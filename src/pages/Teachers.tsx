@@ -19,6 +19,7 @@ interface Teacher {
   name: string;
   subject: string;
   experience: string;
+  students?: number;
 }
 
 const Teachers = () => {
