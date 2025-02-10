@@ -10,32 +10,50 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { UserPlus } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/components/ui/use-toast";
+
+interface Teacher {
+  id: string;
+  name: string;
+  subject: string;
+  experience: string;
+}
 
 const Teachers = () => {
-  // Sample data - would come from backend in production
-  const teachers = [
-    { 
-      id: 1, 
-      name: "Ustadh Muhammad", 
-      subject: "Hifz", 
-      students: "25",
-      experience: "10 years" 
-    },
-    { 
-      id: 2, 
-      name: "Ustadh Abdullah", 
-      subject: "Hifz", 
-      students: "22",
-      experience: "8 years" 
-    },
-    { 
-      id: 3, 
-      name: "Ustadh Ahmad", 
-      subject: "Hifz", 
-      students: "20",
-      experience: "5 years" 
-    },
-  ];
+  const { toast } = useToast();
+
+  const { data: teachers, isLoading } = useQuery({
+    queryKey: ['teachers'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('teachers')
+        .select(`
+          id,
+          name,
+          subject,
+          experience,
+          students_teachers (
+            id
+          )
+        `);
+
+      if (error) {
+        toast({
+          title: "Error fetching teachers",
+          description: error.message,
+          variant: "destructive",
+        });
+        throw error;
+      }
+
+      return data.map(teacher => ({
+        ...teacher,
+        students: teacher.students_teachers?.length || 0
+      }));
+    }
+  });
 
   return (
     <DashboardLayout>
@@ -63,19 +81,33 @@ const Teachers = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {teachers.map((teacher) => (
-                <TableRow key={teacher.id}>
-                  <TableCell className="font-medium">{teacher.name}</TableCell>
-                  <TableCell>{teacher.subject}</TableCell>
-                  <TableCell>{teacher.students}</TableCell>
-                  <TableCell>{teacher.experience}</TableCell>
-                  <TableCell className="text-right">
-                    <Button variant="outline" size="sm">
-                      View Details
-                    </Button>
+              {isLoading ? (
+                <TableRow>
+                  <TableCell colSpan={5} className="text-center py-10">
+                    Loading teachers...
                   </TableCell>
                 </TableRow>
-              ))}
+              ) : teachers?.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={5} className="text-center py-10">
+                    No teachers found. Add your first teacher!
+                  </TableCell>
+                </TableRow>
+              ) : (
+                teachers?.map((teacher) => (
+                  <TableRow key={teacher.id}>
+                    <TableCell className="font-medium">{teacher.name}</TableCell>
+                    <TableCell>{teacher.subject}</TableCell>
+                    <TableCell>{teacher.students}</TableCell>
+                    <TableCell>{teacher.experience}</TableCell>
+                    <TableCell className="text-right">
+                      <Button variant="outline" size="sm">
+                        View Details
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
             </TableBody>
           </Table>
         </div>
