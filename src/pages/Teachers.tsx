@@ -9,7 +9,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { UserPlus } from "lucide-react";
+import { Pencil, Search, Trash2, UserPlus } from "lucide-react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
@@ -22,6 +22,17 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { useState } from "react";
 
 interface Teacher {
@@ -35,7 +46,9 @@ interface Teacher {
 const Teachers = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const [isAddingTeacher, setIsAddingTeacher] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedTeacher, setSelectedTeacher] = useState<Teacher | null>(null);
   const [formData, setFormData] = useState({
     name: "",
     subject: "",
@@ -73,34 +86,92 @@ const Teachers = () => {
     }
   });
 
+  const filteredTeachers = teachers?.filter(teacher => 
+    teacher.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    teacher.subject.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsAddingTeacher(true);
+    setIsProcessing(true);
 
+    try {
+      if (selectedTeacher) {
+        // Update existing teacher
+        const { error } = await supabase
+          .from('teachers')
+          .update(formData)
+          .eq('id', selectedTeacher.id);
+
+        if (error) throw error;
+
+        toast({
+          title: "Success",
+          description: "Teacher updated successfully",
+        });
+      } else {
+        // Add new teacher
+        const { error } = await supabase
+          .from('teachers')
+          .insert([formData]);
+
+        if (error) throw error;
+
+        toast({
+          title: "Success",
+          description: "Teacher added successfully",
+        });
+      }
+
+      // Reset form and close dialog
+      setFormData({ name: "", subject: "", experience: "" });
+      setSelectedTeacher(null);
+      queryClient.invalidateQueries({ queryKey: ['teachers'] });
+      
+    } catch (error: any) {
+      toast({
+        title: selectedTeacher ? "Error updating teacher" : "Error adding teacher",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const handleEdit = (teacher: Teacher) => {
+    setSelectedTeacher(teacher);
+    setFormData({
+      name: teacher.name,
+      subject: teacher.subject,
+      experience: teacher.experience,
+    });
+  };
+
+  const handleDelete = async (teacherId: string) => {
+    setIsProcessing(true);
     try {
       const { error } = await supabase
         .from('teachers')
-        .insert([formData]);
+        .delete()
+        .eq('id', teacherId);
 
       if (error) throw error;
 
       toast({
         title: "Success",
-        description: "Teacher added successfully",
+        description: "Teacher deleted successfully",
       });
-
-      // Reset form and close dialog
-      setFormData({ name: "", subject: "", experience: "" });
-      queryClient.invalidateQueries({ queryKey: ['teachers'] });
       
+      queryClient.invalidateQueries({ queryKey: ['teachers'] });
     } catch (error: any) {
       toast({
-        title: "Error adding teacher",
+        title: "Error deleting teacher",
         description: error.message,
         variant: "destructive",
       });
     } finally {
-      setIsAddingTeacher(false);
+      setIsProcessing(false);
     }
   };
 
@@ -121,7 +192,9 @@ const Teachers = () => {
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
-                <DialogTitle>Add New Teacher</DialogTitle>
+                <DialogTitle>
+                  {selectedTeacher ? "Edit Teacher" : "Add New Teacher"}
+                </DialogTitle>
               </DialogHeader>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="space-y-2">
@@ -157,9 +230,9 @@ const Teachers = () => {
                 <div className="flex justify-end space-x-2">
                   <Button
                     type="submit"
-                    disabled={isAddingTeacher}
+                    disabled={isProcessing}
                   >
-                    {isAddingTeacher ? "Adding..." : "Add Teacher"}
+                    {isProcessing ? "Processing..." : selectedTeacher ? "Update Teacher" : "Add Teacher"}
                   </Button>
                 </div>
               </form>
@@ -168,6 +241,17 @@ const Teachers = () => {
         </div>
 
         <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
+          <div className="p-4 border-b border-gray-200">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+              <Input
+                placeholder="Search teachers by name or subject..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+          </div>
           <Table>
             <TableHeader>
               <TableRow>
@@ -185,23 +269,55 @@ const Teachers = () => {
                     Loading teachers...
                   </TableCell>
                 </TableRow>
-              ) : teachers?.length === 0 ? (
+              ) : filteredTeachers?.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={5} className="text-center py-10">
-                    No teachers found. Add your first teacher!
+                    {searchQuery ? "No teachers found matching your search." : "No teachers found. Add your first teacher!"}
                   </TableCell>
                 </TableRow>
               ) : (
-                teachers?.map((teacher) => (
+                filteredTeachers?.map((teacher) => (
                   <TableRow key={teacher.id}>
                     <TableCell className="font-medium">{teacher.name}</TableCell>
                     <TableCell>{teacher.subject}</TableCell>
                     <TableCell>{teacher.students}</TableCell>
                     <TableCell>{teacher.experience}</TableCell>
-                    <TableCell className="text-right">
-                      <Button variant="outline" size="sm">
-                        View Details
+                    <TableCell className="text-right space-x-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleEdit(teacher)}
+                      >
+                        <Pencil className="h-4 w-4" />
                       </Button>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="text-red-600 hover:text-red-700"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Delete Teacher</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Are you sure you want to delete {teacher.name}? This action cannot be undone.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction
+                              onClick={() => handleDelete(teacher.id)}
+                              className="bg-red-600 hover:bg-red-700"
+                            >
+                              Delete
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
                     </TableCell>
                   </TableRow>
                 ))
