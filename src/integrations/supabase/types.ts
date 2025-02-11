@@ -9,6 +9,257 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      juz: {
+        Row: {
+          id: string
+          juz_number: number
+          surah_list: string
+        }
+        Insert: {
+          id?: string
+          juz_number: number
+          surah_list: string
+        }
+        Update: {
+          id?: string
+          juz_number?: number
+          surah_list?: string
+        }
+        Relationships: []
+      }
+      juz_mastery: {
+        Row: {
+          consecutive_good_revisions: number | null
+          created_at: string
+          id: string
+          juz_number: number
+          last_revision_date: string | null
+          mastery_level: Database["public"]["Enums"]["mastery_level"] | null
+          revision_count: number | null
+          student_id: string | null
+        }
+        Insert: {
+          consecutive_good_revisions?: number | null
+          created_at?: string
+          id?: string
+          juz_number: number
+          last_revision_date?: string | null
+          mastery_level?: Database["public"]["Enums"]["mastery_level"] | null
+          revision_count?: number | null
+          student_id?: string | null
+        }
+        Update: {
+          consecutive_good_revisions?: number | null
+          created_at?: string
+          id?: string
+          juz_number?: number
+          last_revision_date?: string | null
+          mastery_level?: Database["public"]["Enums"]["mastery_level"] | null
+          revision_count?: number | null
+          student_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "juz_mastery_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      juz_revisions: {
+        Row: {
+          created_at: string
+          id: string
+          juz_revised: number
+          memorization_quality:
+            | Database["public"]["Enums"]["quality_rating"]
+            | null
+          revision_date: string
+          student_id: string | null
+          teacher_notes: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          juz_revised: number
+          memorization_quality?:
+            | Database["public"]["Enums"]["quality_rating"]
+            | null
+          revision_date: string
+          student_id?: string | null
+          teacher_notes?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          juz_revised?: number
+          memorization_quality?:
+            | Database["public"]["Enums"]["quality_rating"]
+            | null
+          revision_date?: string
+          student_id?: string | null
+          teacher_notes?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "juz_revisions_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      progress: {
+        Row: {
+          completed_juz: number | null
+          created_at: string
+          current_juz: number | null
+          current_surah: number | null
+          date: string | null
+          end_ayat: number | null
+          id: string
+          last_completed_surah: string | null
+          last_revision_date: string | null
+          memorization_quality:
+            | Database["public"]["Enums"]["quality_rating"]
+            | null
+          notes: string | null
+          revision_status: string | null
+          start_ayat: number | null
+          student_id: string | null
+          tajweed_level: string | null
+          teacher_notes: string | null
+          verses_memorized: number | null
+        }
+        Insert: {
+          completed_juz?: number | null
+          created_at?: string
+          current_juz?: number | null
+          current_surah?: number | null
+          date?: string | null
+          end_ayat?: number | null
+          id?: string
+          last_completed_surah?: string | null
+          last_revision_date?: string | null
+          memorization_quality?:
+            | Database["public"]["Enums"]["quality_rating"]
+            | null
+          notes?: string | null
+          revision_status?: string | null
+          start_ayat?: number | null
+          student_id?: string | null
+          tajweed_level?: string | null
+          teacher_notes?: string | null
+          verses_memorized?: number | null
+        }
+        Update: {
+          completed_juz?: number | null
+          created_at?: string
+          current_juz?: number | null
+          current_surah?: number | null
+          date?: string | null
+          end_ayat?: number | null
+          id?: string
+          last_completed_surah?: string | null
+          last_revision_date?: string | null
+          memorization_quality?:
+            | Database["public"]["Enums"]["quality_rating"]
+            | null
+          notes?: string | null
+          revision_status?: string | null
+          start_ayat?: number | null
+          student_id?: string | null
+          tajweed_level?: string | null
+          teacher_notes?: string | null
+          verses_memorized?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "progress_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sabaq_para: {
+        Row: {
+          created_at: string
+          id: string
+          juz_number: number
+          quality_rating: Database["public"]["Enums"]["quality_rating"]
+          quarters_revised: Database["public"]["Enums"]["quarter_revised"]
+          revision_date: string
+          student_id: string | null
+          teacher_notes: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          juz_number: number
+          quality_rating: Database["public"]["Enums"]["quality_rating"]
+          quarters_revised: Database["public"]["Enums"]["quarter_revised"]
+          revision_date: string
+          student_id?: string | null
+          teacher_notes?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          juz_number?: number
+          quality_rating?: Database["public"]["Enums"]["quality_rating"]
+          quarters_revised?: Database["public"]["Enums"]["quarter_revised"]
+          revision_date?: string
+          student_id?: string | null
+          teacher_notes?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sabaq_para_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      students: {
+        Row: {
+          created_at: string
+          date_of_birth: string | null
+          enrollment_date: string | null
+          guardian_contact: string | null
+          guardian_name: string | null
+          id: string
+          name: string
+          status: Database["public"]["Enums"]["student_status"] | null
+        }
+        Insert: {
+          created_at?: string
+          date_of_birth?: string | null
+          enrollment_date?: string | null
+          guardian_contact?: string | null
+          guardian_name?: string | null
+          id?: string
+          name: string
+          status?: Database["public"]["Enums"]["student_status"] | null
+        }
+        Update: {
+          created_at?: string
+          date_of_birth?: string | null
+          enrollment_date?: string | null
+          guardian_contact?: string | null
+          guardian_name?: string | null
+          id?: string
+          name?: string
+          status?: Database["public"]["Enums"]["student_status"] | null
+        }
+        Relationships: []
+      }
       students_teachers: {
         Row: {
           created_at: string
@@ -38,6 +289,27 @@ export type Database = {
           },
         ]
       }
+      surah: {
+        Row: {
+          id: string
+          name: string
+          surah_number: number
+          total_ayat: number
+        }
+        Insert: {
+          id?: string
+          name: string
+          surah_number: number
+          total_ayat: number
+        }
+        Update: {
+          id?: string
+          name?: string
+          surah_number?: number
+          total_ayat?: number
+        }
+        Relationships: []
+      }
       teachers: {
         Row: {
           created_at: string
@@ -62,6 +334,30 @@ export type Database = {
         }
         Relationships: []
       }
+      users: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          role: Database["public"]["Enums"]["user_role"]
+          username: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          role: Database["public"]["Enums"]["user_role"]
+          username: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          role?: Database["public"]["Enums"]["user_role"]
+          username?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -70,7 +366,21 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      attendance_status: "present" | "absent" | "late"
+      mastery_level: "not_started" | "in_progress" | "memorized" | "mastered"
+      quality_rating:
+        | "excellent"
+        | "good"
+        | "average"
+        | "needsWork"
+        | "horrible"
+      quarter_revised:
+        | "1st_quarter"
+        | "2_quarters"
+        | "3_quarters"
+        | "4_quarters"
+      student_status: "active" | "inactive"
+      user_role: "admin" | "teacher"
     }
     CompositeTypes: {
       [_ in never]: never
