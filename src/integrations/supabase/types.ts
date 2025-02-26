@@ -9,6 +9,51 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      attendance: {
+        Row: {
+          class_schedule_id: string | null
+          created_at: string | null
+          date: string
+          id: string
+          notes: string | null
+          status: string
+          student_id: string | null
+        }
+        Insert: {
+          class_schedule_id?: string | null
+          created_at?: string | null
+          date: string
+          id?: string
+          notes?: string | null
+          status: string
+          student_id?: string | null
+        }
+        Update: {
+          class_schedule_id?: string | null
+          created_at?: string | null
+          date?: string
+          id?: string
+          notes?: string | null
+          status?: string
+          student_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "attendance_class_schedule_id_fkey"
+            columns: ["class_schedule_id"]
+            isOneToOne: false
+            referencedRelation: "schedules"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "attendance_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       juz: {
         Row: {
           id: string
