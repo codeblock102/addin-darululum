@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -8,6 +8,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { ArrowLeft } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Auth = () => {
   const [email, setEmail] = useState("");
@@ -16,6 +17,13 @@ const Auth = () => {
   const [isSignUp, setIsSignUp] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { session } = useAuth();
+
+  useEffect(() => {
+    if (session) {
+      navigate("/");
+    }
+  }, [session, navigate]);
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
