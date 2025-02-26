@@ -254,6 +254,50 @@ export type Database = {
           },
         ]
       }
+      schedules: {
+        Row: {
+          capacity: number
+          class_name: string
+          created_at: string | null
+          current_students: number
+          day_of_week: string
+          id: string
+          room: string
+          teacher_id: string | null
+          time_slot: string
+        }
+        Insert: {
+          capacity?: number
+          class_name: string
+          created_at?: string | null
+          current_students?: number
+          day_of_week: string
+          id?: string
+          room: string
+          teacher_id?: string | null
+          time_slot: string
+        }
+        Update: {
+          capacity?: number
+          class_name?: string
+          created_at?: string | null
+          current_students?: number
+          day_of_week?: string
+          id?: string
+          room?: string
+          teacher_id?: string | null
+          time_slot?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "schedules_teacher_id_fkey"
+            columns: ["teacher_id"]
+            isOneToOne: false
+            referencedRelation: "teachers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       students: {
         Row: {
           created_at: string
