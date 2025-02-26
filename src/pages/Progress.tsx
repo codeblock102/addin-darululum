@@ -1,4 +1,5 @@
 
+import { useQuery } from "@tanstack/react-query";
 import { DashboardLayout } from "@/components/layouts/DashboardLayout";
 import { Card } from "@/components/ui/card";
 import {
@@ -10,36 +11,48 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { BookOpen } from "lucide-react";
+import { BookOpen, Loader2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 const Progress = () => {
-  // Sample progress data - would come from backend in production
-  const progressData = [
-    {
-      id: 1,
-      student: "Ahmad Ali",
-      currentSurah: "Al-Baqarah",
-      verses: "1-15",
-      status: "On Track",
-      lastRevision: "2024-02-20"
+  const { data: progressData, isLoading } = useQuery({
+    queryKey: ['progress'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('progress')
+        .select(`
+          *,
+          students(name)
+        `)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      return data;
     },
-    {
-      id: 2,
-      student: "Fatima Khan",
-      currentSurah: "Al-Imran",
-      verses: "20-35",
-      status: "Ahead",
-      lastRevision: "2024-02-19"
-    },
-    {
-      id: 3,
-      student: "Omar Hassan",
-      currentSurah: "An-Nisa",
-      verses: "5-12",
-      status: "Needs Review",
-      lastRevision: "2024-02-18"
-    }
-  ];
+  });
+
+  const calculateOverallProgress = () => {
+    if (!progressData?.length) return 0;
+    const totalStudents = progressData.length;
+    const onTrackStudents = progressData.filter(
+      (p) => p.memorization_quality === 'excellent' || p.memorization_quality === 'good'
+    ).length;
+    return Math.round((onTrackStudents / totalStudents) * 100);
+  };
+
+  const getStudentsOnTrack = () => {
+    if (!progressData?.length) return 0;
+    return progressData.filter(
+      (p) => p.memorization_quality === 'excellent' || p.memorization_quality === 'good'
+    ).length;
+  };
+
+  const getStudentsNeedingReview = () => {
+    if (!progressData?.length) return 0;
+    return progressData.filter(
+      (p) => p.memorization_quality === 'needsWork' || p.memorization_quality === 'horrible'
+    ).length;
+  };
 
   return (
     <DashboardLayout>
@@ -58,61 +71,67 @@ const Progress = () => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <Card className="p-6">
             <h3 className="font-semibold mb-2">Overall Progress</h3>
-            <div className="text-3xl font-bold text-primary">85%</div>
+            <div className="text-3xl font-bold text-primary">{calculateOverallProgress()}%</div>
             <p className="text-sm text-gray-500 mt-1">Average completion rate</p>
           </Card>
           
           <Card className="p-6">
             <h3 className="font-semibold mb-2">Students On Track</h3>
-            <div className="text-3xl font-bold text-green-600">24</div>
-            <p className="text-sm text-gray-500 mt-1">Out of 30 students</p>
+            <div className="text-3xl font-bold text-green-600">{getStudentsOnTrack()}</div>
+            <p className="text-sm text-gray-500 mt-1">Out of {progressData?.length || 0} students</p>
           </Card>
           
           <Card className="p-6">
             <h3 className="font-semibold mb-2">Needs Review</h3>
-            <div className="text-3xl font-bold text-yellow-600">6</div>
+            <div className="text-3xl font-bold text-yellow-600">{getStudentsNeedingReview()}</div>
             <p className="text-sm text-gray-500 mt-1">Students requiring attention</p>
           </Card>
         </div>
 
-        <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Student</TableHead>
-                <TableHead>Current Surah</TableHead>
-                <TableHead>Verses</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Last Revision</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {progressData.map((entry) => (
-                <TableRow key={entry.id}>
-                  <TableCell className="font-medium">{entry.student}</TableCell>
-                  <TableCell>{entry.currentSurah}</TableCell>
-                  <TableCell>{entry.verses}</TableCell>
-                  <TableCell>
-                    <span className={`px-2 py-1 rounded-full text-xs ${
-                      entry.status === 'On Track' ? 'bg-green-100 text-green-800' :
-                      entry.status === 'Ahead' ? 'bg-blue-100 text-blue-800' :
-                      'bg-yellow-100 text-yellow-800'
-                    }`}>
-                      {entry.status}
-                    </span>
-                  </TableCell>
-                  <TableCell>{entry.lastRevision}</TableCell>
-                  <TableCell className="text-right">
-                    <Button variant="outline" size="sm">
-                      Update Progress
-                    </Button>
-                  </TableCell>
+        {isLoading ? (
+          <div className="flex justify-center items-center h-64">
+            <Loader2 className="h-8 w-8 animate-spin" />
+          </div>
+        ) : (
+          <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Student</TableHead>
+                  <TableHead>Current Surah</TableHead>
+                  <TableHead>Verses</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Last Revision</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
+              </TableHeader>
+              <TableBody>
+                {progressData?.map((entry) => (
+                  <TableRow key={entry.id}>
+                    <TableCell className="font-medium">{entry.students?.name}</TableCell>
+                    <TableCell>{entry.current_surah}</TableCell>
+                    <TableCell>{entry.start_ayat} - {entry.end_ayat}</TableCell>
+                    <TableCell>
+                      <span className={`px-2 py-1 rounded-full text-xs ${
+                        entry.memorization_quality === 'excellent' ? 'bg-green-100 text-green-800' :
+                        entry.memorization_quality === 'good' ? 'bg-blue-100 text-blue-800' :
+                        'bg-yellow-100 text-yellow-800'
+                      }`}>
+                        {entry.memorization_quality}
+                      </span>
+                    </TableCell>
+                    <TableCell>{new Date(entry.last_revision_date).toLocaleDateString()}</TableCell>
+                    <TableCell className="text-right">
+                      <Button variant="outline" size="sm">
+                        Update Progress
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        )}
       </div>
     </DashboardLayout>
   );
