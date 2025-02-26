@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
+import { ArrowLeft } from "lucide-react";
 
 const Auth = () => {
   const [email, setEmail] = useState("");
@@ -51,7 +52,15 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 px-4">
+      <Button
+        variant="ghost"
+        className="absolute top-4 left-4"
+        onClick={() => navigate(-1)}
+      >
+        <ArrowLeft className="mr-2" />
+        Back
+      </Button>
       <Card className="w-full max-w-md">
         <CardHeader>
           <CardTitle>{isSignUp ? "Create Account" : "Sign In"}</CardTitle>
