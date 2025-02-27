@@ -27,26 +27,30 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 
+// Define the schema with proper types matching the database
 const scheduleSchema = z.object({
   class_name: z.string().min(1, "Class name is required"),
   time_slot: z.string().min(1, "Time slot is required"),
   room: z.string().min(1, "Room is required"),
   day_of_week: z.string().min(1, "Day of week is required"),
-  capacity: z.string().transform(num => parseInt(num, 10)),
+  capacity: z.number().min(1, "Capacity must be at least 1"),
 });
+
+type ScheduleFormValues = z.infer<typeof scheduleSchema>;
 
 const Schedule = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const form = useForm<z.infer<typeof scheduleSchema>>({
+  
+  const form = useForm<ScheduleFormValues>({
     resolver: zodResolver(scheduleSchema),
     defaultValues: {
       class_name: "",
       time_slot: "",
       room: "",
       day_of_week: "",
-      capacity: "20",
+      capacity: 20, // Changed to number
     },
   });
 
@@ -64,10 +68,17 @@ const Schedule = () => {
   });
 
   const addScheduleMutation = useMutation({
-    mutationFn: async (values: z.infer<typeof scheduleSchema>) => {
+    mutationFn: async (values: ScheduleFormValues) => {
       const { error } = await supabase
         .from('schedules')
-        .insert([values]);
+        .insert({
+          class_name: values.class_name,
+          time_slot: values.time_slot,
+          room: values.room,
+          day_of_week: values.day_of_week,
+          capacity: values.capacity,
+          current_students: 0, // Adding default value for required field
+        });
       
       if (error) throw error;
     },
@@ -89,7 +100,7 @@ const Schedule = () => {
     },
   });
 
-  const onSubmit = (values: z.infer<typeof scheduleSchema>) => {
+  const onSubmit = (values: ScheduleFormValues) => {
     addScheduleMutation.mutate(values);
   };
 
@@ -173,7 +184,13 @@ const Schedule = () => {
                       <FormItem>
                         <FormLabel>Capacity</FormLabel>
                         <FormControl>
-                          <Input {...field} type="number" min="1" />
+                          <Input 
+                            {...field} 
+                            type="number" 
+                            min="1" 
+                            onChange={(e) => field.onChange(parseInt(e.target.value))}
+                            value={field.value}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
