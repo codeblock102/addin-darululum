@@ -54,6 +54,51 @@ export type Database = {
           },
         ]
       }
+      communications: {
+        Row: {
+          created_at: string | null
+          id: string
+          message: string
+          read: boolean | null
+          recipient_id: string | null
+          sender_id: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          message: string
+          read?: boolean | null
+          recipient_id?: string | null
+          sender_id?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          message?: string
+          read?: boolean | null
+          recipient_id?: string | null
+          sender_id?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "communications_recipient_id_fkey"
+            columns: ["recipient_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "communications_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       juz: {
         Row: {
           id: string
@@ -378,18 +423,24 @@ export type Database = {
       }
       students_teachers: {
         Row: {
+          active: boolean | null
+          assigned_date: string | null
           created_at: string
           id: string
           student_name: string
           teacher_id: string
         }
         Insert: {
+          active?: boolean | null
+          assigned_date?: string | null
           created_at?: string
           id?: string
           student_name: string
           teacher_id: string
         }
         Update: {
+          active?: boolean | null
+          assigned_date?: string | null
           created_at?: string
           id?: string
           student_name?: string
