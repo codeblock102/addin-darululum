@@ -1,11 +1,13 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { DashboardLayout } from "@/components/layouts/DashboardLayout";
-import { Button } from "@/components/ui/button";
-import { BookOpen, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { ProgressStats } from "@/components/progress/ProgressStats";
 import { ProgressTable } from "@/components/progress/ProgressTable";
+import { NewProgressDialog } from "@/components/progress/NewProgressDialog";
+import { RecentRevisions } from "@/components/progress/RecentRevisions";
+import { CompleteRevisions } from "@/components/progress/CompleteRevisions";
 import type { Progress } from "@/types/progress";
 
 const Progress = () => {
@@ -56,10 +58,7 @@ const Progress = () => {
             <h1 className="text-3xl font-bold mb-2">Progress Tracking</h1>
             <p className="text-gray-500">Monitor student Hifz progress and revisions</p>
           </div>
-          <Button>
-            <BookOpen className="mr-2" />
-            New Progress Entry
-          </Button>
+          <NewProgressDialog />
         </div>
 
         <ProgressStats 
@@ -68,6 +67,11 @@ const Progress = () => {
           needsReviewCount={getStudentsNeedingReview()}
           overallProgress={calculateOverallProgress()}
         />
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+          <RecentRevisions />
+          <CompleteRevisions />
+        </div>
 
         {isLoading ? (
           <div className="flex justify-center items-center h-64">
