@@ -12,6 +12,7 @@ import StudentDetail from "./pages/StudentDetail";
 import Teachers from "./pages/Teachers";
 import Schedule from "./pages/Schedule";
 import Progress from "./pages/Progress";
+import Attendance from "./pages/Attendance";
 import NotFound from "./pages/NotFound";
 import Auth from "./pages/Auth";
 
@@ -72,6 +73,14 @@ const App = () => (
                 element={
                   <ProtectedRoute>
                     <Progress />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/attendance"
+                element={
+                  <ProtectedRoute>
+                    <Attendance />
                   </ProtectedRoute>
                 }
               />
