@@ -1,9 +1,8 @@
 
 import { useState } from "react";
-import { useQueryClient, useQuery } from "@tanstack/react-query";
+import { useNavigate } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
-import { Button } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -12,18 +11,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-import { Pencil, Trash2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Edit, Eye } from "lucide-react";
 
 interface Student {
   id: string;
@@ -41,62 +31,48 @@ interface StudentListProps {
 }
 
 export const StudentList = ({ searchQuery, onEdit }: StudentListProps) => {
-  const { toast } = useToast();
-  const queryClient = useQueryClient();
-  const [isProcessing, setIsProcessing] = useState(false);
+  const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState(true);
 
-  const { data: students, isLoading } = useQuery({
+  const { data: students } = useQuery({
     queryKey: ['students'],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('students')
         .select('*')
-        .order('name');
-      
-      if (error) {
-        toast({
-          title: "Error fetching students",
-          description: error.message,
-          variant: "destructive",
-        });
-        throw error;
-      }
-      
-      return data as Student[];
-    }
-  });
-
-  const handleDelete = async (studentId: string) => {
-    setIsProcessing(true);
-    try {
-      const { error } = await supabase
-        .from('students')
-        .delete()
-        .eq('id', studentId);
+        .order('name', { ascending: true });
 
       if (error) throw error;
-
-      toast({
-        title: "Success",
-        description: "Student deleted successfully",
-      });
       
-      queryClient.invalidateQueries({ queryKey: ['students'] });
-    } catch (error: any) {
-      toast({
-        title: "Error deleting student",
-        description: error.message,
-        variant: "destructive",
-      });
-    } finally {
-      setIsProcessing(false);
-    }
-  };
+      setIsLoading(false);
+      return data as Student[];
+    },
+  });
 
-  const filteredStudents = students?.filter(student =>
-    student.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    student.guardian_name?.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredStudents = students?.filter(
+    (student) =>
+      student.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (student.guardian_name && 
+       student.guardian_name.toLowerCase().includes(searchQuery.toLowerCase()))
   );
+
+  if (isLoading) {
+    return (
+      <div className="p-4 space-y-4">
+        {[...Array(5)].map((_, i) => (
+          <Skeleton key={i} className="h-12 w-full" />
+        ))}
+      </div>
+    );
+  }
+
+  if (filteredStudents?.length === 0) {
+    return (
+      <div className="text-center p-8">
+        <p className="text-gray-500">No students found with the search criteria.</p>
+      </div>
+    );
+  }
 
   return (
     <Table>
@@ -111,72 +87,41 @@ export const StudentList = ({ searchQuery, onEdit }: StudentListProps) => {
         </TableRow>
       </TableHeader>
       <TableBody>
-        {isLoading ? (
-          <TableRow>
-            <TableCell colSpan={6} className="text-center py-10">
-              Loading students...
+        {filteredStudents?.map((student) => (
+          <TableRow key={student.id}>
+            <TableCell className="font-medium">{student.name}</TableCell>
+            <TableCell>{student.guardian_name || '—'}</TableCell>
+            <TableCell>{student.guardian_contact || '—'}</TableCell>
+            <TableCell>
+              {student.enrollment_date ? new Date(student.enrollment_date).toLocaleDateString() : '—'}
             </TableCell>
-          </TableRow>
-        ) : filteredStudents?.length === 0 ? (
-          <TableRow>
-            <TableCell colSpan={6} className="text-center py-10">
-              {searchQuery ? "No students found matching your search." : "No students found. Add your first student!"}
+            <TableCell>
+              <span className={`px-2 py-1 rounded-full text-xs ${
+                student.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+              }`}>
+                {student.status}
+              </span>
             </TableCell>
-          </TableRow>
-        ) : (
-          filteredStudents?.map((student) => (
-            <TableRow key={student.id}>
-              <TableCell className="font-medium">{student.name}</TableCell>
-              <TableCell>{student.guardian_name || '-'}</TableCell>
-              <TableCell>{student.guardian_contact || '-'}</TableCell>
-              <TableCell>{student.enrollment_date || '-'}</TableCell>
-              <TableCell>
-                <span className={`px-2 py-1 rounded-full text-xs ${
-                  student.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
-                }`}>
-                  {student.status}
-                </span>
-              </TableCell>
-              <TableCell className="text-right space-x-2">
-                <Button
-                  variant="outline"
-                  size="sm"
+            <TableCell className="text-right">
+              <div className="flex justify-end gap-2">
+                <Button 
+                  variant="outline" 
+                  size="icon"
+                  onClick={() => navigate(`/students/${student.id}`)}
+                >
+                  <Eye className="h-4 w-4" />
+                </Button>
+                <Button 
+                  variant="outline" 
+                  size="icon"
                   onClick={() => onEdit(student)}
                 >
-                  <Pencil className="h-4 w-4" />
+                  <Edit className="h-4 w-4" />
                 </Button>
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="text-red-600 hover:text-red-700"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>Delete Student</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        Are you sure you want to delete {student.name}? This action cannot be undone.
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>Cancel</AlertDialogCancel>
-                      <AlertDialogAction
-                        onClick={() => handleDelete(student.id)}
-                        className="bg-red-600 hover:bg-red-700"
-                      >
-                        Delete
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
-              </TableCell>
-            </TableRow>
-          ))
-        )}
+              </div>
+            </TableCell>
+          </TableRow>
+        ))}
       </TableBody>
     </Table>
   );
