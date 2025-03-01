@@ -1,12 +1,12 @@
-
 export type UserRole = 'admin' | 'teacher';
 
 export interface User {
   id: string;
   email: string;
   role: UserRole;
-  name: string;
+  username: string;
   created_at: string;
+  name?: string;
 }
 
 export interface StudentAssignment {

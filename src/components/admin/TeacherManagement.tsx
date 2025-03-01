@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -68,7 +67,7 @@ export const TeacherManagement = () => {
 
   const filteredTeachers = teachers?.filter(teacher =>
     teacher.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    teacher.name?.toLowerCase().includes(searchQuery.toLowerCase())
+    (teacher.username && teacher.username.toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
   return (
@@ -107,20 +106,18 @@ export const TeacherManagement = () => {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Name</TableHead>
+              <TableHead>Username</TableHead>
               <TableHead>Email</TableHead>
               <TableHead>Status</TableHead>
-              <TableHead>Students</TableHead>
               <TableHead>Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {filteredTeachers?.map((teacher) => (
               <TableRow key={teacher.id}>
-                <TableCell>{teacher.name}</TableCell>
+                <TableCell>{teacher.username}</TableCell>
                 <TableCell>{teacher.email}</TableCell>
                 <TableCell>Active</TableCell>
-                <TableCell>0</TableCell>
                 <TableCell>
                   <Button variant="outline" size="sm">
                     Manage
