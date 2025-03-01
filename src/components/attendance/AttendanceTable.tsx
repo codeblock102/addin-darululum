@@ -1,12 +1,10 @@
-
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { format, subDays } from "date-fns";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CaretSortIcon, CheckIcon, Cross2Icon, DotsHorizontalIcon } from "@radix-ui/react-icons";
-import { CalendarIcon, Check, X, Clock, Filter } from "lucide-react";
+import { CalendarIcon, Check, X, Clock, Filter, MoreHorizontal } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";

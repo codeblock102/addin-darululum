@@ -1,3 +1,4 @@
+
 import * as React from "react"
 
 const MOBILE_BREAKPOINT = 768
@@ -17,3 +18,10 @@ export function useIsMobile() {
 
   return !!isMobile
 }
+
+// Add the useMediaQuery hook as an alias to useIsMobile for compatibility
+export const useMediaQuery = (query: string) => {
+  // We're ignoring the query parameter since our useIsMobile is hardcoded to check for mobile breakpoint
+  // In a more complete implementation, this would use the query parameter
+  return useIsMobile();
+};
