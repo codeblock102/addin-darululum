@@ -72,14 +72,14 @@ export function AttendanceFilters({
         </Popover>
 
         <Select
-          value={statusFilter || ""}
-          onValueChange={(value) => setStatusFilter(value || null)}
+          value={statusFilter || "all"}
+          onValueChange={(value) => setStatusFilter(value === "all" ? null : value)}
         >
           <SelectTrigger className="sm:w-[180px]">
             <SelectValue placeholder="Filter by status" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">All Statuses</SelectItem>
+            <SelectItem value="all">All Statuses</SelectItem>
             <SelectItem value="present">Present</SelectItem>
             <SelectItem value="absent">Absent</SelectItem>
             <SelectItem value="late">Late</SelectItem>
