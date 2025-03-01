@@ -10,11 +10,13 @@ import { Label } from "@/components/ui/label";
 import { ArrowLeft } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
+type AuthMode = "signIn" | "signUp" | "forgotPassword";
+
 const Auth = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [isSignUp, setIsSignUp] = useState(false);
+  const [mode, setMode] = useState<AuthMode>("signIn");
   const navigate = useNavigate();
   const { toast } = useToast();
   const { session } = useAuth();
@@ -30,7 +32,7 @@ const Auth = () => {
     setIsLoading(true);
 
     try {
-      if (isSignUp) {
+      if (mode === "signUp") {
         const { error } = await supabase.auth.signUp({
           email,
           password,
@@ -40,13 +42,23 @@ const Auth = () => {
           title: "Success",
           description: "Please check your email to verify your account",
         });
-      } else {
+      } else if (mode === "signIn") {
         const { error } = await supabase.auth.signInWithPassword({
           email,
           password,
         });
         if (error) throw error;
         navigate("/");
+      } else if (mode === "forgotPassword") {
+        const { error } = await supabase.auth.resetPasswordForEmail(email, {
+          redirectTo: `${window.location.origin}/auth/reset-password`,
+        });
+        if (error) throw error;
+        toast({
+          title: "Password Reset Email Sent",
+          description: "Check your email for a password reset link",
+        });
+        setMode("signIn");
       }
     } catch (error: any) {
       toast({
@@ -57,6 +69,91 @@ const Auth = () => {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const renderAuthForm = () => {
+    if (mode === "forgotPassword") {
+      return (
+        <form onSubmit={handleAuth} className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="email">Email</Label>
+            <Input
+              id="email"
+              type="email"
+              placeholder="Enter your email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+          </div>
+          <Button type="submit" className="w-full" disabled={isLoading}>
+            {isLoading ? "Processing..." : "Send Reset Link"}
+          </Button>
+          <Button
+            type="button"
+            variant="link"
+            className="w-full"
+            onClick={() => setMode("signIn")}
+          >
+            Back to Sign In
+          </Button>
+        </form>
+      );
+    }
+
+    return (
+      <form onSubmit={handleAuth} className="space-y-4">
+        <div className="space-y-2">
+          <Label htmlFor="email">Email</Label>
+          <Input
+            id="email"
+            type="email"
+            placeholder="Enter your email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="password">Password</Label>
+          <Input
+            id="password"
+            type="password"
+            placeholder="Enter your password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+          />
+        </div>
+        {mode === "signIn" && (
+          <Button
+            type="button"
+            variant="link"
+            className="w-full -mt-2 text-sm text-right"
+            onClick={() => setMode("forgotPassword")}
+          >
+            Forgot Password?
+          </Button>
+        )}
+        <Button type="submit" className="w-full" disabled={isLoading}>
+          {isLoading
+            ? "Processing..."
+            : mode === "signUp"
+            ? "Create Account"
+            : "Sign In"}
+        </Button>
+        <Button
+          type="button"
+          variant="link"
+          className="w-full"
+          onClick={() => setMode(mode === "signUp" ? "signIn" : "signUp")}
+        >
+          {mode === "signUp"
+            ? "Already have an account? Sign In"
+            : "Don't have an account? Sign Up"}
+        </Button>
+      </form>
+    );
   };
 
   return (
@@ -71,55 +168,17 @@ const Auth = () => {
       </Button>
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle>{isSignUp ? "Create Account" : "Sign In"}</CardTitle>
+          <CardTitle>{mode === "forgotPassword" ? "Reset Password" : mode === "signUp" ? "Create Account" : "Sign In"}</CardTitle>
           <CardDescription>
-            {isSignUp
+            {mode === "forgotPassword"
+              ? "Enter your email to receive a password reset link"
+              : mode === "signUp"
               ? "Create a new account to access the system"
               : "Sign in to your account to continue"}
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleAuth} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="Enter your email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                type="password"
-                placeholder="Enter your password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
-            </div>
-            <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading
-                ? "Processing..."
-                : isSignUp
-                ? "Create Account"
-                : "Sign In"}
-            </Button>
-            <Button
-              type="button"
-              variant="link"
-              className="w-full"
-              onClick={() => setIsSignUp(!isSignUp)}
-            >
-              {isSignUp
-                ? "Already have an account? Sign In"
-                : "Don't have an account? Sign Up"}
-            </Button>
-          </form>
+          {renderAuthForm()}
         </CardContent>
       </Card>
     </div>
