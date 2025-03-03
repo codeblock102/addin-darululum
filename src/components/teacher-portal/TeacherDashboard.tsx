@@ -15,17 +15,25 @@ interface Teacher {
   subject: string;
   experience: string;
   email?: string;
+  bio?: string;
+  phone?: string;
 }
 
 interface TeacherDashboardProps {
   teacher: Teacher;
 }
 
+interface SummaryData {
+  studentsCount: number;
+  recentProgressEntries: number;
+  todayClasses: number;
+}
+
 export const TeacherDashboard = ({ teacher }: TeacherDashboardProps) => {
   const [activeTab, setActiveTab] = useState("overview");
   
   // Fetch summary data for the dashboard
-  const { data: summaryData } = useQuery({
+  const { data: summaryData } = useQuery<SummaryData>({
     queryKey: ['teacher-summary', teacher.id],
     queryFn: async () => {
       // Get assigned students count

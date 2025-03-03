@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -81,14 +82,14 @@ export const TeacherList = ({ searchQuery, onEdit }: TeacherListProps) => {
         console.error("Error fetching student assignments:", studentError);
       }
       
-      return data.map(teacher => {
+      return data.map((teacher) => {
         const studentCount = studentData ? 
           studentData.filter(s => s.teacher_id === teacher.id).length : 0;
         
         return {
           ...teacher,
           students: studentCount
-        };
+        } as Teacher;
       });
     }
   });

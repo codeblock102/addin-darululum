@@ -479,24 +479,33 @@ export type Database = {
       }
       teachers: {
         Row: {
+          bio: string | null
           created_at: string
+          email: string | null
           experience: string
           id: string
           name: string
+          phone: string | null
           subject: string
         }
         Insert: {
+          bio?: string | null
           created_at?: string
+          email?: string | null
           experience: string
           id?: string
           name: string
+          phone?: string | null
           subject: string
         }
         Update: {
+          bio?: string | null
           created_at?: string
+          email?: string | null
           experience?: string
           id?: string
           name?: string
+          phone?: string | null
           subject?: string
         }
         Relationships: []

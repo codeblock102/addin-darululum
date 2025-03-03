@@ -9,10 +9,19 @@ import { TeacherDashboard } from "@/components/teacher-portal/TeacherDashboard";
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
+interface Teacher {
+  id: string;
+  name: string;
+  subject: string;
+  experience: string;
+  email?: string;
+  bio?: string;
+  phone?: string;
+}
+
 const TeacherPortal = () => {
   const navigate = useNavigate();
   const { session } = useAuth();
-  const [isLoading, setIsLoading] = useState(true);
 
   // Get teacher information based on the authenticated user's email
   const { data: teacherData, isLoading: teacherLoading } = useQuery({
@@ -22,7 +31,7 @@ const TeacherPortal = () => {
       
       const { data, error } = await supabase
         .from('teachers')
-        .select('id, name, subject, experience, email')
+        .select('id, name, subject, experience, email, bio, phone')
         .eq('email', session.user.email)
         .single();
       
@@ -31,7 +40,7 @@ const TeacherPortal = () => {
         return null;
       }
       
-      return data;
+      return data as Teacher;
     },
     enabled: !!session?.user?.email,
   });
