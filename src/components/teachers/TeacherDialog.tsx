@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -14,6 +13,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { useToast } from "@/components/ui/use-toast";
+import { Loader2 } from "lucide-react";
 
 interface TeacherFormData {
   name: string;
@@ -51,7 +51,6 @@ export const TeacherDialog = ({ selectedTeacher }: TeacherDialogProps) => {
     phone: "",
   });
 
-  // Reset form when selected teacher changes
   useEffect(() => {
     if (selectedTeacher) {
       setFormData({
@@ -102,7 +101,6 @@ export const TeacherDialog = ({ selectedTeacher }: TeacherDialogProps) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
     
-    // Clear error when user types
     if (errors[name]) {
       setErrors(prev => {
         const newErrors = { ...prev };
