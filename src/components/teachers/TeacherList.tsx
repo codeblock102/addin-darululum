@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -63,18 +62,7 @@ export const TeacherList = ({ searchQuery, onEdit }: TeacherListProps) => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('teachers')
-        .select(`
-          id,
-          name,
-          subject,
-          experience,
-          bio,
-          email,
-          phone,
-          students_teachers (
-            id
-          )
-        `);
+        .select('id, name, subject, experience, email, phone, bio');
 
       if (error) {
         toast({
@@ -85,10 +73,23 @@ export const TeacherList = ({ searchQuery, onEdit }: TeacherListProps) => {
         throw error;
       }
 
-      return data.map(teacher => ({
-        ...teacher,
-        students: teacher.students_teachers?.length || 0
-      }));
+      const { data: studentData, error: studentError } = await supabase
+        .from('students_teachers')
+        .select('id, teacher_id');
+        
+      if (studentError) {
+        console.error("Error fetching student assignments:", studentError);
+      }
+      
+      return data.map(teacher => {
+        const studentCount = studentData ? 
+          studentData.filter(s => s.teacher_id === teacher.id).length : 0;
+        
+        return {
+          ...teacher,
+          students: studentCount
+        };
+      });
     }
   });
 
