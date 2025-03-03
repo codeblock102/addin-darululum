@@ -33,9 +33,9 @@ export const TeacherDashboard = ({ teacher }: TeacherDashboardProps) => {
   const [activeTab, setActiveTab] = useState("overview");
   
   // Fetch summary data for the dashboard
-  const { data: summaryData } = useQuery<SummaryData>({
+  const { data: summaryData } = useQuery({
     queryKey: ['teacher-summary', teacher.id],
-    queryFn: async () => {
+    queryFn: async (): Promise<SummaryData> => {
       // Get assigned students count
       const { data: studentsData, error: studentsError } = await supabase
         .from('students_teachers')
