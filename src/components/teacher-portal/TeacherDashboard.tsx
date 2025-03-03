@@ -29,6 +29,22 @@ interface SummaryData {
   todayClasses: number;
 }
 
+// Define the return types for the Supabase queries to help TypeScript
+type StudentsQueryResult = {
+  data: { id: string }[] | null;
+  error: any;
+}
+
+type ProgressQueryResult = {
+  data: { id: string }[] | null;
+  error: any;
+}
+
+type ScheduleQueryResult = {
+  data: { id: string }[] | null;
+  error: any;
+}
+
 export const TeacherDashboard = ({ teacher }: TeacherDashboardProps) => {
   const [activeTab, setActiveTab] = useState("overview");
   
@@ -37,7 +53,7 @@ export const TeacherDashboard = ({ teacher }: TeacherDashboardProps) => {
     queryKey: ['teacher-summary', teacher.id],
     queryFn: async (): Promise<SummaryData> => {
       // Get assigned students count
-      const { data: studentsData, error: studentsError } = await supabase
+      const { data: studentsData, error: studentsError }: StudentsQueryResult = await supabase
         .from('students_teachers')
         .select('id')
         .eq('teacher_id', teacher.id);
@@ -47,7 +63,7 @@ export const TeacherDashboard = ({ teacher }: TeacherDashboardProps) => {
       }
       
       // Get recent progress entries count
-      const { data: progressData, error: progressError } = await supabase
+      const { data: progressData, error: progressError }: ProgressQueryResult = await supabase
         .from('progress')
         .select('id')
         .eq('teacher_id', teacher.id)
@@ -59,7 +75,7 @@ export const TeacherDashboard = ({ teacher }: TeacherDashboardProps) => {
       
       // Get today's classes
       const today = new Date().toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
-      const { data: classesData, error: classesError } = await supabase
+      const { data: classesData, error: classesError }: ScheduleQueryResult = await supabase
         .from('schedules')
         .select('id')
         .eq('teacher_id', teacher.id)
