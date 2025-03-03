@@ -15,6 +15,7 @@ import Progress from "./pages/Progress";
 import Attendance from "./pages/Attendance";
 import NotFound from "./pages/NotFound";
 import Auth from "./pages/Auth";
+import TeacherPortal from "./pages/TeacherPortal";
 
 const queryClient = new QueryClient();
 
@@ -81,6 +82,14 @@ const App = () => (
                 element={
                   <ProtectedRoute>
                     <Attendance />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/teacher-portal"
+                element={
+                  <ProtectedRoute>
+                    <TeacherPortal />
                   </ProtectedRoute>
                 }
               />

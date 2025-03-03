@@ -15,7 +15,8 @@ import {
   School, 
   Settings, 
   Users,
-  CalendarCheck 
+  CalendarCheck,
+  GraduationCap
 } from "lucide-react";
 
 export const Sidebar = () => {
@@ -42,6 +43,7 @@ export const Sidebar = () => {
     { href: "/schedule", label: "Schedule", icon: <CalendarDays className="h-5 w-5" /> },
     { href: "/progress", label: "Progress", icon: <LineChart className="h-5 w-5" /> },
     { href: "/attendance", label: "Attendance", icon: <CalendarCheck className="h-5 w-5" /> },
+    { href: "/teacher-portal", label: "Teacher Portal", icon: <GraduationCap className="h-5 w-5" /> },
   ];
 
   return (
