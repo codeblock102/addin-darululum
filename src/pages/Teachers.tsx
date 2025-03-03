@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { DashboardLayout } from "@/components/layouts/DashboardLayout";
 import { TeacherDialog } from "@/components/teachers/TeacherDialog";
@@ -10,12 +10,15 @@ import {
   Dialog,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Search, UserPlus } from "lucide-react";
+import { Search, UserPlus, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/components/ui/use-toast";
 
 const Teachers = () => {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
   const [selectedTeacher, setSelectedTeacher] = useState<{
     id: string;
     name: string;
@@ -24,11 +27,24 @@ const Teachers = () => {
   } | null>(null);
 
   // Check authentication
-  useState(() => {
+  useEffect(() => {
     const checkAuth = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
+      try {
+        setIsLoading(true);
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) {
+          navigate("/auth");
+        }
+      } catch (error) {
+        console.error("Authentication error:", error);
+        toast({
+          variant: "destructive",
+          title: "Authentication Error",
+          description: "Unable to verify your session. Please try logging in again.",
+        });
         navigate("/auth");
+      } finally {
+        setIsLoading(false);
       }
     };
     
@@ -41,7 +57,17 @@ const Teachers = () => {
     });
 
     return () => subscription.unsubscribe();
-  });
+  }, [navigate, toast]);
+
+  if (isLoading) {
+    return (
+      <DashboardLayout>
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        </div>
+      </DashboardLayout>
+    );
+  }
 
   return (
     <DashboardLayout>
