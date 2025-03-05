@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -29,21 +28,11 @@ interface SummaryData {
   todayClasses: number;
 }
 
-// Define explicit return types for Supabase queries
-interface StudentsQueryResult {
-  data: { id: string }[] | null;
-  error: Error | null;
-}
-
-interface ProgressQueryResult {
-  data: { id: string }[] | null;
-  error: Error | null;
-}
-
-interface ScheduleQueryResult {
-  data: { id: string }[] | null;
-  error: Error | null;
-}
+// Simple type definition to avoid excessive type instantiation
+type SupabaseResult = {
+  data: any[] | null;
+  error: any | null;
+};
 
 export const TeacherDashboard = ({ teacher }: TeacherDashboardProps) => {
   const [activeTab, setActiveTab] = useState("overview");
@@ -53,42 +42,42 @@ export const TeacherDashboard = ({ teacher }: TeacherDashboardProps) => {
     queryKey: ['teacher-summary', teacher.id],
     queryFn: async (): Promise<SummaryData> => {
       // Get assigned students count
-      const { data: studentsData, error: studentsError }: StudentsQueryResult = await supabase
+      const studentsResult: SupabaseResult = await supabase
         .from('students_teachers')
         .select('id')
         .eq('teacher_id', teacher.id);
       
-      if (studentsError) {
-        console.error('Error fetching assigned students:', studentsError);
+      if (studentsResult.error) {
+        console.error('Error fetching assigned students:', studentsResult.error);
       }
       
       // Get recent progress entries count
-      const { data: progressData, error: progressError }: ProgressQueryResult = await supabase
+      const progressResult: SupabaseResult = await supabase
         .from('progress')
         .select('id')
         .eq('teacher_id', teacher.id)
         .gte('created_at', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString());
       
-      if (progressError) {
-        console.error('Error fetching recent progress:', progressError);
+      if (progressResult.error) {
+        console.error('Error fetching recent progress:', progressResult.error);
       }
       
       // Get today's classes
       const today = new Date().toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
-      const { data: classesData, error: classesError }: ScheduleQueryResult = await supabase
+      const classesResult: SupabaseResult = await supabase
         .from('schedules')
         .select('id')
         .eq('teacher_id', teacher.id)
         .eq('day_of_week', today);
       
-      if (classesError) {
-        console.error('Error fetching today classes:', classesError);
+      if (classesResult.error) {
+        console.error('Error fetching today classes:', classesResult.error);
       }
       
       return {
-        studentsCount: studentsData?.length || 0,
-        recentProgressEntries: progressData?.length || 0,
-        todayClasses: classesData?.length || 0
+        studentsCount: studentsResult.data?.length || 0,
+        recentProgressEntries: progressResult.data?.length || 0,
+        todayClasses: classesResult.data?.length || 0
       };
     }
   });
