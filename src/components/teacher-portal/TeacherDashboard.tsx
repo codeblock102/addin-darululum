@@ -29,17 +29,20 @@ interface SummaryData {
   todayClasses: number;
 }
 
-// Define proper return types for Supabase queries
-interface StudentsData {
-  id: string;
+// Define explicit return types for Supabase queries
+interface StudentsQueryResult {
+  data: { id: string }[] | null;
+  error: Error | null;
 }
 
-interface ProgressData {
-  id: string;
+interface ProgressQueryResult {
+  data: { id: string }[] | null;
+  error: Error | null;
 }
 
-interface ScheduleData {
-  id: string;
+interface ScheduleQueryResult {
+  data: { id: string }[] | null;
+  error: Error | null;
 }
 
 export const TeacherDashboard = ({ teacher }: TeacherDashboardProps) => {
@@ -50,7 +53,7 @@ export const TeacherDashboard = ({ teacher }: TeacherDashboardProps) => {
     queryKey: ['teacher-summary', teacher.id],
     queryFn: async (): Promise<SummaryData> => {
       // Get assigned students count
-      const { data: studentsData, error: studentsError } = await supabase
+      const { data: studentsData, error: studentsError }: StudentsQueryResult = await supabase
         .from('students_teachers')
         .select('id')
         .eq('teacher_id', teacher.id);
@@ -60,7 +63,7 @@ export const TeacherDashboard = ({ teacher }: TeacherDashboardProps) => {
       }
       
       // Get recent progress entries count
-      const { data: progressData, error: progressError } = await supabase
+      const { data: progressData, error: progressError }: ProgressQueryResult = await supabase
         .from('progress')
         .select('id')
         .eq('teacher_id', teacher.id)
@@ -72,7 +75,7 @@ export const TeacherDashboard = ({ teacher }: TeacherDashboardProps) => {
       
       // Get today's classes
       const today = new Date().toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
-      const { data: classesData, error: classesError } = await supabase
+      const { data: classesData, error: classesError }: ScheduleQueryResult = await supabase
         .from('schedules')
         .select('id')
         .eq('teacher_id', teacher.id)
