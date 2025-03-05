@@ -6,8 +6,10 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { DashboardLayout } from "@/components/layouts/DashboardLayout";
 import { TeacherDashboard } from "@/components/teacher-portal/TeacherDashboard";
-import { Loader2 } from "lucide-react";
+import { Loader2, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { toast } from "@/components/ui/use-toast";
 
 interface Teacher {
   id: string;
@@ -24,7 +26,7 @@ const TeacherPortal = () => {
   const { session } = useAuth();
 
   // Get teacher information based on the authenticated user's email
-  const { data: teacherData, isLoading: teacherLoading } = useQuery({
+  const { data: teacherData, isLoading: teacherLoading, error: teacherError } = useQuery({
     queryKey: ['teacher-profile', session?.user?.email],
     queryFn: async () => {
       if (!session?.user?.email) return null;
@@ -43,6 +45,13 @@ const TeacherPortal = () => {
       return data as Teacher;
     },
     enabled: !!session?.user?.email,
+    onError: (error) => {
+      toast({
+        title: "Error loading profile",
+        description: "Could not load your teacher profile. Please try again later.",
+        variant: "destructive"
+      });
+    }
   });
 
   // Handle loading state
@@ -51,7 +60,26 @@ const TeacherPortal = () => {
       <DashboardLayout>
         <div className="flex justify-center items-center h-64">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <span className="ml-2 text-lg">Loading your profile...</span>
         </div>
+      </DashboardLayout>
+    );
+  }
+
+  // If teacher profile fetch error
+  if (teacherError) {
+    return (
+      <DashboardLayout>
+        <Alert variant="destructive" className="mb-6">
+          <AlertTriangle className="h-4 w-4" />
+          <AlertTitle>Error</AlertTitle>
+          <AlertDescription>
+            There was a problem loading your teacher profile. Please try again later.
+          </AlertDescription>
+        </Alert>
+        <Button onClick={() => navigate('/')} variant="default">
+          Return to Dashboard
+        </Button>
       </DashboardLayout>
     );
   }
@@ -65,9 +93,14 @@ const TeacherPortal = () => {
           <p className="text-gray-600 mb-6">
             We couldn't find a teacher profile associated with your account. This portal is only for registered teachers.
           </p>
-          <Button onClick={() => navigate('/')} variant="default">
-            Return to Dashboard
-          </Button>
+          <div className="space-x-4">
+            <Button onClick={() => navigate('/')} variant="outline">
+              Return to Dashboard
+            </Button>
+            <Button onClick={() => navigate('/auth')} variant="default">
+              Sign in with a Different Account
+            </Button>
+          </div>
         </div>
       </DashboardLayout>
     );

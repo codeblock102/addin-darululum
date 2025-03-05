@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -28,12 +29,6 @@ interface SummaryData {
   todayClasses: number;
 }
 
-// Simple type definition to avoid excessive type instantiation
-type SupabaseResult = {
-  data: any[] | null;
-  error: any | null;
-};
-
 export const TeacherDashboard = ({ teacher }: TeacherDashboardProps) => {
   const [activeTab, setActiveTab] = useState("overview");
   
@@ -42,7 +37,7 @@ export const TeacherDashboard = ({ teacher }: TeacherDashboardProps) => {
     queryKey: ['teacher-summary', teacher.id],
     queryFn: async (): Promise<SummaryData> => {
       // Get assigned students count
-      const studentsResult: SupabaseResult = await supabase
+      const studentsResult = await supabase
         .from('students_teachers')
         .select('id')
         .eq('teacher_id', teacher.id);
@@ -52,7 +47,7 @@ export const TeacherDashboard = ({ teacher }: TeacherDashboardProps) => {
       }
       
       // Get recent progress entries count
-      const progressResult: SupabaseResult = await supabase
+      const progressResult = await supabase
         .from('progress')
         .select('id')
         .eq('teacher_id', teacher.id)
@@ -64,7 +59,7 @@ export const TeacherDashboard = ({ teacher }: TeacherDashboardProps) => {
       
       // Get today's classes
       const today = new Date().toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
-      const classesResult: SupabaseResult = await supabase
+      const classesResult = await supabase
         .from('schedules')
         .select('id')
         .eq('teacher_id', teacher.id)
