@@ -37,7 +37,7 @@ export const TeacherDashboard = ({ teacher }: TeacherDashboardProps) => {
     queryKey: ['teacher-summary', teacher.id],
     queryFn: async (): Promise<SummaryData> => {
       // Get assigned students count
-      const studentsResult = await supabase
+      const studentsResult: { data: any, error: any } = await supabase
         .from('students_teachers')
         .select('id')
         .eq('teacher_id', teacher.id);
@@ -47,7 +47,7 @@ export const TeacherDashboard = ({ teacher }: TeacherDashboardProps) => {
       }
       
       // Get recent progress entries count
-      const progressResult = await supabase
+      const progressResult: { data: any, error: any } = await supabase
         .from('progress')
         .select('id')
         .eq('teacher_id', teacher.id)
@@ -59,7 +59,7 @@ export const TeacherDashboard = ({ teacher }: TeacherDashboardProps) => {
       
       // Get today's classes
       const today = new Date().toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
-      const classesResult = await supabase
+      const classesResult: { data: any, error: any } = await supabase
         .from('schedules')
         .select('id')
         .eq('teacher_id', teacher.id)
