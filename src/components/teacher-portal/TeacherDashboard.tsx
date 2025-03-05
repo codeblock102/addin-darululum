@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -29,52 +28,46 @@ interface SummaryData {
   todayClasses: number;
 }
 
-interface SimpleQueryResult {
-  data: any[] | null;
-  error: any | null;
-}
-
 export const TeacherDashboard = ({ teacher }: TeacherDashboardProps) => {
   const [activeTab, setActiveTab] = useState("overview");
   
   const { data: summaryData } = useQuery({
     queryKey: ['teacher-summary', teacher.id],
     queryFn: async (): Promise<SummaryData> => {
-      // Explicitly cast each query result to a simple interface to avoid deep typing
-      const { data: studentsData, error: studentsError } = await supabase
+      const studentsResponse = await supabase
         .from('students_teachers')
         .select('id')
         .eq('teacher_id', teacher.id);
       
-      if (studentsError) {
-        console.error('Error fetching assigned students:', studentsError);
+      if (studentsResponse.error) {
+        console.error('Error fetching assigned students:', studentsResponse.error);
       }
       
-      const { data: progressData, error: progressError } = await supabase
+      const progressResponse = await supabase
         .from('progress')
         .select('id')
         .eq('teacher_id', teacher.id)
         .gte('created_at', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString());
       
-      if (progressError) {
-        console.error('Error fetching recent progress:', progressError);
+      if (progressResponse.error) {
+        console.error('Error fetching recent progress:', progressResponse.error);
       }
       
       const today = new Date().toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
-      const { data: classesData, error: classesError } = await supabase
+      const classesResponse = await supabase
         .from('schedules')
         .select('id')
         .eq('teacher_id', teacher.id)
         .eq('day_of_week', today);
       
-      if (classesError) {
-        console.error('Error fetching today classes:', classesError);
+      if (classesResponse.error) {
+        console.error('Error fetching today classes:', classesResponse.error);
       }
       
       return {
-        studentsCount: studentsData?.length || 0,
-        recentProgressEntries: progressData?.length || 0,
-        todayClasses: classesData?.length || 0
+        studentsCount: studentsResponse.data?.length || 0,
+        recentProgressEntries: progressResponse.data?.length || 0,
+        todayClasses: classesResponse.data?.length || 0
       };
     }
   });
