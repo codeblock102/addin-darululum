@@ -39,20 +39,22 @@ const TeacherPortal = () => {
       
       if (error) {
         console.error('Error fetching teacher profile:', error);
-        return null;
+        throw error; // This will be caught by the error property of useQuery
       }
       
       return data as Teacher;
     },
-    enabled: !!session?.user?.email,
-    onError: (error) => {
-      toast({
-        title: "Error loading profile",
-        description: "Could not load your teacher profile. Please try again later.",
-        variant: "destructive"
-      });
-    }
+    enabled: !!session?.user?.email
   });
+
+  // Display toast when there's an error
+  if (teacherError) {
+    toast({
+      title: "Error loading profile",
+      description: "Could not load your teacher profile. Please try again later.",
+      variant: "destructive"
+    });
+  }
 
   // Handle loading state
   if (teacherLoading) {
