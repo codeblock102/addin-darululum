@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -29,41 +28,42 @@ interface SummaryData {
   todayClasses: number;
 }
 
+type SupabaseQueryResult = {
+  data: any[] | null;
+  error: any | null;
+};
+
 export const TeacherDashboard = ({ teacher }: TeacherDashboardProps) => {
   const [activeTab, setActiveTab] = useState("overview");
   
-  // Fetch summary data for the dashboard
   const { data: summaryData } = useQuery({
     queryKey: ['teacher-summary', teacher.id],
     queryFn: async (): Promise<SummaryData> => {
-      // Get assigned students count
-      const studentsResult: { data: any, error: any } = await supabase
+      const studentsResult = await supabase
         .from('students_teachers')
         .select('id')
-        .eq('teacher_id', teacher.id);
+        .eq('teacher_id', teacher.id) as SupabaseQueryResult;
       
       if (studentsResult.error) {
         console.error('Error fetching assigned students:', studentsResult.error);
       }
       
-      // Get recent progress entries count
-      const progressResult: { data: any, error: any } = await supabase
+      const progressResult = await supabase
         .from('progress')
         .select('id')
         .eq('teacher_id', teacher.id)
-        .gte('created_at', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString());
+        .gte('created_at', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()) as SupabaseQueryResult;
       
       if (progressResult.error) {
         console.error('Error fetching recent progress:', progressResult.error);
       }
       
-      // Get today's classes
       const today = new Date().toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
-      const classesResult: { data: any, error: any } = await supabase
+      const classesResult = await supabase
         .from('schedules')
         .select('id')
         .eq('teacher_id', teacher.id)
-        .eq('day_of_week', today);
+        .eq('day_of_week', today) as SupabaseQueryResult;
       
       if (classesResult.error) {
         console.error('Error fetching today classes:', classesResult.error);
@@ -86,7 +86,6 @@ export const TeacherDashboard = ({ teacher }: TeacherDashboardProps) => {
         </p>
       </div>
       
-      {/* Quick stats */}
       <div className="grid gap-4 md:grid-cols-3">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -126,7 +125,6 @@ export const TeacherDashboard = ({ teacher }: TeacherDashboardProps) => {
         </Card>
       </div>
       
-      {/* Main content */}
       <Tabs defaultValue="overview" value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="grid grid-cols-3 w-full max-w-md">
           <TabsTrigger value="overview">Overview</TabsTrigger>
