@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -28,16 +29,23 @@ interface SummaryData {
   todayClasses: number;
 }
 
+// Simple type for Supabase query results to avoid deep type instantiation
+interface SupabaseQueryResult {
+  data: any[] | null;
+  error: any | null;
+}
+
 export const TeacherDashboard = ({ teacher }: TeacherDashboardProps) => {
   const [activeTab, setActiveTab] = useState("overview");
   
   const { data: summaryData } = useQuery({
     queryKey: ['teacher-summary', teacher.id],
     queryFn: async (): Promise<SummaryData> => {
+      // Cast the query results to avoid deep type instantiation
       const studentsResponse = await supabase
         .from('students_teachers')
         .select('id')
-        .eq('teacher_id', teacher.id);
+        .eq('teacher_id', teacher.id) as SupabaseQueryResult;
       
       if (studentsResponse.error) {
         console.error('Error fetching assigned students:', studentsResponse.error);
@@ -47,7 +55,7 @@ export const TeacherDashboard = ({ teacher }: TeacherDashboardProps) => {
         .from('progress')
         .select('id')
         .eq('teacher_id', teacher.id)
-        .gte('created_at', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString());
+        .gte('created_at', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()) as SupabaseQueryResult;
       
       if (progressResponse.error) {
         console.error('Error fetching recent progress:', progressResponse.error);
@@ -58,7 +66,7 @@ export const TeacherDashboard = ({ teacher }: TeacherDashboardProps) => {
         .from('schedules')
         .select('id')
         .eq('teacher_id', teacher.id)
-        .eq('day_of_week', today);
+        .eq('day_of_week', today) as SupabaseQueryResult;
       
       if (classesResponse.error) {
         console.error('Error fetching today classes:', classesResponse.error);
