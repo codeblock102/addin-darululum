@@ -1,88 +1,13 @@
 
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { MyStudents } from "./MyStudents";
-import { ProgressRecording } from "./ProgressRecording";
-import { TeacherSchedule } from "./TeacherSchedule";
-import { TeacherMessages } from "./TeacherMessages";
-import { TeacherProfile } from "./TeacherProfile";
-import { TeacherGrading } from "./TeacherGrading";
-import { TeacherAnalytics } from "./TeacherAnalytics";
-import { CalendarDays, LineChart, Users, MessageSquare, Settings, GraduationCap, BarChart } from "lucide-react";
-
-interface Teacher {
-  id: string;
-  name: string;
-  subject: string;
-  experience: string;
-  email?: string;
-  bio?: string;
-  phone?: string;
-}
-
-interface TeacherDashboardProps {
-  teacher: Teacher;
-}
-
-interface SummaryData {
-  studentsCount: number;
-  recentProgressEntries: number;
-  todayClasses: number;
-}
-
-// Define type for Supabase query result
-interface SupabaseQueryResult<T> {
-  data: T[] | null;
-  error: Error | null;
-}
+import { TeacherDashboardProps } from "@/types/teacher";
+import { useTeacherSummary } from "@/hooks/useTeacherSummary";
+import { DashboardSummary } from "./DashboardSummary";
+import { TeacherTabs } from "./TeacherTabs";
 
 export const TeacherDashboard = ({ teacher }: TeacherDashboardProps) => {
   const [activeTab, setActiveTab] = useState("overview");
-  
-  const { data: summaryData } = useQuery({
-    queryKey: ['teacher-summary', teacher.id],
-    queryFn: async (): Promise<SummaryData> => {
-      // Using type annotations to avoid deep type instantiation issues
-      const studentsQuery: SupabaseQueryResult<{ id: string }> = await supabase
-        .from('students_teachers')
-        .select('id')
-        .eq('teacher_id', teacher.id);
-      
-      if (studentsQuery.error) {
-        console.error('Error fetching assigned students:', studentsQuery.error);
-      }
-      
-      const progressQuery: SupabaseQueryResult<{ id: string }> = await supabase
-        .from('progress')
-        .select('id')
-        .eq('teacher_id', teacher.id)
-        .gte('created_at', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString());
-      
-      if (progressQuery.error) {
-        console.error('Error fetching recent progress:', progressQuery.error);
-      }
-      
-      const today = new Date().toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
-      const classesQuery: SupabaseQueryResult<{ id: string }> = await supabase
-        .from('schedules')
-        .select('id')
-        .eq('teacher_id', teacher.id)
-        .eq('day_of_week', today);
-      
-      if (classesQuery.error) {
-        console.error('Error fetching today classes:', classesQuery.error);
-      }
-      
-      return {
-        studentsCount: studentsQuery.data?.length || 0,
-        recentProgressEntries: progressQuery.data?.length || 0,
-        todayClasses: classesQuery.data?.length || 0
-      };
-    }
-  });
+  const { data: summaryData } = useTeacherSummary(teacher.id);
   
   return (
     <div className="space-y-6">
@@ -93,94 +18,12 @@ export const TeacherDashboard = ({ teacher }: TeacherDashboardProps) => {
         </p>
       </div>
       
-      <div className="grid gap-4 md:grid-cols-3">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Assigned Students</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{summaryData?.studentsCount || 0}</div>
-            <p className="text-xs text-muted-foreground">
-              Total students assigned to you
-            </p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Recent Progress</CardTitle>
-            <LineChart className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{summaryData?.recentProgressEntries || 0}</div>
-            <p className="text-xs text-muted-foreground">
-              Progress entries in the last 7 days
-            </p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Today's Classes</CardTitle>
-            <CalendarDays className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{summaryData?.todayClasses || 0}</div>
-            <p className="text-xs text-muted-foreground">
-              Classes scheduled for today
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-      
-      <Tabs defaultValue="overview" value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid grid-cols-7 w-full">
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="students">Students</TabsTrigger>
-          <TabsTrigger value="progress">Progress</TabsTrigger>
-          <TabsTrigger value="grading">Grading</TabsTrigger>
-          <TabsTrigger value="analytics">Analytics</TabsTrigger>
-          <TabsTrigger value="messages">Messages</TabsTrigger>
-          <TabsTrigger value="profile">Profile</TabsTrigger>
-        </TabsList>
-        
-        <TabsContent value="overview" className="space-y-4 mt-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Teaching Schedule</CardTitle>
-              <CardDescription>
-                Your upcoming classes for the week
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <TeacherSchedule teacherId={teacher.id} />
-            </CardContent>
-          </Card>
-        </TabsContent>
-        
-        <TabsContent value="students" className="space-y-4 mt-6">
-          <MyStudents teacherId={teacher.id} />
-        </TabsContent>
-        
-        <TabsContent value="progress" className="space-y-4 mt-6">
-          <ProgressRecording teacherId={teacher.id} />
-        </TabsContent>
-        
-        <TabsContent value="grading" className="space-y-4 mt-6">
-          <TeacherGrading teacherId={teacher.id} />
-        </TabsContent>
-        
-        <TabsContent value="analytics" className="space-y-4 mt-6">
-          <TeacherAnalytics teacherId={teacher.id} />
-        </TabsContent>
-        
-        <TabsContent value="messages" className="space-y-4 mt-6">
-          <TeacherMessages teacherId={teacher.id} teacherName={teacher.name} />
-        </TabsContent>
-        
-        <TabsContent value="profile" className="space-y-4 mt-6">
-          <TeacherProfile teacher={teacher} />
-        </TabsContent>
-      </Tabs>
+      <DashboardSummary summaryData={summaryData} />
+      <TeacherTabs 
+        teacher={teacher} 
+        activeTab={activeTab} 
+        onTabChange={setActiveTab} 
+      />
     </div>
   );
 };
