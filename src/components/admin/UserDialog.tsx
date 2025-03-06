@@ -104,7 +104,7 @@ export const UserDialog = ({ selectedUser, teachers, onSuccess }: UserDialogProp
   };
 
   const handleTeacherChange = (value: string) => {
-    setFormData(prev => ({ ...prev, teacherId: value }));
+    setFormData(prev => ({ ...prev, teacherId: value === "none" ? null : value }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -246,14 +246,14 @@ export const UserDialog = ({ selectedUser, teachers, onSuccess }: UserDialogProp
         <div className="space-y-2">
           <Label htmlFor="teacherId">Assign to Teacher</Label>
           <Select
-            value={formData.teacherId || ""}
+            value={formData.teacherId || "none"}
             onValueChange={handleTeacherChange}
           >
             <SelectTrigger className="w-full">
               <SelectValue placeholder="Select a teacher (optional)" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">None</SelectItem>
+              <SelectItem value="none">None</SelectItem>
               {teachers.map((teacher) => (
                 <SelectItem key={teacher.id} value={teacher.id}>
                   {teacher.name}
