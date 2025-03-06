@@ -7,7 +7,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MyStudents } from "./MyStudents";
 import { ProgressRecording } from "./ProgressRecording";
 import { TeacherSchedule } from "./TeacherSchedule";
-import { CalendarDays, LineChart, Users } from "lucide-react";
+import { TeacherMessages } from "./TeacherMessages";
+import { TeacherProfile } from "./TeacherProfile";
+import { TeacherGrading } from "./TeacherGrading";
+import { TeacherAnalytics } from "./TeacherAnalytics";
+import { CalendarDays, LineChart, Users, MessageSquare, Settings, GraduationCap, BarChart } from "lucide-react";
 
 interface Teacher {
   id: string;
@@ -29,53 +33,47 @@ interface SummaryData {
   todayClasses: number;
 }
 
-// Simple type for Supabase query results to avoid deep type instantiation
-interface SupabaseQueryResult {
-  data: any[] | null;
-  error: any | null;
-}
-
 export const TeacherDashboard = ({ teacher }: TeacherDashboardProps) => {
   const [activeTab, setActiveTab] = useState("overview");
   
   const { data: summaryData } = useQuery({
     queryKey: ['teacher-summary', teacher.id],
     queryFn: async (): Promise<SummaryData> => {
-      // Cast the query results to avoid deep type instantiation
-      const studentsResponse = await supabase
+      // Using destructuring to avoid deep type instantiation
+      const { data: studentsData, error: studentsError } = await supabase
         .from('students_teachers')
         .select('id')
-        .eq('teacher_id', teacher.id) as SupabaseQueryResult;
+        .eq('teacher_id', teacher.id);
       
-      if (studentsResponse.error) {
-        console.error('Error fetching assigned students:', studentsResponse.error);
+      if (studentsError) {
+        console.error('Error fetching assigned students:', studentsError);
       }
       
-      const progressResponse = await supabase
+      const { data: progressData, error: progressError } = await supabase
         .from('progress')
         .select('id')
         .eq('teacher_id', teacher.id)
-        .gte('created_at', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()) as SupabaseQueryResult;
+        .gte('created_at', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString());
       
-      if (progressResponse.error) {
-        console.error('Error fetching recent progress:', progressResponse.error);
+      if (progressError) {
+        console.error('Error fetching recent progress:', progressError);
       }
       
       const today = new Date().toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
-      const classesResponse = await supabase
+      const { data: classesData, error: classesError } = await supabase
         .from('schedules')
         .select('id')
         .eq('teacher_id', teacher.id)
-        .eq('day_of_week', today) as SupabaseQueryResult;
+        .eq('day_of_week', today);
       
-      if (classesResponse.error) {
-        console.error('Error fetching today classes:', classesResponse.error);
+      if (classesError) {
+        console.error('Error fetching today classes:', classesError);
       }
       
       return {
-        studentsCount: studentsResponse.data?.length || 0,
-        recentProgressEntries: progressResponse.data?.length || 0,
-        todayClasses: classesResponse.data?.length || 0
+        studentsCount: studentsData?.length || 0,
+        recentProgressEntries: progressData?.length || 0,
+        todayClasses: classesData?.length || 0
       };
     }
   });
@@ -129,10 +127,14 @@ export const TeacherDashboard = ({ teacher }: TeacherDashboardProps) => {
       </div>
       
       <Tabs defaultValue="overview" value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid grid-cols-3 w-full max-w-md">
+        <TabsList className="grid grid-cols-7 w-full">
           <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="students">My Students</TabsTrigger>
-          <TabsTrigger value="progress">Record Progress</TabsTrigger>
+          <TabsTrigger value="students">Students</TabsTrigger>
+          <TabsTrigger value="progress">Progress</TabsTrigger>
+          <TabsTrigger value="grading">Grading</TabsTrigger>
+          <TabsTrigger value="analytics">Analytics</TabsTrigger>
+          <TabsTrigger value="messages">Messages</TabsTrigger>
+          <TabsTrigger value="profile">Profile</TabsTrigger>
         </TabsList>
         
         <TabsContent value="overview" className="space-y-4 mt-6">
@@ -155,6 +157,22 @@ export const TeacherDashboard = ({ teacher }: TeacherDashboardProps) => {
         
         <TabsContent value="progress" className="space-y-4 mt-6">
           <ProgressRecording teacherId={teacher.id} />
+        </TabsContent>
+        
+        <TabsContent value="grading" className="space-y-4 mt-6">
+          <TeacherGrading teacherId={teacher.id} />
+        </TabsContent>
+        
+        <TabsContent value="analytics" className="space-y-4 mt-6">
+          <TeacherAnalytics teacherId={teacher.id} />
+        </TabsContent>
+        
+        <TabsContent value="messages" className="space-y-4 mt-6">
+          <TeacherMessages teacherId={teacher.id} teacherName={teacher.name} />
+        </TabsContent>
+        
+        <TabsContent value="profile" className="space-y-4 mt-6">
+          <TeacherProfile teacher={teacher} />
         </TabsContent>
       </Tabs>
     </div>
