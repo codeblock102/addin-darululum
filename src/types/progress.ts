@@ -20,4 +20,5 @@ export interface Progress {
   students?: {
     name: string;
   };
+  teacher_id?: string;
 }

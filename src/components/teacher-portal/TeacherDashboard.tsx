@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -38,8 +37,7 @@ export const TeacherDashboard = ({ teacher }: TeacherDashboardProps) => {
   
   const { data: summaryData } = useQuery({
     queryKey: ['teacher-summary', teacher.id],
-    queryFn: async (): Promise<SummaryData> => {
-      // Using destructuring to avoid deep type instantiation
+    queryFn: async () => {
       const { data: studentsData, error: studentsError } = await supabase
         .from('students_teachers')
         .select('id')
@@ -74,7 +72,7 @@ export const TeacherDashboard = ({ teacher }: TeacherDashboardProps) => {
         studentsCount: studentsData?.length || 0,
         recentProgressEntries: progressData?.length || 0,
         todayClasses: classesData?.length || 0
-      };
+      } as SummaryData;
     }
   });
   
