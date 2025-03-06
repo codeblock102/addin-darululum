@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -32,47 +33,54 @@ interface SummaryData {
   todayClasses: number;
 }
 
+// Define type for Supabase query result
+interface SupabaseQueryResult<T> {
+  data: T[] | null;
+  error: Error | null;
+}
+
 export const TeacherDashboard = ({ teacher }: TeacherDashboardProps) => {
   const [activeTab, setActiveTab] = useState("overview");
   
   const { data: summaryData } = useQuery({
     queryKey: ['teacher-summary', teacher.id],
-    queryFn: async () => {
-      const { data: studentsData, error: studentsError } = await supabase
+    queryFn: async (): Promise<SummaryData> => {
+      // Using type annotations to avoid deep type instantiation issues
+      const studentsQuery: SupabaseQueryResult<{ id: string }> = await supabase
         .from('students_teachers')
         .select('id')
         .eq('teacher_id', teacher.id);
       
-      if (studentsError) {
-        console.error('Error fetching assigned students:', studentsError);
+      if (studentsQuery.error) {
+        console.error('Error fetching assigned students:', studentsQuery.error);
       }
       
-      const { data: progressData, error: progressError } = await supabase
+      const progressQuery: SupabaseQueryResult<{ id: string }> = await supabase
         .from('progress')
         .select('id')
         .eq('teacher_id', teacher.id)
         .gte('created_at', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString());
       
-      if (progressError) {
-        console.error('Error fetching recent progress:', progressError);
+      if (progressQuery.error) {
+        console.error('Error fetching recent progress:', progressQuery.error);
       }
       
       const today = new Date().toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
-      const { data: classesData, error: classesError } = await supabase
+      const classesQuery: SupabaseQueryResult<{ id: string }> = await supabase
         .from('schedules')
         .select('id')
         .eq('teacher_id', teacher.id)
         .eq('day_of_week', today);
       
-      if (classesError) {
-        console.error('Error fetching today classes:', classesError);
+      if (classesQuery.error) {
+        console.error('Error fetching today classes:', classesQuery.error);
       }
       
       return {
-        studentsCount: studentsData?.length || 0,
-        recentProgressEntries: progressData?.length || 0,
-        todayClasses: classesData?.length || 0
-      } as SummaryData;
+        studentsCount: studentsQuery.data?.length || 0,
+        recentProgressEntries: progressQuery.data?.length || 0,
+        todayClasses: classesQuery.data?.length || 0
+      };
     }
   });
   
