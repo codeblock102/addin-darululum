@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Progress } from "@/components/ui/progress";
 import { GraduationCap, Award, Loader2, Save, FileCheck } from "lucide-react";
+import { Progress as StudentProgress } from "@/types/progress";
 
 interface GradingProps {
   teacherId: string;
@@ -68,7 +69,13 @@ export const TeacherGrading = ({ teacherId }: GradingProps) => {
             return { name: student.student_name };
           }
           
-          const progress = progressData?.[0] || {};
+          const progress = progressData && progressData.length > 0 ? progressData[0] : {
+            current_surah: undefined,
+            current_juz: undefined,
+            memorization_quality: undefined,
+            tajweed_level: undefined
+          };
+          
           return {
             name: student.student_name,
             current_surah: progress.current_surah,
@@ -125,6 +132,7 @@ export const TeacherGrading = ({ teacherId }: GradingProps) => {
         .from('progress')
         .insert([{
           student_id: studentData.id,
+          teacher_id: teacherId,
           memorization_quality: data.memorization_quality,
           tajweed_level: data.tajweed_grade,
           teacher_notes: data.notes,
