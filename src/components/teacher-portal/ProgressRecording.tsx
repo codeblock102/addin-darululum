@@ -1,7 +1,8 @@
+
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { 
   Card, 
   CardContent, 
@@ -48,7 +49,7 @@ export const ProgressRecording = ({ teacherId }: ProgressRecordingProps) => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('students')
-        .select('name')
+        .select('id, name')
         .eq('status', 'active')
         .order('name', { ascending: true });
       
@@ -63,10 +64,11 @@ export const ProgressRecording = ({ teacherId }: ProgressRecordingProps) => {
   
   // Progress entry form schema
   const formSchema = z.object({
-    student_name: z.string({
+    student_id: z.string({
       required_error: "Please select a student",
     }),
     current_surah: z.coerce.number().min(1).max(114),
+    current_juz: z.coerce.number().min(1).max(30),
     start_ayat: z.coerce.number().min(1),
     end_ayat: z.coerce.number().min(1),
     memorization_quality: z.enum(["excellent", "good", "average", "needsWork", "horrible"]),
@@ -78,8 +80,9 @@ export const ProgressRecording = ({ teacherId }: ProgressRecordingProps) => {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      student_name: "",
+      student_id: "",
       current_surah: 1,
+      current_juz: 1,
       start_ayat: 1,
       end_ayat: 1,
       memorization_quality: "average",
@@ -91,24 +94,13 @@ export const ProgressRecording = ({ teacherId }: ProgressRecordingProps) => {
   // Handle form submission
   const progressMutation = useMutation({
     mutationFn: async (values: z.infer<typeof formSchema>) => {
-      // Get student_id from student_name
-      const { data: studentData, error: studentError } = await supabase
-        .from('students')
-        .select('id')
-        .eq('name', values.student_name)
-        .single();
-      
-      if (studentError) {
-        throw new Error(`Student not found: ${studentError.message}`);
-      }
-      
-      // Create progress entry
+      // Create progress entry - removing teacher_id which doesn't exist in the schema
       const { data, error } = await supabase
         .from('progress')
         .insert([{
-          student_id: studentData.id,
-          teacher_id: teacherId,
+          student_id: values.student_id,
           current_surah: values.current_surah,
+          current_juz: values.current_juz,
           start_ayat: values.start_ayat,
           end_ayat: values.end_ayat,
           memorization_quality: values.memorization_quality,
@@ -158,7 +150,7 @@ export const ProgressRecording = ({ teacherId }: ProgressRecordingProps) => {
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <FormField
               control={form.control}
-              name="student_name"
+              name="student_id"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Student</FormLabel>
@@ -174,7 +166,7 @@ export const ProgressRecording = ({ teacherId }: ProgressRecordingProps) => {
                     </FormControl>
                     <SelectContent>
                       {students?.map((student) => (
-                        <SelectItem key={student.name} value={student.name}>
+                        <SelectItem key={student.id} value={student.id}>
                           {student.name}
                         </SelectItem>
                       ))}
@@ -200,6 +192,22 @@ export const ProgressRecording = ({ teacherId }: ProgressRecordingProps) => {
                 )}
               />
               
+              <FormField
+                control={form.control}
+                name="current_juz"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Current Juz</FormLabel>
+                    <FormControl>
+                      <Input type="number" min={1} max={30} {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormField
                 control={form.control}
                 name="start_ayat"

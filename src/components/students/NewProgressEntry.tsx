@@ -82,6 +82,7 @@ export const NewProgressEntry = ({
   const onSubmit = async (data: ProgressFormData) => {
     setIsProcessing(true);
     try {
+      // Removed teacher_id from insertion since it doesn't exist in the schema
       const { error } = await supabase
         .from('progress')
         .insert([{
