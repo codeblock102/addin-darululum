@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -19,6 +20,7 @@ interface GradingProps {
 
 interface Student {
   name: string;
+  id: string;
   current_surah?: number;
   current_juz?: number;
   last_grade?: string;
@@ -39,15 +41,15 @@ export const TeacherGrading = ({ teacherId }: GradingProps) => {
     notes: ""
   });
   
-  // Fetch students assigned to this teacher
+  // Fetch all students from shared database
   const { data: students, isLoading: studentsLoading } = useQuery({
-    queryKey: ['teacher-students-for-grading', teacherId],
+    queryKey: ['all-students-for-grading'],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('students_teachers')
-        .select('student_name')
-        .eq('teacher_id', teacherId)
-        .eq('active', true);
+        .from('students')
+        .select('id, name, status')
+        .eq('status', 'active')
+        .order('name', { ascending: true });
       
       if (error) {
         console.error('Error fetching students:', error);
@@ -60,13 +62,17 @@ export const TeacherGrading = ({ teacherId }: GradingProps) => {
           const { data: progressData, error: progressError } = await supabase
             .from('progress')
             .select('current_surah, current_juz, memorization_quality, tajweed_level')
-            .eq('student_id', student.student_name)
+            .eq('student_id', student.id)
             .order('created_at', { ascending: false })
             .limit(1);
           
           if (progressError) {
             console.error('Error fetching student progress:', progressError);
-            return { name: student.student_name };
+            return { 
+              id: student.id,
+              name: student.name,
+              status: student.status
+            };
           }
           
           const progress = progressData && progressData.length > 0 ? progressData[0] : {
@@ -77,7 +83,9 @@ export const TeacherGrading = ({ teacherId }: GradingProps) => {
           };
           
           return {
-            name: student.student_name,
+            id: student.id,
+            name: student.name,
+            status: student.status,
             current_surah: progress.current_surah,
             current_juz: progress.current_juz,
             memorization_quality: progress.memorization_quality,
@@ -96,10 +104,15 @@ export const TeacherGrading = ({ teacherId }: GradingProps) => {
     queryFn: async () => {
       if (!selectedStudent) return [];
       
+      // Find the student ID from the name
+      const student = students?.find(s => s.name === selectedStudent);
+      
+      if (!student) return [];
+      
       const { data, error } = await supabase
         .from('progress')
         .select('current_surah, current_juz, memorization_quality, tajweed_level, created_at')
-        .eq('student_id', selectedStudent)
+        .eq('student_id', student.id)
         .order('created_at', { ascending: false })
         .limit(10);
       
@@ -110,28 +123,24 @@ export const TeacherGrading = ({ teacherId }: GradingProps) => {
       
       return data;
     },
-    enabled: !!selectedStudent
+    enabled: !!selectedStudent && !!students
   });
   
   // Submit grade mutation
   const submitGradeMutation = useMutation({
     mutationFn: async (data: any) => {
-      // First get the student_id from name
-      const { data: studentData, error: studentError } = await supabase
-        .from('students')
-        .select('id')
-        .eq('name', selectedStudent)
-        .single();
+      // Find the student id from name
+      const student = students?.find(s => s.name === selectedStudent);
       
-      if (studentError) {
-        throw new Error(`Student not found: ${studentError.message}`);
+      if (!student) {
+        throw new Error("Student not found");
       }
       
       // Submit grade as progress
       const { data: result, error } = await supabase
         .from('progress')
         .insert([{
-          student_id: studentData.id,
+          student_id: student.id,
           teacher_id: teacherId,
           memorization_quality: data.memorization_quality,
           tajweed_level: data.tajweed_grade,
@@ -257,7 +266,7 @@ export const TeacherGrading = ({ teacherId }: GradingProps) => {
                       </TableHeader>
                       <TableBody>
                         {students.map((student: Student) => (
-                          <TableRow key={student.name}>
+                          <TableRow key={student.id}>
                             <TableCell className="font-medium">{student.name}</TableCell>
                             <TableCell>{student.current_surah || 'N/A'}</TableCell>
                             <TableCell>{student.current_juz || 'N/A'}</TableCell>
@@ -294,7 +303,7 @@ export const TeacherGrading = ({ teacherId }: GradingProps) => {
                 ) : (
                   <div className="text-center p-6 border rounded-md">
                     <FileCheck className="h-12 w-12 mx-auto mb-2 text-muted-foreground opacity-20" />
-                    <p>No students assigned to you</p>
+                    <p>No students in the database</p>
                   </div>
                 )}
               </div>
