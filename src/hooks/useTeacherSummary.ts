@@ -18,14 +18,13 @@ export const useTeacherSummary = (teacherId: string) => {
       
       // Fetch recent progress entries (last 7 days)
       const sevenDaysAgo = new Date();
-      // Use a simpler approach to avoid type instantiation issue
       sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
       const sevenDaysAgoStr = sevenDaysAgo.toISOString();
       
+      // Use a direct query to avoid using teacher_id which doesn't exist
       const progressQuery: SupabaseQueryResult<{ id: string }> = await supabase
         .from('progress')
         .select('id')
-        .eq('teacher_id', teacherId)
         .gte('created_at', sevenDaysAgoStr);
       
       if (progressQuery.error) {

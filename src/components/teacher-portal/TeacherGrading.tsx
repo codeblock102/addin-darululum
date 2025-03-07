@@ -1,9 +1,8 @@
-
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/components/ui/use-toast";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
+import { useToast } from "@/hooks/use-toast";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,7 +11,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Progress } from "@/components/ui/progress";
 import { GraduationCap, Award, Loader2, Save, FileCheck } from "lucide-react";
-import { Progress as StudentProgress } from "@/types/progress";
 
 interface GradingProps {
   teacherId: string;
@@ -136,12 +134,11 @@ export const TeacherGrading = ({ teacherId }: GradingProps) => {
         throw new Error("Student not found");
       }
       
-      // Submit grade as progress
+      // Submit grade as progress - removed teacher_id which doesn't exist
       const { data: result, error } = await supabase
         .from('progress')
         .insert([{
           student_id: student.id,
-          teacher_id: teacherId,
           memorization_quality: data.memorization_quality,
           tajweed_level: data.tajweed_grade,
           teacher_notes: data.notes,
