@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -8,8 +7,7 @@ import {
   CardContent, 
   CardDescription, 
   CardHeader, 
-  CardTitle,
-  CardFooter
+  CardTitle
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -43,20 +41,19 @@ interface ProgressRecordingProps {
 export const ProgressRecording = ({ teacherId }: ProgressRecordingProps) => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const [selectedStudent, setSelectedStudent] = useState<string | null>(null);
   
-  // Fetch students assigned to this teacher
+  // Fetch all students from shared database
   const { data: students, isLoading: studentsLoading } = useQuery({
-    queryKey: ['teacher-students-for-progress', teacherId],
+    queryKey: ['all-students-for-progress'],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('students_teachers')
-        .select('student_name')
-        .eq('teacher_id', teacherId)
-        .eq('active', true);
+        .from('students')
+        .select('name')
+        .eq('status', 'active')
+        .order('name', { ascending: true });
       
       if (error) {
-        console.error('Error fetching assigned students:', error);
+        console.error('Error fetching students:', error);
         return [];
       }
       
@@ -110,6 +107,7 @@ export const ProgressRecording = ({ teacherId }: ProgressRecordingProps) => {
         .from('progress')
         .insert([{
           student_id: studentData.id,
+          teacher_id: teacherId,
           current_surah: values.current_surah,
           start_ayat: values.start_ayat,
           end_ayat: values.end_ayat,
@@ -176,8 +174,8 @@ export const ProgressRecording = ({ teacherId }: ProgressRecordingProps) => {
                     </FormControl>
                     <SelectContent>
                       {students?.map((student) => (
-                        <SelectItem key={student.student_name} value={student.student_name}>
-                          {student.student_name}
+                        <SelectItem key={student.name} value={student.name}>
+                          {student.name}
                         </SelectItem>
                       ))}
                     </SelectContent>

@@ -18,7 +18,6 @@ import {
   TableRow 
 } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Loader2, Search, User, UserCheck } from "lucide-react";
 
@@ -29,36 +28,35 @@ interface MyStudentsProps {
 export const MyStudents = ({ teacherId }: MyStudentsProps) => {
   const [searchQuery, setSearchQuery] = useState("");
   
-  // Fetch students assigned to this teacher
+  // Fetch all students from the shared database
   const { data: students, isLoading } = useQuery({
-    queryKey: ['teacher-students', teacherId],
+    queryKey: ['all-students'],
     queryFn: async () => {
-      const { data: assignedStudents, error: assignmentError } = await supabase
-        .from('students_teachers')
-        .select('student_name, id, assigned_date')
-        .eq('teacher_id', teacherId)
-        .eq('active', true);
+      const { data, error } = await supabase
+        .from('students')
+        .select('id, name, enrollment_date, status')
+        .order('name', { ascending: true });
       
-      if (assignmentError) {
-        console.error('Error fetching assigned students:', assignmentError);
+      if (error) {
+        console.error('Error fetching students:', error);
         return [];
       }
       
-      return assignedStudents;
+      return data;
     }
   });
   
   // Filter students based on search query
   const filteredStudents = students?.filter(student => 
-    student.student_name.toLowerCase().includes(searchQuery.toLowerCase())
+    student.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
   
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-xl">My Students</CardTitle>
+        <CardTitle className="text-xl">Students</CardTitle>
         <CardDescription>
-          Students assigned to you for instruction and mentoring
+          All students in the database
         </CardDescription>
         <div className="flex items-center space-x-2 mt-2">
           <div className="relative flex-1">
@@ -85,7 +83,8 @@ export const MyStudents = ({ teacherId }: MyStudentsProps) => {
                 <TableHeader>
                   <TableRow>
                     <TableHead>Student Name</TableHead>
-                    <TableHead>Assigned Since</TableHead>
+                    <TableHead>Enrollment Date</TableHead>
+                    <TableHead>Status</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -95,11 +94,18 @@ export const MyStudents = ({ teacherId }: MyStudentsProps) => {
                       <TableCell className="font-medium">
                         <div className="flex items-center">
                           <User className="h-4 w-4 mr-2 text-muted-foreground" />
-                          {student.student_name}
+                          {student.name}
                         </div>
                       </TableCell>
                       <TableCell>
-                        {new Date(student.assigned_date).toLocaleDateString()}
+                        {student.enrollment_date ? new Date(student.enrollment_date).toLocaleDateString() : 'N/A'}
+                      </TableCell>
+                      <TableCell>
+                        <span className={`px-2 py-1 rounded-full text-xs ${
+                          student.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                        }`}>
+                          {student.status || 'N/A'}
+                        </span>
                       </TableCell>
                       <TableCell className="text-right">
                         <Button variant="outline" size="sm">
@@ -115,7 +121,7 @@ export const MyStudents = ({ teacherId }: MyStudentsProps) => {
               <div className="text-center py-8 text-muted-foreground">
                 {searchQuery 
                   ? "No students found matching your search." 
-                  : "No students are currently assigned to you."}
+                  : "No students found in the database."}
               </div>
             )}
           </>

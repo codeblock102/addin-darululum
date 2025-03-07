@@ -7,18 +7,18 @@ export const useTeacherSummary = (teacherId: string) => {
   return useQuery({
     queryKey: ['teacher-summary', teacherId],
     queryFn: async (): Promise<SummaryData> => {
-      // Fetch assigned students count
+      // Fetch assigned students count - now we fetch all students since there's no assignment
       const studentsQuery: SupabaseQueryResult<{ id: string }> = await supabase
-        .from('students_teachers')
-        .select('id')
-        .eq('teacher_id', teacherId);
+        .from('students')
+        .select('id');
       
       if (studentsQuery.error) {
-        console.error('Error fetching assigned students:', studentsQuery.error);
+        console.error('Error fetching students:', studentsQuery.error);
       }
       
       // Fetch recent progress entries (last 7 days)
       const sevenDaysAgo = new Date();
+      // Use a simpler approach to avoid type instantiation issue
       sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
       const sevenDaysAgoStr = sevenDaysAgo.toISOString();
       
