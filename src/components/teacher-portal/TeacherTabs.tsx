@@ -1,4 +1,6 @@
 
+import { useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { TeacherSchedule } from "./TeacherSchedule";
@@ -17,8 +19,35 @@ interface TeacherTabsProps {
 }
 
 export const TeacherTabs = ({ teacher, activeTab, onTabChange }: TeacherTabsProps) => {
+  const location = useLocation();
+  const navigate = useNavigate();
+  
+  // Handle tab changes from URL query parameters
+  useEffect(() => {
+    const searchParams = new URLSearchParams(location.search);
+    const tabParam = searchParams.get('tab');
+    
+    if (tabParam && ['students', 'progress', 'grading', 'analytics', 'messages', 'profile'].includes(tabParam)) {
+      onTabChange(tabParam);
+    } else if (location.search && !tabParam) {
+      // Clear search params if they don't include a valid tab
+      navigate('/teacher-portal', { replace: true });
+    }
+  }, [location.search, navigate, onTabChange]);
+  
+  // Update URL when tab changes
+  const handleTabChange = (value: string) => {
+    onTabChange(value);
+    
+    if (value === 'overview') {
+      navigate('/teacher-portal', { replace: true });
+    } else {
+      navigate(`/teacher-portal?tab=${value}`, { replace: true });
+    }
+  };
+  
   return (
-    <Tabs defaultValue="overview" value={activeTab} onValueChange={onTabChange}>
+    <Tabs defaultValue="overview" value={activeTab} onValueChange={handleTabChange}>
       <TabsList className="grid grid-cols-7 w-full">
         <TabsTrigger value="overview">Overview</TabsTrigger>
         <TabsTrigger value="students">Students</TabsTrigger>
