@@ -18,11 +18,14 @@ export const useTeacherSummary = (teacherId: string) => {
       }
       
       // Fetch recent progress entries (last 7 days)
+      const sevenDaysAgo = new Date();
+      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+      
       const progressQuery: SupabaseQueryResult<{ id: string }> = await supabase
         .from('progress')
         .select('id')
         .eq('teacher_id', teacherId)
-        .gte('created_at', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString());
+        .gte('created_at', sevenDaysAgo.toISOString());
       
       if (progressQuery.error) {
         console.error('Error fetching recent progress:', progressQuery.error);
