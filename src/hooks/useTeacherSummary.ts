@@ -18,6 +18,7 @@ export const useTeacherSummary = (teacherId: string) => {
       }
       
       // Fetch recent progress entries (last 7 days)
+      // Use simple date arithmetic to avoid type instantiation depth issues
       const sevenDaysAgo = new Date();
       sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
       

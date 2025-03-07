@@ -9,11 +9,12 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { Loader2 } from "lucide-react";
+import { Loader2, AlertCircle } from "lucide-react";
 import { UserFormData, UserDialogProps, FormErrors } from "@/types/adminUser";
 import { UserFormFields } from "./user/UserFormFields";
 import { validateUserForm } from "./user/UserFormValidation";
 import { handleUserSubmit } from "./user/UserFormSubmitHandler";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 export const UserDialog = ({ selectedUser, teachers, onSuccess }: UserDialogProps) => {
   const { toast } = useToast();
@@ -116,6 +117,16 @@ export const UserDialog = ({ selectedUser, teachers, onSuccess }: UserDialogProp
             : "Create a new user account with access to the system."}
         </DialogDescription>
       </DialogHeader>
+      
+      {selectedUser && (
+        <Alert variant="destructive" className="mb-4">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>
+            Editing existing users requires admin privileges and is currently disabled.
+          </AlertDescription>
+        </Alert>
+      )}
+      
       <form onSubmit={handleSubmit} className="space-y-4">
         <UserFormFields
           formData={formData}
@@ -129,7 +140,7 @@ export const UserDialog = ({ selectedUser, teachers, onSuccess }: UserDialogProp
         <DialogFooter>
           <Button
             type="submit"
-            disabled={isProcessing}
+            disabled={isProcessing || !!selectedUser}
             className="w-full sm:w-auto"
           >
             {isProcessing ? (
