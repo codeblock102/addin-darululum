@@ -1,7 +1,5 @@
 
 import { useState } from "react";
-import { useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -11,44 +9,10 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { 
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue 
-} from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
-import { useToast } from "@/hooks/use-toast";
-import { useForm } from "react-hook-form";
-import { BookOpen, Loader2 } from "lucide-react";
-import { useAuth } from "@/contexts/AuthContext";
-
-interface NewProgressEntryProps {
-  studentId: string;
-  studentName: string;
-  open?: boolean;
-  onOpenChange?: (open: boolean) => void;
-}
-
-interface ProgressFormData {
-  current_surah: number;
-  current_juz: number;
-  start_ayat: number;
-  end_ayat: number;
-  verses_memorized: number;
-  memorization_quality: 'excellent' | 'good' | 'average' | 'needsWork' | 'horrible';
-  notes: string;
-}
+import { BookOpen } from "lucide-react";
+import { ProgressForm } from "./progress/ProgressForm";
+import { useProgressSubmit } from "./progress/useProgressSubmit";
+import { NewProgressEntryProps } from "./progress/types";
 
 export const NewProgressEntry = ({ 
   studentId, 
@@ -56,102 +20,13 @@ export const NewProgressEntry = ({
   open, 
   onOpenChange 
 }: NewProgressEntryProps) => {
-  const { toast } = useToast();
-  const queryClient = useQueryClient();
-  const { session } = useAuth();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [isProcessing, setIsProcessing] = useState(false);
+  const { submitProgress, isProcessing } = useProgressSubmit(studentId);
 
   const handleOpenChange = (newOpen: boolean) => {
     setIsDialogOpen(newOpen);
     if (onOpenChange) {
       onOpenChange(newOpen);
-    }
-  };
-
-  const form = useForm<ProgressFormData>({
-    defaultValues: {
-      current_surah: 1,
-      current_juz: 1,
-      start_ayat: 1,
-      end_ayat: 7,
-      verses_memorized: 7,
-      memorization_quality: 'average',
-      notes: '',
-    },
-  });
-
-  // Get contributor information
-  const getUserInfo = async () => {
-    if (!session?.user?.email) return null;
-    
-    try {
-      // First, check if user is a teacher
-      const { data: teacherData, error: teacherError } = await supabase
-        .from('teachers')
-        .select('id, name')
-        .eq('email', session.user.email)
-        .single();
-      
-      if (!teacherError && teacherData) {
-        return {
-          contributor_id: teacherData.id,
-          contributor_name: `Teacher ${teacherData.name}`
-        };
-      }
-      
-      // If not a teacher, perhaps an admin or other role
-      return {
-        contributor_id: session.user.id,
-        contributor_name: `User ${session.user.email.split('@')[0]}`
-      };
-    } catch (error) {
-      console.error("Error fetching user info:", error);
-      return {
-        contributor_id: session.user.id,
-        contributor_name: `User ${session.user.email.split('@')[0]}`
-      };
-    }
-  };
-
-  const onSubmit = async (data: ProgressFormData) => {
-    setIsProcessing(true);
-    try {
-      // Get contributor information
-      const contributorInfo = await getUserInfo();
-      
-      // Insert progress entry with contributor info
-      const { error } = await supabase
-        .from('progress')
-        .insert([{
-          student_id: studentId,
-          ...data,
-          date: new Date().toISOString().split('T')[0],
-          last_revision_date: new Date().toISOString().split('T')[0],
-          ...contributorInfo // Add contributor information
-        }]);
-
-      if (error) throw error;
-
-      toast({
-        title: "Success",
-        description: "Progress entry has been saved",
-      });
-      
-      // Invalidate both progress queries
-      queryClient.invalidateQueries({ queryKey: ['student-progress', studentId] });
-      queryClient.invalidateQueries({ queryKey: ['progress'] });
-      
-      handleOpenChange(false);
-      form.reset();
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to save progress entry",
-        variant: "destructive",
-      });
-    } finally {
-      setIsProcessing(false);
     }
   };
 
@@ -170,136 +45,14 @@ export const NewProgressEntry = ({
             Record progress for {studentName}
           </DialogDescription>
         </DialogHeader>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="current_surah"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Current Surah</FormLabel>
-                    <FormControl>
-                      <Input type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value))} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="current_juz"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Current Juz</FormLabel>
-                    <FormControl>
-                      <Input type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value))} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="start_ayat"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Start Verse</FormLabel>
-                    <FormControl>
-                      <Input type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value))} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="end_ayat"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>End Verse</FormLabel>
-                    <FormControl>
-                      <Input type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value))} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-            <FormField
-              control={form.control}
-              name="verses_memorized"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Verses Memorized</FormLabel>
-                  <FormControl>
-                    <Input type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value))} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="memorization_quality"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Memorization Quality</FormLabel>
-                  <Select 
-                    onValueChange={field.onChange} 
-                    defaultValue={field.value}
-                    value={field.value}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select quality" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="excellent">Excellent</SelectItem>
-                      <SelectItem value="good">Good</SelectItem>
-                      <SelectItem value="average">Average</SelectItem>
-                      <SelectItem value="needsWork">Needs Work</SelectItem>
-                      <SelectItem value="horrible">Needs Significant Improvement</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="notes"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Notes</FormLabel>
-                  <FormControl>
-                    <Textarea 
-                      placeholder="Add any additional notes or observations" 
-                      className="resize-none" 
-                      {...field} 
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <div className="flex justify-end">
-              <Button type="submit" disabled={isProcessing}>
-                {isProcessing ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Saving...
-                  </>
-                ) : (
-                  "Save Progress"
-                )}
-              </Button>
-            </div>
-          </form>
-        </Form>
+        <ProgressForm 
+          onSubmit={(data) => {
+            submitProgress(data, () => {
+              handleOpenChange(false);
+            });
+          }}
+          isProcessing={isProcessing}
+        />
       </DialogContent>
     </Dialog>
   );
