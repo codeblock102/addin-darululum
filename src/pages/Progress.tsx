@@ -1,5 +1,6 @@
 
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useEffect } from "react";
 import { DashboardLayout } from "@/components/layouts/DashboardLayout";
 import { Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -8,9 +9,51 @@ import { ProgressTable } from "@/components/progress/ProgressTable";
 import { NewProgressDialog } from "@/components/progress/NewProgressDialog";
 import { RecentRevisions } from "@/components/progress/RecentRevisions";
 import { CompleteRevisions } from "@/components/progress/CompleteRevisions";
+import { useToast } from "@/hooks/use-toast";
 import type { Progress } from "@/types/progress";
 
 const Progress = () => {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  // Set up real-time listener for progress updates
+  useEffect(() => {
+    const channel = supabase
+      .channel('progress-page-updates')
+      .on(
+        'postgres_changes',
+        {
+          event: '*', // Listen to all events (INSERT, UPDATE, DELETE)
+          schema: 'public',
+          table: 'progress'
+        },
+        (payload) => {
+          console.log('Real-time progress update received:', payload);
+          
+          // Invalidate queries to refresh data
+          queryClient.invalidateQueries({ queryKey: ['progress'] });
+          
+          // Show notification
+          let eventType = "";
+          if (payload.eventType === "INSERT") eventType = "added";
+          if (payload.eventType === "UPDATE") eventType = "updated";
+          if (payload.eventType === "DELETE") eventType = "deleted";
+          
+          toast({
+            title: "Progress Updated",
+            description: `A progress entry was ${eventType}. The data has been refreshed.`,
+            duration: 3000,
+          });
+        }
+      )
+      .subscribe();
+
+    // Cleanup subscription on unmount
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [queryClient, toast]);
+
   const { data: progressData, isLoading } = useQuery({
     queryKey: ['progress'],
     queryFn: async () => {

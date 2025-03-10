@@ -1,13 +1,15 @@
 
-import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useState, useEffect } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ProgressDistributionChart } from "./analytics/ProgressDistributionChart";
 import { StudentProgressChart } from "./analytics/StudentProgressChart";
 import { TimeProgressChart } from "./analytics/TimeProgressChart";
-import { Loader2 } from "lucide-react";
+import { Loader2, Download } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
 
 interface TeacherAnalyticsProps {
   teacherId: string;
@@ -15,6 +17,41 @@ interface TeacherAnalyticsProps {
 
 export const TeacherAnalytics = ({ teacherId }: TeacherAnalyticsProps) => {
   const [timeRange, setTimeRange] = useState("30");
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+  
+  // Set up real-time listener to invalidate queries when data changes
+  useEffect(() => {
+    const channel = supabase
+      .channel('analytics-updates')
+      .on(
+        'postgres_changes',
+        {
+          event: '*', // Listen for all events
+          schema: 'public',
+          table: 'progress'
+        },
+        (payload) => {
+          console.log('Real-time update received:', payload);
+          
+          // Invalidate the query to fetch fresh data
+          queryClient.invalidateQueries({ queryKey: ['teacher-analytics', teacherId, timeRange] });
+          
+          // Show toast notification about the update
+          toast({
+            title: "Data Updated",
+            description: "Analytics data has been refreshed in real-time.",
+            duration: 3000,
+          });
+        }
+      )
+      .subscribe();
+
+    // Cleanup subscription on unmount
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [teacherId, timeRange, queryClient, toast]);
   
   const { data: analyticsData, isLoading } = useQuery({
     queryKey: ['teacher-analytics', teacherId, timeRange],
@@ -84,6 +121,34 @@ export const TeacherAnalytics = ({ teacherId }: TeacherAnalyticsProps) => {
       };
     }
   });
+
+  // Export data as CSV
+  const exportDataAsCSV = () => {
+    if (!analyticsData) return;
+    
+    // Create CSV for student progress
+    const studentData = analyticsData.studentProgress;
+    const studentCSV = [
+      'Student Name,Verses Memorized',
+      ...studentData.map(student => `${student.name},${student.verses}`)
+    ].join('\n');
+    
+    // Create and download the file
+    const blob = new Blob([studentCSV], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `student-progress-${new Date().toISOString().split('T')[0]}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    
+    toast({
+      title: "Export Complete",
+      description: "Student progress data has been exported as CSV.",
+    });
+  };
   
   if (isLoading) {
     return (
@@ -104,18 +169,24 @@ export const TeacherAnalytics = ({ teacherId }: TeacherAnalyticsProps) => {
                 View student progress and performance metrics
               </CardDescription>
             </div>
-            <Select value={timeRange} onValueChange={setTimeRange}>
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Select time range" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="7">Last 7 days</SelectItem>
-                <SelectItem value="30">Last 30 days</SelectItem>
-                <SelectItem value="90">Last 3 months</SelectItem>
-                <SelectItem value="180">Last 6 months</SelectItem>
-                <SelectItem value="365">Last year</SelectItem>
-              </SelectContent>
-            </Select>
+            <div className="flex flex-col space-y-2 md:flex-row md:space-x-2 md:space-y-0">
+              <Select value={timeRange} onValueChange={setTimeRange}>
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue placeholder="Select time range" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="7">Last 7 days</SelectItem>
+                  <SelectItem value="30">Last 30 days</SelectItem>
+                  <SelectItem value="90">Last 3 months</SelectItem>
+                  <SelectItem value="180">Last 6 months</SelectItem>
+                  <SelectItem value="365">Last year</SelectItem>
+                </SelectContent>
+              </Select>
+              <Button variant="outline" onClick={exportDataAsCSV}>
+                <Download className="mr-2 h-4 w-4" />
+                Export Data
+              </Button>
+            </div>
           </div>
         </CardHeader>
         <CardContent>
