@@ -2,14 +2,12 @@
 import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import {
   Form,
@@ -28,126 +26,100 @@ import {
   SelectValue 
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { useForm } from "react-hook-form";
-import { BookOpen, Loader2 } from "lucide-react";
-import { useAuth } from "@/contexts/AuthContext";
+import { Loader2 } from "lucide-react";
 
-interface NewProgressEntryProps {
-  studentId: string;
-  studentName: string;
-  open?: boolean;
-  onOpenChange?: (open: boolean) => void;
-}
-
-interface ProgressFormData {
+interface Progress {
+  id: string;
+  student_id: string;
   current_surah: number;
   current_juz: number;
   start_ayat: number;
   end_ayat: number;
   verses_memorized: number;
-  memorization_quality: 'excellent' | 'good' | 'average' | 'needsWork' | 'horrible';
-  notes: string;
+  date: string;
+  memorization_quality?: 'excellent' | 'good' | 'average' | 'needsWork' | 'horrible';
+  notes?: string;
+  teacher_notes?: string;
+  contributor_name?: string;
+  contributor_id?: string;
 }
 
-export const NewProgressEntry = ({ 
-  studentId, 
-  studentName, 
+interface EditProgressDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  progressEntry: Progress | null;
+}
+
+export const EditProgressDialog = ({ 
   open, 
-  onOpenChange 
-}: NewProgressEntryProps) => {
+  onOpenChange, 
+  progressEntry 
+}: EditProgressDialogProps) => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const { session } = useAuth();
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
 
-  const handleOpenChange = (newOpen: boolean) => {
-    setIsDialogOpen(newOpen);
-    if (onOpenChange) {
-      onOpenChange(newOpen);
-    }
-  };
-
-  const form = useForm<ProgressFormData>({
+  const form = useForm({
     defaultValues: {
-      current_surah: 1,
-      current_juz: 1,
-      start_ayat: 1,
-      end_ayat: 7,
-      verses_memorized: 7,
-      memorization_quality: 'average',
-      notes: '',
+      current_surah: progressEntry?.current_surah || 1,
+      current_juz: progressEntry?.current_juz || 1,
+      start_ayat: progressEntry?.start_ayat || 1,
+      end_ayat: progressEntry?.end_ayat || 1,
+      verses_memorized: progressEntry?.verses_memorized || 0,
+      memorization_quality: progressEntry?.memorization_quality || 'average',
+      notes: progressEntry?.notes || '',
+      teacher_notes: progressEntry?.teacher_notes || '',
     },
   });
 
-  // Get contributor information
-  const getUserInfo = async () => {
-    if (!session?.user?.email) return null;
-    
-    try {
-      // First, check if user is a teacher
-      const { data: teacherData, error: teacherError } = await supabase
-        .from('teachers')
-        .select('id, name')
-        .eq('email', session.user.email)
-        .single();
-      
-      if (!teacherError && teacherData) {
-        return {
-          contributor_id: teacherData.id,
-          contributor_name: `Teacher ${teacherData.name}`
-        };
-      }
-      
-      // If not a teacher, perhaps an admin or other role
-      return {
-        contributor_id: session.user.id,
-        contributor_name: `User ${session.user.email.split('@')[0]}`
-      };
-    } catch (error) {
-      console.error("Error fetching user info:", error);
-      return {
-        contributor_id: session.user.id,
-        contributor_name: `User ${session.user.email.split('@')[0]}`
-      };
+  // Update form when progressEntry changes
+  useState(() => {
+    if (progressEntry) {
+      form.reset({
+        current_surah: progressEntry.current_surah || 1,
+        current_juz: progressEntry.current_juz || 1,
+        start_ayat: progressEntry.start_ayat || 1,
+        end_ayat: progressEntry.end_ayat || 1,
+        verses_memorized: progressEntry.verses_memorized || 0,
+        memorization_quality: progressEntry.memorization_quality || 'average',
+        notes: progressEntry.notes || '',
+        teacher_notes: progressEntry.teacher_notes || '',
+      });
     }
-  };
+  });
 
-  const onSubmit = async (data: ProgressFormData) => {
+  const onSubmit = async (data: any) => {
+    if (!progressEntry?.id) return;
+    
     setIsProcessing(true);
     try {
-      // Get contributor information
-      const contributorInfo = await getUserInfo();
-      
-      // Insert progress entry with contributor info
       const { error } = await supabase
         .from('progress')
-        .insert([{
-          student_id: studentId,
+        .update({
           ...data,
-          date: new Date().toISOString().split('T')[0],
-          last_revision_date: new Date().toISOString().split('T')[0],
-          ...contributorInfo // Add contributor information
-        }]);
+          // Don't update contributor information to preserve original submission metadata
+        })
+        .eq('id', progressEntry.id);
 
       if (error) throw error;
 
       toast({
         title: "Success",
-        description: "Progress entry has been saved",
+        description: "Progress entry has been updated",
       });
       
       // Invalidate both progress queries
-      queryClient.invalidateQueries({ queryKey: ['student-progress', studentId] });
+      queryClient.invalidateQueries({ queryKey: ['student-progress', progressEntry.student_id] });
       queryClient.invalidateQueries({ queryKey: ['progress'] });
       
-      handleOpenChange(false);
-      form.reset();
+      onOpenChange(false);
     } catch (error: any) {
       toast({
         title: "Error",
-        description: error.message || "Failed to save progress entry",
+        description: error.message || "Failed to update progress entry",
         variant: "destructive",
       });
     } finally {
@@ -156,18 +128,12 @@ export const NewProgressEntry = ({
   };
 
   return (
-    <Dialog open={open !== undefined ? open : isDialogOpen} onOpenChange={handleOpenChange}>
-      <DialogTrigger asChild>
-        <Button>
-          <BookOpen className="mr-2" />
-          Add Progress
-        </Button>
-      </DialogTrigger>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>New Progress Entry</DialogTitle>
+          <DialogTitle>Edit Progress Entry</DialogTitle>
           <DialogDescription>
-            Record progress for {studentName}
+            Make changes to the progress entry
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
@@ -286,15 +252,39 @@ export const NewProgressEntry = ({
                 </FormItem>
               )}
             />
-            <div className="flex justify-end">
+            <FormField
+              control={form.control}
+              name="teacher_notes"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Teacher Notes</FormLabel>
+                  <FormControl>
+                    <Textarea 
+                      placeholder="Add teacher notes or feedback" 
+                      className="resize-none" 
+                      {...field} 
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <div className="flex justify-end space-x-2">
+              <Button 
+                type="button" 
+                variant="outline" 
+                onClick={() => onOpenChange(false)}
+              >
+                Cancel
+              </Button>
               <Button type="submit" disabled={isProcessing}>
                 {isProcessing ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Saving...
+                    Updating...
                   </>
                 ) : (
-                  "Save Progress"
+                  "Update Progress"
                 )}
               </Button>
             </div>

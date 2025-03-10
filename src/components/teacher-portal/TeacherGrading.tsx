@@ -39,7 +39,6 @@ export const TeacherGrading = ({ teacherId }: GradingProps) => {
     notes: ""
   });
   
-  // Fetch all students from shared database
   const { data: students, isLoading: studentsLoading } = useQuery({
     queryKey: ['all-students-for-grading'],
     queryFn: async () => {
@@ -54,7 +53,6 @@ export const TeacherGrading = ({ teacherId }: GradingProps) => {
         return [];
       }
       
-      // Get progress data for each student
       const studentsWithProgress = await Promise.all(
         data.map(async (student) => {
           const { data: progressData, error: progressError } = await supabase
@@ -96,13 +94,11 @@ export const TeacherGrading = ({ teacherId }: GradingProps) => {
     }
   });
   
-  // Fetch recent grades for a student
   const { data: studentGrades, isLoading: gradesLoading } = useQuery({
     queryKey: ['student-grades', selectedStudent],
     queryFn: async () => {
       if (!selectedStudent) return [];
       
-      // Find the student ID from the name
       const student = students?.find(s => s.name === selectedStudent);
       
       if (!student) return [];
@@ -124,17 +120,40 @@ export const TeacherGrading = ({ teacherId }: GradingProps) => {
     enabled: !!selectedStudent && !!students
   });
   
-  // Submit grade mutation
+  const { data: teacherData } = useQuery({
+    queryKey: ['teacher-details-for-grading', teacherId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('teachers')
+        .select('id, name')
+        .eq('id', teacherId)
+        .single();
+      
+      if (error) {
+        console.error('Error fetching teacher details:', error);
+        return null;
+      }
+      
+      return data;
+    }
+  });
+  
   const submitGradeMutation = useMutation({
     mutationFn: async (data: any) => {
-      // Find the student id from name
       const student = students?.find(s => s.name === selectedStudent);
       
       if (!student) {
         throw new Error("Student not found");
       }
       
-      // Submit grade as progress - removed teacher_id which doesn't exist
+      const contributorInfo = teacherData ? {
+        contributor_id: teacherData.id,
+        contributor_name: `Teacher ${teacherData.name}`
+      } : {
+        contributor_id: teacherId,
+        contributor_name: "Teacher"
+      };
+      
       const { data: result, error } = await supabase
         .from('progress')
         .insert([{
@@ -143,6 +162,7 @@ export const TeacherGrading = ({ teacherId }: GradingProps) => {
           tajweed_level: data.tajweed_grade,
           teacher_notes: data.notes,
           date: new Date().toISOString().split('T')[0],
+          ...contributorInfo
         }]);
       
       if (error) throw new Error(error.message);
@@ -154,7 +174,6 @@ export const TeacherGrading = ({ teacherId }: GradingProps) => {
         title: "Grade Submitted",
         description: "The student's grade has been successfully recorded.",
       });
-      // Reset form data but keep the selected student
       setGradeData({
         memorization_quality: "average",
         tajweed_grade: "",
@@ -195,7 +214,6 @@ export const TeacherGrading = ({ teacherId }: GradingProps) => {
     submitGradeMutation.mutate(gradeData);
   };
   
-  // Get color based on memorization quality
   const getQualityColor = (quality: string) => {
     switch (quality) {
       case 'excellent': return 'text-green-600';
@@ -207,7 +225,6 @@ export const TeacherGrading = ({ teacherId }: GradingProps) => {
     }
   };
   
-  // Get percentage for progress bar
   const getQualityPercentage = (quality: string) => {
     switch (quality) {
       case 'excellent': return 100;
@@ -440,6 +457,7 @@ export const TeacherGrading = ({ teacherId }: GradingProps) => {
                             <TableHead>Tajweed</TableHead>
                             <TableHead>Surah</TableHead>
                             <TableHead>Juz</TableHead>
+                            <TableHead>Contributor</TableHead>
                           </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -452,6 +470,9 @@ export const TeacherGrading = ({ teacherId }: GradingProps) => {
                               <TableCell>{grade.tajweed_level || 'N/A'}</TableCell>
                               <TableCell>{grade.current_surah || 'N/A'}</TableCell>
                               <TableCell>{grade.current_juz || 'N/A'}</TableCell>
+                              <TableCell>
+                                {grade.contributor_name || 'Unknown'}
+                              </TableCell>
                             </TableRow>
                           ))}
                         </TableBody>
