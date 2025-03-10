@@ -43,6 +43,25 @@ export const ProgressRecording = ({ teacherId }: ProgressRecordingProps) => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   
+  // Fetch teacher details for contributor info
+  const { data: teacherData } = useQuery({
+    queryKey: ['teacher-details', teacherId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('teachers')
+        .select('id, name')
+        .eq('id', teacherId)
+        .single();
+      
+      if (error) {
+        console.error('Error fetching teacher details:', error);
+        return null;
+      }
+      
+      return data;
+    }
+  });
+  
   // Fetch all students from shared database
   const { data: students, isLoading: studentsLoading } = useQuery({
     queryKey: ['all-students-for-progress'],
@@ -94,7 +113,16 @@ export const ProgressRecording = ({ teacherId }: ProgressRecordingProps) => {
   // Handle form submission
   const progressMutation = useMutation({
     mutationFn: async (values: z.infer<typeof formSchema>) => {
-      // Create progress entry - removing teacher_id which doesn't exist in the schema
+      // Create contributor info
+      const contributorInfo = teacherData ? {
+        contributor_id: teacherData.id,
+        contributor_name: `Teacher ${teacherData.name}`
+      } : {
+        contributor_id: teacherId,
+        contributor_name: "Teacher"
+      };
+      
+      // Create progress entry with contributor info
       const { data, error } = await supabase
         .from('progress')
         .insert([{
@@ -108,6 +136,7 @@ export const ProgressRecording = ({ teacherId }: ProgressRecordingProps) => {
           teacher_notes: values.notes,
           date: new Date().toISOString().split('T')[0],
           verses_memorized: values.end_ayat - values.start_ayat + 1,
+          ...contributorInfo // Add contributor information
         }]);
       
       if (error) {
@@ -316,6 +345,12 @@ export const ProgressRecording = ({ teacherId }: ProgressRecordingProps) => {
                 </>
               )}
             </Button>
+            
+            {teacherData && (
+              <p className="text-xs text-center text-muted-foreground mt-2">
+                Entry will be recorded as submitted by Teacher {teacherData.name}
+              </p>
+            )}
           </form>
         </Form>
       </CardContent>
