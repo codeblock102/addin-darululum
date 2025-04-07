@@ -7,12 +7,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ArrowLeft, BookOpen, UserRound } from "lucide-react";
+import { ArrowLeft, BookOpen, UserRound, BookMarked, RefreshCw } from "lucide-react";
 import { StudentProgressChart } from "@/components/students/StudentProgressChart";
 import { StudentProgressList } from "@/components/students/StudentProgressList";
 import { Skeleton } from "@/components/ui/skeleton";
 import { NewProgressEntry } from "@/components/students/NewProgressEntry";
 import { useToast } from "@/hooks/use-toast";
+import { DhorBook } from "@/components/students/dhor/DhorBook";
 
 interface Student {
   id: string;
@@ -200,7 +201,10 @@ const StudentDetail = () => {
         <Tabs defaultValue="progress" className="w-full">
           <TabsList className="mb-4">
             <TabsTrigger value="progress">Progress History</TabsTrigger>
-            <TabsTrigger value="revisions">Revisions</TabsTrigger>
+            <TabsTrigger value="revisions">
+              <RefreshCw className="w-4 h-4 mr-2" />
+              Revision Book (Dhor)
+            </TabsTrigger>
           </TabsList>
           <TabsContent value="progress">
             {progressLoading ? (
@@ -214,13 +218,7 @@ const StudentDetail = () => {
             )}
           </TabsContent>
           <TabsContent value="revisions">
-            <Card>
-              <CardContent className="pt-6">
-                <p className="text-muted-foreground text-center py-8">
-                  Revision tracking will be implemented in a future update.
-                </p>
-              </CardContent>
-            </Card>
+            <DhorBook studentId={student.id} studentName={student.name} />
           </TabsContent>
         </Tabs>
       </div>

@@ -21,7 +21,7 @@ export const NewProgressEntry = ({
   onOpenChange 
 }: NewProgressEntryProps) => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const { submitProgress, isProcessing } = useProgressSubmit(studentId);
+  const { submitProgress, isProcessing, contributorName } = useProgressSubmit(studentId);
 
   const handleOpenChange = (newOpen: boolean) => {
     setIsDialogOpen(newOpen);
@@ -53,6 +53,11 @@ export const NewProgressEntry = ({
           }}
           isProcessing={isProcessing}
         />
+        {contributorName && (
+          <p className="text-xs text-center text-muted-foreground mt-2">
+            Entry will be recorded as submitted by {contributorName}
+          </p>
+        )}
       </DialogContent>
     </Dialog>
   );
