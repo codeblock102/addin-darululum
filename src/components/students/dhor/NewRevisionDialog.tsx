@@ -110,15 +110,14 @@ export const NewRevisionDialog = ({
         // Insert revision entry
         const { error: revisionError } = await supabase
           .from('juz_revisions')
-          .insert([{
+          .insert({
             student_id: studentId,
             juz_revised: data.juz_number,
             revision_date: new Date().toISOString().split('T')[0],
             teacher_notes: data.teacher_notes || '',
             memorization_quality: data.memorization_quality,
-            teacher_id: teacherInfo?.id,
-            quarters_revised: data.quarters_revised
-          }]);
+            teacher_id: teacherInfo?.id
+          });
         
         if (revisionError) throw revisionError;
         
@@ -135,7 +134,7 @@ export const NewRevisionDialog = ({
         }
         
         // Determine mastery level based on memorization quality
-        let mastery_level = 'in_progress';
+        let mastery_level: 'not_started' | 'in_progress' | 'memorized' | 'mastered' = 'in_progress';
         if (data.memorization_quality === 'excellent') {
           mastery_level = 'mastered';
         } else if (data.memorization_quality === 'good') {
@@ -169,7 +168,7 @@ export const NewRevisionDialog = ({
           // Create new mastery record
           const { error: insertError } = await supabase
             .from('juz_mastery')
-            .insert([{
+            .insert({
               student_id: studentId,
               juz_number: data.juz_number,
               mastery_level,
@@ -177,7 +176,7 @@ export const NewRevisionDialog = ({
               revision_count: 1,
               consecutive_good_revisions: 
                 (data.memorization_quality === 'excellent' || data.memorization_quality === 'good') ? 1 : 0
-            }]);
+            });
           
           if (insertError) throw insertError;
         }

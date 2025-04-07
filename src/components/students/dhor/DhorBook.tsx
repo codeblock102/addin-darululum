@@ -13,6 +13,7 @@ import { RevisionSchedule } from "./RevisionSchedule";
 import { RevisionStats } from "./RevisionStats";
 import { NewRevisionDialog } from "./NewRevisionDialog";
 import { DhorBookProps } from "../progress/types";
+import { JuzRevision, JuzMastery, DifficultAyah, RevisionScheduleItem } from "@/types/progress";
 
 export const DhorBook = ({ studentId, studentName }: DhorBookProps) => {
   const { toast } = useToast();
@@ -31,13 +32,20 @@ export const DhorBook = ({ studentId, studentName }: DhorBookProps) => {
           revision_date,
           teacher_notes,
           memorization_quality,
-          teachers:teacher_id (name)
+          teacher_id
         `)
         .eq('student_id', studentId)
         .order('revision_date', { ascending: false });
       
       if (error) throw error;
-      return data;
+      
+      // Add empty teachers object for type compatibility
+      const revisionsWithTeachers = data.map(revision => ({
+        ...revision,
+        teachers: { name: "Unknown" }
+      }));
+      
+      return revisionsWithTeachers as JuzRevision[];
     },
   });
 
@@ -51,37 +59,53 @@ export const DhorBook = ({ studentId, studentName }: DhorBookProps) => {
         .eq('student_id', studentId);
       
       if (error) throw error;
-      return data;
+      return data as JuzMastery[];
     },
   });
 
-  // Fetch difficult ayahs
+  // Mock difficult ayahs until we have a real API endpoint
   const { data: difficultAyahs, isLoading: ayahsLoading } = useQuery({
     queryKey: ['student-difficult-ayahs', studentId],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('difficult_ayahs')
-        .select('*')
-        .eq('student_id', studentId)
-        .order('date_added', { ascending: false });
-      
-      if (error) throw error;
-      return data || [];
+      try {
+        const { data, error } = await supabase
+          .rpc('get_difficult_ayahs', { student_id_param: studentId })
+          .order('date_added', { ascending: false });
+          
+        if (error) {
+          console.error("Using fallback for difficult ayahs:", error);
+          // Fallback to an empty array if the RPC call fails
+          return [] as DifficultAyah[];
+        }
+        
+        return (data || []) as DifficultAyah[];
+      } catch (error) {
+        console.error("Error fetching difficult ayahs:", error);
+        return [] as DifficultAyah[];
+      }
     },
   });
 
-  // Fetch revision schedule
+  // Mock revision schedule
   const { data: schedule, isLoading: scheduleLoading } = useQuery({
     queryKey: ['student-revision-schedule', studentId],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('revision_schedule')
-        .select('*')
-        .eq('student_id', studentId)
-        .order('scheduled_date', { ascending: true });
-      
-      if (error) throw error;
-      return data || [];
+      try {
+        const { data, error } = await supabase
+          .rpc('get_revision_schedule', { student_id_param: studentId })
+          .order('scheduled_date', { ascending: true });
+          
+        if (error) {
+          console.error("Using fallback for revision schedule:", error);
+          // Fallback to an empty array if the RPC call fails
+          return [] as RevisionScheduleItem[];
+        }
+        
+        return (data || []) as RevisionScheduleItem[];
+      } catch (error) {
+        console.error("Error fetching revision schedule:", error);
+        return [] as RevisionScheduleItem[];
+      }
     },
   });
   

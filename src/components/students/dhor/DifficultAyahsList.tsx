@@ -15,7 +15,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Edit2, Plus, Check } from "lucide-react";
 import { Card } from "@/components/ui/card";
-import { DifficultAyah } from "../progress/types";
+import { DifficultAyah } from "@/types/progress";
 import { NewDifficultAyahDialog } from "./NewDifficultAyahDialog";
 import { EditDifficultAyahDialog } from "./EditDifficultAyahDialog";
 
@@ -33,13 +33,16 @@ export const DifficultAyahsList = ({ ayahs, studentId }: DifficultAyahsListProps
   
   const markAsResolved = useMutation({
     mutationFn: async (ayahId: string) => {
-      const { error } = await supabase
-        .from('difficult_ayahs')
-        .update({ status: 'resolved' })
-        .eq('id', ayahId);
-      
-      if (error) throw error;
-      return ayahId;
+      try {
+        const { error } = await supabase
+          .rpc('mark_ayah_resolved', { ayah_id_param: ayahId })
+        
+        if (error) throw error;
+        return ayahId;
+      } catch (error) {
+        console.error("Error updating ayah status:", error);
+        throw error;
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({

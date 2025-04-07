@@ -48,7 +48,9 @@ export interface JuzRevision {
   memorization_quality?: 'excellent' | 'good' | 'average' | 'needsWork' | 'horrible';
   quarters_revised?: '1st_quarter' | '2_quarters' | '3_quarters' | '4_quarters';
   teacher_id?: string;
-  teacher_name?: string;
+  teachers?: {
+    name: string;
+  };
 }
 
 export interface DifficultAyah {
@@ -62,6 +64,7 @@ export interface DifficultAyah {
   revision_count: number;
   last_revised: string | null;
   status: 'active' | 'resolved';
+  created_at?: string;
 }
 
 export interface RevisionScheduleItem {

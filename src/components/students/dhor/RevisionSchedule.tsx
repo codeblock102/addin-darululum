@@ -14,7 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Check, AlertTriangle } from "lucide-react";
 import { Card } from "@/components/ui/card";
-import { RevisionScheduleItem } from "../progress/types";
+import { RevisionScheduleItem } from "@/types/progress";
 
 interface RevisionScheduleProps {
   schedule: RevisionScheduleItem[];
@@ -27,13 +27,16 @@ export const RevisionSchedule = ({ schedule, studentId }: RevisionScheduleProps)
   
   const markAsCompleted = useMutation({
     mutationFn: async (itemId: string) => {
-      const { error } = await supabase
-        .from('revision_schedule')
-        .update({ status: 'completed' })
-        .eq('id', itemId);
-      
-      if (error) throw error;
-      return itemId;
+      try {
+        const { error } = await supabase
+          .rpc('mark_revision_completed', { item_id_param: itemId })
+        
+        if (error) throw error;
+        return itemId;
+      } catch (error) {
+        console.error("Error updating revision status:", error);
+        throw error;
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({
