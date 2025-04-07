@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -11,8 +11,37 @@ export const useProgressSubmit = (studentId: string) => {
   const queryClient = useQueryClient();
   const { session } = useAuth();
   const [isProcessing, setIsProcessing] = useState(false);
+  const [contributorName, setContributorName] = useState<string | null>(null);
 
   // Get contributor information
+  useEffect(() => {
+    const fetchUserInfo = async () => {
+      if (!session?.user?.email) return;
+      
+      try {
+        // First, check if user is a teacher
+        const { data: teacherData, error: teacherError } = await supabase
+          .from('teachers')
+          .select('id, name')
+          .eq('email', session.user.email)
+          .single();
+        
+        if (!teacherError && teacherData) {
+          setContributorName(`Teacher ${teacherData.name}`);
+          return;
+        }
+        
+        // If not a teacher, perhaps an admin or other role
+        setContributorName(`User ${session.user.email.split('@')[0]}`);
+      } catch (error) {
+        console.error("Error fetching user info:", error);
+        setContributorName(`User ${session.user.email.split('@')[0]}`);
+      }
+    };
+
+    fetchUserInfo();
+  }, [session]);
+
   const getUserInfo = async () => {
     if (!session?.user?.email) return null;
     
@@ -51,12 +80,16 @@ export const useProgressSubmit = (studentId: string) => {
       // Get contributor information
       const contributorInfo = await getUserInfo();
       
+      // Calculate verses memorized if not provided
+      const verses_memorized = data.verses_memorized || (data.end_ayat - data.start_ayat + 1);
+      
       // Insert progress entry with contributor info
       const { error } = await supabase
         .from('progress')
         .insert([{
           student_id: studentId,
           ...data,
+          verses_memorized,
           date: new Date().toISOString().split('T')[0],
           last_revision_date: new Date().toISOString().split('T')[0],
           ...contributorInfo // Add contributor information
@@ -87,6 +120,7 @@ export const useProgressSubmit = (studentId: string) => {
 
   return {
     submitProgress,
-    isProcessing
+    isProcessing,
+    contributorName
   };
 };
