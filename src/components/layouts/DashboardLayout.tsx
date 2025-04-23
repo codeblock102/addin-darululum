@@ -1,6 +1,5 @@
 
 import { ReactNode, useEffect, useState } from "react";
-import { useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { 
@@ -11,8 +10,8 @@ import {
   SidebarProvider, 
   SidebarTrigger 
 } from "@/components/ui/sidebar";
-import { Button } from "@/components/ui/button";
 import { Bell, BookOpen } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { NavigationMenu } from "@/components/shared/NavigationMenu";
 import { UserAvatar } from "@/components/shared/UserAvatar";
 import { adminNavItems, teacherNavItems } from "@/config/navigation";
@@ -25,7 +24,7 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   const { session } = useAuth();
   const user = session?.user;
   const [isTeacher, setIsTeacher] = useState(false);
-  const [unreadNotifications, setUnreadNotifications] = useState(0);
+  const [unreadNotifications] = useState(0);
 
   useEffect(() => {
     const checkTeacherStatus = async () => {
