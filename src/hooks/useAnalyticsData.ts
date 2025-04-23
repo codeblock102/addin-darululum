@@ -2,163 +2,150 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
-export interface AnalyticsData {
-  teacherId: string;
-  qualityDistribution: {
-    name: string;
-    value: number;
-    color?: string;
-  }[];
-  timeProgress: {
-    date: string;
-    count: number;
-  }[];
-  studentProgress: {
-    name: string;
-    progress: number;
-    lastQuality?: string;
-  }[];
-  contributorActivity: {
-    name: string;
-    count: number;
-    color?: string;
-  }[];
-}
-
 export const useAnalyticsData = (teacherId: string) => {
   return useQuery({
-    queryKey: ['analytics-data', teacherId],
-    queryFn: async (): Promise<AnalyticsData> => {
-      // Create an empty result object
-      const result: AnalyticsData = {
-        teacherId,
-        qualityDistribution: [],
-        timeProgress: [],
-        studentProgress: [],
-        contributorActivity: [],
-      };
-
-      // Quality Distribution (memorization quality breakdown)
-      const { data: qualityData, error: qualityError } = await supabase
-        .from('progress')
-        .select('memorization_quality, count')
-        .not('memorization_quality', 'is', null)
-        .order('memorization_quality')
-        .group('memorization_quality')
-        .filter('date', 'gte', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString());
-
-      if (qualityError) console.error('Error fetching quality distribution:', qualityError);
-      
-      if (qualityData) {
-        // Map quality ratings to user-friendly names and colors
-        const qualityMap: Record<string, { label: string, color: string }> = {
-          excellent: { label: 'Excellent', color: '#10b981' },  // green
-          good: { label: 'Good', color: '#3b82f6' },            // blue
-          average: { label: 'Average', color: '#f59e0b' },      // yellow
-          needsWork: { label: 'Needs Work', color: '#f97316' },  // orange
-          horrible: { label: 'Incomplete', color: '#ef4444' },   // red
-        };
-
-        result.qualityDistribution = qualityData.map(item => ({
-          name: qualityMap[item.memorization_quality]?.label || item.memorization_quality,
-          value: parseInt(item.count),
-          color: qualityMap[item.memorization_quality]?.color
-        }));
-      }
-
-      // Time Progress (progress entries over time)
-      const { data: timeData, error: timeError } = await supabase
-        .from('progress')
-        .select('date, count')
-        .not('date', 'is', null)
-        .order('date')
-        .group('date')
-        .filter('date', 'gte', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString());
-
-      if (timeError) console.error('Error fetching time progress:', timeError);
-      
-      if (timeData) {
-        result.timeProgress = timeData.map(item => ({
-          date: new Date(item.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-          count: parseInt(item.count)
-        }));
-      }
-
-      // Student Progress (per student)
-      const { data: studentsData, error: studentsError } = await supabase
-        .from('students')
-        .select(`
-          id, 
-          name,
-          progress:progress(
-            current_surah, 
-            memorization_quality,
-            created_at
-          )
-        `)
-        .eq('status', 'active')
-        .order('name');
-
-      if (studentsError) console.error('Error fetching student progress:', studentsError);
-
-      if (studentsData) {
-        result.studentProgress = studentsData.map(student => {
-          // Sort progress entries by date (newest first)
-          const sortedProgress = student.progress
-            ? Array.isArray(student.progress)
-              ? [...student.progress].sort((a, b) => 
-                  new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-                )
-              : []
-            : [];
-          
-          // Get last quality rating
-          const lastQuality = sortedProgress.length > 0 ? sortedProgress[0].memorization_quality : undefined;
-          
-          // Get max surah number as progress indicator
-          const maxSurah = sortedProgress.reduce((max, entry) => 
-            entry.current_surah ? Math.max(max, entry.current_surah) : max, 0);
-          
-          // Calculate progress as percentage (total Quran has 114 surahs)
-          const progressPercentage = Math.round((maxSurah / 114) * 100);
-          
-          return {
-            name: student.name,
-            progress: progressPercentage,
-            lastQuality
-          };
-        });
-      }
-
-      // Contributor Activity (entries by contributor)
-      const { data: contributorData, error: contributorError } = await supabase
-        .from('progress')
-        .select('contributor_name, count')
-        .not('contributor_name', 'is', null)
-        .group('contributor_name')
-        .order('count', { ascending: false });
-
-      if (contributorError) console.error('Error fetching contributor activity:', contributorError);
-      
-      if (contributorData) {
-        // Generate some colors for contributors
-        const contributorColors = [
-          '#a855f7', // purple
-          '#ec4899', // pink
-          '#14b8a6', // teal
-          '#6366f1', // indigo
-          '#f59e0b', // amber
-        ];
+    queryKey: ['teacher-analytics', teacherId],
+    queryFn: async () => {
+      try {
+        // Get quality distribution data
+        const qualityDistribution = await getQualityDistribution();
         
-        result.contributorActivity = contributorData.map((item, index) => ({
-          name: item.contributor_name,
-          count: parseInt(item.count),
-          color: contributorColors[index % contributorColors.length]
-        }));
+        // Get progress over time
+        const timeProgress = await getTimeProgress();
+        
+        // Get student progress
+        const studentProgress = await getStudentProgress(teacherId);
+        
+        // Get contributor activity
+        const contributorActivity = await getContributorActivity();
+        
+        return {
+          qualityDistribution,
+          timeProgress,
+          studentProgress,
+          contributorActivity
+        };
+      } catch (error) {
+        console.error("Error fetching analytics data:", error);
+        throw new Error("Failed to fetch analytics data");
       }
-
-      return result;
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
+};
+
+// Helper function to get quality distribution
+const getQualityDistribution = async () => {
+  try {
+    // Create SQL query to get distribution with counts
+    const { data, error } = await supabase.rpc('get_quality_distribution');
+    
+    if (error) {
+      throw error;
+    }
+    
+    // Map to expected format
+    return data.map((item: any) => ({
+      quality: item.memorization_quality === null ? 'Not rated' : item.memorization_quality,
+      count: item.count
+    }));
+  } catch (error) {
+    console.error("Error getting quality distribution:", error);
+    return [];
+  }
+};
+
+// Helper function to get progress over time
+const getTimeProgress = async () => {
+  try {
+    // Create SQL query to get progress by date with counts
+    const { data, error } = await supabase.rpc('get_progress_by_date');
+    
+    if (error) {
+      throw error;
+    }
+    
+    // Map to expected format and add zeros for dates with no entries
+    return data.map((item: any) => ({
+      date: item.date,
+      count: item.count
+    }));
+  } catch (error) {
+    console.error("Error getting time progress:", error);
+    return [];
+  }
+};
+
+// Helper function to get student progress
+const getStudentProgress = async (teacherId: string) => {
+  try {
+    // First get the students assigned to this teacher
+    const { data: students, error: studentsError } = await supabase
+      .from('students_teachers')
+      .select('id, student_name')
+      .eq('teacher_id', teacherId)
+      .eq('active', true);
+    
+    if (studentsError) {
+      throw studentsError;
+    }
+    
+    if (!students || students.length === 0) {
+      return [];
+    }
+    
+    // Now for each student, get their total verses memorized
+    const studentDataPromises = students.map(async (student) => {
+      const { data, error } = await supabase
+        .from('progress')
+        .select('verses_memorized, memorization_quality')
+        .eq('student_id', student.id)
+        .order('date', { ascending: false })
+        .limit(1);
+      
+      if (error) {
+        console.error(`Error fetching progress for student ${student.student_name}:`, error);
+        return {
+          name: student.student_name,
+          progress: 0,
+          lastQuality: undefined
+        };
+      }
+      
+      const totalVerses = data?.reduce((sum, record) => sum + (record.verses_memorized || 0), 0) || 0;
+      const lastQuality = data && data.length > 0 ? data[0].memorization_quality : undefined;
+      
+      return {
+        name: student.student_name,
+        progress: totalVerses,
+        lastQuality
+      };
+    });
+    
+    return Promise.all(studentDataPromises);
+  } catch (error) {
+    console.error("Error getting student progress:", error);
+    return [];
+  }
+};
+
+// Helper function to get contributor activity
+const getContributorActivity = async () => {
+  try {
+    // Create SQL query to get contributor activity with counts
+    const { data, error } = await supabase.rpc('get_contributor_activity');
+    
+    if (error) {
+      throw error;
+    }
+    
+    // Map to expected format
+    return data.map((item: any) => ({
+      name: item.contributor_name || 'Unknown',
+      count: item.count
+    }));
+  } catch (error) {
+    console.error("Error getting contributor activity:", error);
+    return [];
+  }
 };

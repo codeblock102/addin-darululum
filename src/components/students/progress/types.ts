@@ -13,6 +13,7 @@ export interface ProgressFormData {
   is_new_lesson?: boolean;
   lesson_type?: 'hifz' | 'nazirah' | 'qaida';
   quality_rating?: 'excellent' | 'good' | 'average' | 'needsWork' | 'horrible';
+  auto_rating?: string;
 }
 
 export interface ProgressEntry extends ProgressFormData {
@@ -85,4 +86,19 @@ export interface StudentStatusSummary {
   pending_assignments: number;
   missed_assignments: number;
   pending_details?: string;
+}
+
+// DifficultAyah Type (needed for EditDifficultAyahDialog)
+export interface DifficultAyah {
+  id: string;
+  student_id: string;
+  surah_number: number;
+  ayah_number: number;
+  juz_number: number;
+  date_added: string;
+  notes: string;
+  revision_count: number;
+  last_revised: string | null;
+  status: 'active' | 'resolved';
+  created_at?: string;
 }
