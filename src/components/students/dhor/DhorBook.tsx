@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -17,6 +17,7 @@ import { JuzRevision, JuzMastery, DifficultAyah, RevisionScheduleItem } from "@/
 export const DhorBook = ({ studentId, studentName }: DhorBookProps) => {
   const { toast } = useToast();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const queryClient = useQueryClient();
 
   const { data: revisions, isLoading: revisionsLoading } = useQuery({
     queryKey: ['student-revisions', studentId],
@@ -266,7 +267,6 @@ export const DhorBook = ({ studentId, studentName }: DhorBookProps) => {
         studentId={studentId}
         studentName={studentName}
         onSuccess={() => {
-          const queryClient = queryClient;
           queryClient.invalidateQueries({
             queryKey: ['student-revisions', studentId]
           });
