@@ -47,8 +47,8 @@ export const TeacherTabs = ({ teacher, activeTab, onTabChange }: TeacherTabsProp
   };
   
   return (
-    <Tabs defaultValue="overview" value={activeTab} onValueChange={handleTabChange}>
-      <TabsList className="grid grid-cols-7 w-full">
+    <Tabs defaultValue="overview" value={activeTab} onValueChange={handleTabChange} className="w-full">
+      <TabsList className="grid w-full grid-cols-7">
         <TabsTrigger value="overview">Overview</TabsTrigger>
         <TabsTrigger value="students">Students</TabsTrigger>
         <TabsTrigger value="progress">Progress</TabsTrigger>
@@ -72,27 +72,27 @@ export const TeacherTabs = ({ teacher, activeTab, onTabChange }: TeacherTabsProp
         </Card>
       </TabsContent>
       
-      <TabsContent value="students" className="space-y-4 mt-6">
+      <TabsContent value="students" className="mt-6">
         <MyStudents teacherId={teacher.id} />
       </TabsContent>
       
-      <TabsContent value="progress" className="space-y-4 mt-6">
+      <TabsContent value="progress" className="mt-6">
         <ProgressRecording teacherId={teacher.id} />
       </TabsContent>
       
-      <TabsContent value="grading" className="space-y-4 mt-6">
+      <TabsContent value="grading" className="mt-6">
         <TeacherGrading teacherId={teacher.id} />
       </TabsContent>
       
-      <TabsContent value="analytics" className="space-y-4 mt-6">
+      <TabsContent value="analytics" className="mt-6">
         <TeacherAnalytics teacherId={teacher.id} />
       </TabsContent>
       
-      <TabsContent value="messages" className="space-y-4 mt-6">
+      <TabsContent value="messages" className="mt-6">
         <TeacherMessages teacherId={teacher.id} teacherName={teacher.name} />
       </TabsContent>
       
-      <TabsContent value="profile" className="space-y-4 mt-6">
+      <TabsContent value="profile" className="mt-6">
         <TeacherProfile teacher={teacher} />
       </TabsContent>
     </Tabs>

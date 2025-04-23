@@ -1,51 +1,153 @@
 
 import { useState } from "react";
-import { Card } from "@/components/ui/card";
-import { Loader2 } from "lucide-react";
-import { AnalyticsHeader } from "./analytics/AnalyticsHeader";
-import { AnalyticsCharts } from "./analytics/AnalyticsCharts";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
+import { 
+  ProgressDistributionChart, 
+  StudentProgressChart, 
+  TimeProgressChart, 
+  ContributorActivityChart 
+} from "./analytics";
 import { useAnalyticsData } from "@/hooks/useAnalyticsData";
-import { useRealtimeAnalytics } from "@/hooks/useRealtimeAnalytics";
-import { exportDataAsCSV } from "@/utils/exportUtils";
-import { useToast } from "@/hooks/use-toast";
+import { Download } from "lucide-react";
 
 interface TeacherAnalyticsProps {
   teacherId: string;
 }
 
 export const TeacherAnalytics = ({ teacherId }: TeacherAnalyticsProps) => {
-  const [timeRange, setTimeRange] = useState("30");
-  const { toast } = useToast();
+  const [timeRange, setTimeRange] = useState<'week' | 'month' | 'year'>('month');
+  const { data, isLoading } = useAnalyticsData(teacherId);
   
-  // Set up real-time listener
-  useRealtimeAnalytics(teacherId, timeRange);
-  
-  // Fetch analytics data
-  const { data: analyticsData, isLoading } = useAnalyticsData(teacherId, timeRange);
+  // Transform data for StudentProgressChart
+  const studentProgressData = data?.studentProgress?.map(item => ({
+    name: item.name,
+    verses: item.progress // Renamed from progress to verses
+  })) || [];
 
-  // Export data as CSV
-  const handleExportData = () => {
-    exportDataAsCSV(analyticsData?.studentProgress || [], toast);
-  };
-  
-  if (isLoading) {
-    return (
-      <div className="flex h-96 items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin" />
-      </div>
-    );
-  }
-  
   return (
     <div className="space-y-6">
-      <Card>
-        <AnalyticsHeader 
-          timeRange={timeRange}
-          setTimeRange={setTimeRange}
-          onExport={handleExportData}
-        />
-        <AnalyticsCharts data={analyticsData} />
-      </Card>
+      <div className="flex justify-between items-center">
+        <div>
+          <h2 className="text-2xl font-bold tracking-tight">Analytics</h2>
+          <p className="text-muted-foreground">
+            Monitor student progress and performance metrics
+          </p>
+        </div>
+        <Button variant="outline" size="sm">
+          <Download className="mr-2 h-4 w-4" />
+          Export Report
+        </Button>
+      </div>
+      
+      <Tabs defaultValue="overview" className="space-y-4">
+        <TabsList>
+          <TabsTrigger value="overview">Overview</TabsTrigger>
+          <TabsTrigger value="students">Students</TabsTrigger>
+          <TabsTrigger value="time">Time Analysis</TabsTrigger>
+          <TabsTrigger value="contributors">Contributors</TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="overview" className="space-y-4">
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-2">
+            <Card>
+              <CardHeader>
+                <CardTitle>Student Progress</CardTitle>
+                <CardDescription>
+                  Average verses memorized per student
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="h-80">
+                <StudentProgressChart data={studentProgressData} />
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardHeader>
+                <CardTitle>Quality Distribution</CardTitle>
+                <CardDescription>
+                  Distribution of memorization quality
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="h-80">
+                <ProgressDistributionChart data={data?.qualityDistribution || []} />
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+        
+        <TabsContent value="students" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Detailed Student Progress</CardTitle>
+              <CardDescription>
+                Track individual student progress over time
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="h-96">
+              <StudentProgressChart data={studentProgressData} />
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        <TabsContent value="time" className="space-y-4">
+          <div className="flex justify-end mb-4">
+            <div className="space-x-2">
+              <Button 
+                variant={timeRange === 'week' ? 'default' : 'outline'} 
+                size="sm" 
+                onClick={() => setTimeRange('week')}
+              >
+                Week
+              </Button>
+              <Button 
+                variant={timeRange === 'month' ? 'default' : 'outline'} 
+                size="sm" 
+                onClick={() => setTimeRange('month')}
+              >
+                Month
+              </Button>
+              <Button 
+                variant={timeRange === 'year' ? 'default' : 'outline'} 
+                size="sm" 
+                onClick={() => setTimeRange('year')}
+              >
+                Year
+              </Button>
+            </div>
+          </div>
+          
+          <Card>
+            <CardHeader>
+              <CardTitle>Progress Over Time</CardTitle>
+              <CardDescription>
+                Tracking progress trends over {timeRange}
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="h-96">
+              <TimeProgressChart 
+                data={data?.timeProgress || []} 
+                timeRange={timeRange}
+              />
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        <TabsContent value="contributors" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Contributor Activity</CardTitle>
+              <CardDescription>
+                Progress entries by contributor
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="h-96">
+              <ContributorActivityChart data={data?.contributorActivity || []} />
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };

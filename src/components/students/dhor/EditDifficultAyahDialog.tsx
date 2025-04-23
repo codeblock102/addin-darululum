@@ -1,234 +1,133 @@
 
-import { useEffect, useState } from "react";
-import { useQueryClient, useMutation } from "@tanstack/react-query";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import * as z from "zod";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
+import { useState } from "react";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Loader2 } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/components/ui/use-toast";
 import { DifficultAyah } from "../progress/types";
-
-const formSchema = z.object({
-  surah_number: z.coerce.number().min(1).max(114),
-  ayah_number: z.coerce.number().min(1),
-  juz_number: z.coerce.number().min(1).max(30),
-  notes: z.string().optional(),
-  revision_count: z.coerce.number().min(0)
-});
 
 interface EditDifficultAyahDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  ayah: DifficultAyah | null;
+  difficultAyah: DifficultAyah | null;
+  onSuccess: () => void;
 }
 
 export const EditDifficultAyahDialog = ({
   open,
   onOpenChange,
-  ayah
+  difficultAyah,
+  onSuccess,
 }: EditDifficultAyahDialogProps) => {
+  const [notes, setNotes] = useState(difficultAyah?.notes || "");
+  const [isResolved, setIsResolved] = useState(difficultAyah?.status === "resolved");
+  const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
-  const queryClient = useQueryClient();
-  const [submitting, setSubmitting] = useState(false);
-  
-  // Setup form
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      surah_number: ayah?.surah_number || 1,
-      ayah_number: ayah?.ayah_number || 1,
-      juz_number: ayah?.juz_number || 1,
-      notes: ayah?.notes || '',
-      revision_count: ayah?.revision_count || 0
+
+  // Reset state when dialog opens/closes
+  const handleOpenChange = (open: boolean) => {
+    if (open && difficultAyah) {
+      setNotes(difficultAyah.notes || "");
+      setIsResolved(difficultAyah.status === "resolved");
     }
-  });
-  
-  // Update form when ayah changes
-  useEffect(() => {
-    if (ayah) {
-      form.reset({
-        surah_number: ayah.surah_number,
-        ayah_number: ayah.ayah_number,
-        juz_number: ayah.juz_number,
-        notes: ayah.notes,
-        revision_count: ayah.revision_count
-      });
-    }
-  }, [ayah, form]);
-  
-  // Mutation for updating difficult ayah
-  const updateDifficultAyah = useMutation({
-    mutationFn: async (data: z.infer<typeof formSchema>) => {
-      if (!ayah?.id) throw new Error("No ayah selected");
-      
-      setSubmitting(true);
-      
-      try {
-        const { error } = await supabase
-          .from('difficult_ayahs')
-          .update({
-            surah_number: data.surah_number,
-            ayah_number: data.ayah_number,
-            juz_number: data.juz_number,
-            notes: data.notes || '',
-            revision_count: data.revision_count,
-            last_revised: new Date().toISOString().split('T')[0]
-          })
-          .eq('id', ayah.id);
-        
-        if (error) throw error;
-        return true;
-      } catch (error: any) {
-        console.error("Error updating difficult ayah:", error);
-        throw new Error(error.message || "Failed to update difficult ayah");
-      } finally {
-        setSubmitting(false);
-      }
-    },
-    onSuccess: () => {
+    onOpenChange(open);
+  };
+
+  const handleSave = async () => {
+    if (!difficultAyah) return;
+
+    setIsLoading(true);
+    try {
+      const { error } = await supabase
+        .from("difficult_ayahs")
+        .update({
+          notes,
+          status: isResolved ? "resolved" : "active",
+          last_revised: isResolved ? new Date().toISOString().split("T")[0] : difficultAyah.last_revised,
+          revision_count: isResolved ? (difficultAyah.revision_count || 0) + 1 : difficultAyah.revision_count,
+        })
+        .eq("id", difficultAyah.id);
+
+      if (error) throw error;
+
       toast({
-        title: "Success",
-        description: "Difficult ayah updated successfully"
+        title: "Success!",
+        description: "Difficult ayah updated successfully",
       });
-      
-      // Invalidate query to refresh data
-      queryClient.invalidateQueries({
-        queryKey: ['student-difficult-ayahs', ayah?.student_id]
-      });
-      
-      // Close dialog
+
+      onSuccess();
       onOpenChange(false);
-    },
-    onError: (error: any) => {
+    } catch (error) {
+      console.error("Error updating difficult ayah:", error);
       toast({
-        title: "Error",
-        description: error.message || "Failed to update difficult ayah",
-        variant: "destructive"
+        variant: "destructive",
+        title: "Failed to update",
+        description: "There was an error updating the difficult ayah.",
       });
+    } finally {
+      setIsLoading(false);
     }
-  });
-  
-  // Form submission handler
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    updateDifficultAyah.mutate(values);
-  }
-  
+  };
+
+  if (!difficultAyah) return null;
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px]">
+    <Dialog open={open} onOpenChange={handleOpenChange}>
+      <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>Edit Difficult Ayah</DialogTitle>
         </DialogHeader>
-        
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            <div className="grid grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="surah_number"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Surah Number</FormLabel>
-                    <FormControl>
-                      <Input type="number" min={1} max={114} {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="ayah_number"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Ayah Number</FormLabel>
-                    <FormControl>
-                      <Input type="number" min={1} {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
+        <div className="grid gap-4 py-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="surah">Surah</Label>
+              <Input
+                id="surah"
+                value={difficultAyah.surah_number}
+                disabled
               />
             </div>
-            
-            <div className="grid grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="juz_number"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Juz Number</FormLabel>
-                    <FormControl>
-                      <Input type="number" min={1} max={30} {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="revision_count"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Revision Count</FormLabel>
-                    <FormControl>
-                      <Input type="number" min={0} {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
+            <div>
+              <Label htmlFor="ayah">Ayah</Label>
+              <Input
+                id="ayah"
+                value={difficultAyah.ayah_number}
+                disabled
               />
             </div>
-            
-            <FormField
-              control={form.control}
-              name="notes"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Notes</FormLabel>
-                  <FormControl>
-                    <Textarea 
-                      placeholder="Add notes about why this ayah is difficult"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
+          </div>
+          <div>
+            <Label htmlFor="notes">Notes</Label>
+            <Textarea
+              id="notes"
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              className="resize-none"
+              rows={4}
             />
-            
-            <Button type="submit" disabled={submitting} className="w-full">
-              {submitting ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Saving...
-                </>
-              ) : (
-                "Update Ayah"
-              )}
-            </Button>
-          </form>
-        </Form>
+          </div>
+          <div className="flex items-center space-x-2">
+            <Switch
+              id="resolved"
+              checked={isResolved}
+              onCheckedChange={setIsResolved}
+            />
+            <Label htmlFor="resolved">Mark as resolved</Label>
+          </div>
+        </div>
+        <DialogFooter>
+          <Button
+            type="submit"
+            onClick={handleSave}
+            disabled={isLoading}
+          >
+            {isLoading ? "Saving..." : "Save changes"}
+          </Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );
