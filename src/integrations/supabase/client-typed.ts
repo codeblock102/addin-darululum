@@ -173,6 +173,7 @@ interface CustomDatabase extends Database {
       };
     };
     Enums: Database['public']['Enums'];
+    CompositeTypes: Record<string, never>;
   };
 }
 

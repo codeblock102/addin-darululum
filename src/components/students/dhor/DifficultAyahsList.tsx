@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useQueryClient, useMutation } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -73,6 +72,12 @@ export const DifficultAyahsList = ({ ayahs, studentId }: DifficultAyahsListProps
   };
   
   const activeAyahs = ayahs.filter(ayah => ayah.status === 'active');
+  
+  const refreshData = () => {
+    queryClient.invalidateQueries({
+      queryKey: ['student-difficult-ayahs', studentId]
+    });
+  };
   
   if (activeAyahs.length === 0) {
     return (
@@ -166,9 +171,10 @@ export const DifficultAyahsList = ({ ayahs, studentId }: DifficultAyahsListProps
       />
       
       <EditDifficultAyahDialog
-        ayah={selectedAyah}
+        difficultAyah={selectedAyah}
         open={editDialogOpen}
         onOpenChange={setEditDialogOpen}
+        onSuccess={refreshData}
       />
     </div>
   );

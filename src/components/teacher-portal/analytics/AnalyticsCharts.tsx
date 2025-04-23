@@ -20,6 +20,12 @@ export const AnalyticsCharts = ({
   contributorActivity,
   timeRange
 }: AnalyticsChartsProps) => {
+  // Transform data to match the chart component prop types
+  const formattedQualityData = qualityDistribution.map(item => ({
+    name: item.quality,
+    value: item.count
+  }));
+
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
       <Card className="col-span-2">
@@ -42,7 +48,7 @@ export const AnalyticsCharts = ({
           </CardDescription>
         </CardHeader>
         <CardContent className="h-80">
-          <ProgressDistributionChart data={qualityDistribution} />
+          <ProgressDistributionChart data={formattedQualityData} />
         </CardContent>
       </Card>
       
@@ -54,7 +60,7 @@ export const AnalyticsCharts = ({
           </CardDescription>
         </CardHeader>
         <CardContent className="h-80">
-          <TimeProgressChart data={timeProgress} timeRange={timeRange} />
+          <TimeProgressChart data={timeProgress} />
         </CardContent>
       </Card>
       

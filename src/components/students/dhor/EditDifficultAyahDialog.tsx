@@ -7,8 +7,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/components/ui/use-toast";
-import { DifficultAyah } from "../progress/types";
+import { useToast } from "@/hooks/use-toast";
+import { DifficultAyah } from "@/types/progress";
 
 interface EditDifficultAyahDialogProps {
   open: boolean;
