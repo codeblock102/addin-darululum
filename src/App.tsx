@@ -17,12 +17,13 @@ import NotFound from "./pages/NotFound";
 import Auth from "./pages/Auth";
 import TeacherPortal from "./pages/TeacherPortal";
 
-// Create a client for React Query
+// Create a client for React Query with better error handling
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       refetchOnWindowFocus: false,
-      retry: 1
+      retry: 1,
+      staleTime: 5 * 60 * 1000, // 5 minutes
     },
   },
 });
@@ -95,6 +96,22 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <TeacherPortal />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/account"
+              element={
+                <ProtectedRoute>
+                  <div>Account Page</div>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/preferences"
+              element={
+                <ProtectedRoute>
+                  <div>Preferences Page</div>
                 </ProtectedRoute>
               }
             />

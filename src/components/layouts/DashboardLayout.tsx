@@ -1,5 +1,8 @@
 
-import { ReactNode } from "react";
+import { ReactNode, useEffect, useState } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 import { 
   Sidebar, 
   SidebarContent, 
@@ -11,35 +14,23 @@ import {
   SidebarProvider, 
   SidebarTrigger 
 } from "@/components/ui/sidebar";
-import { useNavigate, useLocation } from "react-router-dom";
-import { useAuth } from "@/contexts/AuthContext";
-import { 
-  BookOpen, 
-  Home, 
-  Users, 
-  School, 
-  CalendarDays, 
-  LineChart,
-  CalendarCheck,
-  Settings,
-  GraduationCap,
-  LogOut
-} from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { Bell, BookOpen, Calendar, ChevronDown, FileText, Home, LayoutDashboard, LineChart, LogOut, School, Settings, Users } from "lucide-react";
+import { toast } from "@/components/ui/use-toast";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 interface DashboardLayoutProps {
   children: ReactNode;
 }
 
 export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
-  const location = useLocation();
   const navigate = useNavigate();
+  const location = useLocation();
   const { session, signOut } = useAuth();
   const user = session?.user;
   const [isTeacher, setIsTeacher] = useState(false);
+  const [unreadNotifications, setUnreadNotifications] = useState(0);
 
   // Check if the current user is a teacher
   useEffect(() => {
@@ -76,34 +67,67 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
 
   // Define navigation items
   const adminNavItems = [
-    { href: "/", label: "Dashboard", icon: Home },
-    { href: "/students", label: "Students", icon: Users },
-    { href: "/teachers", label: "Teachers", icon: School },
-    { href: "/schedule", label: "Schedule", icon: CalendarDays },
-    { href: "/progress", label: "Progress", icon: LineChart },
-    { href: "/attendance", label: "Attendance", icon: CalendarCheck },
-    { href: "/teacher-portal", label: "Teacher Portal", icon: GraduationCap },
-    { href: "/settings", label: "Settings", icon: Settings },
+    { href: "/", label: "Dashboard", icon: Home, description: "Overview of all activities" },
+    { href: "/students", label: "Students", icon: Users, description: "Manage student profiles" },
+    { href: "/teachers", label: "Teachers", icon: School, description: "Manage teaching staff" },
+    { href: "/schedule", label: "Schedule", icon: Calendar, description: "View and manage classes" },
+    { href: "/progress", label: "Progress", icon: LineChart, description: "Student progress tracker" },
+    { href: "/attendance", label: "Attendance", icon: FileText, description: "Track attendance records" },
+    { href: "/teacher-portal", label: "Teacher Portal", icon: LayoutDashboard, description: "Access teacher dashboard" },
+    { href: "/settings", label: "Settings", icon: Settings, description: "System preferences" },
   ];
 
   const teacherNavItems = [
-    { href: "/teacher-portal", label: "Dashboard", icon: Home },
-    { href: "/teacher-portal?tab=students", label: "My Students", icon: Users },
-    { href: "/teacher-portal?tab=progress", label: "Record Progress", icon: LineChart },
-    { href: "/teacher-portal?tab=grading", label: "Grading", icon: School },
-    { href: "/teacher-portal?tab=analytics", label: "Analytics", icon: LineChart },
-    { href: "/teacher-portal?tab=messages", label: "Messages", icon: BookOpen },
-    { href: "/teacher-portal?tab=profile", label: "My Profile", icon: Settings },
+    { href: "/teacher-portal", exact: true, label: "Dashboard", icon: Home, description: "Teacher overview" },
+    { href: "/teacher-portal?tab=students", label: "My Students", icon: Users, description: "View assigned students" },
+    { href: "/teacher-portal?tab=progress", label: "Record Progress", icon: LineChart, description: "Log student progress" },
+    { href: "/teacher-portal?tab=grading", label: "Grading", icon: FileText, description: "Evaluate performances" },
+    { href: "/teacher-portal?tab=analytics", label: "Analytics", icon: LineChart, description: "Performance insights" },
+    { href: "/teacher-portal?tab=messages", label: "Messages", icon: BookOpen, description: "Communication hub" },
+    { href: "/teacher-portal?tab=profile", label: "My Profile", icon: Settings, description: "Account settings" },
   ];
 
   const navItems = isTeacher ? teacherNavItems : adminNavItems;
+
+  // Check if a nav item is active
+  const isNavItemActive = (item: typeof navItems[0]) => {
+    if (item.exact) {
+      return location.pathname === item.href && !location.search;
+    }
+    
+    if (item.href.includes('?tab=')) {
+      const [path, search] = item.href.split('?');
+      return location.pathname === path && location.search.includes(search);
+    }
+    
+    return location.pathname === item.href;
+  };
+
+  // Handle sign out with confirmation
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+      toast({
+        title: "Signed out successfully",
+        description: "You have been logged out of your account"
+      });
+      navigate("/auth");
+    } catch (error) {
+      console.error("Error signing out:", error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Could not sign out. Please try again."
+      });
+    }
+  };
 
   return (
     <SidebarProvider defaultOpen={true}>
       <div className="flex min-h-screen w-full bg-background">
         <Sidebar>
           <SidebarHeader>
-            <div className="flex items-center gap-2 px-2 py-3">
+            <div className="flex items-center gap-2 px-4 py-3">
               <BookOpen className="h-6 w-6 text-primary" />
               <span className="font-semibold text-lg">Quran Academy</span>
             </div>
@@ -111,54 +135,57 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
           
           <SidebarContent>
             <SidebarMenu>
-              {navItems.map((item, index) => {
-                // For teacher items with tabs, check if the current URL includes the tab
-                const isActive = item.href.includes('?tab=')
-                  ? location.pathname === '/teacher-portal' && location.search.includes(item.href.split('?')[1])
-                  : location.pathname === item.href;
-                  
-                const Icon = item.icon;
-                
-                return (
-                  <SidebarMenuItem key={index}>
-                    <SidebarMenuButton 
-                      isActive={isActive}
-                      onClick={() => navigate(item.href)}
-                      tooltip={item.label}
-                    >
-                      <Icon className="h-5 w-5" />
-                      <span>{item.label}</span>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                );
-              })}
+              {navItems.map((item, index) => (
+                <SidebarMenuItem key={index}>
+                  <SidebarMenuButton 
+                    isActive={isNavItemActive(item)}
+                    onClick={() => navigate(item.href)}
+                    tooltip={item.description}
+                  >
+                    <item.icon className="h-5 w-5" />
+                    <span>{item.label}</span>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
             </SidebarMenu>
           </SidebarContent>
           
           <SidebarFooter>
             <div className="p-2">
               <div className="flex items-center gap-3 rounded-lg px-3 py-2">
-                <Avatar className="h-9 w-9">
-                  <AvatarImage alt="User avatar" />
-                  <AvatarFallback>{getInitials(user?.email)}</AvatarFallback>
-                </Avatar>
-                <div>
-                  <div className="text-sm font-medium">
-                    {user?.email?.split("@")[0] || "User"}
-                  </div>
-                  <div className="text-xs text-muted-foreground">
-                    {user?.email || "user@example.com"}
-                  </div>
-                </div>
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  className="ml-auto" 
-                  onClick={() => signOut()}
-                >
-                  <LogOut className="h-5 w-5" />
-                  <span className="sr-only">Log out</span>
-                </Button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" className="p-0 h-auto hover:bg-transparent">
+                      <div className="flex items-center gap-2">
+                        <Avatar className="h-9 w-9">
+                          <AvatarImage alt="User avatar" />
+                          <AvatarFallback>{getInitials(user?.email)}</AvatarFallback>
+                        </Avatar>
+                        <div className="text-left">
+                          <div className="text-sm font-medium">
+                            {user?.email?.split("@")[0] || "User"}
+                          </div>
+                          <div className="text-xs text-muted-foreground">
+                            {isTeacher ? "Teacher" : "Administrator"}
+                          </div>
+                        </div>
+                        <ChevronDown className="h-4 w-4 opacity-50" />
+                      </div>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-56">
+                    <DropdownMenuItem onClick={() => navigate("/account")}>
+                      My Account
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => navigate("/preferences")}>
+                      Preferences
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={handleSignOut}>
+                      <LogOut className="h-4 w-4 mr-2" />
+                      <span>Log out</span>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
             </div>
           </SidebarFooter>
@@ -166,7 +193,19 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
         
         <main className="flex-1 p-6 overflow-auto animate-fadeIn">
           <div className="max-w-7xl mx-auto">
-            <SidebarTrigger className="mb-4" />
+            <div className="flex justify-between items-center mb-6">
+              <SidebarTrigger className="inline-block" />
+              <div className="flex items-center gap-4">
+                <Button variant="outline" size="icon" className="relative">
+                  <Bell className="h-5 w-5" />
+                  {unreadNotifications > 0 && (
+                    <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-destructive text-xs text-white flex items-center justify-center">
+                      {unreadNotifications}
+                    </span>
+                  )}
+                </Button>
+              </div>
+            </div>
             {children}
           </div>
         </main>
