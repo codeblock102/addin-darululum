@@ -107,18 +107,15 @@ const getStudentProgress = async (teacherId: string) => {
         console.error(`Error fetching progress for student ${student.student_name}:`, error);
         return {
           name: student.student_name,
-          progress: 0,
-          lastQuality: undefined
+          verses: 0 // Changed from 'progress' to 'verses'
         };
       }
       
       const totalVerses = data?.reduce((sum, record) => sum + (record.verses_memorized || 0), 0) || 0;
-      const lastQuality = data && data.length > 0 ? data[0].memorization_quality : undefined;
       
       return {
         name: student.student_name,
-        progress: totalVerses,
-        lastQuality
+        verses: totalVerses // Changed from 'progress' to 'verses'
       };
     });
     
