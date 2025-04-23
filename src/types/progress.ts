@@ -26,6 +26,10 @@ export interface Progress {
   is_new_lesson?: boolean;
   lesson_type?: 'hifz' | 'nazirah' | 'qaida';
   quality_rating?: 'excellent' | 'good' | 'average' | 'needsWork' | 'horrible';
+  page_start?: number;
+  page_end?: number;
+  mistake_count?: number;
+  auto_rating?: string;
 }
 
 export interface JuzMastery {
@@ -76,4 +80,28 @@ export interface RevisionScheduleItem {
   priority: 'high' | 'medium' | 'low';
   status: 'pending' | 'completed' | 'overdue';
   created_at: string;
+}
+
+export interface StudentAssignment {
+  id: string;
+  student_id: string;
+  assignment_date: string;
+  surah_number: number;
+  start_ayat: number;
+  end_ayat: number;
+  page_start?: number;
+  page_end?: number;
+  assignment_type: 'sabaq' | 'sabaq_para' | 'dhor' | 'nazirah' | 'qaida';
+  status: 'pending' | 'completed' | 'missed';
+  teacher_id?: string;
+  created_at?: string;
+}
+
+export interface StudentStatus {
+  student_id: string;
+  student_name: string;
+  learning_type: 'hifz' | 'nazirah' | 'qaida';
+  pending_assignments: number;
+  missed_assignments: number;
+  pending_details?: string;
 }

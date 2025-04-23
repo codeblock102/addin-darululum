@@ -10,3 +10,7 @@ service_role_key = "your-service-role-key-here"
 dhor_book_utils = {
   verify_jwt = true
 }
+
+[functions.student_status]
+verify_jwt = true
+
