@@ -7,6 +7,12 @@ export interface ProgressFormData {
   verses_memorized: number;
   memorization_quality: 'excellent' | 'good' | 'average' | 'needsWork' | 'horrible';
   notes: string;
+  page_start?: number;
+  page_end?: number;
+  mistake_count?: number;
+  is_new_lesson?: boolean;
+  lesson_type?: 'hifz' | 'nazirah' | 'qaida';
+  quality_rating?: 'excellent' | 'good' | 'average' | 'needsWork' | 'horrible';
 }
 
 export interface ProgressEntry extends ProgressFormData {
@@ -16,6 +22,7 @@ export interface ProgressEntry extends ProgressFormData {
   last_revision_date?: string;
   contributor_id?: string;
   contributor_name?: string;
+  auto_rating?: string;
 }
 
 export interface NewProgressEntryProps {
@@ -53,4 +60,29 @@ export interface RevisionFormData {
   memorization_quality: 'excellent' | 'good' | 'average' | 'needsWork' | 'horrible';
   teacher_notes?: string;
   status: 'completed' | 'pending' | 'needs_improvement';
+}
+
+// Student Assignment Types
+export interface StudentAssignment {
+  id: string;
+  student_id: string;
+  assignment_date: string;
+  surah_number: number;
+  start_ayat: number;
+  end_ayat: number;
+  page_start?: number;
+  page_end?: number;
+  assignment_type: 'sabaq' | 'sabaq_para' | 'dhor' | 'nazirah' | 'qaida';
+  status: 'pending' | 'completed' | 'missed';
+  teacher_id?: string;
+  created_at?: string;
+}
+
+export interface StudentStatusSummary {
+  student_id: string;
+  student_name: string;
+  learning_type: 'hifz' | 'nazirah' | 'qaida';
+  pending_assignments: number;
+  missed_assignments: number;
+  pending_details?: string;
 }
