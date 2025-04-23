@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -19,7 +18,6 @@ export const DhorBook = ({ studentId, studentName }: DhorBookProps) => {
   const { toast } = useToast();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-  // Fetch student revisions
   const { data: revisions, isLoading: revisionsLoading } = useQuery({
     queryKey: ['student-revisions', studentId],
     queryFn: async () => {
@@ -39,7 +37,6 @@ export const DhorBook = ({ studentId, studentName }: DhorBookProps) => {
       
       if (error) throw error;
       
-      // Add empty teachers object for type compatibility
       const revisionsWithTeachers = data.map(revision => ({
         ...revision,
         teachers: { name: "Unknown" }
@@ -49,7 +46,6 @@ export const DhorBook = ({ studentId, studentName }: DhorBookProps) => {
     },
   });
 
-  // Fetch student mastery levels for all juz
   const { data: masteryLevels, isLoading: masteryLoading } = useQuery({
     queryKey: ['student-mastery', studentId],
     queryFn: async () => {
@@ -63,7 +59,6 @@ export const DhorBook = ({ studentId, studentName }: DhorBookProps) => {
     },
   });
 
-  // Mock difficult ayahs until we have a real API endpoint
   const { data: difficultAyahs, isLoading: ayahsLoading } = useQuery({
     queryKey: ['student-difficult-ayahs', studentId],
     queryFn: async () => {
@@ -74,7 +69,6 @@ export const DhorBook = ({ studentId, studentName }: DhorBookProps) => {
           
         if (error) {
           console.error("Using fallback for difficult ayahs:", error);
-          // Fallback to an empty array if the RPC call fails
           return [] as DifficultAyah[];
         }
         
@@ -86,7 +80,6 @@ export const DhorBook = ({ studentId, studentName }: DhorBookProps) => {
     },
   });
 
-  // Mock revision schedule
   const { data: schedule, isLoading: scheduleLoading } = useQuery({
     queryKey: ['student-revision-schedule', studentId],
     queryFn: async () => {
@@ -97,7 +90,6 @@ export const DhorBook = ({ studentId, studentName }: DhorBookProps) => {
           
         if (error) {
           console.error("Using fallback for revision schedule:", error);
-          // Fallback to an empty array if the RPC call fails
           return [] as RevisionScheduleItem[];
         }
         
@@ -108,8 +100,7 @@ export const DhorBook = ({ studentId, studentName }: DhorBookProps) => {
       }
     },
   });
-  
-  // Calculate revision stats
+
   const completedRevisions = revisions?.filter(
     rev => rev.memorization_quality === 'excellent' || rev.memorization_quality === 'good'
   ).length || 0;
@@ -124,7 +115,12 @@ export const DhorBook = ({ studentId, studentName }: DhorBookProps) => {
     ? Math.round((completedRevisions / totalRevisions) * 100) 
     : 0;
 
-  // Handle dialog
+  const fetchRevisions = () => {
+    // This will trigger a refetch of the revisions data
+    // We can use the invalidateQueries method from QueryClient
+    // which is accessed through the useQueryClient hook if needed
+  };
+
   const handleOpenDialog = () => {
     setIsDialogOpen(true);
   };
@@ -269,6 +265,15 @@ export const DhorBook = ({ studentId, studentName }: DhorBookProps) => {
         onOpenChange={setIsDialogOpen}
         studentId={studentId}
         studentName={studentName}
+        onSuccess={() => {
+          const queryClient = queryClient;
+          queryClient.invalidateQueries({
+            queryKey: ['student-revisions', studentId]
+          });
+          queryClient.invalidateQueries({
+            queryKey: ['student-mastery', studentId]
+          });
+        }}
       />
     </div>
   );

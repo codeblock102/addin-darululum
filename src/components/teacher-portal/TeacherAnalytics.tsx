@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -9,6 +8,7 @@ import {
   TimeProgressChart, 
   ContributorActivityChart 
 } from "./analytics";
+import { AnalyticsCharts } from "./analytics/AnalyticsCharts";
 import { useAnalyticsData } from "@/hooks/useAnalyticsData";
 import { Download } from "lucide-react";
 
@@ -50,31 +50,15 @@ export const TeacherAnalytics = ({ teacherId }: TeacherAnalyticsProps) => {
         </TabsList>
         
         <TabsContent value="overview" className="space-y-4">
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-2">
-            <Card>
-              <CardHeader>
-                <CardTitle>Student Progress</CardTitle>
-                <CardDescription>
-                  Average verses memorized per student
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="h-80">
-                <StudentProgressChart data={studentProgressData} />
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardHeader>
-                <CardTitle>Quality Distribution</CardTitle>
-                <CardDescription>
-                  Distribution of memorization quality
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="h-80">
-                <ProgressDistributionChart data={data?.qualityDistribution || []} />
-              </CardContent>
-            </Card>
-          </div>
+          {data && (
+            <AnalyticsCharts
+              studentProgress={data.studentProgress || []}
+              qualityDistribution={data.qualityDistribution || []}
+              timeProgress={data.timeProgress || []}
+              contributorActivity={data.contributorActivity || []}
+              timeRange={timeRange}
+            />
+          )}
         </TabsContent>
         
         <TabsContent value="students" className="space-y-4">
