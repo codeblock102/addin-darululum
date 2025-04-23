@@ -1,6 +1,6 @@
 
 import { ReactNode, useEffect, useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { 
@@ -8,39 +8,25 @@ import {
   SidebarContent, 
   SidebarFooter, 
   SidebarHeader, 
-  SidebarMenu, 
-  SidebarMenuButton, 
-  SidebarMenuItem, 
   SidebarProvider, 
   SidebarTrigger 
 } from "@/components/ui/sidebar";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Bell, BookOpen, Calendar, ChevronDown, FileText, Home, LayoutDashboard, LineChart, LogOut, School, Settings, Users } from "lucide-react";
-import { toast } from "@/components/ui/use-toast";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Bell, BookOpen } from "lucide-react";
+import { NavigationMenu } from "@/components/shared/NavigationMenu";
+import { UserAvatar } from "@/components/shared/UserAvatar";
+import { adminNavItems, teacherNavItems } from "@/config/navigation";
 
 interface DashboardLayoutProps {
   children: ReactNode;
 }
 
-interface NavItem {
-  href: string;
-  label: string;
-  icon: React.ForwardRefExoticComponent<React.SVGProps<SVGSVGElement> & { title?: string, titleId?: string }>;
-  description: string;
-  exact?: boolean;
-}
-
 export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
-  const navigate = useNavigate();
-  const location = useLocation();
-  const { session, signOut } = useAuth();
+  const { session } = useAuth();
   const user = session?.user;
   const [isTeacher, setIsTeacher] = useState(false);
   const [unreadNotifications, setUnreadNotifications] = useState(0);
 
-  // Check if the current user is a teacher
   useEffect(() => {
     const checkTeacherStatus = async () => {
       if (!user?.email) return;
@@ -63,72 +49,7 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
     checkTeacherStatus();
   }, [user]);
 
-  // Extract user's initials for avatar
-  const getInitials = (name: string | undefined) => {
-    if (!name) return "U";
-    const parts = name.split("@")[0].split(".");
-    if (parts.length > 1) {
-      return (parts[0][0] + parts[1][0]).toUpperCase();
-    }
-    return name.substring(0, 2).toUpperCase();
-  };
-
-  // Define navigation items
-  const adminNavItems: NavItem[] = [
-    { href: "/", label: "Dashboard", icon: Home, description: "Overview of all activities" },
-    { href: "/students", label: "Students", icon: Users, description: "Manage student profiles" },
-    { href: "/teachers", label: "Teachers", icon: School, description: "Manage teaching staff" },
-    { href: "/schedule", label: "Schedule", icon: Calendar, description: "View and manage classes" },
-    { href: "/progress", label: "Progress", icon: LineChart, description: "Student progress tracker" },
-    { href: "/attendance", label: "Attendance", icon: FileText, description: "Track attendance records" },
-    { href: "/teacher-portal", label: "Teacher Portal", icon: LayoutDashboard, description: "Access teacher dashboard" },
-    { href: "/settings", label: "Settings", icon: Settings, description: "System preferences" },
-  ];
-
-  const teacherNavItems: NavItem[] = [
-    { href: "/teacher-portal", exact: true, label: "Dashboard", icon: Home, description: "Teacher overview" },
-    { href: "/teacher-portal?tab=students", label: "My Students", icon: Users, description: "View assigned students" },
-    { href: "/teacher-portal?tab=progress", label: "Record Progress", icon: LineChart, description: "Log student progress" },
-    { href: "/teacher-portal?tab=grading", label: "Grading", icon: FileText, description: "Evaluate performances" },
-    { href: "/teacher-portal?tab=analytics", label: "Analytics", icon: LineChart, description: "Performance insights" },
-    { href: "/teacher-portal?tab=messages", label: "Messages", icon: BookOpen, description: "Communication hub" },
-    { href: "/teacher-portal?tab=profile", label: "My Profile", icon: Settings, description: "Account settings" },
-  ];
-
   const navItems = isTeacher ? teacherNavItems : adminNavItems;
-
-  // Check if a nav item is active
-  const isNavItemActive = (item: NavItem) => {
-    if (item.exact) {
-      return location.pathname === item.href && !location.search;
-    }
-    
-    if (item.href.includes('?tab=')) {
-      const [path, search] = item.href.split('?');
-      return location.pathname === path && location.search.includes(search);
-    }
-    
-    return location.pathname === item.href;
-  };
-
-  // Handle sign out with confirmation
-  const handleSignOut = async () => {
-    try {
-      await signOut();
-      toast({
-        title: "Signed out successfully",
-        description: "You have been logged out of your account"
-      });
-      navigate("/auth");
-    } catch (error) {
-      console.error("Error signing out:", error);
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Could not sign out. Please try again."
-      });
-    }
-  };
 
   return (
     <SidebarProvider defaultOpen={true}>
@@ -144,62 +65,11 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
           </SidebarHeader>
           
           <SidebarContent>
-            <SidebarMenu>
-              {navItems.map((item, index) => (
-                <SidebarMenuItem key={index}>
-                  <SidebarMenuButton 
-                    isActive={isNavItemActive(item)}
-                    onClick={() => navigate(item.href)}
-                    className="transition-all duration-200 hover:translate-x-1"
-                  >
-                    <item.icon className="h-5 w-5" />
-                    <span className="font-medium">{item.label}</span>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
+            <NavigationMenu items={navItems} />
           </SidebarContent>
           
           <SidebarFooter>
-            <div className="p-2">
-              <div className="flex items-center gap-3 rounded-lg p-3 bg-accent/50 backdrop-blur-sm transition-all hover:bg-accent">
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="p-0 h-auto hover:bg-transparent">
-                      <div className="flex items-center gap-2">
-                        <Avatar className="h-9 w-9 ring-2 ring-border transition-all">
-                          <AvatarImage alt="User avatar" />
-                          <AvatarFallback className="bg-primary/10 text-primary">
-                            {getInitials(user?.email)}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div className="text-left">
-                          <div className="text-sm font-medium">
-                            {user?.email?.split("@")[0] || "User"}
-                          </div>
-                          <div className="text-xs text-muted-foreground">
-                            {isTeacher ? "Teacher" : "Administrator"}
-                          </div>
-                        </div>
-                        <ChevronDown className="h-4 w-4 opacity-50" />
-                      </div>
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-56">
-                    <DropdownMenuItem onClick={() => navigate("/account")}>
-                      My Account
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => navigate("/preferences")}>
-                      Preferences
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={handleSignOut} className="text-destructive">
-                      <LogOut className="h-4 w-4 mr-2" />
-                      <span>Log out</span>
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
-            </div>
+            <UserAvatar isTeacher={isTeacher} />
           </SidebarFooter>
         </Sidebar>
         
