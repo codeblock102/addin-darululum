@@ -24,6 +24,14 @@ interface DashboardLayoutProps {
   children: ReactNode;
 }
 
+interface NavItem {
+  href: string;
+  label: string;
+  icon: React.ForwardRefExoticComponent<React.SVGProps<SVGSVGElement> & { title?: string, titleId?: string }>;
+  description: string;
+  exact?: boolean;
+}
+
 export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -66,7 +74,7 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   };
 
   // Define navigation items
-  const adminNavItems = [
+  const adminNavItems: NavItem[] = [
     { href: "/", label: "Dashboard", icon: Home, description: "Overview of all activities" },
     { href: "/students", label: "Students", icon: Users, description: "Manage student profiles" },
     { href: "/teachers", label: "Teachers", icon: School, description: "Manage teaching staff" },
@@ -77,7 +85,7 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
     { href: "/settings", label: "Settings", icon: Settings, description: "System preferences" },
   ];
 
-  const teacherNavItems = [
+  const teacherNavItems: NavItem[] = [
     { href: "/teacher-portal", exact: true, label: "Dashboard", icon: Home, description: "Teacher overview" },
     { href: "/teacher-portal?tab=students", label: "My Students", icon: Users, description: "View assigned students" },
     { href: "/teacher-portal?tab=progress", label: "Record Progress", icon: LineChart, description: "Log student progress" },
@@ -90,7 +98,7 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   const navItems = isTeacher ? teacherNavItems : adminNavItems;
 
   // Check if a nav item is active
-  const isNavItemActive = (item: typeof navItems[0]) => {
+  const isNavItemActive = (item: NavItem) => {
     if (item.exact) {
       return location.pathname === item.href && !location.search;
     }
