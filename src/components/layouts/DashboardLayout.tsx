@@ -132,12 +132,14 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
 
   return (
     <SidebarProvider defaultOpen={true}>
-      <div className="flex min-h-screen w-full bg-background">
-        <Sidebar>
+      <div className="flex min-h-screen w-full bg-gradient-to-br from-background to-secondary/20">
+        <Sidebar className="border-r border-border/30 backdrop-blur-sm bg-background/80">
           <SidebarHeader>
             <div className="flex items-center gap-2 px-4 py-3">
               <BookOpen className="h-6 w-6 text-primary" />
-              <span className="font-semibold text-lg">Quran Academy</span>
+              <span className="font-semibold text-lg bg-gradient-to-r from-primary to-primary/80 text-transparent bg-clip-text">
+                Quran Academy
+              </span>
             </div>
           </SidebarHeader>
           
@@ -148,10 +150,10 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
                   <SidebarMenuButton 
                     isActive={isNavItemActive(item)}
                     onClick={() => navigate(item.href)}
-                    tooltip={item.description}
+                    className="transition-all duration-200 hover:translate-x-1"
                   >
                     <item.icon className="h-5 w-5" />
-                    <span>{item.label}</span>
+                    <span className="font-medium">{item.label}</span>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
@@ -160,14 +162,16 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
           
           <SidebarFooter>
             <div className="p-2">
-              <div className="flex items-center gap-3 rounded-lg px-3 py-2">
+              <div className="flex items-center gap-3 rounded-lg p-3 bg-accent/50 backdrop-blur-sm transition-all hover:bg-accent">
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" className="p-0 h-auto hover:bg-transparent">
                       <div className="flex items-center gap-2">
-                        <Avatar className="h-9 w-9">
+                        <Avatar className="h-9 w-9 ring-2 ring-border transition-all">
                           <AvatarImage alt="User avatar" />
-                          <AvatarFallback>{getInitials(user?.email)}</AvatarFallback>
+                          <AvatarFallback className="bg-primary/10 text-primary">
+                            {getInitials(user?.email)}
+                          </AvatarFallback>
                         </Avatar>
                         <div className="text-left">
                           <div className="text-sm font-medium">
@@ -188,7 +192,7 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
                     <DropdownMenuItem onClick={() => navigate("/preferences")}>
                       Preferences
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={handleSignOut}>
+                    <DropdownMenuItem onClick={handleSignOut} className="text-destructive">
                       <LogOut className="h-4 w-4 mr-2" />
                       <span>Log out</span>
                     </DropdownMenuItem>
@@ -200,21 +204,27 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
         </Sidebar>
         
         <main className="flex-1 p-6 overflow-auto animate-fadeIn">
-          <div className="max-w-7xl mx-auto">
-            <div className="flex justify-between items-center mb-6">
-              <SidebarTrigger className="inline-block" />
+          <div className="max-w-7xl mx-auto space-y-6">
+            <div className="flex justify-between items-center">
+              <SidebarTrigger className="inline-block hover:bg-accent/50 transition-colors" />
               <div className="flex items-center gap-4">
-                <Button variant="outline" size="icon" className="relative">
+                <Button 
+                  variant="outline" 
+                  size="icon" 
+                  className="relative hover:scale-105 transition-transform"
+                >
                   <Bell className="h-5 w-5" />
                   {unreadNotifications > 0 && (
-                    <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-destructive text-xs text-white flex items-center justify-center">
+                    <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-destructive text-xs text-white flex items-center justify-center animate-in fade-in">
                       {unreadNotifications}
                     </span>
                   )}
                 </Button>
               </div>
             </div>
-            {children}
+            <div className="animate-slideIn">
+              {children}
+            </div>
           </div>
         </main>
       </div>
