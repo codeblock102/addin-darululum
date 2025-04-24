@@ -33,11 +33,27 @@ export const StudentStatusList: React.FC<StudentStatusListProps> = ({ teacherId 
     queryKey: ['student-status', teacherId],
     queryFn: async () => {
       try {
+        // Use a simple query instead of RPC
         const { data, error } = await supabase
-          .rpc('get_student_status');
+          .from('students_teachers')
+          .select(`
+            id,
+            student_name
+          `)
+          .eq('teacher_id', teacherId)
+          .eq('active', true);
           
         if (error) throw error;
-        return (data || []) as StudentStatus[];
+        
+        // Map the data to match the StudentStatus interface
+        return (data || []).map(student => ({
+          student_id: student.id,
+          student_name: student.student_name,
+          learning_type: 'hifz', // Default value
+          pending_assignments: 0,
+          missed_assignments: 0,
+          pending_details: ''
+        }));
       } catch (error) {
         console.error("Error fetching student status:", error);
         return [] as StudentStatus[];
