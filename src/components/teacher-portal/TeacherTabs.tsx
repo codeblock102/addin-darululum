@@ -1,4 +1,3 @@
-
 import { useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -15,56 +14,67 @@ import { motion } from "framer-motion";
 import { useTeacherSummary } from "@/hooks/useTeacherSummary";
 import { StudentStatusList } from "./StudentStatusList";
 import { DashboardSummary } from "./DashboardSummary";
-
 interface TeacherTabsProps {
   teacher: Teacher;
   activeTab: string;
   onTabChange: (value: string) => void;
 }
-
-export const TeacherTabs = ({ teacher, activeTab, onTabChange }: TeacherTabsProps) => {
+export const TeacherTabs = ({
+  teacher,
+  activeTab,
+  onTabChange
+}: TeacherTabsProps) => {
   const location = useLocation();
   const navigate = useNavigate();
-  
+
   // Handle tab changes from URL query parameters
   useEffect(() => {
     const searchParams = new URLSearchParams(location.search);
     const tabParam = searchParams.get('tab');
-    
     if (tabParam && ['students', 'progress', 'grading', 'analytics', 'messages', 'profile'].includes(tabParam)) {
       onTabChange(tabParam);
     } else if (location.search && !tabParam) {
       // Clear search params if they don't include a valid tab
-      navigate('/teacher-portal', { replace: true });
+      navigate('/teacher-portal', {
+        replace: true
+      });
     }
   }, [location.search, navigate, onTabChange]);
-  
+
   // Update URL when tab changes
   const handleTabChange = (value: string) => {
     onTabChange(value);
-    
     if (value === 'overview') {
-      navigate('/teacher-portal', { replace: true });
+      navigate('/teacher-portal', {
+        replace: true
+      });
     } else {
-      navigate(`/teacher-portal?tab=${value}`, { replace: true });
+      navigate(`/teacher-portal?tab=${value}`, {
+        replace: true
+      });
     }
   };
-  
   const tabVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: { 
-      opacity: 1, 
+    hidden: {
+      opacity: 0,
+      y: 20
+    },
+    visible: {
+      opacity: 1,
       y: 0,
-      transition: { duration: 0.4, ease: "easeOut" }
+      transition: {
+        duration: 0.4,
+        ease: "easeOut"
+      }
     }
   };
-  
-  const { data: summaryData } = useTeacherSummary(teacher.id);
+  const {
+    data: summaryData
+  } = useTeacherSummary(teacher.id);
 
   // If activeTab is overview, we display the dashboard content directly
   if (activeTab === "overview") {
-    return (
-      <div className="space-y-6">
+    return <div className="space-y-6">
         <div className="animate-slideIn space-y-6">
           <DashboardSummary summaryData={summaryData} />
           
@@ -112,22 +122,13 @@ export const TeacherTabs = ({ teacher, activeTab, onTabChange }: TeacherTabsProp
             </Card>
           </div>
         </div>
-      </div>
-    );
+      </div>;
   }
 
   // For all other tabs, we'll use the Tabs component properly
-  return (
-    <div className="space-y-6">
+  return <div className="space-y-6">
       <Tabs value={activeTab} onValueChange={handleTabChange}>
-        <TabsList className="w-full border-b pb-0">
-          <TabsTrigger value="students">Students</TabsTrigger>
-          <TabsTrigger value="progress">Progress</TabsTrigger>
-          <TabsTrigger value="grading">Grading</TabsTrigger>
-          <TabsTrigger value="analytics">Analytics</TabsTrigger>
-          <TabsTrigger value="messages">Messages</TabsTrigger>
-          <TabsTrigger value="profile">Profile</TabsTrigger>
-        </TabsList>
+        
         
         <TabsContent value="students" className="mt-6">
           <MyStudents teacherId={teacher.id} />
@@ -153,6 +154,5 @@ export const TeacherTabs = ({ teacher, activeTab, onTabChange }: TeacherTabsProp
           <TeacherProfile teacher={teacher} />
         </TabsContent>
       </Tabs>
-    </div>
-  );
+    </div>;
 };
