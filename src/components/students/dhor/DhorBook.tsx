@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Button } from "@/components/ui/button";
-import { Loader2, Plus } from "lucide-react";
-import { NewRevisionDialog } from "./NewRevisionDialog";
+import { Loader2 } from "lucide-react";
+import { MasteryLevelGrid } from "./MasteryLevelGrid";
+import { RevisionSchedule } from "./RevisionSchedule";
 import { RevisionStats } from "./RevisionStats";
 import { RevisionTabs } from "./RevisionTabs";
 import { DhorBookProps } from "../progress/types";
@@ -13,8 +13,12 @@ export const DhorBook = ({ studentId, studentName }: DhorBookProps) => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const queryClient = useQueryClient();
 
-  const { data: revisions, isLoading: revisionsLoading } = useQuery({
-    queryKey: ['student-revisions', studentId],
+  // Fetch juz revisions
+  const {
+    data: revisionsArray = [],
+    isLoading: revisionsLoading
+  } = useQuery({
+    queryKey: ['student-juz-revisions', studentId],
     queryFn: async () => {
       try {
         const { data, error } = await supabase
@@ -25,76 +29,77 @@ export const DhorBook = ({ studentId, studentName }: DhorBookProps) => {
             juz_revised,
             revision_date,
             teacher_notes,
-            memorization_quality,
-            quarters_revised
+            memorization_quality
           `)
           .eq('student_id', studentId)
           .order('revision_date', { ascending: false });
         
         if (error) throw error;
-        return (data || []) as JuzRevision[];
+        return data as JuzRevision[];
       } catch (error) {
         console.error("Error fetching revisions:", error);
         return [];
       }
-    },
+    }
   });
 
-  const { data: masteryLevels, isLoading: masteryLoading } = useQuery({
-    queryKey: ['student-mastery', studentId],
+  const { data: masteryData } = useQuery({
+    queryKey: ['student-juz-mastery', studentId],
     queryFn: async () => {
-      try {
-        const { data, error } = await supabase
-          .from('juz_mastery')
-          .select('*')
-          .eq('student_id', studentId);
-        
-        if (error) throw error;
-        return data || [];
-      } catch (error) {
-        console.error("Error fetching mastery levels:", error);
+      const { data, error } = await supabase
+        .from('juz_mastery')
+        .select('*')
+        .eq('student_id', studentId)
+        .order('juz_number', { ascending: true });
+
+      if (error) {
+        console.error("Error fetching mastery:", error);
         return [];
       }
-    },
+      return data;
+    }
   });
 
-  const { data: difficultAyahs, isLoading: ayahsLoading } = useQuery({
+  const { data: difficultAyahs } = useQuery({
     queryKey: ['student-difficult-ayahs', studentId],
     queryFn: async () => {
-      try {
-        const { data, error } = await supabase
-          .from('difficult_ayahs')
-          .select('*')
-          .eq('student_id', studentId)
-          .eq('status', 'active');
-        
-        if (error) throw error;
-        return data || [];
-      } catch (error) {
+      const { data, error } = await supabase
+        .from('difficult_ayahs')
+        .select('*')
+        .eq('student_id', studentId)
+        .order('surah_number', { ascending: true });
+
+      if (error) {
         console.error("Error fetching difficult ayahs:", error);
         return [];
       }
-    },
+      return data;
+    }
   });
 
-  const { data: schedule, isLoading: scheduleLoading } = useQuery({
+  const { data: revisionSchedule } = useQuery({
     queryKey: ['student-revision-schedule', studentId],
     queryFn: async () => {
-      try {
-        const { data, error } = await supabase
-          .from('revision_schedule')
-          .select('*')
-          .eq('student_id', studentId)
-          .neq('status', 'completed');
-        
-        if (error) throw error;
-        return data || [];
-      } catch (error) {
+      const { data, error } = await supabase
+        .from('revision_schedule')
+        .select('*')
+        .eq('student_id', studentId)
+        .order('juz_number', { ascending: true });
+
+      if (error) {
         console.error("Error fetching revision schedule:", error);
         return [];
       }
-    },
+      return data;
+    }
   });
+
+  const totalRevisions = revisionsArray?.length || 0;
+  const excellentRevisions = revisionsArray?.filter(rev => rev.memorization_quality === 'excellent').length || 0;
+  const goodRevisions = revisionsArray?.filter(rev => rev.memorization_quality === 'good').length || 0;
+  const averageRevisions = revisionsArray?.filter(rev => rev.memorization_quality === 'average').length || 0;
+  const needsWorkRevisions = revisionsArray?.filter(rev => rev.memorization_quality === 'needsWork').length || 0;
+  const horribleRevisions = revisionsArray?.filter(rev => rev.memorization_quality === 'horrible').length || 0;
 
   if (revisionsLoading) {
     return (
@@ -104,64 +109,29 @@ export const DhorBook = ({ studentId, studentName }: DhorBookProps) => {
     );
   }
 
-  // If revisions is not an array or empty, use an empty array for calculations
-  const revisionsArray = Array.isArray(revisions) ? revisions : [];
-
-  const completedRevisions = revisionsArray.filter(
-    rev => rev.memorization_quality === 'excellent' || rev.memorization_quality === 'good'
-  ).length;
-  
-  const needsImprovementRevisions = revisionsArray.filter(
-    rev => rev.memorization_quality === 'needsWork' || rev.memorization_quality === 'horrible'
-  ).length;
-  
-  const totalRevisions = revisionsArray.length;
-  
-  const revisionCompletionRate = totalRevisions > 0 
-    ? Math.round((completedRevisions / totalRevisions) * 100) 
-    : 0;
-
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold">Dhor Book for {studentName}</h2>
-        <Button onClick={() => setIsDialogOpen(true)}>
-          <Plus className="mr-2 h-4 w-4" />
-          Add Revision
-        </Button>
-      </div>
+      <h2 className="text-2xl font-bold">Student: {studentName}</h2>
 
-      <RevisionStats 
+      <RevisionStats
         totalRevisions={totalRevisions}
-        completedRevisions={completedRevisions}
-        needsImprovementRevisions={needsImprovementRevisions}
-        completionRate={revisionCompletionRate}
+        excellentRevisions={excellentRevisions}
+        goodRevisions={goodRevisions}
+        averageRevisions={averageRevisions}
+        needsWorkRevisions={needsWorkRevisions}
+        horribleRevisions={horribleRevisions}
       />
-      
+
       <RevisionTabs
         revisions={revisionsArray}
-        masteryLevels={masteryLevels || []}
         difficultAyahs={difficultAyahs || []}
-        schedule={schedule || []}
         studentId={studentId}
-        masteryLoading={masteryLoading}
-        scheduleLoading={scheduleLoading}
-        ayahsLoading={ayahsLoading}
+        onOpenNewRevisionDialog={() => setIsDialogOpen(true)}
       />
-      
-      <NewRevisionDialog 
-        open={isDialogOpen}
-        onOpenChange={setIsDialogOpen}
+
+      <RevisionSchedule
         studentId={studentId}
-        studentName={studentName}
-        onSuccess={() => {
-          queryClient.invalidateQueries({
-            queryKey: ['student-revisions', studentId]
-          });
-          queryClient.invalidateQueries({
-            queryKey: ['student-mastery', studentId]
-          });
-        }}
+        revisionSchedule={revisionSchedule || []}
       />
     </div>
   );

@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import {
@@ -131,7 +132,9 @@ export const DifficultAyahsList: React.FC<DifficultAyahsListProps> = ({ ayahs, s
           onOpenChange={setEditDialogOpen}
           difficultAyah={selectedAyah}
           studentId={studentId}
-          onSuccess={() => queryClient.invalidateQueries(['student-difficult-ayahs', studentId])}
+          onSuccess={() => queryClient.invalidateQueries({
+            queryKey: ['student-difficult-ayahs', studentId]
+          })}
         />
       )}
     </div>
