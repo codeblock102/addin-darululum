@@ -24,9 +24,13 @@ export const TeacherDashboard = ({ teacher }: TeacherDashboardProps) => {
   }, [location.search]);
   
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fadeIn">
       <DashboardHeader teacher={teacher} />
-      {activeTab === "overview" && <DashboardSummary summaryData={summaryData} />}
+      {activeTab === "overview" && (
+        <div className="animate-slideIn">
+          <DashboardSummary summaryData={summaryData} />
+        </div>
+      )}
       <TeacherTabs 
         teacher={teacher} 
         activeTab={activeTab} 

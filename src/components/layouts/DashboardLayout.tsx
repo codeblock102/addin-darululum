@@ -1,4 +1,3 @@
-
 import { ReactNode, useState, useEffect } from "react";
 import { 
   Sidebar, 
@@ -14,7 +13,6 @@ import { UserAvatar } from "@/components/shared/UserAvatar";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 
-// Import the navigation items
 import { 
   BookText, 
   Calendar, 
@@ -33,7 +31,6 @@ import {
 } from "lucide-react";
 import { NavItem } from "@/types/navigation";
 
-// Define navigation items
 const adminNavItems: NavItem[] = [
   { href: "/", label: "Dashboard", icon: Home, description: "Overview dashboard" },
   { href: "/students", label: "Students", icon: Users, description: "Manage students" },
