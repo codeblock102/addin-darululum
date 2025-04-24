@@ -39,13 +39,11 @@ export const DhorBook = ({ studentId, studentName }: DhorBookProps) => {
       
       if (error) throw error;
       
-      // Create a properly typed object instead of spreading potentially undefined values
-      const revisionsWithTeachers = data.map(revision => ({
+      // Create properly typed revisions with teachers
+      return (data || []).map(revision => ({
         ...revision,
         teachers: { name: "Unknown" }
-      }));
-      
-      return revisionsWithTeachers as JuzRevision[];
+      })) as JuzRevision[];
     },
   });
 
@@ -58,7 +56,7 @@ export const DhorBook = ({ studentId, studentName }: DhorBookProps) => {
         .eq('student_id', studentId);
       
       if (error) throw error;
-      return data as JuzMastery[];
+      return (data || []) as JuzMastery[];
     },
   });
 
@@ -67,8 +65,7 @@ export const DhorBook = ({ studentId, studentName }: DhorBookProps) => {
     queryFn: async () => {
       try {
         const { data, error } = await supabase
-          .rpc('get_difficult_ayahs', { student_id_param: studentId })
-          .order('date_added', { ascending: false });
+          .rpc('get_difficult_ayahs', { student_id_param: studentId });
           
         if (error) {
           console.error("Using fallback for difficult ayahs:", error);
@@ -88,8 +85,7 @@ export const DhorBook = ({ studentId, studentName }: DhorBookProps) => {
     queryFn: async () => {
       try {
         const { data, error } = await supabase
-          .rpc('get_revision_schedule', { student_id_param: studentId })
-          .order('scheduled_date', { ascending: true });
+          .rpc('get_revision_schedule', { student_id_param: studentId });
           
         if (error) {
           console.error("Using fallback for revision schedule:", error);
@@ -117,16 +113,6 @@ export const DhorBook = ({ studentId, studentName }: DhorBookProps) => {
   const revisionCompletionRate = totalRevisions > 0 
     ? Math.round((completedRevisions / totalRevisions) * 100) 
     : 0;
-
-  const fetchRevisions = () => {
-    // This will trigger a refetch of the revisions data
-    // We can use the invalidateQueries method from QueryClient
-    // which is accessed through the useQueryClient hook if needed
-  };
-
-  const handleOpenDialog = () => {
-    setIsDialogOpen(true);
-  };
 
   if (revisionsLoading || masteryLoading) {
     return (
@@ -173,7 +159,7 @@ export const DhorBook = ({ studentId, studentName }: DhorBookProps) => {
               <CardTitle>Revision History</CardTitle>
             </CardHeader>
             <CardContent>
-              <RevisionsList revisions={revisions || []} />
+              <RevisionsList revisions={(revisions || []) as any} />
             </CardContent>
           </Card>
         </TabsContent>

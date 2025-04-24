@@ -1,3 +1,4 @@
+
 // Add or update interfaces to match what's expected by the components
 
 export interface JuzRevision {
@@ -8,6 +9,7 @@ export interface JuzRevision {
   teacher_notes?: string;
   memorization_quality?: 'excellent' | 'good' | 'average' | 'needsWork' | 'horrible';
   teacher_id?: string;
+  quarters_revised?: '1st_quarter' | '2_quarters' | '3_quarters' | '4_quarters';
   teachers?: {
     name: string;
   };
@@ -56,6 +58,9 @@ export interface Progress {
   completed_juz?: number;
   memorization_quality?: 'excellent' | 'good' | 'average' | 'needsWork' | 'horrible';
   created_at?: string;
+  start_ayat?: number;
+  end_ayat?: number;
+  last_revision_date?: string;
   students?: {
     name: string;
   };
@@ -69,6 +74,7 @@ export interface Revision {
   teacher_notes?: string;
   memorization_quality?: 'excellent' | 'good' | 'average' | 'needsWork' | 'horrible';
   teacher_id?: string;
+  quarters_revised?: '1st_quarter' | '2_quarters' | '3_quarters' | '4_quarters';
   teachers?: {
     name: string;
   };

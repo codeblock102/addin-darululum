@@ -33,17 +33,25 @@ export const ProgressTable = ({ data }: ProgressTableProps) => {
             <TableRow key={entry.id}>
               <TableCell className="font-medium">{entry.students?.name}</TableCell>
               <TableCell>{entry.current_surah}</TableCell>
-              <TableCell>{entry.start_ayat} - {entry.end_ayat}</TableCell>
+              <TableCell>
+                {entry.start_ayat && entry.end_ayat ? 
+                  `${entry.start_ayat} - ${entry.end_ayat}` : 
+                  'N/A'}
+              </TableCell>
               <TableCell>
                 <span className={`px-2 py-1 rounded-full text-xs ${
                   entry.memorization_quality === 'excellent' ? 'bg-green-100 text-green-800' :
                   entry.memorization_quality === 'good' ? 'bg-blue-100 text-blue-800' :
                   'bg-yellow-100 text-yellow-800'
                 }`}>
-                  {entry.memorization_quality}
+                  {entry.memorization_quality || 'Unknown'}
                 </span>
               </TableCell>
-              <TableCell>{new Date(entry.last_revision_date).toLocaleDateString()}</TableCell>
+              <TableCell>
+                {entry.last_revision_date ? 
+                  new Date(entry.last_revision_date).toLocaleDateString() : 
+                  'Not revised'}
+              </TableCell>
               <TableCell className="text-right">
                 <Button variant="outline" size="sm">
                   Update Progress
