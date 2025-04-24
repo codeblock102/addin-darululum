@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -8,6 +7,7 @@ import { NewRevisionDialog } from "./NewRevisionDialog";
 import { RevisionStats } from "./RevisionStats";
 import { RevisionTabs } from "./RevisionTabs";
 import { DhorBookProps } from "../progress/types";
+import { JuzRevision } from "@/types/progress";
 
 export const DhorBook = ({ studentId, studentName }: DhorBookProps) => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -26,16 +26,13 @@ export const DhorBook = ({ studentId, studentName }: DhorBookProps) => {
             revision_date,
             teacher_notes,
             memorization_quality,
-            teacher_id,
-            teachers:teacher_id (
-              name
-            )
+            quarters_revised
           `)
           .eq('student_id', studentId)
           .order('revision_date', { ascending: false });
         
         if (error) throw error;
-        return data || [];
+        return (data || []) as JuzRevision[];
       } catch (error) {
         console.error("Error fetching revisions:", error);
         return [];
@@ -99,7 +96,7 @@ export const DhorBook = ({ studentId, studentName }: DhorBookProps) => {
     },
   });
 
-  if (revisionsLoading || masteryLoading) {
+  if (revisionsLoading) {
     return (
       <div className="flex items-center justify-center h-64">
         <Loader2 className="h-8 w-8 animate-spin" />
@@ -112,13 +109,13 @@ export const DhorBook = ({ studentId, studentName }: DhorBookProps) => {
 
   const completedRevisions = revisionsArray.filter(
     rev => rev.memorization_quality === 'excellent' || rev.memorization_quality === 'good'
-  ).length || 0;
+  ).length;
   
   const needsImprovementRevisions = revisionsArray.filter(
     rev => rev.memorization_quality === 'needsWork' || rev.memorization_quality === 'horrible'
-  ).length || 0;
+  ).length;
   
-  const totalRevisions = revisionsArray.length || 0;
+  const totalRevisions = revisionsArray.length;
   
   const revisionCompletionRate = totalRevisions > 0 
     ? Math.round((completedRevisions / totalRevisions) * 100) 

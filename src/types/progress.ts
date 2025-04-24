@@ -1,4 +1,3 @@
-
 // Add or update interfaces to match what's expected by the components
 
 export interface JuzRevision {
@@ -66,15 +65,27 @@ export interface Progress {
   };
 }
 
-// The Revision type extends JuzRevision with all properties required
-export interface Revision extends JuzRevision {
-  student_id: string; // Make this required
+// The JuzRevision type with student_id optional
+export interface JuzRevision {
+  id: string;
+  student_id?: string;
+  juz_revised: number;
+  revision_date: string;
+  teacher_notes?: string;
+  memorization_quality?: 'excellent' | 'good' | 'average' | 'needsWork' | 'horrible';
+  quarters_revised?: '1st_quarter' | '2_quarters' | '3_quarters' | '4_quarters';
+}
+
+// Make student_id optional in Revision to match JuzRevision
+export interface Revision extends Omit<JuzRevision, 'student_id'> {
+  student_id?: string;
 }
 
 // Fix EditDifficultAyahDialogProps to match component usage
 export interface EditDifficultAyahDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  ayah: DifficultAyah;
+  difficultAyah: DifficultAyah | null;
   studentId: string;
+  onSuccess?: () => void;
 }
