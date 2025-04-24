@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -8,6 +9,7 @@ import { RevisionStats } from "./RevisionStats";
 import { RevisionTabs } from "./RevisionTabs";
 import { DhorBookProps } from "../progress/types";
 import { JuzRevision } from "@/types/progress";
+import { NewRevisionDialog } from "./NewRevisionDialog";
 
 export const DhorBook = ({ studentId, studentName }: DhorBookProps) => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -43,6 +45,7 @@ export const DhorBook = ({ studentId, studentName }: DhorBookProps) => {
     }
   });
 
+  // Fetch mastery data
   const { data: masteryData } = useQuery({
     queryKey: ['student-juz-mastery', studentId],
     queryFn: async () => {
@@ -60,7 +63,8 @@ export const DhorBook = ({ studentId, studentName }: DhorBookProps) => {
     }
   });
 
-  const { data: difficultAyahs } = useQuery({
+  // Fetch difficult ayahs
+  const { data: difficultAyahs = [] } = useQuery({
     queryKey: ['student-difficult-ayahs', studentId],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -77,7 +81,8 @@ export const DhorBook = ({ studentId, studentName }: DhorBookProps) => {
     }
   });
 
-  const { data: revisionSchedule } = useQuery({
+  // Fetch revision schedule
+  const { data: revisionSchedule = [] } = useQuery({
     queryKey: ['student-revision-schedule', studentId],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -100,6 +105,12 @@ export const DhorBook = ({ studentId, studentName }: DhorBookProps) => {
   const averageRevisions = revisionsArray?.filter(rev => rev.memorization_quality === 'average').length || 0;
   const needsWorkRevisions = revisionsArray?.filter(rev => rev.memorization_quality === 'needsWork').length || 0;
   const horribleRevisions = revisionsArray?.filter(rev => rev.memorization_quality === 'horrible').length || 0;
+
+  const handleRevisionSuccess = () => {
+    queryClient.invalidateQueries({ queryKey: ['student-juz-revisions', studentId] });
+    queryClient.invalidateQueries({ queryKey: ['student-juz-mastery', studentId] });
+    setIsDialogOpen(false);
+  };
 
   if (revisionsLoading) {
     return (
@@ -124,14 +135,21 @@ export const DhorBook = ({ studentId, studentName }: DhorBookProps) => {
 
       <RevisionTabs
         revisions={revisionsArray}
-        difficultAyahs={difficultAyahs || []}
+        difficultAyahs={difficultAyahs}
         studentId={studentId}
         onOpenNewRevisionDialog={() => setIsDialogOpen(true)}
       />
 
       <RevisionSchedule
         studentId={studentId}
-        revisionSchedule={revisionSchedule || []}
+        revisionSchedule={revisionSchedule}
+      />
+
+      <NewRevisionDialog
+        open={isDialogOpen}
+        onOpenChange={setIsDialogOpen}
+        studentId={studentId}
+        onSuccess={handleRevisionSuccess}
       />
     </div>
   );

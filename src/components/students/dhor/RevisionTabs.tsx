@@ -26,7 +26,7 @@ export const RevisionTabs = ({
 
       <TabsContent value="revisions">
         <RevisionsList 
-          revisions={revisions} 
+          revisions={revisions}
           studentId={studentId}
           onAddRevision={onOpenNewRevisionDialog} 
         />

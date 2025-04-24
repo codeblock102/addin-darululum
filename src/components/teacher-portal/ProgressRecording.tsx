@@ -13,27 +13,22 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { Loader2, Save } from "lucide-react";
+
 interface ProgressRecordingProps {
   teacherId: string;
 }
+
 export const ProgressRecording = ({
   teacherId
 }: ProgressRecordingProps) => {
-  const {
-    toast
-  } = useToast();
+  const { toast } = useToast();
   const queryClient = useQueryClient();
 
   // Fetch teacher details for contributor info
-  const {
-    data: teacherData
-  } = useQuery({
+  const { data: teacherData } = useQuery({
     queryKey: ['teacher-details', teacherId],
     queryFn: async () => {
-      const {
-        data,
-        error
-      } = await supabase.from('teachers').select('id, name').eq('id', teacherId).single();
+      const { data, error } = await supabase.from('teachers').select('id, name').eq('id', teacherId).single();
       if (error) {
         console.error('Error fetching teacher details:', error);
         return null;
@@ -49,10 +44,7 @@ export const ProgressRecording = ({
   } = useQuery({
     queryKey: ['all-students-for-progress'],
     queryFn: async () => {
-      const {
-        data,
-        error
-      } = await supabase.from('students').select('id, name').eq('status', 'active').order('name', {
+      const { data, error } = await supabase.from('students').select('id, name').eq('status', 'active').order('name', {
         ascending: true
       });
       if (error) {
@@ -105,10 +97,7 @@ export const ProgressRecording = ({
       };
 
       // Create progress entry with contributor info
-      const {
-        data,
-        error
-      } = await supabase.from('progress').insert([{
+      const { data, error } = await supabase.from('progress').insert([{
         student_id: values.student_id,
         current_surah: values.current_surah,
         current_juz: values.current_juz,
@@ -121,9 +110,11 @@ export const ProgressRecording = ({
         verses_memorized: values.end_ayat - values.start_ayat + 1,
         ...contributorInfo // Add contributor information
       }]);
+      
       if (error) {
         throw new Error(`Failed to save progress: ${error.message}`);
       }
+      
       return data;
     },
     onSuccess: () => {
@@ -144,9 +135,11 @@ export const ProgressRecording = ({
       });
     }
   });
+  
   function onSubmit(values: z.infer<typeof formSchema>) {
     progressMutation.mutate(values);
   }
+  
   return <Card>
       <CardHeader>
         <CardTitle>Record Student Sabaq Progress</CardTitle>

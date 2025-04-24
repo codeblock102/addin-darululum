@@ -14,6 +14,7 @@ interface EditDifficultAyahDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   difficultAyah: DifficultAyah | null;
+  studentId: string;
   onSuccess: () => void;
 }
 
@@ -21,6 +22,7 @@ export const EditDifficultAyahDialog = ({
   open,
   onOpenChange,
   difficultAyah,
+  studentId,
   onSuccess,
 }: EditDifficultAyahDialogProps) => {
   const [notes, setNotes] = useState(difficultAyah?.notes || "");
