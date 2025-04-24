@@ -1,4 +1,3 @@
-
 import { useAuth } from "@/contexts/AuthContext";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -7,7 +6,12 @@ import { ChevronDown, LogOut } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "@/components/ui/use-toast";
 
-export const UserAvatar = ({ isTeacher }: { isTeacher: boolean }) => {
+interface UserAvatarProps {
+  isTeacher: boolean;
+  large?: boolean;
+}
+
+export const UserAvatar = ({ isTeacher, large }: UserAvatarProps) => {
   const navigate = useNavigate();
   const { session, signOut } = useAuth();
   const user = session?.user;

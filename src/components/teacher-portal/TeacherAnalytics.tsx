@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -21,10 +20,21 @@ export const TeacherAnalytics = ({ teacherId }: TeacherAnalyticsProps) => {
   const [timeRange, setTimeRange] = useState<'week' | 'month' | 'year'>('month');
   const { data, isLoading } = useAnalyticsData(teacherId);
   
-  // Transform data for StudentProgressChart - using verses property instead of progress
+  // Transform data for StudentProgressChart with proper typing
   const studentProgressData = data?.studentProgress?.map(item => ({
     name: item.name,
-    verses: item.verses // Using verses instead of progress
+    verses: Number(item.verses) // Ensure verses is a number
+  })) || [];
+
+  // Transform data for charts with proper typing
+  const formattedQualityData = data?.qualityDistribution.map(item => ({
+    quality: item.quality,
+    count: Number(item.count) // Ensure count is a number
+  })) || [];
+
+  const formattedTimeData = data?.timeProgress.map(item => ({
+    date: item.date,
+    count: Number(item.count) // Ensure count is a number
   })) || [];
 
   return (
@@ -54,8 +64,8 @@ export const TeacherAnalytics = ({ teacherId }: TeacherAnalyticsProps) => {
           {data && (
             <AnalyticsCharts
               studentProgress={data.studentProgress || []}
-              qualityDistribution={data.qualityDistribution || []}
-              timeProgress={data.timeProgress || []}
+              qualityDistribution={formattedQualityData || []}
+              timeProgress={formattedTimeData || []}
               contributorActivity={data.contributorActivity || []}
               timeRange={timeRange}
             />

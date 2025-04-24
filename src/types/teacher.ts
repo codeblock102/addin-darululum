@@ -1,4 +1,3 @@
-
 export interface Teacher {
   id: string;
   name: string;
@@ -17,6 +16,9 @@ export interface SummaryData {
   studentsCount: number;
   recentProgressEntries: number;
   todayClasses: number;
+  averageQuality?: string;
+  totalRevisions?: number;
+  pendingRevisions?: number;
 }
 
 // Supabase query result type
