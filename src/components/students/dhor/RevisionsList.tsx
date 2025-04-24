@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import {
   Table,
@@ -13,6 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Edit2 } from "lucide-react";
 import { EditRevisionDialog } from "./EditRevisionDialog";
+import { RevisionsListProps } from "@/types/progress";
 
 interface Revision {
   id: string;
@@ -27,11 +27,12 @@ interface Revision {
   teacher_id?: string;
 }
 
-interface RevisionsListProps {
-  revisions: Revision[];
-}
-
-export const RevisionsList = ({ revisions }: RevisionsListProps) => {
+export const RevisionsList = ({
+  revisions,
+  studentId,
+  studentName,
+  onAddRevision
+}: RevisionsListProps) => {
   const [editingRevision, setEditingRevision] = useState<Revision | null>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 

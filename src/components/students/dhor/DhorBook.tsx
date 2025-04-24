@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -7,7 +8,12 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { RevisionTabs } from "./RevisionTabs";
 import { NewRevisionDialog } from "./NewRevisionDialog";
 
-export const DhorBook = ({ studentId }: { studentId: string }) => {
+interface DhorBookProps {
+  studentId: string;
+  studentName: string;
+}
+
+export const DhorBook = ({ studentId, studentName }: DhorBookProps) => {
   const [isNewRevisionDialogOpen, setIsNewRevisionDialogOpen] = useState(false);
 
   const { data: studentData, isLoading: isStudentLoading } = useQuery({
@@ -86,7 +92,7 @@ export const DhorBook = ({ studentId }: { studentId: string }) => {
       <div className="flex items-center space-x-2">
         <h2 className="text-2xl font-bold">Dhor Book</h2>
         <Badge variant="secondary">
-          {studentData?.name}
+          {studentName}
         </Badge>
       </div>
       <p className="text-muted-foreground">
@@ -98,7 +104,7 @@ export const DhorBook = ({ studentId }: { studentId: string }) => {
           revisions={revisions || []}
           difficultAyahs={difficultAyahs}
           studentId={studentId}
-          studentName={studentData?.name || ''}
+          studentName={studentName}
           onOpenNewRevisionDialog={() => setIsNewRevisionDialogOpen(true)}
         />
       </ScrollArea>
@@ -107,7 +113,7 @@ export const DhorBook = ({ studentId }: { studentId: string }) => {
         open={isNewRevisionDialogOpen}
         onOpenChange={setIsNewRevisionDialogOpen}
         studentId={studentId}
-        studentName={studentData?.name || ''} // Add studentName prop
+        studentName={studentName}
         onSuccess={onRevisionSuccess}
       />
     </div>
