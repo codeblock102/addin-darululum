@@ -1,3 +1,4 @@
+
 import { ReactNode, useState, useEffect } from "react";
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarProvider } from "@/components/ui/sidebar";
 import { Bell, Search } from "lucide-react";
@@ -7,9 +8,13 @@ import { NavigationMenu } from "@/components/shared/NavigationMenu";
 import { UserAvatar } from "@/components/shared/UserAvatar";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import { NavItem } from "@/types/navigation";
+import { Home, Users, BookOpen, CheckSquare, BarChart2, MessageSquare, User, GraduationCap, Calendar, TrendingUp } from "lucide-react";
+
 interface DashboardLayoutProps {
   children: ReactNode;
 }
+
 export const DashboardLayout = ({
   children
 }: DashboardLayoutProps) => {
@@ -19,61 +24,92 @@ export const DashboardLayout = ({
   const [isTeacher, setIsTeacher] = useState(false);
   const [unreadNotifications] = useState(3);
 
-  // Define navigation items here for both teacher and admin
-  const teacherNavItems = [{
-    title: "Dashboard",
-    href: "/teacher-portal",
-    icon: "Home"
-  }, {
-    title: "My Students",
-    href: "/teacher-portal?tab=students",
-    icon: "Users"
-  }, {
-    title: "Progress Recording",
-    href: "/teacher-portal?tab=progress",
-    icon: "BookOpen"
-  }, {
-    title: "Grading",
-    href: "/teacher-portal?tab=grading",
-    icon: "CheckSquare"
-  }, {
-    title: "Analytics",
-    href: "/teacher-portal?tab=analytics",
-    icon: "BarChart2"
-  }, {
-    title: "Messages",
-    href: "/teacher-portal?tab=messages",
-    icon: "MessageSquare"
-  }, {
-    title: "Profile",
-    href: "/teacher-portal?tab=profile",
-    icon: "User"
-  }];
-  const adminNavItems = [{
-    title: "Dashboard",
-    href: "/",
-    icon: "Home"
-  }, {
-    title: "Students",
-    href: "/students",
-    icon: "GraduationCap"
-  }, {
-    title: "Teachers",
-    href: "/teachers",
-    icon: "Users"
-  }, {
-    title: "Schedule",
-    href: "/schedule",
-    icon: "Calendar"
-  }, {
-    title: "Progress",
-    href: "/progress",
-    icon: "TrendingUp"
-  }, {
-    title: "Attendance",
-    href: "/attendance",
-    icon: "CheckSquare"
-  }];
+  // Define navigation items here for both teacher and admin with proper NavItem structure
+  const teacherNavItems: NavItem[] = [
+    {
+      href: "/teacher-portal",
+      label: "Dashboard",
+      icon: Home,
+      description: "Overview dashboard",
+      exact: true
+    }, 
+    {
+      href: "/teacher-portal?tab=students",
+      label: "My Students",
+      icon: Users,
+      description: "Manage your students"
+    }, 
+    {
+      href: "/teacher-portal?tab=progress",
+      label: "Progress Recording",
+      icon: BookOpen,
+      description: "Record student progress"
+    }, 
+    {
+      href: "/teacher-portal?tab=grading",
+      label: "Grading",
+      icon: CheckSquare,
+      description: "Grade student work"
+    }, 
+    {
+      href: "/teacher-portal?tab=analytics",
+      label: "Analytics",
+      icon: BarChart2,
+      description: "View performance analytics"
+    }, 
+    {
+      href: "/teacher-portal?tab=messages",
+      label: "Messages",
+      icon: MessageSquare,
+      description: "Communication center"
+    }, 
+    {
+      href: "/teacher-portal?tab=profile",
+      label: "Profile",
+      icon: User,
+      description: "Manage your profile"
+    }
+  ];
+  
+  const adminNavItems: NavItem[] = [
+    {
+      href: "/",
+      label: "Dashboard",
+      icon: Home,
+      description: "Admin overview"
+    }, 
+    {
+      href: "/students",
+      label: "Students",
+      icon: GraduationCap,
+      description: "Manage students"
+    }, 
+    {
+      href: "/teachers",
+      label: "Teachers",
+      icon: Users,
+      description: "Manage teaching staff"
+    }, 
+    {
+      href: "/schedule",
+      label: "Schedule",
+      icon: Calendar,
+      description: "Manage class schedule"
+    }, 
+    {
+      href: "/progress",
+      label: "Progress",
+      icon: TrendingUp,
+      description: "Track student progress"
+    }, 
+    {
+      href: "/attendance",
+      label: "Attendance",
+      icon: CheckSquare,
+      description: "Track attendance records"
+    }
+  ];
+
   useEffect(() => {
     const checkTeacherStatus = async () => {
       if (!session?.user?.email) return;
@@ -91,6 +127,7 @@ export const DashboardLayout = ({
     };
     checkTeacherStatus();
   }, [session]);
+  
   return <SidebarProvider defaultOpen={true}>
       <div className="flex min-h-screen w-full bg-gradient-to-br from-background to-secondary/5">
         <Sidebar className="border-r border-border/30 bg-emerald-600 text-white">
@@ -102,7 +139,7 @@ export const DashboardLayout = ({
             </div>
           </SidebarHeader>
           
-          <SidebarContent className="i cant see anything here\n">
+          <SidebarContent>
             <NavigationMenu items={isTeacher ? teacherNavItems : adminNavItems} />
           </SidebarContent>
           

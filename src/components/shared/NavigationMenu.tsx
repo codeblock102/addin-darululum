@@ -32,6 +32,7 @@ export const NavigationMenu = ({ items }: NavigationMenuProps) => {
           <SidebarMenuButton 
             isActive={isNavItemActive(item)}
             onClick={() => navigate(item.href)}
+            tooltip={item.description}
             className={`transition-all duration-200 hover:bg-white/10 ${
               isNavItemActive(item) ? 'bg-white/20 text-white' : 'text-white/80 hover:text-white'
             }`}

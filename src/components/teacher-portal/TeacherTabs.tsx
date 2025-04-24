@@ -1,3 +1,4 @@
+
 import { useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -14,11 +15,13 @@ import { motion } from "framer-motion";
 import { useTeacherSummary } from "@/hooks/useTeacherSummary";
 import { StudentStatusList } from "./StudentStatusList";
 import { DashboardSummary } from "./DashboardSummary";
+
 interface TeacherTabsProps {
   teacher: Teacher;
   activeTab: string;
   onTabChange: (value: string) => void;
 }
+
 export const TeacherTabs = ({
   teacher,
   activeTab,
@@ -54,6 +57,7 @@ export const TeacherTabs = ({
       });
     }
   };
+
   const tabVariants = {
     hidden: {
       opacity: 0,
@@ -68,6 +72,7 @@ export const TeacherTabs = ({
       }
     }
   };
+
   const {
     data: summaryData
   } = useTeacherSummary(teacher.id);
@@ -128,7 +133,14 @@ export const TeacherTabs = ({
   // For all other tabs, we'll use the Tabs component properly
   return <div className="space-y-6">
       <Tabs value={activeTab} onValueChange={handleTabChange}>
-        
+        <TabsList className="mb-4">
+          <TabsTrigger value="students">My Students</TabsTrigger>
+          <TabsTrigger value="progress">Progress</TabsTrigger>
+          <TabsTrigger value="grading">Grading</TabsTrigger>
+          <TabsTrigger value="analytics">Analytics</TabsTrigger>
+          <TabsTrigger value="messages">Messages</TabsTrigger>
+          <TabsTrigger value="profile">Profile</TabsTrigger>
+        </TabsList>
         
         <TabsContent value="students" className="mt-6">
           <MyStudents teacherId={teacher.id} />
