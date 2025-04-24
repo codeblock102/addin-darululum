@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import {
@@ -19,6 +18,7 @@ import { AlertTriangle, Clock, MoreVertical, Plus, RefreshCw } from 'lucide-reac
 import { NewDifficultAyahDialog } from './NewDifficultAyahDialog';
 import { DifficultAyah, EditDifficultAyahDialogProps } from '@/types/progress';
 import { EditDifficultAyahDialog } from './EditDifficultAyahDialog';
+import { useQueryClient } from "@tanstack/react-query";
 
 interface DifficultAyahsListProps {
   ayahs: DifficultAyah[];
@@ -29,6 +29,7 @@ export const DifficultAyahsList: React.FC<DifficultAyahsListProps> = ({ ayahs, s
   const [newDialogOpen, setNewDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [selectedAyah, setSelectedAyah] = useState<DifficultAyah | null>(null);
+  const queryClient = useQueryClient();
 
   const handleEditAyah = (ayah: DifficultAyah) => {
     setSelectedAyah(ayah);
@@ -128,8 +129,9 @@ export const DifficultAyahsList: React.FC<DifficultAyahsListProps> = ({ ayahs, s
         <EditDifficultAyahDialog
           open={editDialogOpen}
           onOpenChange={setEditDialogOpen}
-          ayah={selectedAyah}
+          difficultAyah={selectedAyah}
           studentId={studentId}
+          onSuccess={() => queryClient.invalidateQueries(['student-difficult-ayahs', studentId])}
         />
       )}
     </div>
