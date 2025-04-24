@@ -1,20 +1,18 @@
 
-import { ReactNode, useEffect, useState } from "react";
-import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
+import { ReactNode } from "react";
 import { 
   Sidebar, 
   SidebarContent, 
   SidebarFooter, 
   SidebarHeader, 
-  SidebarProvider, 
-  SidebarTrigger 
+  SidebarProvider
 } from "@/components/ui/sidebar";
-import { Bell, BookOpen } from "lucide-react";
+import { BookOpen, Bell } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { NavigationMenu } from "@/components/shared/NavigationMenu";
 import { UserAvatar } from "@/components/shared/UserAvatar";
-import { adminNavItems, teacherNavItems } from "@/config/navigation";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 
 interface DashboardLayoutProps {
   children: ReactNode;
@@ -22,19 +20,18 @@ interface DashboardLayoutProps {
 
 export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   const { session } = useAuth();
-  const user = session?.user;
   const [isTeacher, setIsTeacher] = useState(false);
   const [unreadNotifications] = useState(0);
 
   useEffect(() => {
     const checkTeacherStatus = async () => {
-      if (!user?.email) return;
+      if (!session?.user?.email) return;
       
       try {
         const { data, error } = await supabase
           .from('teachers')
           .select('id')
-          .eq('email', user.email);
+          .eq('email', session.user.email);
           
         if (error) throw error;
         
@@ -46,9 +43,7 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
     };
     
     checkTeacherStatus();
-  }, [user]);
-
-  const navItems = isTeacher ? teacherNavItems : adminNavItems;
+  }, [session]);
 
   return (
     <SidebarProvider defaultOpen={true}>
@@ -64,7 +59,7 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
           </SidebarHeader>
           
           <SidebarContent>
-            <NavigationMenu items={navItems} />
+            <NavigationMenu items={isTeacher ? teacherNavItems : adminNavItems} />
           </SidebarContent>
           
           <SidebarFooter>
@@ -74,22 +69,19 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
         
         <main className="flex-1 p-6 overflow-auto animate-fadeIn">
           <div className="max-w-7xl mx-auto space-y-6">
-            <div className="flex justify-between items-center">
-              <SidebarTrigger className="inline-block hover:bg-accent/50 transition-colors" />
-              <div className="flex items-center gap-4">
-                <Button 
-                  variant="outline" 
-                  size="icon" 
-                  className="relative hover:scale-105 transition-transform"
-                >
-                  <Bell className="h-5 w-5" />
-                  {unreadNotifications > 0 && (
-                    <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-destructive text-xs text-white flex items-center justify-center animate-in fade-in">
-                      {unreadNotifications}
-                    </span>
-                  )}
-                </Button>
-              </div>
+            <div className="flex justify-end">
+              <Button 
+                variant="outline" 
+                size="icon" 
+                className="relative hover:scale-105 transition-transform"
+              >
+                <Bell className="h-5 w-5" />
+                {unreadNotifications > 0 && (
+                  <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-destructive text-xs text-white flex items-center justify-center animate-in fade-in">
+                    {unreadNotifications}
+                  </span>
+                )}
+              </Button>
             </div>
             <div className="animate-slideIn">
               {children}
