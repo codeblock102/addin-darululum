@@ -1,4 +1,3 @@
-
 import { useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -12,6 +11,8 @@ import { TeacherMessages } from "./TeacherMessages";
 import { TeacherProfile } from "./TeacherProfile";
 import { Teacher } from "@/types/teacher";
 import { motion } from "framer-motion";
+import { useTeacherSummary } from "@/hooks/useTeacherSummary";
+import { StudentStatusList } from "./StudentStatusList";
 
 interface TeacherTabsProps {
   teacher: Teacher;
@@ -56,87 +57,83 @@ export const TeacherTabs = ({ teacher, activeTab, onTabChange }: TeacherTabsProp
     }
   };
   
+  const { data: summaryData } = useTeacherSummary(teacher.id);
+
   return (
-    <Tabs defaultValue="overview" value={activeTab} onValueChange={handleTabChange} className="w-full">
-      <TabsList className="grid w-full grid-cols-7 bg-muted/30 p-1 rounded-lg">
-        <TabsTrigger 
-          value="overview" 
-          className="transition-all duration-200 data-[state=active]:bg-white data-[state=active]:shadow-sm rounded-md"
-        >
-          Overview
-        </TabsTrigger>
-        <TabsTrigger 
-          value="students" 
-          className="transition-all duration-200 data-[state=active]:bg-white data-[state=active]:shadow-sm rounded-md"
-        >
-          Students
-        </TabsTrigger>
-        <TabsTrigger 
-          value="progress" 
-          className="transition-all duration-200 data-[state=active]:bg-white data-[state=active]:shadow-sm rounded-md"
-        >
-          Progress
-        </TabsTrigger>
-        <TabsTrigger 
-          value="grading" 
-          className="transition-all duration-200 data-[state=active]:bg-white data-[state=active]:shadow-sm rounded-md"
-        >
-          Grading
-        </TabsTrigger>
-        <TabsTrigger 
-          value="analytics" 
-          className="transition-all duration-200 data-[state=active]:bg-white data-[state=active]:shadow-sm rounded-md"
-        >
-          Analytics
-        </TabsTrigger>
-        <TabsTrigger 
-          value="messages" 
-          className="transition-all duration-200 data-[state=active]:bg-white data-[state=active]:shadow-sm rounded-md"
-        >
-          Messages
-        </TabsTrigger>
-        <TabsTrigger 
-          value="profile" 
-          className="transition-all duration-200 data-[state=active]:bg-white data-[state=active]:shadow-sm rounded-md"
-        >
-          Profile
-        </TabsTrigger>
-      </TabsList>
+    <div className="space-y-6">
+      {activeTab === "overview" && (
+        <div className="animate-slideIn space-y-6">
+          <DashboardSummary summaryData={summaryData} />
+          
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <Card className="p-6 shadow-sm hover:shadow-md transition-all duration-300">
+              <h3 className="text-lg font-semibold mb-4">Recent Student Status</h3>
+              <StudentStatusList teacherId={teacher.id} />
+            </Card>
+            
+            <Card className="p-6 shadow-sm hover:shadow-md transition-all duration-300">
+              <h3 className="text-lg font-semibold mb-4">Upcoming Schedule</h3>
+              <div className="space-y-4">
+                {/* Simplified schedule view */}
+                <div className="flex justify-between items-center p-3 bg-muted/30 rounded-md">
+                  <div>
+                    <p className="font-medium">Hifz Morning Class</p>
+                    <p className="text-sm text-muted-foreground">Group A</p>
+                  </div>
+                  <div className="text-sm text-right">
+                    <p className="font-medium">8:00 AM</p>
+                    <p className="text-muted-foreground">Today</p>
+                  </div>
+                </div>
+                <div className="flex justify-between items-center p-3 bg-muted/30 rounded-md">
+                  <div>
+                    <p className="font-medium">Tajweed Class</p>
+                    <p className="text-sm text-muted-foreground">Group B</p>
+                  </div>
+                  <div className="text-sm text-right">
+                    <p className="font-medium">11:00 AM</p>
+                    <p className="text-muted-foreground">Today</p>
+                  </div>
+                </div>
+                <div className="flex justify-between items-center p-3 bg-muted/30 rounded-md">
+                  <div>
+                    <p className="font-medium">Advanced Hifz</p>
+                    <p className="text-sm text-muted-foreground">Individual</p>
+                  </div>
+                  <div className="text-sm text-right">
+                    <p className="font-medium">2:00 PM</p>
+                    <p className="text-muted-foreground">Tomorrow</p>
+                  </div>
+                </div>
+              </div>
+            </Card>
+          </div>
+        </div>
+      )}
       
-      <motion.div
-        key={activeTab}
-        initial="hidden"
-        animate="visible"
-        variants={tabVariants}
-      >
-        <TabsContent value="overview" className="space-y-4 mt-6">
-          {/* Overview content is now in the TeacherDashboard component */}
-        </TabsContent>
-        
-        <TabsContent value="students" className="mt-6">
-          <MyStudents teacherId={teacher.id} />
-        </TabsContent>
-        
-        <TabsContent value="progress" className="mt-6">
-          <ProgressRecording teacherId={teacher.id} />
-        </TabsContent>
-        
-        <TabsContent value="grading" className="mt-6">
-          <TeacherGrading teacherId={teacher.id} />
-        </TabsContent>
-        
-        <TabsContent value="analytics" className="mt-6">
-          <TeacherAnalytics teacherId={teacher.id} />
-        </TabsContent>
-        
-        <TabsContent value="messages" className="mt-6">
-          <TeacherMessages teacherId={teacher.id} teacherName={teacher.name} />
-        </TabsContent>
-        
-        <TabsContent value="profile" className="mt-6">
-          <TeacherProfile teacher={teacher} />
-        </TabsContent>
-      </motion.div>
-    </Tabs>
+      <TabsContent value="students" className="mt-6">
+        <MyStudents teacherId={teacher.id} />
+      </TabsContent>
+      
+      <TabsContent value="progress" className="mt-6">
+        <ProgressRecording teacherId={teacher.id} />
+      </TabsContent>
+      
+      <TabsContent value="grading" className="mt-6">
+        <TeacherGrading teacherId={teacher.id} />
+      </TabsContent>
+      
+      <TabsContent value="analytics" className="mt-6">
+        <TeacherAnalytics teacherId={teacher.id} />
+      </TabsContent>
+      
+      <TabsContent value="messages" className="mt-6">
+        <TeacherMessages teacherId={teacher.id} teacherName={teacher.name} />
+      </TabsContent>
+      
+      <TabsContent value="profile" className="mt-6">
+        <TeacherProfile teacher={teacher} />
+      </TabsContent>
+    </div>
   );
 };
