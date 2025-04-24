@@ -29,7 +29,7 @@ export const RevisionSchedule = ({ schedule, studentId }: RevisionScheduleProps)
     mutationFn: async (itemId: string) => {
       try {
         const { error } = await supabase
-          .rpc('mark_revision_completed', { item_id_param: itemId })
+          .rpc('mark_revision_completed', { item_id_param: itemId });
         
         if (error) throw error;
         return itemId;
@@ -139,7 +139,7 @@ export const RevisionSchedule = ({ schedule, studentId }: RevisionScheduleProps)
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => handleMarkCompleted(item.id)}
+                onClick={() => markAsCompleted.mutate(item.id)}
                 disabled={item.status === 'completed'}
               >
                 <Check className="h-4 w-4 mr-1" />

@@ -45,7 +45,7 @@ const getQualityDistribution = async () => {
     }
     
     // Map to expected format
-    return data.map((item: any) => ({
+    return (data || []).map((item: any) => ({
       quality: item.memorization_quality === null ? 'Not rated' : item.memorization_quality,
       count: item.count
     }));
@@ -66,7 +66,7 @@ const getTimeProgress = async () => {
     }
     
     // Map to expected format and add zeros for dates with no entries
-    return data.map((item: any) => ({
+    return (data || []).map((item: any) => ({
       date: item.date,
       count: item.count
     }));
@@ -137,7 +137,7 @@ const getContributorActivity = async () => {
     }
     
     // Map to expected format
-    return data.map((item: any) => ({
+    return (data || []).map((item: any) => ({
       name: item.contributor_name || 'Unknown',
       count: item.count
     }));
