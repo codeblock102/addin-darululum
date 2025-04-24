@@ -11,6 +11,7 @@ import { TeacherAnalytics } from "./TeacherAnalytics";
 import { TeacherMessages } from "./TeacherMessages";
 import { TeacherProfile } from "./TeacherProfile";
 import { Teacher } from "@/types/teacher";
+import { motion } from "framer-motion";
 
 interface TeacherTabsProps {
   teacher: Teacher;
@@ -46,55 +47,71 @@ export const TeacherTabs = ({ teacher, activeTab, onTabChange }: TeacherTabsProp
     }
   };
   
+  const tabVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { 
+      opacity: 1, 
+      y: 0,
+      transition: { duration: 0.4, ease: "easeOut" }
+    }
+  };
+  
   return (
     <Tabs defaultValue="overview" value={activeTab} onValueChange={handleTabChange} className="w-full">
       <TabsList className="grid w-full grid-cols-7">
-        <TabsTrigger value="overview">Overview</TabsTrigger>
-        <TabsTrigger value="students">Students</TabsTrigger>
-        <TabsTrigger value="progress">Progress</TabsTrigger>
-        <TabsTrigger value="grading">Grading</TabsTrigger>
-        <TabsTrigger value="analytics">Analytics</TabsTrigger>
-        <TabsTrigger value="messages">Messages</TabsTrigger>
-        <TabsTrigger value="profile">Profile</TabsTrigger>
+        <TabsTrigger value="overview" className="transition-all duration-200">Overview</TabsTrigger>
+        <TabsTrigger value="students" className="transition-all duration-200">Students</TabsTrigger>
+        <TabsTrigger value="progress" className="transition-all duration-200">Progress</TabsTrigger>
+        <TabsTrigger value="grading" className="transition-all duration-200">Grading</TabsTrigger>
+        <TabsTrigger value="analytics" className="transition-all duration-200">Analytics</TabsTrigger>
+        <TabsTrigger value="messages" className="transition-all duration-200">Messages</TabsTrigger>
+        <TabsTrigger value="profile" className="transition-all duration-200">Profile</TabsTrigger>
       </TabsList>
       
-      <TabsContent value="overview" className="space-y-4 mt-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>Teaching Schedule</CardTitle>
-            <CardDescription>
-              Your upcoming classes for the week
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <TeacherSchedule teacherId={teacher.id} />
-          </CardContent>
-        </Card>
-      </TabsContent>
-      
-      <TabsContent value="students" className="mt-6">
-        <MyStudents teacherId={teacher.id} />
-      </TabsContent>
-      
-      <TabsContent value="progress" className="mt-6">
-        <ProgressRecording teacherId={teacher.id} />
-      </TabsContent>
-      
-      <TabsContent value="grading" className="mt-6">
-        <TeacherGrading teacherId={teacher.id} />
-      </TabsContent>
-      
-      <TabsContent value="analytics" className="mt-6">
-        <TeacherAnalytics teacherId={teacher.id} />
-      </TabsContent>
-      
-      <TabsContent value="messages" className="mt-6">
-        <TeacherMessages teacherId={teacher.id} teacherName={teacher.name} />
-      </TabsContent>
-      
-      <TabsContent value="profile" className="mt-6">
-        <TeacherProfile teacher={teacher} />
-      </TabsContent>
+      <motion.div
+        key={activeTab}
+        initial="hidden"
+        animate="visible"
+        variants={tabVariants}
+      >
+        <TabsContent value="overview" className="space-y-4 mt-6">
+          <Card className="overflow-hidden border-border/40 shadow-sm hover:shadow-md transition-all duration-300">
+            <CardHeader>
+              <CardTitle>Teaching Schedule</CardTitle>
+              <CardDescription>
+                Your upcoming classes for the week
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <TeacherSchedule teacherId={teacher.id} />
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        <TabsContent value="students" className="mt-6">
+          <MyStudents teacherId={teacher.id} />
+        </TabsContent>
+        
+        <TabsContent value="progress" className="mt-6">
+          <ProgressRecording teacherId={teacher.id} />
+        </TabsContent>
+        
+        <TabsContent value="grading" className="mt-6">
+          <TeacherGrading teacherId={teacher.id} />
+        </TabsContent>
+        
+        <TabsContent value="analytics" className="mt-6">
+          <TeacherAnalytics teacherId={teacher.id} />
+        </TabsContent>
+        
+        <TabsContent value="messages" className="mt-6">
+          <TeacherMessages teacherId={teacher.id} teacherName={teacher.name} />
+        </TabsContent>
+        
+        <TabsContent value="profile" className="mt-6">
+          <TeacherProfile teacher={teacher} />
+        </TabsContent>
+      </motion.div>
     </Tabs>
   );
 };
