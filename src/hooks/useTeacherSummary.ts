@@ -7,65 +7,116 @@ export const useTeacherSummary = (teacherId: string) => {
   return useQuery({
     queryKey: ['teacher-summary', teacherId],
     queryFn: async (): Promise<SummaryData> => {
-      // Get assigned students count
-      const studentsQuery = await supabase
-        .from('students_teachers')
-        .select('id')
-        .eq('teacher_id', teacherId)
-        .eq('active', true);
+      if (!teacherId) {
+        return {
+          studentsCount: 0,
+          recentProgressEntries: 0,
+          todayClasses: 0,
+          averageQuality: 'N/A',
+          totalRevisions: 0,
+          pendingRevisions: 0
+        };
+      }
       
-      // Get recent progress entries (last 7 days)
-      const sevenDaysAgo = new Date();
-      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-      const sevenDaysAgoStr = sevenDaysAgo.toISOString();
-      
-      const progressQuery = await supabase
-        .from('progress')
-        .select('id, memorization_quality')
-        .gte('created_at', sevenDaysAgoStr);
-      
-      // Get today's classes
-      const today = new Date().toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
-      const classesQuery = await supabase
-        .from('schedules')
-        .select('id')
-        .eq('teacher_id', teacherId)
-        .eq('day_of_week', today);
-
-      // Get revision statistics
-      const revisionsQuery = await supabase
-        .from('juz_revisions')
-        .select('id, memorization_quality')
-        .eq('teacher_notes', 'pending')
-        .is('teacher_notes', null);
-
-      // Calculate average quality from progress entries
-      const qualities = progressQuery.data?.map(p => p.memorization_quality) || [];
-      const averageQuality = qualities.length > 0 
-        ? qualities.reduce((acc, curr) => {
-            if (curr === 'excellent') return acc + 5;
-            if (curr === 'good') return acc + 4;
-            if (curr === 'average') return acc + 3;
-            if (curr === 'needsWork') return acc + 2;
-            return acc + 1;
-          }, 0) / qualities.length
-        : 0;
-
-      const qualityLabel = averageQuality >= 4.5 ? 'excellent' 
-        : averageQuality >= 3.5 ? 'good'
-        : averageQuality >= 2.5 ? 'average'
-        : averageQuality >= 1.5 ? 'needs work'
-        : 'poor';
-      
-      // Return summary data
-      return {
-        studentsCount: studentsQuery.data?.length || 0,
-        recentProgressEntries: progressQuery.data?.length || 0,
-        todayClasses: classesQuery.data?.length || 0,
-        averageQuality: qualityLabel,
-        totalRevisions: revisionsQuery.data?.length || 0,
-        pendingRevisions: revisionsQuery.data?.filter(r => r.teacher_notes === 'pending').length || 0
-      };
-    }
+      try {
+        // Get assigned students count
+        const { data: students, error: studentError } = await supabase
+          .from('students_teachers')
+          .select('id')
+          .eq('teacher_id', teacherId)
+          .eq('active', true);
+          
+        if (studentError) throw studentError;
+        
+        // Get classes scheduled for today
+        const today = new Date().toISOString().split('T')[0];
+        const { data: classes, error: classError } = await supabase
+          .from('schedules')
+          .select('id')
+          .eq('teacher_id', teacherId)
+          .eq('day_of_week', getDayOfWeek());
+          
+        if (classError) throw classError;
+        
+        // Get recent progress entries (last 7 days)
+        const sevenDaysAgo = new Date();
+        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+        
+        const { data: progressEntries, error: progressError } = await supabase
+          .from('progress')
+          .select('id, memorization_quality')
+          .gte('created_at', sevenDaysAgo.toISOString())
+          .order('created_at', { ascending: false });
+          
+        if (progressError) throw progressError;
+        
+        // Get revisions data
+        const { data: revisions, error: revisionsError } = await supabase
+          .from('juz_revisions')
+          .select('id, memorization_quality')
+          .gte('revision_date', sevenDaysAgo.toISOString())
+          .order('revision_date', { ascending: false });
+          
+        if (revisionsError) throw revisionsError;
+        
+        // Calculate average quality from recent revisions
+        const qualityValues = revisions
+          ?.filter(revision => revision.memorization_quality)
+          .map(revision => revision.memorization_quality);
+          
+        let averageQuality = 'N/A';
+        
+        if (qualityValues && qualityValues.length > 0) {
+          const qualityMap = {
+            'excellent': 5,
+            'good': 4,
+            'average': 3,
+            'needsWork': 2,
+            'horrible': 1
+          };
+          
+          const sum = qualityValues.reduce((acc, quality) => {
+            return acc + (qualityMap[quality as keyof typeof qualityMap] || 3);
+          }, 0);
+          
+          const avg = sum / qualityValues.length;
+          
+          if (avg >= 4.5) averageQuality = 'Excellent';
+          else if (avg >= 3.5) averageQuality = 'Good';
+          else if (avg >= 2.5) averageQuality = 'Average';
+          else if (avg >= 1.5) averageQuality = 'Needs Work';
+          else averageQuality = 'Poor';
+        }
+        
+        // Get pending revision count
+        const { data: pendingRevisions, error: pendingError } = await supabase
+          .from('revision_schedule')
+          .select('id')
+          .eq('status', 'pending')
+          .lte('scheduled_date', today);
+          
+        if (pendingError) throw pendingError;
+        
+        return {
+          studentsCount: students?.length || 0,
+          recentProgressEntries: progressEntries?.length || 0,
+          todayClasses: classes?.length || 0,
+          averageQuality,
+          totalRevisions: revisions?.length || 0,
+          pendingRevisions: pendingRevisions?.length || 0
+        };
+      } catch (error) {
+        console.error("Error fetching teacher summary:", error);
+        throw error;
+      }
+    },
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    retry: 1
   });
+};
+
+// Helper function to get day of week
+const getDayOfWeek = (): string => {
+  const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+  return days[new Date().getDay()];
 };

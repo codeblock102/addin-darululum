@@ -67,7 +67,7 @@ export interface Progress {
 }
 
 // Make Revision interface compatible with JuzRevision
-export interface Revision extends JuzRevision {
+export interface Revision extends Omit<JuzRevision, 'student_id'> {
   student_id: string;
   // Any additional fields specific to Revision interface
 }
