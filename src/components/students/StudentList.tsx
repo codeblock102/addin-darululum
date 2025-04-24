@@ -32,9 +32,9 @@ interface StudentListProps {
 
 export const StudentList = ({ searchQuery, onEdit }: StudentListProps) => {
   const navigate = useNavigate();
-  const [isLoading, setIsLoading] = useState(true);
+  const [hoveredId, setHoveredId] = useState<string | null>(null);
 
-  const { data: students } = useQuery({
+  const { data: students, isLoading } = useQuery({
     queryKey: ['students'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -43,8 +43,6 @@ export const StudentList = ({ searchQuery, onEdit }: StudentListProps) => {
         .order('name', { ascending: true });
 
       if (error) throw error;
-      
-      setIsLoading(false);
       return data as Student[];
     },
   });
@@ -88,7 +86,13 @@ export const StudentList = ({ searchQuery, onEdit }: StudentListProps) => {
       </TableHeader>
       <TableBody>
         {filteredStudents?.map((student) => (
-          <TableRow key={student.id}>
+          <TableRow 
+            key={student.id}
+            className="transition-colors hover:bg-muted/50 cursor-pointer"
+            onMouseEnter={() => setHoveredId(student.id)}
+            onMouseLeave={() => setHoveredId(null)}
+            onClick={() => navigate(`/students/${student.id}`)}
+          >
             <TableCell className="font-medium">{student.name}</TableCell>
             <TableCell>{student.guardian_name || '—'}</TableCell>
             <TableCell>{student.guardian_contact || '—'}</TableCell>
@@ -107,14 +111,26 @@ export const StudentList = ({ searchQuery, onEdit }: StudentListProps) => {
                 <Button 
                   variant="outline" 
                   size="icon"
-                  onClick={() => navigate(`/students/${student.id}`)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    navigate(`/students/${student.id}`);
+                  }}
+                  className={`transition-opacity duration-200 ${
+                    hoveredId === student.id ? 'opacity-100' : 'opacity-0'
+                  }`}
                 >
                   <Eye className="h-4 w-4" />
                 </Button>
                 <Button 
                   variant="outline" 
                   size="icon"
-                  onClick={() => onEdit(student)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onEdit(student);
+                  }}
+                  className={`transition-opacity duration-200 ${
+                    hoveredId === student.id ? 'opacity-100' : 'opacity-0'
+                  }`}
                 >
                   <Edit className="h-4 w-4" />
                 </Button>

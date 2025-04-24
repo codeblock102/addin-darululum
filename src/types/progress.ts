@@ -1,4 +1,3 @@
-
 // Add or update interfaces to match what's expected by the components
 
 export interface JuzRevision {
@@ -46,4 +45,31 @@ export interface RevisionScheduleItem {
   priority?: string;
   status: string;
   isOverdue?: boolean;
+}
+
+export interface Progress {
+  id: string;
+  student_id: string;
+  current_surah?: number;
+  current_juz?: number;
+  verses_memorized?: number;
+  completed_juz?: number;
+  memorization_quality?: 'excellent' | 'good' | 'average' | 'needsWork' | 'horrible';
+  created_at?: string;
+  students?: {
+    name: string;
+  };
+}
+
+export interface Revision {
+  id: string;
+  student_id: string;
+  juz_revised: number;
+  revision_date: string;
+  teacher_notes?: string;
+  memorization_quality?: 'excellent' | 'good' | 'average' | 'needsWork' | 'horrible';
+  teacher_id?: string;
+  teachers?: {
+    name: string;
+  };
 }
