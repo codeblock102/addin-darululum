@@ -1,155 +1,114 @@
-
 import { useState } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2 } from "lucide-react";
-import { MasteryLevelGrid } from "./MasteryLevelGrid";
-import { RevisionSchedule } from "./RevisionSchedule";
-import { RevisionStats } from "./RevisionStats";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Badge } from "@/components/ui/badge";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { RevisionTabs } from "./RevisionTabs";
-import { DhorBookProps } from "../progress/types";
-import { JuzRevision } from "@/types/progress";
 import { NewRevisionDialog } from "./NewRevisionDialog";
 
-export const DhorBook = ({ studentId, studentName }: DhorBookProps) => {
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const queryClient = useQueryClient();
+export const DhorBook = ({ studentId }: { studentId: string }) => {
+  const [isNewRevisionDialogOpen, setIsNewRevisionDialogOpen] = useState(false);
 
-  // Fetch juz revisions
-  const {
-    data: revisionsArray = [],
-    isLoading: revisionsLoading
-  } = useQuery({
-    queryKey: ['student-juz-revisions', studentId],
-    queryFn: async () => {
-      try {
-        const { data, error } = await supabase
-          .from('juz_revisions')
-          .select(`
-            id,
-            student_id,
-            juz_revised,
-            revision_date,
-            teacher_notes,
-            memorization_quality
-          `)
-          .eq('student_id', studentId)
-          .order('revision_date', { ascending: false });
-        
-        if (error) throw error;
-        return data as JuzRevision[];
-      } catch (error) {
-        console.error("Error fetching revisions:", error);
-        return [];
-      }
-    }
-  });
-
-  // Fetch mastery data
-  const { data: masteryData } = useQuery({
-    queryKey: ['student-juz-mastery', studentId],
+  const { data: studentData, isLoading: isStudentLoading } = useQuery({
+    queryKey: ['student', studentId],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('juz_mastery')
+        .from('students')
         .select('*')
-        .eq('student_id', studentId)
-        .order('juz_number', { ascending: true });
+        .eq('id', studentId)
+        .single();
 
       if (error) {
-        console.error("Error fetching mastery:", error);
-        return [];
+        console.error("Error fetching student:", error);
+        return null;
       }
       return data;
-    }
+    },
   });
 
-  // Fetch difficult ayahs
-  const { data: difficultAyahs = [] } = useQuery({
-    queryKey: ['student-difficult-ayahs', studentId],
+  const { data, isLoading, refetch } = useQuery({
+    queryKey: ['difficult-ayahs', studentId],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('difficult_ayahs')
         .select('*')
         .eq('student_id', studentId)
-        .order('surah_number', { ascending: true });
+        .order('surah_number', { ascending: true })
+        .order('ayah_number', { ascending: true });
 
       if (error) {
         console.error("Error fetching difficult ayahs:", error);
         return [];
       }
       return data;
-    }
+    },
   });
 
-  // Fetch revision schedule
-  const { data: revisionSchedule = [] } = useQuery({
-    queryKey: ['student-revision-schedule', studentId],
+  const { data: revisions, isLoading: isRevisionsLoading } = useQuery({
+    queryKey: ['juz-revisions', studentId],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('revision_schedule')
+        .from('juz_revisions')
         .select('*')
         .eq('student_id', studentId)
-        .order('juz_number', { ascending: true });
+        .order('revision_date', { ascending: false });
 
       if (error) {
-        console.error("Error fetching revision schedule:", error);
+        console.error("Error fetching juz revisions:", error);
         return [];
       }
       return data;
-    }
+    },
   });
 
-  const totalRevisions = revisionsArray?.length || 0;
-  const excellentRevisions = revisionsArray?.filter(rev => rev.memorization_quality === 'excellent').length || 0;
-  const goodRevisions = revisionsArray?.filter(rev => rev.memorization_quality === 'good').length || 0;
-  const averageRevisions = revisionsArray?.filter(rev => rev.memorization_quality === 'average').length || 0;
-  const needsWorkRevisions = revisionsArray?.filter(rev => rev.memorization_quality === 'needsWork').length || 0;
-  const horribleRevisions = revisionsArray?.filter(rev => rev.memorization_quality === 'horrible').length || 0;
+  const difficultAyahs = data?.map((ayah: any) => ({
+    ...ayah,
+    status: ayah.status as 'active' | 'resolved' | 'pending'
+  })) || [];
 
-  const handleRevisionSuccess = () => {
-    queryClient.invalidateQueries({ queryKey: ['student-juz-revisions', studentId] });
-    queryClient.invalidateQueries({ queryKey: ['student-juz-mastery', studentId] });
-    setIsDialogOpen(false);
+  const onRevisionSuccess = () => {
+    refetch();
   };
 
-  if (revisionsLoading) {
+  if (isLoading || isStudentLoading || isRevisionsLoading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <Loader2 className="h-8 w-8 animate-spin" />
+      <div className="space-y-4">
+        <Skeleton className="h-10 w-40" />
+        <Skeleton className="h-4 w-[200px]" />
+        <Skeleton className="h-96 w-full" />
       </div>
     );
   }
 
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-bold">Student: {studentName}</h2>
+      <div className="flex items-center space-x-2">
+        <h2 className="text-2xl font-bold">Dhor Book</h2>
+        <Badge variant="secondary">
+          {studentData?.name}
+        </Badge>
+      </div>
+      <p className="text-muted-foreground">
+        Here you can track revisions and difficult ayahs for the student.
+      </p>
 
-      <RevisionStats
-        totalRevisions={totalRevisions}
-        excellentRevisions={excellentRevisions}
-        goodRevisions={goodRevisions}
-        averageRevisions={averageRevisions}
-        needsWorkRevisions={needsWorkRevisions}
-        horribleRevisions={horribleRevisions}
-      />
-
-      <RevisionTabs
-        revisions={revisionsArray}
-        difficultAyahs={difficultAyahs}
-        studentId={studentId}
-        onOpenNewRevisionDialog={() => setIsDialogOpen(true)}
-      />
-
-      <RevisionSchedule
-        studentId={studentId}
-        revisionSchedule={revisionSchedule}
-      />
-
+      <ScrollArea className="h-[500px] w-full rounded-md border">
+        <RevisionTabs
+          revisions={revisions || []}
+          difficultAyahs={difficultAyahs}
+          studentId={studentId}
+          studentName={studentData?.name || ''}
+          onOpenNewRevisionDialog={() => setIsNewRevisionDialogOpen(true)}
+        />
+      </ScrollArea>
+      
       <NewRevisionDialog
-        open={isDialogOpen}
-        onOpenChange={setIsDialogOpen}
+        open={isNewRevisionDialogOpen}
+        onOpenChange={setIsNewRevisionDialogOpen}
         studentId={studentId}
-        onSuccess={handleRevisionSuccess}
+        studentName={studentData?.name || ''} // Add studentName prop
+        onSuccess={onRevisionSuccess}
       />
     </div>
   );

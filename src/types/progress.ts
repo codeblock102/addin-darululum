@@ -1,4 +1,3 @@
-
 export interface JuzRevision {
   id: string;
   student_id: string;
@@ -19,6 +18,7 @@ export interface DifficultAyah {
   revision_count?: number;
   notes?: string;
   status: 'active' | 'resolved' | 'pending';
+  created_at?: string;
 }
 
 export type QualityRating = 'excellent' | 'good' | 'average' | 'needsWork' | 'horrible';
@@ -80,7 +80,13 @@ export interface NewRevisionDialogProps {
 
 export type Revision = JuzRevision;
 
-// Message system types for Teacher-Side enhancements
+export interface RevisionsListProps {
+  revisions: JuzRevision[];
+  studentId: string;
+  studentName: string;
+  onAddRevision: () => void;
+}
+
 export interface Message {
   id: string;
   sender_id: string;
@@ -107,7 +113,6 @@ export interface MessageRecipient {
   type: "student" | "teacher" | "admin";
 }
 
-// Class Schedule Management types
 export interface Schedule {
   id: string;
   teacher_id: string | null;
@@ -136,7 +141,6 @@ export interface ScheduleTemplate {
   applicable_terms?: string[];
 }
 
-// Assignment Review & Feedback types
 export interface Assignment {
   id: string;
   student_id: string;
