@@ -66,16 +66,7 @@ export interface Progress {
   };
 }
 
-export interface Revision {
-  id: string;
+export interface Revision extends JuzRevision {
   student_id: string;
-  juz_revised: number;
-  revision_date: string;
-  teacher_notes?: string;
-  memorization_quality?: 'excellent' | 'good' | 'average' | 'needsWork' | 'horrible';
-  teacher_id?: string;
-  quarters_revised?: '1st_quarter' | '2_quarters' | '3_quarters' | '4_quarters';
-  teachers?: {
-    name: string;
-  };
+  // Any additional fields specific to Revision interface
 }
