@@ -66,10 +66,9 @@ export interface Progress {
   };
 }
 
-// Make Revision interface compatible with JuzRevision
-export interface Revision extends Omit<JuzRevision, 'student_id'> {
-  student_id: string;
-  // Any additional fields specific to Revision interface
+// The Revision type extends JuzRevision with all properties required
+export interface Revision extends JuzRevision {
+  student_id: string; // Make this required
 }
 
 // Fix EditDifficultAyahDialogProps to match component usage

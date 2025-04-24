@@ -1,14 +1,47 @@
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsItem, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAnalyticsData } from "@/hooks/useAnalyticsData";
-import { useRealtimeAnalytics } from "@/hooks/useRealtimeAnalytics";
-import { AnalyticsHeader } from './analytics/AnalyticsHeader';
+import { Loader2 } from "lucide-react";
 import { ProgressDistributionChart } from './analytics/ProgressDistributionChart';
 import { StudentProgressChart } from './analytics/StudentProgressChart';
 import { TimeProgressChart } from './analytics/TimeProgressChart';
 import { ContributorActivityChart } from './analytics/ContributorActivityChart';
+
+interface AnalyticsHeaderProps {
+  stats: {
+    title: string;
+    value: any;
+    description: string;
+    trend: string;
+  }[];
+}
+
+export const AnalyticsHeader = ({ stats }: AnalyticsHeaderProps) => {
+  return (
+    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      {stats.map((stat, index) => (
+        <Card key={index}>
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <p className="text-sm font-medium text-muted-foreground">{stat.title}</p>
+              <span className={`text-xs px-2 py-0.5 rounded ${
+                stat.trend.startsWith('+') ? 'bg-green-100 text-green-800' : 'bg-amber-100 text-amber-800'
+              }`}>
+                {stat.trend}
+              </span>
+            </div>
+            <div className="mt-2">
+              <p className="text-2xl font-bold">{stat.value}</p>
+              <p className="text-xs text-muted-foreground mt-1">{stat.description}</p>
+            </div>
+          </CardContent>
+        </Card>
+      ))}
+    </div>
+  );
+};
 
 interface TeacherAnalyticsProps {
   teacherId: string;
@@ -16,46 +49,37 @@ interface TeacherAnalyticsProps {
 
 export const TeacherAnalytics = ({ teacherId }: TeacherAnalyticsProps) => {
   const { data, isLoading, error } = useAnalyticsData(teacherId);
-  const { realtimeData } = useRealtimeAnalytics(teacherId);
   const [currentView, setCurrentView] = useState('week');
   const [progressData, setProgressData] = useState<{ date: string; count: number }[]>([]);
   
-  useEffect(() => {
-    if (data && data.progressOverTime) {
-      // Transform data to the required format for charts
-      const transformedData = data.progressOverTime
-        .filter(item => item.count !== null) // Filter out items with null counts
-        .map(item => ({
-          date: item.date,
-          count: item.count as number // Type assertion to ensure it's a number
-        }));
-      
-      setProgressData(transformedData);
-    }
-  }, [data]);
+  // Transform the data for the charts if available
+  const timeProgress = data?.timeProgress?.map(item => ({
+    date: item.date,
+    count: Number(item.count) || 0
+  })) || [];
   
   const stats = [
     {
       title: "Total Students",
-      value: data?.totalStudents || 0,
+      value: data?.studentProgress?.length || 0,
       description: "Students assigned to you",
       trend: "+2.5%"
     },
     {
       title: "Avg. Quality",
-      value: data?.averageQuality || "N/A",
+      value: data?.qualityDistribution?.length > 0 ? "Good" : "N/A",
       description: "Average memorization quality",
       trend: "+0.3"
     },
     {
       title: "Active Tasks",
-      value: data?.activeTasks || 0,
+      value: data?.contributorActivity?.length || 0,
       description: "Pending assignments",
       trend: "-2"
     },
     {
       title: "Revisions This Month",
-      value: data?.monthlyRevisions || 0,
+      value: timeProgress.reduce((sum, item) => sum + item.count, 0),
       description: "Completed revisions",
       trend: "+15.2%"
     },
@@ -84,6 +108,12 @@ export const TeacherAnalytics = ({ teacherId }: TeacherAnalyticsProps) => {
     );
   }
   
+  // Format the quality distribution data for the chart
+  const formattedQualityData = data?.qualityDistribution?.map(item => ({
+    name: item.quality,
+    value: Number(item.count) || 0
+  })) || [];
+
   return (
     <div className="space-y-8 animate-fadeIn">
       <AnalyticsHeader stats={stats} />
@@ -103,7 +133,7 @@ export const TeacherAnalytics = ({ teacherId }: TeacherAnalyticsProps) => {
                 <CardDescription>Memorization quality assessment</CardDescription>
               </CardHeader>
               <CardContent>
-                <ProgressDistributionChart data={data?.qualityDistribution || []} />
+                <ProgressDistributionChart data={formattedQualityData} />
               </CardContent>
             </Card>
             
@@ -143,7 +173,7 @@ export const TeacherAnalytics = ({ teacherId }: TeacherAnalyticsProps) => {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <TimeProgressChart data={progressData} timeFrame={currentView} />
+                <TimeProgressChart data={timeProgress} />
               </CardContent>
             </Card>
           </div>
@@ -168,11 +198,9 @@ export const TeacherAnalytics = ({ teacherId }: TeacherAnalyticsProps) => {
               <CardDescription>When students are most active</CardDescription>
             </CardHeader>
             <CardContent>
-              <ContributorActivityChart data={data?.activityPatterns || []} />
+              <ContributorActivityChart data={data?.contributorActivity || []} />
             </CardContent>
           </Card>
-          
-          {/* Additional trend charts would go here */}
         </TabsContent>
       </Tabs>
     </div>

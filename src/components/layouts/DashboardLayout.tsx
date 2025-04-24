@@ -14,7 +14,6 @@ import { NavigationMenu } from "@/components/shared/NavigationMenu";
 import { UserAvatar } from "@/components/shared/UserAvatar";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { teacherNavItems, adminNavItems } from "@/config/navigation";
 
 interface DashboardLayoutProps {
   children: ReactNode;
@@ -24,6 +23,78 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   const { session } = useAuth();
   const [isTeacher, setIsTeacher] = useState(false);
   const [unreadNotifications] = useState(3);
+
+  // Define navigation items here for both teacher and admin
+  const teacherNavItems = [
+    {
+      title: "Dashboard",
+      href: "/teacher-portal",
+      icon: "Home"
+    },
+    {
+      title: "My Students",
+      href: "/teacher-portal?tab=students",
+      icon: "Users"
+    },
+    {
+      title: "Progress Recording",
+      href: "/teacher-portal?tab=progress",
+      icon: "BookOpen"
+    },
+    {
+      title: "Grading",
+      href: "/teacher-portal?tab=grading",
+      icon: "CheckSquare"
+    },
+    {
+      title: "Analytics",
+      href: "/teacher-portal?tab=analytics",
+      icon: "BarChart2"
+    },
+    {
+      title: "Messages",
+      href: "/teacher-portal?tab=messages",
+      icon: "MessageSquare"
+    },
+    {
+      title: "Profile",
+      href: "/teacher-portal?tab=profile",
+      icon: "User"
+    }
+  ];
+
+  const adminNavItems = [
+    {
+      title: "Dashboard",
+      href: "/",
+      icon: "Home"
+    },
+    {
+      title: "Students",
+      href: "/students",
+      icon: "GraduationCap"
+    },
+    {
+      title: "Teachers",
+      href: "/teachers",
+      icon: "Users"
+    },
+    {
+      title: "Schedule",
+      href: "/schedule",
+      icon: "Calendar"
+    },
+    {
+      title: "Progress",
+      href: "/progress",
+      icon: "TrendingUp"
+    },
+    {
+      title: "Attendance",
+      href: "/attendance",
+      icon: "CheckSquare"
+    }
+  ];
 
   useEffect(() => {
     const checkTeacherStatus = async () => {
