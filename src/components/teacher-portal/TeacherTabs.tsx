@@ -58,14 +58,49 @@ export const TeacherTabs = ({ teacher, activeTab, onTabChange }: TeacherTabsProp
   
   return (
     <Tabs defaultValue="overview" value={activeTab} onValueChange={handleTabChange} className="w-full">
-      <TabsList className="grid w-full grid-cols-7">
-        <TabsTrigger value="overview" className="transition-all duration-200">Overview</TabsTrigger>
-        <TabsTrigger value="students" className="transition-all duration-200">Students</TabsTrigger>
-        <TabsTrigger value="progress" className="transition-all duration-200">Progress</TabsTrigger>
-        <TabsTrigger value="grading" className="transition-all duration-200">Grading</TabsTrigger>
-        <TabsTrigger value="analytics" className="transition-all duration-200">Analytics</TabsTrigger>
-        <TabsTrigger value="messages" className="transition-all duration-200">Messages</TabsTrigger>
-        <TabsTrigger value="profile" className="transition-all duration-200">Profile</TabsTrigger>
+      <TabsList className="grid w-full grid-cols-7 bg-muted/30 p-1 rounded-lg">
+        <TabsTrigger 
+          value="overview" 
+          className="transition-all duration-200 data-[state=active]:bg-white data-[state=active]:shadow-sm rounded-md"
+        >
+          Overview
+        </TabsTrigger>
+        <TabsTrigger 
+          value="students" 
+          className="transition-all duration-200 data-[state=active]:bg-white data-[state=active]:shadow-sm rounded-md"
+        >
+          Students
+        </TabsTrigger>
+        <TabsTrigger 
+          value="progress" 
+          className="transition-all duration-200 data-[state=active]:bg-white data-[state=active]:shadow-sm rounded-md"
+        >
+          Progress
+        </TabsTrigger>
+        <TabsTrigger 
+          value="grading" 
+          className="transition-all duration-200 data-[state=active]:bg-white data-[state=active]:shadow-sm rounded-md"
+        >
+          Grading
+        </TabsTrigger>
+        <TabsTrigger 
+          value="analytics" 
+          className="transition-all duration-200 data-[state=active]:bg-white data-[state=active]:shadow-sm rounded-md"
+        >
+          Analytics
+        </TabsTrigger>
+        <TabsTrigger 
+          value="messages" 
+          className="transition-all duration-200 data-[state=active]:bg-white data-[state=active]:shadow-sm rounded-md"
+        >
+          Messages
+        </TabsTrigger>
+        <TabsTrigger 
+          value="profile" 
+          className="transition-all duration-200 data-[state=active]:bg-white data-[state=active]:shadow-sm rounded-md"
+        >
+          Profile
+        </TabsTrigger>
       </TabsList>
       
       <motion.div
@@ -75,17 +110,7 @@ export const TeacherTabs = ({ teacher, activeTab, onTabChange }: TeacherTabsProp
         variants={tabVariants}
       >
         <TabsContent value="overview" className="space-y-4 mt-6">
-          <Card className="overflow-hidden border-border/40 shadow-sm hover:shadow-md transition-all duration-300">
-            <CardHeader>
-              <CardTitle>Teaching Schedule</CardTitle>
-              <CardDescription>
-                Your upcoming classes for the week
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <TeacherSchedule teacherId={teacher.id} />
-            </CardContent>
-          </Card>
+          {/* Overview content is now in the TeacherDashboard component */}
         </TabsContent>
         
         <TabsContent value="students" className="mt-6">

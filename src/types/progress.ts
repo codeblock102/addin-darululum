@@ -66,7 +66,16 @@ export interface Progress {
   };
 }
 
+// Make Revision interface compatible with JuzRevision
 export interface Revision extends JuzRevision {
   student_id: string;
   // Any additional fields specific to Revision interface
+}
+
+// Fix EditDifficultAyahDialogProps to match component usage
+export interface EditDifficultAyahDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  ayah: DifficultAyah;
+  studentId: string;
 }

@@ -32,7 +32,9 @@ export const NavigationMenu = ({ items }: NavigationMenuProps) => {
           <SidebarMenuButton 
             isActive={isNavItemActive(item)}
             onClick={() => navigate(item.href)}
-            className="transition-all duration-200 hover:translate-x-1"
+            className={`transition-all duration-200 hover:bg-white/10 ${
+              isNavItemActive(item) ? 'bg-white/20 text-white' : 'text-white/80 hover:text-white'
+            }`}
           >
             <item.icon className="h-5 w-5" />
             <span className="font-medium">{item.label}</span>
