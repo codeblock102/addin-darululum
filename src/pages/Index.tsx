@@ -1,5 +1,4 @@
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { DashboardLayout } from "@/components/layouts/DashboardLayout";
 import { StatsCard } from "@/components/dashboard/StatsCard";
 import { Users, BookOpen, GraduationCap, Clock } from "lucide-react";
@@ -7,9 +6,45 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState("overview");
+  const navigate = useNavigate();
+  const { session } = useAuth();
+  const [isTeacher, setIsTeacher] = useState<boolean | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  
+  useEffect(() => {
+    const checkTeacherStatus = async () => {
+      if (!session?.user?.email) return;
+      
+      try {
+        const { data, error } = await supabase
+          .from('teachers')
+          .select('id')
+          .eq('email', session.user.email);
+          
+        if (error) throw error;
+        
+        setIsTeacher(data && data.length > 0);
+      } catch (error) {
+        console.error("Error checking teacher status:", error);
+        setIsTeacher(false);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    checkTeacherStatus();
+  }, [session]);
+
+  useEffect(() => {
+    if (isTeacher === true && !isLoading) {
+      navigate('/teacher-portal');
+    }
+  }, [isTeacher, isLoading, navigate]);
   
   const { data: studentsCount } = useQuery({
     queryKey: ['studentsCount'],
@@ -43,7 +78,6 @@ const Index = () => {
   const { data: attendanceRate } = useQuery({
     queryKey: ['attendanceRate'],
     queryFn: async () => {
-      // For now, return a static value since attendance tracking isn't implemented yet
       return 92;
     }
   });
@@ -51,7 +85,6 @@ const Index = () => {
   const { data: activeClasses } = useQuery({
     queryKey: ['activeClasses'],
     queryFn: async () => {
-      // We'll implement this when classes feature is added
       return 8;
     }
   });
@@ -69,6 +102,26 @@ const Index = () => {
       return data;
     }
   });
+
+  if (isLoading) {
+    return (
+      <DashboardLayout>
+        <div className="flex items-center justify-center h-screen">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+        </div>
+      </DashboardLayout>
+    );
+  }
+
+  if (isTeacher) {
+    return (
+      <DashboardLayout>
+        <div className="flex items-center justify-center h-screen">
+          <p>Redirecting to teacher portal...</p>
+        </div>
+      </DashboardLayout>
+    );
+  }
 
   return (
     <DashboardLayout>
