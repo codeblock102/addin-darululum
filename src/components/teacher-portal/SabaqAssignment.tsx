@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -39,6 +38,12 @@ interface SabaqAssignmentProps {
   teacherId: string;
 }
 
+interface Student {
+  id: string;
+  name: string;
+  learning_type?: string;
+}
+
 const assignmentSchema = z.object({
   student_id: z.string({
     required_error: "Please select a student",
@@ -57,22 +62,25 @@ export const SabaqAssignment = ({ teacherId }: SabaqAssignmentProps) => {
   const queryClient = useQueryClient();
   const today = new Date().toISOString().split('T')[0];
   
-  // Fetch students for the dropdown
   const { data: students, isLoading: studentsLoading } = useQuery({
     queryKey: ['students-for-assignment'],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('students')
-        .select('id, name, learning_type')
+        .select('id, name')
         .eq('status', 'active')
         .order('name', { ascending: true });
       
       if (error) {
         console.error('Error fetching students:', error);
-        return [];
+        return [] as Student[];
       }
       
-      return data;
+      return (data || []).map(student => ({
+        id: student.id,
+        name: student.name,
+        learning_type: 'hifz'
+      })) as Student[];
     }
   });
 
@@ -144,10 +152,10 @@ export const SabaqAssignment = ({ teacherId }: SabaqAssignmentProps) => {
   }
 
   const selectedStudent = form.watch('student_id');
-  const studentType = students?.find(s => s.id === selectedStudent)?.learning_type || 'hifz';
+  const selectedStudentData = students?.find(s => s.id === selectedStudent);
+  const studentType = selectedStudentData?.learning_type || 'hifz';
   const assignmentType = form.watch('assignment_type');
 
-  // Need to dynamically change available assignment types based on student learning type
   const isQaidaStudent = studentType === 'qaida';
   const isNazirahStudent = studentType === 'nazirah';
 
@@ -172,7 +180,6 @@ export const SabaqAssignment = ({ teacherId }: SabaqAssignmentProps) => {
                     onValueChange={(value) => {
                       field.onChange(value);
                       
-                      // Adjust the assignment type based on student type
                       const student = students?.find(s => s.id === value);
                       if (student?.learning_type === 'qaida') {
                         form.setValue('assignment_type', 'qaida');
@@ -191,9 +198,9 @@ export const SabaqAssignment = ({ teacherId }: SabaqAssignmentProps) => {
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {students?.map((student) => (
+                      {students && students.map((student) => (
                         <SelectItem key={student.id} value={student.id}>
-                          {student.name} ({student.learning_type})
+                          {student.name} ({student.learning_type || 'hifz'})
                         </SelectItem>
                       ))}
                     </SelectContent>

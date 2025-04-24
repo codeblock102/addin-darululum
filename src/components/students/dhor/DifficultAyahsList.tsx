@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useQueryClient, useMutation } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -34,7 +35,7 @@ export const DifficultAyahsList = ({ ayahs, studentId }: DifficultAyahsListProps
     mutationFn: async (ayahId: string) => {
       try {
         const { error } = await supabase
-          .rpc('mark_ayah_resolved', { ayah_id_param: ayahId })
+          .rpc('mark_ayah_resolved', { ayah_id_param: ayahId });
         
         if (error) throw error;
         return ayahId;
@@ -153,7 +154,7 @@ export const DifficultAyahsList = ({ ayahs, studentId }: DifficultAyahsListProps
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => handleMarkResolved(ayah.id)}
+                    onClick={() => markAsResolved.mutate(ayah.id)}
                   >
                     <Check className="h-4 w-4" />
                   </Button>

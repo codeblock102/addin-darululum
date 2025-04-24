@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -38,6 +39,7 @@ export const DhorBook = ({ studentId, studentName }: DhorBookProps) => {
       
       if (error) throw error;
       
+      // Create a properly typed object instead of spreading potentially undefined values
       const revisionsWithTeachers = data.map(revision => ({
         ...revision,
         teachers: { name: "Unknown" }
@@ -138,17 +140,23 @@ export const DhorBook = ({ studentId, studentName }: DhorBookProps) => {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold">Dhor Book for {studentName}</h2>
-        <Button onClick={handleOpenDialog}>
+        <Button onClick={() => setIsDialogOpen(true)}>
           <Plus className="mr-2 h-4 w-4" />
           Add Revision
         </Button>
       </div>
 
       <RevisionStats 
-        totalRevisions={totalRevisions}
-        completedRevisions={completedRevisions}
-        needsImprovementRevisions={needsImprovementRevisions}
-        completionRate={revisionCompletionRate}
+        totalRevisions={revisions?.length || 0}
+        completedRevisions={revisions?.filter(
+          rev => rev.memorization_quality === 'excellent' || rev.memorization_quality === 'good'
+        ).length || 0}
+        needsImprovementRevisions={revisions?.filter(
+          rev => rev.memorization_quality === 'needsWork' || rev.memorization_quality === 'horrible'
+        ).length || 0}
+        completionRate={revisions?.length ? Math.round((revisions.filter(
+          rev => rev.memorization_quality === 'excellent' || rev.memorization_quality === 'good'
+        ).length / revisions.length) * 100) : 0}
       />
       
       <Tabs defaultValue="revisions">
@@ -246,7 +254,7 @@ export const DhorBook = ({ studentId, studentName }: DhorBookProps) => {
                             Last revised: {new Date(juzMastery.last_revision_date).toLocaleDateString()}
                           </div>
                         )}
-                        {juzMastery?.revision_count > 0 && (
+                        {juzMastery?.revision_count && juzMastery.revision_count > 0 && (
                           <div className="text-xs text-gray-500">
                             Revisions: {juzMastery.revision_count}
                           </div>

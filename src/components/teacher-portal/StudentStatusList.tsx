@@ -18,15 +18,30 @@ interface StudentStatusListProps {
   teacherId: string;
 }
 
+// Define a type for student status data
+interface StudentStatus {
+  student_id: string;
+  student_name: string;
+  learning_type?: string;
+  pending_assignments: number;
+  missed_assignments: number;
+  pending_details?: string;
+}
+
 export const StudentStatusList: React.FC<StudentStatusListProps> = ({ teacherId }) => {
   const { data: statusData, isLoading } = useQuery({
     queryKey: ['student-status', teacherId],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .rpc('get_student_status');
-        
-      if (error) throw error;
-      return data;
+      try {
+        const { data, error } = await supabase
+          .rpc('get_student_status');
+          
+        if (error) throw error;
+        return (data || []) as StudentStatus[];
+      } catch (error) {
+        console.error("Error fetching student status:", error);
+        return [] as StudentStatus[];
+      }
     },
   });
   
@@ -38,7 +53,7 @@ export const StudentStatusList: React.FC<StudentStatusListProps> = ({ teacherId 
     );
   }
   
-  if (!statusData?.length) {
+  if (!statusData || statusData.length === 0) {
     return (
       <div className="text-center p-6 text-muted-foreground">
         No student status information available
@@ -63,7 +78,7 @@ export const StudentStatusList: React.FC<StudentStatusListProps> = ({ teacherId 
               <TableCell className="font-medium">{student.student_name}</TableCell>
               <TableCell>
                 <Badge variant="outline" className="capitalize">
-                  {student.learning_type}
+                  {student.learning_type || 'hifz'}
                 </Badge>
               </TableCell>
               <TableCell className="text-center">
