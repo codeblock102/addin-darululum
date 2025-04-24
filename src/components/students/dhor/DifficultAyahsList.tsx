@@ -63,10 +63,6 @@ export const DifficultAyahsList = ({ ayahs, studentId }: DifficultAyahsListProps
     }
   });
   
-  const handleMarkResolved = (ayahId: string) => {
-    markAsResolved.mutate(ayahId);
-  };
-  
   const handleEditAyah = (ayah: DifficultAyah) => {
     setSelectedAyah(ayah);
     setEditDialogOpen(true);
