@@ -61,9 +61,10 @@ export const TeacherTabs = ({ teacher, activeTab, onTabChange }: TeacherTabsProp
   
   const { data: summaryData } = useTeacherSummary(teacher.id);
 
-  return (
-    <div className="space-y-6">
-      {activeTab === "overview" && (
+  // If activeTab is overview, we display the dashboard content directly
+  if (activeTab === "overview") {
+    return (
+      <div className="space-y-6">
         <div className="animate-slideIn space-y-6">
           <DashboardSummary summaryData={summaryData} />
           
@@ -111,31 +112,47 @@ export const TeacherTabs = ({ teacher, activeTab, onTabChange }: TeacherTabsProp
             </Card>
           </div>
         </div>
-      )}
-      
-      <TabsContent value="students" className="mt-6">
-        <MyStudents teacherId={teacher.id} />
-      </TabsContent>
-      
-      <TabsContent value="progress" className="mt-6">
-        <ProgressRecording teacherId={teacher.id} />
-      </TabsContent>
-      
-      <TabsContent value="grading" className="mt-6">
-        <TeacherGrading teacherId={teacher.id} />
-      </TabsContent>
-      
-      <TabsContent value="analytics" className="mt-6">
-        <TeacherAnalytics teacherId={teacher.id} />
-      </TabsContent>
-      
-      <TabsContent value="messages" className="mt-6">
-        <TeacherMessages teacherId={teacher.id} teacherName={teacher.name} />
-      </TabsContent>
-      
-      <TabsContent value="profile" className="mt-6">
-        <TeacherProfile teacher={teacher} />
-      </TabsContent>
+      </div>
+    );
+  }
+
+  // For all other tabs, we'll use the Tabs component properly
+  return (
+    <div className="space-y-6">
+      <Tabs value={activeTab} onValueChange={handleTabChange}>
+        <TabsList className="w-full border-b pb-0">
+          <TabsTrigger value="students">Students</TabsTrigger>
+          <TabsTrigger value="progress">Progress</TabsTrigger>
+          <TabsTrigger value="grading">Grading</TabsTrigger>
+          <TabsTrigger value="analytics">Analytics</TabsTrigger>
+          <TabsTrigger value="messages">Messages</TabsTrigger>
+          <TabsTrigger value="profile">Profile</TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="students" className="mt-6">
+          <MyStudents teacherId={teacher.id} />
+        </TabsContent>
+        
+        <TabsContent value="progress" className="mt-6">
+          <ProgressRecording teacherId={teacher.id} />
+        </TabsContent>
+        
+        <TabsContent value="grading" className="mt-6">
+          <TeacherGrading teacherId={teacher.id} />
+        </TabsContent>
+        
+        <TabsContent value="analytics" className="mt-6">
+          <TeacherAnalytics teacherId={teacher.id} />
+        </TabsContent>
+        
+        <TabsContent value="messages" className="mt-6">
+          <TeacherMessages teacherId={teacher.id} teacherName={teacher.name} />
+        </TabsContent>
+        
+        <TabsContent value="profile" className="mt-6">
+          <TeacherProfile teacher={teacher} />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };
