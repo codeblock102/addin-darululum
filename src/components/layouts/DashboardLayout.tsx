@@ -1,5 +1,5 @@
 
-import { ReactNode } from "react";
+import { ReactNode, useState, useEffect } from "react";
 import { 
   Sidebar, 
   SidebarContent, 
@@ -13,6 +13,46 @@ import { NavigationMenu } from "@/components/shared/NavigationMenu";
 import { UserAvatar } from "@/components/shared/UserAvatar";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+
+// Import the navigation items
+import { 
+  BookText, 
+  Calendar, 
+  CalendarCheck, 
+  CalendarDays, 
+  ClipboardCheck, 
+  GraduationCap, 
+  Home, 
+  LineChart, 
+  BarChart, 
+  MessageSquare, 
+  School, 
+  Settings, 
+  UserCircle, 
+  Users 
+} from "lucide-react";
+import { NavItem } from "@/types/navigation";
+
+// Define navigation items
+const adminNavItems: NavItem[] = [
+  { href: "/", label: "Dashboard", icon: Home, description: "Overview dashboard" },
+  { href: "/students", label: "Students", icon: Users, description: "Manage students" },
+  { href: "/teachers", label: "Teachers", icon: School, description: "Manage teachers" },
+  { href: "/schedule", label: "Schedule", icon: CalendarDays, description: "View schedules" },
+  { href: "/progress", label: "Progress", icon: LineChart, description: "Track progress" },
+  { href: "/attendance", label: "Attendance", icon: CalendarCheck, description: "Record attendance" },
+  { href: "/teacher-portal", label: "Teacher Portal", icon: GraduationCap, description: "Access teacher portal" },
+];
+
+const teacherNavItems: NavItem[] = [
+  { href: "/teacher-portal", label: "Dashboard", icon: Home, description: "Teacher dashboard", exact: true },
+  { href: "/teacher-portal?tab=students", label: "My Students", icon: Users, description: "View students" },
+  { href: "/teacher-portal?tab=progress", label: "Record Progress", icon: BookText, description: "Record student progress" },
+  { href: "/teacher-portal?tab=grading", label: "Grading", icon: ClipboardCheck, description: "Grade student work" },
+  { href: "/teacher-portal?tab=analytics", label: "Analytics", icon: BarChart, description: "View analytics" },
+  { href: "/teacher-portal?tab=messages", label: "Messages", icon: MessageSquare, description: "Message students" },
+  { href: "/teacher-portal?tab=profile", label: "My Profile", icon: UserCircle, description: "Manage profile" },
+];
 
 interface DashboardLayoutProps {
   children: ReactNode;
