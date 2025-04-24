@@ -45,7 +45,6 @@ export const NewDifficultAyahDialog = ({
 }: NewDifficultAyahDialogProps) => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const [submitting, setSubmitting] = useState(false);
   
   // Setup form
   const form = useForm<z.infer<typeof formSchema>>({
@@ -61,31 +60,22 @@ export const NewDifficultAyahDialog = ({
   // Mutation for adding a difficult ayah
   const addDifficultAyah = useMutation({
     mutationFn: async (data: z.infer<typeof formSchema>) => {
-      setSubmitting(true);
+      const { error } = await supabase
+        .from('difficult_ayahs')
+        .insert([{
+          student_id: studentId,
+          surah_number: data.surah_number,
+          ayah_number: data.ayah_number,
+          juz_number: data.juz_number,
+          notes: data.notes || '',
+          date_added: new Date().toISOString().split('T')[0],
+          revision_count: 0,
+          last_revised: null,
+          status: 'active'
+        }]);
       
-      try {
-        const { error } = await supabase
-          .from('difficult_ayahs')
-          .insert([{
-            student_id: studentId,
-            surah_number: data.surah_number,
-            ayah_number: data.ayah_number,
-            juz_number: data.juz_number,
-            notes: data.notes || '',
-            date_added: new Date().toISOString().split('T')[0],
-            revision_count: 0,
-            last_revised: null,
-            status: 'active'
-          }]);
-        
-        if (error) throw error;
-        return true;
-      } catch (error: any) {
-        console.error("Error adding difficult ayah:", error);
-        throw new Error(error.message || "Failed to add difficult ayah");
-      } finally {
-        setSubmitting(false);
-      }
+      if (error) throw error;
+      return true;
     },
     onSuccess: () => {
       toast({
@@ -186,8 +176,8 @@ export const NewDifficultAyahDialog = ({
               )}
             />
             
-            <Button type="submit" disabled={submitting} className="w-full">
-              {submitting ? (
+            <Button type="submit" disabled={addDifficultAyah.isPending} className="w-full">
+              {addDifficultAyah.isPending ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   Saving...

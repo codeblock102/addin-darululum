@@ -17,7 +17,7 @@ import {
 } from '@/components/ui/table';
 import { AlertTriangle, Clock, MoreVertical, Plus, RefreshCw } from 'lucide-react';
 import { NewDifficultAyahDialog } from './NewDifficultAyahDialog';
-import { DifficultAyah, EditDifficultAyahDialogProps } from '@/types/progress';
+import { DifficultAyah } from '@/types/progress';
 import { EditDifficultAyahDialog } from './EditDifficultAyahDialog';
 import { useQueryClient } from "@tanstack/react-query";
 
@@ -54,6 +54,12 @@ export const DifficultAyahsList: React.FC<DifficultAyahsListProps> = ({ ayahs, s
       default:
         return <AlertTriangle className="h-4 w-4 text-amber-500" />;
     }
+  };
+
+  const handleSuccessUpdate = async () => {
+    await queryClient.invalidateQueries({
+      queryKey: ['student-difficult-ayahs', studentId]
+    });
   };
 
   return (
@@ -132,9 +138,7 @@ export const DifficultAyahsList: React.FC<DifficultAyahsListProps> = ({ ayahs, s
           onOpenChange={setEditDialogOpen}
           difficultAyah={selectedAyah}
           studentId={studentId}
-          onSuccess={() => queryClient.invalidateQueries({
-            queryKey: ['student-difficult-ayahs', studentId]
-          })}
+          onSuccess={handleSuccessUpdate}
         />
       )}
     </div>

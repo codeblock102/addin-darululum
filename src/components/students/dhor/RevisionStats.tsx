@@ -1,70 +1,54 @@
 
 import { Card, CardContent } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Info } from "lucide-react";
 
-interface RevisionStatsProps {
+export interface RevisionStatsProps {
   totalRevisions: number;
-  completedRevisions: number;
-  needsImprovementRevisions: number;
-  completionRate: number;
+  excellentRevisions: number;
+  goodRevisions: number;
+  averageRevisions: number;
+  needsWorkRevisions: number;
+  horribleRevisions: number;
 }
 
-export const RevisionStats = ({ 
+export const RevisionStats = ({
   totalRevisions,
-  completedRevisions,
-  needsImprovementRevisions,
-  completionRate
+  excellentRevisions,
+  goodRevisions,
+  averageRevisions,
+  needsWorkRevisions,
+  horribleRevisions
 }: RevisionStatsProps) => {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-      <Card>
-        <CardContent className="pt-6">
-          <div className="text-2xl font-bold">{totalRevisions}</div>
-          <p className="text-xs text-gray-500 mt-1">Total Revisions</p>
-        </CardContent>
-      </Card>
-      
-      <Card>
-        <CardContent className="pt-6">
-          <div className="text-2xl font-bold text-green-600">{completedRevisions}</div>
-          <p className="text-xs text-gray-500 mt-1">Completed</p>
-        </CardContent>
-      </Card>
-      
-      <Card>
-        <CardContent className="pt-6">
-          <div className="text-2xl font-bold text-red-600">{needsImprovementRevisions}</div>
-          <p className="text-xs text-gray-500 mt-1">Needs Improvement</p>
-        </CardContent>
-      </Card>
-      
-      <Card>
-        <CardContent className="pt-6">
-          <div className="flex flex-col gap-2">
-            <div className="flex justify-between items-center">
-              <span className="text-sm font-medium">Completion Rate</span>
-              <div className="flex items-center">
-                <span className="text-sm font-medium mr-1">{completionRate}%</span>
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger>
-                      <Info className="h-4 w-4 text-gray-500" />
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p className="text-xs">
-                        The percentage of revisions rated as excellent or good
-                      </p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              </div>
-            </div>
-            <Progress value={completionRate} className="h-2" />
+    <Card>
+      <CardContent className="p-6">
+        <h3 className="text-lg font-semibold mb-4">Revision Statistics</h3>
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+          <div className="bg-muted/50 p-4 rounded-md text-center">
+            <div className="text-2xl font-bold">{totalRevisions}</div>
+            <div className="text-sm text-muted-foreground">Total</div>
           </div>
-        </CardContent>
-      </Card>
-    </div>
+          <div className="bg-green-100 p-4 rounded-md text-center">
+            <div className="text-2xl font-bold text-green-700">{excellentRevisions}</div>
+            <div className="text-sm text-green-700">Excellent</div>
+          </div>
+          <div className="bg-blue-100 p-4 rounded-md text-center">
+            <div className="text-2xl font-bold text-blue-700">{goodRevisions}</div>
+            <div className="text-sm text-blue-700">Good</div>
+          </div>
+          <div className="bg-yellow-100 p-4 rounded-md text-center">
+            <div className="text-2xl font-bold text-yellow-700">{averageRevisions}</div>
+            <div className="text-sm text-yellow-700">Average</div>
+          </div>
+          <div className="bg-orange-100 p-4 rounded-md text-center">
+            <div className="text-2xl font-bold text-orange-700">{needsWorkRevisions}</div>
+            <div className="text-sm text-orange-700">Needs Work</div>
+          </div>
+          <div className="bg-red-100 p-4 rounded-md text-center">
+            <div className="text-2xl font-bold text-red-700">{horribleRevisions}</div>
+            <div className="text-sm text-red-700">Incomplete</div>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
   );
 };
