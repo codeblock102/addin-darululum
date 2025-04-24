@@ -14,6 +14,7 @@ import { NavigationMenu } from "@/components/shared/NavigationMenu";
 import { UserAvatar } from "@/components/shared/UserAvatar";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import { teacherNavItems, adminNavItems } from "@/config/navigation";
 
 interface DashboardLayoutProps {
   children: ReactNode;

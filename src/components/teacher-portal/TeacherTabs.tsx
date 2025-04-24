@@ -1,3 +1,4 @@
+
 import { useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -13,6 +14,7 @@ import { Teacher } from "@/types/teacher";
 import { motion } from "framer-motion";
 import { useTeacherSummary } from "@/hooks/useTeacherSummary";
 import { StudentStatusList } from "./StudentStatusList";
+import { DashboardSummary } from "./DashboardSummary";
 
 interface TeacherTabsProps {
   teacher: Teacher;
