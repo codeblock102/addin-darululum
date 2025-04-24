@@ -8,6 +8,7 @@ interface RevisionTabsProps {
   revisions: JuzRevision[];
   difficultAyahs: DifficultAyah[];
   studentId: string;
+  studentName: string; // Add studentName prop
   onOpenNewRevisionDialog: () => void;
 }
 
@@ -15,6 +16,7 @@ export const RevisionTabs = ({
   revisions,
   difficultAyahs,
   studentId,
+  studentName, // Add studentName prop
   onOpenNewRevisionDialog
 }: RevisionTabsProps) => {
   return (
@@ -28,6 +30,7 @@ export const RevisionTabs = ({
         <RevisionsList 
           revisions={revisions}
           studentId={studentId}
+          studentName={studentName} // Pass studentName prop
           onAddRevision={onOpenNewRevisionDialog} 
         />
       </TabsContent>
