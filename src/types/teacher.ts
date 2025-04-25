@@ -6,6 +6,7 @@ export interface Teacher {
   email?: string;
   bio?: string;
   phone?: string;
+  user_id?: string;
 }
 
 export interface TeacherDashboardProps {
