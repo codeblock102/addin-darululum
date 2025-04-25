@@ -1,5 +1,5 @@
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -7,11 +7,10 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import { ArrowLeft, Check, X, Eye, EyeOff, LockKeyhole, Mail, User } from "lucide-react";
+import { ArrowLeft, Eye, EyeOff, LockKeyhole, Mail } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-import { Progress } from "@/components/ui/progress";
 
-type AuthMode = "signIn" | "signUp" | "forgotPassword";
+type AuthMode = "signIn" | "forgotPassword";
 
 const Auth = () => {
   const [email, setEmail] = useState("");
@@ -29,52 +28,12 @@ const Auth = () => {
     }
   }, [session, navigate]);
 
-  // Password strength calculation
-  const passwordStrength = useMemo(() => {
-    if (!password) return 0;
-    
-    let strength = 0;
-    if (password.length >= 8) strength += 25;
-    if (/[A-Z]/.test(password)) strength += 25;
-    if (/[0-9]/.test(password)) strength += 25;
-    if (/[^A-Za-z0-9]/.test(password)) strength += 25;
-    
-    return strength;
-  }, [password]);
-
-  const getPasswordColor = () => {
-    if (passwordStrength < 50) return "bg-red-500";
-    if (passwordStrength < 75) return "bg-yellow-500";
-    return "bg-green-500";
-  };
-
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
     try {
-      if (mode === "signUp") {
-        // For sign up, ensure password is strong enough
-        if (passwordStrength < 75) {
-          toast({
-            title: "Weak Password",
-            description: "Please create a stronger password with uppercase, numbers, and special characters",
-            variant: "destructive",
-          });
-          setIsLoading(false);
-          return;
-        }
-        
-        const { error } = await supabase.auth.signUp({
-          email,
-          password,
-        });
-        if (error) throw error;
-        toast({
-          title: "Success",
-          description: "Please check your email to verify your account",
-        });
-      } else if (mode === "signIn") {
+      if (mode === "signIn") {
         const { error } = await supabase.auth.signInWithPassword({
           email,
           password,
@@ -101,50 +60,6 @@ const Auth = () => {
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const renderPasswordRequirements = () => {
-    if (mode !== "signUp" || !password) return null;
-    
-    return (
-      <div className="space-y-2 text-sm mt-2">
-        <p className="font-medium">Password requirements:</p>
-        <div className="grid grid-cols-2 gap-2">
-          <div className="flex items-center">
-            {password.length >= 8 ? (
-              <Check className="h-4 w-4 text-green-500 mr-2" />
-            ) : (
-              <X className="h-4 w-4 text-red-500 mr-2" />
-            )}
-            <span>At least 8 characters</span>
-          </div>
-          <div className="flex items-center">
-            {/[A-Z]/.test(password) ? (
-              <Check className="h-4 w-4 text-green-500 mr-2" />
-            ) : (
-              <X className="h-4 w-4 text-red-500 mr-2" />
-            )}
-            <span>Uppercase letter</span>
-          </div>
-          <div className="flex items-center">
-            {/[0-9]/.test(password) ? (
-              <Check className="h-4 w-4 text-green-500 mr-2" />
-            ) : (
-              <X className="h-4 w-4 text-red-500 mr-2" />
-            )}
-            <span>Number</span>
-          </div>
-          <div className="flex items-center">
-            {/[^A-Za-z0-9]/.test(password) ? (
-              <Check className="h-4 w-4 text-green-500 mr-2" />
-            ) : (
-              <X className="h-4 w-4 text-red-500 mr-2" />
-            )}
-            <span>Special character</span>
-          </div>
-        </div>
-      </div>
-    );
   };
 
   const renderAuthForm = () => {
@@ -221,42 +136,26 @@ const Auth = () => {
               {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
             </Button>
           </div>
-          
-          {mode === "signUp" && password && (
-            <>
-              <div className="mt-2">
-                <Progress value={passwordStrength} className={getPasswordColor()} />
-                <p className="text-xs mt-1 text-right">
-                  {passwordStrength < 50 
-                    ? "Weak password" 
-                    : passwordStrength < 75 
-                      ? "Moderate password" 
-                      : "Strong password"}
-                </p>
-              </div>
-              {renderPasswordRequirements()}
-            </>
-          )}
         </div>
         
-        {mode === "signIn" && (
-          <Button
-            type="button"
-            variant="link"
-            className="w-full -mt-2 text-sm text-right"
-            onClick={() => setMode("forgotPassword")}
-          >
-            Forgot Password?
-          </Button>
-        )}
+        <Button
+          type="button"
+          variant="link"
+          className="w-full -mt-2 text-sm text-right"
+          onClick={() => setMode("forgotPassword")}
+        >
+          Forgot Password?
+        </Button>
         
         <Button type="submit" className="w-full" disabled={isLoading}>
-          {isLoading
-            ? "Processing..."
-            : mode === "signUp"
-            ? "Create Account"
-            : "Sign In"}
+          {isLoading ? "Processing..." : "Sign In"}
         </Button>
+        
+        <div className="text-center mt-4">
+          <p className="text-sm text-gray-500">
+            Only admin-created accounts can access this system. Public registration is disabled.
+          </p>
+        </div>
       </form>
     );
   };
@@ -277,15 +176,11 @@ const Auth = () => {
           <CardTitle className="text-2xl font-bold text-center">
             {mode === "forgotPassword" 
               ? "Reset Password" 
-              : mode === "signUp" 
-                ? "Create Account" 
-                : "Sign In"}
+              : "Sign In"}
           </CardTitle>
           <CardDescription className="text-center">
             {mode === "forgotPassword"
               ? "Enter your email to receive a password reset link"
-              : mode === "signUp"
-              ? "Create a new account to access the system"
               : "Sign in to your account to continue"}
           </CardDescription>
         </CardHeader>
@@ -293,17 +188,6 @@ const Auth = () => {
         <CardContent>
           {renderAuthForm()}
         </CardContent>
-        
-        <CardFooter className="flex justify-center border-t p-4">
-          <Button
-            variant="link"
-            onClick={() => setMode(mode === "signUp" ? "signIn" : "signUp")}
-          >
-            {mode === "signUp"
-              ? "Already have an account? Sign In"
-              : "Don't have an account? Sign Up"}
-          </Button>
-        </CardFooter>
       </Card>
     </div>
   );
