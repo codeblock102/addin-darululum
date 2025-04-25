@@ -8,15 +8,15 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { 
-  Badge,
-  Button,
   DropdownMenu,
   DropdownMenuTrigger,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator
-} from "@/components/ui/button";
+} from "@/components/ui/dropdown-menu";
 import { TeacherAccount } from "@/types/teacher";
 import { MoreHorizontal, Eye, Edit, UserMinus, Trash2, Check, X } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
