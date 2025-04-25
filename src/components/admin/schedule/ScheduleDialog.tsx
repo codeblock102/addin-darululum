@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -30,14 +31,15 @@ import { ScheduleFormFields } from "./ScheduleFormFields";
 import { Schedule } from "@/types/teacher";
 import { TimeSlot } from "@/types/teacher";
 import { scheduleFormSchema } from "./scheduleValidation";
-import { useScheduleSubmit } from "./useScheduleSubmit";
+import { useMutation } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 export interface ScheduleDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   schedule: Schedule | null;
   onSuccess?: (data?: any) => void;
-  teacherId?: string; // Added teacherId as an optional prop
+  teacherId?: string;
 }
 
 export function ScheduleDialog({
@@ -50,7 +52,60 @@ export function ScheduleDialog({
   const [formStep, setFormStep] = useState<"info" | "schedule" | "success" | "error">(
     "info"
   );
-  const { isSubmitting, submitSchedule } = useScheduleSubmit();
+
+  const { mutate, isPending } = useMutation({
+    mutationFn: async (formData: any) => {
+      try {
+        const scheduleData = {
+          name: formData.name,
+          room: formData.room,
+          capacity: formData.capacity,
+          teacher_id: teacherId || schedule?.teacher_id || '',
+          time_slots: formData.time_slots,
+          days_of_week: Array.from(
+            new Set(formData.time_slots.flatMap((slot: TimeSlot) => slot.days))
+          )
+        };
+        
+        if (schedule) {
+          const { data, error } = await supabase
+            .from('classes')
+            .update(scheduleData)
+            .eq('id', schedule.id)
+            .select();
+          
+          if (error) throw error;
+          return data;
+        } else {
+          const { data, error } = await supabase
+            .from('classes')
+            .insert([{
+              ...scheduleData,
+              current_students: 0,
+              status: 'active'
+            }])
+            .select();
+          
+          if (error) throw error;
+          return data;
+        }
+      } catch (error: any) {
+        console.error("Error submitting schedule:", error);
+        throw error;
+      }
+    },
+    onSuccess: () => {
+      setFormStep("success");
+      if (onSuccess) onSuccess();
+      setTimeout(() => {
+        onOpenChange(false);
+        setFormStep("info");
+      }, 1500);
+    },
+    onError: () => {
+      setFormStep("error");
+    }
+  });
 
   const form = useForm({
     resolver: zodResolver(scheduleFormSchema),
@@ -60,40 +115,24 @@ export function ScheduleDialog({
       time_slots: schedule?.time_slots || [],
       capacity: schedule?.capacity || 20,
       room: schedule?.room || "",
-      teacher_id: teacherId || schedule?.teacher_id || "", // Use teacherId if provided
+      teacher_id: teacherId || schedule?.teacher_id || "",
     },
   });
 
   const onSubmit = async (data: any) => {
-    try {
-      // Ensure time slots have the correct structure
-      const formattedTimeSlots: TimeSlot[] = data.time_slots.map((slot: any) => ({
-        days: Array.isArray(slot.days) ? slot.days : [],
-        start_time: slot.start_time || "",
-        end_time: slot.end_time || ""
-      }));
-      
-      const scheduleData = {
-        ...data,
-        time_slots: formattedTimeSlots
-      };
-      
-      const success = await submitSchedule(scheduleData, schedule?.id);
-      if (success) {
-        setFormStep("success");
-        if (onSuccess) onSuccess();
-        setTimeout(() => {
-          onOpenChange(false);
-          setFormStep("info");
-          form.reset();
-        }, 1500);
-      } else {
-        setFormStep("error");
-      }
-    } catch (error) {
-      console.error("Error submitting schedule:", error);
-      setFormStep("error");
-    }
+    // Ensure time slots have the correct structure
+    const formattedTimeSlots: TimeSlot[] = data.time_slots.map((slot: any) => ({
+      days: Array.isArray(slot.days) ? slot.days : [],
+      start_time: slot.start_time || "",
+      end_time: slot.end_time || ""
+    }));
+    
+    const scheduleData = {
+      ...data,
+      time_slots: formattedTimeSlots
+    };
+    
+    mutate(scheduleData);
   };
 
   return (
@@ -173,7 +212,7 @@ export function ScheduleDialog({
         {formStep === "schedule" && (
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-              <ScheduleFormFields form={form} />
+              <ScheduleFormFields {...form} />
 
               <DialogFooter>
                 <Button
@@ -183,8 +222,8 @@ export function ScheduleDialog({
                 >
                   Back: Info
                 </Button>
-                <Button type="submit" disabled={isSubmitting}>
-                  {isSubmitting ? (
+                <Button type="submit" disabled={isPending}>
+                  {isPending ? (
                     <>
                       Submitting <Loader2 className="ml-2 h-4 w-4 animate-spin" />
                     </>

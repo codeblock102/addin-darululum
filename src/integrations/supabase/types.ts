@@ -188,6 +188,71 @@ export type Database = {
           },
         ]
       }
+      dhor_book_entries: {
+        Row: {
+          comments: string | null
+          created_at: string
+          day_of_week: string
+          detention: boolean
+          dhor_1: string | null
+          dhor_1_mistakes: number
+          dhor_2: string | null
+          dhor_2_mistakes: number
+          entry_date: string
+          id: string
+          points: number
+          sabak: string | null
+          sabak_para: string | null
+          student_id: string | null
+          teacher_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          comments?: string | null
+          created_at?: string
+          day_of_week: string
+          detention?: boolean
+          dhor_1?: string | null
+          dhor_1_mistakes?: number
+          dhor_2?: string | null
+          dhor_2_mistakes?: number
+          entry_date: string
+          id?: string
+          points?: number
+          sabak?: string | null
+          sabak_para?: string | null
+          student_id?: string | null
+          teacher_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          comments?: string | null
+          created_at?: string
+          day_of_week?: string
+          detention?: boolean
+          dhor_1?: string | null
+          dhor_1_mistakes?: number
+          dhor_2?: string | null
+          dhor_2_mistakes?: number
+          entry_date?: string
+          id?: string
+          points?: number
+          sabak?: string | null
+          sabak_para?: string | null
+          student_id?: string | null
+          teacher_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dhor_book_entries_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       juz: {
         Row: {
           id: string
@@ -284,6 +349,41 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "juz_revisions_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      parent_comments: {
+        Row: {
+          comment: string
+          created_at: string
+          entry_date: string
+          id: string
+          student_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          comment: string
+          created_at?: string
+          entry_date: string
+          id?: string
+          student_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          comment?: string
+          created_at?: string
+          entry_date?: string
+          id?: string
+          student_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "parent_comments_student_id_fkey"
             columns: ["student_id"]
             isOneToOne: false
             referencedRelation: "students"
@@ -517,6 +617,50 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "sabaq_para_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      student_dhor_summaries: {
+        Row: {
+          created_at: string
+          days_absent: number
+          id: string
+          last_entry_date: string
+          last_updated_by: string | null
+          signature: string | null
+          student_id: string | null
+          total_points: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          days_absent?: number
+          id?: string
+          last_entry_date?: string
+          last_updated_by?: string | null
+          signature?: string | null
+          student_id?: string | null
+          total_points?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          days_absent?: number
+          id?: string
+          last_entry_date?: string
+          last_updated_by?: string | null
+          signature?: string | null
+          student_id?: string | null
+          total_points?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "student_dhor_summaries_student_id_fkey"
             columns: ["student_id"]
             isOneToOne: false
             referencedRelation: "students"

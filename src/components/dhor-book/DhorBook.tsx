@@ -17,7 +17,7 @@ interface DhorBookProps {
 export function DhorBook({ studentId, teacherId }: DhorBookProps) {
   const [currentWeek, setCurrentWeek] = useState<Date>(new Date());
 
-  const { data: entries, isLoading: entriesLoading } = useQuery({
+  const { data: entries, isLoading: entriesLoading } = useQuery<DhorBookEntry[]>({
     queryKey: ['dhor-book-entries', studentId, currentWeek],
     queryFn: async () => {
       const startOfWeek = new Date(new Date(currentWeek).setDate(currentWeek.getDate() - currentWeek.getDay()));
@@ -36,7 +36,7 @@ export function DhorBook({ studentId, teacherId }: DhorBookProps) {
     }
   });
 
-  const { data: summary } = useQuery({
+  const { data: summary } = useQuery<StudentDhorSummary>({
     queryKey: ['dhor-book-summary', studentId],
     queryFn: async () => {
       const { data, error } = await supabase
