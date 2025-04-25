@@ -61,9 +61,9 @@ export interface Schedule {
   time_slot?: string;
 }
 
-// Added TimeSlot interface for improved type checking
+// Updated TimeSlot interface to make all fields required to prevent type errors
 export interface TimeSlot {
-  days?: string[];
+  days: string[];
   start_time: string;
   end_time: string;
 }

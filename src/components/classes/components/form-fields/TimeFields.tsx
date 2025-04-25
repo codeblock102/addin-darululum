@@ -15,7 +15,7 @@ export const TimeFields = () => {
           <FormItem>
             <FormLabel>Start Time</FormLabel>
             <FormControl>
-              <Input type="time" {...field} />
+              <Input type="time" {...field} required />
             </FormControl>
             <FormMessage />
           </FormItem>
@@ -29,7 +29,7 @@ export const TimeFields = () => {
           <FormItem>
             <FormLabel>End Time</FormLabel>
             <FormControl>
-              <Input type="time" {...field} />
+              <Input type="time" {...field} required />
             </FormControl>
             <FormMessage />
           </FormItem>
