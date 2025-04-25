@@ -29,7 +29,26 @@ export const TeacherSchedule = ({ teacherId, limit, dashboard = false }: Teacher
       
       if (error) throw error;
       
-      return data as Schedule[];
+      // Transform the data to match our Schedule type
+      return data.map((item: any) => ({
+        id: item.id,
+        name: item.name,
+        class_name: item.name, // For compatibility
+        days_of_week: item.days_of_week || [],
+        time_slots: Array.isArray(item.time_slots) ? item.time_slots.map((slot: any) => ({
+          days: slot.days || [],
+          start_time: slot.start_time || '',
+          end_time: slot.end_time || ''
+        })) : [],
+        room: item.room,
+        capacity: item.capacity,
+        current_students: item.current_students,
+        // For compatibility with older components
+        day_of_week: Array.isArray(item.days_of_week) && item.days_of_week.length > 0 ? 
+          item.days_of_week[0] : undefined,
+        time_slot: Array.isArray(item.time_slots) && item.time_slots.length > 0 ? 
+          `${item.time_slots[0].start_time} - ${item.time_slots[0].end_time}` : undefined,
+      })) as Schedule[];
     },
     enabled: !!teacherId
   });
@@ -62,7 +81,7 @@ export const TeacherSchedule = ({ teacherId, limit, dashboard = false }: Teacher
               {classItem.time_slots && classItem.time_slots.map((slot: TimeSlot, index: number) => (
                 <div key={index} className="flex items-center text-sm text-muted-foreground">
                   <div className="flex-1">
-                    <span className="font-medium">{slot.days.join(', ')}</span>
+                    <span className="font-medium">{slot.days ? slot.days.join(', ') : classItem.days_of_week?.join(', ')}</span>
                   </div>
                   <div className="flex-1 text-right">
                     {slot.start_time} - {slot.end_time}

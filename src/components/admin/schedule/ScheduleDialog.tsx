@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -24,6 +23,15 @@ interface ScheduleDialogProps {
   schedule: any | null;
 }
 
+interface ScheduleFormData {
+  name: string;
+  day_of_week: string;
+  time_slot: string;
+  room: string;
+  capacity: number;
+  teacher_id: string | null;
+}
+
 const daysOfWeek = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 
 export const ScheduleDialog = ({
@@ -46,12 +54,16 @@ export const ScheduleDialog = ({
   // Reset form when dialog opens/closes or schedule changes
   useEffect(() => {
     if (open && schedule) {
-      setClassName(schedule.class_name);
-      setDay(schedule.day_of_week);
-      setTimeSlot(schedule.time_slot);
-      setRoom(schedule.room);
-      setCapacity(schedule.capacity.toString());
-      setTeacherId(schedule.teacher_id);
+      setClassName(schedule.name || schedule.class_name);
+      setDay(schedule.days_of_week?.[0] || schedule.day_of_week || "");
+      setTimeSlot(
+        schedule.time_slots?.[0] 
+          ? `${schedule.time_slots[0].start_time} - ${schedule.time_slots[0].end_time}`
+          : schedule.time_slot || ""
+      );
+      setRoom(schedule.room || "");
+      setCapacity(schedule.capacity?.toString() || "20");
+      setTeacherId(schedule.teacher_id || null);
     } else if (open) {
       setClassName("");
       setDay("");
@@ -80,12 +92,32 @@ export const ScheduleDialog = ({
   
   // Create/update schedule mutation
   const scheduleMutation = useMutation({
-    mutationFn: async (formData: any) => {
+    mutationFn: async (formData: ScheduleFormData) => {
+      const timeParts = formData.time_slot.split('-').map(part => part.trim());
+      const start_time = timeParts[0];
+      const end_time = timeParts[1] || start_time;
+      
+      const scheduleData = {
+        name: formData.name,
+        days_of_week: [formData.day_of_week],
+        time_slots: [{
+          days: [formData.day_of_week],
+          start_time,
+          end_time
+        }],
+        room: formData.room,
+        capacity: formData.capacity,
+        teacher_id: formData.teacher_id,
+        // Keep these for backwards compatibility
+        day_of_week: formData.day_of_week,
+        time_slot: formData.time_slot,
+      };
+      
       if (schedule) {
         // Update existing schedule
         const { data, error } = await supabase
           .from('classes')
-          .update(formData)
+          .update(scheduleData)
           .eq('id', schedule.id)
           .select();
         
@@ -95,7 +127,10 @@ export const ScheduleDialog = ({
         // Create new schedule
         const { data, error } = await supabase
           .from('classes')
-          .insert([formData])
+          .insert([{
+            ...scheduleData,
+            current_students: 0
+          }])
           .select();
         
         if (error) throw error;
@@ -130,7 +165,7 @@ export const ScheduleDialog = ({
     
     // Validate form fields
     const formSchema = z.object({
-      class_name: z.string().min(1, "Class name is required"),
+      name: z.string().min(1, "Class name is required"),
       day_of_week: z.string().min(1, "Day of the week is required"),
       time_slot: z.string().min(1, "Time slot is required"),
       room: z.string().min(1, "Room is required"),
@@ -139,7 +174,7 @@ export const ScheduleDialog = ({
     
     try {
       formSchema.parse({
-        class_name: className,
+        name: className,
         day_of_week: day,
         time_slot: timeSlot,
         room,
@@ -151,8 +186,7 @@ export const ScheduleDialog = ({
         const { data: conflicts } = await supabase
           .from('classes')
           .select('id')
-          .eq('day_of_week', day)
-          .eq('time_slot', timeSlot)
+          .eq('days_of_week', [day])
           .eq('room', room);
         
         if (conflicts && conflicts.length > 0) {
@@ -165,13 +199,12 @@ export const ScheduleDialog = ({
       
       // Submit form data
       scheduleMutation.mutate({
-        class_name: className,
+        name: className,
         day_of_week: day,
         time_slot: timeSlot,
         room,
         capacity: Number(capacity),
         teacher_id: teacherId,
-        current_students: schedule?.current_students || 0,
       });
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -307,6 +340,7 @@ export const ScheduleDialog = ({
             <Button
               type="submit"
               disabled={scheduleMutation.isPending}
+              onClick={handleSubmit}
             >
               {scheduleMutation.isPending ? (
                 <>

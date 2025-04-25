@@ -9,7 +9,7 @@ export interface TeacherFormValues {
   preferences?: Record<string, any>;
 }
 
-export interface TeacherPreferences {
+export interface TeacherPreferencesType {
   id: string;
   preferences?: Record<string, any>;
 }
@@ -55,6 +55,7 @@ export interface Schedule {
   room?: string;
   capacity?: number;
   current_students?: number;
+  teacher_id?: string;
   
   // Deprecated fields - kept for compatibility with existing components
   day_of_week?: string;
@@ -63,7 +64,7 @@ export interface Schedule {
 
 // Added TimeSlot interface for improved type checking
 export interface TimeSlot {
-  days: string[];
+  days?: string[];
   start_time: string;
   end_time: string;
 }

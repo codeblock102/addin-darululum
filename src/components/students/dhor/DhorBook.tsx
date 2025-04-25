@@ -33,7 +33,7 @@ export const DhorBook = ({ studentId, studentName }: DhorBookProps) => {
     },
   });
 
-  const { data, isLoading, refetch } = useQuery({
+  const { data: difficultAyahs, isLoading, refetch } = useQuery({
     queryKey: ['difficult-ayahs', studentId],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -51,7 +51,7 @@ export const DhorBook = ({ studentId, studentName }: DhorBookProps) => {
     },
   });
 
-  const { data: revisions, isLoading: isRevisionsLoading } = useQuery({
+  const { data: juzRevisions, isLoading: isRevisionsLoading } = useQuery({
     queryKey: ['juz-revisions', studentId],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -67,11 +67,6 @@ export const DhorBook = ({ studentId, studentName }: DhorBookProps) => {
       return data;
     },
   });
-
-  const difficultAyahs = data?.map((ayah: any) => ({
-    ...ayah,
-    status: ayah.status as 'active' | 'resolved' | 'pending'
-  })) || [];
 
   const onRevisionSuccess = () => {
     refetch();
@@ -101,11 +96,11 @@ export const DhorBook = ({ studentId, studentName }: DhorBookProps) => {
 
       <ScrollArea className="h-[500px] w-full rounded-md border">
         <RevisionTabs
-          revisions={revisions || []}
-          difficultAyahs={difficultAyahs}
           studentId={studentId}
           studentName={studentName}
-          onOpenNewRevisionDialog={() => setIsNewRevisionDialogOpen(true)}
+          juzRevisions={juzRevisions || []}
+          loading={isRevisionsLoading}
+          onAddJuzRevision={() => setIsNewRevisionDialogOpen(true)}
         />
       </ScrollArea>
       
