@@ -1,13 +1,21 @@
 
 import { z } from "zod";
 
+const timeSlotSchema = z.object({
+  days: z.array(z.string()).min(1, "At least one day must be selected"),
+  start_time: z.string().min(1, "Start time is required"),
+  end_time: z.string().min(1, "End time is required"),
+}).refine(data => data.start_time < data.end_time, {
+  message: "End time must be after start time",
+  path: ["end_time"],
+});
+
 export const scheduleFormSchema = z.object({
   name: z.string().min(1, "Class name is required"),
-  day_of_week: z.string().min(1, "Day of the week is required"),
-  time_slot: z.string().min(1, "Time slot is required"),
+  teacher_id: z.string().nullable(),
   room: z.string().min(1, "Room is required"),
   capacity: z.number().min(1, "Capacity must be at least 1"),
-  teacher_id: z.string().nullable(),
+  time_slots: z.array(timeSlotSchema).min(1, "At least one time slot is required"),
 });
 
 export type ScheduleFormData = z.infer<typeof scheduleFormSchema>;
