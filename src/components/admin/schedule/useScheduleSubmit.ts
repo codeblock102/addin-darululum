@@ -41,7 +41,10 @@ export const useScheduleSubmit = ({ schedule, onSuccess }: UseScheduleSubmitProp
             .eq('id', schedule.id)
             .select();
           
-          if (error) throw error;
+          if (error) {
+            console.error("Supabase update error:", error);
+            throw error;
+          }
           return data;
         } else {
           const { data, error } = await supabase
@@ -54,7 +57,7 @@ export const useScheduleSubmit = ({ schedule, onSuccess }: UseScheduleSubmitProp
             .select();
           
           if (error) {
-            console.error("Supabase error:", error);
+            console.error("Supabase insert error:", error);
             throw error;
           }
           return data;
