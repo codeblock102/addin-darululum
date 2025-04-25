@@ -188,56 +188,6 @@ export type Database = {
           },
         ]
       }
-      difficult_ayahs: {
-        Row: {
-          ayah_number: number
-          created_at: string | null
-          date_added: string | null
-          id: string
-          juz_number: number
-          last_revised: string | null
-          notes: string | null
-          revision_count: number | null
-          status: string | null
-          student_id: string | null
-          surah_number: number
-        }
-        Insert: {
-          ayah_number: number
-          created_at?: string | null
-          date_added?: string | null
-          id?: string
-          juz_number: number
-          last_revised?: string | null
-          notes?: string | null
-          revision_count?: number | null
-          status?: string | null
-          student_id?: string | null
-          surah_number: number
-        }
-        Update: {
-          ayah_number?: number
-          created_at?: string | null
-          date_added?: string | null
-          id?: string
-          juz_number?: number
-          last_revised?: string | null
-          notes?: string | null
-          revision_count?: number | null
-          status?: string | null
-          student_id?: string | null
-          surah_number?: number
-        }
-        Relationships: [
-          {
-            foreignKeyName: "difficult_ayahs_student_id_fkey"
-            columns: ["student_id"]
-            isOneToOne: false
-            referencedRelation: "students"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       juz: {
         Row: {
           id: string
