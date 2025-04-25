@@ -47,14 +47,18 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   return (
     <div className={`flex h-screen w-full ${isAdmin ? "admin-theme" : "teacher-theme"}`}>
       <Sidebar />
-      <div className={`flex flex-col flex-1 overflow-auto transition-colors ${isAdmin ? "bg-[#131720] text-white" : "bg-background"}`}>
+      <div className={`flex flex-col flex-1 overflow-auto transition-all duration-300 ${
+        isAdmin 
+          ? "bg-[#131720] bg-opacity-95 backdrop-blur-xl text-white" 
+          : "bg-background"
+      }`}>
         <div className="p-6 md:p-8">
           <div className="max-w-7xl mx-auto">
             {!isLoading && (
-              <div className={`absolute top-2 right-4 px-3 py-1 text-xs font-medium rounded-full ${
+              <div className={`absolute top-2 right-4 px-3 py-1 text-xs font-medium rounded-full backdrop-blur-md ${
                 isAdmin 
-                  ? "bg-amber-500 text-black" 
-                  : "bg-emerald-500 text-white"
+                  ? "bg-amber-500/90 text-black" 
+                  : "bg-emerald-500/90 text-white"
               }`}>
                 {isAdmin ? "ADMIN" : "TEACHER"}
               </div>
