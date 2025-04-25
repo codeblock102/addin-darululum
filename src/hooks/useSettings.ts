@@ -1,6 +1,5 @@
 
 import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
 import { SystemSettings } from "@/types/settings";
 
 const DEFAULT_SETTINGS: SystemSettings = {
@@ -31,6 +30,8 @@ const DEFAULT_SETTINGS: SystemSettings = {
   }
 };
 
+const SETTINGS_STORAGE_KEY = "quran_academy_system_settings";
+
 export function useSettings() {
   const [settings, setSettings] = useState<SystemSettings>(DEFAULT_SETTINGS);
   const [isLoading, setIsLoading] = useState(true);
@@ -39,17 +40,13 @@ export function useSettings() {
   useEffect(() => {
     async function loadSettings() {
       try {
-        const { data, error } = await supabase
-          .from('system_settings')
-          .select('*')
-          .single();
+        // Instead of using supabase, use localStorage until we create the table
+        const storedSettings = localStorage.getItem(SETTINGS_STORAGE_KEY);
         
-        if (error) throw error;
-        
-        if (data) {
+        if (storedSettings) {
           setSettings({
             ...DEFAULT_SETTINGS,
-            ...(data.settings as SystemSettings),
+            ...JSON.parse(storedSettings),
           });
         }
       } catch (err) {
@@ -67,11 +64,8 @@ export function useSettings() {
     try {
       setIsLoading(true);
       
-      const { error } = await supabase
-        .from('system_settings')
-        .upsert({ id: 1, settings: newSettings });
-      
-      if (error) throw error;
+      // Save to localStorage instead of supabase
+      localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(newSettings));
       
       setSettings(newSettings);
       return { success: true };
