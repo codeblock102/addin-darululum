@@ -36,7 +36,7 @@ export const TeacherSchedule = ({
     queryKey: ['teacher-schedule', teacherId, limit],
     queryFn: async () => {
       const query = supabase
-        .from('schedules')
+        .from('classes')
         .select('*')
         .eq('teacher_id', teacherId);
       

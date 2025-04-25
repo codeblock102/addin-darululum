@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
@@ -25,6 +25,7 @@ export function TeacherPreferences() {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session?.user?.id) return null;
 
+      // First check if the teacher record exists and if it has preferences
       const { data, error } = await supabase
         .from('teachers')
         .select('*')
@@ -36,13 +37,15 @@ export function TeacherPreferences() {
         return null;
       }
 
-      // If teacher has preferences set, use them
-      if (data?.preferences) {
+      // If teacher has preferences column and it's populated, use those values
+      if (data && data.preferences) {
         setEmailNotifications(data.preferences.emailNotifications ?? true);
         setReminderTime(data.preferences.reminderTime ?? 15);
+        return data.preferences as TeacherPreferences;
+      } else {
+        // If no preferences yet, use defaults
+        return { emailNotifications: true, reminderTime: 15 } as TeacherPreferences;
       }
-
-      return data?.preferences as TeacherPreferences || null;
     }
   });
 
@@ -59,6 +62,24 @@ export function TeacherPreferences() {
         return;
       }
 
+      // Check if teacher exists
+      const { data: teacherData, error: teacherError } = await supabase
+        .from('teachers')
+        .select('id')
+        .eq('email', session.user.email)
+        .single();
+
+      if (teacherError) {
+        console.error('Error finding teacher:', teacherError);
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Could not find your teacher profile",
+        });
+        return;
+      }
+
+      // Update teacher record with preferences
       const { error } = await supabase
         .from('teachers')
         .update({
