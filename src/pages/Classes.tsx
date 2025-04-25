@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import { SearchInput } from "@/components/admin/SearchInput";
 import { Plus } from "lucide-react";
+import { hasPermission } from "@/utils/roleUtils"; 
 
 const Classes = () => {
   const [searchQuery, setSearchQuery] = useState("");
