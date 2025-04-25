@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import { SearchInput } from "@/components/admin/SearchInput";
 import { Plus } from "lucide-react";
+import { AdminHeader } from "@/components/admin/AdminHeader";
 
 export default function Classes() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -26,33 +27,35 @@ export default function Classes() {
   return (
     <DashboardLayout>
       <div className="space-y-6">
-        <div className="flex justify-between items-center">
-          <div>
-            <h1 className="text-3xl font-bold">Class Management</h1>
-            <p className="text-muted-foreground mt-2">
-              Create and manage class schedules and assignments
-            </p>
-          </div>
-          
-          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <AdminHeader
+          title="Class Management"
+          description="Create and manage class schedules and assignments"
+        />
+        
+        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+          <div className="flex justify-end mb-4">
             <DialogTrigger asChild>
-              <Button onClick={() => handleOpenDialog()}>
+              <Button 
+                className="bg-amber-500 hover:bg-amber-600 text-black"
+                onClick={() => handleOpenDialog()}
+              >
                 <Plus className="mr-2 h-4 w-4" />
                 Add Class
               </Button>
             </DialogTrigger>
-            <ClassDialog 
-              selectedClass={selectedClass}
-              onClose={handleCloseDialog}
-            />
-          </Dialog>
-        </div>
+          </div>
+          <ClassDialog 
+            selectedClass={selectedClass}
+            onClose={handleCloseDialog}
+          />
+        </Dialog>
 
-        <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
+        <div className="glass-effect rounded-lg shadow-lg overflow-hidden">
           <SearchInput
             placeholder="Search classes by name, teacher, or room..."
             value={searchQuery}
             onChange={setSearchQuery}
+            className="border-gray-700/30 bg-white/5"
           />
           <ClassList 
             searchQuery={searchQuery}
