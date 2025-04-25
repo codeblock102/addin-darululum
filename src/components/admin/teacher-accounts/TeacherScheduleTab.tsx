@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Loader2, Plus, Calendar } from "lucide-react";
 import { TimeSlot } from "@/types/teacher";
-import { format } from "date-fns";
 import { useState } from "react";
 import { ScheduleDialog } from "@/components/admin/schedule/ScheduleDialog";
 
@@ -15,7 +14,7 @@ interface TeacherScheduleTabProps {
 
 export function TeacherScheduleTab({ teacherId }: TeacherScheduleTabProps) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [selectedSchedule, setSelectedSchedule] = useState(null);
+  const [selectedSchedule, setSelectedSchedule] = useState<any>(null);
 
   // Fetch classes for this teacher
   const { data: classes, isLoading, refetch } = useQuery({
@@ -97,11 +96,20 @@ export function TeacherScheduleTab({ teacherId }: TeacherScheduleTabProps) {
                 <span className="font-medium w-20">Time:</span>
                 <div>
                   {classItem.time_slots && classItem.time_slots.length > 0 ? (
-                    classItem.time_slots.map((slot, index) => (
-                      <div key={index} className="mb-0.5">
-                        {formatTimeSlot(slot as TimeSlot)}
-                      </div>
-                    ))
+                    classItem.time_slots.map((slot, index) => {
+                      // Convert the database JSON to TimeSlot type
+                      const timeSlot: TimeSlot = {
+                        days: Array.isArray((slot as any).days) ? (slot as any).days : [],
+                        start_time: (slot as any).start_time || '',
+                        end_time: (slot as any).end_time || ''
+                      };
+                      
+                      return (
+                        <div key={index} className="mb-0.5">
+                          {formatTimeSlot(timeSlot)}
+                        </div>
+                      );
+                    })
                   ) : (
                     <span>No time slots specified</span>
                   )}
@@ -126,8 +134,8 @@ export function TeacherScheduleTab({ teacherId }: TeacherScheduleTabProps) {
         open={isDialogOpen}
         onOpenChange={setIsDialogOpen}
         schedule={selectedSchedule}
-        teacherId={teacherId}
         onSuccess={refetch}
+        teacherId={teacherId}
       />
     </div>
   );
