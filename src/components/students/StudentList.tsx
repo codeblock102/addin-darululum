@@ -58,7 +58,7 @@ export const StudentList = ({ searchQuery, onEdit }: StudentListProps) => {
     return (
       <div className="p-4 space-y-4">
         {[...Array(5)].map((_, i) => (
-          <Skeleton key={i} className="h-12 w-full" />
+          <Skeleton key={i} className="h-12" />
         ))}
       </div>
     );
@@ -66,21 +66,17 @@ export const StudentList = ({ searchQuery, onEdit }: StudentListProps) => {
 
   if (filteredStudents?.length === 0) {
     return (
-      <div className="text-center p-8">
-        <p className="text-gray-500">No students found with the search criteria.</p>
+      <div className="flex flex-col items-center justify-center p-8 text-center">
+        <Users className="h-8 w-8 text-muted-foreground mb-4" />
+        <p className="text-muted-foreground">No students found with the search criteria.</p>
       </div>
     );
   }
 
-  const handleEditClick = (e: React.MouseEvent, student: Student) => {
-    e.stopPropagation();
-    onEdit(student);
-  };
-
   return (
     <Table>
       <TableHeader>
-        <TableRow>
+        <TableRow className="hover:bg-transparent">
           <TableHead>Name</TableHead>
           <TableHead>Guardian</TableHead>
           <TableHead>Contact</TableHead>
@@ -93,46 +89,54 @@ export const StudentList = ({ searchQuery, onEdit }: StudentListProps) => {
         {filteredStudents?.map((student) => (
           <TableRow 
             key={student.id}
-            className="transition-colors hover:bg-muted/50 cursor-pointer"
+            className="transition-colors hover:bg-muted/50 cursor-pointer group"
             onMouseEnter={() => setHoveredId(student.id)}
             onMouseLeave={() => setHoveredId(null)}
             onClick={() => navigate(`/students/${student.id}`)}
           >
-            <TableCell className="font-medium">{student.name}</TableCell>
+            <TableCell>
+              <div className="font-medium flex items-center gap-2">
+                <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
+                  <span className="text-xs text-primary font-semibold">
+                    {student.name.substring(0, 2).toUpperCase()}
+                  </span>
+                </div>
+                {student.name}
+              </div>
+            </TableCell>
             <TableCell>{student.guardian_name || '—'}</TableCell>
             <TableCell>{student.guardian_contact || '—'}</TableCell>
             <TableCell>
               {student.enrollment_date ? new Date(student.enrollment_date).toLocaleDateString() : '—'}
             </TableCell>
             <TableCell>
-              <span className={`px-2 py-1 rounded-full text-xs ${
-                student.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+              <span className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ring-1 ring-inset ${
+                student.status === 'active' 
+                  ? 'bg-green-50 text-green-700 ring-green-600/20' 
+                  : 'bg-red-50 text-red-700 ring-red-600/20'
               }`}>
                 {student.status}
               </span>
             </TableCell>
             <TableCell className="text-right">
-              <div className="flex justify-end gap-2">
+              <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                 <Button 
-                  variant="outline" 
+                  variant="ghost" 
                   size="icon"
                   onClick={(e) => {
                     e.stopPropagation();
                     navigate(`/students/${student.id}`);
                   }}
-                  className={`transition-opacity duration-200 ${
-                    hoveredId === student.id ? 'opacity-100' : 'opacity-0'
-                  }`}
                 >
                   <Eye className="h-4 w-4" />
                 </Button>
                 <Button 
-                  variant="outline" 
+                  variant="ghost" 
                   size="icon"
-                  onClick={(e) => handleEditClick(e, student)}
-                  className={`transition-opacity duration-200 ${
-                    hoveredId === student.id ? 'opacity-100' : 'opacity-0'
-                  }`}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onEdit(student);
+                  }}
                 >
                   <Edit className="h-4 w-4" />
                 </Button>
