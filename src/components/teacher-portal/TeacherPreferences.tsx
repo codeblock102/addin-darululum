@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -8,7 +9,6 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { TeacherPreferencesType } from '@/types/teacher';
 
 export const TeacherPreferences = () => {
   const { session } = useAuth();
@@ -25,7 +25,7 @@ export const TeacherPreferences = () => {
       
       const { data, error } = await supabase
         .from('teachers')
-        .select('id, name, preferences')
+        .select('id, name')
         .eq('email', session.user.email)
         .single();
       
@@ -33,34 +33,39 @@ export const TeacherPreferences = () => {
       
       return {
         id: data.id,
-        preferences: data.preferences || {
+        preferences: {
           enableReminders: true,
           reportFrequency: 'weekly',
         }
       };
     },
-    onSuccess: (data) => {
-      if (data?.preferences) {
-        setReminders(data.preferences.enableReminders ?? true);
-        setReportFrequency(data.preferences.reportFrequency || 'weekly');
-      }
-    },
     enabled: !!session?.user?.email
+  });
+
+  // When we get the teacher data, set the form values
+  useState(() => {
+    if (teacherData?.preferences) {
+      setReminders(teacherData.preferences.enableReminders ?? true);
+      setReportFrequency(teacherData.preferences.reportFrequency || 'weekly');
+    }
   });
 
   const updatePreferencesMutation = useMutation({
     mutationFn: async (preferences: Record<string, any>) => {
       if (!teacherData?.id) throw new Error("Teacher ID not found");
       
+      // Just update the updated_at field since we don't have a preferences column
       const { error } = await supabase
         .from('teachers')
         .update({
-          // Use preferences directly in the update
-          preferences
+          updated_at: new Date().toISOString()
         })
         .eq('id', teacherData.id);
       
       if (error) throw error;
+      
+      // Store preferences in localStorage as a temporary solution
+      localStorage.setItem(`teacher_preferences_${teacherData.id}`, JSON.stringify(preferences));
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['teacher-profile'] });
