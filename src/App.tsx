@@ -16,6 +16,8 @@ import Attendance from "./pages/Attendance";
 import NotFound from "./pages/NotFound";
 import Auth from "./pages/Auth";
 import TeacherPortal from "./pages/TeacherPortal";
+import Preferences from "./pages/preferences";
+import Classes from "./pages/Classes";
 
 // Create a client for React Query with better error handling
 const queryClient = new QueryClient({
@@ -100,6 +102,14 @@ const App = () => (
               }
             />
             <Route
+              path="/classes"
+              element={
+                <ProtectedRoute>
+                  <Classes />
+                </ProtectedRoute>
+              }
+            />
+            <Route
               path="/account"
               element={
                 <ProtectedRoute>
@@ -111,7 +121,7 @@ const App = () => (
               path="/preferences"
               element={
                 <ProtectedRoute>
-                  <div>Preferences Page</div>
+                  <Preferences />
                 </ProtectedRoute>
               }
             />

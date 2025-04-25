@@ -1,5 +1,5 @@
 
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { useMediaQuery } from "@/hooks/use-mobile";
@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/components/ui/use-toast";
 import { 
   BookOpen, 
   CalendarDays, 
@@ -28,6 +29,7 @@ import {
 
 export const Sidebar = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const { session, signOut } = useAuth();
   const isMobile = useMediaQuery("(max-width: 768px)");
   const user = session?.user;
@@ -66,12 +68,30 @@ export const Sidebar = () => {
     return name.substring(0, 2).toUpperCase();
   };
 
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+      toast({
+        title: "Signed out successfully",
+        description: "You have been logged out of your account"
+      });
+      navigate("/auth");
+    } catch (error) {
+      console.error("Error signing out:", error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Could not sign out. Please try again."
+      });
+    }
+  };
+
   // Define navigation items
   const adminNavItems = [
     { href: "/", label: "Dashboard", icon: <Home className="h-5 w-5" /> },
     { href: "/students", label: "Students", icon: <Users className="h-5 w-5" /> },
     { href: "/teachers", label: "Teachers", icon: <School className="h-5 w-5" /> },
-    { href: "/schedule", label: "Schedule", icon: <CalendarDays className="h-5 w-5" /> },
+    { href: "/classes", label: "Classes", icon: <CalendarDays className="h-5 w-5" /> },
     { href: "/progress", label: "Progress", icon: <LineChart className="h-5 w-5" /> },
     { href: "/attendance", label: "Attendance", icon: <CalendarCheck className="h-5 w-5" /> },
     { href: "/teacher-portal", label: "Teacher Portal", icon: <GraduationCap className="h-5 w-5" /> },
@@ -153,7 +173,7 @@ export const Sidebar = () => {
             variant="ghost" 
             size="icon" 
             className="ml-auto" 
-            onClick={() => signOut()}
+            onClick={handleSignOut}
           >
             <LogOut className="h-5 w-5" />
             <span className="sr-only">Log out</span>
