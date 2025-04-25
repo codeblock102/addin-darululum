@@ -30,6 +30,7 @@ import {
   Loader2 
 } from "lucide-react";
 import { ScheduleDialog } from "./ScheduleDialog";
+import { Schedule, TimeSlot } from "@/types/teacher";
 
 export const ScheduleManagement = () => {
   const { toast } = useToast();
@@ -47,12 +48,31 @@ export const ScheduleManagement = () => {
         .select(`
           *,
           teachers(name)
-        `)
-        .order('day_of_week', { ascending: true })
-        .order('time_slot', { ascending: true });
+        `);
       
       if (error) throw error;
-      return data;
+      
+      return data.map((item: any) => ({
+        id: item.id,
+        name: item.name,
+        class_name: item.name,
+        days_of_week: item.days_of_week || [],
+        time_slots: Array.isArray(item.time_slots) ? item.time_slots.map((slot: any) => ({
+          days: slot.days || [],
+          start_time: slot.start_time || '',
+          end_time: slot.end_time || ''
+        })) : [],
+        room: item.room || '',
+        capacity: item.capacity || 0,
+        current_students: item.current_students || 0,
+        teacher_id: item.teacher_id || null,
+        teachers: item.teachers,
+        // For compatibility with older components
+        day_of_week: Array.isArray(item.days_of_week) && item.days_of_week.length > 0 ? 
+          item.days_of_week[0] : '',
+        time_slot: Array.isArray(item.time_slots) && item.time_slots.length > 0 ? 
+          `${item.time_slots[0].start_time} - ${item.time_slots[0].end_time}` : '',
+      }));
     }
   });
   
@@ -96,28 +116,38 @@ export const ScheduleManagement = () => {
   };
   
   // Filter schedules based on search term
-  const filteredSchedules = schedules?.filter((schedule: any) => {
+  const filteredSchedules = schedules?.filter((schedule: Schedule) => {
     const searchText = searchTerm.toLowerCase();
     return (
-      schedule.class_name.toLowerCase().includes(searchText) ||
-      schedule.day_of_week.toLowerCase().includes(searchText) ||
-      schedule.room.toLowerCase().includes(searchText) ||
+      schedule.name.toLowerCase().includes(searchText) ||
+      (schedule.day_of_week && schedule.day_of_week.toLowerCase().includes(searchText)) ||
+      (schedule.room && schedule.room.toLowerCase().includes(searchText)) ||
       (schedule.teachers?.name && schedule.teachers.name.toLowerCase().includes(searchText))
     );
   });
   
+  // Helper function to format time slot for display
+  const formatTimeSlot = (timeSlots: TimeSlot[]) => {
+    if (!timeSlots || timeSlots.length === 0) return '';
+    return `${timeSlots[0].start_time} - ${timeSlots[0].end_time}`;
+  };
+  
   // Group schedules by day
-  const groupedSchedules = filteredSchedules?.reduce((acc: any, schedule: any) => {
-    const day = schedule.day_of_week;
-    if (!acc[day]) {
-      acc[day] = [];
+  const groupedSchedules = filteredSchedules?.reduce((acc: Record<string, Schedule[]>, schedule: Schedule) => {
+    // Get the first day from days_of_week as our primary day
+    const primaryDay = schedule.days_of_week && schedule.days_of_week.length > 0 
+      ? schedule.days_of_week[0] 
+      : schedule.day_of_week || 'Unspecified';
+    
+    if (!acc[primaryDay]) {
+      acc[primaryDay] = [];
     }
-    acc[day].push(schedule);
+    acc[primaryDay].push(schedule);
     return acc;
   }, {});
   
   // Order days of the week
-  const daysOfWeek = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+  const daysOfWeek = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday", "Unspecified"];
   
   return (
     <div className="space-y-6">
@@ -167,7 +197,7 @@ export const ScheduleManagement = () => {
           ) : filteredSchedules && filteredSchedules.length > 0 ? (
             <div className="space-y-6">
               {daysOfWeek.map((day) => {
-                if (!groupedSchedules[day]) return null;
+                if (!groupedSchedules?.[day] || groupedSchedules[day].length === 0) return null;
                 
                 return (
                   <div key={day} className="space-y-4">
@@ -185,17 +215,20 @@ export const ScheduleManagement = () => {
                           </TableRow>
                         </TableHeader>
                         <TableBody>
-                          {groupedSchedules[day].map((schedule: any) => (
+                          {groupedSchedules[day].map((schedule: Schedule) => (
                             <TableRow key={schedule.id}>
-                              <TableCell>{schedule.time_slot}</TableCell>
-                              <TableCell className="font-medium">{schedule.class_name}</TableCell>
+                              <TableCell>{formatTimeSlot(schedule.time_slots)}</TableCell>
+                              <TableCell className="font-medium">{schedule.name}</TableCell>
                               <TableCell>
                                 {schedule.teachers?.name || <Badge variant="outline">Unassigned</Badge>}
                               </TableCell>
                               <TableCell>{schedule.room}</TableCell>
                               <TableCell>
-                                <Badge variant={schedule.current_students >= schedule.capacity ? "destructive" : "outline"}>
-                                  {schedule.current_students} / {schedule.capacity}
+                                <Badge variant={
+                                  schedule.current_students && schedule.capacity && 
+                                  schedule.current_students >= schedule.capacity ? "destructive" : "outline"
+                                }>
+                                  {schedule.current_students || 0} / {schedule.capacity || 0}
                                 </Badge>
                               </TableCell>
                               <TableCell>
