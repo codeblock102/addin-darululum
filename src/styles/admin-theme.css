@@ -1,3 +1,4 @@
+
 /* Admin theme specific styles */
 .admin-theme {
   --admin-bg: 222 47% 11%;
@@ -161,5 +162,21 @@
 }
 
 .admin-theme .settings-section {
-  @apply space-y-6 animate-in fade-in slide-in;
+  @apply space-y-6 animate-in fade-in;
+}
+
+/* Add animation classes for settings section */
+.admin-theme .settings-section {
+  animation: slideIn 0.4s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
