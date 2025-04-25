@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useQueryClient, useMutation } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -9,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Label } from "@/components/ui/label";
 import { Loader2, Save, User } from "lucide-react";
+import { Link } from "react-router-dom";
 
 interface Teacher {
   id: string;

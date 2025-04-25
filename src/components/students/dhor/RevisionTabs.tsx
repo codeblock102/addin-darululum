@@ -1,7 +1,6 @@
 
 import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Schedule } from "@/types/progress";
 import { RevisionsList } from './RevisionsList';
 import { DifficultAyahList } from './DifficultAyahList';
 import { Loader2 } from 'lucide-react';

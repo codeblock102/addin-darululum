@@ -14,7 +14,7 @@ export interface TeacherPreferences {
   preferences?: Record<string, any>;
 }
 
-// Adding missing types referenced in other components
+// Updated Teacher interface to make subject optional
 export interface Teacher {
   id: string;
   name: string;
@@ -51,11 +51,7 @@ export interface Schedule {
   name: string;         // This field stores the class name
   class_name?: string;  // For compatibility with existing components
   days_of_week: string[];
-  time_slots: {
-    days: string[];
-    start_time: string;
-    end_time: string;
-  }[];
+  time_slots: TimeSlot[];
   room?: string;
   capacity?: number;
   current_students?: number;
@@ -63,4 +59,11 @@ export interface Schedule {
   // Deprecated fields - kept for compatibility with existing components
   day_of_week?: string;
   time_slot?: string;
+}
+
+// Added TimeSlot interface for improved type checking
+export interface TimeSlot {
+  days: string[];
+  start_time: string;
+  end_time: string;
 }
