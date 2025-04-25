@@ -51,3 +51,41 @@ export interface MessageRecipient {
   name: string;
   type: 'teacher' | 'admin';
 }
+
+export interface Progress {
+  id: string;
+  student_id: string;
+  teacher_id: string;
+  date: string;
+  juz: number;
+  pages: number;
+  mistakes: number;
+  duration: number;
+  notes?: string;
+  status: 'completed' | 'in-progress' | 'scheduled';
+}
+
+export interface DifficultAyah {
+  id: string;
+  student_id: string;
+  surah: number;
+  ayah: number;
+  notes: string;
+  date_added: string;
+  status: 'active' | 'resolved';
+}
+
+export interface JuzRevision {
+  id: string;
+  student_id: string;
+  juz_number: number;
+  revision_date: string;
+  proficiency_level: 'excellent' | 'good' | 'needs_improvement';
+  notes?: string;
+}
+
+export interface RevisionsListProps {
+  revisions: JuzRevision[];
+  onEdit?: (revision: JuzRevision) => void;
+  onDelete?: (id: string) => void;
+}
