@@ -22,8 +22,15 @@ export const useClassSubmit = ({ selectedClass, onSuccess }: UseClassSubmitProps
       }
 
       const formattedValues = {
-        ...values,
+        name: values.name,
+        teacher_id: values.teacher_id,
+        room: values.room,
+        capacity: values.capacity,
         days_of_week: values.days_of_week,
+        time_slots: [{
+          start_time: values.time_start,
+          end_time: values.time_end,
+        }]
       };
 
       if (selectedClass) {
