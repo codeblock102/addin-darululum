@@ -59,7 +59,6 @@ export function AttendanceForm() {
     },
   });
 
-  // Query to get classes for the dropdown
   const { data: classesData, isLoading: isLoadingClasses } = useQuery({
     queryKey: ["class-schedules"],
     queryFn: async () => {
@@ -73,7 +72,6 @@ export function AttendanceForm() {
     },
   });
 
-  // Query to get students based on selected class
   const { data: students, isLoading: isLoadingStudents } = useQuery({
     queryKey: ["students-by-class", selectedClass],
     queryFn: async () => {
@@ -91,7 +89,6 @@ export function AttendanceForm() {
     enabled: !!selectedClass,
   });
 
-  // Query to get today's attendance for the selected student and class
   const { data: existingAttendance, refetch: refetchAttendance } = useQuery({
     queryKey: ["attendance", selectedStudent, selectedClass, formattedDate],
     queryFn: async () => {
@@ -111,7 +108,6 @@ export function AttendanceForm() {
     enabled: !!selectedStudent && !!selectedClass,
   });
 
-  // Set form values if attendance record exists
   useEffect(() => {
     if (existingAttendance) {
       form.setValue("status", existingAttendance.status);
@@ -122,9 +118,8 @@ export function AttendanceForm() {
     }
   }, [existingAttendance, form]);
 
-  // Mutation for saving attendance
   const saveAttendance = useMutation({
-    mutationFn: async (values: { status: string; notes: string }) => {
+    mutationFn: async (values: { status: AttendanceStatus; notes: string }) => {
       if (!selectedStudent || !selectedClass) {
         throw new Error("Please select a class and student");
       }
@@ -138,7 +133,6 @@ export function AttendanceForm() {
       };
 
       if (existingAttendance) {
-        // Update existing record
         const { error } = await supabase
           .from("attendance")
           .update(attendanceData)
@@ -147,7 +141,6 @@ export function AttendanceForm() {
         if (error) throw error;
         return { action: "updated" };
       } else {
-        // Insert new record
         const { error } = await supabase
           .from("attendance")
           .insert([attendanceData]);
@@ -173,7 +166,7 @@ export function AttendanceForm() {
     },
   });
 
-  const onSubmit = (values: { status: string; notes: string }) => {
+  const onSubmit = (values: { status: AttendanceStatus; notes: string }) => {
     saveAttendance.mutate(values);
   };
 

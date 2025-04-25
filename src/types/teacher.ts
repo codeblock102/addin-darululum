@@ -1,4 +1,3 @@
-
 export interface TeacherFormValues {
   name: string;
   bio?: string;
@@ -14,12 +13,11 @@ export interface TeacherPreferencesType {
   preferences?: Record<string, any>;
 }
 
-// Updated Teacher interface to make subject optional
 export interface Teacher {
   id: string;
   name: string;
-  subject?: string;
-  experience?: string;
+  subject: string;  // Made this required to match database schema
+  experience: string; // Made this required to match database schema
   email?: string;
   bio?: string;
   phone?: string;

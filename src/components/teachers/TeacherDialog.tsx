@@ -90,7 +90,14 @@ export const TeacherDialog = ({ selectedTeacher }: TeacherDialogProps) => {
       if (selectedTeacher) {
         const { data, error } = await supabase
           .from("teachers")
-          .update(values)
+          .update({
+            name: values.name,
+            email: values.email || null,
+            phone: values.phone || null,
+            subject: values.subject || "",
+            experience: values.experience || "",
+            bio: values.bio || null
+          })
           .eq("id", selectedTeacher.id)
           .select();
 
@@ -108,9 +115,18 @@ export const TeacherDialog = ({ selectedTeacher }: TeacherDialogProps) => {
           });
         }
       } else {
+        const teacherData = {
+          name: values.name,
+          email: values.email || null,
+          phone: values.phone || null,
+          subject: values.subject || "",
+          experience: values.experience || "",
+          bio: values.bio || null
+        };
+        
         const { data, error } = await supabase
           .from("teachers")
-          .insert([values])
+          .insert([teacherData])
           .select();
 
         if (error) {

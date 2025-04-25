@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -25,6 +24,7 @@ interface MessageListProps {
 
 interface ExtendedMessage extends Message {
   read_at?: string;
+  updated_at?: string;
 }
 
 export const MessageList = ({
@@ -37,7 +37,6 @@ export const MessageList = ({
   const queryClient = useQueryClient();
   const [expandedMessageId, setExpandedMessageId] = useState<string | null>(null);
 
-  // Mark message as read mutation
   const markAsReadMutation = useMutation({
     mutationFn: async (messageId: string) => {
       const now = new Date().toISOString();
@@ -58,8 +57,7 @@ export const MessageList = ({
       queryClient.invalidateQueries({ queryKey: ['teacher-sent'] });
     }
   });
-  
-  // Handle message click
+
   const handleMessageClick = (message: ExtendedMessage) => {
     setExpandedMessageId(expandedMessageId === message.id ? null : message.id);
     
@@ -72,13 +70,11 @@ export const MessageList = ({
     }
   };
 
-  // Format date for display
   const formatMessageDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleString();
   };
 
-  // Get message type icon
   const getMessageTypeIcon = (type: MessageType | undefined) => {
     switch (type) {
       case 'announcement':
@@ -115,7 +111,7 @@ export const MessageList = ({
   return (
     <ScrollArea className="h-[400px]">
       <div className="space-y-4">
-        {messages.map((message) => {
+        {messages?.map((message) => {
           const extendedMessage = message as ExtendedMessage;
           return (
             <div 
