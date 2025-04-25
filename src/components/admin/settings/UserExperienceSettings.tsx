@@ -53,7 +53,7 @@ export function UserExperienceSettingsSection({ settings, onUpdate }: UserExperi
             value={settings.defaultLandingPage}
             onValueChange={(value: UserExperienceSettings['defaultLandingPage']) => handleChange('defaultLandingPage', value)}
           >
-            <SelectTrigger id="landing-page">
+            <SelectTrigger id="landing-page" className="bg-background">
               <SelectValue placeholder="Select default page" />
             </SelectTrigger>
             <SelectContent>
@@ -63,7 +63,7 @@ export function UserExperienceSettingsSection({ settings, onUpdate }: UserExperi
               <SelectItem value="progress">Progress</SelectItem>
             </SelectContent>
           </Select>
-          <p className="text-xs text-muted-foreground">Page shown after login</p>
+          <p className="text-xs text-muted-foreground mt-1">Page shown after login</p>
         </div>
         
         <div className="flex items-center justify-between">

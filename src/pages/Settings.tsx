@@ -241,7 +241,7 @@ export default function Settings() {
               onClick={handleUpdateSettings} 
               disabled={isSaving}
               size="lg"
-              className="min-w-[150px] bg-primary hover:bg-primary/90"
+              className="min-w-[150px]"
             >
               {isSaving ? (
                 <>
