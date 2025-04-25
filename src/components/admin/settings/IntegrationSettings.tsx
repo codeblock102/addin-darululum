@@ -3,7 +3,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { IntegrationSettings } from "@/types/settings";
-import { Globe, Calendar, MessageSquare, Api } from "lucide-react";
+import { Globe, Calendar, MessageSquare, Network } from "lucide-react";
 import { SettingsCard } from "./SettingsCard";
 
 interface IntegrationSettingsSectionProps {
@@ -46,7 +46,7 @@ export function IntegrationSettingsSection({ settings, onUpdate }: IntegrationSe
     <SettingsCard
       title="Integrations"
       description="Connect with external services and tools"
-      icon={<Api className="h-5 w-5" />}
+      icon={<Network className="h-5 w-5" />}
     >
       <div className="space-y-6">
         <div className="space-y-4 border-b pb-6">
