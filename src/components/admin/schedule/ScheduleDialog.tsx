@@ -64,22 +64,23 @@ export const ScheduleDialog = ({
       
       if (schedule.time_slots && Array.isArray(schedule.time_slots)) {
         schedule.time_slots.forEach((slot: any) => {
-          // Ensure all required fields are present with proper defaults
-          if (slot && typeof slot === 'object') {
-            formattedTimeSlots.push({
-              // Make sure days is always a non-empty array
-              days: Array.isArray(slot.days) && slot.days.length > 0 
-                ? slot.days 
-                : ['Monday'], // Default to Monday if no days provided
-              // Ensure start_time and end_time are always strings
-              start_time: typeof slot.start_time === 'string' && slot.start_time 
-                ? slot.start_time 
-                : '09:00',
-              end_time: typeof slot.end_time === 'string' && slot.end_time 
-                ? slot.end_time 
-                : '10:00'
-            });
-          }
+          // Ensure we extract valid time slot data from each slot
+          const timeSlot: TimeSlot = {
+            // Make sure days is a non-empty array with proper default
+            days: Array.isArray(slot.days) && slot.days.length > 0 
+              ? [...slot.days] 
+              : ['Monday'], 
+            // Ensure start_time is a valid string with default
+            start_time: typeof slot.start_time === 'string' && slot.start_time 
+              ? slot.start_time 
+              : '09:00',
+            // Ensure end_time is a valid string with default
+            end_time: typeof slot.end_time === 'string' && slot.end_time 
+              ? slot.end_time 
+              : '10:00'
+          };
+          
+          formattedTimeSlots.push(timeSlot);
         });
       }
       
