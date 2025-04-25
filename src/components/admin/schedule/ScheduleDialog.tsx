@@ -64,10 +64,10 @@ export const ScheduleDialog = ({
       
       if (schedule.time_slots && Array.isArray(schedule.time_slots)) {
         schedule.time_slots.forEach((slot: any) => {
-          // Only add the time slot if it has valid data
+          // Make sure all required fields are present before adding to formattedTimeSlots
           if (Array.isArray(slot.days) && typeof slot.start_time === 'string' && typeof slot.end_time === 'string') {
             formattedTimeSlots.push({
-              days: slot.days,
+              days: slot.days || [], // Ensure days is always an array even if empty
               start_time: slot.start_time,
               end_time: slot.end_time
             });
