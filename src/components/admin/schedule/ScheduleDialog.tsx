@@ -15,7 +15,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
 import { Loader2 } from "lucide-react";
-import { scheduleFormSchema, ScheduleFormData } from "./scheduleValidation";
+import { scheduleFormSchema, ScheduleFormData, TimeSlot } from "./scheduleValidation";
 import { useScheduleSubmit } from "./useScheduleSubmit";
 import { ClassBasicInfo } from "./ClassBasicInfo";
 import { ClassScheduleSelector } from "./ClassScheduleSelector";
@@ -61,7 +61,7 @@ export const ScheduleDialog = ({
   useEffect(() => {
     if (open && schedule) {
       // Ensure the time_slots from schedule have required properties
-      const formattedTimeSlots = schedule.time_slots?.map((slot: any) => ({
+      const formattedTimeSlots = schedule.time_slots?.map((slot: any): TimeSlot => ({
         days: slot.days || [],
         start_time: slot.start_time || "09:00",
         end_time: slot.end_time || "10:00"

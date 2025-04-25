@@ -19,3 +19,10 @@ export const scheduleFormSchema = z.object({
 });
 
 export type ScheduleFormData = z.infer<typeof scheduleFormSchema>;
+
+// Export the TimeSlot type for use in other components
+export type TimeSlot = {
+  days: string[];
+  start_time: string;
+  end_time: string;
+};
