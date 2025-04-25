@@ -1,0 +1,40 @@
+
+import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { useFormContext } from "react-hook-form";
+
+export const TimeFields = () => {
+  const { control } = useFormContext();
+
+  return (
+    <div className="grid grid-cols-2 gap-4">
+      <FormField
+        control={control}
+        name="time_start"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Start Time</FormLabel>
+            <FormControl>
+              <Input type="time" {...field} />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+
+      <FormField
+        control={control}
+        name="time_end"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>End Time</FormLabel>
+            <FormControl>
+              <Input type="time" {...field} />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+    </div>
+  );
+};
