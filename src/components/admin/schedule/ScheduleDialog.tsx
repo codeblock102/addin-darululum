@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -64,7 +63,7 @@ export function ScheduleDialog({
           time_slots: formData.time_slots,
           days_of_week: Array.from(
             new Set(formData.time_slots.flatMap((slot: TimeSlot) => slot.days))
-          )
+          ) as string[]
         };
         
         if (schedule) {
@@ -120,7 +119,6 @@ export function ScheduleDialog({
   });
 
   const onSubmit = async (data: any) => {
-    // Ensure time slots have the correct structure
     const formattedTimeSlots: TimeSlot[] = data.time_slots.map((slot: any) => ({
       days: Array.isArray(slot.days) ? slot.days : [],
       start_time: slot.start_time || "",

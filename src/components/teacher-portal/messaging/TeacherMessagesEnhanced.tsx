@@ -25,7 +25,6 @@ export const TeacherMessagesEnhanced = ({
   const [messageTab, setMessageTab] = useState("inbox");
   const [inboxTab, setInboxTab] = useState("received");
   
-  // Fetch inbox messages (received messages)
   const { data: inboxMessages, isLoading: inboxLoading, refetch: refetchInbox } = useQuery({
     queryKey: ['teacher-inbox', teacherId],
     queryFn: async () => {
@@ -40,7 +39,6 @@ export const TeacherMessagesEnhanced = ({
       
       if (error) throw error;
       
-      // Format messages with sender names
       return data.map((msg: any) => ({
         ...msg,
         sender_name: msg.teachers?.name || "Unknown Sender"
@@ -48,7 +46,6 @@ export const TeacherMessagesEnhanced = ({
     }
   });
   
-  // Fetch sent messages
   const { data: sentMessages, isLoading: sentLoading, refetch: refetchSent } = useQuery({
     queryKey: ['teacher-sent', teacherId],
     queryFn: async () => {
@@ -63,7 +60,6 @@ export const TeacherMessagesEnhanced = ({
       
       if (error) throw error;
       
-      // Format messages with recipient names
       return data.map((msg: any) => ({
         ...msg,
         recipient_name: msg.teachers?.name || "Unknown Recipient"
@@ -71,7 +67,6 @@ export const TeacherMessagesEnhanced = ({
     }
   });
   
-  // Fetch potential recipients (teachers for now)
   const { data: recipients, isLoading: recipientsLoading } = useQuery({
     queryKey: ['message-recipients', teacherId],
     queryFn: async () => {
@@ -82,14 +77,12 @@ export const TeacherMessagesEnhanced = ({
       
       if (teachersError) throw teachersError;
       
-      // Format teacher recipients
       const formattedTeachers: MessageRecipient[] = teachers.map((teacher) => ({
         id: teacher.id,
         name: teacher.name,
         type: "teacher" as const
       }));
       
-      // Add admin recipients (future enhancement: fetch from users table)
       const adminRecipients: MessageRecipient[] = [
         { id: 'admin-1', name: 'Administrator', type: 'admin' }
       ];
@@ -98,7 +91,6 @@ export const TeacherMessagesEnhanced = ({
     }
   });
   
-  // Refresh messages
   const handleRefresh = () => {
     toast({
       title: "Refreshing messages",
@@ -180,4 +172,3 @@ export const TeacherMessagesEnhanced = ({
       </Card>
     </div>
   );
-};

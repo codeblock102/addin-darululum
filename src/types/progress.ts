@@ -1,99 +1,53 @@
+export type UserRole = 'admin' | 'teacher';
 
-export interface Schedule {
+export interface User {
   id: string;
-  name: string;
-  class_name?: string;   // For backward compatibility
-  days_of_week: string[];
-  time_slots: TimeSlot[];
-  room?: string;
-  capacity?: number;
-  current_students?: number;
-  
-  // Deprecated fields - kept for backward compatibility
-  day_of_week?: string;  
-  time_slot?: string;    
+  email: string;
+  role: UserRole;
+  username: string;
+  created_at: string;
+  name?: string;
 }
 
-export interface Progress {
+export interface StudentAssignment {
   id: string;
-  student_id: string | null;
-  current_juz: number | null;
-  completed_juz: number | null;
-  // Additional fields referenced in components
-  date?: string | null;
-  current_surah?: number | null;
-  verses_memorized?: number | null;
-  memorization_quality?: 'excellent' | 'good' | 'average' | 'needsWork' | 'horrible' | null;
-  
-  // Adding students property for join results
-  students?: {
-    name: string;
-  };
+  teacher_id: string;
+  student_name: string;
+  active: boolean;
+  assigned_date: string;
 }
 
-export interface DifficultAyah {
+export interface Communication {
   id: string;
-  student_id: string | null;
-  surah_number: number;
-  ayah_number: number;
-  juz_number: number;
-  date_added: string | null;
-  revision_count: number | null;
-  last_revised: string | null;
-  notes: string | null;
-  status: string | null;
+  sender_id: string;
+  recipient_id: string;
+  message: string;
+  read: boolean;
+  created_at: string;
+  updated_at: string;
 }
 
-export interface JuzMastery {
-  id: string;
-  student_id: string | null;
-  juz_number: number;
-  mastery_level: 'not_started' | 'in_progress' | 'memorized' | 'mastered' | null;
-  last_revision_date: string | null;
-  revision_count: number | null;
-  consecutive_good_revisions: number | null;
-}
-
-export interface JuzRevision {
-  id: string;
-  student_id: string | null;
-  juz_revised: number;
-  revision_date: string;
-  memorization_quality: 'excellent' | 'good' | 'average' | 'needsWork' | 'horrible' | null;
-  teacher_notes: string | null;
-}
+export type MessageType = 'direct' | 'announcement' | 'feedback';
+export type MessageCategory = 'administrative' | 'academic' | 'general';
 
 export interface Message {
   id: string;
-  sender_id: string | null;
-  recipient_id: string | null;
-  message: string;
-  read: boolean | null;
-  created_at: string | null;
-  // Additional fields referenced in components
-  recipient_name?: string;
+  sender_id: string;
   sender_name?: string;
+  recipient_id: string;
+  recipient_name?: string;
+  message: string;
   message_type?: MessageType;
+  message_status?: string;
   category?: MessageCategory;
+  read: boolean;
+  created_at: string;
+  parent_message_id?: string;
+  attachment_url?: string;
 }
 
-export type MessageType = 'general' | 'progress' | 'assignment' | 'announcement' | 'feedback' | 'direct';
-export type MessageCategory = 'student' | 'teacher' | 'admin' | 'academic';
-export type MessageRecipient = {
+export interface MessageRecipient {
   id: string;
   name: string;
-  type: MessageCategory;
-};
-
-export interface RevisionsListProps {
-  studentId?: string;
-  revisions?: JuzRevision[];
-  studentName?: string;
-  onAddRevision?: () => void;
-}
-
-export interface TimeSlot {
-  days: string[];
-  start_time: string;
-  end_time: string;
+  type: 'teacher' | 'admin';
 }

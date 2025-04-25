@@ -145,33 +145,55 @@ export type Database = {
       }
       communications: {
         Row: {
+          attachment_url: string | null
+          category: string | null
           created_at: string | null
           id: string
           message: string
+          message_status: string | null
+          message_type: string | null
+          parent_message_id: string | null
           read: boolean | null
           recipient_id: string | null
           sender_id: string | null
           updated_at: string | null
         }
         Insert: {
+          attachment_url?: string | null
+          category?: string | null
           created_at?: string | null
           id?: string
           message: string
+          message_status?: string | null
+          message_type?: string | null
+          parent_message_id?: string | null
           read?: boolean | null
           recipient_id?: string | null
           sender_id?: string | null
           updated_at?: string | null
         }
         Update: {
+          attachment_url?: string | null
+          category?: string | null
           created_at?: string | null
           id?: string
           message?: string
+          message_status?: string | null
+          message_type?: string | null
+          parent_message_id?: string | null
           read?: boolean | null
           recipient_id?: string | null
           sender_id?: string | null
           updated_at?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "communications_parent_message_id_fkey"
+            columns: ["parent_message_id"]
+            isOneToOne: false
+            referencedRelation: "communications"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "communications_recipient_id_fkey"
             columns: ["recipient_id"]

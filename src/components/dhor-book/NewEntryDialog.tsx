@@ -1,14 +1,14 @@
-
+import { useState } from "react";
 import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { 
+import {
   Dialog,
   DialogContent,
   DialogHeader,
-  DialogTitle 
+  DialogTitle,
+  DialogFooter,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
@@ -18,159 +18,236 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { CalendarIcon } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { format } from "date-fns";
+import { useToast } from "@/components/ui/use-toast";
+import { DhorBookEntrySchema } from "./dhorBookValidation";
 import { Textarea } from "@/components/ui/textarea";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Loader2 } from "lucide-react";
-import { DhorBookEntry } from "@/types/dhor-book";
+import { supabase } from "@/integrations/supabase/client";
 
 interface NewEntryDialogProps {
   open: boolean;
-  onOpenChange: (open: boolean) => void;
+  setOpen: (open: boolean) => void;
   studentId: string;
   teacherId: string;
+  onSuccess?: (data?: any) => void;
 }
 
-export function NewEntryDialog({ open, onOpenChange, studentId, teacherId }: NewEntryDialogProps) {
+export function NewEntryDialog({
+  open,
+  setOpen,
+  studentId,
+  teacherId,
+  onSuccess
+}: NewEntryDialogProps) {
+  const { toast } = useToast();
   const queryClient = useQueryClient();
-  const form = useForm<Partial<DhorBookEntry>>({
+  const [date, setDate] = useState<Date | undefined>(new Date());
+
+  const form = useForm({
+    resolver: zodResolver(DhorBookEntrySchema),
     defaultValues: {
-      student_id: studentId,
-      teacher_id: teacherId,
-      entry_date: new Date().toISOString().split('T')[0],
-      day_of_week: new Date().toLocaleDateString('en-US', { weekday: 'long' }),
+      entry_date: date,
+      sabak: "",
+      sabak_para: "",
+      dhor_1: "",
       dhor_1_mistakes: 0,
+      dhor_2: "",
       dhor_2_mistakes: 0,
+      comments: "",
       points: 0,
       detention: false
-    }
+    },
   });
 
-  const { mutate: createEntry, isPending } = useMutation({
-    mutationFn: async (values: Partial<DhorBookEntry>) => {
+  const { mutate, isPending } = useMutation({
+    mutationFn: async (formData: any) => {
       const { data, error } = await supabase
         .from('dhor_book_entries')
-        .insert([values])
-        .select()
-        .single();
-
+        .insert([{
+          student_id: studentId,
+          teacher_id: teacherId,
+          entry_date: formData.entry_date,
+          day_of_week: new Date(formData.entry_date).toLocaleDateString('en-US', { weekday: 'long' }),
+          sabak: formData.sabak,
+          sabak_para: formData.sabak_para,
+          dhor_1: formData.dhor_1,
+          dhor_1_mistakes: formData.dhor_1_mistakes || 0,
+          dhor_2: formData.dhor_2,
+          dhor_2_mistakes: formData.dhor_2_mistakes || 0,
+          comments: formData.comments,
+          points: formData.points || 0,
+          detention: formData.detention || false
+        }])
+        .select();
+    
       if (error) throw error;
       return data;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['dhor-book-entries'] });
-      queryClient.invalidateQueries({ queryKey: ['dhor-book-summary'] });
-      onOpenChange(false);
+      onSuccess?.(data);
       form.reset();
+      setOpen(false);
+    },
+    onError: (error) => {
+      console.error('Error creating entry:', error);
+      toast({
+        title: "Error",
+        description: "Failed to create entry. Please try again.",
+        variant: "destructive"
+      });
     }
   });
 
+  function onSubmit(data: any) {
+    mutate({
+      ...data,
+      entry_date: format(date || new Date(), "yyyy-MM-dd"),
+    });
+  }
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl">
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Add New Entry</DialogTitle>
+          <DialogTitle>New Dhor Book Entry</DialogTitle>
         </DialogHeader>
-
         <Form {...form}>
-          <form onSubmit={form.handleSubmit((values) => createEntry(values))} className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="sabak"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Sabak</FormLabel>
-                    <FormControl>
-                      <Input {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="sabak_para"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Sabaq Para</FormLabel>
-                    <FormControl>
-                      <Input {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="dhor_1"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Dhor 1</FormLabel>
-                    <FormControl>
-                      <Input {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="dhor_2"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Dhor 2</FormLabel>
-                    <FormControl>
-                      <Input {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="points"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Points (0-10)</FormLabel>
-                    <FormControl>
-                      <Input 
-                        type="number" 
-                        min={0} 
-                        max={10}
-                        {...field} 
-                        onChange={e => field.onChange(parseInt(e.target.value))}
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <FormField
+              control={form.control}
+              name="entry_date"
+              render={({ field }) => (
+                <FormItem className="flex flex-col">
+                  <FormLabel>Entry Date</FormLabel>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant={"outline"}
+                        className={cn(
+                          "w-[240px] pl-3 text-left font-normal",
+                          !date && "text-muted-foreground"
+                        )}
+                      >
+                        {date ? format(date, "PPP") : (
+                          <span>Pick a date</span>
+                        )}
+                        <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={date}
+                        onSelect={setDate}
+                        disabled={(date) =>
+                          date > new Date()
+                        }
+                        initialFocus
                       />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                    </PopoverContent>
+                  </Popover>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-              <FormField
-                control={form.control}
-                name="detention"
-                render={({ field }) => (
-                  <FormItem className="flex items-end space-x-2">
-                    <FormControl>
-                      <Checkbox
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                      />
-                    </FormControl>
-                    <FormLabel>Detention</FormLabel>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
+            <FormField
+              control={form.control}
+              name="sabak"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Sabak</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Enter sabak" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="sabak_para"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Sabak Para</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Enter sabak para" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="dhor_1"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Dhor 1</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Enter dhor 1" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="dhor_1_mistakes"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Dhor 1 Mistakes</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="number"
+                      placeholder="Enter number of mistakes"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="dhor_2"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Dhor 2</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Enter dhor 2" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="dhor_2_mistakes"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Dhor 2 Mistakes</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="number"
+                      placeholder="Enter number of mistakes"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
             <FormField
               control={form.control}
@@ -179,28 +256,43 @@ export function NewEntryDialog({ open, onOpenChange, studentId, teacherId }: New
                 <FormItem>
                   <FormLabel>Comments</FormLabel>
                   <FormControl>
-                    <Textarea {...field} />
+                    <Textarea
+                      placeholder="Enter comments"
+                      className="resize-none"
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
 
-            <div className="flex justify-end space-x-2 pt-4">
-              <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+            <FormField
+              control={form.control}
+              name="points"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Points</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="number"
+                      placeholder="Enter points"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <DialogFooter>
+              <Button type="button" variant="secondary" onClick={() => setOpen(false)}>
                 Cancel
               </Button>
               <Button type="submit" disabled={isPending}>
-                {isPending ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Saving...
-                  </>
-                ) : (
-                  "Save Entry"
-                )}
+                {isPending ? "Creating..." : "Create Entry"}
               </Button>
-            </div>
+            </DialogFooter>
           </form>
         </Form>
       </DialogContent>
