@@ -7,7 +7,7 @@ interface BackgroundPatternProps {
 export const BackgroundPattern = ({ isAdmin, children }: BackgroundPatternProps) => {
   return (
     <div 
-      className={`flex flex-col flex-1 overflow-auto transition-all duration-300 ${
+      className={`flex flex-col flex-1 overflow-auto transition-all duration-500 ${
         isAdmin 
           ? "bg-gradient-to-br from-[#1E2439] to-[#121827] text-white" 
           : "bg-background"
@@ -19,9 +19,11 @@ export const BackgroundPattern = ({ isAdmin, children }: BackgroundPatternProps)
       }}
     >
       {isAdmin && (
-        <div className="absolute inset-0 bg-gradient-to-br from-[#1E2439]/20 to-[#121827]/20 pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-br from-[#1E2439]/20 to-[#121827]/20 pointer-events-none animate-fadeIn" />
       )}
-      {children}
+      <div className="animate-fadeIn">
+        {children}
+      </div>
     </div>
   );
 };
