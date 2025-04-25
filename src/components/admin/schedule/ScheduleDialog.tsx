@@ -1,7 +1,7 @@
+
 import { useState, useEffect } from "react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/components/ui/use-toast";
 import { 
   Dialog,
   DialogContent,
@@ -13,9 +13,10 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Loader2 } from "lucide-react";
-import { z } from "zod";
+import { scheduleFormSchema } from "./scheduleValidation";
+import { ScheduleFormFields } from "./ScheduleFormFields";
+import { useScheduleSubmit } from "./useScheduleSubmit";
 
 interface ScheduleDialogProps {
   open: boolean;
@@ -23,26 +24,11 @@ interface ScheduleDialogProps {
   schedule: any | null;
 }
 
-interface ScheduleFormData {
-  name: string;
-  day_of_week: string;
-  time_slot: string;
-  room: string;
-  capacity: number;
-  teacher_id: string | null;
-}
-
-const daysOfWeek = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
-
 export const ScheduleDialog = ({
   open,
   onOpenChange,
   schedule
 }: ScheduleDialogProps) => {
-  const { toast } = useToast();
-  const queryClient = useQueryClient();
-  
-  // Form state
   const [className, setClassName] = useState("");
   const [day, setDay] = useState<string>("");
   const [timeSlot, setTimeSlot] = useState("");
@@ -90,96 +76,26 @@ export const ScheduleDialog = ({
     }
   });
   
-  // Create/update schedule mutation
-  const scheduleMutation = useMutation({
-    mutationFn: async (formData: ScheduleFormData) => {
-      const timeParts = formData.time_slot.split('-').map(part => part.trim());
-      const start_time = timeParts[0];
-      const end_time = timeParts[1] || start_time;
-      
-      const scheduleData = {
-        name: formData.name,
-        days_of_week: [formData.day_of_week],
-        time_slots: [{
-          days: [formData.day_of_week],
-          start_time,
-          end_time
-        }],
-        room: formData.room,
-        capacity: formData.capacity,
-        teacher_id: formData.teacher_id,
-        // Keep these for backwards compatibility
-        day_of_week: formData.day_of_week,
-        time_slot: formData.time_slot,
-      };
-      
-      if (schedule) {
-        // Update existing schedule
-        const { data, error } = await supabase
-          .from('classes')
-          .update(scheduleData)
-          .eq('id', schedule.id)
-          .select();
-        
-        if (error) throw error;
-        return data;
-      } else {
-        // Create new schedule
-        const { data, error } = await supabase
-          .from('classes')
-          .insert([{
-            ...scheduleData,
-            current_students: 0
-          }])
-          .select();
-        
-        if (error) throw error;
-        return data;
-      }
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin-schedules'] });
-      queryClient.invalidateQueries({ queryKey: ['teacher-schedule'] });
-      
-      toast({
-        title: schedule ? "Schedule updated" : "Schedule created",
-        description: schedule 
-          ? "The schedule has been updated successfully."
-          : "A new schedule has been created successfully."
-      });
-      
-      onOpenChange(false);
-    },
-    onError: (error: Error) => {
-      toast({
-        title: "Error",
-        description: `Failed to ${schedule ? 'update' : 'create'} schedule: ${error.message}`,
-        variant: "destructive"
-      });
-    }
+  const scheduleMutation = useScheduleSubmit({
+    schedule,
+    onSuccess: () => onOpenChange(false)
   });
   
-  // Validate and submit form
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // Validate form fields
-    const formSchema = z.object({
-      name: z.string().min(1, "Class name is required"),
-      day_of_week: z.string().min(1, "Day of the week is required"),
-      time_slot: z.string().min(1, "Time slot is required"),
-      room: z.string().min(1, "Room is required"),
-      capacity: z.number().min(1, "Capacity must be at least 1"),
-    });
+    setErrors({});
     
     try {
-      formSchema.parse({
+      const formData = {
         name: className,
         day_of_week: day,
         time_slot: timeSlot,
         room,
-        capacity: Number(capacity)
-      });
+        capacity: Number(capacity),
+        teacher_id: teacherId,
+      };
+      
+      scheduleFormSchema.parse(formData);
       
       // Check for schedule conflicts
       if (!schedule) {
@@ -197,24 +113,12 @@ export const ScheduleDialog = ({
         }
       }
       
-      // Submit form data
-      scheduleMutation.mutate({
-        name: className,
-        day_of_week: day,
-        time_slot: timeSlot,
-        room,
-        capacity: Number(capacity),
-        teacher_id: teacherId,
-      });
+      scheduleMutation.mutate(formData);
     } catch (error) {
-      if (error instanceof z.ZodError) {
-        const formattedErrors: Record<string, string> = {};
-        error.errors.forEach((err) => {
-          if (err.path[0]) {
-            formattedErrors[err.path[0].toString()] = err.message;
-          }
+      if (error instanceof Error) {
+        setErrors({
+          form: error.message
         });
-        setErrors(formattedErrors);
       }
     }
   };
@@ -247,87 +151,21 @@ export const ScheduleDialog = ({
             )}
           </div>
           
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="day">Day of Week</Label>
-              <Select value={day} onValueChange={setDay}>
-                <SelectTrigger className={errors.day_of_week ? "border-destructive" : ""}>
-                  <SelectValue placeholder="Select day" />
-                </SelectTrigger>
-                <SelectContent>
-                  {daysOfWeek.map((day) => (
-                    <SelectItem key={day} value={day}>
-                      {day}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {errors.day_of_week && (
-                <p className="text-xs text-destructive">{errors.day_of_week}</p>
-              )}
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="timeSlot">Time Slot</Label>
-              <Input
-                id="timeSlot"
-                value={timeSlot}
-                onChange={(e) => setTimeSlot(e.target.value)}
-                placeholder="e.g. 9:00 AM - 10:30 AM"
-                className={errors.time_slot ? "border-destructive" : ""}
-              />
-              {errors.time_slot && (
-                <p className="text-xs text-destructive">{errors.time_slot}</p>
-              )}
-            </div>
-          </div>
-          
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="room">Room</Label>
-              <Input
-                id="room"
-                value={room}
-                onChange={(e) => setRoom(e.target.value)}
-                className={errors.room ? "border-destructive" : ""}
-              />
-              {errors.room && (
-                <p className="text-xs text-destructive">{errors.room}</p>
-              )}
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="capacity">Capacity</Label>
-              <Input
-                id="capacity"
-                type="number"
-                value={capacity}
-                onChange={(e) => setCapacity(e.target.value)}
-                min={1}
-                className={errors.capacity ? "border-destructive" : ""}
-              />
-              {errors.capacity && (
-                <p className="text-xs text-destructive">{errors.capacity}</p>
-              )}
-            </div>
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="teacher">Assign Teacher (Optional)</Label>
-            <Select value={teacherId || "unassigned"} onValueChange={(value) => setTeacherId(value === "unassigned" ? null : value)}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select teacher" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="unassigned">None (Unassigned)</SelectItem>
-                {teachers?.map((teacher) => (
-                  <SelectItem key={teacher.id} value={teacher.id}>
-                    {teacher.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+          <ScheduleFormFields
+            className="space-y-4"
+            day={day}
+            setDay={setDay}
+            timeSlot={timeSlot}
+            setTimeSlot={setTimeSlot}
+            room={room}
+            setRoom={setRoom}
+            capacity={capacity}
+            setCapacity={setCapacity}
+            teacherId={teacherId}
+            setTeacherId={setTeacherId}
+            teachers={teachers}
+            errors={errors}
+          />
           
           <DialogFooter className="mt-6">
             <Button
