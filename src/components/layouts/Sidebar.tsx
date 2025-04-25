@@ -24,7 +24,9 @@ import {
   ClipboardCheck,
   BarChart,
   MessageSquare,
-  UserCircle
+  UserCircle,
+  ShieldCheck,
+  Database
 } from "lucide-react";
 
 export const Sidebar = () => {
@@ -34,6 +36,7 @@ export const Sidebar = () => {
   const isMobile = useMediaQuery("(max-width: 768px)");
   const user = session?.user;
   const [isTeacher, setIsTeacher] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(true);
 
   // Check if the current user is a teacher
   useEffect(() => {
@@ -49,9 +52,11 @@ export const Sidebar = () => {
         if (error) throw error;
         
         setIsTeacher(data && data.length > 0);
+        setIsAdmin(!data || data.length === 0);
       } catch (error) {
         console.error("Error checking teacher status:", error);
         setIsTeacher(false);
+        setIsAdmin(true);
       }
     };
     
@@ -94,6 +99,7 @@ export const Sidebar = () => {
     { href: "/classes", label: "Classes", icon: <CalendarDays className="h-5 w-5" /> },
     { href: "/progress", label: "Progress", icon: <LineChart className="h-5 w-5" /> },
     { href: "/attendance", label: "Attendance", icon: <CalendarCheck className="h-5 w-5" /> },
+    { href: "/settings", label: "Settings", icon: <Settings className="h-5 w-5" /> },
     { href: "/teacher-portal", label: "Teacher Portal", icon: <GraduationCap className="h-5 w-5" /> },
   ];
 
@@ -109,17 +115,48 @@ export const Sidebar = () => {
 
   // Choose navItems based on user role
   const navItems = isTeacher ? teacherNavItems : adminNavItems;
+  
+  // Admin UI styling
+  const adminStyles = {
+    sidebar: "bg-[#1A1F2C] border-r border-gray-800 text-white",
+    header: "border-b border-gray-800",
+    navItem: {
+      active: "bg-[#2A3142] text-amber-400 font-medium",
+      inactive: "text-gray-300 hover:bg-[#2A3142] hover:text-amber-400"
+    },
+    avatar: "bg-amber-500 text-[#1A1F2C]",
+    footer: "border-t border-gray-800"
+  };
+  
+  // Teacher UI styling (default)
+  const teacherStyles = {
+    sidebar: "bg-background border-r",
+    header: "border-b",
+    navItem: {
+      active: "bg-accent text-accent-foreground",
+      inactive: "hover:bg-accent/50 hover:text-accent-foreground"
+    },
+    avatar: "bg-primary text-primary-foreground",
+    footer: "border-t"
+  };
+  
+  // Choose styles based on role
+  const styles = isAdmin ? adminStyles : teacherStyles;
 
   return (
-    <div className="flex h-screen flex-col border-r bg-background">
-      <div className="flex h-14 items-center border-b px-4 lg:h-[60px] lg:px-6">
+    <div className={`flex h-screen flex-col ${styles.sidebar}`}>
+      <div className={`flex h-14 items-center ${styles.header} px-4 lg:h-[60px] lg:px-6`}>
         <Link 
           to={isTeacher ? "/teacher-portal" : "/"} 
           className="flex items-center gap-2 font-semibold"
         >
-          <BookOpen className="h-6 w-6" />
+          {isAdmin ? (
+            <ShieldCheck className="h-6 w-6 text-amber-400" />
+          ) : (
+            <BookOpen className="h-6 w-6" />
+          )}
           <span className="hidden md:inline-block">
-            {isTeacher ? "Teacher Portal" : "Quran Academy"}
+            {isAdmin ? "Admin Portal" : "Teacher Portal"}
           </span>
         </Link>
         {isMobile && (
@@ -144,8 +181,8 @@ export const Sidebar = () => {
                 className={cn(
                   "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all",
                   isActive
-                    ? "bg-accent text-accent-foreground"
-                    : "hover:bg-accent/50 hover:text-accent-foreground"
+                    ? styles.navItem.active
+                    : styles.navItem.inactive
                 )}
               >
                 {item.icon}
@@ -155,27 +192,27 @@ export const Sidebar = () => {
           })}
         </nav>
       </div>
-      <div className="mt-auto border-t px-2 py-4">
+      <div className={`mt-auto ${styles.footer} px-2 py-4`}>
         <div className="flex items-center gap-3 rounded-lg px-3 py-2">
-          <Avatar className="h-9 w-9">
+          <Avatar className={`h-9 w-9 ${isAdmin ? "ring-2 ring-amber-400" : ""}`}>
             <AvatarImage alt="User avatar" />
-            <AvatarFallback>{getInitials(user?.email)}</AvatarFallback>
+            <AvatarFallback className={styles.avatar}>{getInitials(user?.email)}</AvatarFallback>
           </Avatar>
           <div className="hidden md:block">
             <div className="text-sm font-medium">
               {user?.email?.split("@")[0] || "User"}
             </div>
-            <div className="text-xs text-muted-foreground">
-              {user?.email || "user@example.com"}
+            <div className={`text-xs ${isAdmin ? "text-gray-400" : "text-muted-foreground"}`}>
+              {isAdmin ? "Administrator" : "Teacher"}
             </div>
           </div>
           <Button 
-            variant="ghost" 
+            variant={isAdmin ? "outline" : "ghost"} 
             size="icon" 
-            className="ml-auto" 
+            className={`ml-auto ${isAdmin ? "hover:bg-gray-800 border-gray-700" : ""}`}
             onClick={handleSignOut}
           >
-            <LogOut className="h-5 w-5" />
+            <LogOut className={`h-5 w-5 ${isAdmin ? "text-amber-400" : ""}`} />
             <span className="sr-only">Log out</span>
           </Button>
         </div>
