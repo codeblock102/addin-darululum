@@ -73,7 +73,7 @@ export default function Settings() {
 
   return (
     <DashboardLayout>
-      <div className="space-y-6">
+      <div className="space-y-6 animate-fadeIn">
         <div>
           <h1 className="text-3xl font-bold">System Settings</h1>
           <p className="text-muted-foreground">
@@ -84,35 +84,35 @@ export default function Settings() {
         <div className="space-y-6">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="grid w-full grid-cols-4">
-              <TabsTrigger value="appearance">Appearance</TabsTrigger>
-              <TabsTrigger value="notifications">Notifications</TabsTrigger>
-              <TabsTrigger value="security">Security</TabsTrigger>
-              <TabsTrigger value="academic">Academic</TabsTrigger>
+              <TabsTrigger value="appearance" className="transition-all duration-200 hover:scale-105">Appearance</TabsTrigger>
+              <TabsTrigger value="notifications" className="transition-all duration-200 hover:scale-105">Notifications</TabsTrigger>
+              <TabsTrigger value="security" className="transition-all duration-200 hover:scale-105">Security</TabsTrigger>
+              <TabsTrigger value="academic" className="transition-all duration-200 hover:scale-105">Academic</TabsTrigger>
             </TabsList>
 
             <div className="mt-6">
-              <TabsContent value="appearance">
+              <TabsContent value="appearance" className="animate-slideIn">
                 <AppearanceSettingsSection
                   settings={settings.appearance}
                   onUpdate={(newSettings) => updateSettings({ ...settings, appearance: newSettings })}
                 />
               </TabsContent>
               
-              <TabsContent value="notifications">
+              <TabsContent value="notifications" className="animate-slideIn">
                 <NotificationSettingsSection
                   settings={settings.notifications}
                   onUpdate={(newSettings) => updateSettings({ ...settings, notifications: newSettings })}
                 />
               </TabsContent>
               
-              <TabsContent value="security">
+              <TabsContent value="security" className="animate-slideIn">
                 <SecuritySettingsSection
                   settings={settings.security}
                   onUpdate={(newSettings) => updateSettings({ ...settings, security: newSettings })}
                 />
               </TabsContent>
               
-              <TabsContent value="academic">
+              <TabsContent value="academic" className="animate-slideIn">
                 <AcademicSettingsSection
                   settings={settings.academic}
                   onUpdate={(newSettings) => updateSettings({ ...settings, academic: newSettings })}
@@ -125,7 +125,7 @@ export default function Settings() {
             <Button 
               onClick={handleUpdateSettings} 
               disabled={isSaving}
-              className="px-6"
+              className="px-6 transition-all duration-200 hover:scale-105"
             >
               {isSaving ? (
                 <>
