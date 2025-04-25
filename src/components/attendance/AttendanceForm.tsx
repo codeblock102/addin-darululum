@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -110,7 +111,7 @@ export function AttendanceForm() {
 
   useEffect(() => {
     if (existingAttendance) {
-      form.setValue("status", existingAttendance.status);
+      form.setValue("status", existingAttendance.status as AttendanceStatus);
       form.setValue("notes", existingAttendance.notes || "");
     } else {
       form.setValue("status", "present");
