@@ -1,18 +1,10 @@
 
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
-} from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
-import { Loader2, Clock, Users, MapPin } from "lucide-react";
-import { Card } from "@/components/ui/card";
-import { Schedule } from "@/types/progress";
+import React from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { Schedule, TimeSlot } from '@/types/teacher';
+import { Card, CardContent } from '@/components/ui/card';
+import { Loader2 } from 'lucide-react';
 
 interface TeacherScheduleProps {
   teacherId: string;
@@ -20,145 +12,73 @@ interface TeacherScheduleProps {
   dashboard?: boolean;
 }
 
-export const TeacherSchedule = ({ 
-  teacherId,
-  limit,
-  dashboard = false
-}: TeacherScheduleProps) => {
-  // Define days of the week for ordering
-  const daysOfWeek = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"];
-  
-  // Get current day for highlighting
-  const currentDay = new Date().toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
-  
-  // Fetch teacher's schedule
-  const { data: scheduleData, isLoading } = useQuery({
-    queryKey: ['teacher-schedule', teacherId, limit],
+export const TeacherSchedule = ({ teacherId, limit, dashboard = false }: TeacherScheduleProps) => {
+  const { data: classes, isLoading } = useQuery({
+    queryKey: ['teacher-schedule', teacherId],
     queryFn: async () => {
       const query = supabase
         .from('classes')
         .select('*')
         .eq('teacher_id', teacherId);
-      
+        
       if (limit) {
         query.limit(limit);
       }
       
       const { data, error } = await query;
       
-      if (error) {
-        console.error('Error fetching teacher schedule:', error);
-        return [];
-      }
+      if (error) throw error;
       
-      return data.map(classItem => {
-        // Transform data to match Schedule interface for compatibility
-        const firstTimeSlot = classItem.time_slots && classItem.time_slots.length > 0 
-          ? classItem.time_slots[0] 
-          : { start_time: "N/A", end_time: "N/A" };
-        
-        // Use first day from days_of_week for compatibility
-        const primaryDay = classItem.days_of_week && classItem.days_of_week.length > 0 
-          ? classItem.days_of_week[0] 
-          : "N/A";
-          
-        return {
-          ...classItem,
-          class_name: classItem.name, // Map name to class_name for compatibility
-          day_of_week: primaryDay,    // Use primary day for components expecting single day
-          time_slot: `${firstTimeSlot.start_time} - ${firstTimeSlot.end_time}` // Format for display
-        };
-      });
-    }
+      return data as Schedule[];
+    },
+    enabled: !!teacherId
   });
   
   if (isLoading) {
     return (
-      <div className="flex justify-center py-8">
-        <Loader2 className="h-6 w-6 animate-spin text-primary" />
+      <div className="flex justify-center my-8">
+        <Loader2 className="h-6 w-6 animate-spin" />
       </div>
     );
   }
   
-  if (!scheduleData || scheduleData.length === 0) {
+  if (!classes || classes.length === 0) {
     return (
-      <div className="text-center py-8 text-muted-foreground">
-        No classes are currently scheduled for you.
-      </div>
+      <Card>
+        <CardContent className="py-6">
+          <p className="text-center text-muted-foreground">No scheduled classes found.</p>
+        </CardContent>
+      </Card>
     );
   }
   
-  if (dashboard) {
-    return (
-      <div className="space-y-4">
-        {scheduleData.map((item) => (
-          <div key={item.id} className="flex justify-between items-center p-3 bg-muted/30 rounded-md">
-            <div>
-              <p className="font-medium">{item.class_name || item.name}</p>
-              <p className="text-sm text-muted-foreground">Room {item.room}</p>
-            </div>
-            <div className="text-sm text-right">
-              <p className="font-medium">{item.time_slot}</p>
-              <p className="text-muted-foreground capitalize">{item.day_of_week || (item.days_of_week?.[0] || 'N/A')}</p>
-            </div>
-          </div>
-        ))}
-      </div>
-    );
-  }
-
   return (
-    <Card className="overflow-hidden border">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Day</TableHead>
-            <TableHead>Class</TableHead>
-            <TableHead>Time</TableHead>
-            <TableHead>Room</TableHead>
-            <TableHead>Students</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {scheduleData.map((item) => {
-            const day = item.day_of_week || (item.days_of_week?.[0] || 'N/A');
-            return (
-              <TableRow 
-                key={item.id}
-                className={day.toLowerCase() === currentDay ? "bg-muted/50" : ""}
-              >
-                <TableCell>
-                  <Badge 
-                    variant={day.toLowerCase() === currentDay ? "default" : "outline"}
-                    className="capitalize"
-                  >
-                    {day}
-                  </Badge>
-                </TableCell>
-                <TableCell className="font-medium">{item.class_name || item.name}</TableCell>
-                <TableCell>
-                  <div className="flex items-center">
-                    <Clock className="h-4 w-4 mr-1 text-muted-foreground" />
-                    {item.time_slot}
+    <div className="space-y-4">
+      {classes.map((classItem) => (
+        <Card key={classItem.id} className={dashboard ? 'border-l-4 border-l-primary' : ''}>
+          <CardContent className={dashboard ? 'py-4' : 'py-6'}>
+            <h3 className="font-medium text-lg">{classItem.name}</h3>
+            <div className="mt-2 space-y-2">
+              {classItem.time_slots && classItem.time_slots.map((slot: TimeSlot, index: number) => (
+                <div key={index} className="flex items-center text-sm text-muted-foreground">
+                  <div className="flex-1">
+                    <span className="font-medium">{slot.days.join(', ')}</span>
                   </div>
-                </TableCell>
-                <TableCell>
-                  <div className="flex items-center">
-                    <MapPin className="h-4 w-4 mr-1 text-muted-foreground" />
-                    {item.room}
+                  <div className="flex-1 text-right">
+                    {slot.start_time} - {slot.end_time}
                   </div>
-                </TableCell>
-                <TableCell>
-                  <div className="flex items-center">
-                    <Users className="h-4 w-4 mr-1 text-muted-foreground" />
-                    {item.current_students} / {item.capacity}
-                  </div>
-                </TableCell>
-              </TableRow>
-            );
-          })}
-        </TableBody>
-      </Table>
-    </Card>
+                </div>
+              ))}
+              {classItem.room && (
+                <p className="text-sm text-muted-foreground">Room: {classItem.room}</p>
+              )}
+              <p className="text-sm text-muted-foreground">
+                Students: {classItem.current_students || 0} / {classItem.capacity || 0}
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      ))}
+    </div>
   );
 };

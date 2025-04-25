@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { TeacherPreferences } from '@/types/teacher';
+import { Teacher, TeacherPreferences as TeacherPreferencesType } from '@/types/teacher';
 
 export const TeacherPreferences = () => {
   const { session } = useAuth();
@@ -52,12 +52,6 @@ export const TeacherPreferences = () => {
         preferences
       };
     },
-    onSuccess: (data) => {
-      if (data?.preferences) {
-        setReminders(data.preferences.enableReminders);
-        setReportFrequency(data.preferences.reportFrequency || 'weekly');
-      }
-    },
     enabled: !!session?.user?.email
   });
 
@@ -68,7 +62,8 @@ export const TeacherPreferences = () => {
       const { error } = await supabase
         .from('teachers')
         .update({
-          updated_at: new Date().toISOString()
+          // Use preferences directly instead of updated_at
+          preferences
         })
         .eq('id', teacherData.id);
       
