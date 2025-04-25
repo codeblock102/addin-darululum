@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { DashboardLayout } from "@/components/layouts/DashboardLayout";
-import { TeacherDialog } from "@/components/teachers/TeacherDialog";
+import TeacherDialog from "@/components/teachers/TeacherDialog";
 import { TeacherList } from "@/components/teachers/TeacherList";
 import { AdminHeader } from "@/components/admin/AdminHeader";
 import { SearchInput } from "@/components/admin/SearchInput";

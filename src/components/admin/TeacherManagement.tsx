@@ -37,15 +37,15 @@ export const TeacherManagement = () => {
         
       if (teachersError) throw teachersError;
       
-      const { data: schedulesData, error: schedulesError } = await supabase
-        .from('schedules')
+      const { data: classesData, error: classesError } = await supabase
+        .from('classes')
         .select('id');
         
-      if (schedulesError) throw schedulesError;
+      if (classesError) throw classesError;
       
       return {
         teacherCount: teachersData ? teachersData.length : 0,
-        scheduleCount: schedulesData ? schedulesData.length : 0
+        scheduleCount: classesData ? classesData.length : 0
       };
     }
   });

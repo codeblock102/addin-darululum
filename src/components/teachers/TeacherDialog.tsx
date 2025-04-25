@@ -55,7 +55,7 @@ interface TeacherDialogProps {
   selectedTeacher: Teacher | null;
 }
 
-const TeacherDialog = ({ selectedTeacher }: TeacherDialogProps) => {
+export const TeacherDialog = ({ selectedTeacher }: TeacherDialogProps) => {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -95,7 +95,6 @@ const TeacherDialog = ({ selectedTeacher }: TeacherDialogProps) => {
       setIsSubmitting(true);
 
       if (selectedTeacher) {
-        // Update existing teacher
         const { data, error } = await supabase
           .from("teachers")
           .update(values)
@@ -117,7 +116,6 @@ const TeacherDialog = ({ selectedTeacher }: TeacherDialogProps) => {
           });
         }
       } else {
-        // Create new teacher
         const { data, error } = await supabase
           .from("teachers")
           .insert([values])
