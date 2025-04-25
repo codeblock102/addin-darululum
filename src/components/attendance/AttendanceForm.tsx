@@ -11,16 +11,24 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { CalendarIcon, Check, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { Tables } from "@/integrations/supabase/types";
 
-type Student = Tables<"students">;
-type Schedule = Tables<"schedules">;
+type Student = {
+  id: string;
+  name: string;
+  status?: string;
+};
+
+type Schedule = {
+  id: string;
+  class_name: string;
+  day_of_week: string;
+  time_slot: string;
+};
 
 const formSchema = z.object({
   class_schedule_id: z.string().min(1, { message: "Please select a class." }),
@@ -39,7 +47,7 @@ type FormValues = z.infer<typeof formSchema>;
 export function AttendanceForm() {
   const [selectedClass, setSelectedClass] = useState<string | null>(null);
   const queryClient = useQueryClient();
-  
+
   // Get all class schedules
   const { data: schedules, isLoading: isLoadingSchedules } = useQuery({
     queryKey: ["schedules"],
@@ -57,15 +65,27 @@ export function AttendanceForm() {
   const { data: students, isLoading: isLoadingStudents } = useQuery({
     queryKey: ["students", selectedClass],
     queryFn: async () => {
+      if (!selectedClass) return [];
+      
       const { data, error } = await supabase
         .from("students")
-        .select("*")
+        .select(`
+          id, 
+          name,
+          (
+            select status 
+            from attendance 
+            where student_id = students.id 
+            and class_schedule_id = :schedule_id
+            and date = :today
+          ) as today_status
+        `)
         .eq("status", "active");
       
       if (error) throw error;
-      return data as Student[];
+      return data as (Student & { today_status?: string })[];
     },
-    enabled: true,
+    enabled: !!selectedClass,
   });
 
   const form = useForm<FormValues>({
@@ -89,12 +109,14 @@ export function AttendanceForm() {
 
   const submitAttendance = useMutation({
     mutationFn: async (values: FormValues) => {
-      const { error } = await supabase.from("attendance").insert({
+      const { error } = await supabase.from("attendance").upsert({
         class_schedule_id: values.class_schedule_id,
         student_id: values.student_id,
         date: format(values.date, "yyyy-MM-dd"),
         status: values.status,
         notes: values.notes || null,
+      }, {
+        onConflict: 'class_schedule_id,student_id,date'
       });
       
       if (error) throw error;
@@ -102,7 +124,7 @@ export function AttendanceForm() {
     },
     onSuccess: () => {
       toast.success("Attendance recorded successfully");
-      queryClient.invalidateQueries({ queryKey: ["attendance"] });
+      queryClient.invalidateQueries({ queryKey: ["attendance", "students"] });
       form.reset({
         class_schedule_id: form.getValues().class_schedule_id,
         student_id: "",
@@ -126,7 +148,7 @@ export function AttendanceForm() {
       <CardHeader>
         <CardTitle>Take Attendance</CardTitle>
         <CardDescription>
-          Record attendance for students in your classes.
+          Record attendance for individual students in your class.
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -182,7 +204,12 @@ export function AttendanceForm() {
                       <SelectContent>
                         {students?.map((student) => (
                           <SelectItem key={student.id} value={student.id}>
-                            {student.name}
+                            {student.name} 
+                            {student.today_status && (
+                              <span className="text-muted-foreground ml-2">
+                                (Today: {student.today_status})
+                              </span>
+                            )}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -278,7 +305,7 @@ export function AttendanceForm() {
                   <FormLabel>Notes (Optional)</FormLabel>
                   <FormControl>
                     <Textarea
-                      placeholder="Add any notes about the student's attendance"
+                      placeholder="Add any additional notes about the student's attendance"
                       className="resize-none"
                       {...field}
                     />

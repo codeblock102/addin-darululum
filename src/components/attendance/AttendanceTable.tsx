@@ -1,36 +1,54 @@
 
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { format, parseISO } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
-import { format } from "date-fns";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { AttendanceFilters } from "./AttendanceFilters";
-import { AttendanceRecordsTable } from "./AttendanceRecordsTable";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import { Loader2 } from "lucide-react";
 
 type AttendanceRecord = {
   id: string;
   date: string;
   status: string;
-  notes: string | null;
   student: {
     id: string;
     name: string;
   };
   class_schedule: {
-    id: string;
     class_name: string;
-    day_of_week: string;
-    time_slot: string;
   };
 };
 
 export function AttendanceTable() {
-  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedStudent, setSelectedStudent] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<string | null>(null);
-  const [dateFilter, setDateFilter] = useState<Date | null>(null);
-  
-  const { data: attendanceRecords, isLoading } = useQuery({
-    queryKey: ["attendance", dateFilter],
+
+  // Query to get students for the dropdown
+  const { data: students, isLoading: isLoadingStudents } = useQuery({
+    queryKey: ["students"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("students")
+        .select("id, name")
+        .eq("status", "active");
+      
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  // Query to get attendance records
+  const { 
+    data: attendanceRecords, 
+    isLoading: isLoadingAttendance 
+  } = useQuery({
+    queryKey: ["attendance", selectedStudent, statusFilter],
     queryFn: async () => {
       let query = supabase
         .from("attendance")
@@ -38,14 +56,17 @@ export function AttendanceTable() {
           id,
           date,
           status,
-          notes,
           student:student_id(id, name),
-          class_schedule:class_schedule_id(id, class_name, day_of_week, time_slot)
+          class_schedule:class_schedule_id(class_name)
         `)
         .order("date", { ascending: false });
       
-      if (dateFilter) {
-        query = query.eq("date", format(dateFilter, "yyyy-MM-dd"));
+      if (selectedStudent) {
+        query = query.eq("student_id", selectedStudent);
+      }
+      
+      if (statusFilter) {
+        query = query.eq("status", statusFilter);
       }
       
       const { data, error } = await query;
@@ -55,51 +76,105 @@ export function AttendanceTable() {
     },
   });
 
-  const resetFilters = () => {
-    setSearchQuery("");
-    setStatusFilter(null);
-    setDateFilter(null);
+  // Render attendance status badge
+  const renderStatusBadge = (status: string) => {
+    switch (status) {
+      case "present":
+        return <Badge variant="outline" className="bg-green-50 text-green-700">Present</Badge>;
+      case "absent":
+        return <Badge variant="outline" className="bg-red-50 text-red-700">Absent</Badge>;
+      case "late":
+        return <Badge variant="outline" className="bg-amber-50 text-amber-700">Late</Badge>;
+      default:
+        return <Badge variant="secondary">Unknown</Badge>;
+    }
   };
 
-  const filteredRecords = attendanceRecords
-    ?.filter((record) => {
-      // Filter by search query (student name or class name)
-      const matchesSearch = 
-        record.student?.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        record.class_schedule?.class_name.toLowerCase().includes(searchQuery.toLowerCase());
-      
-      // Filter by status
-      const matchesStatus = !statusFilter || record.status === statusFilter;
-      
-      return matchesSearch && matchesStatus;
-    });
+  // Reset filters
+  const resetFilters = () => {
+    setSelectedStudent(null);
+    setStatusFilter(null);
+  };
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Attendance Records</CardTitle>
+        <CardTitle>Student Attendance History</CardTitle>
         <CardDescription>
-          View and filter attendance records for all students.
+          View and filter attendance records for individual students
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <AttendanceFilters 
-          searchQuery={searchQuery}
-          setSearchQuery={setSearchQuery}
-          statusFilter={statusFilter}
-          setStatusFilter={setStatusFilter}
-          dateFilter={dateFilter}
-          setDateFilter={setDateFilter}
-        />
+        <div className="flex space-x-2 mb-4">
+          <Select 
+            value={selectedStudent || ""} 
+            onValueChange={(value) => setSelectedStudent(value || null)}
+          >
+            <SelectTrigger className="w-[250px]">
+              <SelectValue placeholder="Select a student" />
+            </SelectTrigger>
+            <SelectContent>
+              {students?.map((student) => (
+                <SelectItem key={student.id} value={student.id}>
+                  {student.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
 
-        <AttendanceRecordsTable 
-          records={filteredRecords}
-          isLoading={isLoading}
-          searchQuery={searchQuery}
-          statusFilter={statusFilter}
-          dateFilter={dateFilter}
-          resetFilters={resetFilters}
-        />
+          <Select 
+            value={statusFilter || ""} 
+            onValueChange={(value) => setStatusFilter(value || null)}
+          >
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Attendance Status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="present">Present</SelectItem>
+              <SelectItem value="absent">Absent</SelectItem>
+              <SelectItem value="late">Late</SelectItem>
+            </SelectContent>
+          </Select>
+
+          {(selectedStudent || statusFilter) && (
+            <Button variant="outline" onClick={resetFilters}>
+              Clear Filters
+            </Button>
+          )}
+        </div>
+
+        {isLoadingAttendance ? (
+          <div className="flex justify-center items-center h-48">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          </div>
+        ) : attendanceRecords && attendanceRecords.length > 0 ? (
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Date</TableHead>
+                <TableHead>Student</TableHead>
+                <TableHead>Class</TableHead>
+                <TableHead>Status</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {attendanceRecords.map((record) => (
+                <TableRow key={record.id}>
+                  <TableCell>
+                    {format(parseISO(record.date), "PPP")}
+                  </TableCell>
+                  <TableCell>{record.student.name}</TableCell>
+                  <TableCell>{record.class_schedule.class_name}</TableCell>
+                  <TableCell>{renderStatusBadge(record.status)}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        ) : (
+          <div className="text-center text-muted-foreground py-8">
+            No attendance records found
+          </div>
+        )}
       </CardContent>
     </Card>
   );
