@@ -45,7 +45,7 @@ export function NewEntryDialog({ open, onOpenChange, studentId, teacherId }: New
     }
   });
 
-  const { mutate: createEntry, isLoading } = useMutation({
+  const { mutate: createEntry, isPending } = useMutation({
     mutationFn: async (values: Partial<DhorBookEntry>) => {
       const { data, error } = await supabase
         .from('dhor_book_entries')
@@ -190,8 +190,8 @@ export function NewEntryDialog({ open, onOpenChange, studentId, teacherId }: New
               <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
                 Cancel
               </Button>
-              <Button type="submit" disabled={isLoading}>
-                {isLoading ? (
+              <Button type="submit" disabled={isPending}>
+                {isPending ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     Saving...
