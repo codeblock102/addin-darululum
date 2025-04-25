@@ -169,7 +169,7 @@ export const TeacherList = ({
                   </div>
                 </TableCell>
                 <TableCell className="text-right space-x-2">
-                  <Button variant="outline" size="sm" onClick={() => onEdit(teacher)} title="Edit teacher">
+                  <Button variant="outline" size="sm" onClick={() => onEdit(teacher)} title="Edit teacher" className="bg-slate-950 hover:bg-slate-800">
                     <Pencil className="h-4 w-4" />
                   </Button>
                   <AlertDialog open={teacherToDelete === teacher.id} onOpenChange={open => {
