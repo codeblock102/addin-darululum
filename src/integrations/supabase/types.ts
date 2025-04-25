@@ -97,38 +97,47 @@ export type Database = {
         Row: {
           capacity: number
           created_at: string | null
-          day_of_week: string
+          current_students: number | null
+          days_of_week: string[]
           description: string | null
           id: string
           name: string
           room: string | null
           status: string | null
           teacher_id: string | null
+          time_end: string | null
           time_slot: string
+          time_start: string | null
         }
         Insert: {
           capacity?: number
           created_at?: string | null
-          day_of_week: string
+          current_students?: number | null
+          days_of_week?: string[]
           description?: string | null
           id?: string
           name: string
           room?: string | null
           status?: string | null
           teacher_id?: string | null
+          time_end?: string | null
           time_slot: string
+          time_start?: string | null
         }
         Update: {
           capacity?: number
           created_at?: string | null
-          day_of_week?: string
+          current_students?: number | null
+          days_of_week?: string[]
           description?: string | null
           id?: string
           name?: string
           room?: string | null
           status?: string | null
           teacher_id?: string | null
+          time_end?: string | null
           time_slot?: string
+          time_start?: string | null
         }
         Relationships: [
           {

@@ -12,26 +12,15 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Badge } from "@/components/ui/badge";
 import { Edit, Users } from "lucide-react";
-
-interface Class {
-  id: string;
-  name: string;
-  teacher_id: string;
-  teacher_name?: string;
-  room: string;
-  day_of_week: string;
-  time_slot: string;
-  capacity: number;
-  status: string;
-}
 
 interface ClassListProps {
   searchQuery: string;
-  onEdit: (classItem: Class) => void;
+  onEdit: (classItem: any) => void;
 }
 
-export const ClassList = ({ searchQuery, onEdit }: ClassListProps) => {
+export function ClassList({ searchQuery, onEdit }: ClassListProps) {
   const [hoveredId, setHoveredId] = useState<string | null>(null);
 
   const { data: classes, isLoading } = useQuery({
@@ -39,22 +28,26 @@ export const ClassList = ({ searchQuery, onEdit }: ClassListProps) => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('classes')
-        .select('*, teachers(name)')
-        .order('name', { ascending: true });
+        .select(`
+          *,
+          teachers (
+            name
+          )
+        `)
+        .order('name');
 
       if (error) throw error;
-      return data.map(cls => ({
-        ...cls,
-        teacher_name: cls.teachers?.name
-      }));
+      return data;
     },
   });
 
   const filteredClasses = classes?.filter(
     (cls) =>
       cls.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (cls.teacher_name && 
-       cls.teacher_name.toLowerCase().includes(searchQuery.toLowerCase()))
+      (cls.teachers?.name && 
+       cls.teachers.name.toLowerCase().includes(searchQuery.toLowerCase())) ||
+      (cls.room && 
+       cls.room.toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
   if (isLoading) {
@@ -75,16 +68,23 @@ export const ClassList = ({ searchQuery, onEdit }: ClassListProps) => {
     );
   }
 
+  const formatTime = (time: string) => {
+    return new Date(`2000-01-01T${time}`).toLocaleTimeString([], {
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true
+    });
+  };
+
   return (
     <Table>
       <TableHeader>
         <TableRow>
           <TableHead>Name</TableHead>
+          <TableHead>Schedule</TableHead>
           <TableHead>Teacher</TableHead>
           <TableHead>Room</TableHead>
-          <TableHead>Schedule</TableHead>
           <TableHead>Capacity</TableHead>
-          <TableHead>Status</TableHead>
           <TableHead className="text-right">Actions</TableHead>
         </TableRow>
       </TableHeader>
@@ -97,23 +97,29 @@ export const ClassList = ({ searchQuery, onEdit }: ClassListProps) => {
             onMouseLeave={() => setHoveredId(null)}
           >
             <TableCell className="font-medium">{cls.name}</TableCell>
-            <TableCell>{cls.teacher_name || '—'}</TableCell>
-            <TableCell>{cls.room || '—'}</TableCell>
             <TableCell>
-              {cls.day_of_week} at {cls.time_slot}
+              <div className="space-y-1">
+                <div className="text-sm font-medium">
+                  {formatTime(cls.time_start)} - {formatTime(cls.time_end)}
+                </div>
+                <div className="flex flex-wrap gap-1">
+                  {cls.days_of_week.map((day: string) => (
+                    <Badge key={day} variant="outline" className="text-xs">
+                      {day}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
             </TableCell>
+            <TableCell>{cls.teachers?.name || '—'}</TableCell>
+            <TableCell>{cls.room}</TableCell>
             <TableCell>
               <div className="flex items-center">
                 <Users className="h-4 w-4 mr-2 text-muted-foreground" />
-                {cls.capacity}
+                <span className={cls.current_students >= cls.capacity ? "text-red-500" : ""}>
+                  {cls.current_students} / {cls.capacity}
+                </span>
               </div>
-            </TableCell>
-            <TableCell>
-              <span className={`px-2 py-1 rounded-full text-xs ${
-                cls.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-              }`}>
-                {cls.status}
-              </span>
             </TableCell>
             <TableCell className="text-right">
               <Button 
@@ -132,4 +138,4 @@ export const ClassList = ({ searchQuery, onEdit }: ClassListProps) => {
       </TableBody>
     </Table>
   );
-};
+}
