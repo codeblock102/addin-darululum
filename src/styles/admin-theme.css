@@ -1,4 +1,3 @@
-
 /* Admin theme specific styles */
 .admin-theme {
   --admin-bg: 222 47% 11%;
@@ -10,7 +9,7 @@
 
 .admin-theme .card,
 .admin-theme .stats-card {
-  @apply bg-opacity-40 backdrop-blur-xl border border-[#ffffff15] shadow-lg;
+  @apply bg-opacity-40 backdrop-blur-xl border border-[#ffffff15] shadow-lg admin-card-hover;
   background: linear-gradient(
     to bottom right,
     rgba(255, 255, 255, 0.08),
@@ -41,7 +40,7 @@
 }
 
 .admin-theme .dialog-content {
-  @apply bg-opacity-95 backdrop-blur-2xl border border-[#ffffff20] shadow-xl;
+  @apply bg-opacity-95 backdrop-blur-2xl border border-[#ffffff20] shadow-xl animate-scaleIn;
   background: linear-gradient(
     to bottom,
     rgba(26, 31, 44, 0.95),
@@ -53,12 +52,13 @@
 .admin-theme input, 
 .admin-theme select, 
 .admin-theme textarea {
-  @apply bg-[#ffffff08] backdrop-blur-md border-[#ffffff15] focus:border-primary/50 text-white;
+  @apply bg-[#ffffff08] backdrop-blur-md border-[#ffffff15] focus:border-primary/50 text-white 
+    transition-all duration-200 focus:scale-[1.02];
 }
 
 /* Enhanced glass effect */
 .glass-effect {
-  @apply backdrop-blur-xl bg-[#ffffff0a] border border-[#ffffff15] shadow-lg;
+  @apply backdrop-blur-xl bg-[#ffffff0a] border border-[#ffffff15] shadow-lg animate-fadeIn;
   background: linear-gradient(
     135deg,
     rgba(255, 255, 255, 0.08),
@@ -120,11 +120,11 @@
 
 /* Enhanced buttons */
 .admin-theme .button-primary {
-  @apply bg-primary hover:bg-primary/90 text-white font-medium shadow-lg;
+  @apply bg-primary hover:bg-primary/90 text-white font-medium shadow-lg admin-button-hover;
 }
 
 .admin-theme .button-secondary {
-  @apply bg-[#ffffff0a] hover:bg-[#ffffff15] text-white border border-[#ffffff15];
+  @apply bg-[#ffffff0a] hover:bg-[#ffffff15] text-white border border-[#ffffff15] admin-button-hover;
 }
 
 /* Status indicators */
@@ -146,11 +146,12 @@
 
 /* Settings page specific styles */
 .admin-theme .settings-nav {
-  @apply flex gap-2 p-2 rounded-lg bg-[#ffffff0a] backdrop-blur-md;
+  @apply flex gap-2 p-2 rounded-lg bg-[#ffffff0a] backdrop-blur-md animate-fadeIn;
 }
 
 .admin-theme .settings-nav-item {
-  @apply px-4 py-2 rounded-md text-sm font-medium text-white/70 hover:text-white hover:bg-[#ffffff0a] transition-all;
+  @apply px-4 py-2 rounded-md text-sm font-medium text-white/70 hover:text-white hover:bg-[#ffffff0a] 
+    transition-all duration-200;
 }
 
 .admin-theme .settings-nav-item[data-state="active"] {
@@ -158,15 +159,11 @@
 }
 
 .admin-theme .settings-card {
-  @apply p-6 rounded-xl border border-[#ffffff15] bg-[#ffffff08] backdrop-blur-md;
+  @apply p-6 rounded-xl border border-[#ffffff15] bg-[#ffffff08] backdrop-blur-md animate-fadeIn;
 }
 
 .admin-theme .settings-section {
-  @apply space-y-6 animate-in fade-in;
-}
-
-/* Add animation classes for settings section */
-.admin-theme .settings-section {
+  @apply space-y-6;
   animation: slideIn 0.4s ease-out;
 }
 
