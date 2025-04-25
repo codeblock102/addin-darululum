@@ -64,12 +64,20 @@ export const ScheduleDialog = ({
       
       if (schedule.time_slots && Array.isArray(schedule.time_slots)) {
         schedule.time_slots.forEach((slot: any) => {
-          // Make sure all required fields are present before adding to formattedTimeSlots
-          if (Array.isArray(slot.days) && typeof slot.start_time === 'string' && typeof slot.end_time === 'string') {
+          // Ensure all required fields are present with proper defaults
+          if (slot && typeof slot === 'object') {
             formattedTimeSlots.push({
-              days: slot.days || [], // Ensure days is always an array even if empty
-              start_time: slot.start_time,
-              end_time: slot.end_time
+              // Make sure days is always a non-empty array
+              days: Array.isArray(slot.days) && slot.days.length > 0 
+                ? slot.days 
+                : ['Monday'], // Default to Monday if no days provided
+              // Ensure start_time and end_time are always strings
+              start_time: typeof slot.start_time === 'string' && slot.start_time 
+                ? slot.start_time 
+                : '09:00',
+              end_time: typeof slot.end_time === 'string' && slot.end_time 
+                ? slot.end_time 
+                : '10:00'
             });
           }
         });
@@ -80,7 +88,7 @@ export const ScheduleDialog = ({
         teacher_id: schedule.teacher_id || null,
         room: schedule.room || "",
         capacity: schedule.capacity || 20,
-        time_slots: formattedTimeSlots,
+        time_slots: formattedTimeSlots.length > 0 ? formattedTimeSlots : [],
       });
     } else if (open) {
       form.reset({

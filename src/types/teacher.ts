@@ -61,7 +61,7 @@ export interface Schedule {
   time_slot?: string;
 }
 
-// Updated TimeSlot interface to make all fields required to prevent type errors
+// Updated TimeSlot interface to ensure all fields are required
 export interface TimeSlot {
   days: string[];
   start_time: string;
