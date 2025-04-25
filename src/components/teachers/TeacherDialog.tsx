@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -38,6 +37,7 @@ interface TeacherDialogProps {
     phone?: string;
     user_id?: string;
   } | null;
+  onClose?: () => void;
 }
 
 interface ScheduleItem {
@@ -49,7 +49,7 @@ interface ScheduleItem {
   capacity: number;
 }
 
-export const TeacherDialog = ({ selectedTeacher }: TeacherDialogProps) => {
+export const TeacherDialog = ({ selectedTeacher, onClose }: TeacherDialogProps) => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [isProcessing, setIsProcessing] = useState(false);
@@ -66,7 +66,6 @@ export const TeacherDialog = ({ selectedTeacher }: TeacherDialogProps) => {
     phone: "",
   });
 
-  // Days of week for select dropdown
   const daysOfWeek = [
     "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"
   ];
@@ -82,7 +81,6 @@ export const TeacherDialog = ({ selectedTeacher }: TeacherDialogProps) => {
         phone: selectedTeacher.phone || "",
       });
       
-      // Fetch teacher schedules if we have a selected teacher
       fetchTeacherSchedules(selectedTeacher.id);
     } else {
       setFormData({
@@ -116,7 +114,6 @@ export const TeacherDialog = ({ selectedTeacher }: TeacherDialogProps) => {
       if (data && data.length > 0) {
         setSchedules(data);
       } else {
-        // If no schedules yet, initialize with one empty schedule
         setSchedules([{
           day_of_week: "Monday",
           time_slot: "09:00 AM - 10:00 AM",
@@ -159,7 +156,6 @@ export const TeacherDialog = ({ selectedTeacher }: TeacherDialogProps) => {
   };
 
   const validateSchedules = () => {
-    // Check if any schedules have empty required fields
     const invalidSchedules = schedules.filter(
       schedule => !schedule.class_name || !schedule.room || !schedule.time_slot
     );
@@ -236,7 +232,6 @@ export const TeacherDialog = ({ selectedTeacher }: TeacherDialogProps) => {
 
     try {
       if (selectedTeacher) {
-        // Update teacher profile
         const { error: profileError } = await supabase
           .from('teachers')
           .update({
@@ -251,10 +246,8 @@ export const TeacherDialog = ({ selectedTeacher }: TeacherDialogProps) => {
 
         if (profileError) throw profileError;
 
-        // Update or insert schedules
         for (const schedule of schedules) {
           if (schedule.id) {
-            // Update existing schedule
             const { error: scheduleError } = await supabase
               .from('schedules')
               .update({
@@ -268,7 +261,6 @@ export const TeacherDialog = ({ selectedTeacher }: TeacherDialogProps) => {
             
             if (scheduleError) throw scheduleError;
           } else {
-            // Create new schedule
             const { error: scheduleError } = await supabase
               .from('schedules')
               .insert({
@@ -289,7 +281,6 @@ export const TeacherDialog = ({ selectedTeacher }: TeacherDialogProps) => {
           description: "Teacher profile and schedule updated successfully",
         });
       } else {
-        // First create the teacher record
         const { data: teacherData, error: teacherError } = await supabase
           .from('teachers')
           .insert([{
@@ -305,7 +296,6 @@ export const TeacherDialog = ({ selectedTeacher }: TeacherDialogProps) => {
 
         if (teacherError) throw teacherError;
 
-        // Then create the user account using our custom function
         const { data: userData, error: userError } = await supabase.rpc(
           "create_teacher_user",
           {
@@ -317,7 +307,6 @@ export const TeacherDialog = ({ selectedTeacher }: TeacherDialogProps) => {
 
         if (userError) throw userError;
 
-        // Create schedules for the new teacher
         for (const schedule of schedules) {
           const { error: scheduleError } = await supabase
             .from('schedules')
@@ -349,6 +338,32 @@ export const TeacherDialog = ({ selectedTeacher }: TeacherDialogProps) => {
     } finally {
       setIsProcessing(false);
     }
+  };
+
+  const handleCreateUser = async (email: string, password: string, teacherId: string) => {
+    try {
+      const { error } = await supabase.functions.invoke('create-teacher-user', {
+        body: { email, password, teacherId }
+      });
+
+      if (error) {
+        throw new Error(error.message);
+      }
+
+      toast({
+        title: "Success",
+        description: "User account created for this teacher",
+      });
+      
+    } catch (error: any) {
+      toast({
+        title: "Error creating user",
+        description: error.message,
+        variant: "destructive",
+      });
+      return false;
+    }
+    return true;
   };
 
   return (

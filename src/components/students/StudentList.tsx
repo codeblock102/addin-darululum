@@ -72,6 +72,11 @@ export const StudentList = ({ searchQuery, onEdit }: StudentListProps) => {
     );
   }
 
+  const handleEditClick = (e: React.MouseEvent, student: Student) => {
+    e.stopPropagation();
+    onEdit(student);
+  };
+
   return (
     <Table>
       <TableHeader>
@@ -124,10 +129,7 @@ export const StudentList = ({ searchQuery, onEdit }: StudentListProps) => {
                 <Button 
                   variant="outline" 
                   size="icon"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onEdit(student);
-                  }}
+                  onClick={(e) => handleEditClick(e, student)}
                   className={`transition-opacity duration-200 ${
                     hoveredId === student.id ? 'opacity-100' : 'opacity-0'
                   }`}
