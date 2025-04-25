@@ -35,11 +35,11 @@ export const SidebarUser = ({ isAdmin }: SidebarUserProps) => {
   };
 
   return (
-    <div className={`mt-auto ${isAdmin ? "border-t border-white/10" : "border-t"} px-2 py-4`}>
-      <div className="flex items-center gap-3 rounded-lg px-3 py-2">
-        <Avatar className={`h-9 w-9 ${isAdmin ? "ring-2 ring-amber-400" : ""}`}>
+    <div className={`mt-auto ${isAdmin ? "border-t border-white/5" : "border-t"} px-4 py-4`}>
+      <div className="flex items-center gap-3 rounded-lg px-2 py-2">
+        <Avatar className={`h-10 w-10 ${isAdmin ? "ring-2 ring-amber-500/50" : ""}`}>
           <AvatarImage alt="User avatar" />
-          <AvatarFallback className={isAdmin ? "bg-amber-500 text-[#1A1F2C]" : "bg-primary text-primary-foreground"}>
+          <AvatarFallback className={isAdmin ? "bg-amber-500 text-[#121827] font-semibold" : "bg-primary text-primary-foreground"}>
             {getInitials(user?.email)}
           </AvatarFallback>
         </Avatar>
@@ -47,14 +47,14 @@ export const SidebarUser = ({ isAdmin }: SidebarUserProps) => {
           <div className="text-sm font-medium text-white">
             {user?.email?.split("@")[0] || "User"}
           </div>
-          <div className={`text-xs ${isAdmin ? "text-gray-300" : "text-muted-foreground"}`}>
+          <div className={`text-xs ${isAdmin ? "text-amber-400" : "text-muted-foreground"}`}>
             {isAdmin ? "Administrator" : "Teacher"}
           </div>
         </div>
         <Button 
-          variant={isAdmin ? "outline" : "ghost"} 
+          variant={isAdmin ? "ghost" : "ghost"} 
           size="icon" 
-          className={`ml-auto ${isAdmin ? "hover:bg-gray-800 border-gray-700" : ""}`}
+          className={`ml-auto ${isAdmin ? "hover:bg-white/10 text-white" : ""}`}
           onClick={handleSignOut}
         >
           <LogOut className={`h-5 w-5 ${isAdmin ? "text-amber-400" : ""}`} />

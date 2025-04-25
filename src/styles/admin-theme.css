@@ -4,17 +4,17 @@
   --admin-bg: 222 47% 11%;
   --admin-card: 225 46% 14%;
   --admin-border: 225 35% 20%;
-  --admin-primary: 43 96% 58%;
+  --admin-primary: 38 100% 50%;
   --admin-accent: 223 35% 20%;
 }
 
 .admin-theme .card,
 .admin-theme .stats-card {
-  @apply bg-opacity-30 backdrop-blur-xl border border-white/20 shadow-lg;
+  @apply bg-opacity-40 backdrop-blur-xl border border-white/10 shadow-lg;
   background: linear-gradient(
     to bottom right,
-    rgba(255, 255, 255, 0.15),
-    rgba(255, 255, 255, 0.08)
+    rgba(255, 255, 255, 0.1),
+    rgba(255, 255, 255, 0.05)
   );
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
 }
@@ -24,12 +24,20 @@
 }
 
 .admin-theme .table {
-  @apply bg-opacity-30 backdrop-blur-md border border-white/10;
-  background: linear-gradient(
-    to bottom,
-    rgba(255, 255, 255, 0.1),
-    rgba(255, 255, 255, 0.05)
-  );
+  @apply bg-white/5 backdrop-blur-md border border-white/10 rounded-lg overflow-hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.admin-theme .table th {
+  @apply bg-white/5 text-amber-300 font-medium border-b border-white/10 px-4 py-3;
+}
+
+.admin-theme .table td {
+  @apply px-4 py-3 border-b border-white/5 text-gray-200;
+}
+
+.admin-theme .table tr:hover {
+  @apply bg-white/5;
 }
 
 .admin-theme .dialog-content {
@@ -45,16 +53,16 @@
 .admin-theme input, 
 .admin-theme select, 
 .admin-theme textarea {
-  @apply bg-opacity-30 backdrop-blur-md border-white/20 focus:border-amber-400/50;
-  background: rgba(255, 255, 255, 0.06);
+  @apply bg-white/5 backdrop-blur-md border-white/10 focus:border-amber-400/50 text-white;
+  background: rgba(255, 255, 255, 0.05);
 }
 
 /* Enhanced glass effect */
 .glass-effect {
-  @apply backdrop-blur-xl bg-white/10 border border-white/20 shadow-lg;
+  @apply backdrop-blur-xl bg-white/10 border border-white/10 shadow-lg;
   background: linear-gradient(
     135deg,
-    rgba(255, 255, 255, 0.12),
+    rgba(255, 255, 255, 0.1),
     rgba(255, 255, 255, 0.05)
   );
   box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.25);
@@ -96,4 +104,43 @@
 
 .admin-theme .tab-trigger {
   @apply text-gray-300 data-[state=active]:text-white data-[state=active]:bg-white/10;
+}
+
+/* Improved stats cards */
+.admin-theme .stats-card-value {
+  @apply text-3xl font-bold text-white;
+}
+
+.admin-theme .stats-card-label {
+  @apply text-sm text-amber-300 font-medium mb-1;
+}
+
+.admin-theme .stats-card-description {
+  @apply text-xs text-gray-400 mt-1;
+}
+
+/* Enhanced buttons */
+.admin-theme .button-primary {
+  @apply bg-amber-500 hover:bg-amber-600 text-black font-medium shadow-lg;
+}
+
+.admin-theme .button-secondary {
+  @apply bg-white/10 hover:bg-white/20 text-white border border-white/10;
+}
+
+/* Status indicators */
+.admin-theme .status-active {
+  @apply bg-green-500/20 text-green-300 border border-green-500/30 px-2 py-0.5 rounded-full text-xs font-medium;
+}
+
+.admin-theme .status-inactive {
+  @apply bg-gray-500/20 text-gray-300 border border-gray-500/30 px-2 py-0.5 rounded-full text-xs font-medium;
+}
+
+.admin-theme .status-warning {
+  @apply bg-amber-500/20 text-amber-300 border border-amber-500/30 px-2 py-0.5 rounded-full text-xs font-medium;
+}
+
+.admin-theme .status-danger {
+  @apply bg-red-500/20 text-red-300 border border-red-500/30 px-2 py-0.5 rounded-full text-xs font-medium;
 }

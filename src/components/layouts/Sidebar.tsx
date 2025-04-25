@@ -15,14 +15,14 @@ export const Sidebar = () => {
   
   const styles = {
     sidebar: isAdmin 
-      ? "bg-[#1A1F2C]/95 backdrop-blur-xl border-r border-white/10 text-white shadow-xl"
+      ? "bg-[#131724] border-r border-white/5 text-white shadow-xl"
       : "bg-background border-r",
     header: isAdmin ? "border-b border-white/10" : "border-b",
   };
 
   return (
     <div className={`flex h-screen flex-col ${styles.sidebar}`}>
-      <div className={`flex h-14 items-center ${styles.header} px-4 lg:h-[60px] lg:px-6`}>
+      <div className={`flex h-16 items-center ${styles.header} pl-5 pr-4 lg:pl-6 lg:pr-6`}>
         <Link 
           to={isTeacher ? "/teacher-portal" : "/"} 
           className="flex items-center gap-2 font-semibold"
@@ -44,7 +44,7 @@ export const Sidebar = () => {
         )}
       </div>
       
-      <div className="flex-1 overflow-auto py-2">
+      <div className="flex-1 overflow-auto py-4">
         <SidebarNav items={navItems} isAdmin={isAdmin} />
       </div>
 
