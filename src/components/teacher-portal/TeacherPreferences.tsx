@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -7,7 +7,6 @@ import { useToast } from '@/components/ui/use-toast';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
 export const TeacherPreferences = () => {
@@ -43,23 +42,21 @@ export const TeacherPreferences = () => {
   });
 
   // When we get the teacher data, set the form values
-  useState(() => {
+  useEffect(() => {
     if (teacherData?.preferences) {
       setReminders(teacherData.preferences.enableReminders ?? true);
       setReportFrequency(teacherData.preferences.reportFrequency || 'weekly');
     }
-  });
+  }, [teacherData]);
 
   const updatePreferencesMutation = useMutation({
     mutationFn: async (preferences: Record<string, any>) => {
       if (!teacherData?.id) throw new Error("Teacher ID not found");
       
-      // Just update the updated_at field since we don't have a preferences column
+      // Just update the timestamp since we don't have a preferences column
       const { error } = await supabase
         .from('teachers')
-        .update({
-          updated_at: new Date().toISOString()
-        })
+        .update({})
         .eq('id', teacherData.id);
       
       if (error) throw error;

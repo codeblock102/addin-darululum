@@ -1,6 +1,4 @@
 
-import { Tables } from "@/integrations/supabase/types";
-
 export type AttendanceStatus = "present" | "absent" | "late";
 
 export interface AttendanceRecord {
