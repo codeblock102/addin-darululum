@@ -1,9 +1,10 @@
 
 interface BackgroundPatternProps {
   isAdmin: boolean;
+  children?: React.ReactNode;
 }
 
-export const BackgroundPattern = ({ isAdmin }: BackgroundPatternProps) => {
+export const BackgroundPattern = ({ isAdmin, children }: BackgroundPatternProps) => {
   return (
     <div 
       className={`flex flex-col flex-1 overflow-auto transition-all duration-300 ${
@@ -20,7 +21,7 @@ export const BackgroundPattern = ({ isAdmin }: BackgroundPatternProps) => {
       {isAdmin && (
         <div className="absolute inset-0 bg-gradient-to-br from-[#131720]/50 to-[#1A1F2C]/50 pointer-events-none" />
       )}
+      {children}
     </div>
   );
 };
-
