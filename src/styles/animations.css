@@ -15,6 +15,16 @@
   .hover-scale {
     @apply transition-transform duration-200 hover:scale-105;
   }
+  
+  /* Add slide-in animation class */
+  .slide-in {
+    @apply animate-slideIn;
+  }
+  
+  /* Add fade-in animation class */
+  .fade-in {
+    @apply animate-fadeIn;
+  }
 }
 
 @keyframes fadeIn {
