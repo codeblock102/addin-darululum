@@ -394,6 +394,56 @@ export type Database = {
           },
         ]
       }
+      role_permissions: {
+        Row: {
+          created_at: string
+          id: string
+          permission: Database["public"]["Enums"]["role_permission"]
+          role_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          permission: Database["public"]["Enums"]["role_permission"]
+          role_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          permission?: Database["public"]["Enums"]["role_permission"]
+          role_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "role_permissions_role_id_fkey"
+            columns: ["role_id"]
+            isOneToOne: false
+            referencedRelation: "roles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      roles: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       sabaq_para: {
         Row: {
           created_at: string
@@ -601,6 +651,35 @@ export type Database = {
         }
         Relationships: []
       }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_roles_role_id_fkey"
+            columns: ["role_id"]
+            isOneToOne: false
+            referencedRelation: "roles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       users: {
         Row: {
           created_at: string
@@ -630,7 +709,13 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_permission: {
+        Args: {
+          user_id: string
+          required_permission: Database["public"]["Enums"]["role_permission"]
+        }
+        Returns: boolean
+      }
     }
     Enums: {
       attendance_status: "present" | "absent" | "late"
@@ -646,6 +731,14 @@ export type Database = {
         | "2_quarters"
         | "3_quarters"
         | "4_quarters"
+      role_permission:
+        | "view_reports"
+        | "export_reports"
+        | "manage_students"
+        | "manage_teachers"
+        | "manage_schedules"
+        | "manage_roles"
+        | "bulk_actions"
       student_status: "active" | "inactive"
       user_role: "admin" | "teacher"
     }
@@ -771,6 +864,15 @@ export const Constants = {
         "2_quarters",
         "3_quarters",
         "4_quarters",
+      ],
+      role_permission: [
+        "view_reports",
+        "export_reports",
+        "manage_students",
+        "manage_teachers",
+        "manage_schedules",
+        "manage_roles",
+        "bulk_actions",
       ],
       student_status: ["active", "inactive"],
       user_role: ["admin", "teacher"],
