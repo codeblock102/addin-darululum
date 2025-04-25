@@ -282,12 +282,12 @@ export const ScheduleDialog = ({
           
           <div className="space-y-2">
             <Label htmlFor="teacher">Assign Teacher (Optional)</Label>
-            <Select value={teacherId || ""} onValueChange={(value) => setTeacherId(value || null)}>
+            <Select value={teacherId || "unassigned"} onValueChange={(value) => setTeacherId(value === "unassigned" ? null : value)}>
               <SelectTrigger>
                 <SelectValue placeholder="Select teacher" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">None (Unassigned)</SelectItem>
+                <SelectItem value="unassigned">None (Unassigned)</SelectItem>
                 {teachers?.map((teacher) => (
                   <SelectItem key={teacher.id} value={teacher.id}>
                     {teacher.name}

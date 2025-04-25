@@ -77,10 +77,11 @@ export const MessageList = ({
   // Get message type icon
   const getMessageTypeIcon = (type: MessageType | undefined) => {
     switch (type) {
-      case 'urgent':
+      case 'announcement':
         return <AlertCircle className="h-4 w-4 text-red-500" />;
       case 'feedback':
         return <ClipboardCheck className="h-4 w-4 text-green-500" />;
+      case 'direct':
       default:
         return <MessageSquare className="h-4 w-4 text-blue-500" />;
     }

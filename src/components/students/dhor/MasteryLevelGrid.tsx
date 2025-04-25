@@ -1,79 +1,91 @@
 
-import { Card } from "@/components/ui/card";
-import { JuzMastery } from "@/types/progress";
-import { Loader2 } from "lucide-react";
-import { motion } from "framer-motion";
+import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { JuzMastery } from '@/types/progress';
 
 interface MasteryLevelGridProps {
-  masteryLevels: JuzMastery[];
-  masteryLoading: boolean;
+  masteryData: JuzMastery[];
+  onJuzClick: (juzNumber: number) => void;
 }
 
-export const MasteryLevelGrid = ({ masteryLevels, masteryLoading }: MasteryLevelGridProps) => {
-  if (masteryLoading) {
-    return (
-      <div className="flex justify-center p-6">
-        <Loader2 className="h-6 w-6 animate-spin text-primary" />
-      </div>
-    );
-  }
+export const MasteryLevelGrid = ({ masteryData, onJuzClick }: MasteryLevelGridProps) => {
+  // Create an array for all 30 juz
+  const allJuz = Array.from({ length: 30 }, (_, i) => i + 1);
   
-  const container = {
-    hidden: { opacity: 0 },
-    show: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.05
-      }
+  // Get mastery level for a specific juz
+  const getMasteryLevel = (juzNum: number) => {
+    const juzData = masteryData.find(item => item.juz_number === juzNum);
+    return juzData?.mastery_level || 'not_started';
+  };
+  
+  // Get last revision date for a specific juz
+  const getLastRevisionDate = (juzNum: number) => {
+    const juzData = masteryData.find(item => item.juz_number === juzNum);
+    return juzData?.last_revision_date;
+  };
+  
+  // Helper function to get appropriate background color based on mastery level
+  const getBgColor = (level: string) => {
+    switch (level) {
+      case 'mastered':
+        return 'bg-green-100 border-green-500';
+      case 'reviewing':
+        return 'bg-blue-100 border-blue-500';
+      case 'learning':
+        return 'bg-yellow-100 border-yellow-500';
+      default:
+        return 'bg-gray-50 border-gray-200';
     }
   };
   
-  const item = {
-    hidden: { y: 20, opacity: 0 },
-    show: { y: 0, opacity: 1 }
+  // Helper function to get appropriate text color based on mastery level
+  const getTextColor = (level: string) => {
+    switch (level) {
+      case 'mastered':
+        return 'text-green-700';
+      case 'reviewing':
+        return 'text-blue-700';
+      case 'learning':
+        return 'text-yellow-700';
+      default:
+        return 'text-gray-700';
+    }
+  };
+  
+  // Format date for display
+  const formatDate = (dateString: string | null) => {
+    if (!dateString) return '';
+    return new Date(dateString).toLocaleDateString();
   };
 
   return (
-    <motion.div 
-      className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
-      variants={container}
-      initial="hidden"
-      animate="show"
-    >
-      {Array.from({ length: 30 }, (_, i) => i + 1).map((juz) => {
-        const juzMastery = masteryLevels?.find(m => m.juz_number === juz);
+    <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+      {allJuz.map(juzNum => {
+        const masteryLevel = getMasteryLevel(juzNum);
+        const lastRevision = getLastRevisionDate(juzNum);
         
         return (
-          <motion.div key={juz} variants={item}>
-            <Card className={`p-4 transition-all duration-300 ${
-              juzMastery?.mastery_level === 'mastered' ? 'bg-green-50 border-green-200 hover:bg-green-100' :
-              juzMastery?.mastery_level === 'memorized' ? 'bg-blue-50 border-blue-200 hover:bg-blue-100' :
-              juzMastery?.mastery_level === 'in_progress' ? 'bg-yellow-50 border-yellow-200 hover:bg-yellow-100' :
-              'bg-gray-50 border-gray-200'
-            } hover:shadow-md`}>
-              <div className="font-medium">Juz {juz}</div>
-              <div className="text-sm text-gray-500">
-                Status: {juzMastery?.mastery_level ? (
-                  juzMastery.mastery_level === 'mastered' ? 'Mastered' :
-                  juzMastery.mastery_level === 'memorized' ? 'Memorized' :
-                  juzMastery.mastery_level === 'in_progress' ? 'In Progress' :
-                  'Not Started'
-                ) : 'Not Started'}
-              </div>
-              {juzMastery?.last_revision_date && (
-                <div className="text-xs text-gray-500 mt-1">
-                  Last revised: {new Date(juzMastery.last_revision_date).toLocaleDateString()}
-                </div>
+          <Card 
+            key={juzNum}
+            className={`p-3 border-2 hover:shadow-md cursor-pointer transition-all ${getBgColor(masteryLevel)}`}
+            onClick={() => onJuzClick(juzNum)}
+          >
+            <div className="flex flex-col items-center">
+              <h3 className="font-bold text-lg">Juz {juzNum}</h3>
+              <p className={`text-sm font-medium capitalize ${getTextColor(masteryLevel)}`}>
+                {masteryLevel === 'not_started' ? 'Not Started' :
+                 masteryLevel === 'learning' ? 'Learning' :
+                 masteryLevel === 'reviewing' ? 'Reviewing' :
+                 'Mastered'}
+              </p>
+              {lastRevision && (
+                <p className="text-xs mt-1 text-gray-500">Last: {formatDate(lastRevision)}</p>
               )}
-              {juzMastery?.revision_count && juzMastery.revision_count > 0 && (
-                <div className="text-xs text-gray-500">
-                  Revisions: {juzMastery.revision_count}
-                </div>
-              )}
-            </Card>
-          </motion.div>
+            </div>
+          </Card>
         );
       })}
-    </motion.div>
+    </div>
   );
 };
