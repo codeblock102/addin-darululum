@@ -1,168 +1,188 @@
 
-import React, { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/components/ui/use-toast';
-import { TeacherPreferences as TeacherPreferencesType } from '@/types/teacher';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Switch } from '@/components/ui/switch';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { TeacherPreferences } from '@/types/teacher';
 
-export function TeacherPreferencesComponent() {
+export const TeacherPreferences = () => {
+  const { session } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const [notificationPreference, setNotificationPreference] = useState<string>('email');
-  const [languagePreference, setLanguagePreference] = useState<string>('en');
-  const [enableReminders, setEnableReminders] = useState<boolean>(true);
+  const [reminders, setReminders] = useState(true);
+  const [reportFrequency, setReportFrequency] = useState('weekly');
+  const [savedChanges, setSavedChanges] = useState(false);
 
-  // Fetch teacher data with potential preferences
-  const { data: teacherData } = useQuery({
-    queryKey: ['teacher-profile'],
+  const { data: teacherData, isLoading } = useQuery({
+    queryKey: ['teacher-profile', session?.user?.email],
     queryFn: async () => {
+      if (!session?.user?.email) return null;
+      
       const { data, error } = await supabase
         .from('teachers')
-        .select('*, preferences')
+        .select('id, name')
+        .eq('email', session.user.email)
         .single();
       
       if (error) throw error;
-      return data as TeacherPreferencesType;
-    }
+      
+      // Get teacher preferences
+      const { data: preferencesData, error: preferencesError } = await supabase
+        .from('teachers')
+        .select('id')
+        .eq('id', data.id)
+        .single();
+      
+      if (preferencesError) throw preferencesError;
+      
+      // Initialize with default values if no preferences found
+      const preferences = {
+        enableReminders: true,
+        reportFrequency: 'weekly',
+      };
+      
+      return {
+        id: data.id, 
+        preferences
+      };
+    },
+    onSuccess: (data) => {
+      if (data?.preferences) {
+        setReminders(data.preferences.enableReminders);
+        setReportFrequency(data.preferences.reportFrequency || 'weekly');
+      }
+    },
+    enabled: !!session?.user?.email
   });
 
-  // Initialize preference states from data
-  useEffect(() => {
-    if (teacherData?.preferences) {
-      setNotificationPreference(teacherData.preferences.notificationPreference || 'email');
-      setLanguagePreference(teacherData.preferences.languagePreference || 'en');
-      setEnableReminders(teacherData.preferences.enableReminders !== false);
-    }
-  }, [teacherData]);
-
-  // Mutation to update preferences
   const updatePreferencesMutation = useMutation({
     mutationFn: async (preferences: Record<string, any>) => {
-      if (!teacherData?.id) throw new Error('Teacher ID not available');
+      if (!teacherData?.id) throw new Error("Teacher ID not found");
       
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('teachers')
-        .update({ 
-          preferences: preferences 
+        .update({
+          updated_at: new Date().toISOString()
         })
         .eq('id', teacherData.id);
       
       if (error) throw error;
-      return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['teacher-profile'] });
       toast({
-        title: 'Preferences Updated',
-        description: 'Your preferences have been successfully saved.'
+        title: "Preferences updated",
+        description: "Your preferences have been saved successfully."
       });
+      setSavedChanges(true);
+      
+      // Reset the saved message after a delay
+      setTimeout(() => {
+        setSavedChanges(false);
+      }, 3000);
     },
-    onError: (error) => {
+    onError: (error: Error) => {
       toast({
-        title: 'Error',
-        description: `Failed to update preferences: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        variant: 'destructive'
+        title: "Error",
+        description: `Failed to update preferences: ${error.message}`,
+        variant: "destructive"
       });
     }
   });
 
-  // Handler for preference updates
-  const handlePreferencesUpdate = () => {
-    const newPreferences = {
-      notificationPreference,
-      languagePreference,
-      enableReminders
-    };
-    
-    updatePreferencesMutation.mutate(newPreferences);
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    updatePreferencesMutation.mutate({
+      enableReminders: reminders,
+      reportFrequency
+    });
   };
 
+  if (isLoading) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Preferences</CardTitle>
+          <CardDescription>Loading your preferences...</CardDescription>
+        </CardHeader>
+      </Card>
+    );
+  }
+
   return (
-    <Card className="w-full max-w-3xl mx-auto">
+    <Card>
       <CardHeader>
         <CardTitle>Teacher Preferences</CardTitle>
         <CardDescription>
-          Customize your teaching experience by adjusting your preferences below.
+          Customize your teaching experience by setting your preferences.
         </CardDescription>
       </CardHeader>
-      <CardContent className="space-y-6">
-        <div className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="notification-preference">Notification Preference</Label>
-            <Select 
-              value={notificationPreference} 
-              onValueChange={setNotificationPreference}
-            >
-              <SelectTrigger id="notification-preference">
-                <SelectValue placeholder="Select notification method" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="email">Email</SelectItem>
-                <SelectItem value="sms">SMS</SelectItem>
-                <SelectItem value="both">Both Email & SMS</SelectItem>
-                <SelectItem value="none">None</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="language-preference">Language Preference</Label>
-            <Select 
-              value={languagePreference} 
-              onValueChange={setLanguagePreference}
-            >
-              <SelectTrigger id="language-preference">
-                <SelectValue placeholder="Select language" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="en">English</SelectItem>
-                <SelectItem value="ar">Arabic</SelectItem>
-                <SelectItem value="ur">Urdu</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="flex items-center justify-between">
-            <div>
-              <Label htmlFor="enable-reminders" className="block mb-1">Enable Reminders</Label>
-              <p className="text-sm text-muted-foreground">
-                Receive reminders about upcoming classes and reviews
-              </p>
+      <CardContent>
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="space-y-4">
+            <div className="flex items-center space-x-2">
+              <Checkbox 
+                id="reminders" 
+                checked={reminders}
+                onCheckedChange={(value) => setReminders(!!value)} 
+              />
+              <Label htmlFor="reminders" className="font-normal">
+                Enable class reminders
+              </Label>
             </div>
-            <Switch 
-              id="enable-reminders" 
-              checked={enableReminders} 
-              onCheckedChange={setEnableReminders} 
-            />
+            <p className="text-sm text-muted-foreground pl-6">
+              Receive notifications about upcoming classes and assignments
+            </p>
           </div>
-        </div>
-
-        {teacherData?.preferences && (
-          <div className="bg-muted p-4 rounded-md border border-muted-foreground/20">
-            <h3 className="text-sm font-medium mb-1">Current Preferences</h3>
-            <pre className="text-xs overflow-auto max-h-40">
-              {JSON.stringify(teacherData.preferences, null, 2)}
-            </pre>
+          
+          <div className="space-y-2">
+            <Label htmlFor="reportFrequency">Progress Report Frequency</Label>
+            <div className="grid grid-cols-3 gap-2">
+              <Button
+                type="button"
+                variant={reportFrequency === 'daily' ? 'default' : 'outline'}
+                onClick={() => setReportFrequency('daily')}
+              >
+                Daily
+              </Button>
+              <Button
+                type="button"
+                variant={reportFrequency === 'weekly' ? 'default' : 'outline'}
+                onClick={() => setReportFrequency('weekly')}
+              >
+                Weekly
+              </Button>
+              <Button
+                type="button"
+                variant={reportFrequency === 'monthly' ? 'default' : 'outline'}
+                onClick={() => setReportFrequency('monthly')}
+              >
+                Monthly
+              </Button>
+            </div>
           </div>
-        )}
+          
+          <Button 
+            type="submit" 
+            disabled={updatePreferencesMutation.isPending}
+            className="w-full"
+          >
+            {updatePreferencesMutation.isPending ? 'Saving...' : 'Save Preferences'}
+          </Button>
+          
+          {savedChanges && (
+            <p className="text-center text-sm text-green-600">
+              Preferences saved successfully!
+            </p>
+          )}
+        </form>
       </CardContent>
-      <CardFooter>
-        <Button 
-          onClick={handlePreferencesUpdate}
-          disabled={updatePreferencesMutation.isPending}
-        >
-          {updatePreferencesMutation.isPending ? "Saving..." : "Save Preferences"}
-        </Button>
-      </CardFooter>
     </Card>
   );
-}
-
-// Re-export with the name expected by the import
-export const TeacherPreferences = TeacherPreferencesComponent;
+};
