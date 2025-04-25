@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Edit, Eye } from "lucide-react";
+import { Edit, Eye, Users } from "lucide-react";
 
 interface Student {
   id: string;
