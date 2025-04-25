@@ -32,7 +32,7 @@ export interface StudentDhorSummary {
   student_id: string;
   days_absent: number;
   total_points: number;
-  last_updated_by: string;
+  last_updated_by: string | null;
   last_entry_date: string;
   signature: string | null;
   created_at: string;
