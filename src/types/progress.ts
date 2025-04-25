@@ -1,14 +1,9 @@
-
 export interface Schedule {
   id: string;
   name: string;
   class_name?: string;   // For backward compatibility
   days_of_week: string[];
-  time_slots: {
-    days: string[];
-    start_time: string;
-    end_time: string;
-  }[];
+  time_slots: TimeSlot[];
   room?: string;
   capacity?: number;
   current_students?: number;
@@ -94,4 +89,10 @@ export interface RevisionsListProps {
   revisions?: JuzRevision[];
   studentName?: string;
   onAddRevision?: () => void;
+}
+
+export interface TimeSlot {
+  days: string[];
+  start_time: string;
+  end_time: string;
 }
