@@ -1,45 +1,52 @@
-
+import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { RevisionsList } from "./RevisionsList";
-import { DifficultAyahsList } from "./DifficultAyahsList";
-import { JuzRevision, DifficultAyah } from "@/types/progress";
+import { Schedule } from "@/types/progress";
+import { RevisionsList } from './RevisionsList';
+import { DifficultAyahList } from './DifficultAyahList';
+import { Loader2 } from 'lucide-react';
 
 interface RevisionTabsProps {
-  revisions: JuzRevision[];
-  difficultAyahs: DifficultAyah[];
   studentId: string;
   studentName: string;
-  onOpenNewRevisionDialog: () => void;
+  juzRevisions: any[];
+  loading: boolean;
+  onAddJuzRevision: () => void;
 }
 
-export const RevisionTabs = ({
-  revisions,
-  difficultAyahs,
-  studentId,
-  studentName,
-  onOpenNewRevisionDialog
-}: RevisionTabsProps) => {
+export function RevisionTabs({ studentId, studentName, juzRevisions, loading, onAddJuzRevision }: RevisionTabsProps) {
+  const [activeTab, setActiveTab] = useState("revisions");
+
   return (
-    <Tabs defaultValue="revisions" className="mt-6">
-      <TabsList className="mb-4">
-        <TabsTrigger value="revisions">Revisions History</TabsTrigger>
-        <TabsTrigger value="difficult-ayahs">Difficult Ayahs</TabsTrigger>
+    <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+      <TabsList className="mb-4 grid grid-cols-3">
+        <TabsTrigger value="revisions">Revisions</TabsTrigger>
+        <TabsTrigger value="schedule">Schedule</TabsTrigger>
+        <TabsTrigger value="difficult">Difficult Ayahs</TabsTrigger>
       </TabsList>
-
+      
       <TabsContent value="revisions">
-        <RevisionsList 
-          revisions={revisions}
-          studentId={studentId}
-          studentName={studentName}
-          onAddRevision={onOpenNewRevisionDialog} 
-        />
+        {loading ? (
+          <div className="flex justify-center py-8">
+            <Loader2 className="h-6 w-6 animate-spin text-primary" />
+          </div>
+        ) : (
+          <RevisionsList 
+            revisions={juzRevisions} 
+            studentId={studentId}
+            studentName={studentName}
+            onAddRevision={onAddJuzRevision}
+          />
+        )}
       </TabsContent>
-
-      <TabsContent value="difficult-ayahs">
-        <DifficultAyahsList 
-          ayahs={difficultAyahs} 
-          studentId={studentId} 
-        />
+      
+      <TabsContent value="schedule">
+        <div className="text-center py-12">
+          <p className="text-muted-foreground">Coming Soon: Student Schedule</p>
+        </div>
+      </TabsContent>
+      
+      <TabsContent value="difficult">
+        <DifficultAyahList studentId={studentId} />
       </TabsContent>
     </Tabs>
   );

@@ -1,12 +1,19 @@
+
 export interface Schedule {
   id: string;
-  class_name: string;
+  name: string;
+  class_name?: string;   // For backward compatibility
   days_of_week: string[];
   time_slots: {
     days: string[];
     start_time: string;
     end_time: string;
   }[];
+  room?: string;
+  capacity?: number;
+  current_students?: number;
+  day_of_week?: string;  // For backward compatibility
+  time_slot?: string;    // For backward compatibility
 }
 
 export interface Progress {
@@ -14,6 +21,11 @@ export interface Progress {
   student_id: string | null;
   current_juz: number | null;
   completed_juz: number | null;
+  // Additional fields referenced in components
+  date?: string | null;
+  current_surah?: number | null;
+  verses_memorized?: number | null;
+  memorization_quality?: 'excellent' | 'good' | 'average' | 'needsWork' | 'horrible' | null;
 }
 
 export interface DifficultAyah {
@@ -55,10 +67,15 @@ export interface Message {
   message: string;
   read: boolean | null;
   created_at: string | null;
+  // Additional fields referenced in components
+  recipient_name?: string;
+  sender_name?: string;
+  message_type?: MessageType;
+  category?: MessageCategory;
 }
 
-export type MessageType = 'general' | 'progress' | 'assignment';
-export type MessageCategory = 'student' | 'teacher' | 'admin';
+export type MessageType = 'general' | 'progress' | 'assignment' | 'announcement' | 'feedback' | 'direct';
+export type MessageCategory = 'student' | 'teacher' | 'admin' | 'academic';
 export type MessageRecipient = {
   id: string;
   name: string;
@@ -68,4 +85,7 @@ export type MessageRecipient = {
 // Additional types as needed
 export interface RevisionsListProps {
   studentId?: string;
+  revisions?: JuzRevision[];
+  studentName?: string;
+  onAddRevision?: () => void;
 }
