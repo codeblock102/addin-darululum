@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -14,6 +13,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { NewProgressEntry } from "@/components/students/NewProgressEntry";
 import { useToast } from "@/hooks/use-toast";
 import { DhorBook } from "@/components/students/dhor/DhorBook";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface Student {
   id: string;
@@ -30,6 +30,7 @@ const StudentDetail = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const { session } = useAuth();
 
   const { data: student, isLoading: studentLoading, error: studentError } = useQuery({
     queryKey: ['student', id],
@@ -198,23 +199,23 @@ const StudentDetail = () => {
           </Card>
         </div>
 
-        <Tabs defaultValue="progress" className="w-full">
+        <Tabs defaultValue="dhor-book" className="w-full">
           <TabsList className="mb-4">
-            <TabsTrigger value="progress">Progress History</TabsTrigger>
+            <TabsTrigger value="dhor-book">
+              <BookOpen className="w-4 h-4 mr-2" />
+              Dhor Book
+            </TabsTrigger>
             <TabsTrigger value="revisions">
               <RefreshCw className="w-4 h-4 mr-2" />
-              Revision Book (Dhor)
+              Revision History
             </TabsTrigger>
           </TabsList>
-          <TabsContent value="progress">
-            {progressLoading ? (
-              <div className="space-y-2">
-                <Skeleton className="h-12 w-full" />
-                <Skeleton className="h-12 w-full" />
-                <Skeleton className="h-12 w-full" />
-              </div>
-            ) : (
-              <StudentProgressList progress={progressEntries || []} />
+          <TabsContent value="dhor-book">
+            {student && (
+              <DhorBook 
+                studentId={student.id}
+                teacherId={session?.user?.id || ''} // You'll need to get the actual teacher ID
+              />
             )}
           </TabsContent>
           <TabsContent value="revisions">
