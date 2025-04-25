@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useQueryClient, useMutation } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -25,7 +24,7 @@ interface TeacherProfileProps {
   teacher: Teacher;
 }
 
-export const TeacherProfile = ({ teacher }: TeacherProfileProps) => {
+export function TeacherProfile({ teacher }: { teacher: Teacher }) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   
@@ -75,7 +74,7 @@ export const TeacherProfile = ({ teacher }: TeacherProfileProps) => {
   };
   
   return (
-    <div className="grid gap-6">
+    <div className="space-y-6">
       <Card>
         <CardHeader>
           <CardTitle>Profile Information</CardTitle>
@@ -181,6 +180,16 @@ export const TeacherProfile = ({ teacher }: TeacherProfileProps) => {
           </form>
         </CardContent>
       </Card>
+
+      <div className="border-t pt-6">
+        <h3 className="font-medium mb-4">Preferences</h3>
+        <p className="text-muted-foreground mb-4">
+          You can customize your teaching preferences from the preferences page.
+        </p>
+        <Button asChild variant="outline">
+          <Link to="/preferences">Manage Preferences</Link>
+        </Button>
+      </div>
     </div>
   );
-};
+}
