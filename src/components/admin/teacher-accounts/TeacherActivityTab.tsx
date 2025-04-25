@@ -1,7 +1,5 @@
-
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 import {
   Table,
   TableBody,
@@ -10,7 +8,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Loader2, BookOpen, Clock, Calendar } from "lucide-react";
 import { format, parseISO, subDays } from "date-fns";
 import {
@@ -49,13 +47,13 @@ export function TeacherActivityTab({ teacherId }: TeacherActivityTabProps) {
       
       // Sample activity types
       const activityTypes = [
-        { type: 'login', description: 'Logged in to the system' },
-        { type: 'login', description: 'Changed password' },
-        { type: 'class', description: 'Added new class schedule' },
-        { type: 'class', description: 'Updated class information' },
-        { type: 'student', description: 'Assigned new student' },
-        { type: 'progress', description: 'Recorded student progress' },
-        { type: 'attendance', description: 'Marked attendance' }
+        { type: 'login' as const, description: 'Logged in to the system' },
+        { type: 'login' as const, description: 'Changed password' },
+        { type: 'class' as const, description: 'Added new class schedule' },
+        { type: 'class' as const, description: 'Updated class information' },
+        { type: 'student' as const, description: 'Assigned new student' },
+        { type: 'progress' as const, description: 'Recorded student progress' },
+        { type: 'attendance' as const, description: 'Marked attendance' }
       ];
       
       // Generate random dates within the period

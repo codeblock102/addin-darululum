@@ -19,6 +19,7 @@ import TeacherPortal from "./pages/TeacherPortal";
 import Preferences from "./pages/preferences";
 import Classes from "./pages/Classes";
 import Settings from "./pages/Settings";
+import AdminDashboard from "./pages/admin/Dashboard";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -41,7 +42,7 @@ const App = () => (
               path="/"
               element={
                 <ProtectedRoute>
-                  <Index />
+                  <AdminDashboard />
                 </ProtectedRoute>
               }
             />
