@@ -1,35 +1,20 @@
-
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 interface TeacherAccountFiltersProps {
   statusFilter: "all" | "active" | "suspended";
   activityFilter: "all" | "7days" | "30days" | "inactive";
   onStatusFilterChange: (value: "all" | "active" | "suspended") => void;
   onActivityFilterChange: (value: "all" | "7days" | "30days" | "inactive") => void;
 }
-
 export function TeacherAccountFilters({
   statusFilter,
   activityFilter,
   onStatusFilterChange,
   onActivityFilterChange
 }: TeacherAccountFiltersProps) {
-  return (
-    <div className="flex gap-3">
+  return <div className="flex gap-3 bg-slate-900">
       {/* Status Filter */}
       <div className="w-1/2">
-        <Select
-          value={statusFilter}
-          onValueChange={(value) => 
-            onStatusFilterChange(value as "all" | "active" | "suspended")
-          }
-        >
+        <Select value={statusFilter} onValueChange={value => onStatusFilterChange(value as "all" | "active" | "suspended")}>
           <SelectTrigger>
             <SelectValue placeholder="Filter by status" />
           </SelectTrigger>
@@ -43,12 +28,7 @@ export function TeacherAccountFilters({
 
       {/* Activity Filter */}
       <div className="w-1/2">
-        <Select
-          value={activityFilter}
-          onValueChange={(value) => 
-            onActivityFilterChange(value as "all" | "7days" | "30days" | "inactive")
-          }
-        >
+        <Select value={activityFilter} onValueChange={value => onActivityFilterChange(value as "all" | "7days" | "30days" | "inactive")}>
           <SelectTrigger>
             <SelectValue placeholder="Filter by activity" />
           </SelectTrigger>
@@ -60,6 +40,5 @@ export function TeacherAccountFilters({
           </SelectContent>
         </Select>
       </div>
-    </div>
-  );
+    </div>;
 }
