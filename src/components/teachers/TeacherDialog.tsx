@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -20,7 +21,7 @@ interface TeacherFormData {
   subject: string;
   experience: string;
   bio?: string;
-  email?: string;
+  email: string;
   phone?: string;
 }
 
@@ -89,7 +90,7 @@ export const TeacherDialog = ({ selectedTeacher }: TeacherDialogProps) => {
       newErrors.experience = "Experience is required";
     }
     
-    if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+    if (!formData.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
       newErrors.email = "Please enter a valid email address";
     }
     
@@ -128,7 +129,14 @@ export const TeacherDialog = ({ selectedTeacher }: TeacherDialogProps) => {
       if (selectedTeacher) {
         const { error } = await supabase
           .from('teachers')
-          .update(formData)
+          .update({
+            name: formData.name,
+            subject: formData.subject,
+            experience: formData.experience,
+            bio: formData.bio,
+            email: formData.email,
+            phone: formData.phone
+          })
           .eq('id', selectedTeacher.id);
 
         if (error) throw error;
@@ -138,15 +146,37 @@ export const TeacherDialog = ({ selectedTeacher }: TeacherDialogProps) => {
           description: "Teacher updated successfully",
         });
       } else {
-        const { error } = await supabase
+        // First create the teacher record
+        const { data: teacherData, error: teacherError } = await supabase
           .from('teachers')
-          .insert([formData]);
+          .insert([{
+            name: formData.name,
+            subject: formData.subject,
+            experience: formData.experience,
+            bio: formData.bio,
+            email: formData.email,
+            phone: formData.phone
+          }])
+          .select()
+          .single();
 
-        if (error) throw error;
+        if (teacherError) throw teacherError;
+
+        // Then create the user account using our custom function
+        const { data: userData, error: userError } = await supabase.rpc(
+          'create_teacher_user',
+          {
+            teacher_email: formData.email,
+            teacher_name: formData.name,
+            teacher_id: teacherData.id
+          }
+        );
+
+        if (userError) throw userError;
 
         toast({
           title: "Success",
-          description: "Teacher added successfully",
+          description: "Teacher added successfully and user account created",
         });
       }
 
