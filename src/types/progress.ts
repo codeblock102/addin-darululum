@@ -31,3 +31,57 @@ export interface RevisionsListProps {
   studentName: string;
   onAddRevision: () => void;
 }
+
+export interface Progress {
+  id: string;
+  student_id: string;
+  current_surah: number;
+  current_juz: number;
+  verses_memorized: number;
+  memorization_quality: 'excellent' | 'good' | 'average' | 'needsWork' | 'horrible';
+  date: string;
+  notes?: string;
+}
+
+export interface Schedule {
+  id: string;
+  teacher_id: string;
+  class_name: string;
+  time_slot: string;
+  day_of_week: string;
+  room: string;
+  capacity: number;
+  current_students: number;
+}
+
+export interface JuzMastery {
+  id: string;
+  student_id: string;
+  juz_number: number;
+  mastery_level: 'not_started' | 'learning' | 'reviewing' | 'mastered';
+  last_revision_date: string | null;
+  revision_count: number;
+  consecutive_good_revisions: number;
+}
+
+export interface Message {
+  id: string;
+  sender_id: string;
+  recipient_id: string;
+  message: string;
+  created_at: string;
+  read: boolean;
+}
+
+export type MessageType = 'direct' | 'announcement' | 'feedback';
+export type MessageCategory = 'general' | 'academic' | 'administrative';
+export type MessageRecipient = 'student' | 'teacher' | 'admin';
+
+export interface RevisionSchedule {
+  id: string;
+  student_id: string;
+  juz_number: number;
+  scheduled_date: string;
+  priority: 'high' | 'medium' | 'low';
+  status: 'pending' | 'completed' | 'missed';
+}
