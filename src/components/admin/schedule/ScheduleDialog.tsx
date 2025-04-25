@@ -1,4 +1,3 @@
-
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -64,17 +63,13 @@ export const ScheduleDialog = ({
       
       if (schedule.time_slots && Array.isArray(schedule.time_slots)) {
         schedule.time_slots.forEach((slot: any) => {
-          // Ensure we extract valid time slot data from each slot
           const timeSlot: TimeSlot = {
-            // Make sure days is a non-empty array with proper default
             days: Array.isArray(slot.days) && slot.days.length > 0 
               ? [...slot.days] 
-              : ['Monday'], 
-            // Ensure start_time is a valid string with default
+              : ['Monday'],
             start_time: typeof slot.start_time === 'string' && slot.start_time 
               ? slot.start_time 
               : '09:00',
-            // Ensure end_time is a valid string with default
             end_time: typeof slot.end_time === 'string' && slot.end_time 
               ? slot.end_time 
               : '10:00'
@@ -89,7 +84,7 @@ export const ScheduleDialog = ({
         teacher_id: schedule.teacher_id || null,
         room: schedule.room || "",
         capacity: schedule.capacity || 20,
-        time_slots: formattedTimeSlots.length > 0 ? formattedTimeSlots : [],
+        time_slots: formattedTimeSlots,
       });
     } else if (open) {
       form.reset({
