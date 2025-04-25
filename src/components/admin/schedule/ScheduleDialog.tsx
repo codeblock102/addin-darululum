@@ -60,12 +60,19 @@ export const ScheduleDialog = ({
   // Reset form when dialog opens/closes or schedule changes
   useEffect(() => {
     if (open && schedule) {
+      // Ensure the time_slots from schedule have required properties
+      const formattedTimeSlots = schedule.time_slots?.map((slot: any) => ({
+        days: slot.days || [],
+        start_time: slot.start_time || "09:00",
+        end_time: slot.end_time || "10:00"
+      })) || [];
+      
       form.reset({
         name: schedule.name,
         teacher_id: schedule.teacher_id,
         room: schedule.room || "",
         capacity: schedule.capacity || 20,
-        time_slots: schedule.time_slots || [],
+        time_slots: formattedTimeSlots,
       });
     } else if (open) {
       form.reset({
