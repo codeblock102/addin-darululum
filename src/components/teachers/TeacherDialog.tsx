@@ -21,13 +21,6 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Loader2 } from "lucide-react";
 import { Teacher } from "@/types/teacher";
 import { hasPermission } from "@/utils/roleUtils";
@@ -42,10 +35,10 @@ const teacherSchema = z.object({
   phone: z.string().optional().nullable(),
   subject: z.string().min(2, {
     message: "Subject must be at least 2 characters.",
-  }),
+  }).optional(),
   experience: z.string().min(2, {
     message: "Experience must be at least 2 characters.",
-  }),
+  }).optional(),
   bio: z.string().optional().nullable(),
 });
 
@@ -66,8 +59,8 @@ export const TeacherDialog = ({ selectedTeacher }: TeacherDialogProps) => {
           name: selectedTeacher.name,
           email: selectedTeacher.email || null,
           phone: selectedTeacher.phone || null,
-          subject: selectedTeacher.subject,
-          experience: selectedTeacher.experience,
+          subject: selectedTeacher.subject || "",
+          experience: selectedTeacher.experience || "",
           bio: selectedTeacher.bio || null,
         }
       : {
@@ -105,8 +98,7 @@ export const TeacherDialog = ({ selectedTeacher }: TeacherDialogProps) => {
           console.error("Error updating teacher:", error);
           toast({
             title: "Error",
-            description:
-              error.message || "Failed to update teacher. Please try again.",
+            description: error.message || "Failed to update teacher. Please try again.",
             variant: "destructive",
           });
         } else {
@@ -125,8 +117,7 @@ export const TeacherDialog = ({ selectedTeacher }: TeacherDialogProps) => {
           console.error("Error creating teacher:", error);
           toast({
             title: "Error",
-            description:
-              error.message || "Failed to create teacher. Please try again.",
+            description: error.message || "Failed to create teacher. Please try again.",
             variant: "destructive",
           });
         } else {
@@ -140,8 +131,7 @@ export const TeacherDialog = ({ selectedTeacher }: TeacherDialogProps) => {
       console.error("Unexpected error:", error);
       toast({
         title: "Error",
-        description:
-          "An unexpected error occurred. Please check the console for details.",
+        description: "An unexpected error occurred. Please check the console for details.",
         variant: "destructive",
       });
     } finally {

@@ -10,7 +10,7 @@ interface RevisionTabsProps {
   studentName: string;
   juzRevisions: any[];
   loading: boolean;
-  onAddJuzRevision: () => void;
+  onAddJuzRevision?: () => void;
 }
 
 export function RevisionTabs({ studentId, studentName, juzRevisions, loading, onAddJuzRevision }: RevisionTabsProps) {

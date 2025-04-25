@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -31,6 +30,7 @@ import { format } from "date-fns";
 import { useForm } from "react-hook-form";
 import { CalendarX, CalendarCheck, Clock } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { AttendanceStatus } from "@/types/attendance";
 
 type Student = {
   id: string;
@@ -39,9 +39,9 @@ type Student = {
 
 interface ClassInfo {
   id: string;
-  class_name: string;
-  day_of_week: string;
-  time_slot: string;
+  name: string;
+  days_of_week: string[];
+  time_slots: any[];
 }
 
 export function AttendanceForm() {
@@ -54,7 +54,7 @@ export function AttendanceForm() {
 
   const form = useForm({
     defaultValues: {
-      status: "present",
+      status: "present" as AttendanceStatus,
       notes: "",
     },
   });
@@ -65,8 +65,8 @@ export function AttendanceForm() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("classes")
-        .select("id, class_name, day_of_week, time_slot")
-        .order("class_name", { ascending: true });
+        .select("id, name, days_of_week, time_slots")
+        .order("name", { ascending: true });
       
       if (error) throw error;
       return data as ClassInfo[];
@@ -200,7 +200,7 @@ export function AttendanceForm() {
               <SelectContent>
                 {classesData?.map((classInfo) => (
                   <SelectItem key={classInfo.id} value={classInfo.id}>
-                    {classInfo.class_name} - {classInfo.day_of_week} at {classInfo.time_slot}
+                    {classInfo.name} - {classInfo.days_of_week.join(', ')}
                   </SelectItem>
                 ))}
               </SelectContent>

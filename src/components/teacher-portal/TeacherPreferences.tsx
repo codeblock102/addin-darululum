@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -9,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Teacher, TeacherPreferences as TeacherPreferencesType } from '@/types/teacher';
+import { TeacherPreferencesType } from '@/types/teacher';
 
 export const TeacherPreferences = () => {
   const { session } = useAuth();
@@ -26,31 +25,25 @@ export const TeacherPreferences = () => {
       
       const { data, error } = await supabase
         .from('teachers')
-        .select('id, name')
+        .select('id, name, preferences')
         .eq('email', session.user.email)
         .single();
       
       if (error) throw error;
       
-      // Get teacher preferences
-      const { data: preferencesData, error: preferencesError } = await supabase
-        .from('teachers')
-        .select('id')
-        .eq('id', data.id)
-        .single();
-      
-      if (preferencesError) throw preferencesError;
-      
-      // Initialize with default values if no preferences found
-      const preferences = {
-        enableReminders: true,
-        reportFrequency: 'weekly',
-      };
-      
       return {
-        id: data.id, 
-        preferences
+        id: data.id,
+        preferences: data.preferences || {
+          enableReminders: true,
+          reportFrequency: 'weekly',
+        }
       };
+    },
+    onSuccess: (data) => {
+      if (data?.preferences) {
+        setReminders(data.preferences.enableReminders ?? true);
+        setReportFrequency(data.preferences.reportFrequency || 'weekly');
+      }
     },
     enabled: !!session?.user?.email
   });
@@ -62,7 +55,7 @@ export const TeacherPreferences = () => {
       const { error } = await supabase
         .from('teachers')
         .update({
-          // Use preferences directly instead of updated_at
+          // Use preferences directly in the update
           preferences
         })
         .eq('id', teacherData.id);

@@ -1,7 +1,17 @@
 
 import { supabase } from "@/integrations/supabase/client";
 
-export const hasPermission = async (requiredPermission: string): Promise<boolean> => {
+type RolePermission = 
+  | "view_reports" 
+  | "export_reports" 
+  | "manage_students" 
+  | "manage_teachers" 
+  | "manage_schedules" 
+  | "manage_roles" 
+  | "bulk_actions" 
+  | "manage_classes";
+
+export const hasPermission = async (requiredPermission: RolePermission): Promise<boolean> => {
   try {
     const { data: { session } } = await supabase.auth.getSession();
     
