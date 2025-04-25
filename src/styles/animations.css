@@ -25,6 +25,19 @@
   .fade-in {
     @apply animate-fadeIn;
   }
+
+  /* Admin specific animations */
+  .admin-enter {
+    @apply animate-fadeIn animate-slideIn;
+  }
+
+  .admin-card-hover {
+    @apply transition-all duration-300 hover:scale-[1.02] hover:shadow-lg;
+  }
+  
+  .admin-button-hover {
+    @apply transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md;
+  }
 }
 
 @keyframes fadeIn {
