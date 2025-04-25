@@ -32,25 +32,27 @@
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-    --card: 222.2 84% 4.9%;
+    --background: 222.2 20% 10%; // Darker background
+    --foreground: 210 40% 98%; // Bright text color
+    --card: 222.2 20% 15%; // Slightly lighter card background
     --card-foreground: 210 40% 98%;
-    --popover: 222.2 84% 4.9%;
+    --popover: 222.2 20% 15%;
     --popover-foreground: 210 40% 98%;
-    --primary: 152 60% 52%;
+    --primary: 152 60% 52%; // Bright primary color
     --primary-foreground: 222.2 47.4% 11.2%;
-    --secondary: 217.2 32.6% 17.5%;
+    --secondary: 217.2 32.6% 20%; // Darker secondary
     --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 217.2 32.6% 17.5%;
+    --muted: 217.2 32.6% 20%;
+    --muted-foreground: 215 30% 70%; // Brighter muted text
+    --accent: 217.2 32.6% 20%;
     --accent-foreground: 210 40% 98%;
-    --destructive: 0 62.8% 30.6%;
+    --destructive: 0 62.8% 40%; // Adjusted destructive color
     --destructive-foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
+    --border: 217.2 32.6% 25%; // Slightly lighter border
+    --input: 217.2 32.6% 25%;
     --ring: 152 60% 52%;
+    
+    // Sidebar specific variables
     --sidebar-background: 160 60% 20%;
     --sidebar-foreground: 210 40% 98%;
     --sidebar-primary: 152 60% 52%;
