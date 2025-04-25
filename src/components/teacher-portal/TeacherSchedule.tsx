@@ -53,7 +53,7 @@ export const TeacherSchedule = ({
       
       return data.map(classItem => {
         // Transform data to match Schedule interface for compatibility
-        const firstTimeSlot = classItem.time_slots && classItem.time_slots[0] 
+        const firstTimeSlot = classItem.time_slots && classItem.time_slots.length > 0 
           ? classItem.time_slots[0] 
           : { start_time: "N/A", end_time: "N/A" };
         

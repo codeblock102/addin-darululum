@@ -1,4 +1,3 @@
-
 export interface Schedule {
   id: string;
   name: string;
@@ -12,8 +11,10 @@ export interface Schedule {
   room?: string;
   capacity?: number;
   current_students?: number;
-  day_of_week?: string;  // For backward compatibility
-  time_slot?: string;    // For backward compatibility
+  
+  // Deprecated fields - kept for backward compatibility
+  day_of_week?: string;  
+  time_slot?: string;    
 }
 
 export interface Progress {
@@ -82,7 +83,6 @@ export type MessageRecipient = {
   type: MessageCategory;
 };
 
-// Additional types as needed
 export interface RevisionsListProps {
   studentId?: string;
   revisions?: JuzRevision[];

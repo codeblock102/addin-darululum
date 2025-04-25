@@ -35,6 +35,14 @@ export interface SummaryData {
   activeClasses: number;
   upcomingRevisions: number;
   completionRate: number;
+  
+  // Add missing fields referenced in components
+  studentsCount: number;
+  recentProgressEntries: number;
+  todayClasses: number;
+  averageQuality: string;
+  totalRevisions: number;
+  pendingRevisions: number;
 }
 
 // Updated Schedule type to match the database schema
@@ -51,6 +59,8 @@ export interface Schedule {
   room?: string;
   capacity?: number;
   current_students?: number;
-  day_of_week?: string; // For compatibility with existing components
-  time_slot?: string;   // For compatibility with existing components
+  
+  // Deprecated fields - kept for compatibility with existing components
+  day_of_week?: string;
+  time_slot?: string;
 }

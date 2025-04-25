@@ -9,6 +9,10 @@ export const useTeacherSummary = (teacherId: string) => {
     queryFn: async (): Promise<SummaryData> => {
       if (!teacherId) {
         return {
+          totalStudents: 0,
+          activeClasses: 0,
+          upcomingRevisions: 0,
+          completionRate: 0,
           studentsCount: 0,
           recentProgressEntries: 0,
           todayClasses: 0,
@@ -31,10 +35,10 @@ export const useTeacherSummary = (teacherId: string) => {
         // Get classes scheduled for today
         const today = new Date().toISOString().split('T')[0];
         const { data: classes, error: classError } = await supabase
-          .from('schedules')
+          .from('classes')
           .select('id')
           .eq('teacher_id', teacherId)
-          .eq('day_of_week', getDayOfWeek());
+          .contains('days_of_week', [getDayOfWeek()]);
           
         if (classError) throw classError;
         
@@ -98,6 +102,10 @@ export const useTeacherSummary = (teacherId: string) => {
         if (pendingError) throw pendingError;
         
         return {
+          totalStudents: students?.length || 0,
+          activeClasses: classes?.length || 0,
+          upcomingRevisions: pendingRevisions?.length || 0,
+          completionRate: progressEntries?.length ? Math.round((progressEntries.length / (students?.length || 1)) * 100) : 0,
           studentsCount: students?.length || 0,
           recentProgressEntries: progressEntries?.length || 0,
           todayClasses: classes?.length || 0,

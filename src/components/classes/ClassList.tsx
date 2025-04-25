@@ -68,12 +68,17 @@ export function ClassList({ searchQuery, onEdit }: ClassListProps) {
     );
   }
 
-  const formatTime = (time: string) => {
-    return new Date(`2000-01-01T${time}`).toLocaleTimeString([], {
-      hour: 'numeric',
-      minute: '2-digit',
-      hour12: true
-    });
+  const formatTime = (timeSlot: any) => {
+    if (!timeSlot) return 'N/A';
+    
+    // Handle the new time_slots array format
+    if (Array.isArray(timeSlot) && timeSlot.length > 0) {
+      const firstSlot = timeSlot[0];
+      return `${firstSlot.start_time} - ${firstSlot.end_time}`;
+    }
+    
+    // Return as is if it's already formatted
+    return timeSlot;
   };
 
   return (
@@ -100,7 +105,7 @@ export function ClassList({ searchQuery, onEdit }: ClassListProps) {
             <TableCell>
               <div className="space-y-1">
                 <div className="text-sm font-medium">
-                  {formatTime(cls.time_start)} - {formatTime(cls.time_end)}
+                  {formatTime(cls.time_slots)}
                 </div>
                 <div className="flex flex-wrap gap-1">
                   {cls.days_of_week.map((day: string) => (
