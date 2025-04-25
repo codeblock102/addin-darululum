@@ -3,6 +3,7 @@ import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/comp
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Teacher } from "@/types/teacher";
+import { useFormContext } from "react-hook-form";
 
 interface ClassBasicInfoProps {
   teachers?: Teacher[];
@@ -29,7 +30,7 @@ export const ClassBasicInfo = ({ teachers }: ClassBasicInfoProps) => {
         render={({ field }) => (
           <FormItem>
             <FormLabel>Assigned Teacher</FormLabel>
-            <Select onValueChange={field.onChange} value={field.value}>
+            <Select onValueChange={field.onChange} value={field.value || ""}>
               <FormControl>
                 <SelectTrigger>
                   <SelectValue placeholder="Select a teacher" />
@@ -50,3 +51,54 @@ export const ClassBasicInfo = ({ teachers }: ClassBasicInfoProps) => {
     </div>
   );
 };
+
+// Add subcomponents for room and capacity inputs
+const RoomInput = () => {
+  const { control } = useFormContext();
+  
+  return (
+    <FormField
+      control={control}
+      name="room"
+      render={({ field }) => (
+        <FormItem>
+          <FormLabel>Room</FormLabel>
+          <FormControl>
+            <Input placeholder="Room number or location" {...field} />
+          </FormControl>
+          <FormMessage />
+        </FormItem>
+      )}
+    />
+  );
+};
+
+const CapacityInput = () => {
+  const { control } = useFormContext();
+  
+  return (
+    <FormField
+      control={control}
+      name="capacity"
+      render={({ field }) => (
+        <FormItem>
+          <FormLabel>Capacity</FormLabel>
+          <FormControl>
+            <Input 
+              type="number" 
+              min={1}
+              placeholder="Class capacity" 
+              {...field}
+              onChange={e => field.onChange(parseInt(e.target.value) || 1)} 
+            />
+          </FormControl>
+          <FormMessage />
+        </FormItem>
+      )}
+    />
+  );
+};
+
+// Attach subcomponents to main component
+ClassBasicInfo.RoomInput = RoomInput;
+ClassBasicInfo.CapacityInput = CapacityInput;
