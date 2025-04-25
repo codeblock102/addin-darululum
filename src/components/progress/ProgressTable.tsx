@@ -72,12 +72,13 @@ export const ProgressTable = ({ data }: { data: Progress[] }) => {
                 {progress.date ? new Date(progress.date).toLocaleDateString() : "N/A"}
               </TableCell>
               <TableCell>
-                {progress.students?.name || "Unknown"}
+                {/* Using optional chaining and typing correctly */}
+                {(progress as any)?.students?.name || "Unknown"}
               </TableCell>
               <TableCell>{progress.current_surah || "N/A"}</TableCell>
               <TableCell className="text-center">{progress.verses_memorized || 0}</TableCell>
               <TableCell className="text-right">
-                {getQualityBadge(progress.memorization_quality, isAdmin)}
+                {getQualityBadge(progress.memorization_quality || '', isAdmin)}
               </TableCell>
             </TableRow>
           ))}

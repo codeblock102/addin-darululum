@@ -1,3 +1,4 @@
+
 export interface Schedule {
   id: string;
   name: string;
@@ -27,6 +28,11 @@ export interface Progress {
   current_surah?: number | null;
   verses_memorized?: number | null;
   memorization_quality?: 'excellent' | 'good' | 'average' | 'needsWork' | 'horrible' | null;
+  
+  // Adding students property for join results
+  students?: {
+    name: string;
+  };
 }
 
 export interface DifficultAyah {
