@@ -2,7 +2,7 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { DashboardLayout } from "@/components/layouts/DashboardLayout";
-import { Loader2 } from "lucide-react";
+import { Loader2, BookOpen } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { ProgressStats } from "@/components/progress/ProgressStats";
 import { ProgressTable } from "@/components/progress/ProgressTable";
@@ -10,6 +10,7 @@ import { NewProgressDialog } from "@/components/progress/NewProgressDialog";
 import { RecentRevisions } from "@/components/progress/RecentRevisions";
 import { CompleteRevisions } from "@/components/progress/CompleteRevisions";
 import { useToast } from "@/hooks/use-toast";
+import { Button } from "@/components/ui/button";
 import type { Progress } from "@/types/progress";
 
 const Progress = () => {
@@ -98,10 +99,13 @@ const Progress = () => {
       <div className="space-y-6">
         <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-3xl font-bold mb-2">Progress Tracking</h1>
-            <p className="text-gray-500">Monitor student Hifz progress and revisions</p>
+            <h1 className="text-2xl md:text-3xl font-bold mb-2">Progress Tracking</h1>
+            <p className="text-gray-400">Monitor student Hifz progress and revisions</p>
           </div>
-          <NewProgressDialog />
+          <Button className="bg-amber-500 hover:bg-amber-600 text-[#121827] font-medium flex items-center gap-2">
+            <BookOpen className="h-4 w-4" />
+            <span>New Progress Entry</span>
+          </Button>
         </div>
 
         <ProgressStats 
@@ -118,10 +122,12 @@ const Progress = () => {
 
         {isLoading ? (
           <div className="flex justify-center items-center h-64">
-            <Loader2 className="h-8 w-8 animate-spin" />
+            <Loader2 className="h-8 w-8 animate-spin text-amber-400" />
           </div>
         ) : (
-          <ProgressTable data={progressData || []} />
+          <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-lg overflow-hidden shadow-md">
+            <ProgressTable data={progressData || []} />
+          </div>
         )}
       </div>
     </DashboardLayout>

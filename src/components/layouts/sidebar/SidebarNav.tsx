@@ -13,8 +13,12 @@ export const SidebarNav = ({ items, isAdmin }: SidebarNavProps) => {
   
   const styles = {
     navItem: {
-      active: isAdmin ? "bg-white/20 text-amber-400 font-medium backdrop-blur-sm" : "bg-accent text-accent-foreground",
-      inactive: isAdmin ? "text-gray-200 hover:bg-white/10 hover:text-amber-400" : "hover:bg-accent/50 hover:text-accent-foreground"
+      active: isAdmin 
+        ? "bg-white/15 text-amber-400 font-medium backdrop-blur-sm border-l-2 border-amber-500" 
+        : "bg-accent text-accent-foreground",
+      inactive: isAdmin 
+        ? "text-gray-300 hover:bg-white/10 hover:text-amber-400 border-l-2 border-transparent" 
+        : "hover:bg-accent/50 hover:text-accent-foreground"
     }
   };
 
@@ -30,7 +34,7 @@ export const SidebarNav = ({ items, isAdmin }: SidebarNavProps) => {
             key={index}
             to={item.href}
             className={cn(
-              "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all",
+              "flex items-center gap-3 rounded-lg pl-3 pr-3 py-3 text-sm font-medium transition-all",
               isActive ? styles.navItem.active : styles.navItem.inactive
             )}
           >
