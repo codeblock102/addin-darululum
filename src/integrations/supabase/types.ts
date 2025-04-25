@@ -11,7 +11,7 @@ export type Database = {
     Tables: {
       attendance: {
         Row: {
-          class_schedule_id: string | null
+          class_id: string | null
           created_at: string | null
           date: string
           id: string
@@ -20,7 +20,7 @@ export type Database = {
           student_id: string | null
         }
         Insert: {
-          class_schedule_id?: string | null
+          class_id?: string | null
           created_at?: string | null
           date: string
           id?: string
@@ -29,7 +29,7 @@ export type Database = {
           student_id?: string | null
         }
         Update: {
-          class_schedule_id?: string | null
+          class_id?: string | null
           created_at?: string | null
           date?: string
           id?: string
@@ -39,10 +39,10 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "attendance_class_schedule_id_fkey"
-            columns: ["class_schedule_id"]
+            foreignKeyName: "attendance_class_id_fkey"
+            columns: ["class_id"]
             isOneToOne: false
-            referencedRelation: "schedules"
+            referencedRelation: "classes"
             referencedColumns: ["id"]
           },
           {
@@ -50,6 +50,92 @@ export type Database = {
             columns: ["student_id"]
             isOneToOne: false
             referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      class_enrollments: {
+        Row: {
+          class_id: string | null
+          enrolled_date: string | null
+          id: string
+          status: string | null
+          student_id: string | null
+        }
+        Insert: {
+          class_id?: string | null
+          enrolled_date?: string | null
+          id?: string
+          status?: string | null
+          student_id?: string | null
+        }
+        Update: {
+          class_id?: string | null
+          enrolled_date?: string | null
+          id?: string
+          status?: string | null
+          student_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "class_enrollments_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "class_enrollments_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      classes: {
+        Row: {
+          capacity: number
+          created_at: string | null
+          day_of_week: string
+          description: string | null
+          id: string
+          name: string
+          room: string | null
+          status: string | null
+          teacher_id: string | null
+          time_slot: string
+        }
+        Insert: {
+          capacity?: number
+          created_at?: string | null
+          day_of_week: string
+          description?: string | null
+          id?: string
+          name: string
+          room?: string | null
+          status?: string | null
+          teacher_id?: string | null
+          time_slot: string
+        }
+        Update: {
+          capacity?: number
+          created_at?: string | null
+          day_of_week?: string
+          description?: string | null
+          id?: string
+          name?: string
+          room?: string | null
+          status?: string | null
+          teacher_id?: string | null
+          time_slot?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "classes_teacher_id_fkey"
+            columns: ["teacher_id"]
+            isOneToOne: false
+            referencedRelation: "teachers"
             referencedColumns: ["id"]
           },
         ]
@@ -481,50 +567,6 @@ export type Database = {
             columns: ["student_id"]
             isOneToOne: false
             referencedRelation: "students"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      schedules: {
-        Row: {
-          capacity: number
-          class_name: string
-          created_at: string | null
-          current_students: number
-          day_of_week: string
-          id: string
-          room: string
-          teacher_id: string | null
-          time_slot: string
-        }
-        Insert: {
-          capacity?: number
-          class_name: string
-          created_at?: string | null
-          current_students?: number
-          day_of_week: string
-          id?: string
-          room: string
-          teacher_id?: string | null
-          time_slot: string
-        }
-        Update: {
-          capacity?: number
-          class_name?: string
-          created_at?: string | null
-          current_students?: number
-          day_of_week?: string
-          id?: string
-          room?: string
-          teacher_id?: string | null
-          time_slot?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "schedules_teacher_id_fkey"
-            columns: ["teacher_id"]
-            isOneToOne: false
-            referencedRelation: "teachers"
             referencedColumns: ["id"]
           },
         ]
