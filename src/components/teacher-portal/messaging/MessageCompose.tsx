@@ -30,7 +30,6 @@ export const MessageCompose = ({
   const [messageType, setMessageType] = useState<MessageType>("direct");
   const [messageCategory, setMessageCategory] = useState<MessageCategory>("academic");
 
-  // Send message mutation
   const sendMessageMutation = useMutation({
     mutationFn: async (messageData: {
       recipient_id: string;
@@ -63,7 +62,6 @@ export const MessageCompose = ({
         description: "Your message has been sent successfully.",
       });
       setNewMessage("");
-      // No need to reset other fields to allow for quick follow-up messages
     },
     onError: (error: Error) => {
       toast({
@@ -74,7 +72,6 @@ export const MessageCompose = ({
     }
   });
   
-  // Handle sending a new message
   const handleSendMessage = (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -192,4 +189,3 @@ export const MessageCompose = ({
       </div>
     </form>
   );
-};
