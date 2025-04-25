@@ -13,8 +13,8 @@ export const SidebarNav = ({ items, isAdmin }: SidebarNavProps) => {
   
   const styles = {
     navItem: {
-      active: isAdmin ? "bg-white/10 text-amber-400 font-medium backdrop-blur-sm" : "bg-accent text-accent-foreground",
-      inactive: isAdmin ? "text-gray-300 hover:bg-white/5 hover:text-amber-400" : "hover:bg-accent/50 hover:text-accent-foreground"
+      active: isAdmin ? "bg-white/20 text-amber-400 font-medium backdrop-blur-sm" : "bg-accent text-accent-foreground",
+      inactive: isAdmin ? "text-gray-200 hover:bg-white/10 hover:text-amber-400" : "hover:bg-accent/50 hover:text-accent-foreground"
     }
   };
 

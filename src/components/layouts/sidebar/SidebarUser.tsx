@@ -44,10 +44,10 @@ export const SidebarUser = ({ isAdmin }: SidebarUserProps) => {
           </AvatarFallback>
         </Avatar>
         <div className="hidden md:block">
-          <div className="text-sm font-medium">
+          <div className="text-sm font-medium text-white">
             {user?.email?.split("@")[0] || "User"}
           </div>
-          <div className={`text-xs ${isAdmin ? "text-gray-400" : "text-muted-foreground"}`}>
+          <div className={`text-xs ${isAdmin ? "text-gray-300" : "text-muted-foreground"}`}>
             {isAdmin ? "Administrator" : "Teacher"}
           </div>
         </div>

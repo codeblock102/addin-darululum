@@ -1,32 +1,55 @@
 
-import { ReactNode } from "react";
-import { Card } from "@/components/ui/card";
+import React from 'react';
+import { Card } from '@/components/ui/card';
+import { ArrowUp, ArrowDown } from 'lucide-react';
+import { useUserRole } from '@/hooks/useUserRole';
+
+interface TrendProps {
+  value: number;
+  isPositive: boolean;
+}
 
 interface StatsCardProps {
   title: string;
-  value: string | number;
-  icon: ReactNode;
-  trend?: {
-    value: number;
-    isPositive: boolean;
-  };
+  value: string;
+  icon?: React.ReactNode;
+  trend?: TrendProps;
 }
 
 export const StatsCard = ({ title, value, icon, trend }: StatsCardProps) => {
+  const { isAdmin } = useUserRole();
+
   return (
-    <Card className="p-6 hover:shadow-lg transition-shadow duration-300 animate-slideIn">
-      <div className="flex items-start justify-between">
-        <div>
-          <p className="text-sm text-gray-500 mb-1">{title}</p>
-          <h3 className="text-2xl font-semibold">{value}</h3>
-          {trend && (
-            <p className={`text-sm mt-2 ${trend.isPositive ? 'text-green-500' : 'text-red-500'}`}>
-              {trend.isPositive ? '↑' : '↓'} {Math.abs(trend.value)}%
-            </p>
-          )}
+    <Card className={`stats-card ${isAdmin ? 'admin-stats-card' : ''}`}>
+      <div className="p-6">
+        <div className="flex items-center justify-between">
+          <h3 className={`text-sm font-medium ${isAdmin ? 'text-white' : 'text-muted-foreground'}`}>
+            {title}
+          </h3>
+          <div className={`${isAdmin ? 'text-amber-400' : 'text-muted-foreground'}`}>
+            {icon}
+          </div>
         </div>
-        <div className="p-3 bg-primary/10 rounded-lg">
-          {icon}
+        <div className={`mt-2 flex items-baseline`}>
+          <p className={`text-2xl font-semibold ${isAdmin ? 'text-white' : ''}`}>
+            {value}
+          </p>
+          {trend && (
+            <span 
+              className={`ml-2 text-xs flex items-center ${
+                trend.isPositive
+                  ? isAdmin ? 'text-green-400' : 'text-green-500'
+                  : isAdmin ? 'text-red-400' : 'text-red-500'
+              }`}
+            >
+              {trend.isPositive ? (
+                <ArrowUp className="mr-1 h-3 w-3" />
+              ) : (
+                <ArrowDown className="mr-1 h-3 w-3" />
+              )}
+              {trend.value}%
+            </span>
+          )}
         </div>
       </div>
     </Card>

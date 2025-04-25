@@ -32,7 +32,7 @@ export const Sidebar = () => {
           ) : (
             <BookOpen className="h-6 w-6" />
           )}
-          <span className="hidden md:inline-block">
+          <span className="hidden md:inline-block text-white">
             {isAdmin ? "Admin Portal" : "Teacher Portal"}
           </span>
         </Link>
