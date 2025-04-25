@@ -6,14 +6,19 @@ import { Card } from "@/components/ui/card";
 import { Loader2, Plus, Calendar } from "lucide-react";
 import { TimeSlot } from "@/types/teacher";
 import { format } from "date-fns";
+import { useState } from "react";
+import { ScheduleDialog } from "@/components/admin/schedule/ScheduleDialog";
 
 interface TeacherScheduleTabProps {
   teacherId: string;
 }
 
 export function TeacherScheduleTab({ teacherId }: TeacherScheduleTabProps) {
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [selectedSchedule, setSelectedSchedule] = useState(null);
+
   // Fetch classes for this teacher
-  const { data: classes, isLoading } = useQuery({
+  const { data: classes, isLoading, refetch } = useQuery({
     queryKey: ['teacher-classes', teacherId],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -42,7 +47,7 @@ export function TeacherScheduleTab({ teacherId }: TeacherScheduleTabProps) {
         <p className="text-muted-foreground mt-2 mb-6">
           This teacher doesn't have any classes assigned yet.
         </p>
-        <Button>
+        <Button onClick={() => setIsDialogOpen(true)}>
           <Plus className="mr-2 h-4 w-4" />
           Assign New Class
         </Button>
@@ -50,12 +55,10 @@ export function TeacherScheduleTab({ teacherId }: TeacherScheduleTabProps) {
     );
   }
 
-  // Format time slot for display
   const formatTimeSlot = (timeSlot: TimeSlot) => {
     return `${timeSlot.start_time} - ${timeSlot.end_time}`;
   };
   
-  // Format days array for display
   const formatDays = (days: string[]) => {
     return days.map(day => day.charAt(0).toUpperCase() + day.slice(1)).join(', ');
   };
@@ -64,7 +67,7 @@ export function TeacherScheduleTab({ teacherId }: TeacherScheduleTabProps) {
     <div className="space-y-4">
       <div className="flex justify-between items-center mb-4">
         <h3 className="text-lg font-medium">Classes ({classes.length})</h3>
-        <Button size="sm">
+        <Button size="sm" onClick={() => setIsDialogOpen(true)}>
           <Plus className="mr-1 h-4 w-4" />
           Assign Class
         </Button>
@@ -95,7 +98,9 @@ export function TeacherScheduleTab({ teacherId }: TeacherScheduleTabProps) {
                 <div>
                   {classItem.time_slots && classItem.time_slots.length > 0 ? (
                     classItem.time_slots.map((slot, index) => (
-                      <div key={index} className="mb-0.5">{formatTimeSlot(slot as TimeSlot)}</div>
+                      <div key={index} className="mb-0.5">
+                        {formatTimeSlot(slot as TimeSlot)}
+                      </div>
                     ))
                   ) : (
                     <span>No time slots specified</span>
@@ -116,6 +121,14 @@ export function TeacherScheduleTab({ teacherId }: TeacherScheduleTabProps) {
           </Card>
         ))}
       </div>
+
+      <ScheduleDialog
+        open={isDialogOpen}
+        onOpenChange={setIsDialogOpen}
+        schedule={selectedSchedule}
+        teacherId={teacherId}
+        onSuccess={refetch}
+      />
     </div>
   );
 }

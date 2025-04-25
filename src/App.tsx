@@ -11,7 +11,6 @@ import Students from "./pages/Students";
 import StudentDetail from "./pages/StudentDetail";
 import Teachers from "./pages/Teachers";
 import TeacherAccounts from "./pages/TeacherAccounts";
-import Schedule from "./pages/Schedule";
 import Progress from "./pages/Progress";
 import Attendance from "./pages/Attendance";
 import NotFound from "./pages/NotFound";
@@ -21,7 +20,6 @@ import Preferences from "./pages/preferences";
 import Classes from "./pages/Classes";
 import Settings from "./pages/Settings";
 
-// Create a client for React Query with better error handling
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -76,14 +74,6 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <TeacherAccounts />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/schedule"
-              element={
-                <ProtectedRoute>
-                  <Schedule />
                 </ProtectedRoute>
               }
             />
