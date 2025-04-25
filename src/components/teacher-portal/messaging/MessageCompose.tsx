@@ -27,7 +27,7 @@ export const MessageCompose = ({
   const queryClient = useQueryClient();
   const [newMessage, setNewMessage] = useState("");
   const [selectedRecipient, setSelectedRecipient] = useState("");
-  const [messageType, setMessageType] = useState<MessageType>("general");
+  const [messageType, setMessageType] = useState<MessageType>("direct");
   const [messageCategory, setMessageCategory] = useState<MessageCategory>("academic");
 
   // Send message mutation
@@ -124,7 +124,7 @@ export const MessageCompose = ({
                 </SelectItem>
               ))
             ) : (
-              <SelectItem value="none" disabled>No recipients available</SelectItem>
+              <SelectItem value="no-recipients" disabled>No recipients available</SelectItem>
             )}
           </SelectContent>
         </Select>
@@ -138,8 +138,8 @@ export const MessageCompose = ({
               <SelectValue placeholder="Message type" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="general">General</SelectItem>
-              <SelectItem value="urgent">Urgent</SelectItem>
+              <SelectItem value="direct">Direct</SelectItem>
+              <SelectItem value="announcement">Announcement</SelectItem>
               <SelectItem value="feedback">Feedback</SelectItem>
             </SelectContent>
           </Select>
@@ -154,7 +154,7 @@ export const MessageCompose = ({
             <SelectContent>
               <SelectItem value="administrative">Administrative</SelectItem>
               <SelectItem value="academic">Academic</SelectItem>
-              <SelectItem value="personal">Personal</SelectItem>
+              <SelectItem value="general">General</SelectItem>
             </SelectContent>
           </Select>
         </div>
