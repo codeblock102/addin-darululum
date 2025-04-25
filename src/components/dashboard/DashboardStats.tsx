@@ -4,8 +4,11 @@ import { useQuery } from '@tanstack/react-query';
 import { StatsCard } from './StatsCard';
 import { Users, Clock, GraduationCap, BookOpen } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { useUserRole } from '@/hooks/useUserRole';
 
 export const DashboardStats = () => {
+  const { isAdmin } = useUserRole();
+  
   const { data: studentsCount } = useQuery({
     queryKey: ['studentsCount'],
     queryFn: async () => {
@@ -49,30 +52,32 @@ export const DashboardStats = () => {
     }
   });
 
+  const iconClass = isAdmin ? "text-amber-400" : "text-primary";
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
       <StatsCard
         title="Total Students"
         value={studentsCount?.toString() || "0"}
-        icon={<Users className="text-primary" size={24} />}
+        icon={<Users className={iconClass} size={24} />}
         trend={{ value: 12, isPositive: true }}
       />
       <StatsCard
         title="Average Attendance"
         value={`${attendanceRate}%`}
-        icon={<Clock className="text-primary" size={24} />}
+        icon={<Clock className={iconClass} size={24} />}
         trend={{ value: 3, isPositive: true }}
       />
       <StatsCard
         title="Completion Rate"
         value={`${progressStats || 0}%`}
-        icon={<GraduationCap className="text-primary" size={24} />}
+        icon={<GraduationCap className={iconClass} size={24} />}
         trend={{ value: 5, isPositive: true }}
       />
       <StatsCard
         title="Active Classes"
         value={activeClasses?.toString() || "0"}
-        icon={<BookOpen className="text-primary" size={24} />}
+        icon={<BookOpen className={iconClass} size={24} />}
       />
     </div>
   );

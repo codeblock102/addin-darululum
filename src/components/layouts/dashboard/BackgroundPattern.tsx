@@ -19,7 +19,7 @@ export const BackgroundPattern = ({ isAdmin, children }: BackgroundPatternProps)
       }}
     >
       {isAdmin && (
-        <div className="absolute inset-0 bg-gradient-to-br from-[#131720]/50 to-[#1A1F2C]/50 pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-br from-[#131720]/30 to-[#1A1F2C]/30 pointer-events-none" />
       )}
       {children}
     </div>

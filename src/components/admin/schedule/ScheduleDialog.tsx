@@ -55,6 +55,14 @@ export const ScheduleDialog = ({
     }
   });
   
+  const defaultTimeSlots = [
+    {
+      days: [],
+      start_time: "",
+      end_time: "",
+    },
+  ] as TimeSlot[];
+
   useEffect(() => {
     if (open && schedule) {
       const formattedTimeSlots: TimeSlot[] = [];

@@ -27,7 +27,7 @@ const AdminDashboard = () => {
     return (
       <DashboardLayout>
         <div className="flex justify-center items-center h-64">
-          <Loader2 className="h-8 w-8 animate-spin" />
+          <Loader2 className="h-8 w-8 animate-spin text-white" />
         </div>
       </DashboardLayout>
     );
@@ -37,38 +37,38 @@ const AdminDashboard = () => {
     <DashboardLayout>
       <div className="space-y-6">
         <div>
-          <h1 className="text-3xl font-bold mb-2">Admin Dashboard</h1>
-          <p className="text-gray-500">Manage teachers, students, and system settings</p>
+          <h1 className="text-3xl font-bold mb-2 text-white">Admin Dashboard</h1>
+          <p className="text-gray-300">Manage teachers, students, and system settings</p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <Card>
+          <Card className="bg-white/15 backdrop-blur-md border border-white/20">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Teachers</CardTitle>
-              <Users className="h-4 w-4 text-muted-foreground" />
+              <CardTitle className="text-sm font-medium text-white">Total Teachers</CardTitle>
+              <Users className="h-4 w-4 text-amber-400" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{stats?.teacherCount}</div>
+              <div className="text-2xl font-bold text-white">{stats?.teacherCount}</div>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="bg-white/15 backdrop-blur-md border border-white/20">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Students</CardTitle>
-              <GraduationCap className="h-4 w-4 text-muted-foreground" />
+              <CardTitle className="text-sm font-medium text-white">Total Students</CardTitle>
+              <GraduationCap className="h-4 w-4 text-amber-400" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{stats?.studentCount}</div>
+              <div className="text-2xl font-bold text-white">{stats?.studentCount}</div>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="bg-white/15 backdrop-blur-md border border-white/20">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Messages</CardTitle>
-              <Mail className="h-4 w-4 text-muted-foreground" />
+              <CardTitle className="text-sm font-medium text-white">Messages</CardTitle>
+              <Mail className="h-4 w-4 text-amber-400" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{stats?.messageCount}</div>
+              <div className="text-2xl font-bold text-white">{stats?.messageCount}</div>
             </CardContent>
           </Card>
         </div>
