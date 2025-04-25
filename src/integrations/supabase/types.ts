@@ -105,9 +105,7 @@ export type Database = {
           room: string | null
           status: string | null
           teacher_id: string | null
-          time_end: string | null
-          time_slot: string
-          time_start: string | null
+          time_slots: Json[] | null
         }
         Insert: {
           capacity?: number
@@ -120,9 +118,7 @@ export type Database = {
           room?: string | null
           status?: string | null
           teacher_id?: string | null
-          time_end?: string | null
-          time_slot: string
-          time_start?: string | null
+          time_slots?: Json[] | null
         }
         Update: {
           capacity?: number
@@ -135,9 +131,7 @@ export type Database = {
           room?: string | null
           status?: string | null
           teacher_id?: string | null
-          time_end?: string | null
-          time_slot?: string
-          time_start?: string | null
+          time_slots?: Json[] | null
         }
         Relationships: [
           {
@@ -790,6 +784,7 @@ export type Database = {
         | "manage_schedules"
         | "manage_roles"
         | "bulk_actions"
+        | "manage_classes"
       student_status: "active" | "inactive"
       user_role: "admin" | "teacher"
     }
@@ -924,6 +919,7 @@ export const Constants = {
         "manage_schedules",
         "manage_roles",
         "bulk_actions",
+        "manage_classes",
       ],
       student_status: ["active", "inactive"],
       user_role: ["admin", "teacher"],

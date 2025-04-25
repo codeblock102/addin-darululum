@@ -1,29 +1,15 @@
-export interface Teacher {
-  id: string;
+
+export interface TeacherFormValues {
   name: string;
-  subject: string;
-  experience: string;
-  email?: string;
   bio?: string;
+  email?: string;
+  experience?: string;
   phone?: string;
-  user_id?: string;
+  subject?: string;
+  preferences?: Record<string, any>;
 }
 
-export interface TeacherDashboardProps {
-  teacher: Teacher;
-}
-
-export interface SummaryData {
-  studentsCount: number;
-  recentProgressEntries: number;
-  todayClasses: number;
-  averageQuality?: string;
-  totalRevisions?: number;
-  pendingRevisions?: number;
-}
-
-// Supabase query result type
-export interface SupabaseQueryResult<T> {
-  data: T[] | null;
-  error: Error | null;
+export interface TeacherPreferences {
+  id: string;
+  preferences?: Record<string, any>;
 }
