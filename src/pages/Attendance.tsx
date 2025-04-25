@@ -1,12 +1,9 @@
 
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 import { DashboardLayout } from "@/components/layouts/DashboardLayout";
 import { AttendanceForm } from "@/components/attendance/AttendanceForm";
 import { AttendanceTable } from "@/components/attendance/AttendanceTable";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Skeleton } from "@/components/ui/skeleton";
 import { CalendarCheck, Users } from "lucide-react";
 
 const Attendance = () => {
@@ -18,7 +15,7 @@ const Attendance = () => {
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Attendance Management</h1>
           <p className="text-muted-foreground mt-2">
-            Take attendance and view attendance records for all students.
+            Take attendance for individual students and view attendance history.
           </p>
         </div>
 
