@@ -6,6 +6,7 @@ import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { cn } from "@/lib/utils";
 import { PlusCircle, Trash2 } from "lucide-react";
 import { TimeSlotPicker } from "./TimeSlotPicker";
+import { TimeSlot } from "./scheduleValidation";
 
 const DAYS_OF_WEEK = [
   "Monday",
@@ -16,12 +17,6 @@ const DAYS_OF_WEEK = [
   "Saturday",
   "Sunday",
 ];
-
-interface TimeSlot {
-  days: string[];
-  start_time: string;
-  end_time: string;
-}
 
 interface ClassScheduleSelectorProps {
   value: TimeSlot[];
