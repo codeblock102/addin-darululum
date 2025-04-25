@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { DashboardLayout } from "@/components/layouts/DashboardLayout";
 import { AppearanceSettingsSection } from "@/components/admin/settings/AppearanceSettings";
@@ -14,7 +13,7 @@ import { useSettings } from "@/hooks/useSettings";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Loader2, LayoutDashboard, Bell, Shield, BookOpen, Globe, Api, Database, UserCheck, Bug } from "lucide-react";
+import { Loader2, LayoutDashboard, Bell, Shield, BookOpen, Globe, Network, Database, UserCheck, Bug } from "lucide-react";
 import { useUserRole } from "@/hooks/useUserRole";
 import { useNavigate } from "react-router-dom";
 
@@ -112,7 +111,7 @@ export default function Settings() {
                   <span>Localization</span>
                 </TabsTrigger>
                 <TabsTrigger value="integrations" className="flex items-center gap-1 py-2 px-3 transition-all duration-200 hover:scale-105">
-                  <Api className="h-4 w-4" />
+                  <Network className="h-4 w-4" />
                   <span>Integrations</span>
                 </TabsTrigger>
                 <TabsTrigger value="data-management" className="flex items-center gap-1 py-2 px-3 transition-all duration-200 hover:scale-105">
