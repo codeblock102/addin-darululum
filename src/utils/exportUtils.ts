@@ -1,5 +1,5 @@
 
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/components/ui/use-toast";
 
 export const exportDataAsCSV = (data: Array<{ name: string; verses: number }>, toast: ReturnType<typeof useToast>["toast"]) => {
   if (!data || data.length === 0) return;

@@ -71,11 +71,20 @@ export interface Message {
   message: string;
   created_at: string;
   read: boolean;
+  sender_name?: string;
+  recipient_name?: string;
+  message_type: MessageType;
+  category: MessageCategory;
+  read_at?: string;
 }
 
 export type MessageType = 'direct' | 'announcement' | 'feedback';
 export type MessageCategory = 'general' | 'academic' | 'administrative';
-export type MessageRecipient = 'student' | 'teacher' | 'admin';
+export type MessageRecipient = { 
+  id: string; 
+  name: string; 
+  type: 'student' | 'teacher' | 'admin';
+};
 
 export interface RevisionSchedule {
   id: string;
