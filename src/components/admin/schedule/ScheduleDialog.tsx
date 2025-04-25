@@ -1,4 +1,3 @@
-
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -43,7 +42,6 @@ export const ScheduleDialog = ({
     }
   });
   
-  // Fetch teachers for dropdown
   const { data: teachers } = useQuery({
     queryKey: ['teachers-dropdown'],
     queryFn: async () => {
@@ -57,26 +55,17 @@ export const ScheduleDialog = ({
     }
   });
   
-  // Reset form when dialog opens/closes or schedule changes
   useEffect(() => {
     if (open && schedule) {
       const formattedTimeSlots: TimeSlot[] = [];
       
       if (schedule.time_slots && Array.isArray(schedule.time_slots)) {
         schedule.time_slots.forEach((slot: any) => {
-          const timeSlot: TimeSlot = {
-            days: Array.isArray(slot.days) && slot.days.length > 0 
-              ? [...slot.days] 
-              : ['Monday'],
-            start_time: typeof slot.start_time === 'string' && slot.start_time 
-              ? slot.start_time 
-              : '09:00',
-            end_time: typeof slot.end_time === 'string' && slot.end_time 
-              ? slot.end_time 
-              : '10:00'
-          };
-          
-          formattedTimeSlots.push(timeSlot);
+          formattedTimeSlots.push({
+            days: Array.isArray(slot.days) ? slot.days : ['Monday'],
+            start_time: slot.start_time || '09:00',
+            end_time: slot.end_time || '10:00'
+          });
         });
       }
       
