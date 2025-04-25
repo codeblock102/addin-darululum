@@ -25,6 +25,15 @@ export interface Teacher {
   preferences?: Record<string, any>;
 }
 
+export interface TeacherAccount extends Teacher {
+  userId: string | null;
+  status: 'active' | 'suspended';
+  lastLogin: string | null;
+  classesCount: number;
+  studentsCount: number;
+  created_at?: string;
+}
+
 export interface TeacherDashboardProps {
   teacher: Teacher;
 }

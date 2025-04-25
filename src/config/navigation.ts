@@ -1,11 +1,12 @@
 
-import { Home, Users, School, Calendar, LineChart, FileText, LayoutDashboard, Settings, BookOpen } from "lucide-react";
+import { Home, Users, School, Calendar, LineChart, FileText, LayoutDashboard, Settings, BookOpen, User } from "lucide-react";
 import { NavItem } from "@/types/navigation";
 
 export const adminNavItems: NavItem[] = [
   { href: "/", label: "Dashboard", icon: Home, description: "Overview of all activities" },
   { href: "/students", label: "Students", icon: Users, description: "Manage student profiles" },
   { href: "/teachers", label: "Teachers", icon: School, description: "Manage teaching staff" },
+  { href: "/teacher-accounts", label: "Teacher Accounts", icon: User, description: "Teacher account control center" },
   { href: "/schedule", label: "Schedule", icon: Calendar, description: "View and manage classes" },
   { href: "/progress", label: "Progress", icon: LineChart, description: "Student progress tracker" },
   { href: "/attendance", label: "Attendance", icon: FileText, description: "Track attendance records" },
