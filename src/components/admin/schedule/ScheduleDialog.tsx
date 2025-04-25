@@ -15,14 +15,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Schedule } from "@/types/progress";
 import { Loader2 } from "lucide-react";
 import { z } from "zod";
 
 interface ScheduleDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  schedule: Schedule | null;
+  schedule: any | null;
 }
 
 const daysOfWeek = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
@@ -85,7 +84,7 @@ export const ScheduleDialog = ({
       if (schedule) {
         // Update existing schedule
         const { data, error } = await supabase
-          .from('schedules')
+          .from('classes')
           .update(formData)
           .eq('id', schedule.id)
           .select();
@@ -95,7 +94,7 @@ export const ScheduleDialog = ({
       } else {
         // Create new schedule
         const { data, error } = await supabase
-          .from('schedules')
+          .from('classes')
           .insert([formData])
           .select();
         
@@ -150,7 +149,7 @@ export const ScheduleDialog = ({
       // Check for schedule conflicts
       if (!schedule) {
         const { data: conflicts } = await supabase
-          .from('schedules')
+          .from('classes')
           .select('id')
           .eq('day_of_week', day)
           .eq('time_slot', timeSlot)

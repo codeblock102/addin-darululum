@@ -37,7 +37,7 @@ type Student = {
   name: string;
 };
 
-interface Schedule {
+interface ClassInfo {
   id: string;
   class_name: string;
   day_of_week: string;
@@ -60,16 +60,16 @@ export function AttendanceForm() {
   });
 
   // Query to get classes for the dropdown
-  const { data: schedules, isLoading: isLoadingSchedules } = useQuery({
+  const { data: classesData, isLoading: isLoadingClasses } = useQuery({
     queryKey: ["class-schedules"],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("schedules")
+        .from("classes")
         .select("id, class_name, day_of_week, time_slot")
         .order("class_name", { ascending: true });
       
       if (error) throw error;
-      return data as Schedule[];
+      return data as ClassInfo[];
     },
   });
 
@@ -101,7 +101,7 @@ export function AttendanceForm() {
         .from("attendance")
         .select("*")
         .eq("student_id", selectedStudent)
-        .eq("class_schedule_id", selectedClass)
+        .eq("class_id", selectedClass)
         .eq("date", formattedDate)
         .maybeSingle();
       
@@ -131,7 +131,7 @@ export function AttendanceForm() {
 
       const attendanceData = {
         student_id: selectedStudent,
-        class_schedule_id: selectedClass,
+        class_id: selectedClass,
         date: formattedDate,
         status: values.status,
         notes: values.notes,
@@ -192,15 +192,15 @@ export function AttendanceForm() {
             <Select 
               value={selectedClass} 
               onValueChange={setSelectedClass}
-              disabled={isLoadingSchedules}
+              disabled={isLoadingClasses}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Select a class" />
               </SelectTrigger>
               <SelectContent>
-                {schedules?.map((schedule) => (
-                  <SelectItem key={schedule.id} value={schedule.id}>
-                    {schedule.class_name} - {schedule.day_of_week} at {schedule.time_slot}
+                {classesData?.map((classInfo) => (
+                  <SelectItem key={classInfo.id} value={classInfo.id}>
+                    {classInfo.class_name} - {classInfo.day_of_week} at {classInfo.time_slot}
                   </SelectItem>
                 ))}
               </SelectContent>

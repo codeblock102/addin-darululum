@@ -30,21 +30,20 @@ import {
   Loader2 
 } from "lucide-react";
 import { ScheduleDialog } from "./ScheduleDialog";
-import { Schedule } from "@/types/progress";
 
 export const ScheduleManagement = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [selectedSchedule, setSelectedSchedule] = useState<Schedule | null>(null);
+  const [selectedSchedule, setSelectedSchedule] = useState<any | null>(null);
   
   // Fetch all schedules
   const { data: schedules, isLoading, refetch } = useQuery({
     queryKey: ['admin-schedules'],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('schedules')
+        .from('classes')
         .select(`
           *,
           teachers(name)
@@ -61,7 +60,7 @@ export const ScheduleManagement = () => {
   const deleteScheduleMutation = useMutation({
     mutationFn: async (scheduleId: string) => {
       const { error } = await supabase
-        .from('schedules')
+        .from('classes')
         .delete()
         .eq('id', scheduleId);
       
@@ -84,7 +83,7 @@ export const ScheduleManagement = () => {
   });
   
   // Handle adding/editing schedule
-  const handleOpenDialog = (schedule?: Schedule) => {
+  const handleOpenDialog = (schedule?: any) => {
     setSelectedSchedule(schedule || null);
     setIsDialogOpen(true);
   };
