@@ -9,6 +9,11 @@ import { toast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2, Save } from "lucide-react";
 
+interface TeacherPreferences {
+  emailNotifications: boolean;
+  reminderTime: number;
+}
+
 export function TeacherPreferences() {
   const [emailNotifications, setEmailNotifications] = useState(true);
   const [reminderTime, setReminderTime] = useState(15);
@@ -22,8 +27,8 @@ export function TeacherPreferences() {
 
       const { data, error } = await supabase
         .from('teachers')
-        .select('preferences')
-        .eq('user_id', session.user.id)
+        .select('*')
+        .eq('email', session.user.email)
         .single();
 
       if (error) {
@@ -31,7 +36,13 @@ export function TeacherPreferences() {
         return null;
       }
 
-      return data?.preferences || null;
+      // If teacher has preferences set, use them
+      if (data?.preferences) {
+        setEmailNotifications(data.preferences.emailNotifications ?? true);
+        setReminderTime(data.preferences.reminderTime ?? 15);
+      }
+
+      return data?.preferences as TeacherPreferences || null;
     }
   });
 
@@ -56,7 +67,7 @@ export function TeacherPreferences() {
             reminderTime
           }
         })
-        .eq('user_id', session.user.id);
+        .eq('email', session.user.email);
 
       if (error) throw error;
 
