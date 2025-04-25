@@ -1,10 +1,9 @@
-
 /* Admin theme specific styles */
 .admin-theme {
   --admin-bg: 222 47% 11%;
   --admin-card: 225 46% 14%;
   --admin-border: 225 35% 20%;
-  --admin-primary: 38 100% 50%;
+  --admin-primary: 217 70% 55%;
   --admin-accent: 223 35% 20%;
 }
 
@@ -20,7 +19,7 @@
 }
 
 .admin-theme .stats-card {
-  @apply hover:border-amber-400/30 transition-all duration-300;
+  @apply hover:border-primary/30 transition-all duration-300;
 }
 
 .admin-theme .table {
@@ -29,7 +28,7 @@
 }
 
 .admin-theme .table th {
-  @apply bg-white/5 text-amber-300 font-medium border-b border-white/10 px-4 py-3;
+  @apply bg-white/5 text-primary font-medium border-b border-white/10 px-4 py-3;
 }
 
 .admin-theme .table td {
@@ -53,7 +52,7 @@
 .admin-theme input, 
 .admin-theme select, 
 .admin-theme textarea {
-  @apply bg-white/5 backdrop-blur-md border-white/10 focus:border-amber-400/50 text-white;
+  @apply bg-white/5 backdrop-blur-md border-white/10 focus:border-primary/50 text-white;
   background: rgba(255, 255, 255, 0.05);
 }
 
@@ -112,7 +111,7 @@
 }
 
 .admin-theme .stats-card-label {
-  @apply text-sm text-amber-300 font-medium mb-1;
+  @apply text-sm text-primary font-medium mb-1;
 }
 
 .admin-theme .stats-card-description {
@@ -121,7 +120,7 @@
 
 /* Enhanced buttons */
 .admin-theme .button-primary {
-  @apply bg-amber-500 hover:bg-amber-600 text-black font-medium shadow-lg;
+  @apply bg-primary hover:bg-primary/90 text-white font-medium shadow-lg;
 }
 
 .admin-theme .button-secondary {
@@ -144,4 +143,3 @@
 .admin-theme .status-danger {
   @apply bg-red-500/20 text-red-300 border border-red-500/30 px-2 py-0.5 rounded-full text-xs font-medium;
 }
-
