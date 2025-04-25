@@ -1,5 +1,4 @@
 
-
 @layer base {
   :root {
     --background: 0 0% 100%;
@@ -22,14 +21,6 @@
     --input: 214.3 31.8% 91.4%;
     --ring: 152 60% 38%;
     --radius: 0.5rem;
-    --sidebar-background: 160 83% 39%;
-    --sidebar-foreground: 210 40% 98%;
-    --sidebar-primary: 210 40% 98%;
-    --sidebar-primary-foreground: 152 60% 38%;
-    --sidebar-accent: 160 84% 45%;
-    --sidebar-accent-foreground: 210 40% 98%;
-    --sidebar-border: 160 59% 45%;
-    --sidebar-ring: 152 60% 38%;
   }
 
   .dark {
@@ -52,16 +43,14 @@
     --border: 217.2 32.6% 25%; /* Slightly lighter border */
     --input: 217.2 32.6% 25%;
     --ring: 152 60% 52%;
-    
-    /* Sidebar specific variables */
-    --sidebar-background: 160 60% 20%;
-    --sidebar-foreground: 210 40% 98%;
-    --sidebar-primary: 152 60% 52%;
-    --sidebar-primary-foreground: 222.2 47.4% 11.2%;
-    --sidebar-accent: 160 70% 30%;
-    --sidebar-accent-foreground: 210 40% 98%;
-    --sidebar-border: 160 60% 30%;
-    --sidebar-ring: 152 60% 52%;
   }
 }
 
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
