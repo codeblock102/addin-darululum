@@ -13,13 +13,13 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Form } from "@/components/ui/form";
 import { Loader2 } from "lucide-react";
-import { scheduleFormSchema } from "./scheduleValidation";
+import { scheduleFormSchema, ScheduleFormData } from "./scheduleValidation";
 import { useScheduleSubmit } from "./useScheduleSubmit";
 import { ClassBasicInfo } from "./ClassBasicInfo";
 import { ClassScheduleSelector } from "./ClassScheduleSelector";
+import { Teacher } from "@/types/teacher";
 
 interface ScheduleDialogProps {
   open: boolean;
@@ -32,14 +32,13 @@ export const ScheduleDialog = ({
   onOpenChange,
   schedule
 }: ScheduleDialogProps) => {
-  const form = useForm({
+  const form = useForm<ScheduleFormData>({
     resolver: zodResolver(scheduleFormSchema),
     defaultValues: {
       name: "",
       teacher_id: null,
       room: "",
       capacity: 20,
-      days_of_week: [],
       time_slots: [],
     }
   });
@@ -50,11 +49,11 @@ export const ScheduleDialog = ({
     queryFn: async () => {
       const { data, error } = await supabase
         .from('teachers')
-        .select('id, name')
+        .select('id, name, subject, experience')
         .order('name');
       
       if (error) throw error;
-      return data;
+      return data as Teacher[];
     }
   });
   
@@ -66,7 +65,6 @@ export const ScheduleDialog = ({
         teacher_id: schedule.teacher_id,
         room: schedule.room || "",
         capacity: schedule.capacity || 20,
-        days_of_week: schedule.days_of_week || [],
         time_slots: schedule.time_slots || [],
       });
     } else if (open) {
@@ -75,7 +73,6 @@ export const ScheduleDialog = ({
         teacher_id: null,
         room: "",
         capacity: 20,
-        days_of_week: [],
         time_slots: [],
       });
     }
@@ -86,7 +83,7 @@ export const ScheduleDialog = ({
     onSuccess: () => onOpenChange(false)
   });
   
-  const onSubmit = async (data: any) => {
+  const onSubmit = (data: ScheduleFormData) => {
     scheduleMutation.mutate(data);
   };
   
@@ -110,22 +107,18 @@ export const ScheduleDialog = ({
             
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
-                <Input
-                  placeholder="Room number or location"
-                  {...form.register("room")}
-                />
-                <Input
-                  type="number"
-                  placeholder="Class capacity"
-                  min={1}
-                  {...form.register("capacity", { valueAsNumber: true })}
-                />
+                <div>
+                  <ClassBasicInfo.RoomInput />
+                </div>
+                <div>
+                  <ClassBasicInfo.CapacityInput />
+                </div>
               </div>
             </div>
             
             <ClassScheduleSelector
               value={form.watch("time_slots")}
-              onChange={(slots) => form.setValue("time_slots", slots)}
+              onChange={(slots) => form.setValue("time_slots", slots, { shouldValidate: true })}
             />
             
             <DialogFooter className="mt-6">

@@ -15,23 +15,16 @@ export const useScheduleSubmit = ({ schedule, onSuccess }: UseScheduleSubmitProp
 
   return useMutation({
     mutationFn: async (formData: ScheduleFormData) => {
-      const timeParts = formData.time_slot.split('-').map(part => part.trim());
-      const start_time = timeParts[0];
-      const end_time = timeParts[1] || start_time;
-      
       const scheduleData = {
         name: formData.name,
-        days_of_week: [formData.day_of_week],
-        time_slots: [{
-          days: [formData.day_of_week],
-          start_time,
-          end_time
-        }],
         room: formData.room,
         capacity: formData.capacity,
         teacher_id: formData.teacher_id,
-        day_of_week: formData.day_of_week,
-        time_slot: formData.time_slot,
+        time_slots: formData.time_slots,
+        // Convert time_slots to days_of_week array for compatibility with existing code
+        days_of_week: Array.from(
+          new Set(formData.time_slots.flatMap(slot => slot.days))
+        )
       };
       
       if (schedule) {
