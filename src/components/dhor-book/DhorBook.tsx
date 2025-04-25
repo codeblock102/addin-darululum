@@ -20,12 +20,15 @@ export function DhorBook({ studentId, teacherId }: DhorBookProps) {
   const { data: entries, isLoading: entriesLoading } = useQuery({
     queryKey: ['dhor-book-entries', studentId, currentWeek],
     queryFn: async () => {
+      const startOfWeek = new Date(new Date(currentWeek).setDate(currentWeek.getDate() - currentWeek.getDay()));
+      const endOfWeek = new Date(new Date(currentWeek).setDate(currentWeek.getDate() - currentWeek.getDay() + 6));
+      
       const { data, error } = await supabase
         .from('dhor_book_entries')
         .select('*')
         .eq('student_id', studentId)
-        .gte('entry_date', new Date(currentWeek.setDate(currentWeek.getDate() - currentWeek.getDay())).toISOString())
-        .lte('entry_date', new Date(currentWeek.setDate(currentWeek.getDate() - currentWeek.getDay() + 6)).toISOString())
+        .gte('entry_date', startOfWeek.toISOString().split('T')[0])
+        .lte('entry_date', endOfWeek.toISOString().split('T')[0])
         .order('entry_date', { ascending: true });
 
       if (error) throw error;

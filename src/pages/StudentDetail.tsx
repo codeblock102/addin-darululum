@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -12,7 +13,7 @@ import { StudentProgressList } from "@/components/students/StudentProgressList";
 import { Skeleton } from "@/components/ui/skeleton";
 import { NewProgressEntry } from "@/components/students/NewProgressEntry";
 import { useToast } from "@/hooks/use-toast";
-import { DhorBook } from "@/components/students/dhor/DhorBook";
+import { DhorBook } from "@/components/dhor-book/DhorBook";
 import { useAuth } from "@/contexts/AuthContext";
 
 interface Student {
@@ -211,15 +212,19 @@ const StudentDetail = () => {
             </TabsTrigger>
           </TabsList>
           <TabsContent value="dhor-book">
-            {student && (
+            {student && session?.user?.id && (
               <DhorBook 
                 studentId={student.id}
-                teacherId={session?.user?.id || ''} // You'll need to get the actual teacher ID
+                teacherId={session?.user?.id || ''}
               />
             )}
           </TabsContent>
           <TabsContent value="revisions">
-            <DhorBook studentId={student.id} studentName={student.name} />
+            {student && (
+              <div className="p-4 border rounded-md">
+                <p className="text-sm text-muted-foreground">Revision history will be displayed here.</p>
+              </div>
+            )}
           </TabsContent>
         </Tabs>
       </div>
