@@ -1,4 +1,3 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -86,12 +85,11 @@
   
   /* Admin theme specific styles */
   .admin-theme {
-    /* Dark colors for Admin */
-    --admin-bg: 222 25% 10%;
-    --admin-card: 222 20% 16%;
-    --admin-border: 223 20% 26%;
-    --admin-primary: 43 100% 61%;
-    --admin-accent: 220 20% 26%;
+    --admin-bg: 222 47% 11%;
+    --admin-card: 225 46% 14%;
+    --admin-border: 225 35% 20%;
+    --admin-primary: 43 96% 58%;
+    --admin-accent: 223 35% 20%;
   }
 }
 
@@ -194,45 +192,38 @@
 
 /* Admin UI specific styles */
 .admin-theme .card {
-  @apply bg-[#202736] border-gray-700 text-white shadow-lg;
-}
-
-.admin-theme .btn-primary {
-  @apply bg-amber-500 hover:bg-amber-600 text-black;
-}
-
-.admin-theme .btn-outline {
-  @apply border-gray-600 hover:border-amber-500 hover:bg-[#2A3142];
-}
-
-.admin-theme h1, .admin-theme h2 {
-  @apply text-amber-100;
+  @apply bg-opacity-20 backdrop-blur-xl border border-white/10 shadow-lg;
+  background: linear-gradient(
+    to bottom right,
+    rgba(255, 255, 255, 0.05),
+    rgba(255, 255, 255, 0.02)
+  );
 }
 
 .admin-theme .stats-card {
-  @apply bg-gradient-to-br from-[#2A3142] to-[#1F2637] border-gray-700;
+  @apply bg-opacity-10 backdrop-blur-lg border border-white/5 shadow-lg;
+  background: linear-gradient(
+    to bottom right,
+    rgba(255, 255, 255, 0.08),
+    rgba(255, 255, 255, 0.03)
+  );
 }
 
 .admin-theme .table {
-  @apply bg-[#1F2637] text-white;
-}
-
-.admin-theme .table th {
-  @apply bg-[#151B28] text-amber-300;
-}
-
-.admin-theme .table tr:hover {
-  @apply bg-[#2A3142];
-}
-
-.admin-theme form {
-  @apply text-white;
-}
-
-.admin-theme input, .admin-theme select, .admin-theme textarea {
-  @apply bg-[#262E40] border-gray-700 text-white;
+  @apply bg-opacity-20 backdrop-blur-md;
 }
 
 .admin-theme .dialog-content {
-  @apply bg-[#1A1F2C] border-gray-700 text-white;
+  @apply bg-opacity-95 backdrop-blur-2xl border border-white/10;
+  background: linear-gradient(
+    to bottom,
+    rgba(26, 31, 44, 0.95),
+    rgba(26, 31, 44, 0.98)
+  );
+}
+
+.admin-theme input, 
+.admin-theme select, 
+.admin-theme textarea {
+  @apply bg-opacity-30 backdrop-blur-md border-white/10;
 }

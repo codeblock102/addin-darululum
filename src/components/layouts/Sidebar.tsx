@@ -1,4 +1,3 @@
-
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
@@ -38,7 +37,6 @@ export const Sidebar = () => {
   const [isTeacher, setIsTeacher] = useState(false);
   const [isAdmin, setIsAdmin] = useState(true);
 
-  // Check if the current user is a teacher
   useEffect(() => {
     const checkTeacherStatus = async () => {
       if (!user?.email) return;
@@ -63,7 +61,6 @@ export const Sidebar = () => {
     checkTeacherStatus();
   }, [user]);
 
-  // Extracting user's initials for avatar
   const getInitials = (name: string | undefined) => {
     if (!name) return "U";
     const parts = name.split("@")[0].split(".");
@@ -91,7 +88,6 @@ export const Sidebar = () => {
     }
   };
 
-  // Define navigation items
   const adminNavItems = [
     { href: "/", label: "Dashboard", icon: <Home className="h-5 w-5" /> },
     { href: "/students", label: "Students", icon: <Users className="h-5 w-5" /> },
@@ -113,22 +109,19 @@ export const Sidebar = () => {
     { href: "/teacher-portal?tab=profile", label: "My Profile", icon: <UserCircle className="h-5 w-5" /> },
   ];
 
-  // Choose navItems based on user role
   const navItems = isTeacher ? teacherNavItems : adminNavItems;
   
-  // Admin UI styling
   const adminStyles = {
-    sidebar: "bg-[#1A1F2C] border-r border-gray-800 text-white",
-    header: "border-b border-gray-800",
+    sidebar: "bg-[#1A1F2C]/95 backdrop-blur-xl border-r border-white/10 text-white shadow-xl",
+    header: "border-b border-white/10",
     navItem: {
-      active: "bg-[#2A3142] text-amber-400 font-medium",
-      inactive: "text-gray-300 hover:bg-[#2A3142] hover:text-amber-400"
+      active: "bg-white/10 text-amber-400 font-medium backdrop-blur-sm",
+      inactive: "text-gray-300 hover:bg-white/5 hover:text-amber-400"
     },
     avatar: "bg-amber-500 text-[#1A1F2C]",
-    footer: "border-t border-gray-800"
+    footer: "border-t border-white/10"
   };
   
-  // Teacher UI styling (default)
   const teacherStyles = {
     sidebar: "bg-background border-r",
     header: "border-b",
@@ -140,7 +133,6 @@ export const Sidebar = () => {
     footer: "border-t"
   };
   
-  // Choose styles based on role
   const styles = isAdmin ? adminStyles : teacherStyles;
 
   return (
@@ -169,7 +161,6 @@ export const Sidebar = () => {
       <div className="flex-1 overflow-auto py-2">
         <nav className="grid gap-1 px-2">
           {navItems.map((item, index) => {
-            // For teacher items with tabs, check if the current URL includes the tab
             const isActive = isTeacher && item.href.includes('?tab=')
               ? location.pathname === '/teacher-portal' && location.search.includes(item.href.split('?')[1])
               : location.pathname === item.href;
