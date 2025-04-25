@@ -21,6 +21,22 @@ interface Student {
 const Students = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+
+  const handleEditStudent = (student: Student) => {
+    setSelectedStudent(student);
+    setIsDialogOpen(true);
+  };
+
+  const handleAddStudent = () => {
+    setSelectedStudent(null);
+    setIsDialogOpen(true);
+  };
+
+  const handleCloseDialog = () => {
+    setSelectedStudent(null);
+    setIsDialogOpen(false);
+  };
 
   return (
     <DashboardLayout>
@@ -30,18 +46,10 @@ const Students = () => {
             <h1 className="text-3xl font-bold mb-2">Students</h1>
             <p className="text-gray-500">Manage and monitor student progress</p>
           </div>
-          <Dialog>
-            <DialogTrigger asChild>
-              <Button>
-                <UserPlus className="mr-2" />
-                Add Student
-              </Button>
-            </DialogTrigger>
-            <StudentDialog 
-              selectedStudent={selectedStudent}
-              onClose={() => setSelectedStudent(null)}
-            />
-          </Dialog>
+          <Button onClick={handleAddStudent}>
+            <UserPlus className="mr-2" />
+            Add Student
+          </Button>
         </div>
 
         <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
@@ -58,10 +66,17 @@ const Students = () => {
           </div>
           <StudentList 
             searchQuery={searchQuery}
-            onEdit={setSelectedStudent}
+            onEdit={handleEditStudent}
           />
         </div>
       </div>
+
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <StudentDialog 
+          selectedStudent={selectedStudent}
+          onClose={handleCloseDialog}
+        />
+      </Dialog>
     </DashboardLayout>
   );
 };

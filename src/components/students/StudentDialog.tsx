@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -10,6 +10,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { 
+  Select, 
+  SelectContent, 
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue 
+} from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 
 interface Student {
@@ -37,7 +44,22 @@ export const StudentDialog = ({ selectedStudent, onClose }: StudentDialogProps) 
     enrollment_date: selectedStudent?.enrollment_date || new Date().toISOString().split('T')[0],
     guardian_name: selectedStudent?.guardian_name || "",
     guardian_contact: selectedStudent?.guardian_contact || "",
+    status: selectedStudent?.status || "active",
   });
+
+  // Update form data when selectedStudent changes
+  useEffect(() => {
+    if (selectedStudent) {
+      setFormData({
+        name: selectedStudent.name || "",
+        date_of_birth: selectedStudent.date_of_birth || "",
+        enrollment_date: selectedStudent.enrollment_date || new Date().toISOString().split('T')[0],
+        guardian_name: selectedStudent.guardian_name || "",
+        guardian_contact: selectedStudent.guardian_contact || "",
+        status: selectedStudent.status || "active",
+      });
+    }
+  }, [selectedStudent]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -106,7 +128,7 @@ export const StudentDialog = ({ selectedStudent, onClose }: StudentDialogProps) 
           <Input
             id="date_of_birth"
             type="date"
-            value={formData.date_of_birth}
+            value={formData.date_of_birth || ""}
             onChange={(e) => setFormData(prev => ({ ...prev, date_of_birth: e.target.value }))}
           />
         </div>
@@ -115,7 +137,7 @@ export const StudentDialog = ({ selectedStudent, onClose }: StudentDialogProps) 
           <Input
             id="enrollment_date"
             type="date"
-            value={formData.enrollment_date}
+            value={formData.enrollment_date || ""}
             onChange={(e) => setFormData(prev => ({ ...prev, enrollment_date: e.target.value }))}
             required
           />
@@ -125,7 +147,7 @@ export const StudentDialog = ({ selectedStudent, onClose }: StudentDialogProps) 
           <Input
             id="guardian_name"
             placeholder="Enter guardian's name"
-            value={formData.guardian_name}
+            value={formData.guardian_name || ""}
             onChange={(e) => setFormData(prev => ({ ...prev, guardian_name: e.target.value }))}
           />
         </div>
@@ -134,11 +156,33 @@ export const StudentDialog = ({ selectedStudent, onClose }: StudentDialogProps) 
           <Input
             id="guardian_contact"
             placeholder="Enter guardian's contact number"
-            value={formData.guardian_contact}
+            value={formData.guardian_contact || ""}
             onChange={(e) => setFormData(prev => ({ ...prev, guardian_contact: e.target.value }))}
           />
         </div>
+        <div className="space-y-2">
+          <Label htmlFor="status">Status</Label>
+          <Select 
+            value={formData.status} 
+            onValueChange={(value: 'active' | 'inactive') => setFormData(prev => ({ ...prev, status: value }))}
+          >
+            <SelectTrigger id="status">
+              <SelectValue placeholder="Select status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="active">Active</SelectItem>
+              <SelectItem value="inactive">Inactive</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
         <div className="flex justify-end space-x-2">
+          <Button
+            type="button" 
+            variant="outline" 
+            onClick={onClose}
+          >
+            Cancel
+          </Button>
           <Button
             type="submit"
             disabled={isProcessing}
