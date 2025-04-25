@@ -81,8 +81,8 @@ const Students = () => {
           </div>
         </div>
 
-        <div className="bg-white rounded-lg border shadow-sm">
-          <div className="p-4 border-b border-border/40">
+        <div className="bg-white/5 backdrop-blur-md rounded-lg border border-white/10 shadow-lg">
+          <div className="p-4 border-b border-white/10">
             <div className="relative flex max-w-sm items-center">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
