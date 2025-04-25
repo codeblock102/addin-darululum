@@ -1,4 +1,3 @@
-
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -39,7 +38,11 @@ export const ScheduleDialog = ({
       teacher_id: null,
       room: "",
       capacity: 20,
-      time_slots: [],
+      time_slots: [{
+        days: [] as string[],
+        start_time: "",
+        end_time: ""
+      }],
     }
   });
   

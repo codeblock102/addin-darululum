@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { DashboardLayout } from "@/components/layouts/DashboardLayout";
 import { AppearanceSettingsSection } from "@/components/admin/settings/AppearanceSettings";
@@ -10,8 +9,7 @@ import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Loader2 } from "lucide-react";
-import { hasPermission } from "@/utils/roleUtils";
-import { useEffect } from "react";
+import { useUserRole } from "@/hooks/useUserRole";
 import { useNavigate } from "react-router-dom";
 
 export default function Settings() {
@@ -19,41 +17,19 @@ export default function Settings() {
   const [activeTab, setActiveTab] = useState("appearance");
   const { settings, updateSettings, isLoading, error } = useSettings();
   const [isSaving, setIsSaving] = useState(false);
-  const [hasAccess, setHasAccess] = useState(false);
-  const [isAccessLoading, setIsAccessLoading] = useState(true);
+  const { isAdmin, isLoading: isRoleLoading } = useUserRole();
 
-  useEffect(() => {
-    const checkAccess = async () => {
-      try {
-        const hasManageRolesPermission = await hasPermission("manage_roles");
-        setHasAccess(hasManageRolesPermission);
-      } catch (error) {
-        console.error("Error checking permissions:", error);
-        toast({
-          title: "Access Error",
-          description: "Failed to verify access permissions.",
-          variant: "destructive"
-        });
-      } finally {
-        setIsAccessLoading(false);
-      }
-    };
+  if (!isRoleLoading && !isAdmin) {
+    toast({
+      title: "Access Denied",
+      description: "Only administrators can access the settings page",
+      variant: "destructive"
+    });
+    navigate("/");
+    return null;
+  }
 
-    checkAccess();
-  }, []);
-
-  useEffect(() => {
-    if (!isAccessLoading && !hasAccess) {
-      toast({
-        title: "Access Denied",
-        description: "You don't have permission to access this page.",
-        variant: "destructive"
-      });
-      navigate("/");
-    }
-  }, [isAccessLoading, hasAccess, navigate]);
-
-  if (isLoading || isAccessLoading) {
+  if (isLoading || isRoleLoading) {
     return (
       <DashboardLayout>
         <div className="flex h-[50vh] w-full items-center justify-center">
