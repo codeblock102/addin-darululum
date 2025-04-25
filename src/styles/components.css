@@ -1,0 +1,38 @@
+
+/* Card hover effects */
+.card-hover {
+  @apply transition-all duration-300 hover:shadow-md hover:-translate-y-1;
+}
+
+/* Student card styles */
+.student-card {
+  @apply rounded-lg overflow-hidden border border-border/40 shadow-sm hover:shadow-md transition-all duration-300;
+}
+
+.student-card-header {
+  @apply p-4 bg-muted/30;
+}
+
+.student-card-content {
+  @apply p-4;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: rgba(155, 155, 155, 0.5);
+  border-radius: 20px;
+  border: transparent;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(155, 155, 155, 0.7);
+}
