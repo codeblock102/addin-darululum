@@ -144,3 +144,4 @@
 .admin-theme .status-danger {
   @apply bg-red-500/20 text-red-300 border border-red-500/30 px-2 py-0.5 rounded-full text-xs font-medium;
 }
+
