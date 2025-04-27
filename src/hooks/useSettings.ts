@@ -29,15 +29,16 @@ export function useSettings() {
         if (error) throw error;
 
         if (data) {
-          setSettings({ ...DEFAULT_SETTINGS, ...data.settings });
+          // Ensure we're combining the default settings with the stored ones
+          setSettings({ ...DEFAULT_SETTINGS, ...(data.settings as unknown as SystemSettings) });
         } else {
           // Initialize settings for new user
           await supabase
             .from('system_settings')
-            .insert([{ 
+            .insert({
               user_id: session.user.id,
-              settings: DEFAULT_SETTINGS 
-            }]);
+              settings: DEFAULT_SETTINGS as unknown as Record<string, any>
+            });
           setSettings(DEFAULT_SETTINGS);
         }
       } catch (err) {
@@ -61,9 +62,9 @@ export function useSettings() {
       
       const { error } = await supabase
         .from('system_settings')
-        .upsert({ 
+        .upsert({
           user_id: session.user.id,
-          settings: newSettings,
+          settings: newSettings as unknown as Record<string, any>,
           updated_at: new Date().toISOString()
         });
 

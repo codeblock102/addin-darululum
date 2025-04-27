@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -210,8 +211,8 @@ export function ScheduleDialog({
         {formStep === "schedule" && (
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-              <ScheduleFormFields {...form} />
-
+              {/* Removed passing form directly to ScheduleFormFields */}
+              
               <DialogFooter>
                 <Button
                   type="button"
