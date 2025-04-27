@@ -7,10 +7,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Loader2 } from "lucide-react";
+import { AttendanceFilters } from "./AttendanceFilters";
 
 type AttendanceRecord = {
   id: string;
@@ -28,6 +28,8 @@ type AttendanceRecord = {
 export function AttendanceTable() {
   const [selectedStudent, setSelectedStudent] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState<string>("");
+  const [dateFilter, setDateFilter] = useState<Date | null>(null);
 
   // Query to get students for the dropdown
   const { data: students, isLoading: isLoadingStudents } = useQuery({
@@ -48,7 +50,7 @@ export function AttendanceTable() {
     data: attendanceRecords, 
     isLoading: isLoadingAttendance 
   } = useQuery({
-    queryKey: ["attendance", selectedStudent, statusFilter],
+    queryKey: ["attendance", selectedStudent, statusFilter, searchQuery, dateFilter],
     queryFn: async () => {
       let query = supabase
         .from("attendance")
@@ -68,6 +70,16 @@ export function AttendanceTable() {
       if (statusFilter) {
         query = query.eq("status", statusFilter);
       }
+
+      if (searchQuery) {
+        query = query.or(
+          `student.name.ilike.%${searchQuery}%,class_schedule.class_name.ilike.%${searchQuery}%`
+        );
+      }
+
+      if (dateFilter) {
+        query = query.eq("date", format(dateFilter, "yyyy-MM-dd"));
+      }
       
       const { data, error } = await query;
       
@@ -80,11 +92,11 @@ export function AttendanceTable() {
   const renderStatusBadge = (status: string) => {
     switch (status) {
       case "present":
-        return <Badge variant="outline" className="bg-green-50 text-green-700">Present</Badge>;
+        return <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">Present</Badge>;
       case "absent":
-        return <Badge variant="outline" className="bg-red-50 text-red-700">Absent</Badge>;
+        return <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200">Absent</Badge>;
       case "late":
-        return <Badge variant="outline" className="bg-amber-50 text-amber-700">Late</Badge>;
+        return <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200">Late</Badge>;
       default:
         return <Badge variant="secondary">Unknown</Badge>;
     }
@@ -94,84 +106,63 @@ export function AttendanceTable() {
   const resetFilters = () => {
     setSelectedStudent(null);
     setStatusFilter(null);
+    setSearchQuery("");
+    setDateFilter(null);
   };
 
   return (
-    <Card>
+    <Card className="bg-white dark:bg-gray-900 shadow-sm">
       <CardHeader>
-        <CardTitle>Student Attendance History</CardTitle>
-        <CardDescription>
+        <CardTitle className="text-gray-900 dark:text-white">Student Attendance History</CardTitle>
+        <CardDescription className="text-gray-600 dark:text-gray-300">
           View and filter attendance records for individual students
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="flex space-x-2 mb-4">
-          <Select 
-            value={selectedStudent || ""} 
-            onValueChange={(value) => setSelectedStudent(value || null)}
-          >
-            <SelectTrigger className="w-[250px]">
-              <SelectValue placeholder="Select a student" />
-            </SelectTrigger>
-            <SelectContent>
-              {students?.map((student) => (
-                <SelectItem key={student.id} value={student.id}>
-                  {student.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-
-          <Select 
-            value={statusFilter || ""} 
-            onValueChange={(value) => setStatusFilter(value || null)}
-          >
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Attendance Status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="present">Present</SelectItem>
-              <SelectItem value="absent">Absent</SelectItem>
-              <SelectItem value="late">Late</SelectItem>
-            </SelectContent>
-          </Select>
-
-          {(selectedStudent || statusFilter) && (
-            <Button variant="outline" onClick={resetFilters}>
-              Clear Filters
-            </Button>
-          )}
-        </div>
+        <AttendanceFilters 
+          searchQuery={searchQuery}
+          setSearchQuery={setSearchQuery}
+          statusFilter={statusFilter}
+          setStatusFilter={setStatusFilter}
+          dateFilter={dateFilter}
+          setDateFilter={setDateFilter}
+        />
 
         {isLoadingAttendance ? (
           <div className="flex justify-center items-center h-48">
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
           </div>
         ) : attendanceRecords && attendanceRecords.length > 0 ? (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Date</TableHead>
-                <TableHead>Student</TableHead>
-                <TableHead>Class</TableHead>
-                <TableHead>Status</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {attendanceRecords.map((record) => (
-                <TableRow key={record.id}>
-                  <TableCell>
-                    {format(parseISO(record.date), "PPP")}
-                  </TableCell>
-                  <TableCell>{record.student.name}</TableCell>
-                  <TableCell>{record.class_schedule.class_name}</TableCell>
-                  <TableCell>{renderStatusBadge(record.status)}</TableCell>
+          <div className="border rounded-lg overflow-hidden">
+            <Table>
+              <TableHeader className="bg-gray-100 dark:bg-gray-800">
+                <TableRow>
+                  <TableHead className="text-gray-700 dark:text-gray-200">Date</TableHead>
+                  <TableHead className="text-gray-700 dark:text-gray-200">Student</TableHead>
+                  <TableHead className="text-gray-700 dark:text-gray-200">Class</TableHead>
+                  <TableHead className="text-gray-700 dark:text-gray-200">Status</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {attendanceRecords.map((record) => (
+                  <TableRow key={record.id} className="hover:bg-gray-50 dark:hover:bg-gray-800">
+                    <TableCell className="text-gray-900 dark:text-gray-200">
+                      {format(parseISO(record.date), "PPP")}
+                    </TableCell>
+                    <TableCell className="text-gray-900 dark:text-gray-200">
+                      {record.student.name}
+                    </TableCell>
+                    <TableCell className="text-gray-900 dark:text-gray-200">
+                      {record.class_schedule.class_name}
+                    </TableCell>
+                    <TableCell>{renderStatusBadge(record.status)}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
         ) : (
-          <div className="text-center text-muted-foreground py-8">
+          <div className="text-center text-gray-600 dark:text-gray-400 py-8 bg-gray-50 dark:bg-gray-800 rounded-lg">
             No attendance records found
           </div>
         )}
