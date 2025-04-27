@@ -14,7 +14,9 @@ import { Progress } from "@/types/progress";
 import { useUserRole } from "@/hooks/useUserRole";
 import { Badge } from "@/components/ui/badge";
 
-const getQualityBadge = (quality: string, isAdmin: boolean) => {
+const getQualityBadge = (quality: string | undefined, isAdmin: boolean) => {
+  if (!quality) return null;
+  
   if (quality === 'excellent') {
     return (
       <Badge className={isAdmin ? "bg-green-500/20 text-green-300 border border-green-500/30" : "bg-green-100 text-green-700"}>
@@ -72,13 +74,12 @@ export const ProgressTable = ({ data }: { data: Progress[] }) => {
                 {progress.date ? new Date(progress.date).toLocaleDateString() : "N/A"}
               </TableCell>
               <TableCell>
-                {/* Using optional chaining and typing correctly */}
-                {(progress as any)?.students?.name || "Unknown"}
+                {progress.students?.name || "Unknown"}
               </TableCell>
               <TableCell>{progress.current_surah || "N/A"}</TableCell>
               <TableCell className="text-center">{progress.verses_memorized || 0}</TableCell>
               <TableCell className="text-right">
-                {getQualityBadge(progress.memorization_quality || '', isAdmin)}
+                {getQualityBadge(progress.memorization_quality, isAdmin)}
               </TableCell>
             </TableRow>
           ))}

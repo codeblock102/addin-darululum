@@ -4,11 +4,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { RevisionsList } from './RevisionsList';
 import { DifficultAyahList } from './DifficultAyahList';
 import { Loader2 } from 'lucide-react';
+import { JuzRevision } from '@/types/progress';
 
 interface RevisionTabsProps {
   studentId: string;
   studentName: string;
-  juzRevisions: any[];
+  juzRevisions: JuzRevision[];
   loading: boolean;
   onAddJuzRevision?: () => void;
 }

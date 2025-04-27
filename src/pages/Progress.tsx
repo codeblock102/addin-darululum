@@ -11,9 +11,9 @@ import { RecentRevisions } from "@/components/progress/RecentRevisions";
 import { CompleteRevisions } from "@/components/progress/CompleteRevisions";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
-import type { Progress } from "@/types/progress";
+import { Progress } from "@/types/progress";
 
-const Progress = () => {
+const ProgressPage = () => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
@@ -67,7 +67,7 @@ const Progress = () => {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      return data as Progress[];
+      return data as unknown as Progress[];
     },
   });
 
@@ -134,4 +134,4 @@ const Progress = () => {
   );
 };
 
-export default Progress;
+export default ProgressPage;

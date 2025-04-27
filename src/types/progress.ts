@@ -1,91 +1,57 @@
-export type UserRole = 'admin' | 'teacher';
-
-export interface User {
-  id: string;
-  email: string;
-  role: UserRole;
-  username: string;
-  created_at: string;
-  name?: string;
-}
-
-export interface StudentAssignment {
-  id: string;
-  teacher_id: string;
-  student_name: string;
-  active: boolean;
-  assigned_date: string;
-}
-
-export interface Communication {
-  id: string;
-  sender_id: string;
-  recipient_id: string;
-  message: string;
-  read: boolean;
-  created_at: string;
-  updated_at: string;
-}
-
-export type MessageType = 'direct' | 'announcement' | 'feedback';
-export type MessageCategory = 'administrative' | 'academic' | 'general';
-
-export interface Message {
-  id: string;
-  sender_id: string;
-  sender_name?: string;
-  recipient_id: string;
-  recipient_name?: string;
-  message: string;
-  message_type?: MessageType;
-  message_status?: string;
-  category?: MessageCategory;
-  read: boolean;
-  created_at: string;
-  parent_message_id?: string;
-  attachment_url?: string;
-}
-
-export interface MessageRecipient {
-  id: string;
-  name: string;
-  type: 'teacher' | 'admin';
-}
 
 export interface Progress {
   id: string;
-  student_id: string;
-  teacher_id: string;
-  date: string;
-  juz: number;
-  pages: number;
-  mistakes: number;
-  duration: number;
+  student_id?: string;
+  current_surah?: number;
+  start_ayat?: number;
+  end_ayat?: number;
+  verses_memorized?: number;
+  date?: string;
+  current_juz?: number;
+  completed_juz?: number;
+  memorization_quality?: 'excellent' | 'good' | 'average' | 'needsWork' | 'horrible';
+  last_revision_date?: string;
+  created_at: string;
   notes?: string;
-  status: 'completed' | 'in-progress' | 'scheduled';
-}
-
-export interface DifficultAyah {
-  id: string;
-  student_id: string;
-  surah: number;
-  ayah: number;
-  notes: string;
-  date_added: string;
-  status: 'active' | 'resolved';
+  last_completed_surah?: string;
+  tajweed_level?: string;
+  revision_status?: string;
+  teacher_notes?: string;
+  // These fields are needed in other files
+  teacher_id?: string;
+  juz?: number;
+  pages?: number;
+  mistakes?: number;
+  students?: { name: string };
 }
 
 export interface JuzRevision {
   id: string;
   student_id: string;
-  juz_number: number;
+  juz_revised: number;
   revision_date: string;
-  proficiency_level: 'excellent' | 'good' | 'needs_improvement';
-  notes?: string;
+  memorization_quality: 'excellent' | 'good' | 'average' | 'needsWork' | 'horrible';
+  created_at: string;
+  teacher_notes?: string;
 }
 
 export interface RevisionsListProps {
-  revisions: JuzRevision[];
-  onEdit?: (revision: JuzRevision) => void;
-  onDelete?: (id: string) => void;
+  revisions?: JuzRevision[];
+  studentId: string;
+  studentName?: string;
+  onAddRevision?: () => void;
+}
+
+export interface DifficultAyah {
+  id: string;
+  student_id: string;
+  surah_number: number;
+  ayah_number: number;
+  juz_number: number;
+  date_added: string;
+  notes: string;
+  revision_count: number;
+  last_revised: string | null;
+  status: 'active' | 'resolved';
+  created_at?: string;
 }
