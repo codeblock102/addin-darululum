@@ -27,18 +27,13 @@ export function AttendanceFilters({
   setDateFilter
 }: AttendanceFiltersProps) {
   return (
-    <div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0 mb-4 
-                    bg-gray-50 dark:bg-gray-800 p-4 rounded-lg shadow-sm">
+    <div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0 mb-4 bg-gray-50 dark:bg-gray-800 p-4 rounded-lg shadow-sm">
       <div className="flex flex-1 items-center space-x-2">
         <Input
           placeholder="Search students or classes..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full sm:w-[300px] 
-                     bg-white dark:bg-gray-700 
-                     text-gray-900 dark:text-gray-200
-                     border-gray-300 dark:border-gray-600
-                     focus:ring-2 focus:ring-primary/50"
+          className="w-full sm:w-[300px] bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200 border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-primary/50"
         />
       </div>
       <div className="flex flex-col space-y-2 sm:flex-row sm:space-x-2 sm:space-y-0">
@@ -47,11 +42,7 @@ export function AttendanceFilters({
             <Button
               variant="outline"
               className={cn(
-                "justify-start text-left sm:w-[180px] 
-                 bg-white dark:bg-gray-700 
-                 text-gray-900 dark:text-gray-200 
-                 border-gray-300 dark:border-gray-600 
-                 hover:bg-gray-100 dark:hover:bg-gray-600",
+                "justify-start text-left sm:w-[180px] bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200 border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-600",
                 !dateFilter && "text-muted-foreground"
               )}
             >
@@ -71,8 +62,7 @@ export function AttendanceFilters({
               <div className="p-3 border-t border-gray-200 dark:border-gray-700">
                 <Button
                   variant="ghost"
-                  className="w-full justify-center 
-                             hover:bg-gray-100 dark:hover:bg-gray-700"
+                  className="w-full justify-center hover:bg-gray-100 dark:hover:bg-gray-700"
                   onClick={() => setDateFilter(null)}
                 >
                   Clear Date
@@ -87,16 +77,12 @@ export function AttendanceFilters({
           onValueChange={(value) => setStatusFilter(value === "all" ? null : value)}
         >
           <SelectTrigger 
-            className="sm:w-[180px] 
-                       bg-white dark:bg-gray-700 
-                       text-gray-900 dark:text-gray-200 
-                       border-gray-300 dark:border-gray-600"
+            className="sm:w-[180px] bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200 border-gray-300 dark:border-gray-600"
           >
             <SelectValue placeholder="Filter by status" />
           </SelectTrigger>
           <SelectContent 
-            className="bg-white dark:bg-gray-800 
-                       text-gray-900 dark:text-gray-200"
+            className="bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-200"
           >
             <SelectItem value="all" className="hover:bg-gray-100 dark:hover:bg-gray-700">All Statuses</SelectItem>
             <SelectItem value="present" className="hover:bg-gray-100 dark:hover:bg-gray-700">Present</SelectItem>
