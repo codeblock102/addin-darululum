@@ -12,8 +12,8 @@
   @apply bg-opacity-40 backdrop-blur-xl border border-[#ffffff15] shadow-lg admin-card-hover;
   background: linear-gradient(
     to bottom right,
-    rgba(255, 255, 255, 0.08),
-    rgba(255, 255, 255, 0.04)
+    rgba(255, 255, 255, 0.05),
+    rgba(255, 255, 255, 0.02)
   );
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
 }
@@ -28,11 +28,11 @@
 }
 
 .admin-theme .table th {
-  @apply bg-white/5 text-primary font-medium border-b border-white/10 px-4 py-3;
+  @apply bg-white/5 text-primary/90 font-medium border-b border-white/10 px-4 py-3;
 }
 
 .admin-theme .table td {
-  @apply px-4 py-3 border-b border-white/5 text-gray-200;
+  @apply px-4 py-3 border-b border-white/5 text-gray-300;
 }
 
 .admin-theme .table tr:hover {
@@ -40,7 +40,7 @@
 }
 
 .admin-theme .dialog-content {
-  @apply bg-opacity-95 backdrop-blur-2xl border border-[#ffffff20] shadow-xl animate-scaleIn;
+  @apply bg-opacity-95 backdrop-blur-2xl border border-[#ffffff15] shadow-xl animate-scaleIn;
   background: linear-gradient(
     to bottom,
     rgba(26, 31, 44, 0.95),
@@ -52,57 +52,57 @@
 .admin-theme input, 
 .admin-theme select, 
 .admin-theme textarea {
-  @apply bg-[#ffffff08] backdrop-blur-md border-[#ffffff15] focus:border-primary/50 text-white 
-    transition-all duration-200 focus:scale-[1.02];
+  @apply bg-[#ffffff08] backdrop-blur-md border-[#ffffff15] focus:border-primary/50 text-gray-200
+    transition-all duration-200;
 }
 
 /* Enhanced glass effect */
 .glass-effect {
-  @apply backdrop-blur-xl bg-[#ffffff0a] border border-[#ffffff15] shadow-lg animate-fadeIn;
+  @apply backdrop-blur-xl bg-[#ffffff08] border border-[#ffffff15] shadow-lg animate-fadeIn;
   background: linear-gradient(
     135deg,
-    rgba(255, 255, 255, 0.08),
-    rgba(255, 255, 255, 0.04)
+    rgba(255, 255, 255, 0.05),
+    rgba(255, 255, 255, 0.02)
   );
   box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.25);
 }
 
-/* Improved text contrast for admin theme */
+/* Improved text contrast */
 .admin-theme h1, 
 .admin-theme h2, 
 .admin-theme h3, 
 .admin-theme h4 {
-  @apply text-white font-bold;
+  @apply text-gray-100 font-bold;
 }
 
 .admin-theme p, 
 .admin-theme span, 
 .admin-theme div {
-  @apply text-gray-100;
-}
-
-.admin-theme .text-muted-foreground {
   @apply text-gray-300;
 }
 
+.admin-theme .text-muted-foreground {
+  @apply text-gray-400;
+}
+
 .admin-theme .card-header {
-  @apply text-white;
-}
-
-.admin-theme .card-title {
-  @apply text-white font-semibold;
-}
-
-.admin-theme .card-content {
   @apply text-gray-100;
 }
 
+.admin-theme .card-title {
+  @apply text-gray-100 font-semibold;
+}
+
+.admin-theme .card-content {
+  @apply text-gray-300;
+}
+
 .admin-theme .tabs-list {
-  @apply bg-white/10 text-white;
+  @apply bg-white/5 text-gray-100;
 }
 
 .admin-theme .tab-trigger {
-  @apply text-gray-300 data-[state=active]:text-white data-[state=active]:bg-white/10;
+  @apply text-gray-400 data-[state=active]:text-gray-100 data-[state=active]:bg-white/10;
 }
 
 /* Improved stats cards */
