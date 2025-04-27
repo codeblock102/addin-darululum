@@ -8,6 +8,7 @@ import { toast } from "@/hooks/use-toast";
 import { Tabs } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Loader2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { SettingsTabs } from "@/components/admin/settings/SettingsTabs";
 import { SettingsContent } from "@/components/admin/settings/SettingsContent";
 import { SettingsHeader } from "@/components/admin/settings/SettingsHeader";

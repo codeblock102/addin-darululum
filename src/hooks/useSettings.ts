@@ -1,134 +1,44 @@
 
 import { useState, useEffect } from "react";
 import { SystemSettings } from "@/types/settings";
-
-const DEFAULT_SETTINGS: SystemSettings = {
-  appearance: {
-    theme: 'light',
-    sidebarCompact: false,
-    highContrastMode: false,
-    animationsEnabled: true,
-    fontSize: 'medium',
-    colorTheme: 'default',
-    layoutDensity: 'comfortable',
-  },
-  notifications: {
-    emailNotifications: true,
-    progressAlerts: true,
-    attendanceReminders: true,
-    systemAnnouncements: true,
-    pushNotifications: false,
-    notificationPriority: 'all',
-    quietHours: {
-      enabled: false,
-      start: '22:00',
-      end: '08:00',
-    },
-    customTemplates: false,
-  },
-  security: {
-    twoFactorAuth: false,
-    sessionTimeout: 60,
-    passwordExpiry: 90,
-    loginAttempts: 5,
-    ipWhitelist: {
-      enabled: false,
-      addresses: [],
-    },
-    loginTimeRestrictions: {
-      enabled: false,
-      startTime: '08:00',
-      endTime: '18:00',
-    },
-    passwordPolicy: {
-      minLength: 8,
-      requireSpecialChar: true,
-      requireNumber: true,
-      requireUppercase: true,
-    },
-  },
-  academic: {
-    defaultJuzPerWeek: 1,
-    attendanceThreshold: 75,
-    progressReportFrequency: 'weekly',
-    academicYearStart: '09-01',
-    academicYearEnd: '06-30',
-    gradingScale: 'percentage',
-    customAssessments: false,
-    curriculumCustomization: false,
-    milestoneTracking: false,
-  },
-  localization: {
-    language: 'english',
-    timeFormat: '12h',
-    dateFormat: 'MM/DD/YYYY',
-    firstDayOfWeek: 'sunday',
-    region: 'US',
-  },
-  integrations: {
-    calendarSync: {
-      enabled: false,
-      provider: 'none',
-    },
-    communicationTools: {
-      enabled: false,
-      preferredPlatform: 'email',
-    },
-    externalApis: false,
-    automations: false,
-  },
-  dataManagement: {
-    autoBackup: {
-      enabled: false,
-      frequency: 'weekly',
-      retention: 30,
-    },
-    dataExport: {
-      includeStudentData: true,
-      includeTeacherData: true,
-      includeAttendance: true, 
-      includeProgress: true,
-    },
-    archivePolicy: {
-      autoArchive: false,
-      afterMonths: 6,
-    },
-  },
-  userExperience: {
-    guidedTours: true,
-    keyboardShortcuts: false,
-    defaultLandingPage: 'dashboard',
-    widgetCustomization: false,
-  },
-  advancedOptions: {
-    developerMode: false,
-    detailedLogs: false,
-    featureFlags: {
-      betaFeatures: false,
-      experimentalUi: false,
-    },
-    performanceMode: 'balanced',
-  },
-};
-
-const SETTINGS_STORAGE_KEY = "quran_academy_system_settings";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import { DEFAULT_SETTINGS } from "@/config/defaultSettings";
 
 export function useSettings() {
   const [settings, setSettings] = useState<SystemSettings>(DEFAULT_SETTINGS);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { session } = useAuth();
 
+  // Load settings when component mounts
   useEffect(() => {
     async function loadSettings() {
+      if (!session?.user) {
+        setIsLoading(false);
+        return;
+      }
+
       try {
-        // Instead of using supabase, use localStorage until we create the table
-        const storedSettings = localStorage.getItem(SETTINGS_STORAGE_KEY);
-        
-        if (storedSettings) {
-          setSettings({
-            ...DEFAULT_SETTINGS,
-            ...JSON.parse(storedSettings),
-          });
+        const { data, error } = await supabase
+          .from('system_settings')
+          .select('settings')
+          .eq('user_id', session.user.id)
+          .single();
+
+        if (error) throw error;
+
+        if (data) {
+          setSettings({ ...DEFAULT_SETTINGS, ...data.settings });
+        } else {
+          // Initialize settings for new user
+          await supabase
+            .from('system_settings')
+            .insert([{ 
+              user_id: session.user.id,
+              settings: DEFAULT_SETTINGS 
+            }]);
+          setSettings(DEFAULT_SETTINGS);
         }
       } catch (err) {
         console.error("Error loading settings:", err);
@@ -139,14 +49,25 @@ export function useSettings() {
     }
 
     loadSettings();
-  }, []);
+  }, [session?.user]);
 
   const updateSettings = async (newSettings: SystemSettings) => {
+    if (!session?.user) {
+      return { success: false, error: "Not authenticated" };
+    }
+
     try {
       setIsLoading(true);
       
-      // Save to localStorage instead of supabase
-      localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(newSettings));
+      const { error } = await supabase
+        .from('system_settings')
+        .upsert({ 
+          user_id: session.user.id,
+          settings: newSettings,
+          updated_at: new Date().toISOString()
+        });
+
+      if (error) throw error;
       
       setSettings(newSettings);
       return { success: true };
