@@ -29,9 +29,9 @@ import { DhorBookEntrySchema } from "./dhorBookValidation";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 
-interface NewEntryDialogProps {
+export interface NewEntryDialogProps {
   open: boolean;
-  setOpen: (open: boolean) => void;
+  onOpenChange: (open: boolean) => void;
   studentId: string;
   teacherId: string;
   onSuccess?: (data?: any) => void;
@@ -39,7 +39,7 @@ interface NewEntryDialogProps {
 
 export function NewEntryDialog({
   open,
-  setOpen,
+  onOpenChange,
   studentId,
   teacherId,
   onSuccess
@@ -92,7 +92,7 @@ export function NewEntryDialog({
       queryClient.invalidateQueries({ queryKey: ['dhor-book-entries'] });
       onSuccess?.(data);
       form.reset();
-      setOpen(false);
+      onOpenChange(false);
     },
     onError: (error) => {
       console.error('Error creating entry:', error);
@@ -112,7 +112,7 @@ export function NewEntryDialog({
   }
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>New Dhor Book Entry</DialogTitle>
@@ -286,7 +286,7 @@ export function NewEntryDialog({
             />
 
             <DialogFooter>
-              <Button type="button" variant="secondary" onClick={() => setOpen(false)}>
+              <Button type="button" variant="secondary" onClick={() => onOpenChange(false)}>
                 Cancel
               </Button>
               <Button type="submit" disabled={isPending}>

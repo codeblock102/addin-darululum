@@ -55,3 +55,28 @@ export interface DifficultAyah {
   status: 'active' | 'resolved';
   created_at?: string;
 }
+
+// Add the missing messaging-related interfaces
+export interface Message {
+  id: string;
+  message: string;
+  created_at: string;
+  sender_id: string;
+  recipient_id: string;
+  read: boolean;
+  sender_name?: string;
+  recipient_name?: string;
+  message_type?: MessageType;
+  message_status?: string;
+  read_at?: string;
+  category?: MessageCategory;
+}
+
+export type MessageType = 'direct' | 'announcement' | 'feedback';
+export type MessageCategory = 'academic' | 'administrative' | 'general';
+
+export interface MessageRecipient {
+  id: string;
+  name: string;
+  type: "student" | "teacher" | "parent" | "admin";
+}
