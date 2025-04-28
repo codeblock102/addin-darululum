@@ -64,10 +64,30 @@ export const TeacherMessagesEnhanced = ({
       
       if (error) throw error;
       
-      return data.map((msg: any) => ({
-        ...msg,
-        recipient_name: msg.teachers?.name || "Unknown Recipient"
-      }));
+      // Include special admin messages sent with parent_message_id
+      const { data: adminMessages, error: adminError } = await supabase
+        .from('communications')
+        .select('*')
+        .eq('sender_id', teacherId)
+        .not('parent_message_id', 'is', null)
+        .order('created_at', { ascending: false });
+        
+      if (adminError) throw adminError;
+
+      // Combine regular messages and admin messages
+      const allMessages = [
+        ...data.map((msg: any) => ({
+          ...msg,
+          recipient_name: msg.teachers?.name || "Unknown Recipient"
+        })),
+        ...(adminMessages || []).map((msg: any) => ({
+          ...msg,
+          recipient_name: "Administrator",
+          recipient_id: msg.parent_message_id // Set the display recipient ID to the admin ID
+        }))
+      ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+      
+      return allMessages;
     }
   });
   
@@ -87,8 +107,14 @@ export const TeacherMessagesEnhanced = ({
         type: "teacher" as const
       }));
       
+      // Add admin recipient with special flag to handle differently
       const adminRecipients: MessageRecipient[] = [
-        { id: 'admin-1', name: 'Administrator', type: 'admin' }
+        { 
+          id: 'admin-1', 
+          name: 'Administrator', 
+          type: 'admin',
+          isSpecial: true // Flag this as a special recipient that doesn't use UUID
+        }
       ];
       
       return [...formattedTeachers, ...adminRecipients];

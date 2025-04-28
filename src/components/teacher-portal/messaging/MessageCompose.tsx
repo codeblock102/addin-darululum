@@ -36,23 +36,53 @@ export const MessageCompose = ({
       message_type: MessageType;
       category: MessageCategory;
     }) => {
-      const { data, error } = await supabase
-        .from('communications')
-        .insert([
-          {
-            sender_id: teacherId,
-            recipient_id: messageData.recipient_id,
-            message: messageData.message,
-            read: false,
-            message_type: messageData.message_type,
-            category: messageData.category,
-            message_status: 'sent'
-          }
-        ])
-        .select();
+      // Find if this is a special recipient (like admin) that doesn't use UUID
+      const recipient = recipients.find(r => r.id === messageData.recipient_id);
+      const isSpecialRecipient = recipient?.isSpecial || false;
       
-      if (error) throw error;
-      return data;
+      // For special recipients like "admin-1", we'll store the message differently
+      if (isSpecialRecipient) {
+        // For admin messages, we'll create a special format to route it properly
+        // Store in the same table but with a special flag or format
+        const { data, error } = await supabase
+          .from('communications')
+          .insert([
+            {
+              sender_id: teacherId,
+              recipient_id: null, // Not using the invalid UUID
+              message: messageData.message,
+              read: false,
+              message_type: messageData.message_type,
+              category: messageData.category,
+              message_status: 'sent',
+              // Additional fields to identify admin messages
+              parent_message_id: messageData.recipient_id // Store the admin ID here as a string
+            }
+          ])
+          .select();
+        
+        if (error) throw error;
+        return data;
+      } else {
+        // Regular user message with valid UUID
+        const { data, error } = await supabase
+          .from('communications')
+          .insert([
+            {
+              sender_id: teacherId,
+              recipient_id: messageData.recipient_id,
+              message: messageData.message,
+              read: false,
+              message_type: messageData.message_type,
+              category: messageData.category,
+              message_status: 'sent'
+            }
+          ])
+          .select();
+        
+        if (error) throw error;
+        return data;
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['teacher-sent', teacherId] });
