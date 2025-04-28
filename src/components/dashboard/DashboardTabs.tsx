@@ -1,21 +1,18 @@
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { RecentActivity } from './RecentActivity';
 import { WeeklySchedule } from './WeeklySchedule';
-
 export const DashboardTabs = () => {
-  return (
-    <Tabs defaultValue="overview" className="w-full">
-      <TabsList className="grid grid-cols-3 mb-6">
+  return <Tabs defaultValue="overview" className="w-full">
+      <TabsList className="grid grid-cols-3 mb-6 bg-gray-800">
         <TabsTrigger value="overview">Overview</TabsTrigger>
         <TabsTrigger value="progress">Progress</TabsTrigger>
         <TabsTrigger value="attendance">Attendance</TabsTrigger>
       </TabsList>
       
       <TabsContent value="overview" className="space-y-6">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 bg-gray-800">
           <RecentActivity />
           <WeeklySchedule />
         </div>
@@ -46,6 +43,5 @@ export const DashboardTabs = () => {
           </CardContent>
         </Card>
       </TabsContent>
-    </Tabs>
-  );
+    </Tabs>;
 };
