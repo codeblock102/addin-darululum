@@ -14,13 +14,17 @@ interface AdminMessageListProps {
   isLoading: boolean;
   emptyMessage: string;
   onReplyClick?: (message: Message) => void;
+  onMessageClick?: (message: Message) => void; // Added missing prop
+  showRecipient?: boolean; // Added missing prop
 }
 
 export const AdminMessageList = ({
   messages,
   isLoading,
   emptyMessage,
-  onReplyClick
+  onReplyClick,
+  onMessageClick, // Added to props destructuring
+  showRecipient = false // Added with default value
 }: AdminMessageListProps) => {
   const queryClient = useQueryClient();
   const [expandedMessageId, setExpandedMessageId] = useState<string | null>(null);
@@ -50,6 +54,11 @@ export const AdminMessageList = ({
     
     if (!message.read) {
       markAsReadMutation.mutate(message.id);
+    }
+    
+    // Call the passed onMessageClick handler if provided
+    if (onMessageClick) {
+      onMessageClick(message);
     }
   };
 
@@ -98,7 +107,10 @@ export const AdminMessageList = ({
                 <div className="flex justify-between items-center">
                   <div className="flex items-center space-x-2">
                     <p className="font-medium">
-                      From: {message.sender_name || "Unknown Teacher"}
+                      {showRecipient 
+                        ? `To: ${message.recipient_name || "Unknown Recipient"}`
+                        : `From: ${message.sender_name || "Unknown Teacher"}`
+                      }
                     </p>
                     <div className="flex items-center">
                       <MessageSquare className="h-4 w-4 text-blue-500" />
@@ -125,16 +137,18 @@ export const AdminMessageList = ({
                         `Read: ${formatMessageDate(message.updated_at)}`}
                     </div>
                     <div className="space-x-2">
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          if (onReplyClick) onReplyClick(message);
-                        }}
-                      >
-                        Reply
-                      </Button>
+                      {onReplyClick && (
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onReplyClick(message);
+                          }}
+                        >
+                          Reply
+                        </Button>
+                      )}
                       <Button 
                         variant="ghost" 
                         size="sm" 
