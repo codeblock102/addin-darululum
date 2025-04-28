@@ -60,7 +60,7 @@ export const useRealtimeMessages = (teacherId: string) => {
       )
       .subscribe();
       
-    // Set up subscription for admin messages
+    // Set up subscription for admin messages sent to this teacher
     const adminMessagesChannel = supabase
       .channel('admin-messages-channel')
       .on(
@@ -69,7 +69,7 @@ export const useRealtimeMessages = (teacherId: string) => {
           event: 'INSERT',
           schema: 'public',
           table: 'communications',
-          filter: `sender_id=is.null AND recipient_id=eq.${teacherId}`
+          filter: `sender_id=is.null AND parent_message_id=eq.${teacherId}`
         },
         (payload) => {
           console.log('Admin message update received:', payload);

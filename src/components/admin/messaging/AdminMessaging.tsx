@@ -24,15 +24,15 @@ export const AdminMessaging = () => {
   const { data: receivedMessages, isLoading: receivedLoading, refetch: refetchReceived } = useQuery({
     queryKey: ['admin-messages'],
     queryFn: async () => {
-      // Get all messages that have parent_message_id set (these are admin messages)
+      // Get all messages sent to admin (where parent_message_id is not null and recipient_id is null)
       const { data, error } = await supabase
         .from('communications')
         .select(`
           id, message, created_at, sender_id, recipient_id, read, message_type, message_status, read_at, category, updated_at, parent_message_id,
           teachers!communications_sender_id_fkey(name)
         `)
-        .eq('parent_message_id', 'admin-1') // Messages specifically sent to admin
-        .is('recipient_id', null) // Directly to admin, not a response
+        .not('parent_message_id', 'is', null)
+        .is('recipient_id', null)
         .order('created_at', { ascending: false });
       
       if (error) throw error;
@@ -45,24 +45,38 @@ export const AdminMessaging = () => {
   });
   
   const { data: sentMessages, isLoading: sentLoading, refetch: refetchSent } = useQuery({
-    queryKey: ['admin-responses'],
+    queryKey: ['admin-sent-messages'],
     queryFn: async () => {
-      // Get all admin responses (messages sent by admin)
+      // Get all messages sent by admin (where sender_id is null)
       const { data, error } = await supabase
         .from('communications')
         .select(`
-          id, message, created_at, sender_id, recipient_id, read, message_type, message_status, read_at, category, updated_at, parent_message_id,
-          teachers!communications_recipient_id_fkey(name)
+          id, message, created_at, sender_id, recipient_id, read, message_type, message_status, read_at, category, updated_at, parent_message_id
         `)
-        .is('sender_id', null) // Messages sent by admin (null sender_id)
+        .is('sender_id', null)
+        .not('parent_message_id', 'is', null)
         .order('created_at', { ascending: false });
       
       if (error) throw error;
       
-      return data.map((msg: any) => ({
-        ...msg,
-        recipient_name: msg.teachers?.name || "Unknown Teacher"
-      }));
+      // For each message, fetch the teacher's name using the parent_message_id which contains the teacher's ID
+      const messagesWithTeacherNames = await Promise.all(
+        data.map(async (msg) => {
+          const { data: teacherData } = await supabase
+            .from('teachers')
+            .select('name')
+            .eq('id', msg.parent_message_id)
+            .single();
+            
+          return {
+            ...msg,
+            recipient_name: teacherData?.name || "Unknown Teacher",
+            recipient_id: msg.parent_message_id // Use parent_message_id as the actual recipient ID
+          };
+        })
+      );
+      
+      return messagesWithTeacherNames;
     }
   });
   
