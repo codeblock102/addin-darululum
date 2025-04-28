@@ -1,0 +1,67 @@
+
+import { useEffect } from "react";
+import { useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/components/ui/use-toast";
+
+export const useRealtimeAdminMessages = () => {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+  
+  useEffect(() => {
+    // Set up subscription for admin messages (messages with parent_message_id)
+    const adminMessagesChannel = supabase
+      .channel('admin-messages-channel')
+      .on(
+        'postgres_changes',
+        {
+          event: '*', // Listen for all events
+          schema: 'public',
+          table: 'communications',
+          filter: `parent_message_id=is.not.null`
+        },
+        (payload) => {
+          console.log('Admin message update received:', payload);
+          
+          // Invalidate the queries to fetch fresh data
+          queryClient.invalidateQueries({ queryKey: ['admin-messages'] });
+          
+          // Show toast notification for new messages
+          if (payload.eventType === 'INSERT') {
+            toast({
+              title: "New Message",
+              description: "You have received a new message from a teacher.",
+              duration: 5000,
+            });
+          }
+        }
+      )
+      .subscribe();
+
+    // Set up subscription for admin responses
+    const adminResponsesChannel = supabase
+      .channel('admin-responses-channel')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'communications',
+          filter: `recipient_id=is.null AND parent_message_id=is.not.null`
+        },
+        (payload) => {
+          console.log('Admin response update received:', payload);
+          queryClient.invalidateQueries({ queryKey: ['admin-responses'] });
+        }
+      )
+      .subscribe();
+      
+    // Cleanup subscriptions on unmount
+    return () => {
+      supabase.removeChannel(adminMessagesChannel);
+      supabase.removeChannel(adminResponsesChannel);
+    };
+  }, [queryClient, toast]);
+  
+  return {};
+};
