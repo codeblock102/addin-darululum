@@ -9,7 +9,7 @@ export const useRealtimeAdminMessages = () => {
   const { toast } = useToast();
   
   useEffect(() => {
-    // Set up subscription for admin messages (messages with parent_message_id and null recipient_id)
+    // Set up subscription for admin messages (messages with recipient_id='admin-1')
     const adminMessagesChannel = supabase
       .channel('admin-messages-channel')
       .on(
@@ -18,7 +18,7 @@ export const useRealtimeAdminMessages = () => {
           event: '*', // Listen for all events
           schema: 'public',
           table: 'communications',
-          filter: `parent_message_id=is.not.null AND recipient_id=is.null`
+          filter: `recipient_id=eq.admin-1`
         },
         (payload) => {
           console.log('Admin message update received:', payload);
@@ -47,7 +47,7 @@ export const useRealtimeAdminMessages = () => {
           event: '*', // Listen for all events
           schema: 'public',
           table: 'communications',
-          filter: `sender_id=is.null AND parent_message_id=is.not.null`
+          filter: `sender_id=is.null AND recipient_id=is.not.null`
         },
         (payload) => {
           console.log('Admin response update received:', payload);

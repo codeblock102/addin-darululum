@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -24,22 +23,19 @@ export const AdminMessageForm = ({
 
   const sendMessageMutation = useMutation({
     mutationFn: async (messageText: string) => {
-      // Create message from admin to teacher - using NULL for sender_id and storing recipient_id
-      // in a separate field to avoid foreign key constraint issues
+      // Create message from admin to teacher
       const { data, error } = await supabase
         .from('communications')
         .insert([
           {
             sender_id: null, // Admin doesn't have a UUID in the teachers table
-            recipient_id: null, // Set to null to avoid FK constraint
+            recipient_id: selectedTeacher, // Store teacher ID directly in recipient_id
             message: messageText,
             read: false,
             message_type: messageType,
             category: messageCategory,
-            message_status: 'sent',
-            // Store the actual teacher ID in the parent_message_id field
-            // This field will be used to identify the teacher recipient
-            parent_message_id: selectedTeacher
+            message_status: 'sent'
+            // No longer using parent_message_id field
           }
         ])
         .select();
