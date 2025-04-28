@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { DashboardLayout } from "@/components/layouts/DashboardLayout";
 import { StudentDialog } from "@/components/students/StudentDialog";
@@ -7,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Search, UserPlus, Users } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
+
 interface Student {
   id: string;
   name: string;
@@ -16,6 +18,7 @@ interface Student {
   guardian_contact: string | null;
   status: 'active' | 'inactive';
 }
+
 const Students = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
@@ -27,19 +30,24 @@ const Students = () => {
     activeStudents: 142,
     avgAttendance: 95
   };
+
   const handleEditStudent = (student: Student) => {
     setSelectedStudent(student);
     setIsDialogOpen(true);
   };
+
   const handleAddStudent = () => {
     setSelectedStudent(null);
     setIsDialogOpen(true);
   };
+
   const handleCloseDialog = () => {
     setSelectedStudent(null);
     setIsDialogOpen(false);
   };
-  return <DashboardLayout>
+
+  return (
+    <DashboardLayout>
       <div className="space-y-6">
         <div className="flex flex-col gap-4">
           <div className="flex items-center justify-between">
@@ -55,11 +63,11 @@ const Students = () => {
 
           <div className="grid gap-4 md:grid-cols-3">
             <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 bg-zinc-500">
-                <CardTitle className="text-sm font-medium">Total Students</CardTitle>
-                <Users className="h-4 w-4 text-muted-foreground" />
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 bg-purple-50 dark:bg-purple-900/20">
+                <CardTitle className="text-sm font-medium text-purple-700 dark:text-purple-300">Total Students</CardTitle>
+                <Users className="h-4 w-4 text-purple-600 dark:text-purple-400" />
               </CardHeader>
-              <CardContent className="bg-gray-700">
+              <CardContent>
                 <div className="text-2xl font-bold">{stats.totalStudents}</div>
                 <p className="text-xs text-muted-foreground">
                   {stats.activeStudents} active students
@@ -73,18 +81,30 @@ const Students = () => {
           </div>
         </div>
 
-        <div className="bg-white/5 backdrop-blur-md rounded-lg border border-white/10 shadow-lg">
-          <div className="p-4 border-b border-white/10">
+        <div className="bg-white dark:bg-card shadow-sm rounded-lg border">
+          <div className="p-4 border-b">
             <div className="relative flex max-w-sm items-center">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input placeholder="Search students by name or guardian..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)} className="pl-9" />
+              <Input 
+                placeholder="Search students by name or guardian..." 
+                value={searchQuery} 
+                onChange={e => setSearchQuery(e.target.value)} 
+                className="pl-9"
+              />
             </div>
           </div>
           <StudentList searchQuery={searchQuery} onEdit={handleEditStudent} />
         </div>
       </div>
 
-      <StudentDialog open={isDialogOpen} onOpenChange={setIsDialogOpen} selectedStudent={selectedStudent} onClose={handleCloseDialog} />
-    </DashboardLayout>;
+      <StudentDialog 
+        open={isDialogOpen} 
+        onOpenChange={setIsDialogOpen} 
+        selectedStudent={selectedStudent} 
+        onClose={handleCloseDialog} 
+      />
+    </DashboardLayout>
+  );
 };
+
 export default Students;
