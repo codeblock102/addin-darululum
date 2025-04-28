@@ -1,8 +1,7 @@
-
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
@@ -32,6 +31,7 @@ export const TeacherMessagesEnhanced = ({
   const { data: inboxMessages, isLoading: inboxLoading, refetch: refetchInbox } = useQuery({
     queryKey: ['teacher-inbox', teacherId],
     queryFn: async () => {
+      // Get regular direct messages to this teacher
       const { data, error } = await supabase
         .from('communications')
         .select(`
@@ -43,16 +43,43 @@ export const TeacherMessagesEnhanced = ({
       
       if (error) throw error;
       
-      return data.map((msg: any) => ({
+      // Get admin messages sent to this teacher (where parent_message_id = teacherId)
+      const { data: adminMessages, error: adminError } = await supabase
+        .from('communications')
+        .select('*')
+        .is('sender_id', null)
+        .eq('parent_message_id', teacherId)
+        .order('created_at', { ascending: false });
+        
+      if (adminError) throw adminError;
+      
+      // Format regular messages
+      const formattedMessages = data.map((msg: any) => ({
         ...msg,
         sender_name: msg.teachers?.name || "Unknown Sender"
       }));
+      
+      // Format admin messages
+      const formattedAdminMessages = (adminMessages || []).map((msg: any) => ({
+        ...msg,
+        sender_name: "Administrator",
+        sender_id: null, // Admin sender
+        recipient_id: teacherId // Set the recipient_id to this teacher's ID for consistent handling
+      }));
+      
+      // Combine and sort all messages by date
+      const allMessages = [...formattedMessages, ...formattedAdminMessages].sort(
+        (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      );
+      
+      return allMessages;
     }
   });
   
   const { data: sentMessages, isLoading: sentLoading, refetch: refetchSent } = useQuery({
     queryKey: ['teacher-sent', teacherId],
     queryFn: async () => {
+      // Get regular messages sent by this teacher
       const { data, error } = await supabase
         .from('communications')
         .select(`
@@ -64,7 +91,7 @@ export const TeacherMessagesEnhanced = ({
       
       if (error) throw error;
       
-      // Include special admin messages sent with parent_message_id
+      // Get messages sent to admin (where parent_message_id = 'admin-1')
       const { data: adminMessages, error: adminError } = await supabase
         .from('communications')
         .select('*')
@@ -74,18 +101,23 @@ export const TeacherMessagesEnhanced = ({
         
       if (adminError) throw adminError;
 
+      // Format regular messages
+      const formattedMessages = data.map((msg: any) => ({
+        ...msg,
+        recipient_name: msg.teachers?.name || "Unknown Recipient"
+      }));
+      
+      // Format admin messages
+      const formattedAdminMessages = (adminMessages || []).map((msg: any) => ({
+        ...msg,
+        recipient_name: "Administrator",
+        recipient_id: msg.parent_message_id // Set the display recipient ID to the admin ID
+      }));
+      
       // Combine regular messages and admin messages
-      const allMessages = [
-        ...data.map((msg: any) => ({
-          ...msg,
-          recipient_name: msg.teachers?.name || "Unknown Recipient"
-        })),
-        ...(adminMessages || []).map((msg: any) => ({
-          ...msg,
-          recipient_name: "Administrator",
-          recipient_id: msg.parent_message_id // Set the display recipient ID to the admin ID
-        }))
-      ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+      const allMessages = [...formattedMessages, ...formattedAdminMessages].sort(
+        (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      );
       
       return allMessages;
     }
