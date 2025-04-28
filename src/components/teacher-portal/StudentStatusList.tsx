@@ -1,210 +1,165 @@
 
-import React, { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
-import { AlertCircle, CheckCircle2, Clock, RefreshCw } from 'lucide-react';
-import { Loader2 } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
+import { RefreshCcw, User, UserCheck, UserX } from "lucide-react";
+import { StudentAssignment } from "@/types/user";
+import { useToast } from "@/components/ui/use-toast";
 
 interface StudentStatusListProps {
   teacherId: string;
 }
 
-// Define a type for student status data
-interface StudentStatus {
-  student_id: string;
-  student_name: string;
-  learning_type?: string;
-  pending_assignments: number;
-  missed_assignments: number;
-  pending_details?: string;
-}
-
-export const StudentStatusList: React.FC<StudentStatusListProps> = ({ teacherId }) => {
+export const StudentStatusList = ({ teacherId }: StudentStatusListProps) => {
+  const { toast } = useToast();
   const [isRefreshing, setIsRefreshing] = useState(false);
   
   const { 
-    data: statusData, 
-    isLoading,
+    data: studentAssignments, 
+    isLoading, 
     refetch 
   } = useQuery({
-    queryKey: ['student-status', teacherId],
+    queryKey: ['teacher-students', teacherId],
     queryFn: async () => {
-      try {
-        // First get students assigned to this teacher
-        const { data: students, error: studentsError } = await supabase
-          .from('students_teachers')
-          .select(`
-            id,
-            student_id,
-            student_name
-          `)
-          .eq('teacher_id', teacherId)
-          .eq('active', true);
-        
-        if (studentsError) throw studentsError;
-        
-        if (!students || students.length === 0) {
-          return [] as StudentStatus[];
-        }
-        
-        // For each student, get pending assignments
-        const studentDataPromises = students.map(async (student) => {
-          // Get pending assignments
-          const { data: pendingAssignments, error: pendingError } = await supabase
-            .from('student_assignments')
-            .select('id')
-            .eq('student_id', student.student_id)
-            .eq('status', 'pending');
-            
-          if (pendingError) {
-            console.error(`Error fetching assignments for ${student.student_name}:`, pendingError);
-          }
-          
-          // Get missed assignments
-          const { data: missedAssignments, error: missedError } = await supabase
-            .from('student_assignments')
-            .select('id')
-            .eq('student_id', student.student_id)
-            .eq('status', 'missed');
-            
-          if (missedError) {
-            console.error(`Error fetching missed assignments for ${student.student_name}:`, missedError);
-          }
-
-          // Get student learning type if available
-          const { data: studentDetails, error: detailsError } = await supabase
-            .from('students')
-            .select('id, name')
-            .eq('id', student.student_id)
-            .single();
-            
-          if (detailsError && detailsError.code !== 'PGRST116') { // Not found error
-            console.error(`Error fetching details for ${student.student_name}:`, detailsError);
-          }
-          
-          return {
-            student_id: student.student_id || student.id,
-            student_name: student.student_name,
-            learning_type: 'hifz', // Default value
-            pending_assignments: pendingAssignments?.length || 0,
-            missed_assignments: missedAssignments?.length || 0,
-            pending_details: pendingAssignments?.length ? 
-              `${pendingAssignments.length} assignments pending` : 
-              (missedAssignments?.length ? 
-                `${missedAssignments.length} assignments missed` : 
-                'Up to date')
-          };
-        });
-        
-        return Promise.all(studentDataPromises);
-      } catch (error) {
-        console.error("Error fetching student status:", error);
-        return [] as StudentStatus[];
+      const { data, error } = await supabase
+        .from('students_teachers')
+        .select(`
+          id, 
+          student_name, 
+          teacher_id, 
+          active, 
+          assigned_date
+        `)
+        .eq('teacher_id', teacherId)
+        .order('assigned_date', { ascending: false });
+      
+      if (error) {
+        console.error("Error fetching student assignments:", error);
+        throw error;
       }
+      
+      return data as StudentAssignment[];
     },
-    retry: 1,
-    staleTime: 5 * 60 * 1000 // 5 minutes
+    enabled: !!teacherId,
   });
-
+  
   const handleRefresh = async () => {
     setIsRefreshing(true);
-    await refetch();
-    setIsRefreshing(false);
+    try {
+      await refetch();
+      toast({
+        title: "Refreshed",
+        description: "Student list has been updated.",
+      });
+    } catch (error) {
+      console.error("Error refreshing student list:", error);
+      toast({
+        title: "Refresh failed",
+        description: "Could not refresh student list. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsRefreshing(false);
+    }
   };
+  
+  const activeStudents = studentAssignments?.filter(student => student.active) || [];
+  const inactiveStudents = studentAssignments?.filter(student => !student.active) || [];
   
   if (isLoading) {
     return (
-      <div className="flex justify-center p-6">
-        <Loader2 className="h-6 w-6 animate-spin text-primary" />
+      <div className="space-y-4">
+        <div className="flex justify-between items-center">
+          <h3 className="text-lg font-semibold">My Students</h3>
+        </div>
+        <div className="space-y-4">
+          {[1, 2, 3].map(i => (
+            <div key={i} className="flex items-center space-x-4">
+              <Skeleton className="h-12 w-12 rounded-full" />
+              <div className="space-y-2">
+                <Skeleton className="h-4 w-[250px]" />
+                <Skeleton className="h-4 w-[200px]" />
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     );
   }
   
-  if (!statusData || statusData.length === 0) {
-    return (
-      <div className="text-center p-6 text-muted-foreground">
-        <p>No student status information available</p>
-        <Button 
-          variant="outline" 
-          size="sm" 
-          className="mt-4"
-          onClick={handleRefresh}
-          disabled={isRefreshing}
-        >
-          {isRefreshing ? (
-            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-          ) : (
-            <RefreshCw className="h-4 w-4 mr-2" />
-          )}
-          Refresh
-        </Button>
-      </div>
-    );
-  }
-
   return (
-    <>
-      <div className="flex justify-end mb-2">
+    <div className="space-y-4">
+      <div className="flex justify-between items-center">
+        <h3 className="text-lg font-semibold">My Students</h3>
         <Button 
           variant="outline" 
           size="sm"
           onClick={handleRefresh}
           disabled={isRefreshing}
         >
-          {isRefreshing ? (
-            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-          ) : (
-            <RefreshCw className="h-4 w-4 mr-2" />
-          )}
-          Refresh
+          <RefreshCcw className={`h-4 w-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
+          {isRefreshing ? 'Refreshing...' : 'Refresh'}
         </Button>
       </div>
-      <div className="overflow-x-auto rounded-lg border border-border/40">
-        <Table>
-          <TableHeader className="bg-muted/50">
-            <TableRow>
-              <TableHead>Student</TableHead>
-              <TableHead>Learning Type</TableHead>
-              <TableHead className="text-center">Status</TableHead>
-              <TableHead>Pending</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {statusData.map((student) => (
-              <TableRow key={student.student_id} className="hover:bg-muted/30">
-                <TableCell className="font-medium">{student.student_name}</TableCell>
-                <TableCell>
-                  <Badge variant="outline" className="capitalize">
-                    {student.learning_type || 'hifz'}
-                  </Badge>
-                </TableCell>
-                <TableCell className="text-center">
-                  {student.pending_assignments > 0 ? (
-                    <AlertCircle className="h-5 w-5 text-amber-500 mx-auto" />
-                  ) : student.missed_assignments > 0 ? (
-                    <Clock className="h-5 w-5 text-red-500 mx-auto" />
-                  ) : (
-                    <CheckCircle2 className="h-5 w-5 text-green-500 mx-auto" />
-                  )}
-                </TableCell>
-                <TableCell className="max-w-[180px] truncate" title={student.pending_details || ""}>
-                  {student.pending_details || "Up to date"}
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
-    </>
+      
+      {activeStudents.length === 0 && inactiveStudents.length === 0 ? (
+        <div className="text-center py-8 text-muted-foreground">
+          <User className="h-12 w-12 mx-auto mb-2 opacity-20" />
+          <p>No students assigned yet</p>
+        </div>
+      ) : (
+        <>
+          {activeStudents.length > 0 && (
+            <div className="space-y-2">
+              <div className="flex items-center space-x-2">
+                <UserCheck className="h-5 w-5 text-green-500" />
+                <span className="font-medium">Active Students</span>
+                <Badge variant="outline">{activeStudents.length}</Badge>
+              </div>
+              <div className="grid gap-2">
+                {activeStudents.map(student => (
+                  <div key={student.id} className="p-3 border rounded-lg flex justify-between items-center">
+                    <div>
+                      <div className="font-medium">{student.student_name}</div>
+                      <div className="text-sm text-muted-foreground">
+                        Assigned: {new Date(student.assigned_date).toLocaleDateString()}
+                      </div>
+                    </div>
+                    <Badge className="bg-green-500 hover:bg-green-600">Active</Badge>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+          
+          {inactiveStudents.length > 0 && (
+            <div className="space-y-2 mt-4">
+              <div className="flex items-center space-x-2">
+                <UserX className="h-5 w-5 text-red-500" />
+                <span className="font-medium">Inactive Students</span>
+                <Badge variant="outline">{inactiveStudents.length}</Badge>
+              </div>
+              <div className="grid gap-2">
+                {inactiveStudents.map(student => (
+                  <div key={student.id} className="p-3 border rounded-lg flex justify-between items-center bg-muted/30">
+                    <div>
+                      <div className="font-medium">{student.student_name}</div>
+                      <div className="text-sm text-muted-foreground">
+                        Assigned: {new Date(student.assigned_date).toLocaleDateString()}
+                      </div>
+                    </div>
+                    <Badge variant="outline" className="text-muted-foreground">Inactive</Badge>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </>
+      )}
+    </div>
   );
 };
