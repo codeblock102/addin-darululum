@@ -56,7 +56,7 @@ export interface DifficultAyah {
   created_at?: string;
 }
 
-// Add the missing messaging-related interfaces
+// Define messaging-related interfaces
 export interface Message {
   id: string;
   message: string;
@@ -70,6 +70,7 @@ export interface Message {
   message_status?: string;
   read_at?: string;
   category?: MessageCategory;
+  updated_at?: string;
 }
 
 export type MessageType = 'direct' | 'announcement' | 'feedback';

@@ -10,6 +10,7 @@ import { RefreshCcw } from "lucide-react";
 import { MessageList } from "./MessageList";
 import { MessageCompose } from "./MessageCompose";
 import { MessageRecipient } from "@/types/progress";
+import { useRealtimeMessages } from "@/hooks/useRealtimeMessages";
 
 interface TeacherMessagesEnhancedProps {
   teacherId: string;
@@ -25,13 +26,16 @@ export const TeacherMessagesEnhanced = ({
   const [messageTab, setMessageTab] = useState("inbox");
   const [inboxTab, setInboxTab] = useState("received");
   
+  // Initialize real-time messages updates
+  useRealtimeMessages(teacherId);
+  
   const { data: inboxMessages, isLoading: inboxLoading, refetch: refetchInbox } = useQuery({
     queryKey: ['teacher-inbox', teacherId],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('communications')
         .select(`
-          id, message, created_at, sender_id, recipient_id, read, message_type, message_status, read_at, category,
+          id, message, created_at, sender_id, recipient_id, read, message_type, message_status, read_at, category, updated_at,
           teachers!communications_sender_id_fkey(name)
         `)
         .eq('recipient_id', teacherId)
@@ -52,7 +56,7 @@ export const TeacherMessagesEnhanced = ({
       const { data, error } = await supabase
         .from('communications')
         .select(`
-          id, message, created_at, sender_id, recipient_id, read, message_type, message_status, read_at, category,
+          id, message, created_at, sender_id, recipient_id, read, message_type, message_status, read_at, category, updated_at,
           teachers!communications_recipient_id_fkey(name)
         `)
         .eq('sender_id', teacherId)
