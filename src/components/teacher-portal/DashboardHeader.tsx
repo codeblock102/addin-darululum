@@ -10,16 +10,16 @@ export const DashboardHeader = ({ teacher }: DashboardHeaderProps) => {
   return (
     <div className="flex items-center justify-between">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight text-emerald-700 dark:text-emerald-500">
+        <h1 className="text-3xl font-bold tracking-tight text-purple-700 dark:text-purple-400">
           Welcome, {teacher.name}
         </h1>
         <p className="text-muted-foreground">
           {teacher.subject} • {teacher.experience} years experience
         </p>
       </div>
-      <div className="hidden md:flex items-center gap-2 px-4 py-2 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg">
-        <BookOpen className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
-        <span className="font-medium text-emerald-700 dark:text-emerald-300">
+      <div className="hidden md:flex items-center gap-2 px-4 py-2 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
+        <BookOpen className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+        <span className="font-medium text-purple-700 dark:text-purple-300">
           Quran Academy
         </span>
       </div>
