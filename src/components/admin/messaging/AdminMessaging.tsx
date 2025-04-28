@@ -1,57 +1,61 @@
 
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { useToast } from "@/components/ui/use-toast";
+import { Card, CardHeader, CardContent, CardTitle, CardDescription } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { RefreshCcw } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
 import { AdminMessageList } from "./AdminMessageList";
-import { AdminMessageReply } from "./AdminMessageReply";
 import { AdminMessageCompose } from "./compose/AdminMessageCompose";
-import { Message } from "@/types/progress";
 import { useRealtimeAdminMessages } from "@/hooks/useRealtimeAdminMessages";
+import { Message, MessageType, MessageCategory } from "@/types/progress";
 
 export const AdminMessaging = () => {
   const { toast } = useToast();
-  const [selectedMessage, setSelectedMessage] = useState<Message | null>(null);
-  const [activeTab, setActiveTab] = useState("received");
+  const queryClient = useQueryClient();
+  const [activeTab, setActiveTab] = useState("inbox");
   
-  // Initialize real-time updates for admin messages
+  // Initialize real-time messages updates
   useRealtimeAdminMessages();
   
+  // Fetch all messages sent to admin (where recipient_id is null and parent_message_id is 'admin-1')
   const { data: receivedMessages, isLoading: receivedLoading, refetch: refetchReceived } = useQuery({
-    queryKey: ['admin-messages'],
+    queryKey: ['admin-received-messages'],
     queryFn: async () => {
-      // Get all messages sent to admin (where parent_message_id is not null and recipient_id is null)
       const { data, error } = await supabase
         .from('communications')
         .select(`
-          id, message, created_at, sender_id, recipient_id, read, message_type, message_status, category, updated_at, parent_message_id,
+          id, message, created_at, sender_id, recipient_id, read, message_type, message_status, read_at, 
+          category, updated_at, parent_message_id,
           teachers!communications_sender_id_fkey(name)
         `)
-        .not('parent_message_id', 'is', null)
-        .is('recipient_id', null)
+        .eq('parent_message_id', 'admin-1')
         .order('created_at', { ascending: false });
       
       if (error) throw error;
       
-      return data.map((msg: any) => ({
+      // Format the received messages with sender names
+      const formattedMessages = data.map((msg: any) => ({
         ...msg,
-        sender_name: msg.teachers?.name || "Unknown Teacher"
-      }));
+        sender_name: msg.teachers?.name || "Unknown Sender"
+      })) as Message[];
+      
+      return formattedMessages;
     }
   });
   
+  // Fetch all messages sent by admin (where sender_id is null and recipient_id references teachers)
   const { data: sentMessages, isLoading: sentLoading, refetch: refetchSent } = useQuery({
     queryKey: ['admin-sent-messages'],
     queryFn: async () => {
-      // Get all messages sent by admin (where sender_id is null)
       const { data, error } = await supabase
         .from('communications')
         .select(`
-          id, message, created_at, sender_id, recipient_id, read, message_type, message_status, category, updated_at, parent_message_id
+          id, message, created_at, sender_id, recipient_id, read, message_type, message_status, read_at, 
+          category, updated_at, parent_message_id,
+          teachers!communications_parent_message_id_fkey(name)
         `)
         .is('sender_id', null)
         .not('parent_message_id', 'is', null)
@@ -59,55 +63,65 @@ export const AdminMessaging = () => {
       
       if (error) throw error;
       
-      // For each message, fetch the teacher's name using the parent_message_id which contains the teacher's ID
-      const messagesWithTeacherNames = await Promise.all(
-        data.map(async (msg) => {
-          const { data: teacherData } = await supabase
-            .from('teachers')
-            .select('name')
-            .eq('id', msg.parent_message_id)
-            .single();
-            
-          return {
-            ...msg,
-            recipient_name: teacherData?.name || "Unknown Teacher",
-            recipient_id: msg.parent_message_id // Use parent_message_id as the actual recipient ID
-          };
-        })
-      );
+      // Format the sent messages with recipient names
+      const formattedMessages = data.map((msg: any) => ({
+        ...msg,
+        recipient_id: msg.parent_message_id,
+        recipient_name: msg.teachers?.name || "Unknown Recipient"
+      }));
       
-      return messagesWithTeacherNames;
+      // Cast the formatted messages to the Message[] type
+      const typedMessages = formattedMessages as unknown as Message[];
+      
+      return typedMessages;
     }
   });
   
+  const markAsReadMutation = useMutation({
+    mutationFn: async (messageId: string) => {
+      const { data, error } = await supabase
+        .from('communications')
+        .update({ 
+          read: true,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', messageId)
+        .select();
+      
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-received-messages'] });
+    }
+  });
+
   const handleRefresh = () => {
+    refetchReceived();
+    refetchSent();
     toast({
       title: "Refreshing messages",
       description: "Getting your latest messages..."
     });
-    refetchReceived();
-    refetchSent();
   };
-
-  const handleReplyClick = (message: Message) => {
-    setSelectedMessage(message);
-  };
-
-  const handleCloseReply = () => {
-    setSelectedMessage(null);
+  
+  const handleMessageRead = (message: Message) => {
+    if (!message.read) {
+      markAsReadMutation.mutate(message.id);
+    }
   };
 
   const unreadCount = receivedMessages?.filter(msg => !msg.read).length || 0;
-
+  
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       <Card>
-        <CardHeader>
+        <CardHeader className="pb-3">
           <div className="flex justify-between items-center">
             <div>
-              <CardTitle>Administrator Messages</CardTitle>
+              <CardTitle>Messaging</CardTitle>
               <CardDescription>
-                View and respond to communications from teachers
+                Send and receive messages to and from teachers
               </CardDescription>
             </div>
             <Button variant="outline" onClick={handleRefresh} size="sm">
@@ -116,30 +130,33 @@ export const AdminMessaging = () => {
             </Button>
           </div>
         </CardHeader>
-        
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <Tabs value={activeTab} onValueChange={setActiveTab}>
-                <TabsList className="mb-4">
-                  <TabsTrigger value="received" className="relative">
-                    Received
-                    {unreadCount > 0 && (
-                      <span className="absolute -top-1 -right-1 bg-primary text-primary-foreground text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                        {unreadCount}
-                      </span>
-                    )}
-                  </TabsTrigger>
+          <Tabs defaultValue="inbox" value={activeTab} onValueChange={setActiveTab}>
+            <TabsList className="grid w-full grid-cols-2 mb-4">
+              <TabsTrigger value="inbox" className="relative">
+                Inbox
+                {unreadCount > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-primary text-primary-foreground text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                    {unreadCount}
+                  </span>
+                )}
+              </TabsTrigger>
+              <TabsTrigger value="compose">Compose</TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="inbox">
+              <Tabs defaultValue="received">
+                <TabsList>
+                  <TabsTrigger value="received">Received</TabsTrigger>
                   <TabsTrigger value="sent">Sent</TabsTrigger>
-                  <TabsTrigger value="compose">Compose</TabsTrigger>
                 </TabsList>
                 
                 <TabsContent value="received">
                   <AdminMessageList 
                     messages={receivedMessages} 
                     isLoading={receivedLoading}
-                    emptyMessage="No messages received from teachers"
-                    onReplyClick={handleReplyClick}
+                    emptyMessage="No messages received"
+                    onMessageClick={handleMessageRead}
                   />
                 </TabsContent>
                 
@@ -147,31 +164,17 @@ export const AdminMessaging = () => {
                   <AdminMessageList 
                     messages={sentMessages} 
                     isLoading={sentLoading}
-                    emptyMessage="No messages sent to teachers"
+                    emptyMessage="No sent messages"
+                    showRecipient={true}
                   />
                 </TabsContent>
-
-                <TabsContent value="compose">
-                  <AdminMessageCompose />
-                </TabsContent>
               </Tabs>
-            </div>
+            </TabsContent>
             
-            <div>
-              {selectedMessage && activeTab === "received" ? (
-                <AdminMessageReply 
-                  message={selectedMessage} 
-                  onClose={handleCloseReply} 
-                />
-              ) : activeTab !== "compose" && (
-                <div className="flex items-center justify-center h-full">
-                  <div className="text-center p-6 text-muted-foreground">
-                    <p>Select a message to reply</p>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
+            <TabsContent value="compose">
+              <AdminMessageCompose />
+            </TabsContent>
+          </Tabs>
         </CardContent>
       </Card>
     </div>
