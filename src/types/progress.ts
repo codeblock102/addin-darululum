@@ -80,4 +80,5 @@ export interface MessageRecipient {
   id: string;
   name: string;
   type: "student" | "teacher" | "parent" | "admin";
+  isSpecial?: boolean; // Flag to indicate if this is a special recipient (not using UUID)
 }

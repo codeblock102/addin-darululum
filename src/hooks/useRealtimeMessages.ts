@@ -59,11 +59,34 @@ export const useRealtimeMessages = (teacherId: string) => {
         }
       )
       .subscribe();
+      
+    // Set up subscription for admin messages
+    const adminMessagesChannel = supabase
+      .channel('admin-messages-channel')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'communications',
+          filter: `parent_message_id=is.not.null`
+        },
+        (payload) => {
+          console.log('Admin message update received:', payload);
+          
+          // Check if this is related to the current teacher
+          if (payload.new && payload.new.sender_id === teacherId) {
+            queryClient.invalidateQueries({ queryKey: ['teacher-sent', teacherId] });
+          }
+        }
+      )
+      .subscribe();
 
     // Cleanup subscriptions on unmount
     return () => {
       supabase.removeChannel(messagesChannel);
       supabase.removeChannel(statusChannel);
+      supabase.removeChannel(adminMessagesChannel);
     };
   }, [teacherId, queryClient, toast]);
   
