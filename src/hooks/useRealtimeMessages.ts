@@ -2,7 +2,7 @@
 import { useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 
 export const useRealtimeMessages = (teacherId: string) => {
   const queryClient = useQueryClient();
@@ -69,15 +69,18 @@ export const useRealtimeMessages = (teacherId: string) => {
           event: 'INSERT',
           schema: 'public',
           table: 'communications',
-          filter: `parent_message_id=is.not.null`
+          filter: `sender_id=is.null AND recipient_id=eq.${teacherId}`
         },
         (payload) => {
           console.log('Admin message update received:', payload);
+          queryClient.invalidateQueries({ queryKey: ['teacher-inbox', teacherId] });
           
-          // Check if this is related to the current teacher
-          if (payload.new && payload.new.sender_id === teacherId) {
-            queryClient.invalidateQueries({ queryKey: ['teacher-sent', teacherId] });
-          }
+          // Show toast notification for admin messages
+          toast({
+            title: "New Admin Message",
+            description: "You have received a new message from the administrator.",
+            duration: 5000,
+          });
         }
       )
       .subscribe();
