@@ -71,6 +71,7 @@ export interface Message {
   read_at?: string;
   category?: MessageCategory;
   updated_at?: string;
+  parent_message_id?: string; // Added this field to fix TypeScript error
 }
 
 export type MessageType = 'direct' | 'announcement' | 'feedback';

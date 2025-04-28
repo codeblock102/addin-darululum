@@ -2,7 +2,7 @@
 import { useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 
 export const useRealtimeAdminMessages = () => {
   const queryClient = useQueryClient();
@@ -44,14 +44,15 @@ export const useRealtimeAdminMessages = () => {
       .on(
         'postgres_changes',
         {
-          event: 'INSERT',
+          event: '*', // Listen for all events
           schema: 'public',
           table: 'communications',
-          filter: `recipient_id=is.null AND parent_message_id=is.not.null`
+          filter: `sender_id=is.null`
         },
         (payload) => {
           console.log('Admin response update received:', payload);
           queryClient.invalidateQueries({ queryKey: ['admin-responses'] });
+          queryClient.invalidateQueries({ queryKey: ['admin-sent-messages'] });
         }
       )
       .subscribe();
