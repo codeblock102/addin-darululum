@@ -6,9 +6,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { RefreshCcw } from "lucide-react";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { AdminMessageList } from "./AdminMessageList";
 import { AdminMessageReply } from "./AdminMessageReply";
+import { AdminMessageCompose } from "./AdminMessageCompose";
 import { Message } from "@/types/progress";
 import { useRealtimeAdminMessages } from "@/hooks/useRealtimeAdminMessages";
 
@@ -54,7 +55,6 @@ export const AdminMessaging = () => {
           teachers!communications_recipient_id_fkey(name)
         `)
         .is('sender_id', null) // Messages sent by admin (null sender_id)
-        .not('parent_message_id', 'is', null) // Has a parent message
         .order('created_at', { ascending: false });
       
       if (error) throw error;
@@ -117,6 +117,7 @@ export const AdminMessaging = () => {
                     )}
                   </TabsTrigger>
                   <TabsTrigger value="sent">Sent</TabsTrigger>
+                  <TabsTrigger value="compose">Compose</TabsTrigger>
                 </TabsList>
                 
                 <TabsContent value="received">
@@ -132,19 +133,23 @@ export const AdminMessaging = () => {
                   <AdminMessageList 
                     messages={sentMessages} 
                     isLoading={sentLoading}
-                    emptyMessage="No replies sent to teachers"
+                    emptyMessage="No messages sent to teachers"
                   />
+                </TabsContent>
+
+                <TabsContent value="compose">
+                  <AdminMessageCompose />
                 </TabsContent>
               </Tabs>
             </div>
             
             <div>
-              {selectedMessage ? (
+              {selectedMessage && activeTab === "received" ? (
                 <AdminMessageReply 
                   message={selectedMessage} 
                   onClose={handleCloseReply} 
                 />
-              ) : (
+              ) : activeTab !== "compose" && (
                 <div className="flex items-center justify-center h-full">
                   <div className="text-center p-6 text-muted-foreground">
                     <p>Select a message to reply</p>
