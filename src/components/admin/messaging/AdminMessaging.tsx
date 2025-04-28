@@ -128,7 +128,7 @@ export const AdminMessaging = () => {
             </Button>
           </div>
         </CardHeader>
-        <CardContent>
+        <CardContent className="bg-gray-600">
           <Tabs defaultValue="inbox" value={activeTab} onValueChange={setActiveTab}>
             <TabsList className="grid w-full grid-cols-2 mb-4">
               <TabsTrigger value="inbox" className="relative">
