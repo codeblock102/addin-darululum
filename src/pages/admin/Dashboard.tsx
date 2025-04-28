@@ -1,4 +1,3 @@
-
 import { DashboardLayout } from "@/components/layouts/DashboardLayout";
 import { AdminHeader } from "@/components/admin/AdminHeader";
 import { DashboardStats } from "@/components/dashboard/DashboardStats";
@@ -7,22 +6,16 @@ import { WelcomeHeader } from "@/components/dashboard/WelcomeHeader";
 import { AdminMessaging } from "@/components/admin/messaging/AdminMessaging";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useState } from "react";
-
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState("overview");
-  
-  return (
-    <DashboardLayout>
+  return <DashboardLayout>
       <div className="space-y-6">
-        <AdminHeader 
-          title="Admin Dashboard" 
-          description="Monitor and manage your education system" 
-        />
+        <AdminHeader title="Admin Dashboard" description="Monitor and manage your education system" />
         
         <WelcomeHeader />
         
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full max-w-md grid-cols-3">
+          <TabsList className="grid w-full max-w-md grid-cols-3 bg-gray-900">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="analytics">Analytics</TabsTrigger>
             <TabsTrigger value="messages">Messages</TabsTrigger>
@@ -45,6 +38,5 @@ export default function AdminDashboard() {
           </TabsContent>
         </Tabs>
       </div>
-    </DashboardLayout>
-  );
+    </DashboardLayout>;
 }
