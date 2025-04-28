@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -20,18 +19,18 @@ export const AdminMessaging = () => {
   // Initialize real-time messages updates
   useRealtimeAdminMessages();
   
-  // Fetch all messages sent to admin (where recipient_id is null and parent_message_id is 'admin-1')
+  // Fetch all messages sent to admin (where recipient_id is 'admin-1')
   const { data: receivedMessages, isLoading: receivedLoading, refetch: refetchReceived } = useQuery({
     queryKey: ['admin-received-messages'],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('communications')
         .select(`
-          id, message, created_at, sender_id, recipient_id, read, message_type, message_status, read_at, 
+          id, message, created_at, sender_id, recipient_id, read, message_type, message_status, 
           category, updated_at, parent_message_id,
           teachers!communications_sender_id_fkey(name)
         `)
-        .eq('parent_message_id', 'admin-1')
+        .eq('recipient_id', 'admin-1')
         .order('created_at', { ascending: false });
       
       if (error) throw error;
@@ -53,12 +52,12 @@ export const AdminMessaging = () => {
       const { data, error } = await supabase
         .from('communications')
         .select(`
-          id, message, created_at, sender_id, recipient_id, read, message_type, message_status, read_at, 
+          id, message, created_at, sender_id, recipient_id, read, message_type, message_status, 
           category, updated_at, parent_message_id,
-          teachers!communications_parent_message_id_fkey(name)
+          teachers!communications_recipient_id_fkey(name)
         `)
         .is('sender_id', null)
-        .not('parent_message_id', 'is', null)
+        .not('recipient_id', 'is', null)
         .order('created_at', { ascending: false });
       
       if (error) throw error;
@@ -66,7 +65,6 @@ export const AdminMessaging = () => {
       // Format the sent messages with recipient names
       const formattedMessages = data.map((msg: any) => ({
         ...msg,
-        recipient_id: msg.parent_message_id,
         recipient_name: msg.teachers?.name || "Unknown Recipient"
       }));
       
