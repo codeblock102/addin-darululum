@@ -27,7 +27,7 @@ export default function AdminDashboard() {
           </TabsContent>
           
           <TabsContent value="analytics">
-            <div className="p-6 bg-white rounded-lg border shadow-sm">
+            <div className="p-6 rounded-lg border shadow-sm bg-gray-700">
               <h2 className="text-2xl font-semibold mb-4">Analytics</h2>
               <p>Advanced analytics features coming soon...</p>
             </div>
