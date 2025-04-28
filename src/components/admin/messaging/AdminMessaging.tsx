@@ -9,7 +9,7 @@ import { RefreshCcw } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { AdminMessageList } from "./AdminMessageList";
 import { AdminMessageReply } from "./AdminMessageReply";
-import { AdminMessageCompose } from "./AdminMessageCompose";
+import { AdminMessageCompose } from "./compose/AdminMessageCompose";
 import { Message } from "@/types/progress";
 import { useRealtimeAdminMessages } from "@/hooks/useRealtimeAdminMessages";
 
@@ -28,7 +28,7 @@ export const AdminMessaging = () => {
       const { data, error } = await supabase
         .from('communications')
         .select(`
-          id, message, created_at, sender_id, recipient_id, read, message_type, message_status, read_at, category, updated_at, parent_message_id,
+          id, message, created_at, sender_id, recipient_id, read, message_type, message_status, category, updated_at, parent_message_id,
           teachers!communications_sender_id_fkey(name)
         `)
         .not('parent_message_id', 'is', null)
@@ -51,7 +51,7 @@ export const AdminMessaging = () => {
       const { data, error } = await supabase
         .from('communications')
         .select(`
-          id, message, created_at, sender_id, recipient_id, read, message_type, message_status, read_at, category, updated_at, parent_message_id
+          id, message, created_at, sender_id, recipient_id, read, message_type, message_status, category, updated_at, parent_message_id
         `)
         .is('sender_id', null)
         .not('parent_message_id', 'is', null)
