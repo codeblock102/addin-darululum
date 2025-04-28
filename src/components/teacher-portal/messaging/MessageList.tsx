@@ -23,6 +23,7 @@ interface MessageListProps {
   showRecipient?: boolean;
 }
 
+// Create an extended message type that includes the properties used in the component
 interface ExtendedMessage extends Message {
   read_at?: string;
   updated_at?: string;
