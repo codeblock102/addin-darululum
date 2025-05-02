@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { supabase } from '@/integrations/supabase/client';
 
-// Define an interface for the activity data
+// Define an interface for the activity data with properly defined types
 interface ActivityItem {
   id: string;
   date: string;

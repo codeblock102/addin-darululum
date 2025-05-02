@@ -10,7 +10,7 @@ interface RecentActivityProps {
   teacherId: string;
 }
 
-// Define activity type to fix type instantiation issue
+// Define activity types properly to avoid infinite type instantiation
 interface ActivityItem {
   id: string;
   type: 'progress' | 'dhor' | 'attendance' | 'message';
@@ -18,6 +18,39 @@ interface ActivityItem {
   studentId: string;
   studentName: string;
   detail: string;
+}
+
+// Define types for data coming from the database
+interface ProgressData {
+  id: string;
+  created_at: string;
+  student_id: string;
+  current_surah?: number;
+  current_juz?: number;
+  students?: {
+    name: string;
+  };
+}
+
+interface DhorData {
+  id: string;
+  created_at: string;
+  student_id: string;
+  entry_date: string;
+  students?: {
+    name: string;
+  };
+}
+
+interface AttendanceData {
+  id: string;
+  created_at: string;
+  student_id: string;
+  date: string;
+  status: string;
+  students?: {
+    name: string;
+  };
 }
 
 export const RecentActivity = ({ teacherId }: RecentActivityProps) => {
@@ -68,7 +101,7 @@ export const RecentActivity = ({ teacherId }: RecentActivityProps) => {
       }
       
       // Combine and format activities
-      const progressActivities: ActivityItem[] = (progressData || []).map((item: any) => ({
+      const progressActivities: ActivityItem[] = (progressData || []).map((item: ProgressData) => ({
         id: `progress-${item.id}`,
         type: 'progress',
         date: item.created_at,
@@ -77,7 +110,7 @@ export const RecentActivity = ({ teacherId }: RecentActivityProps) => {
         detail: `Recorded progress - Surah ${item.current_surah}, Juz ${item.current_juz}`
       }));
       
-      const dhorActivities: ActivityItem[] = (dhorData || []).map((item: any) => ({
+      const dhorActivities: ActivityItem[] = (dhorData || []).map((item: DhorData) => ({
         id: `dhor-${item.id}`,
         type: 'dhor',
         date: item.created_at,
@@ -86,7 +119,7 @@ export const RecentActivity = ({ teacherId }: RecentActivityProps) => {
         detail: `Dhor Book entry for ${new Date(item.entry_date).toLocaleDateString()}`
       }));
       
-      const attendanceActivities: ActivityItem[] = (attendanceData || []).map((item: any) => ({
+      const attendanceActivities: ActivityItem[] = (attendanceData || []).map((item: AttendanceData) => ({
         id: `attendance-${item.id}`,
         type: 'attendance',
         date: item.created_at,

@@ -56,7 +56,12 @@ export const ProgressForm = ({ onSubmit, isProcessing, defaultValues }: Progress
               <FormItem>
                 <FormLabel>Current Surah</FormLabel>
                 <FormControl>
-                  <Input type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value))} />
+                  <Input 
+                    type="number" 
+                    {...field}
+                    value={field.value}
+                    onChange={e => field.onChange(parseInt(e.target.value) || 1)} 
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -69,7 +74,12 @@ export const ProgressForm = ({ onSubmit, isProcessing, defaultValues }: Progress
               <FormItem>
                 <FormLabel>Current Juz</FormLabel>
                 <FormControl>
-                  <Input type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value))} />
+                  <Input 
+                    type="number" 
+                    {...field}
+                    value={field.value}
+                    onChange={e => field.onChange(parseInt(e.target.value) || 1)} 
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -84,7 +94,12 @@ export const ProgressForm = ({ onSubmit, isProcessing, defaultValues }: Progress
               <FormItem>
                 <FormLabel>Start Verse</FormLabel>
                 <FormControl>
-                  <Input type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value))} />
+                  <Input 
+                    type="number" 
+                    {...field}
+                    value={field.value}
+                    onChange={e => field.onChange(parseInt(e.target.value) || 1)} 
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -97,7 +112,12 @@ export const ProgressForm = ({ onSubmit, isProcessing, defaultValues }: Progress
               <FormItem>
                 <FormLabel>End Verse</FormLabel>
                 <FormControl>
-                  <Input type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value))} />
+                  <Input 
+                    type="number" 
+                    {...field}
+                    value={field.value}
+                    onChange={e => field.onChange(parseInt(e.target.value) || 1)} 
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -111,7 +131,12 @@ export const ProgressForm = ({ onSubmit, isProcessing, defaultValues }: Progress
             <FormItem>
               <FormLabel>Verses Memorized</FormLabel>
               <FormControl>
-                <Input type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value))} />
+                <Input 
+                  type="number" 
+                  {...field}
+                  value={field.value}
+                  onChange={e => field.onChange(parseInt(e.target.value) || 0)} 
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
