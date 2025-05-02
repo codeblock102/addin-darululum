@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { Loader2, UserRound, CalendarX } from "lucide-react";
+import { Loader2, UserRound, CalendarX, BookOpen } from "lucide-react";
 import { StudentQuickProfileModal } from "./StudentQuickProfileModal";
 import { useState } from "react";
 
@@ -94,7 +94,7 @@ export const TodayStudents = ({ teacherId }: TodayStudentsProps) => {
         {todayStudents.map((student: any) => (
           <div 
             key={student.id}
-            className="flex items-center justify-between py-3 hover:bg-muted/10 cursor-pointer transition-colors px-1"
+            className="flex items-center justify-between py-3 hover:bg-purple-50/50 dark:hover:bg-purple-900/10 cursor-pointer transition-colors px-1 rounded-md"
             onClick={() => handleStudentClick(student)}
           >
             <div className="flex items-center gap-3">
@@ -102,7 +102,7 @@ export const TodayStudents = ({ teacherId }: TodayStudentsProps) => {
                 <UserRound className="h-4 w-4 text-blue-600 dark:text-blue-300" />
               </div>
               <div>
-                <p className="font-medium">{student.name}</p>
+                <p className="font-medium text-blue-800 dark:text-blue-200">{student.name}</p>
                 {student.guardian_contact && (
                   <p className="text-xs text-muted-foreground">📞 {student.guardian_contact}</p>
                 )}
@@ -111,13 +111,14 @@ export const TodayStudents = ({ teacherId }: TodayStudentsProps) => {
             <Button 
               variant="ghost" 
               size="sm" 
-              className="text-sm"
+              className="text-sm flex items-center gap-1 text-blue-600"
               onClick={(e) => {
                 e.stopPropagation();
                 navigate(`/students/${student.id}?tab=dhor-book`);
               }}
             >
-              Dhor Book
+              <BookOpen className="h-4 w-4" />
+              <span className="hidden sm:inline">Dhor Book</span>
             </Button>
           </div>
         ))}
@@ -127,14 +128,17 @@ export const TodayStudents = ({ teacherId }: TodayStudentsProps) => {
   
   return (
     <>
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center justify-between">
-            <div>Today's Students</div>
-            <div className="text-sm font-normal text-muted-foreground">{today}</div>
+      <Card className="border border-blue-100 dark:border-blue-900/30 shadow-sm">
+        <CardHeader className="bg-blue-50 dark:bg-blue-900/20">
+          <CardTitle className="flex items-center justify-between text-blue-700 dark:text-blue-300">
+            <div className="flex items-center gap-2">
+              <UserRound className="h-5 w-5" />
+              Today's Students
+            </div>
+            <div className="text-sm font-normal text-blue-600/80 dark:text-blue-400/80">{today}</div>
           </CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="pt-6">
           {renderContent()}
         </CardContent>
       </Card>
