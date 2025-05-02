@@ -1,229 +1,194 @@
 
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { format } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Loader2, ClipboardList, BookOpen, Calendar, MessageSquare } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { ActivityIcon, BookOpen, CalendarIcon, Info } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Badge } from "@/components/ui/badge";
+import { NewEntryDialog } from "@/components/dhor-book/NewEntryDialog";
 
 interface RecentActivityProps {
   teacherId: string;
 }
 
-// Define activity types without circular references
-interface ActivityItem {
-  id: string;
-  type: 'progress' | 'dhor' | 'attendance' | 'message';
-  date: string;
-  studentId: string;
-  studentName: string;
-  detail: string;
-}
-
-// Define explicitly typed interfaces for database responses
-interface ProgressData {
+type ActivityItem = {
   id: string;
   created_at: string;
+  type: "dhor_entry" | "attendance" | "progress";
+  description: string;
+  student_name: string;
   student_id: string;
-  current_surah?: number;
-  current_juz?: number;
-  students?: {
-    name: string;
-  };
-}
-
-interface DhorData {
-  id: string;
-  created_at: string;
-  student_id: string;
-  entry_date: string;
-  students?: {
-    name: string;
-  };
-}
-
-interface AttendanceData {
-  id: string;
-  created_at: string;
-  student_id: string;
-  date: string;
-  status: string;
-  students?: {
-    name: string;
-  };
-}
+};
 
 export const RecentActivity = ({ teacherId }: RecentActivityProps) => {
-  const navigate = useNavigate();
+  const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
   
-  const { data: recentActivities, isLoading } = useQuery({
-    queryKey: ['recent-activities', teacherId],
+  const { data: activities, isLoading } = useQuery({
+    queryKey: ["teacher-recent-activities", teacherId],
     queryFn: async () => {
-      const threeWeeksAgo = new Date();
-      threeWeeksAgo.setDate(threeWeeksAgo.getDate() - 21);
-      
-      // Fetch recent progress entries
-      const { data: progressData, error: progressError } = await supabase
-        .from('progress')
-        .select('id, created_at, student_id, current_surah, current_juz, students(name)')
-        .eq('contributor_id', teacherId)
-        .gte('created_at', threeWeeksAgo.toISOString())
-        .order('created_at', { ascending: false })
+      // This query fetches the most recent activity across different types (dhor entries, attendance, etc)
+      const { data: dhorEntries, error: dhorError } = await supabase
+        .from("dhor_book_entries")
+        .select(`
+          id,
+          created_at,
+          student_id,
+          students (name)
+        `)
+        .eq("teacher_id", teacherId)
+        .order("created_at", { ascending: false })
         .limit(5);
         
-      if (progressError) {
-        console.error('Error fetching progress entries:', progressError);
-      }
+      if (dhorError) console.error("Error fetching dhor entries:", dhorError);
       
-      // Fetch dhor book entries
-      const { data: dhorData, error: dhorError } = await supabase
-        .from('dhor_book_entries')
-        .select('id, created_at, student_id, entry_date, students(name)')
-        .eq('teacher_id', teacherId)
-        .gte('created_at', threeWeeksAgo.toISOString())
-        .order('created_at', { ascending: false })
+      const { data: attendanceRecords, error: attendanceError } = await supabase
+        .from("attendance")
+        .select(`
+          id,
+          created_at,
+          student_id,
+          students (name)
+        `)
+        .eq("created_by", teacherId)
+        .order("created_at", { ascending: false })
         .limit(5);
         
-      if (dhorError) {
-        console.error('Error fetching dhor entries:', dhorError);
-      }
+      if (attendanceError) console.error("Error fetching attendance:", attendanceError);
       
-      // Fetch attendance records
-      const { data: attendanceData, error: attendanceError } = await supabase
-        .from('attendance')
-        .select('id, created_at, student_id, date, status, students(name)')
-        .gte('created_at', threeWeeksAgo.toISOString())
-        .order('created_at', { ascending: false })
-        .limit(5);
+      // Format the activities in a consistent way
+      const formattedActivities: ActivityItem[] = [
+        ...(dhorEntries?.map((entry: any) => ({
+          id: `dhor_${entry.id}`,
+          created_at: entry.created_at,
+          type: "dhor_entry" as const,
+          description: "Added new Dhor Book entry",
+          student_name: entry.students?.name || "Unknown Student",
+          student_id: entry.student_id
+        })) || []),
         
-      if (attendanceError) {
-        console.error('Error fetching attendance records:', attendanceError);
-      }
+        ...(attendanceRecords?.map((record: any) => ({
+          id: `attendance_${record.id}`,
+          created_at: record.created_at,
+          type: "attendance" as const,
+          description: "Recorded attendance",
+          student_name: record.students?.name || "Unknown Student",
+          student_id: record.student_id
+        })) || [])
+      ];
       
-      // Combine and format activities with proper typing
-      const progressActivities: ActivityItem[] = (progressData || []).map((item: ProgressData) => ({
-        id: `progress-${item.id}`,
-        type: 'progress',
-        date: item.created_at,
-        studentId: item.student_id,
-        studentName: item.students?.name || 'Unknown Student',
-        detail: `Recorded progress - Surah ${item.current_surah}, Juz ${item.current_juz}`
-      }));
-      
-      const dhorActivities: ActivityItem[] = (dhorData || []).map((item: DhorData) => ({
-        id: `dhor-${item.id}`,
-        type: 'dhor',
-        date: item.created_at,
-        studentId: item.student_id,
-        studentName: item.students?.name || 'Unknown Student',
-        detail: `Dhor Book entry for ${new Date(item.entry_date).toLocaleDateString()}`
-      }));
-      
-      const attendanceActivities: ActivityItem[] = (attendanceData || []).map((item: AttendanceData) => ({
-        id: `attendance-${item.id}`,
-        type: 'attendance',
-        date: item.created_at,
-        studentId: item.student_id,
-        studentName: item.students?.name || 'Unknown Student',
-        detail: `Marked as ${item.status} for ${new Date(item.date).toLocaleDateString()}`
-      }));
-      
-      // Combine all activities, sort by date (newest first), and limit to 10
-      const allActivities = [...progressActivities, ...dhorActivities, ...attendanceActivities]
-        .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-        .slice(0, 10);
-        
-      return allActivities;
+      // Sort by most recent
+      return formattedActivities.sort((a, b) => 
+        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      ).slice(0, 5);
     }
   });
   
+  const handleAddDhorEntry = (studentId: string) => {
+    setSelectedStudentId(studentId);
+    setIsDialogOpen(true);
+  };
+  
   const getActivityIcon = (type: string) => {
     switch (type) {
-      case 'progress':
-        return <ClipboardList className="h-4 w-4 text-green-600" />;
-      case 'dhor':
-        return <BookOpen className="h-4 w-4 text-amber-600" />;
-      case 'attendance':
-        return <Calendar className="h-4 w-4 text-blue-600" />;
-      case 'message':
-        return <MessageSquare className="h-4 w-4 text-purple-600" />;
+      case "dhor_entry":
+        return <BookOpen className="h-4 w-4 text-purple-500" />;
+      case "attendance":
+        return <CalendarIcon className="h-4 w-4 text-blue-500" />;
       default:
-        return <ClipboardList className="h-4 w-4" />;
+        return <ActivityIcon className="h-4 w-4 text-gray-500" />;
     }
   };
-  
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffDays = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24));
-    
-    if (diffDays === 0) {
-      return 'Today';
-    } else if (diffDays === 1) {
-      return 'Yesterday';
-    } else if (diffDays < 7) {
-      return `${diffDays} days ago`;
-    } else {
-      return date.toLocaleDateString();
-    }
-  };
-  
-  const renderContent = () => {
-    if (isLoading) {
-      return (
-        <div className="flex justify-center items-center h-32">
-          <Loader2 className="h-6 w-6 animate-spin text-primary" />
-        </div>
-      );
-    }
-    
-    if (!recentActivities || recentActivities.length === 0) {
-      return (
-        <div className="flex flex-col items-center justify-center py-8 text-center text-muted-foreground">
-          <ClipboardList className="h-10 w-10 mb-2" />
-          <p>No recent activities found</p>
-        </div>
-      );
-    }
-    
-    return (
-      <div className="space-y-3">
-        {recentActivities.map((activity: ActivityItem) => (
-          <div key={activity.id} className="flex items-start gap-3 pb-3 border-b last:border-0">
-            <div className="mt-1 h-7 w-7 rounded-full bg-muted flex items-center justify-center">
-              {getActivityIcon(activity.type)}
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center justify-between gap-2">
-                <p className="font-medium truncate">{activity.studentName}</p>
-                <p className="text-xs text-muted-foreground whitespace-nowrap">{formatDate(activity.date)}</p>
-              </div>
-              <p className="text-sm text-muted-foreground">{activity.detail}</p>
-            </div>
-          </div>
-        ))}
-      </div>
-    );
-  };
-  
+
   return (
-    <Card className="border border-purple-100 dark:border-purple-900/30 shadow-sm">
-      <CardHeader className="bg-purple-50 dark:bg-purple-900/20">
-        <CardTitle className="flex items-center justify-between text-purple-700 dark:text-purple-300">
-          <div>Recent Activity</div>
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            onClick={() => navigate("/teacher-portal?tab=performance")}
-            className="text-sm text-purple-600 hover:text-purple-800"
-          >
-            View All
-          </Button>
+    <Card className="border border-purple-200 dark:border-purple-800/40 shadow-sm overflow-hidden">
+      <CardHeader className="bg-gradient-to-r from-purple-100 to-purple-50 dark:from-purple-900/30 dark:to-purple-800/20">
+        <CardTitle className="text-purple-700 dark:text-purple-300 flex items-center gap-2">
+          <span className="text-xl">Recent Activity</span>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Info className="h-4 w-4 text-purple-500 dark:text-purple-400 cursor-help" />
+            </TooltipTrigger>
+            <TooltipContent className="bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200 border border-purple-200 dark:border-purple-700">
+              <p>Your recent interactions with students</p>
+            </TooltipContent>
+          </Tooltip>
         </CardTitle>
       </CardHeader>
       <CardContent className="pt-6">
-        {renderContent()}
+        {isLoading ? (
+          <div className="flex justify-center py-8">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500"></div>
+          </div>
+        ) : !activities || activities.length === 0 ? (
+          <div className="text-center py-8 text-gray-500">
+            <p>No recent activity found</p>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {activities.map((activity) => (
+              <div 
+                key={activity.id}
+                className="flex items-start gap-3 p-3 rounded-lg transition-all duration-200 hover:bg-purple-50 dark:hover:bg-purple-900/10"
+              >
+                <div className="bg-white dark:bg-gray-800 rounded-full p-2 shadow-sm border border-purple-100 dark:border-purple-900/30">
+                  {getActivityIcon(activity.type)}
+                </div>
+                <div className="flex-1">
+                  <div className="flex justify-between">
+                    <p className="font-medium text-gray-800 dark:text-gray-200">
+                      {activity.student_name}
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      {format(new Date(activity.created_at), "MMM d, h:mm a")}
+                    </p>
+                  </div>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    {activity.description}
+                  </p>
+                  <div className="mt-1.5 flex flex-wrap gap-2">
+                    <Badge 
+                      variant="outline"
+                      className={`
+                        text-xs font-normal
+                        ${activity.type === "dhor_entry" 
+                          ? "bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-900/20 dark:text-purple-300 dark:border-purple-700/50" 
+                          : "bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-700/50"
+                        }
+                      `}
+                    >
+                      {activity.type === "dhor_entry" ? "Dhor Book" : "Attendance"}
+                    </Badge>
+                    {activity.type === "dhor_entry" && (
+                      <button
+                        onClick={() => handleAddDhorEntry(activity.student_id)}
+                        className="text-xs text-purple-600 hover:text-purple-800 dark:text-purple-400 dark:hover:text-purple-300 underline-offset-2 hover:underline"
+                      >
+                        Add new entry
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </CardContent>
+      
+      {selectedStudentId && (
+        <NewEntryDialog
+          open={isDialogOpen}
+          onOpenChange={setIsDialogOpen}
+          studentId={selectedStudentId}
+          teacherId={teacherId}
+          onSuccess={() => {
+            // Refetch activities after a successful entry
+            // This will be handled by invalidating the query in useDhorEntryMutation
+          }}
+        />
+      )}
     </Card>
   );
 };
