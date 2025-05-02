@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -210,6 +211,7 @@ export function NewEntryDialog({
                       type="number"
                       placeholder="Enter number of mistakes"
                       {...field}
+                      onChange={e => field.onChange(parseInt(e.target.value) || 0)}
                     />
                   </FormControl>
                   <FormMessage />
@@ -242,6 +244,7 @@ export function NewEntryDialog({
                       type="number"
                       placeholder="Enter number of mistakes"
                       {...field}
+                      onChange={e => field.onChange(parseInt(e.target.value) || 0)}
                     />
                   </FormControl>
                   <FormMessage />
@@ -278,6 +281,7 @@ export function NewEntryDialog({
                       type="number"
                       placeholder="Enter points"
                       {...field}
+                      onChange={e => field.onChange(parseInt(e.target.value) || 0)}
                     />
                   </FormControl>
                   <FormMessage />
