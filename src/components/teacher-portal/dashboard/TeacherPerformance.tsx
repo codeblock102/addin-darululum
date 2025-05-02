@@ -1,29 +1,11 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { BarChart, Calendar, ClipboardList } from "lucide-react";
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend,
-} from 'chart.js';
-import { Bar } from 'react-chartjs-2';
-
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend
-);
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend, CartesianGrid } from "recharts";
+import { BarChart2, Calendar, ClipboardList } from "lucide-react";
 
 interface TeacherPerformanceProps {
   teacherId: string;
@@ -134,66 +116,29 @@ export const TeacherPerformance = ({ teacherId }: TeacherPerformanceProps) => {
     return weekCounts;
   };
   
-  const chartData = {
-    labels: getLast4WeeksLabels(),
-    datasets: [
-      {
-        label: 'Progress Entries',
-        data: getWeekData(progressData || []),
-        backgroundColor: 'rgba(75, 192, 192, 0.5)',
-        borderColor: 'rgb(75, 192, 192)',
-        borderWidth: 1,
-      },
-      {
-        label: 'Dhor Book Entries',
-        data: getWeekData(dhorBookData || []),
-        backgroundColor: 'rgba(255, 159, 64, 0.5)',
-        borderColor: 'rgb(255, 159, 64)',
-        borderWidth: 1,
-      },
-      {
-        label: 'Attendance Records',
-        data: getWeekData(attendanceData || []),
-        backgroundColor: 'rgba(54, 162, 235, 0.5)',
-        borderColor: 'rgb(54, 162, 235)',
-        borderWidth: 1,
-      },
-    ],
-  };
-  
-  const chartOptions = {
-    responsive: true,
-    plugins: {
-      legend: {
-        position: 'top' as const,
-      },
-      title: {
-        display: true,
-        text: 'Teacher Activity (Last 4 Weeks)',
-      },
-    },
-    scales: {
-      y: {
-        beginAtZero: true,
-      },
-    },
-  };
+  // Prepare chart data using recharts format
+  const chartData = getLast4WeeksLabels().map((label, index) => ({
+    name: label,
+    Progress: getWeekData(progressData || [])[index] || 0,
+    Dhor: getWeekData(dhorBookData || [])[index] || 0,
+    Attendance: getWeekData(attendanceData || [])[index] || 0
+  }));
   
   return (
     <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <BarChart className="h-5 w-5" />
+      <Card className="border border-purple-100 dark:border-purple-900/30 shadow-sm">
+        <CardHeader className="bg-purple-50 dark:bg-purple-900/20">
+          <CardTitle className="flex items-center gap-2 text-purple-700 dark:text-purple-300">
+            <BarChart2 className="h-5 w-5" />
             Performance Overview
           </CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="pt-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <ClipboardList className="h-5 w-5 text-green-600" />
+                  <ClipboardList className="h-5 w-5 text-green-600 dark:text-green-400" />
                   <span className="font-medium">Progress Entries</span>
                 </div>
                 <span className="font-bold">{totalProgress}</span>
@@ -204,7 +149,7 @@ export const TeacherPerformance = ({ teacherId }: TeacherPerformanceProps) => {
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <Calendar className="h-5 w-5 text-amber-600" />
+                  <Calendar className="h-5 w-5 text-amber-600 dark:text-amber-400" />
                   <span className="font-medium">Dhor Book Entries</span>
                 </div>
                 <span className="font-bold">{totalDhor}</span>
@@ -215,7 +160,7 @@ export const TeacherPerformance = ({ teacherId }: TeacherPerformanceProps) => {
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <Calendar className="h-5 w-5 text-blue-600" />
+                  <Calendar className="h-5 w-5 text-blue-600 dark:text-blue-400" />
                   <span className="font-medium">Attendance Records</span>
                 </div>
                 <span className="font-bold">{totalAttendance}</span>
@@ -225,18 +170,29 @@ export const TeacherPerformance = ({ teacherId }: TeacherPerformanceProps) => {
           </div>
           
           <div className="h-64">
-            <Bar data={chartData} options={chartOptions} />
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={chartData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#f3f3f3" />
+                <XAxis dataKey="name" scale="band" fontSize={10} />
+                <YAxis fontSize={11} />
+                <Tooltip />
+                <Legend />
+                <Bar dataKey="Progress" fill="#4ade80" name="Progress Entries" />
+                <Bar dataKey="Dhor" fill="#fbbf24" name="Dhor Book" />
+                <Bar dataKey="Attendance" fill="#60a5fa" name="Attendance" />
+              </BarChart>
+            </ResponsiveContainer>
           </div>
         </CardContent>
       </Card>
       
-      <Card>
+      <Card className="border border-purple-100 dark:border-purple-900/30 shadow-sm">
         <CardHeader>
-          <CardTitle>Activity Timeline</CardTitle>
+          <CardTitle className="text-purple-700 dark:text-purple-300">Activity Timeline</CardTitle>
         </CardHeader>
         <CardContent>
           <Tabs defaultValue="all">
-            <TabsList>
+            <TabsList className="bg-purple-50 dark:bg-purple-900/20">
               <TabsTrigger value="all">All Activity</TabsTrigger>
               <TabsTrigger value="progress">Progress</TabsTrigger>
               <TabsTrigger value="dhor">Dhor Book</TabsTrigger>

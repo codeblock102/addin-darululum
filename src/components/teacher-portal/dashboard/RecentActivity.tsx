@@ -10,6 +10,16 @@ interface RecentActivityProps {
   teacherId: string;
 }
 
+// Define activity type to fix type instantiation issue
+interface ActivityItem {
+  id: string;
+  type: 'progress' | 'dhor' | 'attendance' | 'message';
+  date: string;
+  studentId: string;
+  studentName: string;
+  detail: string;
+}
+
 export const RecentActivity = ({ teacherId }: RecentActivityProps) => {
   const navigate = useNavigate();
   
@@ -58,7 +68,7 @@ export const RecentActivity = ({ teacherId }: RecentActivityProps) => {
       }
       
       // Combine and format activities
-      const progressActivities = (progressData || []).map((item: any) => ({
+      const progressActivities: ActivityItem[] = (progressData || []).map((item: any) => ({
         id: `progress-${item.id}`,
         type: 'progress',
         date: item.created_at,
@@ -67,7 +77,7 @@ export const RecentActivity = ({ teacherId }: RecentActivityProps) => {
         detail: `Recorded progress - Surah ${item.current_surah}, Juz ${item.current_juz}`
       }));
       
-      const dhorActivities = (dhorData || []).map((item: any) => ({
+      const dhorActivities: ActivityItem[] = (dhorData || []).map((item: any) => ({
         id: `dhor-${item.id}`,
         type: 'dhor',
         date: item.created_at,
@@ -76,7 +86,7 @@ export const RecentActivity = ({ teacherId }: RecentActivityProps) => {
         detail: `Dhor Book entry for ${new Date(item.entry_date).toLocaleDateString()}`
       }));
       
-      const attendanceActivities = (attendanceData || []).map((item: any) => ({
+      const attendanceActivities: ActivityItem[] = (attendanceData || []).map((item: any) => ({
         id: `attendance-${item.id}`,
         type: 'attendance',
         date: item.created_at,
@@ -145,7 +155,7 @@ export const RecentActivity = ({ teacherId }: RecentActivityProps) => {
     
     return (
       <div className="space-y-3">
-        {recentActivities.map((activity: any) => (
+        {recentActivities.map((activity: ActivityItem) => (
           <div key={activity.id} className="flex items-start gap-3 pb-3 border-b last:border-0">
             <div className="mt-1 h-7 w-7 rounded-full bg-muted flex items-center justify-center">
               {getActivityIcon(activity.type)}
@@ -164,21 +174,21 @@ export const RecentActivity = ({ teacherId }: RecentActivityProps) => {
   };
   
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center justify-between">
+    <Card className="border border-purple-100 dark:border-purple-900/30 shadow-sm">
+      <CardHeader className="bg-purple-50 dark:bg-purple-900/20">
+        <CardTitle className="flex items-center justify-between text-purple-700 dark:text-purple-300">
           <div>Recent Activity</div>
           <Button 
             variant="ghost" 
             size="sm" 
             onClick={() => navigate("/teacher-portal?tab=performance")}
-            className="text-sm"
+            className="text-sm text-purple-600 hover:text-purple-800"
           >
             View All
           </Button>
         </CardTitle>
       </CardHeader>
-      <CardContent>
+      <CardContent className="pt-6">
         {renderContent()}
       </CardContent>
     </Card>
