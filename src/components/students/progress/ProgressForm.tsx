@@ -45,6 +45,14 @@ export const ProgressForm = ({ onSubmit, isProcessing, defaultValues }: Progress
     onSubmit(data);
   };
 
+  // Watch values to avoid controlled/uncontrolled component warnings
+  const currentSurah = form.watch('current_surah');
+  const currentJuz = form.watch('current_juz');
+  const startAyat = form.watch('start_ayat');
+  const endAyat = form.watch('end_ayat');
+  const versesMemorized = form.watch('verses_memorized');
+  const memorizationQuality = form.watch('memorization_quality');
+
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
@@ -59,7 +67,7 @@ export const ProgressForm = ({ onSubmit, isProcessing, defaultValues }: Progress
                   <Input 
                     type="number" 
                     {...field}
-                    value={field.value}
+                    value={field.value !== undefined ? field.value : currentSurah}
                     onChange={e => field.onChange(parseInt(e.target.value) || 1)} 
                   />
                 </FormControl>
@@ -77,7 +85,7 @@ export const ProgressForm = ({ onSubmit, isProcessing, defaultValues }: Progress
                   <Input 
                     type="number" 
                     {...field}
-                    value={field.value}
+                    value={field.value !== undefined ? field.value : currentJuz}
                     onChange={e => field.onChange(parseInt(e.target.value) || 1)} 
                   />
                 </FormControl>
@@ -97,7 +105,7 @@ export const ProgressForm = ({ onSubmit, isProcessing, defaultValues }: Progress
                   <Input 
                     type="number" 
                     {...field}
-                    value={field.value}
+                    value={field.value !== undefined ? field.value : startAyat}
                     onChange={e => field.onChange(parseInt(e.target.value) || 1)} 
                   />
                 </FormControl>
@@ -115,7 +123,7 @@ export const ProgressForm = ({ onSubmit, isProcessing, defaultValues }: Progress
                   <Input 
                     type="number" 
                     {...field}
-                    value={field.value}
+                    value={field.value !== undefined ? field.value : endAyat}
                     onChange={e => field.onChange(parseInt(e.target.value) || 1)} 
                   />
                 </FormControl>
@@ -134,7 +142,7 @@ export const ProgressForm = ({ onSubmit, isProcessing, defaultValues }: Progress
                 <Input 
                   type="number" 
                   {...field}
-                  value={field.value}
+                  value={field.value !== undefined ? field.value : versesMemorized}
                   onChange={e => field.onChange(parseInt(e.target.value) || 0)} 
                 />
               </FormControl>
@@ -151,7 +159,7 @@ export const ProgressForm = ({ onSubmit, isProcessing, defaultValues }: Progress
               <Select 
                 onValueChange={field.onChange} 
                 defaultValue={field.value}
-                value={field.value}
+                value={field.value || memorizationQuality}
               >
                 <FormControl>
                   <SelectTrigger>
