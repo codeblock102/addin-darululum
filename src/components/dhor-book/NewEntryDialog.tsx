@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -112,6 +111,8 @@ export function NewEntryDialog({
     });
   }
 
+  if (!open) return null;
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
@@ -134,6 +135,7 @@ export function NewEntryDialog({
                           "w-[240px] pl-3 text-left font-normal",
                           !date && "text-muted-foreground"
                         )}
+                        type="button"
                       >
                         {date ? format(date, "PPP") : (
                           <span>Pick a date</span>

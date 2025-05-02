@@ -10,7 +10,7 @@ interface RecentActivityProps {
   teacherId: string;
 }
 
-// Define activity types properly to avoid infinite type instantiation
+// Define activity types without circular references
 interface ActivityItem {
   id: string;
   type: 'progress' | 'dhor' | 'attendance' | 'message';
@@ -20,7 +20,7 @@ interface ActivityItem {
   detail: string;
 }
 
-// Define types for data coming from the database
+// Define explicitly typed interfaces for database responses
 interface ProgressData {
   id: string;
   created_at: string;
@@ -100,7 +100,7 @@ export const RecentActivity = ({ teacherId }: RecentActivityProps) => {
         console.error('Error fetching attendance records:', attendanceError);
       }
       
-      // Combine and format activities
+      // Combine and format activities with proper typing
       const progressActivities: ActivityItem[] = (progressData || []).map((item: ProgressData) => ({
         id: `progress-${item.id}`,
         type: 'progress',
