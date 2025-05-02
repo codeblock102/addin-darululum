@@ -27,8 +27,17 @@ export function NewEntryDialog({
     }
   });
 
-  // Don't render when closed to avoid React hook errors
-  if (!open) return null;
+  // Don't render the form until dialog is open to prevent React hook errors
+  if (!open) return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-[425px]">
+        <DialogHeader>
+          <DialogTitle>New Dhor Book Entry</DialogTitle>
+        </DialogHeader>
+        <div className="py-4">Loading...</div>
+      </DialogContent>
+    </Dialog>
+  );
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
