@@ -19,6 +19,7 @@ const TeacherPortal = () => {
   const [isTeacher, setIsTeacher] = useState<boolean | null>(null);
   const [isCheckingRole, setIsCheckingRole] = useState(true);
 
+  // Check if the logged-in user is a teacher
   useEffect(() => {
     const checkTeacherStatus = async () => {
       if (!session?.user?.email) {
