@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
@@ -21,6 +22,20 @@ interface ActivityItem {
   description: string;
   student_name: string;
   student_id: string;
+}
+
+interface DhorEntry {
+  id: string;
+  created_at: string;
+  student_id: string;
+  students: { name: string } | null;
+}
+
+interface AttendanceRecord {
+  id: string;
+  created_at: string;
+  student_id: string;
+  students: { name: string } | null;
 }
 
 export const RecentActivity = ({ teacherId }: RecentActivityProps) => {
@@ -63,7 +78,7 @@ export const RecentActivity = ({ teacherId }: RecentActivityProps) => {
       const formattedActivities: ActivityItem[] = [];
       
       if (dhorEntries) {
-        dhorEntries.forEach((entry: any) => {
+        (dhorEntries as DhorEntry[]).forEach((entry) => {
           formattedActivities.push({
             id: `dhor_${entry.id}`,
             created_at: entry.created_at,
@@ -76,7 +91,7 @@ export const RecentActivity = ({ teacherId }: RecentActivityProps) => {
       }
       
       if (attendanceRecords) {
-        attendanceRecords.forEach((record: any) => {
+        (attendanceRecords as AttendanceRecord[]).forEach((record) => {
           formattedActivities.push({
             id: `attendance_${record.id}`,
             created_at: record.created_at,
@@ -116,14 +131,16 @@ export const RecentActivity = ({ teacherId }: RecentActivityProps) => {
       <CardHeader className="bg-gradient-to-r from-purple-100 to-purple-50 dark:from-purple-900/30 dark:to-purple-800/20">
         <CardTitle className="text-purple-700 dark:text-purple-300 flex items-center gap-2">
           <span className="text-xl">Recent Activity</span>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Info className="h-4 w-4 text-purple-500 dark:text-purple-400 cursor-help" />
-            </TooltipTrigger>
-            <TooltipContent className="bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200 border border-purple-200 dark:border-purple-700">
-              <p>Your recent interactions with students</p>
-            </TooltipContent>
-          </Tooltip>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Info className="h-4 w-4 text-purple-500 dark:text-purple-400 cursor-help" />
+              </TooltipTrigger>
+              <TooltipContent className="bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200 border border-purple-200 dark:border-purple-700">
+                <p>Your recent interactions with students</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </CardTitle>
       </CardHeader>
       <CardContent className="pt-6">

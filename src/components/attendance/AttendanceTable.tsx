@@ -7,6 +7,7 @@ import { SearchInput } from "./table/SearchInput";
 import { AttendanceDataTable } from "./table/AttendanceDataTable";
 import { AttendanceEmptyState } from "./table/AttendanceEmptyState";
 import { useAttendanceRecords } from "./table/useAttendanceRecords";
+import { AttendanceRecord } from "@/types/attendance";
 
 export function AttendanceTable() {
   const {
@@ -22,6 +23,21 @@ export function AttendanceTable() {
   } = useAttendanceRecords();
 
   const hasFilters = !!searchQuery || !!statusFilter || !!dateFilter;
+  
+  // Process attendance records to ensure they match the expected type
+  const processedRecords: AttendanceRecord[] = attendanceRecords ? 
+    attendanceRecords.map((record: any) => ({
+      id: record.id,
+      date: record.date,
+      status: record.status,
+      notes: record.notes,
+      student_id: record.student?.id,
+      class_id: record.class_schedule?.id,
+      student: record.student,
+      class: {
+        class_name: record.class_schedule?.class_name || "Unknown Class"
+      }
+    })) : [];
 
   return (
     <Card className="bg-white dark:bg-gray-900 border border-purple-200 dark:border-purple-800/40 shadow-sm overflow-hidden animate-fadeIn">
@@ -52,10 +68,10 @@ export function AttendanceTable() {
 
         <AttendanceDataTable 
           isLoading={isLoadingAttendance}
-          attendanceRecords={attendanceRecords && attendanceRecords.length > 0 ? attendanceRecords : []}
+          attendanceRecords={processedRecords.length > 0 ? processedRecords : []}
         />
 
-        {!isLoadingAttendance && (!attendanceRecords || attendanceRecords.length === 0) && (
+        {!isLoadingAttendance && (!processedRecords || processedRecords.length === 0) && (
           <AttendanceEmptyState 
             hasFilters={hasFilters}
             resetFilters={resetFilters}

@@ -89,8 +89,10 @@ export function StudentSearch({ onStudentSelect }: StudentSearchProps) {
                 <CommandInput 
                   placeholder="Search student by name..." 
                   onValueChange={setSearch}
-                  startIcon={<Search className="h-4 w-4 text-muted-foreground" />}
                 />
+                <div className="px-2 py-1">
+                  <Search className="h-4 w-4 text-muted-foreground" />
+                </div>
                 {isLoading ? (
                   <div className="py-6 text-center">
                     <Loader2 className="h-6 w-6 animate-spin mx-auto mb-2" />

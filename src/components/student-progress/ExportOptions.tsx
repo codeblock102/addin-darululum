@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/types/progress";
 import { exportDataAsCSV } from "@/utils/exportUtils";
-import { FileSpreadsheet, FilePdf, Loader2 } from "lucide-react";
+import { FileSpreadsheet, FileText, Loader2 } from "lucide-react";
 
 interface ExportOptionsProps {
   studentId: string;
@@ -131,7 +131,7 @@ export function ExportOptions({
             {isExporting ? (
               <Loader2 className="h-4 w-4 animate-spin" />
             ) : (
-              <FilePdf className="h-4 w-4" />
+              <FileText className="h-4 w-4" />
             )}
             Export as PDF
           </Button>

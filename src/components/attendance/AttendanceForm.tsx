@@ -31,6 +31,7 @@ export function AttendanceForm() {
       <CardContent className="p-6">
         <div className="space-y-4">
           <ClassSelector 
+            form={form}
             selectedClass={selectedClass}
             setSelectedClass={setSelectedClass}
             isLoading={isLoadingClasses}
@@ -38,6 +39,7 @@ export function AttendanceForm() {
           />
 
           <StudentSelector 
+            form={form}
             selectedStudent={selectedStudent}
             setSelectedStudent={setSelectedStudent}
             isLoading={isLoadingStudents}

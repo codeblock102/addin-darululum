@@ -5,12 +5,23 @@ import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/comp
 import { UseFormReturn } from "react-hook-form";
 
 interface ClassSelectorProps {
-  classes: { id: string; name: string }[] | undefined;
+  classes?: { id: string; name: string }[];
   isLoading: boolean;
   form: UseFormReturn<any>;
+  selectedClass?: string;
+  setSelectedClass?: (value: string) => void;
+  classesData?: any[];
 }
 
-export function ClassSelector({ classes, isLoading, form }: ClassSelectorProps) {
+export function ClassSelector({ classes, isLoading, form, selectedClass, setSelectedClass, classesData }: ClassSelectorProps) {
+  // If we have direct props for value/onChange, use those (for components not using react-hook-form)
+  const handleChange = (value: string) => {
+    if (setSelectedClass) {
+      setSelectedClass(value);
+    }
+  };
+
+  // Use the component with either direct props or within a form context
   return (
     <FormField
       control={form.control}
@@ -19,7 +30,13 @@ export function ClassSelector({ classes, isLoading, form }: ClassSelectorProps) 
         <FormItem>
           <FormLabel className="text-gray-700 dark:text-gray-300">Class</FormLabel>
           <FormControl>
-            <Select onValueChange={field.onChange} defaultValue={field.value}>
+            <Select 
+              onValueChange={(value) => {
+                field.onChange(value);
+                handleChange(value);
+              }} 
+              value={selectedClass || field.value}
+            >
               <SelectTrigger 
                 disabled={isLoading}
                 className="w-full border-gray-300 dark:border-gray-700 focus:ring-purple-500 focus:border-purple-500"
@@ -34,7 +51,7 @@ export function ClassSelector({ classes, isLoading, form }: ClassSelectorProps) 
                 )}
               </SelectTrigger>
               <SelectContent>
-                {classes?.map((cls) => (
+                {(classesData || classes)?.map((cls) => (
                   <SelectItem key={cls.id} value={cls.id}>
                     {cls.name}
                   </SelectItem>

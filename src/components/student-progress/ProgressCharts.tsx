@@ -14,8 +14,10 @@ import {
   Legend, 
   ResponsiveContainer,
   LineChart,
-  Line
+  Line,
+  TooltipProps
 } from "recharts";
+import { NameType, ValueType } from "recharts/types/component/DefaultTooltipContent";
 
 interface ProgressChartsProps {
   progressData: Progress[];
@@ -31,6 +33,15 @@ export function ProgressCharts({ progressData, dhorData }: ProgressChartsProps) 
   
   // Data for dhor performance comparison
   const dhorPerformanceData = processDhorPerformanceData(dhorData);
+
+  // Custom tooltip formatter
+  const customTooltipFormatter = (value: ValueType, name: NameType) => {
+    let formattedName = name;
+    if (typeof name === 'string') {
+      formattedName = name.replace('_', ' ');
+    }
+    return [value, formattedName];
+  };
 
   return (
     <Card>
@@ -126,7 +137,7 @@ export function ProgressCharts({ progressData, dhorData }: ProgressChartsProps) 
                         boxShadow: "0 2px 10px rgba(0,0,0,0.1)", 
                         border: "1px solid #eee" 
                       }}
-                      formatter={(value, name) => [value, name.replace('_', ' ')]}
+                      formatter={customTooltipFormatter}
                     />
                     <Legend verticalAlign="top" height={36} />
                     <Bar 
@@ -162,7 +173,7 @@ export function ProgressCharts({ progressData, dhorData }: ProgressChartsProps) 
                         boxShadow: "0 2px 10px rgba(0,0,0,0.1)", 
                         border: "1px solid #eee" 
                       }}
-                      formatter={(value, name) => [value, name.replace('_', ' ')]}
+                      formatter={customTooltipFormatter}
                     />
                     <Legend verticalAlign="top" height={36} />
                     <Line 
@@ -217,7 +228,7 @@ export function ProgressCharts({ progressData, dhorData }: ProgressChartsProps) 
                       boxShadow: "0 2px 10px rgba(0,0,0,0.1)", 
                       border: "1px solid #eee" 
                     }}
-                    formatter={(value, name) => [value, name.replace('_', ' ')]}
+                    formatter={customTooltipFormatter}
                   />
                   <Legend verticalAlign="top" height={36} />
                   <Bar 

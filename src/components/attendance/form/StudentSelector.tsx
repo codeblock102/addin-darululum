@@ -5,13 +5,29 @@ import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/comp
 import { UseFormReturn } from "react-hook-form";
 
 interface StudentSelectorProps {
-  students: { id: string; name: string }[] | undefined;
+  students?: { id: string; name: string }[];
   isLoading: boolean;
   form: UseFormReturn<any>;
   disabled?: boolean;
+  selectedStudent?: string;
+  setSelectedStudent?: (value: string) => void;
 }
 
-export function StudentSelector({ students, isLoading, form, disabled = false }: StudentSelectorProps) {
+export function StudentSelector({ 
+  students, 
+  isLoading, 
+  form, 
+  disabled = false,
+  selectedStudent,
+  setSelectedStudent 
+}: StudentSelectorProps) {
+  // If we have direct props for value/onChange, use those (for components not using react-hook-form)
+  const handleChange = (value: string) => {
+    if (setSelectedStudent) {
+      setSelectedStudent(value);
+    }
+  };
+
   return (
     <FormField
       control={form.control}
@@ -21,8 +37,11 @@ export function StudentSelector({ students, isLoading, form, disabled = false }:
           <FormLabel className="text-gray-700 dark:text-gray-300">Student</FormLabel>
           <FormControl>
             <Select 
-              onValueChange={field.onChange} 
-              defaultValue={field.value}
+              onValueChange={(value) => {
+                field.onChange(value);
+                handleChange(value);
+              }}
+              value={selectedStudent || field.value}
               disabled={disabled || isLoading}
             >
               <SelectTrigger 
