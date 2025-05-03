@@ -22,9 +22,8 @@ interface AttendanceRecord {
     id: string;
     name: string;
   };
-  // Make class_schedule optional since it might not be present in all records
   class_schedule?: {
-    class_name: string;
+    class_name?: string;
   };
 }
 
@@ -84,7 +83,11 @@ export function AttendanceTable({ teacherId }: AttendanceTableProps) {
           ] as AttendanceRecord[];
         }
         
-        return data as unknown as AttendanceRecord[];
+        // Cast the data to our AttendanceRecord type, ensuring optional fields
+        return (data as any[]).map(record => ({
+          ...record,
+          class_schedule: record.class_schedule || { class_name: "N/A" }
+        })) as AttendanceRecord[];
       } catch (error) {
         console.error("Error fetching attendance records:", error);
         return [] as AttendanceRecord[];
@@ -99,7 +102,17 @@ export function AttendanceTable({ teacherId }: AttendanceTableProps) {
     (record.class_schedule?.class_name?.toLowerCase() || "").includes(searchQuery.toLowerCase())
   );
 
-  // Optional: Handle various states like loading, error, etc.
+  // Function to handle search input changes
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value);
+  };
+
+  // Function to reset filters
+  const resetFilters = () => {
+    setSearchQuery("");
+  };
+
+  const hasFilters = searchQuery.length > 0;
   
   return (
     <div className="space-y-4">
@@ -108,7 +121,7 @@ export function AttendanceTable({ teacherId }: AttendanceTableProps) {
       <SearchInput 
         placeholder="Search students, status..." 
         value={searchQuery}
-        onChange={(e) => setSearchQuery(e.target.value)}
+        onChange={handleSearchChange}
       />
       
       {isLoading ? (
@@ -116,32 +129,11 @@ export function AttendanceTable({ teacherId }: AttendanceTableProps) {
           <div className="animate-spin rounded-full h-8 w-8 border-2 border-primary border-t-transparent"></div>
         </div>
       ) : !filteredRecords?.length ? (
-        <AttendanceEmptyState />
+        <AttendanceEmptyState hasFilters={hasFilters} resetFilters={resetFilters} />
       ) : (
         <AttendanceDataTable 
-          data={filteredRecords}
-          columns={[
-            {
-              header: "Student",
-              cell: (row) => row.student.name
-            },
-            {
-              header: "Date",
-              cell: (row) => new Date(row.date).toLocaleDateString()
-            },
-            {
-              header: "Status",
-              cell: (row) => <AttendanceStatusBadge status={row.status} />
-            },
-            {
-              header: "Class",
-              cell: (row) => row.class_schedule?.class_name || "N/A"
-            },
-            {
-              header: "Notes",
-              cell: (row) => row.notes || "—"
-            }
-          ]}
+          isLoading={isLoading}
+          attendanceRecords={filteredRecords}
         />
       )}
     </div>

@@ -29,6 +29,14 @@ interface ProgressData {
   dhor2?: number;
 }
 
+interface DhorData {
+  entry_date: string;
+  dhor_1_mistakes?: number;
+  dhor_2_mistakes?: number;
+  points?: number;
+  [key: string]: any;
+}
+
 interface AttendanceData {
   status: string;
   count: number;
@@ -37,6 +45,7 @@ interface AttendanceData {
 interface ProgressChartsProps {
   progressData?: ProgressData[];
   attendanceData?: AttendanceData[];
+  dhorData?: DhorData[];
   studentName?: string;
 }
 
@@ -50,15 +59,20 @@ const ATTENDANCE_COLORS = {
 };
 
 // Format tooltip labels properly for charts
-const formatTooltipLabel = (value: string | number) => {
-  // If value is a number, just return it
-  if (typeof value === 'number') return value;
+const formatTooltipLabel = (value: any): string => {
+  // If value is a number, just return it as string
+  if (typeof value === 'number') return value.toString();
   
   // If it's a string (like a date), return as is
   return String(value);
 };
 
-export const ProgressCharts = ({ progressData = [], attendanceData = [], studentName }: ProgressChartsProps) => {
+export const ProgressCharts = ({ 
+  progressData = [], 
+  attendanceData = [], 
+  dhorData = [],
+  studentName 
+}: ProgressChartsProps) => {
   const [viewType, setViewType] = useState<'bar' | 'line'>('bar');
   
   // Use sample data if no data is provided
@@ -100,7 +114,7 @@ export const ProgressCharts = ({ progressData = [], attendanceData = [], student
   // Custom tooltip formatter for recharts
   const CustomTooltip = ({ active, payload, label }: TooltipProps<string | number, string>) => {
     if (active && payload && payload.length) {
-      const formattedLabel = typeof label === 'string' ? formatDate(label) : label;
+      const formattedLabel = typeof label === 'string' ? formatDate(label) : String(label);
       
       return (
         <div className="bg-white dark:bg-gray-800 p-3 border border-gray-200 dark:border-gray-700 rounded shadow-md">

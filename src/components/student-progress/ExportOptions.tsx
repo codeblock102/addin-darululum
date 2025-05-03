@@ -1,16 +1,54 @@
 
-// Import the correct icons from lucide-react
-import { Download, FileSpreadsheet, FileDown } from "lucide-react";
+import { FileDown, FileSpreadsheet } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 
 interface ExportOptionsProps {
-  onExportPDF: () => void;
-  onExportCSV: () => void;
+  onExportPDF?: () => void;
+  onExportCSV?: () => void;
   studentId?: string;
+  studentName?: string;
+  progressData?: any[];
+  attendanceData?: any[];
+  dhorData?: any[];
+  toast?: any;
 }
 
-export const ExportOptions = ({ onExportPDF, onExportCSV, studentId }: ExportOptionsProps) => {
+export const ExportOptions = ({ 
+  onExportPDF, 
+  onExportCSV, 
+  studentId,
+  studentName,
+  progressData,
+  attendanceData,
+  dhorData,
+  toast
+}: ExportOptionsProps) => {
+  
+  const handleExportPDF = () => {
+    if (onExportPDF) {
+      onExportPDF();
+    } else if (toast) {
+      toast({
+        title: "Export initiated",
+        description: `Preparing PDF report for ${studentName || 'student'}`,
+      });
+      // Default PDF export logic could be implemented here
+    }
+  };
+  
+  const handleExportCSV = () => {
+    if (onExportCSV) {
+      onExportCSV();
+    } else if (toast) {
+      toast({
+        title: "Export initiated",
+        description: `Preparing CSV data for ${studentName || 'student'}`,
+      });
+      // Default CSV export logic could be implemented here
+    }
+  };
+  
   return (
     <Card className="mb-6">
       <CardContent className="p-4">
@@ -19,7 +57,7 @@ export const ExportOptions = ({ onExportPDF, onExportCSV, studentId }: ExportOpt
           <Button 
             variant="outline" 
             size="sm" 
-            onClick={onExportPDF}
+            onClick={handleExportPDF}
             disabled={!studentId}
             className="w-full sm:w-auto"
           >
@@ -29,7 +67,7 @@ export const ExportOptions = ({ onExportPDF, onExportCSV, studentId }: ExportOpt
           <Button 
             variant="outline" 
             size="sm" 
-            onClick={onExportCSV}
+            onClick={handleExportCSV}
             disabled={!studentId}
             className="w-full sm:w-auto"
           >

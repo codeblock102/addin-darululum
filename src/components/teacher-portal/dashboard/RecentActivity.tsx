@@ -15,17 +15,27 @@ interface ActivityItem {
   };
 }
 
-export const RecentActivity = () => {
+interface RecentActivityProps {
+  teacherId?: string;
+}
+
+export const RecentActivity = ({ teacherId }: RecentActivityProps) => {
   const {
     data: recentActivity
   } = useQuery({
-    queryKey: ['recentActivity'],
+    queryKey: ['recentActivity', teacherId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from('progress')
         .select('id, date, students(name), verses_memorized, memorization_quality')
         .order('date', { ascending: false })
         .limit(5);
+        
+      if (teacherId) {
+        query = query.eq('teacher_id', teacherId);
+      }
+      
+      const { data, error } = await query;
         
       if (error) throw error;
       

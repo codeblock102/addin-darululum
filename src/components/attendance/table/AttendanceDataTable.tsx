@@ -14,13 +14,13 @@ type AttendanceRecord = {
     id: string;
     name: string;
   };
-  class_schedule: {
-    class_name: string;
+  class_schedule?: {
+    class_name?: string;
   };
 };
 
 interface AttendanceDataTableProps {
-  isLoading: boolean;
+  isLoading?: boolean;
   attendanceRecords?: AttendanceRecord[];
 }
 
@@ -63,7 +63,7 @@ export function AttendanceDataTable({ isLoading, attendanceRecords }: Attendance
                   {record.student.name}
                 </TableCell>
                 <TableCell className="text-gray-900 dark:text-gray-200">
-                  {record.class_schedule.class_name}
+                  {record.class_schedule?.class_name || "N/A"}
                 </TableCell>
                 <TableCell>
                   <StatusBadge status={record.status as any} />

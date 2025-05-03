@@ -13,9 +13,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 interface Student {
   id: string;
   name: string;
-  age?: number;
   grade?: string;
-  profile_image?: string;
 }
 
 interface StudentSearchProps {
@@ -34,23 +32,28 @@ export const StudentSearch = ({ onStudentSelect, selectedStudentId }: StudentSea
       try {
         const { data, error } = await supabase
           .from("students")
-          .select("id, name, age, grade, profile_image")
+          .select("id, name, grade")
           .order("name");
           
         if (error) throw error;
         
-        // If no real data, use sample data
+        // If no real data, use sample data or handle the empty case
         if (!data || data.length === 0) {
           return [
-            { id: "1", name: "Ahmad Hassan", age: 12, grade: "7" },
-            { id: "2", name: "Fatima Ahmed", age: 11, grade: "6" },
-            { id: "3", name: "Mohammed Ali", age: 10, grade: "5" },
-            { id: "4", name: "Sara Mahmoud", age: 13, grade: "8" },
-            { id: "5", name: "Youssef Ibrahim", age: 9, grade: "4" }
+            { id: "1", name: "Ahmad Hassan", grade: "7" },
+            { id: "2", name: "Fatima Ahmed", grade: "6" },
+            { id: "3", name: "Mohammed Ali", grade: "5" },
+            { id: "4", name: "Sara Mahmoud", grade: "8" },
+            { id: "5", name: "Youssef Ibrahim", grade: "4" }
           ] as Student[];
         }
         
-        return data as Student[];
+        // Safely map the data to ensure it matches our Student type
+        return (data as any[]).map(student => ({
+          id: student.id,
+          name: student.name,
+          grade: student.grade
+        })) as Student[];
       } catch (error) {
         console.error("Error fetching students:", error);
         return [] as Student[];
