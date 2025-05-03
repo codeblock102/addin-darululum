@@ -52,7 +52,7 @@ export function AttendanceTable() {
 
         <AttendanceDataTable 
           isLoading={isLoadingAttendance}
-          attendanceRecords={attendanceRecords}
+          attendanceRecords={attendanceRecords && attendanceRecords.length > 0 ? attendanceRecords : []}
         />
 
         {!isLoadingAttendance && (!attendanceRecords || attendanceRecords.length === 0) && (

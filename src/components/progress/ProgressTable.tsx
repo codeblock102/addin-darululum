@@ -12,37 +12,7 @@ import {
 import { formatDate } from "@/lib/utils";
 import { Progress } from "@/types/progress";
 import { useUserRole } from "@/hooks/useUserRole";
-import { Badge } from "@/components/ui/badge";
-
-const getQualityBadge = (quality: string | undefined, isAdmin: boolean) => {
-  if (!quality) return null;
-  
-  if (quality === 'excellent') {
-    return (
-      <Badge className={isAdmin ? "bg-green-500/20 text-green-300 border border-green-500/30" : "bg-green-100 text-green-700"}>
-        Excellent
-      </Badge>
-    );
-  } else if (quality === 'good') {
-    return (
-      <Badge className={isAdmin ? "bg-blue-500/20 text-blue-300 border border-blue-500/30" : "bg-blue-100 text-blue-700"}>
-        Good
-      </Badge>
-    );
-  } else if (quality === 'needsWork') {
-    return (
-      <Badge className={isAdmin ? "bg-amber-500/20 text-amber-300 border border-amber-500/30" : "bg-amber-100 text-amber-700"}>
-        Needs Work
-      </Badge>
-    );
-  } else {
-    return (
-      <Badge className={isAdmin ? "bg-red-500/20 text-red-300 border border-red-500/30" : "bg-red-100 text-red-700"}>
-        Needs Review
-      </Badge>
-    );
-  }
-};
+import { StatusBadge } from "@/components/ui/status-badge";
 
 export const ProgressTable = ({ data }: { data: Progress[] }) => {
   const { isAdmin } = useUserRole();
@@ -79,7 +49,9 @@ export const ProgressTable = ({ data }: { data: Progress[] }) => {
               <TableCell>{progress.current_surah || "N/A"}</TableCell>
               <TableCell className="text-center">{progress.verses_memorized || 0}</TableCell>
               <TableCell className="text-right">
-                {getQualityBadge(progress.memorization_quality, isAdmin)}
+                {progress.memorization_quality ? (
+                  <StatusBadge status={progress.memorization_quality} />
+                ) : null}
               </TableCell>
             </TableRow>
           ))}

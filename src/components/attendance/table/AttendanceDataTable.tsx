@@ -2,8 +2,8 @@
 import { format, parseISO } from "date-fns";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { AttendanceStatusBadge } from "./AttendanceStatusBadge";
 import { Loader2 } from "lucide-react";
+import { StatusBadge } from "@/components/ui/status-badge";
 
 type AttendanceRecord = {
   id: string;
@@ -66,7 +66,7 @@ export function AttendanceDataTable({ isLoading, attendanceRecords }: Attendance
                   {record.class_schedule.class_name}
                 </TableCell>
                 <TableCell>
-                  <AttendanceStatusBadge status={record.status} />
+                  <StatusBadge status={record.status as any} />
                 </TableCell>
                 <TableCell className="max-w-[200px] truncate text-gray-700 dark:text-gray-300">
                   {record.notes || "—"}

@@ -3,9 +3,10 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
 import { CheckCircle, XCircle } from "lucide-react";
+import { StatusBadge } from "@/components/ui/status-badge";
 
 export interface RevisionScheduleItem {
   id: string;
@@ -96,32 +97,6 @@ export const RevisionSchedule = ({ studentId, revisionSchedule }: RevisionSchedu
     return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
   };
 
-  const getPriorityColor = (priority: string) => {
-    switch(priority.toLowerCase()) {
-      case 'high': return 'bg-red-100 text-red-700';
-      case 'medium': return 'bg-yellow-100 text-yellow-700';
-      case 'low': return 'bg-blue-100 text-blue-700';
-      default: return 'bg-gray-100 text-gray-700';
-    }
-  };
-
-  const getStatusColor = (status: string) => {
-    switch(status.toLowerCase()) {
-      case 'completed': return 'bg-green-100 text-green-700';
-      case 'skipped': return 'bg-orange-100 text-orange-700';
-      case 'pending': return 'bg-blue-100 text-blue-700';
-      default: return 'bg-gray-100 text-gray-700';
-    }
-  };
-
-  const handleComplete = (id: string) => {
-    markCompleteMutation.mutate(id);
-  };
-
-  const handleSkip = (id: string) => {
-    markSkippedMutation.mutate(id);
-  };
-
   return (
     <Card>
       <CardContent className="p-6">
@@ -143,14 +118,18 @@ export const RevisionSchedule = ({ studentId, revisionSchedule }: RevisionSchedu
                   <TableCell>{item.juz_number}</TableCell>
                   <TableCell>{formatDate(item.scheduled_date)}</TableCell>
                   <TableCell>
-                    <span className={`inline-block px-2 py-1 rounded-full text-xs font-semibold ${getPriorityColor(item.priority)}`}>
-                      {item.priority}
-                    </span>
+                    <StatusBadge 
+                      status={item.priority === 'high' ? 'error' : 
+                             item.priority === 'medium' ? 'warning' : 'info'} 
+                      customLabel={item.priority.charAt(0).toUpperCase() + item.priority.slice(1)}
+                    />
                   </TableCell>
                   <TableCell>
-                    <span className={`inline-block px-2 py-1 rounded-full text-xs font-semibold ${getStatusColor(item.status)}`}>
-                      {item.status}
-                    </span>
+                    <StatusBadge 
+                      status={item.status === 'completed' ? 'success' : 
+                             item.status === 'skipped' ? 'warning' : 'info'} 
+                      customLabel={item.status.charAt(0).toUpperCase() + item.status.slice(1)}
+                    />
                   </TableCell>
                   <TableCell>
                     {item.status === 'pending' && (
@@ -159,7 +138,7 @@ export const RevisionSchedule = ({ studentId, revisionSchedule }: RevisionSchedu
                           variant="outline" 
                           size="sm" 
                           className="text-green-600 border-green-600 hover:bg-green-50"
-                          onClick={() => handleComplete(item.id)}
+                          onClick={() => markCompleteMutation.mutate(item.id)}
                           disabled={markCompleteMutation.isPending}
                         >
                           <CheckCircle className="h-4 w-4 mr-1" />
@@ -169,7 +148,7 @@ export const RevisionSchedule = ({ studentId, revisionSchedule }: RevisionSchedu
                           variant="outline" 
                           size="sm" 
                           className="text-orange-600 border-orange-600 hover:bg-orange-50"
-                          onClick={() => handleSkip(item.id)}
+                          onClick={() => markSkippedMutation.mutate(item.id)}
                           disabled={markSkippedMutation.isPending}
                         >
                           <XCircle className="h-4 w-4 mr-1" />
