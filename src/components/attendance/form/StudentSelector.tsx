@@ -1,16 +1,17 @@
 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Label } from "@/components/ui/label";
 import { Loader2 } from "lucide-react";
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { UseFormReturn } from "react-hook-form";
 
 interface StudentSelectorProps {
   students: { id: string; name: string }[] | undefined;
   isLoading: boolean;
-  form: any;
+  form: UseFormReturn<any>;
+  disabled?: boolean;
 }
 
-export function StudentSelector({ students, isLoading, form }: StudentSelectorProps) {
+export function StudentSelector({ students, isLoading, form, disabled = false }: StudentSelectorProps) {
   return (
     <FormField
       control={form.control}
@@ -19,9 +20,13 @@ export function StudentSelector({ students, isLoading, form }: StudentSelectorPr
         <FormItem>
           <FormLabel className="text-gray-700 dark:text-gray-300">Student</FormLabel>
           <FormControl>
-            <Select onValueChange={field.onChange} defaultValue={field.value}>
+            <Select 
+              onValueChange={field.onChange} 
+              defaultValue={field.value}
+              disabled={disabled || isLoading}
+            >
               <SelectTrigger 
-                disabled={isLoading}
+                disabled={disabled || isLoading}
                 className="w-full border-gray-300 dark:border-gray-700 focus:ring-purple-500 focus:border-purple-500"
               >
                 {isLoading ? (

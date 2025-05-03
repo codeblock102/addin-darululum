@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -11,7 +12,6 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
@@ -30,7 +30,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
+import { useForm, FormProvider } from "react-hook-form";
 import * as z from "zod";
 import { Loader2, Save, BookOpen } from "lucide-react";
 
@@ -168,7 +168,7 @@ export const SabaqAssignment = ({ teacherId }: SabaqAssignmentProps) => {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <Form {...form}>
+        <FormProvider {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <FormField
               control={form.control}
@@ -368,7 +368,7 @@ export const SabaqAssignment = ({ teacherId }: SabaqAssignmentProps) => {
               )}
             </Button>
           </form>
-        </Form>
+        </FormProvider>
       </CardContent>
     </Card>
   );
