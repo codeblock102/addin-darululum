@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { supabase } from '@/integrations/supabase/client';
 
-// Define an interface for the activity data with properly defined types
+// Define a simplified interface for the activity data
 interface ActivityItem {
   id: string;
   date: string;
@@ -25,41 +25,31 @@ export const RecentActivity = ({ teacherId }: RecentActivityProps) => {
   } = useQuery({
     queryKey: ['recentActivity', teacherId],
     queryFn: async () => {
-      let query = supabase
-        .from('progress')
-        .select('id, date, students(name), verses_memorized, memorization_quality')
-        .order('date', { ascending: false })
-        .limit(5);
+      try {
+        let query = supabase
+          .from('progress')
+          .select('id, date, students(name), verses_memorized, memorization_quality')
+          .order('date', { ascending: false })
+          .limit(5);
+          
+        if (teacherId) {
+          query = query.eq('teacher_id', teacherId);
+        }
         
-      if (teacherId) {
-        query = query.eq('teacher_id', teacherId);
-      }
-      
-      const { data, error } = await query;
+        const { data, error } = await query;
+          
+        if (error) throw error;
         
-      if (error) throw error;
-      
-      // If no actual data exists, use some sample data for development
-      if (!data || data.length === 0) {
-        return [
-          {
-            id: "1",
-            date: "2025-05-01",
-            verses_memorized: 5,
-            memorization_quality: "excellent",
-            students: { name: "Ahmed Ali" }
-          },
-          {
-            id: "2",
-            date: "2025-04-30",
-            verses_memorized: 3,
-            memorization_quality: "good",
-            students: { name: "Sara Khan" }
-          }
-        ] as ActivityItem[];
+        // If no actual data exists, return empty array
+        if (!data || data.length === 0) {
+          return [] as ActivityItem[];
+        }
+        
+        return data as ActivityItem[];
+      } catch (error) {
+        console.error("Error fetching recent activity:", error);
+        return [] as ActivityItem[];
       }
-      
-      return data as ActivityItem[];
     }
   });
   
@@ -70,7 +60,7 @@ export const RecentActivity = ({ teacherId }: RecentActivityProps) => {
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          {recentActivity ? recentActivity.map((activity) => (
+          {recentActivity && recentActivity.length > 0 ? recentActivity.map((activity) => (
             <div key={activity.id} className="flex items-center justify-between border-b pb-2 last:border-0">
               <div>
                 <p className="font-medium">{activity.students?.name || 'Unknown Student'}</p>

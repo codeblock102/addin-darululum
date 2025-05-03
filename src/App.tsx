@@ -4,7 +4,7 @@ import Attendance from '@/pages/Attendance';
 import Classes from '@/pages/Classes';
 import Index from '@/pages/Index';
 import NotFound from '@/pages/NotFound';
-import Preferences from '@/pages/Preferences';
+import Preferences from '@/pages/preferences'; // Changed from @/pages/Preferences to match actual file casing
 import Progress from '@/pages/Progress';
 import Schedule from '@/pages/Schedule';
 import Settings from '@/pages/Settings';
