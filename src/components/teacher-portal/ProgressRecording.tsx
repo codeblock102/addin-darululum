@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -5,12 +6,11 @@ import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
+import { useForm, FormProvider } from "react-hook-form";
 import * as z from "zod";
 import { Loader2, Save } from "lucide-react";
 
@@ -148,11 +148,13 @@ export const ProgressRecording = ({
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <Form {...form}>
+        <FormProvider {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            <FormField control={form.control} name="student_id" render={({
-            field
-          }) => <FormItem>
+            <FormField
+              control={form.control}
+              name="student_id"
+              render={({ field }) => (
+                <FormItem>
                   <FormLabel>Student</FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value} disabled={studentsLoading}>
                     <FormControl>
@@ -161,62 +163,84 @@ export const ProgressRecording = ({
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {students?.map(student => <SelectItem key={student.id} value={student.id}>
+                      {students?.map(student => (
+                        <SelectItem key={student.id} value={student.id}>
                           {student.name}
-                        </SelectItem>)}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                   <FormMessage />
-                </FormItem>} />
+                </FormItem>
+              )}
+            />
             
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <FormField control={form.control} name="current_surah" render={({
-              field
-            }) => <FormItem>
+              <FormField
+                control={form.control}
+                name="current_surah"
+                render={({ field }) => (
+                  <FormItem>
                     <FormLabel>Surah Number</FormLabel>
                     <FormControl>
                       <Input type="number" min={1} max={114} {...field} />
                     </FormControl>
                     <FormMessage />
-                  </FormItem>} />
+                  </FormItem>
+                )}
+              />
               
-              <FormField control={form.control} name="current_juz" render={({
-              field
-            }) => <FormItem>
+              <FormField
+                control={form.control}
+                name="current_juz"
+                render={({ field }) => (
+                  <FormItem>
                     <FormLabel>Current Juz</FormLabel>
                     <FormControl>
                       <Input type="number" min={1} max={30} {...field} />
                     </FormControl>
                     <FormMessage />
-                  </FormItem>} />
+                  </FormItem>
+                )}
+              />
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField control={form.control} name="start_ayat" render={({
-              field
-            }) => <FormItem>
+              <FormField
+                control={form.control}
+                name="start_ayat"
+                render={({ field }) => (
+                  <FormItem>
                     <FormLabel>Starting Ayat</FormLabel>
                     <FormControl>
                       <Input type="number" min={1} {...field} />
                     </FormControl>
                     <FormMessage />
-                  </FormItem>} />
+                  </FormItem>
+                )}
+              />
               
-              <FormField control={form.control} name="end_ayat" render={({
-              field
-            }) => <FormItem>
+              <FormField
+                control={form.control}
+                name="end_ayat"
+                render={({ field }) => (
+                  <FormItem>
                     <FormLabel>Ending Ayat</FormLabel>
                     <FormControl>
                       <Input type="number" min={1} {...field} />
                     </FormControl>
                     <FormMessage />
-                  </FormItem>} />
+                  </FormItem>
+                )}
+              />
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField control={form.control} name="memorization_quality" render={({
-              field
-            }) => <FormItem>
+              <FormField
+                control={form.control}
+                name="memorization_quality"
+                render={({ field }) => (
+                  <FormItem>
                     <FormLabel>Memorization Quality</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
@@ -233,44 +257,64 @@ export const ProgressRecording = ({
                       </SelectContent>
                     </Select>
                     <FormMessage />
-                  </FormItem>} />
+                  </FormItem>
+                )}
+              />
               
-              <FormField control={form.control} name="tajweed_level" render={({
-              field
-            }) => <FormItem>
+              <FormField
+                control={form.control}
+                name="tajweed_level"
+                render={({ field }) => (
+                  <FormItem>
                     <FormLabel>Tajweed Level</FormLabel>
                     <FormControl>
                       <Input placeholder="e.g., Excellent, Good, Needs Practice" {...field} />
                     </FormControl>
                     <FormMessage />
-                  </FormItem>} />
+                  </FormItem>
+                )}
+              />
             </div>
             
-            <FormField control={form.control} name="notes" render={({
-            field
-          }) => <FormItem>
+            <FormField
+              control={form.control}
+              name="notes"
+              render={({ field }) => (
+                <FormItem>
                   <FormLabel>Teacher Notes</FormLabel>
                   <FormControl>
-                    <Textarea placeholder="Additional notes about the student's progress, areas for improvement, or specific achievements" className="min-h-[120px]" {...field} />
+                    <Textarea 
+                      placeholder="Additional notes about the student's progress, areas for improvement, or specific achievements" 
+                      className="min-h-[120px]" 
+                      {...field} 
+                    />
                   </FormControl>
                   <FormMessage />
-                </FormItem>} />
+                </FormItem>
+              )}
+            />
             
             <Button type="submit" className="w-full" disabled={progressMutation.isPending}>
-              {progressMutation.isPending ? <>
+              {progressMutation.isPending ? (
+                <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   Saving...
-                </> : <>
+                </>
+              ) : (
+                <>
                   <Save className="mr-2 h-4 w-4" />
                   Record Progress
-                </>}
+                </>
+              )}
             </Button>
             
-            {teacherData && <p className="text-xs text-center text-muted-foreground mt-2">
+            {teacherData && (
+              <p className="text-xs text-center text-muted-foreground mt-2">
                 Entry will be recorded as submitted by Teacher {teacherData.name}
-              </p>}
+              </p>
+            )}
           </form>
-        </Form>
+        </FormProvider>
       </CardContent>
     </Card>;
 };

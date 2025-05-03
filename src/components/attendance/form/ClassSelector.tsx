@@ -1,13 +1,13 @@
 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Label } from "@/components/ui/label";
 import { Loader2 } from "lucide-react";
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { UseFormReturn } from "react-hook-form";
 
 interface ClassSelectorProps {
   classes: { id: string; name: string }[] | undefined;
   isLoading: boolean;
-  form: any;
+  form: UseFormReturn<any>;
 }
 
 export function ClassSelector({ classes, isLoading, form }: ClassSelectorProps) {
