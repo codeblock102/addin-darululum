@@ -1,230 +1,198 @@
 
+import { useState, useEffect } from "react";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Check, Clock, AlertTriangle, ArrowRight, HelpCircle } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { CircularProgressIndicator } from "./CircularProgressIndicator";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend, CartesianGrid } from "recharts";
-import { BarChart2, Calendar, ClipboardList } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface TeacherPerformanceProps {
   teacherId: string;
 }
 
+interface PerformanceStats {
+  totalStudents: number;
+  studentsWithProgress: number;
+  attendanceRecorded: number;
+  progressCoverage: number;
+}
+
 export const TeacherPerformance = ({ teacherId }: TeacherPerformanceProps) => {
-  const thirtyDaysAgo = new Date();
-  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+  const { data: stats, isLoading } = useQuery({
+    queryKey: ["teacher-performance", teacherId],
+    queryFn: async () => {
+      // Get assigned students count
+      const { data: students, error: studentsError } = await supabase
+        .from("students")
+        .select("id")
+        .eq("assigned_teacher", teacherId);
+        
+      if (studentsError) throw studentsError;
+      
+      // Get recent progress records (last 7 days)
+      const sevenDaysAgo = new Date();
+      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+      
+      // Create an array to store student IDs that have progress
+      const studentsWithProgressIds: string[] = [];
+      
+      if (students && students.length > 0) {
+        const studentIds = students.map(s => s.id);
+        
+        // Get progress records
+        const { data: progressRecords, error: progressError } = await supabase
+          .from("progress")
+          .select("student_id")
+          .in("student_id", studentIds)
+          .gte("created_at", sevenDaysAgo.toISOString())
+          .order("created_at", { ascending: false });
+          
+        if (progressError) throw progressError;
+        
+        // Add unique student IDs with progress to the array
+        if (progressRecords) {
+          progressRecords.forEach(record => {
+            if (!studentsWithProgressIds.includes(record.student_id)) {
+              studentsWithProgressIds.push(record.student_id);
+            }
+          });
+        }
+        
+        // Get attendance records
+        const { data: attendanceRecords, error: attendanceError } = await supabase
+          .from("attendance")
+          .select("id")
+          .eq("created_by", teacherId)
+          .gte("created_at", sevenDaysAgo.toISOString());
+          
+        if (attendanceError) throw attendanceError;
+        
+        // Calculate stats
+        return {
+          totalStudents: students.length,
+          studentsWithProgress: studentsWithProgressIds.length,
+          attendanceRecorded: attendanceRecords ? attendanceRecords.length : 0,
+          progressCoverage: students.length > 0 
+            ? Math.round((studentsWithProgressIds.length / students.length) * 100) 
+            : 0
+        };
+      }
+      
+      return {
+        totalStudents: 0,
+        studentsWithProgress: 0,
+        attendanceRecorded: 0,
+        progressCoverage: 0
+      };
+    },
+  });
 
-  // Get progress records by the teacher
-  const { data: progressData } = useQuery({
-    queryKey: ['teacher-progress-data', teacherId],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('progress')
-        .select('id, date')
-        .eq('contributor_id', teacherId)
-        .gte('created_at', thirtyDaysAgo.toISOString());
-        
-      if (error) {
-        console.error('Error fetching progress data:', error);
-        return [];
-      }
-      
-      return data;
+  const getStatusIndicator = (value: number, total: number) => {
+    const percentage = total > 0 ? (value / total) * 100 : 0;
+    
+    if (percentage >= 70) {
+      return {
+        icon: <Check className="h-4 w-4 text-green-500" />,
+        color: "bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300"
+      };
+    } else if (percentage >= 40) {
+      return {
+        icon: <Clock className="h-4 w-4 text-amber-500" />,
+        color: "bg-amber-100 text-amber-800 dark:bg-amber-900/20 dark:text-amber-300"
+      };
+    } else {
+      return {
+        icon: <AlertTriangle className="h-4 w-4 text-red-500" />,
+        color: "bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-300"
+      };
     }
-  });
-  
-  // Get dhor book entries by the teacher
-  const { data: dhorBookData } = useQuery({
-    queryKey: ['teacher-dhor-data', teacherId],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('dhor_book_entries')
-        .select('id, entry_date')
-        .eq('teacher_id', teacherId)
-        .gte('created_at', thirtyDaysAgo.toISOString());
-        
-      if (error) {
-        console.error('Error fetching dhor book data:', error);
-        return [];
-      }
-      
-      return data;
-    }
-  });
-  
-  // Get attendance records by the teacher
-  const { data: attendanceData } = useQuery({
-    queryKey: ['teacher-attendance-data', teacherId],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('attendance')
-        .select('id, date')
-        .gte('created_at', thirtyDaysAgo.toISOString());
-        
-      if (error) {
-        console.error('Error fetching attendance data:', error);
-        return [];
-      }
-      
-      return data;
-    }
-  });
-  
-  // Calculate metrics
-  const totalProgress = progressData?.length || 0;
-  const totalDhor = dhorBookData?.length || 0;
-  const totalAttendance = attendanceData?.length || 0;
-  const totalRecords = totalProgress + totalDhor + totalAttendance;
+  };
 
-  // Group data by week for chart
-  const getLast4WeeksLabels = () => {
-    const labels = [];
-    const now = new Date();
-    
-    for (let i = 3; i >= 0; i--) {
-      const weekStart = new Date();
-      weekStart.setDate(now.getDate() - (i * 7 + now.getDay()));
-      const weekEnd = new Date(weekStart);
-      weekEnd.setDate(weekStart.getDate() + 6);
-      
-      labels.push(`${weekStart.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${weekEnd.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`);
-    }
-    
-    return labels;
-  };
-  
-  const getWeekNumber = (date: Date) => {
-    const now = new Date();
-    const diff = now.getTime() - date.getTime();
-    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-    return Math.floor(days / 7);
-  };
-  
-  const getWeekData = (data: any[]) => {
-    const weekCounts = [0, 0, 0, 0]; // Last 4 weeks
-    
-    data?.forEach(item => {
-      const date = new Date(item.date || item.entry_date);
-      const weekNum = getWeekNumber(date);
-      
-      if (weekNum >= 0 && weekNum < 4) {
-        weekCounts[3 - weekNum]++; // Reverse to show oldest to newest
-      }
-    });
-    
-    return weekCounts;
-  };
-  
-  // Prepare chart data using recharts format
-  const chartData = getLast4WeeksLabels().map((label, index) => ({
-    name: label,
-    Progress: getWeekData(progressData || [])[index] || 0,
-    Dhor: getWeekData(dhorBookData || [])[index] || 0,
-    Attendance: getWeekData(attendanceData || [])[index] || 0
-  }));
+  if (isLoading) {
+    return (
+      <Card className="border border-purple-200 dark:border-purple-800/40">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-lg text-purple-700 dark:text-purple-300">Your Performance</CardTitle>
+        </CardHeader>
+        <CardContent className="flex items-center justify-center py-6">
+          <div className="animate-pulse w-full h-32 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (!stats) {
+    return null;
+  }
+
+  const studentProgress = getStatusIndicator(stats.studentsWithProgress, stats.totalStudents);
   
   return (
-    <div className="space-y-6">
-      <Card className="border border-purple-100 dark:border-purple-900/30 shadow-sm">
-        <CardHeader className="bg-purple-50 dark:bg-purple-900/20">
-          <CardTitle className="flex items-center gap-2 text-purple-700 dark:text-purple-300">
-            <BarChart2 className="h-5 w-5" />
-            Performance Overview
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="pt-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <ClipboardList className="h-5 w-5 text-green-600 dark:text-green-400" />
-                  <span className="font-medium">Progress Entries</span>
-                </div>
-                <span className="font-bold">{totalProgress}</span>
+    <Card className="border border-purple-200 dark:border-purple-800/40">
+      <CardHeader className="pb-2">
+        <div className="flex justify-between items-center">
+          <CardTitle className="text-lg text-purple-700 dark:text-purple-300">Your Performance</CardTitle>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <HelpCircle className="h-4 w-4 text-gray-400 cursor-help" />
+              </TooltipTrigger>
+              <TooltipContent className="bg-white dark:bg-gray-800 p-2 shadow-lg rounded">
+                <p className="text-sm">Your teaching performance statistics for the last 7 days</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        </div>
+      </CardHeader>
+      <CardContent className="pb-2">
+        <div className="flex items-start justify-between">
+          <div>
+            <div className="flex items-center space-x-2">
+              <p className="text-2xl font-semibold text-gray-900 dark:text-white">
+                {stats.progressCoverage}%
+              </p>
+              <div className={`px-2 py-1 rounded text-xs font-medium flex items-center ${studentProgress.color}`}>
+                {studentProgress.icon}
+                <span className="ml-1">
+                  {stats.studentsWithProgress}/{stats.totalStudents} Students
+                </span>
               </div>
-              <Progress value={(totalProgress / (totalRecords || 1)) * 100} className="bg-muted h-2" />
             </div>
             
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Calendar className="h-5 w-5 text-amber-600 dark:text-amber-400" />
-                  <span className="font-medium">Dhor Book Entries</span>
-                </div>
-                <span className="font-bold">{totalDhor}</span>
-              </div>
-              <Progress value={(totalDhor / (totalRecords || 1)) * 100} className="bg-muted h-2" />
-            </div>
-            
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Calendar className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-                  <span className="font-medium">Attendance Records</span>
-                </div>
-                <span className="font-bold">{totalAttendance}</span>
-              </div>
-              <Progress value={(totalAttendance / (totalRecords || 1)) * 100} className="bg-muted h-2" />
-            </div>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+              Student Progress Coverage
+            </p>
           </div>
           
-          <div className="h-64">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={chartData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f3f3f3" />
-                <XAxis dataKey="name" scale="band" fontSize={10} />
-                <YAxis fontSize={11} />
-                <Tooltip />
-                <Legend />
-                <Bar dataKey="Progress" fill="#4ade80" name="Progress Entries" />
-                <Bar dataKey="Dhor" fill="#fbbf24" name="Dhor Book" />
-                <Bar dataKey="Attendance" fill="#60a5fa" name="Attendance" />
-              </BarChart>
-            </ResponsiveContainer>
+          <CircularProgressIndicator 
+            value={stats.progressCoverage} 
+            size={64}
+          />
+        </div>
+        
+        <div className="mt-4 grid grid-cols-2 gap-2">
+          <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-3">
+            <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Students</p>
+            <p className="text-xl font-semibold text-gray-900 dark:text-white">{stats.totalStudents}</p>
           </div>
-        </CardContent>
-      </Card>
-      
-      <Card className="border border-purple-100 dark:border-purple-900/30 shadow-sm">
-        <CardHeader>
-          <CardTitle className="text-purple-700 dark:text-purple-300">Activity Timeline</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Tabs defaultValue="all">
-            <TabsList className="bg-purple-50 dark:bg-purple-900/20">
-              <TabsTrigger value="all">All Activity</TabsTrigger>
-              <TabsTrigger value="progress">Progress</TabsTrigger>
-              <TabsTrigger value="dhor">Dhor Book</TabsTrigger>
-              <TabsTrigger value="attendance">Attendance</TabsTrigger>
-            </TabsList>
-            
-            <TabsContent value="all" className="mt-4">
-              <div className="text-center text-muted-foreground py-8">
-                Detailed activity timeline will be displayed here
-              </div>
-            </TabsContent>
-            
-            <TabsContent value="progress" className="mt-4">
-              <div className="text-center text-muted-foreground py-8">
-                Progress activity timeline will be displayed here
-              </div>
-            </TabsContent>
-            
-            <TabsContent value="dhor" className="mt-4">
-              <div className="text-center text-muted-foreground py-8">
-                Dhor Book activity timeline will be displayed here
-              </div>
-            </TabsContent>
-            
-            <TabsContent value="attendance" className="mt-4">
-              <div className="text-center text-muted-foreground py-8">
-                Attendance activity timeline will be displayed here
-              </div>
-            </TabsContent>
-          </Tabs>
-        </CardContent>
-      </Card>
-    </div>
+          <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-3">
+            <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Attendance</p>
+            <p className="text-xl font-semibold text-gray-900 dark:text-white">
+              {stats.attendanceRecorded}
+            </p>
+          </div>
+        </div>
+      </CardContent>
+      <CardFooter className="pt-2">
+        <Button variant="outline" className="w-full text-purple-600 border-purple-200 hover:bg-purple-50 dark:text-purple-400 dark:border-purple-800 dark:hover:bg-purple-900/30" asChild>
+          <a href="/progress">
+            View Progress Details
+            <ArrowRight className="ml-2 h-4 w-4" />
+          </a>
+        </Button>
+      </CardFooter>
+    </Card>
   );
 };
