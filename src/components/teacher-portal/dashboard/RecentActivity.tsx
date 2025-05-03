@@ -31,7 +31,7 @@ export const RecentActivity = ({ teacherId }: RecentActivityProps) => {
   const { data: activities, isLoading } = useQuery({
     queryKey: ["teacher-recent-activities", teacherId],
     queryFn: async () => {
-      // This query fetches the most recent activity across different types (dhor entries, attendance, etc)
+      // This query fetches the most recent activity across different types
       const { data: dhorEntries, error: dhorError } = await supabase
         .from("dhor_book_entries")
         .select(`
@@ -60,26 +60,34 @@ export const RecentActivity = ({ teacherId }: RecentActivityProps) => {
         
       if (attendanceError) console.error("Error fetching attendance:", attendanceError);
       
-      // Format the activities in a consistent way
-      const formattedActivities: ActivityItem[] = [
-        ...(dhorEntries?.map((entry: any) => ({
-          id: `dhor_${entry.id}`,
-          created_at: entry.created_at,
-          type: "dhor_entry" as ActivityType,
-          description: "Added new Dhor Book entry",
-          student_name: entry.students?.name || "Unknown Student",
-          student_id: entry.student_id
-        })) || []),
-        
-        ...(attendanceRecords?.map((record: any) => ({
-          id: `attendance_${record.id}`,
-          created_at: record.created_at,
-          type: "attendance" as ActivityType,
-          description: "Recorded attendance",
-          student_name: record.students?.name || "Unknown Student",
-          student_id: record.student_id
-        })) || [])
-      ];
+      // Format the activities
+      const formattedActivities: ActivityItem[] = [];
+      
+      if (dhorEntries) {
+        dhorEntries.forEach((entry: any) => {
+          formattedActivities.push({
+            id: `dhor_${entry.id}`,
+            created_at: entry.created_at,
+            type: "dhor_entry",
+            description: "Added new Dhor Book entry",
+            student_name: entry.students?.name || "Unknown Student",
+            student_id: entry.student_id
+          });
+        });
+      }
+      
+      if (attendanceRecords) {
+        attendanceRecords.forEach((record: any) => {
+          formattedActivities.push({
+            id: `attendance_${record.id}`,
+            created_at: record.created_at,
+            type: "attendance",
+            description: "Recorded attendance",
+            student_name: record.students?.name || "Unknown Student",
+            student_id: record.student_id
+          });
+        });
+      }
       
       // Sort by most recent
       return formattedActivities.sort((a, b) => 
@@ -179,7 +187,7 @@ export const RecentActivity = ({ teacherId }: RecentActivityProps) => {
         )}
       </CardContent>
       
-      {selectedStudentId && (
+      {selectedStudentId && isDialogOpen && (
         <NewEntryDialog
           open={isDialogOpen}
           onOpenChange={setIsDialogOpen}
