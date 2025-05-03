@@ -3,11 +3,11 @@ import { Button } from "@/components/ui/button";
 import { CalendarCheck } from "lucide-react";
 
 interface AttendanceEmptyStateProps {
-  hasFilters: boolean;
+  hasFilters?: boolean;
   resetFilters: () => void;
 }
 
-export function AttendanceEmptyState({ hasFilters, resetFilters }: AttendanceEmptyStateProps) {
+export function AttendanceEmptyState({ hasFilters = false, resetFilters }: AttendanceEmptyStateProps) {
   return (
     <div className="flex flex-col items-center justify-center p-8 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-700">
       <div className="h-16 w-16 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center mb-4">
