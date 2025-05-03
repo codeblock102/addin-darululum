@@ -1,147 +1,48 @@
-
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
+import { AuthProvider } from '@/components/auth/AuthProvider';
+import Attendance from '@/pages/Attendance';
+import Classes from '@/pages/Classes';
+import Index from '@/pages/Index';
+import NotFound from '@/pages/NotFound';
+import Preferences from '@/pages/Preferences';
+import Progress from '@/pages/Progress';
+import Schedule from '@/pages/Schedule';
+import Settings from '@/pages/Settings';
+import Students from '@/pages/Students';
+import Teachers from '@/pages/Teachers';
+import { ThemeProvider } from '@/components/theme-provider';
+import { TooltipProvider } from "@/components/ui/tooltip"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { AuthProvider } from "@/contexts/AuthContext";
-import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
-import Index from "./pages/Index";
-import Students from "./pages/Students";
-import StudentDetail from "./pages/StudentDetail";
-import Teachers from "./pages/Teachers";
-import TeacherAccounts from "./pages/TeacherAccounts";
-import Progress from "./pages/Progress";
-import Attendance from "./pages/Attendance";
-import NotFound from "./pages/NotFound";
-import Auth from "./pages/Auth";
-import TeacherPortal from "./pages/TeacherPortal";
-import Preferences from "./pages/preferences";
-import Classes from "./pages/Classes";
-import Settings from "./pages/Settings";
-import AdminDashboard from "./pages/admin/Dashboard";
+import { Route, Routes } from 'react-router-dom';
+import { Toaster } from "@/components/ui/toaster"
+import StudentProgressPage from './pages/StudentProgress';
 
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      refetchOnWindowFocus: false,
-      retry: 1,
-      staleTime: 5 * 60 * 1000, // 5 minutes
-    },
-  },
-});
+const queryClient = new QueryClient();
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <AuthProvider>
-      <TooltipProvider>
-        <BrowserRouter>
-          <Routes>
-            <Route path="/auth" element={<Auth />} />
-            <Route
-              path="/"
-              element={
-                <ProtectedRoute>
-                  <AdminDashboard />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/students"
-              element={
-                <ProtectedRoute>
-                  <Students />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/students/:id"
-              element={
-                <ProtectedRoute>
-                  <StudentDetail />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/teachers"
-              element={
-                <ProtectedRoute>
-                  <Teachers />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/teacher-accounts"
-              element={
-                <ProtectedRoute>
-                  <TeacherAccounts />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/progress"
-              element={
-                <ProtectedRoute>
-                  <Progress />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/attendance"
-              element={
-                <ProtectedRoute>
-                  <Attendance />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/teacher-portal"
-              element={
-                <ProtectedRoute>
-                  <TeacherPortal />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/classes"
-              element={
-                <ProtectedRoute>
-                  <Classes />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/account"
-              element={
-                <ProtectedRoute>
-                  <div>Account Page</div>
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/preferences"
-              element={
-                <ProtectedRoute>
-                  <Preferences />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/settings"
-              element={
-                <ProtectedRoute>
-                  <Settings />
-                </ProtectedRoute>
-              }
-            />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
+function App() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <ThemeProvider defaultTheme="system" storageKey="theme">
+        <TooltipProvider>
+          <AuthProvider>
+            <Routes>
+              <Route path="/teachers" element={<Teachers />} />
+              <Route path="/students" element={<Students />} />
+              <Route path="/classes" element={<Classes />} />
+              <Route path="/progress" element={<Progress />} />
+              <Route path="/student-progress" element={<StudentProgressPage />} />
+              <Route path="/attendance" element={<Attendance />} />
+              <Route path="/schedule" element={<Schedule />} />
+              <Route path="/settings" element={<Settings />} />
+              <Route path="/preferences" element={<Preferences />} />
+              <Route path="/" element={<Index />} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </AuthProvider>
           <Toaster />
-          <Sonner />
-        </BrowserRouter>
-      </TooltipProvider>
-    </AuthProvider>
-  </QueryClientProvider>
-);
+        </TooltipProvider>
+      </ThemeProvider>
+    </QueryClientProvider>
+  );
+}
 
 export default App;
