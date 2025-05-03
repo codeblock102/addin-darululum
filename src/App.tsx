@@ -1,9 +1,10 @@
+
 import { AuthProvider } from '@/components/auth/AuthProvider';
 import Attendance from '@/pages/Attendance';
 import Classes from '@/pages/Classes';
 import Index from '@/pages/Index';
 import NotFound from '@/pages/NotFound';
-import Preferences from '@/pages/Preferences';
+import Preferences from '@/pages/preferences';
 import Progress from '@/pages/Progress';
 import Schedule from '@/pages/Schedule';
 import Settings from '@/pages/Settings';
