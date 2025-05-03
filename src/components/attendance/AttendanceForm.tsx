@@ -29,9 +29,10 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Textarea } from "@/components/ui/textarea";
 import { format } from "date-fns";
 import { useForm } from "react-hook-form";
-import { CalendarX, CalendarCheck, Clock } from "lucide-react";
+import { CalendarX, CalendarCheck, Clock, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { AttendanceStatus } from "@/types/attendance";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 type Student = {
   id: string;
@@ -172,51 +173,81 @@ export function AttendanceForm() {
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Mark Attendance</CardTitle>
-        <CardDescription>
-          Record today's attendance for {format(today, "PPP")}
+    <Card className="border border-purple-200 dark:border-purple-800/40 shadow-sm overflow-hidden bg-white dark:bg-gray-900">
+      <CardHeader className="bg-gradient-to-r from-purple-50 to-white dark:from-purple-900/20 dark:to-gray-900 border-b border-purple-100 dark:border-purple-900/30">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <CardTitle className="text-purple-700 dark:text-purple-300">Mark Attendance</CardTitle>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <CalendarCheck className="h-4 w-4 text-purple-500 dark:text-purple-400 cursor-help" />
+                </TooltipTrigger>
+                <TooltipContent className="bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200 border border-purple-200 dark:border-purple-700">
+                  <p>Record today's attendance</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </div>
+        </div>
+        <CardDescription className="text-gray-600 dark:text-gray-300">
+          Record attendance for {format(today, "PPP")}
         </CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent className="p-6">
         <div className="space-y-4">
           <div className="space-y-2">
-            <label className="text-sm font-medium">Class</label>
+            <FormLabel className="text-sm font-medium text-gray-700 dark:text-gray-300">Class</FormLabel>
             <Select 
               value={selectedClass} 
               onValueChange={setSelectedClass}
               disabled={isLoadingClasses}
             >
-              <SelectTrigger>
+              <SelectTrigger className="border-gray-300 dark:border-gray-700 focus:ring-purple-500 focus:border-purple-500">
                 <SelectValue placeholder="Select a class" />
               </SelectTrigger>
               <SelectContent>
-                {classesData?.map((classInfo) => (
-                  <SelectItem key={classInfo.id} value={classInfo.id}>
-                    {classInfo.name} - {classInfo.days_of_week.join(', ')}
-                  </SelectItem>
-                ))}
+                {isLoadingClasses ? (
+                  <div className="flex items-center justify-center p-2">
+                    <Loader2 className="h-4 w-4 animate-spin text-purple-500" />
+                  </div>
+                ) : classesData?.length === 0 ? (
+                  <div className="p-2 text-sm text-gray-500">No classes found</div>
+                ) : (
+                  classesData?.map((classInfo) => (
+                    <SelectItem key={classInfo.id} value={classInfo.id}>
+                      {classInfo.name} - {classInfo.days_of_week.join(', ')}
+                    </SelectItem>
+                  ))
+                )}
               </SelectContent>
             </Select>
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium">Student</label>
+            <FormLabel className="text-sm font-medium text-gray-700 dark:text-gray-300">Student</FormLabel>
             <Select 
               value={selectedStudent} 
               onValueChange={setSelectedStudent}
               disabled={isLoadingStudents || !selectedClass}
             >
-              <SelectTrigger>
+              <SelectTrigger className="border-gray-300 dark:border-gray-700 focus:ring-purple-500 focus:border-purple-500">
                 <SelectValue placeholder="Select a student" />
               </SelectTrigger>
               <SelectContent>
-                {students?.map((student) => (
-                  <SelectItem key={student.id} value={student.id}>
-                    {student.name}
-                  </SelectItem>
-                ))}
+                {isLoadingStudents ? (
+                  <div className="flex items-center justify-center p-2">
+                    <Loader2 className="h-4 w-4 animate-spin text-purple-500" />
+                  </div>
+                ) : students?.length === 0 ? (
+                  <div className="p-2 text-sm text-gray-500">No students found</div>
+                ) : (
+                  students?.map((student) => (
+                    <SelectItem key={student.id} value={student.id}>
+                      {student.name}
+                    </SelectItem>
+                  ))
+                )}
               </SelectContent>
             </Select>
           </div>
@@ -228,32 +259,44 @@ export function AttendanceForm() {
                   control={form.control}
                   name="status"
                   render={({ field }) => (
-                    <FormItem className="space-y-1">
-                      <FormLabel>Attendance Status</FormLabel>
+                    <FormItem className="space-y-3">
+                      <FormLabel className="text-gray-700 dark:text-gray-300">Attendance Status</FormLabel>
                       <FormControl>
                         <RadioGroup
                           onValueChange={field.onChange}
                           defaultValue={field.value}
                           value={field.value}
-                          className="flex flex-col space-y-1"
+                          className="flex flex-col space-y-2"
                         >
-                          <div className="flex items-center space-x-2">
-                            <RadioGroupItem value="present" id="present" />
-                            <label htmlFor="present" className="flex items-center text-sm font-medium">
+                          <div className="flex items-center space-x-2 p-2 rounded-md hover:bg-purple-50 dark:hover:bg-purple-900/10 transition-colors">
+                            <RadioGroupItem 
+                              value="present" 
+                              id="present" 
+                              className="text-purple-600 border-gray-400 focus:ring-purple-500"
+                            />
+                            <label htmlFor="present" className="flex items-center text-gray-900 dark:text-gray-100 font-medium cursor-pointer">
                               <CalendarCheck className="h-4 w-4 mr-2 text-green-600" />
                               Present
                             </label>
                           </div>
-                          <div className="flex items-center space-x-2">
-                            <RadioGroupItem value="absent" id="absent" />
-                            <label htmlFor="absent" className="flex items-center text-sm font-medium">
+                          <div className="flex items-center space-x-2 p-2 rounded-md hover:bg-purple-50 dark:hover:bg-purple-900/10 transition-colors">
+                            <RadioGroupItem 
+                              value="absent" 
+                              id="absent" 
+                              className="text-purple-600 border-gray-400 focus:ring-purple-500"
+                            />
+                            <label htmlFor="absent" className="flex items-center text-gray-900 dark:text-gray-100 font-medium cursor-pointer">
                               <CalendarX className="h-4 w-4 mr-2 text-red-600" />
                               Absent
                             </label>
                           </div>
-                          <div className="flex items-center space-x-2">
-                            <RadioGroupItem value="late" id="late" />
-                            <label htmlFor="late" className="flex items-center text-sm font-medium">
+                          <div className="flex items-center space-x-2 p-2 rounded-md hover:bg-purple-50 dark:hover:bg-purple-900/10 transition-colors">
+                            <RadioGroupItem 
+                              value="late" 
+                              id="late" 
+                              className="text-purple-600 border-gray-400 focus:ring-purple-500"
+                            />
+                            <label htmlFor="late" className="flex items-center text-gray-900 dark:text-gray-100 font-medium cursor-pointer">
                               <Clock className="h-4 w-4 mr-2 text-amber-600" />
                               Late
                             </label>
@@ -270,10 +313,11 @@ export function AttendanceForm() {
                   name="notes"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Notes (Optional)</FormLabel>
+                      <FormLabel className="text-gray-700 dark:text-gray-300">Notes (Optional)</FormLabel>
                       <FormControl>
                         <Textarea
                           placeholder="Add any additional notes about attendance"
+                          className="resize-none border-gray-300 dark:border-gray-700 focus:ring-purple-500 focus:border-purple-500"
                           {...field}
                         />
                       </FormControl>
@@ -284,10 +328,17 @@ export function AttendanceForm() {
 
                 <Button 
                   type="submit" 
-                  className="w-full" 
+                  className="w-full bg-purple-600 hover:bg-purple-700 text-white transition-colors"
                   disabled={saveAttendance.isPending}
                 >
-                  {saveAttendance.isPending ? "Saving..." : (existingAttendance ? "Update Attendance" : "Save Attendance")}
+                  {saveAttendance.isPending ? (
+                    <span className="flex items-center gap-2">
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Saving...
+                    </span>
+                  ) : (
+                    existingAttendance ? "Update Attendance" : "Save Attendance"
+                  )}
                 </Button>
               </form>
             </Form>

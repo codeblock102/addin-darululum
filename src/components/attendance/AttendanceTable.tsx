@@ -9,14 +9,16 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Filter, Loader2, Search, Info } from "lucide-react";
+import { Filter, Loader2, Search, Info, CalendarCheck, CalendarX, Clock } from "lucide-react";
 import { AttendanceFilters } from "./AttendanceFilters";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 type AttendanceRecord = {
   id: string;
   date: string;
   status: string;
+  notes?: string;
   student: {
     id: string;
     name: string;
@@ -59,6 +61,7 @@ export function AttendanceTable() {
           id,
           date,
           status,
+          notes,
           student:student_id(id, name),
           class_schedule:class_schedule_id(class_name)
         `)
@@ -93,11 +96,26 @@ export function AttendanceTable() {
   const renderStatusBadge = (status: string) => {
     switch (status) {
       case "present":
-        return <Badge className="bg-green-50 text-green-700 border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800">Present</Badge>;
+        return (
+          <Badge className="bg-green-50 text-green-700 border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800 flex items-center gap-1">
+            <CalendarCheck className="h-3 w-3" />
+            Present
+          </Badge>
+        );
       case "absent":
-        return <Badge className="bg-red-50 text-red-700 border-red-200 dark:bg-red-900/20 dark:text-red-400 dark:border-red-800">Absent</Badge>;
+        return (
+          <Badge className="bg-red-50 text-red-700 border-red-200 dark:bg-red-900/20 dark:text-red-400 dark:border-red-800 flex items-center gap-1">
+            <CalendarX className="h-3 w-3" />
+            Absent
+          </Badge>
+        );
       case "late":
-        return <Badge className="bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-800">Late</Badge>;
+        return (
+          <Badge className="bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-800 flex items-center gap-1">
+            <Clock className="h-3 w-3" />
+            Late
+          </Badge>
+        );
       default:
         return <Badge variant="secondary">Unknown</Badge>;
     }
@@ -112,7 +130,7 @@ export function AttendanceTable() {
   };
 
   return (
-    <Card className="bg-white dark:bg-gray-900 border border-purple-200 dark:border-purple-800/40 shadow-sm">
+    <Card className="bg-white dark:bg-gray-900 border border-purple-200 dark:border-purple-800/40 shadow-sm overflow-hidden animate-fadeIn">
       <CardHeader className="bg-gradient-to-r from-purple-50 to-white dark:from-purple-900/20 dark:to-gray-900 border-b border-purple-100 dark:border-purple-900/30">
         <div className="flex items-center gap-2">
           <CardTitle className="text-purple-700 dark:text-purple-300">Student Attendance History</CardTitle>
@@ -139,7 +157,7 @@ export function AttendanceTable() {
               placeholder="Search by student or class name..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="flex-1 border-gray-300 dark:border-gray-700"
+              className="flex-1 border-gray-300 dark:border-gray-700 focus:ring-purple-500 focus:border-purple-500"
             />
           </div>
           
@@ -165,41 +183,64 @@ export function AttendanceTable() {
 
         {isLoadingAttendance ? (
           <div className="flex justify-center items-center h-48">
-            <Loader2 className="h-8 w-8 animate-spin text-purple-500" />
+            <div className="flex flex-col items-center gap-2">
+              <Loader2 className="h-8 w-8 animate-spin text-purple-500" />
+              <p className="text-sm text-gray-500">Loading attendance records...</p>
+            </div>
           </div>
         ) : attendanceRecords && attendanceRecords.length > 0 ? (
-          <div className="border border-purple-100 dark:border-purple-900/30 rounded-lg overflow-hidden">
-            <Table>
-              <TableHeader className="bg-purple-50 dark:bg-purple-900/20">
-                <TableRow>
-                  <TableHead className="text-purple-700 dark:text-purple-300">Date</TableHead>
-                  <TableHead className="text-purple-700 dark:text-purple-300">Student</TableHead>
-                  <TableHead className="text-purple-700 dark:text-purple-300">Class</TableHead>
-                  <TableHead className="text-purple-700 dark:text-purple-300">Status</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {attendanceRecords.map((record) => (
-                  <TableRow key={record.id} className="hover:bg-purple-50/50 dark:hover:bg-purple-900/10 transition-colors">
-                    <TableCell className="text-gray-900 dark:text-gray-200 font-medium">
-                      {format(parseISO(record.date), "PPP")}
-                    </TableCell>
-                    <TableCell className="text-gray-900 dark:text-gray-200">
-                      {record.student.name}
-                    </TableCell>
-                    <TableCell className="text-gray-900 dark:text-gray-200">
-                      {record.class_schedule.class_name}
-                    </TableCell>
-                    <TableCell>{renderStatusBadge(record.status)}</TableCell>
+          <ScrollArea className="h-[400px]">
+            <div className="border border-purple-100 dark:border-purple-900/30 rounded-lg overflow-hidden">
+              <Table>
+                <TableHeader className="bg-purple-50 dark:bg-purple-900/20 sticky top-0 z-10">
+                  <TableRow>
+                    <TableHead className="text-purple-700 dark:text-purple-300">Date</TableHead>
+                    <TableHead className="text-purple-700 dark:text-purple-300">Student</TableHead>
+                    <TableHead className="text-purple-700 dark:text-purple-300">Class</TableHead>
+                    <TableHead className="text-purple-700 dark:text-purple-300">Status</TableHead>
+                    <TableHead className="text-purple-700 dark:text-purple-300">Notes</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
+                </TableHeader>
+                <TableBody>
+                  {attendanceRecords.map((record) => (
+                    <TableRow key={record.id} className="hover:bg-purple-50/50 dark:hover:bg-purple-900/10 transition-colors">
+                      <TableCell className="text-gray-900 dark:text-gray-200 font-medium">
+                        {format(parseISO(record.date), "PPP")}
+                      </TableCell>
+                      <TableCell className="text-gray-900 dark:text-gray-200">
+                        {record.student.name}
+                      </TableCell>
+                      <TableCell className="text-gray-900 dark:text-gray-200">
+                        {record.class_schedule.class_name}
+                      </TableCell>
+                      <TableCell>{renderStatusBadge(record.status)}</TableCell>
+                      <TableCell className="max-w-[200px] truncate text-gray-700 dark:text-gray-300">
+                        {record.notes || "—"}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          </ScrollArea>
         ) : (
-          <div className="text-center text-gray-500 py-8 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-700">
-            <p className="text-lg font-medium">No attendance records found</p>
-            <p className="text-sm mt-2">Try adjusting your filters or select another date range</p>
+          <div className="flex flex-col items-center justify-center p-8 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-700">
+            <div className="h-16 w-16 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center mb-4">
+              <CalendarCheck className="h-8 w-8 text-purple-500 dark:text-purple-400" />
+            </div>
+            <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">No attendance records found</h3>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 text-center max-w-md">
+              Try adjusting your filters or select another date range to view attendance records.
+            </p>
+            {(searchQuery || statusFilter || dateFilter) && (
+              <Button 
+                variant="outline" 
+                className="mt-4 border-purple-200 text-purple-600 hover:bg-purple-50 dark:border-purple-800 dark:text-purple-400 dark:hover:bg-purple-900/20"
+                onClick={resetFilters}
+              >
+                Clear All Filters
+              </Button>
+            )}
           </div>
         )}
       </CardContent>

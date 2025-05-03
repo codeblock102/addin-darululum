@@ -13,14 +13,16 @@ interface RecentActivityProps {
   teacherId: string;
 }
 
-type ActivityItem = {
+type ActivityType = "dhor_entry" | "attendance" | "progress";
+
+interface ActivityItem {
   id: string;
   created_at: string;
-  type: "dhor_entry" | "attendance" | "progress";
+  type: ActivityType;
   description: string;
   student_name: string;
   student_id: string;
-};
+}
 
 export const RecentActivity = ({ teacherId }: RecentActivityProps) => {
   const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
@@ -63,7 +65,7 @@ export const RecentActivity = ({ teacherId }: RecentActivityProps) => {
         ...(dhorEntries?.map((entry: any) => ({
           id: `dhor_${entry.id}`,
           created_at: entry.created_at,
-          type: "dhor_entry" as const,
+          type: "dhor_entry" as ActivityType,
           description: "Added new Dhor Book entry",
           student_name: entry.students?.name || "Unknown Student",
           student_id: entry.student_id
@@ -72,7 +74,7 @@ export const RecentActivity = ({ teacherId }: RecentActivityProps) => {
         ...(attendanceRecords?.map((record: any) => ({
           id: `attendance_${record.id}`,
           created_at: record.created_at,
-          type: "attendance" as const,
+          type: "attendance" as ActivityType,
           description: "Recorded attendance",
           student_name: record.students?.name || "Unknown Student",
           student_id: record.student_id

@@ -4,22 +4,44 @@ import { DashboardLayout } from "@/components/layouts/DashboardLayout";
 import { AttendanceForm } from "@/components/attendance/AttendanceForm";
 import { AttendanceTable } from "@/components/attendance/AttendanceTable";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { CalendarCheck, Users, Info } from "lucide-react";
+import { CalendarCheck, Users, Info, Clock } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Badge } from "@/components/ui/badge";
 
 const Attendance = () => {
   const [selectedTab, setSelectedTab] = useState("take-attendance");
   
   return (
     <DashboardLayout>
-      <div className="space-y-6">
+      <div className="space-y-6 animate-fadeIn">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-50">
+              Attendance Management
+            </h1>
+            <p className="text-gray-600 dark:text-gray-400 mt-1">
+              Track and manage student attendance records
+            </p>
+          </div>
+          
+          <div className="flex items-center gap-2">
+            <Badge 
+              variant="outline" 
+              className="bg-green-50 text-green-700 border-green-200 dark:bg-green-900/20 dark:text-green-300"
+            >
+              <CalendarCheck className="h-3 w-3 mr-1" />
+              Today: {new Date().toLocaleDateString()}
+            </Badge>
+          </div>
+        </div>
+        
         <Card className="border border-purple-200 dark:border-purple-800/40 shadow-sm overflow-hidden">
           <CardHeader className="bg-gradient-to-r from-purple-100 to-purple-50 dark:from-purple-900/30 dark:to-purple-800/20">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <CardTitle className="text-2xl font-bold text-purple-700 dark:text-purple-300">
-                  Attendance Management
+                  Attendance Dashboard
                 </CardTitle>
                 <TooltipProvider>
                   <Tooltip>
@@ -27,10 +49,17 @@ const Attendance = () => {
                       <Info className="h-4 w-4 text-purple-500 dark:text-purple-400 cursor-help" />
                     </TooltipTrigger>
                     <TooltipContent className="bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200 border border-purple-200 dark:border-purple-700">
-                      <p>Track and manage student attendance</p>
+                      <p>Record and view student attendance information</p>
                     </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
+              </div>
+              
+              <div className="flex items-center gap-2">
+                <Badge className="bg-purple-100 text-purple-800 border-purple-200 flex items-center gap-1">
+                  <Clock className="h-3 w-3" />
+                  <span>Last updated: {new Date().toLocaleTimeString()}</span>
+                </Badge>
               </div>
             </div>
             <CardDescription className="text-gray-600 dark:text-gray-300 mt-2">
