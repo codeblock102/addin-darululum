@@ -42,7 +42,7 @@ export function AttendanceTable({ teacherId }: AttendanceTableProps) {
             status,
             notes,
             student:student_id (id, name),
-            class_schedule:class_id (class_name)
+            class_schedule:class_id (name:name)
           `);
           
         if (teacherId) {
@@ -83,10 +83,10 @@ export function AttendanceTable({ teacherId }: AttendanceTableProps) {
           ] as AttendanceRecord[];
         }
         
-        // Cast the data to our AttendanceRecord type, ensuring optional fields
+        // Cast the data to our AttendanceRecord type, ensuring proper class name mapping
         return (data as any[]).map(record => ({
           ...record,
-          class_schedule: record.class_schedule || { class_name: "N/A" }
+          class_schedule: { class_name: record.class_schedule?.name || "N/A" }
         })) as AttendanceRecord[];
       } catch (error) {
         console.error("Error fetching attendance records:", error);
@@ -119,7 +119,6 @@ export function AttendanceTable({ teacherId }: AttendanceTableProps) {
       <AttendanceTableHeader />
       
       <SearchInput 
-        placeholder="Search students, status..." 
         value={searchQuery}
         onChange={handleSearchChange}
       />
@@ -129,7 +128,10 @@ export function AttendanceTable({ teacherId }: AttendanceTableProps) {
           <div className="animate-spin rounded-full h-8 w-8 border-2 border-primary border-t-transparent"></div>
         </div>
       ) : !filteredRecords?.length ? (
-        <AttendanceEmptyState hasFilters={hasFilters} resetFilters={resetFilters} />
+        <AttendanceEmptyState 
+          hasFilters={hasFilters} 
+          resetFilters={resetFilters} 
+        />
       ) : (
         <AttendanceDataTable 
           isLoading={isLoading}
