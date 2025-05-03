@@ -1,10 +1,9 @@
 
 import { format } from "date-fns";
-import { Check, X, Clock } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { StatusBadge } from "@/components/ui/status-badge";
 
 type AttendanceRecord = {
   id: string;
@@ -40,34 +39,6 @@ export function AttendanceRecordsTable({
   dateFilter,
   resetFilters
 }: AttendanceRecordsTableProps) {
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case "present":
-        return (
-          <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 flex items-center gap-1">
-            <Check className="h-3 w-3" />
-            Present
-          </Badge>
-        );
-      case "absent":
-        return (
-          <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200 flex items-center gap-1">
-            <X className="h-3 w-3" />
-            Absent
-          </Badge>
-        );
-      case "late":
-        return (
-          <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200 flex items-center gap-1">
-            <Clock className="h-3 w-3" />
-            Late
-          </Badge>
-        );
-      default:
-        return null;
-    }
-  };
-
   if (isLoading) {
     return (
       <div className="space-y-2">
@@ -125,7 +96,7 @@ export function AttendanceRecordsTable({
                 {record.date ? format(new Date(record.date), "MMM dd, yyyy") : "N/A"}
               </TableCell>
               <TableCell>
-                {getStatusBadge(record.status)}
+                <StatusBadge status={record.status as any} />
               </TableCell>
               <TableCell className="max-w-[200px] truncate">
                 {record.notes || "—"}
