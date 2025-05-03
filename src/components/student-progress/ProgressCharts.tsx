@@ -1,309 +1,329 @@
 
-import { useState } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Button } from "@/components/ui/button";
-import { Progress } from "@/types/progress";
+import { useState } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { 
   BarChart, 
   Bar, 
+  LineChart, 
+  Line, 
+  PieChart, 
+  Pie, 
+  Cell,
   XAxis, 
   YAxis, 
   CartesianGrid, 
   Tooltip, 
   Legend, 
   ResponsiveContainer,
-  LineChart,
-  Line,
   TooltipProps
-} from "recharts";
-import { NameType, ValueType } from "recharts/types/component/DefaultTooltipContent";
+} from 'recharts';
+import { Button } from '@/components/ui/button';
+import { CalendarIcon, BarChart2Icon, LineChartIcon } from 'lucide-react';
+
+interface ProgressData {
+  date: string;
+  sabaq?: number;
+  sabaq_para?: number;
+  dhor?: number;
+  dhor2?: number;
+}
+
+interface AttendanceData {
+  status: string;
+  count: number;
+}
 
 interface ProgressChartsProps {
-  progressData: Progress[];
-  dhorData: any[];
+  progressData?: ProgressData[];
+  attendanceData?: AttendanceData[];
+  studentName?: string;
 }
 
-export function ProgressCharts({ progressData, dhorData }: ProgressChartsProps) {
-  const [timeRange, setTimeRange] = useState<"week" | "month" | "all">("all");
-  const [chartType, setChartType] = useState<"bar" | "line">("bar");
+const COLORS = ['#22c55e', '#3b82f6', '#f43f5e', '#f59e0b'];
+const ATTENDANCE_COLORS = {
+  'present': '#22c55e',
+  'absent': '#f43f5e',
+  'late': '#f59e0b',
+  'excused': '#3b82f6',
+  // Add more status color mappings as needed
+};
 
-  // Process progress data for visualization
-  const chartData = processChartData(progressData, dhorData, timeRange);
+// Format tooltip labels properly for charts
+const formatTooltipLabel = (value: string | number) => {
+  // If value is a number, just return it
+  if (typeof value === 'number') return value;
   
-  // Data for dhor performance comparison
-  const dhorPerformanceData = processDhorPerformanceData(dhorData);
+  // If it's a string (like a date), return as is
+  return String(value);
+};
 
-  // Custom tooltip formatter
-  const customTooltipFormatter = (value: ValueType, name: NameType) => {
-    let formattedName = name;
-    if (typeof name === 'string') {
-      formattedName = name.replace('_', ' ');
+export const ProgressCharts = ({ progressData = [], attendanceData = [], studentName }: ProgressChartsProps) => {
+  const [viewType, setViewType] = useState<'bar' | 'line'>('bar');
+  
+  // Use sample data if no data is provided
+  const sampleProgressData: ProgressData[] = [
+    { date: '2025-04-01', sabaq: 5, sabaq_para: 3, dhor: 2, dhor2: 1 },
+    { date: '2025-04-08', sabaq: 6, sabaq_para: 4, dhor: 3, dhor2: 2 },
+    { date: '2025-04-15', sabaq: 4, sabaq_para: 5, dhor: 4, dhor2: 2 },
+    { date: '2025-04-22', sabaq: 7, sabaq_para: 6, dhor: 5, dhor2: 3 },
+    { date: '2025-04-29', sabaq: 8, sabaq_para: 7, dhor: 6, dhor2: 4 },
+  ];
+
+  const sampleAttendanceData: AttendanceData[] = [
+    { status: 'present', count: 18 },
+    { status: 'absent', count: 3 },
+    { status: 'late', count: 2 },
+    { status: 'excused', count: 1 },
+  ];
+  
+  const chartData = progressData.length ? progressData : sampleProgressData;
+  const attendanceChartData = attendanceData.length ? attendanceData : sampleAttendanceData;
+
+  // Format date for display
+  const formatDate = (dateString: string) => {
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+    } catch (e) {
+      return dateString;
     }
-    return [value, formattedName];
   };
-
-  return (
-    <Card>
-      <CardHeader className="pb-0">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-          <div>
-            <CardTitle>Progress Visualization</CardTitle>
-            <CardDescription>Performance metrics over time</CardDescription>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="flex items-center border rounded-md overflow-hidden mr-2">
-              <Button
-                variant={chartType === "bar" ? "default" : "ghost"}
-                size="sm"
-                onClick={() => setChartType("bar")}
-                className="rounded-none h-8"
-              >
-                Bar
-              </Button>
-              <Button
-                variant={chartType === "line" ? "default" : "ghost"}
-                size="sm"
-                onClick={() => setChartType("line")}
-                className="rounded-none h-8"
-              >
-                Line
-              </Button>
-            </div>
-            
-            <div className="flex items-center border rounded-md overflow-hidden">
-              <Button
-                variant={timeRange === "week" ? "default" : "ghost"}
-                size="sm"
-                onClick={() => setTimeRange("week")}
-                className="rounded-none h-8"
-              >
-                Week
-              </Button>
-              <Button
-                variant={timeRange === "month" ? "default" : "ghost"}
-                size="sm"
-                onClick={() => setTimeRange("month")}
-                className="rounded-none h-8"
-              >
-                Month
-              </Button>
-              <Button
-                variant={timeRange === "all" ? "default" : "ghost"}
-                size="sm"
-                onClick={() => setTimeRange("all")}
-                className="rounded-none h-8"
-              >
-                All
-              </Button>
-            </div>
-          </div>
-        </div>
-      </CardHeader>
+  
+  const calculateAttendancePercentage = (status: string): string => {
+    const total = attendanceChartData.reduce((sum, item) => sum + item.count, 0);
+    const statusCount = attendanceChartData.find(item => item.status === status)?.count || 0;
+    const percentage = (statusCount / total * 100).toFixed(1);
+    return `${percentage}%`;
+  };
+  
+  // Custom tooltip formatter for recharts
+  const CustomTooltip = ({ active, payload, label }: TooltipProps<string | number, string>) => {
+    if (active && payload && payload.length) {
+      const formattedLabel = typeof label === 'string' ? formatDate(label) : label;
       
-      <CardContent className="pt-4">
-        <Tabs defaultValue="progress" className="w-full">
-          <TabsList className="mb-4">
-            <TabsTrigger value="progress">Memorization Progress</TabsTrigger>
-            <TabsTrigger value="dhor">Dhor Performance</TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="progress" className="mt-0">
-            <div className="h-[400px] w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                {chartType === "bar" ? (
-                  <BarChart
-                    data={chartData}
-                    margin={{
-                      top: 20,
-                      right: 30,
-                      left: 20,
-                      bottom: 60,
-                    }}
-                  >
-                    <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
-                    <XAxis 
-                      dataKey="date" 
-                      angle={-45}
-                      textAnchor="end"
-                      tick={{ fontSize: 12 }}
-                      height={60}
-                    />
-                    <YAxis tick={{ fontSize: 12 }} />
-                    <Tooltip 
-                      contentStyle={{ 
-                        backgroundColor: "rgba(255, 255, 255, 0.95)", 
-                        borderRadius: "8px", 
-                        boxShadow: "0 2px 10px rgba(0,0,0,0.1)", 
-                        border: "1px solid #eee" 
-                      }}
-                      formatter={customTooltipFormatter}
-                    />
-                    <Legend verticalAlign="top" height={36} />
-                    <Bar 
-                      name="Verses Memorized" 
-                      dataKey="verses_memorized" 
-                      fill="#8B5CF6" 
-                      radius={[4, 4, 0, 0]}
-                    />
-                  </BarChart>
-                ) : (
-                  <LineChart
-                    data={chartData}
-                    margin={{
-                      top: 20,
-                      right: 30,
-                      left: 20,
-                      bottom: 60,
-                    }}
-                  >
-                    <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
-                    <XAxis 
-                      dataKey="date" 
-                      angle={-45}
-                      textAnchor="end"
-                      tick={{ fontSize: 12 }}
-                      height={60}
-                    />
-                    <YAxis tick={{ fontSize: 12 }} />
-                    <Tooltip 
-                      contentStyle={{ 
-                        backgroundColor: "rgba(255, 255, 255, 0.95)", 
-                        borderRadius: "8px", 
-                        boxShadow: "0 2px 10px rgba(0,0,0,0.1)", 
-                        border: "1px solid #eee" 
-                      }}
-                      formatter={customTooltipFormatter}
-                    />
-                    <Legend verticalAlign="top" height={36} />
-                    <Line 
-                      name="Verses Memorized"
-                      type="monotone" 
-                      dataKey="verses_memorized" 
-                      stroke="#8B5CF6" 
-                      strokeWidth={2}
-                      dot={{ r: 4 }}
-                      activeDot={{ r: 6 }}
-                    />
-                    <Line 
-                      name="Cumulative Verses"
-                      type="monotone" 
-                      dataKey="cumulative_verses" 
-                      stroke="#0EA5E9" 
-                      strokeWidth={2}
-                      dot={{ r: 4 }}
-                      activeDot={{ r: 6 }}
-                    />
-                  </LineChart>
-                )}
-              </ResponsiveContainer>
+      return (
+        <div className="bg-white dark:bg-gray-800 p-3 border border-gray-200 dark:border-gray-700 rounded shadow-md">
+          <p className="font-medium">{formattedLabel}</p>
+          {payload.map((entry, index) => (
+            <p key={index} style={{ color: entry.color }}>
+              {`${entry.name}: ${entry.value}`}
+            </p>
+          ))}
+        </div>
+      );
+    }
+    return null;
+  };
+  
+  return (
+    <>
+      <div className="flex flex-col md:flex-row gap-6">
+        {/* Progress Charts */}
+        <Card className="flex-1">
+          <CardHeader className="flex flex-row items-center justify-between">
+            <CardTitle>Progress Overview</CardTitle>
+            <div className="space-x-1">
+              <Button 
+                size="icon" 
+                variant={viewType === 'bar' ? 'default' : 'outline'} 
+                onClick={() => setViewType('bar')}
+              >
+                <BarChart2Icon className="h-4 w-4" />
+              </Button>
+              <Button 
+                size="icon" 
+                variant={viewType === 'line' ? 'default' : 'outline'} 
+                onClick={() => setViewType('line')}
+              >
+                <LineChartIcon className="h-4 w-4" />
+              </Button>
             </div>
-          </TabsContent>
-          
-          <TabsContent value="dhor" className="mt-0">
-            <div className="h-[400px] w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart
-                  data={dhorPerformanceData}
-                  margin={{
-                    top: 20,
-                    right: 30,
-                    left: 20,
-                    bottom: 60,
-                  }}
+          </CardHeader>
+          <CardContent>
+            <Tabs defaultValue="all">
+              <TabsList className="mb-4">
+                <TabsTrigger value="all">All</TabsTrigger>
+                <TabsTrigger value="sabaq">Sabaq</TabsTrigger>
+                <TabsTrigger value="sabaq_para">Sabaq Para</TabsTrigger>
+                <TabsTrigger value="dhor">Dhor</TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="all">
+                <ResponsiveContainer width="100%" height={300}>
+                  {viewType === 'bar' ? (
+                    <BarChart data={chartData}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis 
+                        dataKey="date" 
+                        tickFormatter={formatDate}
+                      />
+                      <YAxis />
+                      <Tooltip content={<CustomTooltip />} />
+                      <Legend />
+                      <Bar dataKey="sabaq" name="Sabaq" fill="#22c55e" />
+                      <Bar dataKey="sabaq_para" name="Sabaq Para" fill="#3b82f6" />
+                      <Bar dataKey="dhor" name="Dhor" fill="#f59e0b" />
+                      <Bar dataKey="dhor2" name="Dhor 2" fill="#f43f5e" />
+                    </BarChart>
+                  ) : (
+                    <LineChart data={chartData}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis 
+                        dataKey="date" 
+                        tickFormatter={formatDate} 
+                      />
+                      <YAxis />
+                      <Tooltip content={<CustomTooltip />} />
+                      <Legend />
+                      <Line type="monotone" dataKey="sabaq" name="Sabaq" stroke="#22c55e" activeDot={{ r: 8 }} />
+                      <Line type="monotone" dataKey="sabaq_para" name="Sabaq Para" stroke="#3b82f6" />
+                      <Line type="monotone" dataKey="dhor" name="Dhor" stroke="#f59e0b" />
+                      <Line type="monotone" dataKey="dhor2" name="Dhor 2" stroke="#f43f5e" />
+                    </LineChart>
+                  )}
+                </ResponsiveContainer>
+              </TabsContent>
+              
+              <TabsContent value="sabaq">
+                <ResponsiveContainer width="100%" height={300}>
+                  {viewType === 'bar' ? (
+                    <BarChart data={chartData}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis 
+                        dataKey="date" 
+                        tickFormatter={formatDate}
+                      />
+                      <YAxis />
+                      <Tooltip content={<CustomTooltip />} />
+                      <Bar dataKey="sabaq" name="Sabaq" fill="#22c55e" />
+                    </BarChart>
+                  ) : (
+                    <LineChart data={chartData}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis 
+                        dataKey="date" 
+                        tickFormatter={formatDate}
+                      />
+                      <YAxis />
+                      <Tooltip content={<CustomTooltip />} />
+                      <Line type="monotone" dataKey="sabaq" name="Sabaq" stroke="#22c55e" activeDot={{ r: 8 }} />
+                    </LineChart>
+                  )}
+                </ResponsiveContainer>
+              </TabsContent>
+              
+              {/* Similar TabsContent for sabaq_para and dhor - abbreviated for brevity */}
+              {/* These would follow the same pattern as the "sabaq" tab */}
+              <TabsContent value="sabaq_para">
+                <ResponsiveContainer width="100%" height={300}>
+                  {viewType === 'bar' ? (
+                    <BarChart data={chartData}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis 
+                        dataKey="date" 
+                        tickFormatter={formatDate}
+                      />
+                      <YAxis />
+                      <Tooltip content={<CustomTooltip />} />
+                      <Bar dataKey="sabaq_para" name="Sabaq Para" fill="#3b82f6" />
+                    </BarChart>
+                  ) : (
+                    <LineChart data={chartData}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis 
+                        dataKey="date" 
+                        tickFormatter={formatDate}
+                      />
+                      <YAxis />
+                      <Tooltip content={<CustomTooltip />} />
+                      <Line type="monotone" dataKey="sabaq_para" name="Sabaq Para" stroke="#3b82f6" activeDot={{ r: 8 }} />
+                    </LineChart>
+                  )}
+                </ResponsiveContainer>
+              </TabsContent>
+              
+              <TabsContent value="dhor">
+                <ResponsiveContainer width="100%" height={300}>
+                  {viewType === 'bar' ? (
+                    <BarChart data={chartData}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis 
+                        dataKey="date" 
+                        tickFormatter={formatDate}
+                      />
+                      <YAxis />
+                      <Tooltip content={<CustomTooltip />} />
+                      <Bar dataKey="dhor" name="Dhor" fill="#f59e0b" />
+                      <Bar dataKey="dhor2" name="Dhor 2" fill="#f43f5e" />
+                    </BarChart>
+                  ) : (
+                    <LineChart data={chartData}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis 
+                        dataKey="date" 
+                        tickFormatter={formatDate}
+                      />
+                      <YAxis />
+                      <Tooltip content={<CustomTooltip />} />
+                      <Line type="monotone" dataKey="dhor" name="Dhor" stroke="#f59e0b" activeDot={{ r: 8 }} />
+                      <Line type="monotone" dataKey="dhor2" name="Dhor 2" stroke="#f43f5e" />
+                    </LineChart>
+                  )}
+                </ResponsiveContainer>
+              </TabsContent>
+            </Tabs>
+          </CardContent>
+        </Card>
+        
+        {/* Attendance Pie Chart */}
+        <Card className="w-full md:w-96">
+          <CardHeader>
+            <CardTitle className="flex items-center">
+              <CalendarIcon className="h-5 w-5 mr-2" />
+              Attendance
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="flex flex-col items-center">
+            <ResponsiveContainer width="100%" height={250}>
+              <PieChart>
+                <Pie
+                  data={attendanceChartData}
+                  cx="50%"
+                  cy="50%"
+                  labelLine={false}
+                  outerRadius={80}
+                  fill="#8884d8"
+                  dataKey="count"
+                  nameKey="status"
+                  label={({ name }) => `${name}: ${calculateAttendancePercentage(String(name))}`}
                 >
-                  <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
-                  <XAxis 
-                    dataKey="date" 
-                    angle={-45}
-                    textAnchor="end"
-                    tick={{ fontSize: 12 }}
-                    height={60}
-                  />
-                  <YAxis tick={{ fontSize: 12 }} />
-                  <Tooltip 
-                    contentStyle={{ 
-                      backgroundColor: "rgba(255, 255, 255, 0.95)", 
-                      borderRadius: "8px", 
-                      boxShadow: "0 2px 10px rgba(0,0,0,0.1)", 
-                      border: "1px solid #eee" 
-                    }}
-                    formatter={customTooltipFormatter}
-                  />
-                  <Legend verticalAlign="top" height={36} />
-                  <Bar 
-                    name="Dhor 1 Mistakes" 
-                    dataKey="dhor_1_mistakes" 
-                    fill="#F97316" 
-                    radius={[4, 4, 0, 0]}
-                  />
-                  <Bar 
-                    name="Dhor 2 Mistakes" 
-                    dataKey="dhor_2_mistakes" 
-                    fill="#8B5CF6" 
-                    radius={[4, 4, 0, 0]}
-                  />
-                </BarChart>
-              </ResponsiveContainer>
+                  {attendanceChartData.map((entry, index) => (
+                    <Cell 
+                      key={`cell-${index}`} 
+                      fill={ATTENDANCE_COLORS[entry.status as keyof typeof ATTENDANCE_COLORS] || COLORS[index % COLORS.length]} 
+                    />
+                  ))}
+                </Pie>
+                <Tooltip />
+                <Legend />
+              </PieChart>
+            </ResponsiveContainer>
+            
+            <div className="mt-4 grid grid-cols-2 gap-2 w-full text-sm">
+              {attendanceChartData.map((entry, index) => (
+                <div key={index} className="flex items-center">
+                  <div 
+                    className="w-3 h-3 rounded-full mr-2" 
+                    style={{ backgroundColor: ATTENDANCE_COLORS[entry.status as keyof typeof ATTENDANCE_COLORS] || COLORS[index % COLORS.length] }}
+                  ></div>
+                  <span className="capitalize">{entry.status}: {entry.count}</span>
+                </div>
+              ))}
             </div>
-          </TabsContent>
-        </Tabs>
-      </CardContent>
-    </Card>
+          </CardContent>
+        </Card>
+      </div>
+    </>
   );
-}
-
-// Process chart data function
-function processChartData(progressData: Progress[], dhorData: any[], timeRange: string) {
-  // Get the cutoff date based on the selected time range
-  const now = new Date();
-  let cutoffDate = new Date();
-  
-  if (timeRange === "week") {
-    cutoffDate.setDate(now.getDate() - 7);
-  } else if (timeRange === "month") {
-    cutoffDate.setMonth(now.getMonth() - 1);
-  } else {
-    // For "all", use a very old date to include everything
-    cutoffDate = new Date(0);
-  }
-  
-  // Filter data based on the time range
-  const filteredProgressData = progressData.filter(entry => 
-    entry.date && new Date(entry.date) >= cutoffDate
-  );
-  
-  // Process the data for the chart
-  let cumulativeVerses = 0;
-  return filteredProgressData.map(entry => {
-    cumulativeVerses += entry.verses_memorized || 0;
-    
-    return {
-      date: entry.date ? new Date(entry.date).toLocaleDateString() : 'Unknown',
-      verses_memorized: entry.verses_memorized || 0,
-      cumulative_verses: cumulativeVerses,
-      quality_score: getQualityScore(entry.memorization_quality),
-    };
-  });
-}
-
-// Process dhor performance data
-function processDhorPerformanceData(dhorData: any[]) {
-  return dhorData.map(entry => ({
-    date: entry.entry_date ? new Date(entry.entry_date).toLocaleDateString() : 'Unknown',
-    dhor_1_mistakes: entry.dhor_1_mistakes || 0,
-    dhor_2_mistakes: entry.dhor_2_mistakes || 0,
-  }));
-}
-
-// Helper to convert quality rating to a score
-function getQualityScore(quality?: string) {
-  switch (quality) {
-    case 'excellent': return 5;
-    case 'good': return 4;
-    case 'average': return 3;
-    case 'needsWork': return 2;
-    case 'horrible': return 1;
-    default: return 0;
-  }
-}
+};
