@@ -34,23 +34,14 @@ export function AttendanceTable({ teacherId }: AttendanceTableProps) {
     queryKey: ['attendance-records', teacherId],
     queryFn: async () => {
       try {
-        let query = supabase
+        // Simple query to avoid excessive type instantiation
+        const { data, error } = await supabase
           .from('attendance')
           .select(`
-            id,
-            date,
-            status,
-            notes,
-            student:student_id (id, name),
-            class_schedule:class_id (name:name)
+            id, date, status, notes, 
+            student_id, class_id
           `);
           
-        if (teacherId) {
-          query = query.eq('teacher_id', teacherId);
-        }
-        
-        const { data, error } = await query;
-        
         if (error) throw error;
         
         // If no data, return sample data for development
@@ -83,11 +74,37 @@ export function AttendanceTable({ teacherId }: AttendanceTableProps) {
           ] as AttendanceRecord[];
         }
         
-        // Cast the data to our AttendanceRecord type, ensuring proper class name mapping
-        return (data as any[]).map(record => ({
-          ...record,
-          class_schedule: { class_name: record.class_schedule?.name || "N/A" }
-        })) as AttendanceRecord[];
+        // For each attendance record, get the student and class details
+        const enhancedRecords = await Promise.all(data.map(async (record) => {
+          // Get student details
+          const { data: studentData } = await supabase
+            .from('students')
+            .select('id, name')
+            .eq('id', record.student_id)
+            .single();
+            
+          // Get class details if available
+          let className = "N/A";
+          if (record.class_id) {
+            const { data: classData } = await supabase
+              .from('classes')
+              .select('name')
+              .eq('id', record.class_id)
+              .single();
+              
+            if (classData) {
+              className = classData.name;
+            }
+          }
+          
+          return {
+            ...record,
+            student: studentData || { id: record.student_id || "", name: "Unknown Student" },
+            class_schedule: { class_name: className }
+          };
+        }));
+        
+        return enhancedRecords as AttendanceRecord[];
       } catch (error) {
         console.error("Error fetching attendance records:", error);
         return [] as AttendanceRecord[];
@@ -121,6 +138,7 @@ export function AttendanceTable({ teacherId }: AttendanceTableProps) {
       <SearchInput 
         value={searchQuery}
         onChange={handleSearchChange}
+        placeholder="Search students, status..."
       />
       
       {isLoading ? (

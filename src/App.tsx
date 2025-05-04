@@ -1,10 +1,10 @@
 
-import { AuthProvider } from '@/components/auth/AuthProvider';
+import { AuthProvider } from '@/contexts/AuthContext';
 import Attendance from '@/pages/Attendance';
 import Classes from '@/pages/Classes';
 import Index from '@/pages/Index';
 import NotFound from '@/pages/NotFound';
-import Preferences from '@/pages/preferences'; // Changed from @/pages/Preferences to match actual file casing
+import Preferences from '@/pages/preferences'; // Match actual file casing
 import Progress from '@/pages/Progress';
 import Schedule from '@/pages/Schedule';
 import Settings from '@/pages/Settings';
@@ -16,8 +16,20 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Route, Routes } from 'react-router-dom';
 import { Toaster } from "@/components/ui/toaster"
 import StudentProgressPage from './pages/StudentProgress';
+import TeacherPortal from './pages/TeacherPortal';
+import Auth from './pages/Auth';
+import { ProtectedRoute } from './components/auth/ProtectedRoute';
+import TeacherAccounts from './pages/TeacherAccounts';
+import AdminDashboard from './pages/admin/Dashboard';
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      staleTime: 5 * 60 * 1000, // 5 minutes
+    },
+  },
+});
 
 function App() {
   return (
@@ -26,16 +38,72 @@ function App() {
         <TooltipProvider>
           <AuthProvider>
             <Routes>
-              <Route path="/teachers" element={<Teachers />} />
-              <Route path="/students" element={<Students />} />
-              <Route path="/classes" element={<Classes />} />
-              <Route path="/progress" element={<Progress />} />
-              <Route path="/student-progress" element={<StudentProgressPage />} />
-              <Route path="/attendance" element={<Attendance />} />
-              <Route path="/schedule" element={<Schedule />} />
-              <Route path="/settings" element={<Settings />} />
-              <Route path="/preferences" element={<Preferences />} />
-              <Route path="/" element={<Index />} />
+              <Route path="/auth" element={<Auth />} />
+              <Route path="/" element={
+                <ProtectedRoute>
+                  <Index />
+                </ProtectedRoute>
+              } />
+              <Route path="/admin" element={
+                <ProtectedRoute>
+                  <AdminDashboard />
+                </ProtectedRoute>
+              } />
+              <Route path="/teacher-portal" element={
+                <ProtectedRoute>
+                  <TeacherPortal />
+                </ProtectedRoute>
+              } />
+              <Route path="/teachers" element={
+                <ProtectedRoute>
+                  <Teachers />
+                </ProtectedRoute>
+              } />
+              <Route path="/teacher-accounts" element={
+                <ProtectedRoute>
+                  <TeacherAccounts />
+                </ProtectedRoute>
+              } />
+              <Route path="/students" element={
+                <ProtectedRoute>
+                  <Students />
+                </ProtectedRoute>
+              } />
+              <Route path="/classes" element={
+                <ProtectedRoute>
+                  <Classes />
+                </ProtectedRoute>
+              } />
+              <Route path="/progress" element={
+                <ProtectedRoute>
+                  <Progress />
+                </ProtectedRoute>
+              } />
+              <Route path="/student-progress" element={
+                <ProtectedRoute>
+                  <StudentProgressPage />
+                </ProtectedRoute>
+              } />
+              <Route path="/attendance" element={
+                <ProtectedRoute>
+                  <Attendance />
+                </ProtectedRoute>
+              } />
+              <Route path="/schedule" element={
+                <ProtectedRoute>
+                  <Schedule />
+                </ProtectedRoute>
+              } />
+              <Route path="/settings" element={
+                <ProtectedRoute>
+                  <Settings />
+                </ProtectedRoute>
+              } />
+              <Route path="/preferences" element={
+                <ProtectedRoute>
+                  <Preferences />
+                </ProtectedRoute>
+              } />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </AuthProvider>

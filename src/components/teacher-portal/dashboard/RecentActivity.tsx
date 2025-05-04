@@ -26,17 +26,12 @@ export const RecentActivity = ({ teacherId }: RecentActivityProps) => {
     queryKey: ['recentActivity', teacherId],
     queryFn: async () => {
       try {
-        let query = supabase
+        // Simplified query to avoid type instantiation issues
+        const { data, error } = await supabase
           .from('progress')
-          .select('id, date, students(name), verses_memorized, memorization_quality')
+          .select('id, date, verses_memorized, memorization_quality, student_id')
           .order('date', { ascending: false })
           .limit(5);
-          
-        if (teacherId) {
-          query = query.eq('teacher_id', teacherId);
-        }
-        
-        const { data, error } = await query;
           
         if (error) throw error;
         
@@ -45,7 +40,27 @@ export const RecentActivity = ({ teacherId }: RecentActivityProps) => {
           return [] as ActivityItem[];
         }
         
-        return data as ActivityItem[];
+        // Fetch student names separately to avoid deep type instantiation
+        const enrichedData = await Promise.all(data.map(async (item) => {
+          if (item.student_id) {
+            const { data: studentData } = await supabase
+              .from('students')
+              .select('name')
+              .eq('id', item.student_id)
+              .single();
+              
+            return {
+              ...item,
+              students: { name: studentData?.name || 'Unknown Student' }
+            };
+          }
+          return {
+            ...item,
+            students: { name: 'Unknown Student' }
+          };
+        }));
+        
+        return enrichedData as ActivityItem[];
       } catch (error) {
         console.error("Error fetching recent activity:", error);
         return [] as ActivityItem[];
