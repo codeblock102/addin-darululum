@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { SystemSettings } from "@/types/settings";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "@/contexts/AuthContext";
 import { DEFAULT_SETTINGS } from "@/config/defaultSettings";
 
 export function useSettings() {
