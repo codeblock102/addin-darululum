@@ -1,6 +1,5 @@
 
-import { Input } from "@/components/ui/input";
-import { Search } from "lucide-react";
+import { SearchInput } from "@/components/table/SearchInput";
 
 interface TeacherAccountSearchProps {
   searchQuery: string;
@@ -9,13 +8,12 @@ interface TeacherAccountSearchProps {
 
 export function TeacherAccountSearch({ searchQuery, onSearchChange }: TeacherAccountSearchProps) {
   return (
-    <div className="relative">
-      <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-      <Input
-        placeholder="Search teachers by name or email..."
+    <div className="w-full">
+      <SearchInput
         value={searchQuery}
-        onChange={(e) => onSearchChange(e.target.value)}
-        className="pl-9"
+        onChange={onSearchChange}
+        placeholder="Search teachers by name, email or subject..."
+        className="bg-white rounded-lg shadow-sm border border-gray-200"
       />
     </div>
   );

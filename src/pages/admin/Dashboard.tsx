@@ -1,3 +1,4 @@
+
 import { DashboardLayout } from "@/components/layouts/DashboardLayout";
 import { AdminHeader } from "@/components/admin/AdminHeader";
 import { DashboardStats } from "@/components/dashboard/DashboardStats";
@@ -6,9 +7,39 @@ import { WelcomeHeader } from "@/components/dashboard/WelcomeHeader";
 import { AdminMessaging } from "@/components/admin/messaging/AdminMessaging";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useState } from "react";
+import { Loader2 } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { useUserRole } from "@/hooks/useUserRole";
+import { Card } from "@/components/ui/card";
+
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState("overview");
-  return <DashboardLayout>
+  const { isAdmin, isLoading } = useUserRole();
+  const { session } = useAuth();
+
+  if (isLoading) {
+    return (
+      <DashboardLayout>
+        <div className="flex justify-center items-center h-64">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      </DashboardLayout>
+    );
+  }
+  
+  if (!isAdmin) {
+    return (
+      <DashboardLayout>
+        <Card className="p-8">
+          <h2 className="text-xl font-bold mb-4">Access Denied</h2>
+          <p>You don't have permission to access the admin dashboard.</p>
+        </Card>
+      </DashboardLayout>
+    );
+  }
+
+  return (
+    <DashboardLayout>
       <div className="space-y-6">
         <AdminHeader title="Admin Dashboard" description="Monitor and manage your education system" />
         
@@ -38,5 +69,6 @@ export default function AdminDashboard() {
           </TabsContent>
         </Tabs>
       </div>
-    </DashboardLayout>;
+    </DashboardLayout>
+  );
 }

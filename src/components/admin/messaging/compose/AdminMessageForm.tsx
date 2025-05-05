@@ -1,7 +1,8 @@
+
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
 import { Loader2, Send } from "lucide-react";
 import { MessageCategory, MessageType } from "@/types/progress";
@@ -23,25 +24,33 @@ export const AdminMessageForm = ({
 
   const sendMessageMutation = useMutation({
     mutationFn: async (messageText: string) => {
-      // Create message from admin to teacher
-      const { data, error } = await supabase
-        .from('communications')
-        .insert([
-          {
-            sender_id: null, // Admin doesn't have a UUID in the teachers table
-            recipient_id: selectedTeacher, // Store teacher ID directly in recipient_id
-            message: messageText,
-            read: false,
-            message_type: messageType,
-            category: messageCategory,
-            message_status: 'sent'
-            // No longer using parent_message_id field
-          }
-        ])
-        .select();
+      if (!selectedTeacher || !messageText.trim()) {
+        throw new Error("Missing required fields");
+      }
       
-      if (error) throw error;
-      return data;
+      try {
+        // Create message from admin to teacher
+        const { data, error } = await supabase
+          .from('communications')
+          .insert([
+            {
+              sender_id: null, // Admin doesn't have a UUID in the teachers table
+              recipient_id: selectedTeacher, // Store teacher ID directly in recipient_id
+              message: messageText,
+              read: false,
+              message_type: messageType,
+              category: messageCategory,
+              message_status: 'sent'
+            }
+          ])
+          .select();
+        
+        if (error) throw error;
+        return data;
+      } catch (error) {
+        console.error("Error sending message:", error);
+        throw error;
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-sent-messages'] });
