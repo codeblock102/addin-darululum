@@ -2,11 +2,10 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { AttendanceStatusBadge } from "./table/AttendanceStatusBadge";
 import { AttendanceDataTable } from "./table/AttendanceDataTable";
 import { AttendanceEmptyState } from "./table/AttendanceEmptyState";
 import { AttendanceTableHeader } from "./table/AttendanceTableHeader";
-import { SearchInput } from "./table/SearchInput";
+import { SearchInput } from "../table/SearchInput";
 
 interface AttendanceTableProps {
   teacherId?: string;
