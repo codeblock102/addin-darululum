@@ -2,7 +2,7 @@
 import { useNavigate } from "react-router-dom";
 import { Teacher } from "@/types/teacher";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { BookOpen, Calendar, Users, BarChart2, MessageSquare, LayoutDashboard, Book } from "lucide-react";
+import { BookOpen, Calendar, Users, BarChart2, MessageSquare, LayoutDashboard, Book, CalendarDays } from "lucide-react";
 
 interface TeacherTabsProps {
   teacher: Teacher;
@@ -21,7 +21,7 @@ export const TeacherTabs = ({ teacher, activeTab, onTabChange }: TeacherTabsProp
   return (
     <div className="mb-6">
       <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-        <TabsList className="w-full md:w-auto grid grid-cols-3 md:grid-cols-6 p-1 bg-purple-50 dark:bg-purple-900/30 rounded-xl">
+        <TabsList className="w-full md:w-auto grid grid-cols-3 md:grid-cols-7 p-1 bg-purple-50 dark:bg-purple-900/30 rounded-xl">
           <TabsTrigger 
             value="overview" 
             className="flex items-center gap-2 data-[state=active]:bg-white dark:data-[state=active]:bg-purple-800/50 data-[state=active]:text-purple-700 dark:data-[state=active]:text-purple-200"
@@ -52,6 +52,14 @@ export const TeacherTabs = ({ teacher, activeTab, onTabChange }: TeacherTabsProp
           >
             <Calendar className="h-4 w-4" />
             <span className="hidden sm:inline">Attendance</span>
+          </TabsTrigger>
+          
+          <TabsTrigger 
+            value="schedule" 
+            className="flex items-center gap-2 data-[state=active]:bg-white dark:data-[state=active]:bg-purple-800/50 data-[state=active]:text-purple-700 dark:data-[state=active]:text-purple-200"
+          >
+            <CalendarDays className="h-4 w-4" />
+            <span className="hidden sm:inline">Schedule</span>
           </TabsTrigger>
           
           <TabsTrigger 

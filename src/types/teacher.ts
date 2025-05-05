@@ -54,6 +54,7 @@ export interface SummaryData {
   averageQuality: string;
   totalRevisions: number;
   pendingRevisions: number;
+  scheduledRevisions?: number;
 }
 
 // Updated Schedule type to match the database schema
@@ -79,4 +80,3 @@ export interface TimeSlot {
   start_time: string;
   end_time: string;
 }
-

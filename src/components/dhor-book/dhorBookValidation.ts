@@ -21,7 +21,27 @@ export const DhorBookEntrySchema = z.object({
   memorization_quality: z.enum(['excellent', 'good', 'average', 'needsWork', 'horrible']).optional(),
   tajweed_level: z.string().optional(),
   revision_status: z.string().optional(),
-  teacher_notes: z.string().optional()
+  teacher_notes: z.string().optional(),
+  
+  // Schedule fields
+  schedule_date: z.date().optional(),
+  schedule_priority: z.enum(['high', 'medium', 'low']).optional(),
+  schedule_status: z.enum(['scheduled', 'completed', 'cancelled', 'postponed']).optional(),
+  schedule_notes: z.string().optional(),
+  schedule_type: z.enum(['revision', 'new-lesson', 'evaluation', 'remedial']).optional(),
 });
 
 export type DhorBookEntryFormValues = z.infer<typeof DhorBookEntrySchema>;
+
+// Schedule specific validation schema for the schedule tab
+export const RevisionScheduleSchema = z.object({
+  student_id: z.string().uuid(),
+  juz_number: z.coerce.number().min(1).max(30),
+  surah_number: z.coerce.number().min(1).max(114).optional(),
+  scheduled_date: z.date(),
+  priority: z.enum(['high', 'medium', 'low']).default('medium'),
+  status: z.enum(['pending', 'completed', 'cancelled', 'postponed']).default('pending'),
+  notes: z.string().optional()
+});
+
+export type RevisionScheduleFormValues = z.infer<typeof RevisionScheduleSchema>;
