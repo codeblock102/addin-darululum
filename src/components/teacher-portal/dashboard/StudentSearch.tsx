@@ -22,10 +22,10 @@ export const StudentSearch = ({ teacherId }: StudentSearchProps) => {
       if (!teacherId) return [];
       
       try {
-        // First get the student IDs assigned to this teacher
+        // First get the student names assigned to this teacher
         const { data: assignments, error: assignmentsError } = await supabase
           .from("students_teachers")
-          .select("student_id")
+          .select("student_name")
           .eq("teacher_id", teacherId)
           .eq("active", true);
           
@@ -36,12 +36,12 @@ export const StudentSearch = ({ teacherId }: StudentSearchProps) => {
           return [];
         }
         
-        // Get student details
-        const studentIds = assignments.map(assignment => assignment.student_id);
+        // Get student details using the student names
+        const studentNames = assignments.map(assignment => assignment.student_name);
         const { data: studentsData, error: studentsError } = await supabase
           .from("students")
           .select("id, name")
-          .in("id", studentIds)
+          .in("name", studentNames)
           .order("name");
           
         if (studentsError) throw studentsError;

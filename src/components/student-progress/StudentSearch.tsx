@@ -44,7 +44,7 @@ export const StudentSearch = ({
           // Get students assigned to a specific teacher
           const { data: assignments, error: assignmentsError } = await supabase
             .from("students_teachers")
-            .select("student_id")
+            .select("student_name")
             .eq("teacher_id", teacherId)
             .eq("active", true);
             
@@ -55,26 +55,26 @@ export const StudentSearch = ({
             return [] as Student[];
           }
           
-          // Get student details
-          const studentIds = assignments.map(assignment => assignment.student_id);
+          // Get student details - use student names from assignments
+          const studentNames = assignments.map(assignment => assignment.student_name);
           const { data: studentsData, error: studentsError } = await supabase
             .from("students")
-            .select("id, name, grade")
-            .in("id", studentIds)
+            .select("id, name")
+            .in("name", studentNames)
             .order("name");
             
           if (studentsError) throw studentsError;
-          return studentsData as Student[] || [];
+          return (studentsData || []) as Student[];
         } else {
           // Get all students
           const { data, error } = await supabase
             .from("students")
-            .select("id, name, grade")
+            .select("id, name")
             .order("name");
             
           if (error) throw error;
           
-          return data as Student[] || [];
+          return (data || []) as Student[];
         }
       } catch (error) {
         console.error("Error fetching students:", error);

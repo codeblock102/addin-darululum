@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -22,6 +21,16 @@ import { StudentSearch } from "../student-progress/StudentSearch";
 
 interface TeacherScheduleProps {
   teacherId: string;
+}
+
+// Define interface for students with name property
+interface StudentWithName {
+  name: string;
+}
+
+// Extended interface that includes the students field
+interface RevisionScheduleWithStudentName extends RevisionSchedule {
+  students: StudentWithName;
 }
 
 export const TeacherSchedule = ({ teacherId }: TeacherScheduleProps) => {
@@ -63,8 +72,15 @@ export const TeacherSchedule = ({ teacherId }: TeacherScheduleProps) => {
             .eq('active', true);
 
           if (assignedStudents && assignedStudents.length > 0) {
-            const studentIds = assignedStudents.map(s => s.student_id);
-            if (studentIds.length > 0) {
+            // Get the student IDs from the names
+            const studentNames = assignedStudents.map(s => s.student_name);
+            const { data: studentData } = await supabase
+              .from('students')
+              .select('id')
+              .in('name', studentNames);
+              
+            if (studentData && studentData.length > 0) {
+              const studentIds = studentData.map(s => s.id);
               query = query.in('student_id', studentIds);
             }
           }
@@ -86,12 +102,25 @@ export const TeacherSchedule = ({ teacherId }: TeacherScheduleProps) => {
 
         const { data, error } = await query.order('scheduled_date', { ascending: true });
 
-        if (error) throw error;
+        if (error) {
+          console.error('Error fetching schedules:', error);
+          return [] as RevisionScheduleWithStudentName[];
+        }
         
-        return data as (RevisionSchedule & { students: { name: string } })[];
+        // Handle potential error with students field by adding name property
+        return (data || []).map(item => {
+          // Check if students exists and has error property
+          if (item.students && 'error' in item.students) {
+            return {
+              ...item,
+              students: { name: "Unknown Student" }
+            } as RevisionScheduleWithStudentName;
+          }
+          return item as RevisionScheduleWithStudentName;
+        });
       } catch (error) {
         console.error('Error fetching schedules:', error);
-        return [];
+        return [] as RevisionScheduleWithStudentName[];
       }
     },
     enabled: !!teacherId,
