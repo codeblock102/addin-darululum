@@ -1,4 +1,3 @@
-
 export interface TeacherFormValues {
   name: string;
   bio?: string;
@@ -7,6 +6,9 @@ export interface TeacherFormValues {
   phone?: string;
   subject?: string;
   preferences?: Record<string, any>;
+  createAccount?: boolean;
+  generatePassword?: boolean;
+  password?: string;
 }
 
 export interface TeacherPreferencesType {
