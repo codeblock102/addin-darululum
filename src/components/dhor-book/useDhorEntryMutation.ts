@@ -19,13 +19,14 @@ export function useDhorEntryMutation({
 
   const { mutate, isPending } = useMutation({
     mutationFn: async (formData: any) => {
-      const { data, error } = await supabase
+      // First, insert into the dhor_book_entries table
+      const { data: dhorData, error: dhorError } = await supabase
         .from('dhor_book_entries')
         .insert([{
           student_id: studentId,
           teacher_id: teacherId,
           entry_date: formData.entry_date,
-          day_of_week: new Date(formData.entry_date).toLocaleDateString('en-US', { weekday: 'long' }),
+          day_of_week: formData.day_of_week || new Date(formData.entry_date).toLocaleDateString('en-US', { weekday: 'long' }),
           sabak: formData.sabak,
           sabak_para: formData.sabak_para,
           dhor_1: formData.dhor_1,
@@ -38,11 +39,41 @@ export function useDhorEntryMutation({
         }])
         .select();
     
-      if (error) throw error;
-      return data;
+      if (dhorError) throw dhorError;
+
+      // Check if we have progress data to sync
+      if (formData.current_surah || formData.current_juz || formData.memorization_quality) {
+        // Also insert into the progress table to maintain compatibility
+        const { error: progressError } = await supabase
+          .from('progress')
+          .insert([{
+            student_id: studentId,
+            teacher_id: teacherId,
+            date: formData.entry_date,
+            current_surah: formData.current_surah,
+            current_juz: formData.current_juz,
+            verses_memorized: formData.verses_memorized,
+            memorization_quality: formData.memorization_quality,
+            tajweed_level: formData.tajweed_level,
+            revision_status: formData.revision_status,
+            teacher_notes: formData.teacher_notes || formData.comments
+          }]);
+
+        if (progressError) {
+          console.error("Error syncing to progress table:", progressError);
+          // Do not throw, we already saved the dhor entry
+        }
+      }
+
+      return dhorData;
     },
     onSuccess: (data) => {
+      // Invalidate related queries
       queryClient.invalidateQueries({ queryKey: ['dhor-book-entries'] });
+      queryClient.invalidateQueries({ queryKey: ['progress'] });
+      queryClient.invalidateQueries({ queryKey: ['student-progress'] });
+      queryClient.invalidateQueries({ queryKey: ['teacher-summary'] });
+      
       onSuccess?.(data);
       toast({
         title: "Success",

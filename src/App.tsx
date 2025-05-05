@@ -5,7 +5,7 @@ import Classes from '@/pages/Classes';
 import Index from '@/pages/Index';
 import NotFound from '@/pages/NotFound';
 import Preferences from '@/pages/Preferences';
-import Progress from '@/pages/Progress';
+import DhorBook from '@/pages/DhorBook';
 import Schedule from '@/pages/Schedule';
 import Settings from '@/pages/Settings';
 import Students from '@/pages/Students';
@@ -68,9 +68,9 @@ function App() {
                   <Classes />
                 </ProtectedRoute>
               } />
-              <Route path="/progress" element={
+              <Route path="/dhor-book" element={
                 <ProtectedRoute>
-                  <Progress />
+                  <DhorBook />
                 </ProtectedRoute>
               } />
               <Route path="/schedule" element={

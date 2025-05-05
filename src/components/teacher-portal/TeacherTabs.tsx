@@ -2,7 +2,7 @@
 import { useNavigate } from "react-router-dom";
 import { Teacher } from "@/types/teacher";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { BookOpen, Calendar, Users, BarChart2, MessageSquare, LayoutDashboard } from "lucide-react";
+import { BookOpen, Calendar, Users, BarChart2, MessageSquare, LayoutDashboard, Book } from "lucide-react";
 
 interface TeacherTabsProps {
   teacher: Teacher;
@@ -39,11 +39,11 @@ export const TeacherTabs = ({ teacher, activeTab, onTabChange }: TeacherTabsProp
           </TabsTrigger>
           
           <TabsTrigger 
-            value="progress" 
+            value="dhor-book" 
             className="flex items-center gap-2 data-[state=active]:bg-white dark:data-[state=active]:bg-purple-800/50 data-[state=active]:text-purple-700 dark:data-[state=active]:text-purple-200"
           >
-            <BookOpen className="h-4 w-4" />
-            <span className="hidden sm:inline">Progress</span>
+            <Book className="h-4 w-4" />
+            <span className="hidden sm:inline">Dhor Book</span>
           </TabsTrigger>
           
           <TabsTrigger 
