@@ -10,6 +10,8 @@ import { CalendarIcon } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   Form,
   FormControl,
@@ -19,7 +21,8 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { DialogFooter } from "@/components/ui/dialog";
-import { DhorBookEntrySchema } from "./dhorBookValidation";
+import { DhorBookEntrySchema, DhorBookEntryFormValues } from "./dhorBookValidation";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface DhorBookEntryFormProps {
   onSubmit: (data: any) => void;
@@ -29,8 +32,9 @@ interface DhorBookEntryFormProps {
 
 export function DhorBookEntryForm({ onSubmit, isPending, onCancel }: DhorBookEntryFormProps) {
   const [date, setDate] = useState<Date | undefined>(new Date());
+  const [activeTab, setActiveTab] = useState("basic");
   
-  const form = useForm({
+  const form = useForm<DhorBookEntryFormValues>({
     resolver: zodResolver(DhorBookEntrySchema),
     defaultValues: {
       entry_date: date,
@@ -42,189 +46,366 @@ export function DhorBookEntryForm({ onSubmit, isPending, onCancel }: DhorBookEnt
       dhor_2_mistakes: 0,
       comments: "",
       points: 0,
-      detention: false
+      detention: false,
+      current_surah: undefined,
+      current_juz: undefined,
+      verses_memorized: undefined,
+      memorization_quality: "average",
+      tajweed_level: "",
+      revision_status: "",
+      teacher_notes: ""
     },
   });
 
-  function handleSubmit(data: any) {
+  function handleSubmit(data: DhorBookEntryFormValues) {
     onSubmit({
       ...data,
       entry_date: format(date || new Date(), "yyyy-MM-dd"),
+      day_of_week: format(date || new Date(), "EEEE")
     });
   }
 
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
-        <FormField
-          control={form.control}
-          name="entry_date"
-          render={({ field }) => (
-            <FormItem className="flex flex-col">
-              <FormLabel>Entry Date</FormLabel>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant={"outline"}
-                    className={cn(
-                      "w-[240px] pl-3 text-left font-normal",
-                      !date && "text-muted-foreground"
-                    )}
-                    type="button"
-                  >
-                    {date ? format(date, "PPP") : (
-                      <span>Pick a date</span>
-                    )}
-                    <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar
-                    mode="single"
-                    selected={date}
-                    onSelect={setDate}
-                    disabled={(date) =>
-                      date > new Date()
-                    }
-                    initialFocus
-                  />
-                </PopoverContent>
-              </Popover>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="basic">Basic Entry</TabsTrigger>
+            <TabsTrigger value="advanced">Progress Details</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="basic" className="space-y-4 pt-4">
+            <FormField
+              control={form.control}
+              name="entry_date"
+              render={({ field }) => (
+                <FormItem className="flex flex-col">
+                  <FormLabel>Entry Date</FormLabel>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant={"outline"}
+                        className={cn(
+                          "w-full pl-3 text-left font-normal",
+                          !date && "text-muted-foreground"
+                        )}
+                        type="button"
+                      >
+                        {date ? format(date, "PPP") : (
+                          <span>Pick a date</span>
+                        )}
+                        <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={date}
+                        onSelect={setDate}
+                        disabled={(date) =>
+                          date > new Date()
+                        }
+                        initialFocus
+                      />
+                    </PopoverContent>
+                  </Popover>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-        <FormField
-          control={form.control}
-          name="sabak"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Sabak</FormLabel>
-              <FormControl>
-                <Input placeholder="Enter sabak" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="sabak"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Sabak</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Enter sabak" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-        <FormField
-          control={form.control}
-          name="sabak_para"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Sabak Para</FormLabel>
-              <FormControl>
-                <Input placeholder="Enter sabak para" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+              <FormField
+                control={form.control}
+                name="sabak_para"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Sabak Para</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Enter sabak para" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
 
-        <FormField
-          control={form.control}
-          name="dhor_1"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Dhor 1</FormLabel>
-              <FormControl>
-                <Input placeholder="Enter dhor 1" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="dhor_1"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Dhor 1</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Enter dhor 1" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-        <FormField
-          control={form.control}
-          name="dhor_1_mistakes"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Dhor 1 Mistakes</FormLabel>
-              <FormControl>
-                <Input
-                  type="number"
-                  placeholder="Enter number of mistakes"
-                  {...field}
-                  onChange={e => field.onChange(parseInt(e.target.value) || 0)}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+              <FormField
+                control={form.control}
+                name="dhor_1_mistakes"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Dhor 1 Mistakes</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        placeholder="0"
+                        {...field}
+                        onChange={e => field.onChange(parseInt(e.target.value) || 0)}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
 
-        <FormField
-          control={form.control}
-          name="dhor_2"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Dhor 2</FormLabel>
-              <FormControl>
-                <Input placeholder="Enter dhor 2" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="dhor_2"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Dhor 2</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Enter dhor 2" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-        <FormField
-          control={form.control}
-          name="dhor_2_mistakes"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Dhor 2 Mistakes</FormLabel>
-              <FormControl>
-                <Input
-                  type="number"
-                  placeholder="Enter number of mistakes"
-                  {...field}
-                  onChange={e => field.onChange(parseInt(e.target.value) || 0)}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+              <FormField
+                control={form.control}
+                name="dhor_2_mistakes"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Dhor 2 Mistakes</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        placeholder="0"
+                        {...field}
+                        onChange={e => field.onChange(parseInt(e.target.value) || 0)}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
 
-        <FormField
-          control={form.control}
-          name="comments"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Comments</FormLabel>
-              <FormControl>
-                <Textarea
-                  placeholder="Enter comments"
-                  className="resize-none"
-                  {...field}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+            <FormField
+              control={form.control}
+              name="comments"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Comments</FormLabel>
+                  <FormControl>
+                    <Textarea
+                      placeholder="Enter comments"
+                      className="resize-none"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-        <FormField
-          control={form.control}
-          name="points"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Points</FormLabel>
-              <FormControl>
-                <Input
-                  type="number"
-                  placeholder="Enter points"
-                  {...field}
-                  onChange={e => field.onChange(parseInt(e.target.value) || 0)}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="points"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Points</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        placeholder="0"
+                        {...field}
+                        onChange={e => field.onChange(parseInt(e.target.value) || 0)}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="detention"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-end space-x-2 space-y-0 pt-6">
+                    <FormControl>
+                      <Checkbox
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                    <FormLabel className="font-normal cursor-pointer">Detention</FormLabel>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+          </TabsContent>
+          
+          <TabsContent value="advanced" className="space-y-4 pt-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="current_surah"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Current Surah</FormLabel>
+                    <FormControl>
+                      <Input 
+                        type="number" 
+                        placeholder="1-114" 
+                        {...field} 
+                        value={field.value || ''} 
+                        onChange={e => field.onChange(e.target.value ? parseInt(e.target.value) : undefined)} 
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="current_juz"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Current Juz</FormLabel>
+                    <FormControl>
+                      <Input 
+                        type="number" 
+                        placeholder="1-30" 
+                        {...field} 
+                        value={field.value || ''} 
+                        onChange={e => field.onChange(e.target.value ? parseInt(e.target.value) : undefined)} 
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <FormField
+              control={form.control}
+              name="verses_memorized"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Verses Memorized</FormLabel>
+                  <FormControl>
+                    <Input 
+                      type="number" 
+                      placeholder="Number of verses memorized" 
+                      {...field} 
+                      value={field.value || ''} 
+                      onChange={e => field.onChange(e.target.value ? parseInt(e.target.value) : undefined)} 
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="memorization_quality"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Memorization Quality</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select quality" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="excellent">Excellent</SelectItem>
+                      <SelectItem value="good">Good</SelectItem>
+                      <SelectItem value="average">Average</SelectItem>
+                      <SelectItem value="needsWork">Needs Work</SelectItem>
+                      <SelectItem value="horrible">Incomplete</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="tajweed_level"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Tajweed Level</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Tajweed proficiency level" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="revision_status"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Revision Status</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Status of revision" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="teacher_notes"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Teacher Notes</FormLabel>
+                  <FormControl>
+                    <Textarea
+                      placeholder="Additional notes from the teacher"
+                      className="resize-none"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </TabsContent>
+        </Tabs>
 
         <DialogFooter>
           <Button type="button" variant="secondary" onClick={onCancel}>
