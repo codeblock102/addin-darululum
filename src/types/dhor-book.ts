@@ -50,3 +50,14 @@ export interface RevisionSchedule {
   created_at: string;
   notes?: string;
 }
+
+export interface StudentPerformanceMetrics {
+  totalEntries: number;
+  averagePoints: number;
+  attendanceRate: number;
+  lastEntry: string | null;
+  totalMistakes: number;
+  progressTrend: 'improving' | 'steady' | 'declining' | 'unknown';
+  completedJuz: number;
+  currentJuz: number;
+}
