@@ -66,7 +66,7 @@ export const useScheduleData = (teacherId: string, selectedStudentId: string | n
         }
 
         // Filter by priority if selected
-        if (filters.priority) {
+        if (filters.priority && filters.priority !== 'all') {
           query = query.eq('priority', filters.priority);
         }
 
@@ -79,14 +79,20 @@ export const useScheduleData = (teacherId: string, selectedStudentId: string | n
         
         // Handle nested join errors and provide default values
         return (data || []).map(item => {
-          // Check if students property exists and handle the case when it doesn't
-          if (!item.students || typeof item.students !== 'object' || 'error' in item.students) {
-            return {
-              ...item,
-              students: { name: "Unknown Student" }
-            } as RevisionScheduleWithStudentName;
-          }
-          return item as RevisionScheduleWithStudentName;
+          // Check if students property exists and handle cases when it doesn't match expected shape
+          const hasValidStudents = 
+            item.students && 
+            typeof item.students === 'object' && 
+            !('error' in item.students) && 
+            item.students !== null;
+
+          // Create a properly typed object
+          return {
+            ...item, 
+            students: hasValidStudents 
+              ? item.students as { name: string } 
+              : { name: "Unknown Student" }
+          } as RevisionScheduleWithStudentName;
         });
       } catch (error) {
         console.error('Error fetching schedules:', error);
