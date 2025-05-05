@@ -28,7 +28,10 @@ export const ScheduleFilters = ({
         />
       </div>
 
-      <Select value={filterPriority || ""} onValueChange={setFilterPriority}>
+      <Select 
+        value={filterPriority || undefined} 
+        onValueChange={setFilterPriority}
+      >
         <SelectTrigger className="w-full sm:w-[130px]">
           <div className="flex items-center">
             <Filter className="mr-2 h-4 w-4" />
@@ -36,7 +39,7 @@ export const ScheduleFilters = ({
           </div>
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="">All Priorities</SelectItem>
+          <SelectItem value="all">All Priorities</SelectItem>
           <SelectItem value="high">High</SelectItem>
           <SelectItem value="medium">Medium</SelectItem>
           <SelectItem value="low">Low</SelectItem>
