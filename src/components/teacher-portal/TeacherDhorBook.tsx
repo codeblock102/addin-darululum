@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { DhorBook } from "@/components/dhor-book/DhorBook";
-import { Loader2, Plus, Calendar } from "lucide-react";
+import { Loader2, Plus, Calendar, Search } from "lucide-react";
 import { StudentSearch } from "@/components/student-progress/StudentSearch";
 import { AttendanceStats } from "@/components/student-progress/AttendanceStats";
 import { StudentPerformanceMetrics } from "@/components/student-progress/StudentPerformanceMetrics";
