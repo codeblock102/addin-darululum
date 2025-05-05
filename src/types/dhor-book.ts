@@ -38,3 +38,15 @@ export interface StudentDhorSummary {
   created_at: string;
   updated_at: string;
 }
+
+export interface RevisionSchedule {
+  id: string;
+  student_id: string;
+  juz_number: number;
+  surah_number?: number;
+  scheduled_date: string;
+  priority: 'high' | 'medium' | 'low';
+  status: 'pending' | 'completed' | 'cancelled' | 'postponed';
+  created_at: string;
+  notes?: string;
+}

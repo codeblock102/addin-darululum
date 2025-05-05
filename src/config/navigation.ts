@@ -1,5 +1,5 @@
 
-import { Home, Users, School, LineChart, FileText, LayoutDashboard, Settings, BookOpen, User, Calendar, Clock, Book } from "lucide-react";
+import { Home, Users, School, LineChart, FileText, LayoutDashboard, Settings, BookOpen, User, Calendar, Clock, Book, CalendarDays } from "lucide-react";
 import { NavItem } from "@/types/navigation";
 
 export const adminNavItems: NavItem[] = [
@@ -16,7 +16,7 @@ export const teacherNavItems: NavItem[] = [
   { href: "/teacher-portal", label: "Dashboard", icon: Home, description: "Teacher dashboard" },
   { href: "/teacher-portal?tab=students", label: "My Students", icon: Users, description: "Manage your students" },
   { href: "/teacher-portal?tab=dhor-book", label: "Dhor Book", icon: Book, description: "Record student progress" },
-  { href: "/teacher-portal?tab=schedule", label: "Schedule", icon: Calendar, description: "View your teaching schedule" },
+  { href: "/teacher-portal?tab=schedule", label: "Schedule", icon: CalendarDays, description: "Manage revision schedules" },
   { href: "/teacher-portal?tab=attendance", label: "Attendance", icon: Clock, description: "Track student attendance" },
   { href: "/preferences", label: "Preferences", icon: Settings, description: "Account preferences" }
 ];

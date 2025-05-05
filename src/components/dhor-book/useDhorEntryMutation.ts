@@ -48,7 +48,6 @@ export function useDhorEntryMutation({
           .from('progress')
           .insert([{
             student_id: studentId,
-            teacher_id: teacherId,
             date: formData.entry_date,
             current_surah: formData.current_surah,
             current_juz: formData.current_juz,
@@ -65,6 +64,26 @@ export function useDhorEntryMutation({
         }
       }
 
+      // If we have schedule data, create a revision schedule
+      if (formData.schedule_date) {
+        const { error: scheduleError } = await supabase
+          .from('revision_schedule')
+          .insert([{
+            student_id: studentId,
+            juz_number: formData.current_juz || 1,
+            surah_number: formData.current_surah,
+            scheduled_date: formData.schedule_date,
+            priority: formData.schedule_priority || 'medium',
+            status: formData.schedule_status || 'pending',
+            notes: formData.schedule_notes || formData.comments
+          }]);
+
+        if (scheduleError) {
+          console.error("Error creating revision schedule:", scheduleError);
+          // Do not throw, we already saved the dhor entry
+        }
+      }
+
       return dhorData;
     },
     onSuccess: (data) => {
@@ -73,6 +92,8 @@ export function useDhorEntryMutation({
       queryClient.invalidateQueries({ queryKey: ['progress'] });
       queryClient.invalidateQueries({ queryKey: ['student-progress'] });
       queryClient.invalidateQueries({ queryKey: ['teacher-summary'] });
+      queryClient.invalidateQueries({ queryKey: ['teacher-schedule'] });
+      queryClient.invalidateQueries({ queryKey: ['revision-schedule'] });
       
       onSuccess?.(data);
       toast({

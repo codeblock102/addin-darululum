@@ -12,6 +12,7 @@ import { RecentActivity } from "./dashboard/RecentActivity";
 import { MyStudents } from "./MyStudents";
 import { TeacherDhorBook } from "./TeacherDhorBook";
 import { TeacherAttendance } from "./TeacherAttendance";
+import { TeacherSchedule } from "./TeacherSchedule";
 import { TeacherPerformance } from "./dashboard/TeacherPerformance";
 import { TeacherMessagesEnhanced } from "./messaging/TeacherMessagesEnhanced";
 
@@ -24,7 +25,7 @@ export const TeacherDashboard = ({ teacher }: TeacherDashboardProps) => {
     const searchParams = new URLSearchParams(location.search);
     const tabParam = searchParams.get('tab');
     
-    if (tabParam && ['students', 'dhor-book', 'attendance', 'performance', 'messages'].includes(tabParam)) {
+    if (tabParam && ['students', 'dhor-book', 'attendance', 'schedule', 'performance', 'messages'].includes(tabParam)) {
       setActiveTab(tabParam);
     } else {
       setActiveTab("overview");
@@ -39,6 +40,8 @@ export const TeacherDashboard = ({ teacher }: TeacherDashboardProps) => {
         return <TeacherDhorBook teacherId={teacher.id} />;
       case "attendance":
         return <TeacherAttendance teacherId={teacher.id} />; 
+      case "schedule":
+        return <TeacherSchedule teacherId={teacher.id} />;
       case "performance":
         return <TeacherPerformance teacherId={teacher.id} />;
       case "messages":
