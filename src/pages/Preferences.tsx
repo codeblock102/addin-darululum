@@ -1,19 +1,14 @@
 
 import { DashboardLayout } from "@/components/layouts/DashboardLayout";
+import { TeacherPreferences } from "@/components/teacher-portal/TeacherPreferences";
 
-const Preferences = () => {
+export default function Preferences() {
   return (
     <DashboardLayout>
       <div className="container mx-auto py-6">
-        <h1 className="text-2xl font-bold mb-4">User Preferences</h1>
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
-          <p className="text-gray-600 dark:text-gray-400">
-            Preferences page content will go here.
-          </p>
-        </div>
+        <h1 className="text-2xl font-bold mb-6">Teacher Preferences</h1>
+        <TeacherPreferences />
       </div>
     </DashboardLayout>
   );
-};
-
-export default Preferences;
+}
