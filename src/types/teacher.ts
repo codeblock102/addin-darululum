@@ -1,3 +1,4 @@
+
 export interface TeacherFormValues {
   name: string;
   bio?: string;
@@ -19,8 +20,8 @@ export interface TeacherPreferencesType {
 export interface Teacher {
   id: string;
   name: string;
-  subject: string;  // Made this required to match database schema
-  experience: string; // Made this required to match database schema
+  subject: string;
+  experience: string;
   email?: string;
   bio?: string;
   phone?: string;
@@ -78,3 +79,4 @@ export interface TimeSlot {
   start_time: string;
   end_time: string;
 }
+
