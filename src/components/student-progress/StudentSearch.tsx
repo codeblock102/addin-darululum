@@ -19,41 +19,63 @@ interface Student {
 interface StudentSearchProps {
   onStudentSelect: (studentId: string, studentName: string) => void;
   selectedStudentId?: string;
+  teacherId?: string;
+  className?: string;
+  showHeader?: boolean;
 }
 
-export const StudentSearch = ({ onStudentSelect, selectedStudentId }: StudentSearchProps) => {
+export const StudentSearch = ({ 
+  onStudentSelect, 
+  selectedStudentId,
+  teacherId,
+  className = "mb-6",
+  showHeader = true
+}: StudentSearchProps) => {
   const [open, setOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedName, setSelectedName] = useState("");
   
+  // Determine whether to fetch all students or just those for a specific teacher
   const { data: students, isLoading } = useQuery({
-    queryKey: ["students"],
+    queryKey: teacherId ? ["teacher-students", teacherId] : ["all-students"],
     queryFn: async () => {
       try {
-        const { data, error } = await supabase
-          .from("students")
-          .select("id, name, grade")
-          .order("name");
+        if (teacherId) {
+          // Get students assigned to a specific teacher
+          const { data: assignments, error: assignmentsError } = await supabase
+            .from("students_teachers")
+            .select("student_id")
+            .eq("teacher_id", teacherId)
+            .eq("active", true);
+            
+          if (assignmentsError) throw assignmentsError;
           
-        if (error) throw error;
-        
-        // If no real data, use sample data or handle the empty case
-        if (!data || data.length === 0) {
-          return [
-            { id: "1", name: "Ahmad Hassan", grade: "7" },
-            { id: "2", name: "Fatima Ahmed", grade: "6" },
-            { id: "3", name: "Mohammed Ali", grade: "5" },
-            { id: "4", name: "Sara Mahmoud", grade: "8" },
-            { id: "5", name: "Youssef Ibrahim", grade: "4" }
-          ] as Student[];
+          // If no assignments, return empty array
+          if (!assignments || assignments.length === 0) {
+            return [] as Student[];
+          }
+          
+          // Get student details
+          const studentIds = assignments.map(assignment => assignment.student_id);
+          const { data: studentsData, error: studentsError } = await supabase
+            .from("students")
+            .select("id, name, grade")
+            .in("id", studentIds)
+            .order("name");
+            
+          if (studentsError) throw studentsError;
+          return studentsData as Student[] || [];
+        } else {
+          // Get all students
+          const { data, error } = await supabase
+            .from("students")
+            .select("id, name, grade")
+            .order("name");
+            
+          if (error) throw error;
+          
+          return data as Student[] || [];
         }
-        
-        // Safely map the data to ensure it matches our Student type
-        return (data as any[]).map(student => ({
-          id: student.id,
-          name: student.name,
-          grade: student.grade
-        })) as Student[];
       } catch (error) {
         console.error("Error fetching students:", error);
         return [] as Student[];
@@ -77,10 +99,12 @@ export const StudentSearch = ({ onStudentSelect, selectedStudentId }: StudentSea
   ) || [];
   
   return (
-    <Card className="mb-6">
-      <CardHeader className="pb-3">
-        <CardTitle>Student Progress</CardTitle>
-      </CardHeader>
+    <Card className={className}>
+      {showHeader && (
+        <CardHeader className="pb-3">
+          <CardTitle>Student Search</CardTitle>
+        </CardHeader>
+      )}
       <CardContent>
         <div className="flex flex-col sm:flex-row gap-2">
           <div className="w-full">

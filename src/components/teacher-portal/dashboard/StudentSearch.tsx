@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Loader2, Search, UserRound } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 interface StudentSearchProps {
   teacherId?: string;
@@ -13,37 +14,53 @@ interface StudentSearchProps {
 
 export const StudentSearch = ({ teacherId }: StudentSearchProps) => {
   const [searchQuery, setSearchQuery] = useState("");
+  const navigate = useNavigate();
   
   const { data: students, isLoading } = useQuery({
     queryKey: ["teacher-students", teacherId],
     queryFn: async () => {
       if (!teacherId) return [];
       
-      const { data, error } = await supabase
-        .from("students_teachers")
-        .select("student_name")
-        .eq("teacher_id", teacherId)
-        .eq("active", true);
+      try {
+        // First get the student IDs assigned to this teacher
+        const { data: assignments, error: assignmentsError } = await supabase
+          .from("students_teachers")
+          .select("student_id")
+          .eq("teacher_id", teacherId)
+          .eq("active", true);
+          
+        if (assignmentsError) throw assignmentsError;
         
-      if (error) throw error;
-      
-      if (!data || data.length === 0) {
-        return [
-          { student_name: "Ahmad Hassan" },
-          { student_name: "Fatima Ahmed" },
-          { student_name: "Mohammed Ali" },
-          { student_name: "Sara Mahmoud" },
-        ];
+        // If no assignments, return empty array
+        if (!assignments || assignments.length === 0) {
+          return [];
+        }
+        
+        // Get student details
+        const studentIds = assignments.map(assignment => assignment.student_id);
+        const { data: studentsData, error: studentsError } = await supabase
+          .from("students")
+          .select("id, name")
+          .in("id", studentIds)
+          .order("name");
+          
+        if (studentsError) throw studentsError;
+        return studentsData || [];
+      } catch (error) {
+        console.error("Error fetching students:", error);
+        return [];
       }
-      
-      return data;
     },
     enabled: !!teacherId,
   });
   
   const filteredStudents = students?.filter(student => 
-    student.student_name.toLowerCase().includes(searchQuery.toLowerCase())
+    student.name.toLowerCase().includes(searchQuery.toLowerCase())
   ) || [];
+  
+  const handleStudentClick = (studentId: string) => {
+    navigate(`/teacher-portal?tab=dhor-book&studentId=${studentId}`);
+  };
   
   return (
     <Card className="h-auto lg:h-[350px]">
@@ -72,17 +89,18 @@ export const StudentSearch = ({ teacherId }: StudentSearchProps) => {
               </div>
             ) : filteredStudents.length === 0 ? (
               <div className="text-center p-4 text-gray-500">
-                No students found
+                {searchQuery ? "No matching students found" : "No students found"}
               </div>
             ) : (
-              filteredStudents.map((student, index) => (
+              filteredStudents.map((student) => (
                 <Button
-                  key={index}
+                  key={student.id}
                   variant="ghost"
                   className="w-full justify-start"
+                  onClick={() => handleStudentClick(student.id)}
                 >
                   <UserRound className="h-4 w-4 mr-2 opacity-70" />
-                  {student.student_name}
+                  {student.name}
                 </Button>
               ))
             )}
