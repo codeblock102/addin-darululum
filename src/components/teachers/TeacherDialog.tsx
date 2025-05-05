@@ -19,9 +19,11 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
+  FormDescription,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Loader2 } from "lucide-react";
 import { Teacher } from "@/types/teacher";
 import { hasPermission } from "@/utils/roleUtils";
@@ -41,6 +43,14 @@ const teacherSchema = z.object({
     message: "Experience must be at least 2 characters.",
   }).optional(),
   bio: z.string().optional().nullable(),
+  createAccount: z.boolean().default(true),
+  generatePassword: z.boolean().default(true),
+  password: z.string().optional()
+    .refine(val => {
+      // Password is required if createAccount is true and generatePassword is false
+      if (val === undefined) return true;
+      return val.length >= 6 || "Password must be at least 6 characters";
+    }),
 });
 
 interface TeacherFormValues extends z.infer<typeof teacherSchema> {}
@@ -63,8 +73,14 @@ export const TeacherDialog = ({ selectedTeacher }: TeacherDialogProps) => {
       subject: "",
       experience: "",
       bio: null,
+      createAccount: true,
+      generatePassword: true,
+      password: "",
     },
   });
+
+  const createAccountValue = form.watch("createAccount");
+  const generatePasswordValue = form.watch("generatePassword");
 
   // Set default values when selected teacher changes
   useEffect(() => {
@@ -76,6 +92,9 @@ export const TeacherDialog = ({ selectedTeacher }: TeacherDialogProps) => {
         subject: selectedTeacher.subject || "",
         experience: selectedTeacher.experience || "",
         bio: selectedTeacher.bio || null,
+        createAccount: false, // Don't create account when editing
+        generatePassword: true, 
+        password: "",
       });
     } else {
       form.reset({
@@ -85,25 +104,28 @@ export const TeacherDialog = ({ selectedTeacher }: TeacherDialogProps) => {
         subject: "",
         experience: "",
         bio: null,
+        createAccount: true,
+        generatePassword: true,
+        password: "",
       });
     }
   }, [selectedTeacher, form]);
 
+  // Generate a random password
+  const generateRandomPassword = () => {
+    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()";
+    let password = "";
+    for (let i = 0; i < 10; i++) {
+      password += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return password;
+  };
+
   const handleSubmit = async (values: TeacherFormValues) => {
     try {
-      // Skip permission check in development mode for now
-      // const hasCreatePermission = await hasPermission('manage_teachers');
-      // if (!hasCreatePermission) {
-      //   toast({
-      //     title: "Permission Denied",
-      //     description: "You do not have permission to create or edit teachers.",
-      //     variant: "destructive"
-      //   });
-      //   return;
-      // }
-
       setIsSubmitting(true);
 
+      // Create or update the teacher profile
       if (selectedTeacher) {
         const { error } = await supabase
           .from("teachers")
@@ -124,48 +146,90 @@ export const TeacherDialog = ({ selectedTeacher }: TeacherDialogProps) => {
             description: error.message || "Failed to update teacher. Please try again.",
             variant: "destructive",
           });
-        } else {
-          // Invalidate teacher queries to refresh the data
-          queryClient.invalidateQueries({ queryKey: ['teachers'] });
-          queryClient.invalidateQueries({ queryKey: ['teachers-dropdown'] });
-          
-          toast({
-            title: "Success",
-            description: "Teacher updated successfully!",
-          });
+          return;
         }
       } else {
-        const teacherData = {
-          name: values.name,
-          email: values.email || null,
-          phone: values.phone || null,
-          subject: values.subject || "",
-          experience: values.experience || "",
-          bio: values.bio || null
-        };
-        
-        const { error } = await supabase
+        // Create new teacher profile
+        const { data: teacherData, error: teacherError } = await supabase
           .from("teachers")
-          .insert([teacherData]);
+          .insert([{
+            name: values.name,
+            email: values.email || null,
+            phone: values.phone || null,
+            subject: values.subject || "",
+            experience: values.experience || "",
+            bio: values.bio || null
+          }])
+          .select();
 
-        if (error) {
-          console.error("Error creating teacher:", error);
+        if (teacherError) {
+          console.error("Error creating teacher:", teacherError);
           toast({
             title: "Error",
-            description: error.message || "Failed to create teacher. Please try again.",
+            description: teacherError.message || "Failed to create teacher. Please try again.",
             variant: "destructive",
           });
-        } else {
-          // Invalidate teacher queries to refresh the data
-          queryClient.invalidateQueries({ queryKey: ['teachers'] });
-          queryClient.invalidateQueries({ queryKey: ['teachers-dropdown'] });
+          return;
+        }
+
+        // If create account is enabled, create a user account
+        if (values.createAccount && values.email) {
+          // Generate or use provided password
+          const password = values.generatePassword 
+            ? generateRandomPassword()
+            : values.password;
+
+          if (!password) {
+            toast({
+              title: "Error",
+              description: "Password is required when creating an account with manual password.",
+              variant: "destructive",
+            });
+            return;
+          }
+
+          const newTeacher = teacherData?.[0];
           
+          // Create the user account
+          const { error: userError } = await supabase.auth.signUp({
+            email: values.email,
+            password: password,
+            options: {
+              data: {
+                username: values.name.toLowerCase().replace(/\s+/g, '.'),
+                teacher_id: newTeacher?.id,
+                role: 'teacher'
+              }
+            }
+          });
+
+          if (userError) {
+            console.error("Error creating user account:", userError);
+            toast({
+              title: "Warning",
+              description: `Teacher profile created but failed to create user account: ${userError.message}`,
+              variant: "destructive",
+            });
+          } else {
+            toast({
+              title: "Success",
+              description: values.generatePassword 
+                ? `Teacher and user account created! Temporary password: ${password}`
+                : "Teacher and user account created successfully!",
+            });
+          }
+        } else {
           toast({
             title: "Success",
-            description: "Teacher created successfully!",
+            description: "Teacher profile created successfully!",
           });
         }
       }
+
+      // Invalidate teacher queries to refresh the data
+      queryClient.invalidateQueries({ queryKey: ['teachers'] });
+      queryClient.invalidateQueries({ queryKey: ['teachers-dropdown'] });
+      
     } catch (error) {
       console.error("Unexpected error:", error);
       toast({
@@ -212,7 +276,7 @@ export const TeacherDialog = ({ selectedTeacher }: TeacherDialogProps) => {
               <FormItem>
                 <FormLabel>Email</FormLabel>
                 <FormControl>
-                  <Input placeholder="Teacher's Email" {...field} />
+                  <Input placeholder="Teacher's Email" {...field} value={field.value || ""} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -225,7 +289,7 @@ export const TeacherDialog = ({ selectedTeacher }: TeacherDialogProps) => {
               <FormItem>
                 <FormLabel>Phone</FormLabel>
                 <FormControl>
-                  <Input placeholder="Teacher's Phone" {...field} />
+                  <Input placeholder="Teacher's Phone" {...field} value={field.value || ""} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -264,12 +328,78 @@ export const TeacherDialog = ({ selectedTeacher }: TeacherDialogProps) => {
               <FormItem>
                 <FormLabel>Bio</FormLabel>
                 <FormControl>
-                  <Input placeholder="Teacher's Bio" {...field} />
+                  <Input placeholder="Teacher's Bio" {...field} value={field.value || ""} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
+
+          {!selectedTeacher && (
+            <>
+              <FormField
+                control={form.control}
+                name="createAccount"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                    <FormControl>
+                      <Checkbox
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                    <div className="space-y-1 leading-none">
+                      <FormLabel>Create user account</FormLabel>
+                      <FormDescription>
+                        Automatically create a user account for this teacher
+                      </FormDescription>
+                    </div>
+                  </FormItem>
+                )}
+              />
+
+              {createAccountValue && (
+                <>
+                  <FormField
+                    control={form.control}
+                    name="generatePassword"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                        <FormControl>
+                          <Checkbox
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                          />
+                        </FormControl>
+                        <div className="space-y-1 leading-none">
+                          <FormLabel>Auto-generate password</FormLabel>
+                          <FormDescription>
+                            Automatically generate a secure password
+                          </FormDescription>
+                        </div>
+                      </FormItem>
+                    )}
+                  />
+
+                  {!generatePasswordValue && (
+                    <FormField
+                      control={form.control}
+                      name="password"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Password</FormLabel>
+                          <FormControl>
+                            <Input type="password" placeholder="Minimum 6 characters" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  )}
+                </>
+              )}
+            </>
+          )}
 
           <Button type="submit" disabled={isSubmitting}>
             {isSubmitting ? (
