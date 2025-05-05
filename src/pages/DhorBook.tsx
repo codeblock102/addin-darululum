@@ -138,6 +138,10 @@ const DhorBookPage = () => {
                                   {teacher.name}
                                 </SelectItem>
                               ))}
+                              {/* Added a default teacher option in case there are no teachers */}
+                              {(!teachers || teachers.length === 0) && (
+                                <SelectItem value="default">Default Teacher</SelectItem>
+                              )}
                             </SelectContent>
                           </Select>
                         </div>
@@ -149,7 +153,7 @@ const DhorBookPage = () => {
                     {selectedStudentId ? (
                       <DhorBookComponent 
                         studentId={selectedStudentId} 
-                        teacherId={teachers?.[0]?.id || ''} 
+                        teacherId={teachers?.[0]?.id || 'default'} 
                       />
                     ) : (
                       <div className="border rounded-lg flex items-center justify-center h-[400px] bg-muted/20">

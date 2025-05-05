@@ -77,9 +77,10 @@ export const useScheduleData = (teacherId: string, selectedStudentId: string | n
           return [] as RevisionScheduleWithStudentName[];
         }
         
-        // Handle nested join errors by providing default values
+        // Handle nested join errors and provide default values
         return (data || []).map(item => {
-          if (!item.students || typeof item.students !== 'object' || item.students.error) {
+          // Check if students property exists and handle the case when it doesn't
+          if (!item.students || typeof item.students !== 'object' || 'error' in item.students) {
             return {
               ...item,
               students: { name: "Unknown Student" }
