@@ -1,11 +1,10 @@
-
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { DashboardLayout } from "@/components/layouts/DashboardLayout";
 import TeacherDialog from "@/components/teachers/TeacherDialog";
 import { TeacherList } from "@/components/teachers/TeacherList";
 import { AdminHeader } from "@/components/admin/AdminHeader";
-import { SearchInput } from "@/components/admin/SearchInput";
+import { SearchInput } from "@/components/table/SearchInput";
 import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Loader2, UserPlus, Database, School, Users } from "lucide-react";
@@ -159,12 +158,14 @@ const Teachers = () => {
           </div>
           
           <div className="bg-[#202736] rounded-lg border border-gray-700 shadow-lg">
-            <SearchInput
-              placeholder="Search teachers by name or subject..."
-              value={searchQuery}
-              onChange={setSearchQuery}
-              className="border-gray-700 bg-[#1A1F2C]"
-            />
+            <div className="p-4">
+              <SearchInput
+                placeholder="Search teachers by name or subject..."
+                value={searchQuery}
+                onChange={setSearchQuery}
+                className="border-gray-700 bg-[#1A1F2C]"
+              />
+            </div>
             <TeacherList 
               searchQuery={searchQuery}
               onEdit={setSelectedTeacher}

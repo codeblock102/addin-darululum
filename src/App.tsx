@@ -45,7 +45,7 @@ function App() {
                 </ProtectedRoute>
               } />
               <Route path="/admin" element={
-                <ProtectedRoute>
+                <ProtectedRoute requireAdmin={true}>
                   <AdminDashboard />
                 </ProtectedRoute>
               } />
@@ -55,12 +55,12 @@ function App() {
                 </ProtectedRoute>
               } />
               <Route path="/teachers" element={
-                <ProtectedRoute>
+                <ProtectedRoute requireAdmin={true}>
                   <Teachers />
                 </ProtectedRoute>
               } />
               <Route path="/teacher-accounts" element={
-                <ProtectedRoute>
+                <ProtectedRoute requireAdmin={true}>
                   <TeacherAccounts />
                 </ProtectedRoute>
               } />
@@ -95,7 +95,7 @@ function App() {
                 </ProtectedRoute>
               } />
               <Route path="/settings" element={
-                <ProtectedRoute>
+                <ProtectedRoute requireAdmin={true}>
                   <Settings />
                 </ProtectedRoute>
               } />

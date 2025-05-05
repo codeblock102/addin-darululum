@@ -7,21 +7,51 @@ interface TeacherPerformanceProps {
   teacherId?: string;
 }
 
+interface PerformanceData {
+  studentsCount: number;
+  activeClasses: number;
+  averageRating: number;
+  completionRate: number;
+  totalHours: number;
+}
+
 export const TeacherPerformance = ({ teacherId }: TeacherPerformanceProps) => {
   const { data: performanceData, isLoading } = useQuery({
     queryKey: ["teacher-performance", teacherId],
     queryFn: async () => {
       if (!teacherId) return null;
       
-      // Here you would fetch actual performance data
-      // For now we'll return sample data
-      return {
-        studentsCount: 24,
-        activeClasses: 3,
-        averageRating: 4.8,
-        completionRate: 92.5,
-        totalHours: 128
-      };
+      try {
+        // Fetch students count for this teacher
+        const { data: studentsData, error: studentsError } = await supabase
+          .from('students_teachers')
+          .select('id')
+          .eq('teacher_id', teacherId)
+          .eq('active', true);
+          
+        if (studentsError) throw studentsError;
+        
+        // Fetch classes for this teacher
+        const { data: classesData, error: classesError } = await supabase
+          .from('classes')
+          .select('id')
+          .eq('teacher_id', teacherId);
+          
+        if (classesError) throw classesError;
+        
+        // In a real app, you would fetch rating data from a ratings table
+        // For now, we'll use placeholder data for these metrics
+        return {
+          studentsCount: studentsData?.length || 0,
+          activeClasses: classesData?.length || 0,
+          averageRating: 4.8, // Placeholder - would come from actual ratings
+          completionRate: 92.5, // Placeholder - would be calculated from progress data
+          totalHours: 128 // Placeholder - would be calculated from attendance or time tracking
+        } as PerformanceData;
+      } catch (error) {
+        console.error("Error fetching teacher performance data:", error);
+        return null;
+      }
     },
     enabled: !!teacherId
   });
