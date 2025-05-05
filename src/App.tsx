@@ -19,7 +19,6 @@ import StudentProgressPage from './pages/StudentProgress';
 import TeacherPortal from './pages/TeacherPortal';
 import Auth from './pages/Auth';
 import { ProtectedRoute } from './components/auth/ProtectedRoute';
-import TeacherAccounts from './pages/TeacherAccounts';
 import AdminDashboard from './pages/admin/Dashboard';
 
 const queryClient = new QueryClient({
@@ -59,11 +58,6 @@ function App() {
                   <Teachers />
                 </ProtectedRoute>
               } />
-              <Route path="/teacher-accounts" element={
-                <ProtectedRoute requireAdmin={true}>
-                  <TeacherAccounts />
-                </ProtectedRoute>
-              } />
               <Route path="/students" element={
                 <ProtectedRoute>
                   <Students />
@@ -79,9 +73,9 @@ function App() {
                   <Progress />
                 </ProtectedRoute>
               } />
-              <Route path="/student-progress" element={
+              <Route path="/schedule" element={
                 <ProtectedRoute>
-                  <StudentProgressPage />
+                  <Schedule />
                 </ProtectedRoute>
               } />
               <Route path="/attendance" element={
@@ -89,14 +83,14 @@ function App() {
                   <Attendance />
                 </ProtectedRoute>
               } />
-              <Route path="/schedule" element={
+              <Route path="/settings" element={
                 <ProtectedRoute>
-                  <Schedule />
+                  <Settings />
                 </ProtectedRoute>
               } />
-              <Route path="/settings" element={
-                <ProtectedRoute requireAdmin={true}>
-                  <Settings />
+              <Route path="/student-progress/:studentId" element={
+                <ProtectedRoute>
+                  <StudentProgressPage />
                 </ProtectedRoute>
               } />
               <Route path="/preferences" element={
@@ -106,8 +100,8 @@ function App() {
               } />
               <Route path="*" element={<NotFound />} />
             </Routes>
+            <Toaster />
           </AuthProvider>
-          <Toaster />
         </TooltipProvider>
       </ThemeProvider>
     </QueryClientProvider>

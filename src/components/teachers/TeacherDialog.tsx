@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -7,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
 import {
+  Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
@@ -53,18 +53,19 @@ const teacherSchema = z.object({
     }),
 });
 
-interface TeacherFormValues extends z.infer<typeof teacherSchema> {}
-
 interface TeacherDialogProps {
   selectedTeacher: Teacher | null;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onClose: () => void;
 }
 
-export const TeacherDialog = ({ selectedTeacher }: TeacherDialogProps) => {
+export const TeacherDialog = ({ selectedTeacher, open, onOpenChange, onClose }: TeacherDialogProps) => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const form = useForm<TeacherFormValues>({
+  const form = useForm<z.infer<typeof teacherSchema>>({
     resolver: zodResolver(teacherSchema),
     defaultValues: {
       name: "",
@@ -121,7 +122,7 @@ export const TeacherDialog = ({ selectedTeacher }: TeacherDialogProps) => {
     return password;
   };
 
-  const handleSubmit = async (values: TeacherFormValues) => {
+  const handleSubmit = async (values: z.infer<typeof teacherSchema>) => {
     try {
       setIsSubmitting(true);
 
@@ -148,6 +149,11 @@ export const TeacherDialog = ({ selectedTeacher }: TeacherDialogProps) => {
           });
           return;
         }
+
+        toast({
+          title: "Success",
+          description: "Teacher profile updated successfully!",
+        });
       } else {
         // Create new teacher profile
         const { data: teacherData, error: teacherError } = await supabase
@@ -228,8 +234,10 @@ export const TeacherDialog = ({ selectedTeacher }: TeacherDialogProps) => {
 
       // Invalidate teacher queries to refresh the data
       queryClient.invalidateQueries({ queryKey: ['teachers'] });
+      queryClient.invalidateQueries({ queryKey: ['teacher-accounts'] });
       queryClient.invalidateQueries({ queryKey: ['teachers-dropdown'] });
       
+      onClose();
     } catch (error) {
       console.error("Unexpected error:", error);
       toast({
@@ -243,177 +251,179 @@ export const TeacherDialog = ({ selectedTeacher }: TeacherDialogProps) => {
   };
 
   return (
-    <DialogContent>
-      <DialogHeader>
-        <DialogTitle>
-          {selectedTeacher ? "Edit Teacher" : "Add Teacher"}
-        </DialogTitle>
-        <DialogDescription>
-          {selectedTeacher
-            ? "Update teacher details."
-            : "Enter information for the new teacher."}
-        </DialogDescription>
-      </DialogHeader>
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
-          <FormField
-            control={form.control}
-            name="name"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Name</FormLabel>
-                <FormControl>
-                  <Input placeholder="Teacher's Name" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="email"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Email</FormLabel>
-                <FormControl>
-                  <Input placeholder="Teacher's Email" {...field} value={field.value || ""} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="phone"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Phone</FormLabel>
-                <FormControl>
-                  <Input placeholder="Teacher's Phone" {...field} value={field.value || ""} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="subject"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Subject</FormLabel>
-                <FormControl>
-                  <Input placeholder="Teacher's Subject" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="experience"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Experience</FormLabel>
-                <FormControl>
-                  <Input placeholder="Teacher's Experience" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="bio"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Bio</FormLabel>
-                <FormControl>
-                  <Input placeholder="Teacher's Bio" {...field} value={field.value || ""} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>
+            {selectedTeacher ? "Edit Teacher" : "Add Teacher"}
+          </DialogTitle>
+          <DialogDescription>
+            {selectedTeacher
+              ? "Update teacher details."
+              : "Enter information for the new teacher."}
+          </DialogDescription>
+        </DialogHeader>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+            <FormField
+              control={form.control}
+              name="name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Name</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Teacher's Name" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Email</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Teacher's Email" {...field} value={field.value || ""} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="phone"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Phone</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Teacher's Phone" {...field} value={field.value || ""} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="subject"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Subject</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Teacher's Subject" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="experience"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Experience</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Teacher's Experience" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="bio"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Bio</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Teacher's Bio" {...field} value={field.value || ""} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-          {!selectedTeacher && (
-            <>
-              <FormField
-                control={form.control}
-                name="createAccount"
-                render={({ field }) => (
-                  <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
-                    <FormControl>
-                      <Checkbox
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                      />
-                    </FormControl>
-                    <div className="space-y-1 leading-none">
-                      <FormLabel>Create user account</FormLabel>
-                      <FormDescription>
-                        Automatically create a user account for this teacher
-                      </FormDescription>
-                    </div>
-                  </FormItem>
-                )}
-              />
+            {!selectedTeacher && (
+              <>
+                <FormField
+                  control={form.control}
+                  name="createAccount"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                      <FormControl>
+                        <Checkbox
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                        />
+                      </FormControl>
+                      <div className="space-y-1 leading-none">
+                        <FormLabel>Create user account</FormLabel>
+                        <FormDescription>
+                          Automatically create a user account for this teacher
+                        </FormDescription>
+                      </div>
+                    </FormItem>
+                  )}
+                />
 
-              {createAccountValue && (
-                <>
-                  <FormField
-                    control={form.control}
-                    name="generatePassword"
-                    render={({ field }) => (
-                      <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
-                        <FormControl>
-                          <Checkbox
-                            checked={field.value}
-                            onCheckedChange={field.onChange}
-                          />
-                        </FormControl>
-                        <div className="space-y-1 leading-none">
-                          <FormLabel>Auto-generate password</FormLabel>
-                          <FormDescription>
-                            Automatically generate a secure password
-                          </FormDescription>
-                        </div>
-                      </FormItem>
-                    )}
-                  />
-
-                  {!generatePasswordValue && (
+                {createAccountValue && (
+                  <>
                     <FormField
                       control={form.control}
-                      name="password"
+                      name="generatePassword"
                       render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Password</FormLabel>
+                        <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
                           <FormControl>
-                            <Input type="password" placeholder="Minimum 6 characters" {...field} />
+                            <Checkbox
+                              checked={field.value}
+                              onCheckedChange={field.onChange}
+                            />
                           </FormControl>
-                          <FormMessage />
+                          <div className="space-y-1 leading-none">
+                            <FormLabel>Auto-generate password</FormLabel>
+                            <FormDescription>
+                              Automatically generate a secure password
+                            </FormDescription>
+                          </div>
                         </FormItem>
                       )}
                     />
-                  )}
-                </>
-              )}
-            </>
-          )}
 
-          <Button type="submit" disabled={isSubmitting}>
-            {isSubmitting ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Please wait
+                    {!generatePasswordValue && (
+                      <FormField
+                        control={form.control}
+                        name="password"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Password</FormLabel>
+                            <FormControl>
+                              <Input type="password" placeholder="Minimum 6 characters" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    )}
+                  </>
+                )}
               </>
-            ) : (
-              "Submit"
             )}
-          </Button>
-        </form>
-      </Form>
-    </DialogContent>
+
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Please wait
+                </>
+              ) : (
+                "Submit"
+              )}
+            </Button>
+          </form>
+        </Form>
+      </DialogContent>
+    </Dialog>
   );
 };
 
