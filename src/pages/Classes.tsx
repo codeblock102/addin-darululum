@@ -5,7 +5,7 @@ import { ClassDialog } from "@/components/classes/ClassDialog";
 import { ClassList } from "@/components/classes/ClassList";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogTrigger } from "@/components/ui/dialog";
-import { SearchInput } from "@/components/admin/SearchInput";
+import { SearchInput } from "@/components/table/SearchInput";
 import { Plus } from "lucide-react";
 import { AdminHeader } from "@/components/admin/AdminHeader";
 
