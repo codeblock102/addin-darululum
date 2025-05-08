@@ -83,7 +83,7 @@ export const useScheduleData = (teacherId: string, selectedStudentId: string | n
           let studentName = "Unknown Student";
           let studentObj: { name: string } = { name: studentName };
           
-          // First ensure item.students exists
+          // First ensure item.students exists and handle null case explicitly
           if (item.students !== null && item.students !== undefined) {
             // Then check if it's an object without an error property
             if (
@@ -92,7 +92,7 @@ export const useScheduleData = (teacherId: string, selectedStudentId: string | n
             ) {
               // Now it's safe to cast to the expected type
               const typedStudent = item.students as { name?: string };
-              if (typedStudent.name) {
+              if (typedStudent && typedStudent.name) {
                 studentName = typedStudent.name;
                 studentObj = { name: studentName };
               }
