@@ -79,19 +79,38 @@ export const useScheduleData = (teacherId: string, selectedStudentId: string | n
         
         // Handle nested join errors and provide default values
         return (data || []).map(item => {
-          // Check if students property exists and handle cases when it doesn't match expected shape
-          const hasValidStudents = 
-            item.students && 
-            typeof item.students === 'object' && 
-            !('error' in item.students) && 
-            item.students !== null;
+          // Safely check if students property exists and is valid
+          let studentName = "Unknown Student";
+          let studentObj: { name: string } = { name: studentName };
+          
+          // First ensure item.students exists
+          if (item.students !== null && item.students !== undefined) {
+            // Then check if it's an object without an error property
+            if (
+              typeof item.students === 'object' && 
+              !('error' in item.students)
+            ) {
+              // Now it's safe to cast to the expected type
+              const typedStudent = item.students as { name?: string };
+              if (typedStudent.name) {
+                studentName = typedStudent.name;
+                studentObj = { name: studentName };
+              }
+            }
+          }
 
           // Create a properly typed object
           return {
-            ...item, 
-            students: hasValidStudents 
-              ? item.students as { name: string } 
-              : { name: "Unknown Student" }
+            id: item.id,
+            student_id: item.student_id,
+            juz_number: item.juz_number,
+            surah_number: item.surah_number,
+            scheduled_date: item.scheduled_date,
+            priority: item.priority || 'medium',
+            status: item.status || 'pending',
+            created_at: item.created_at,
+            notes: item.notes || '',
+            students: studentObj
           } as RevisionScheduleWithStudentName;
         });
       } catch (error) {
