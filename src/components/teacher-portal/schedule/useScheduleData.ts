@@ -79,28 +79,12 @@ export const useScheduleData = (teacherId: string, selectedStudentId: string | n
         
         // Handle nested join errors and provide default values
         return (data || []).map(item => {
-          // Safely check if students property exists and is valid
-          let studentName = "Unknown Student";
-          let studentObj: { name: string } = { name: studentName };
+          // Safely check if students property exists and provide default values
+          const defaultStudentName = "Unknown Student";
+          const defaultStudentObj = { name: defaultStudentName };
           
-          // First ensure item.students exists and handle null case explicitly
-          if (item.students !== null && item.students !== undefined) {
-            // Then check if it's an object without an error property
-            if (
-              typeof item.students === 'object' && 
-              !('error' in item.students)
-            ) {
-              // Now it's safe to cast to the expected type
-              const typedStudent = item.students as { name?: string };
-              if (typedStudent && typedStudent.name) {
-                studentName = typedStudent.name;
-                studentObj = { name: studentName };
-              }
-            }
-          }
-
-          // Create a properly typed object
-          return {
+          // Define the properly typed return object with default values first
+          const result: RevisionScheduleWithStudentName = {
             id: item.id,
             student_id: item.student_id,
             juz_number: item.juz_number,
@@ -110,8 +94,25 @@ export const useScheduleData = (teacherId: string, selectedStudentId: string | n
             status: item.status || 'pending',
             created_at: item.created_at,
             notes: item.notes || '',
-            students: studentObj
-          } as RevisionScheduleWithStudentName;
+            students: defaultStudentObj
+          };
+          
+          // Now safely check and update the students object if valid data exists
+          if (item.students !== null && item.students !== undefined) {
+            // Check if it's a valid object (not an error) before trying to use it
+            if (
+              typeof item.students === 'object' && 
+              !('error' in item.students)
+            ) {
+              // Type assertion after validation
+              const studentData = item.students as { name?: string };
+              if (studentData && typeof studentData.name === 'string') {
+                result.students = { name: studentData.name };
+              }
+            }
+          }
+
+          return result;
         });
       } catch (error) {
         console.error('Error fetching schedules:', error);
