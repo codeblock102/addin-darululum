@@ -277,17 +277,17 @@ export type Database = {
       }
       juz: {
         Row: {
-          id: string
+          id: number
           juz_number: number
           surah_list: string
         }
         Insert: {
-          id?: string
+          id: number
           juz_number: number
           surah_list: string
         }
         Update: {
-          id?: string
+          id?: number
           juz_number?: number
           surah_list?: string
         }
@@ -760,19 +760,19 @@ export type Database = {
       }
       surah: {
         Row: {
-          id: string
+          id: number
           name: string
           surah_number: number
           total_ayat: number
         }
         Insert: {
-          id?: string
+          id: number
           name: string
           surah_number: number
           total_ayat: number
         }
         Update: {
-          id?: string
+          id?: number
           name?: string
           surah_number?: number
           total_ayat?: number
