@@ -79,11 +79,7 @@ export const useScheduleData = (teacherId: string, selectedStudentId: string | n
         
         // Handle nested join errors and provide default values
         return (data || []).map(item => {
-          // Safely check if students property exists and provide default values
-          const defaultStudentName = "Unknown Student";
-          const defaultStudentObj = { name: defaultStudentName };
-          
-          // Define the properly typed return object with default values first
+          // Define the properly typed return object with default values
           const result: RevisionScheduleWithStudentName = {
             id: item.id,
             student_id: item.student_id,
@@ -94,22 +90,14 @@ export const useScheduleData = (teacherId: string, selectedStudentId: string | n
             status: (item.status || 'pending') as "pending" | "completed" | "cancelled" | "postponed",
             created_at: item.created_at,
             notes: item.notes || '',
-            students: defaultStudentObj
+            students: { name: "Unknown Student" }
           };
           
-          // Now safely check and update the students object if valid data exists
-          if (item.students !== null && item.students !== undefined) {
-            // Check if it's a valid object (not an error) before trying to use it
-            if (
-              typeof item.students === 'object' && 
-              !('error' in item.students) &&
-              item.students
-            ) {
-              // Type assertion after validation
-              const studentData = item.students as { name?: string };
-              if (studentData && typeof studentData.name === 'string') {
-                result.students = { name: studentData.name };
-              }
+          // Only try to access students if it exists and is not null
+          if (item.students && typeof item.students === 'object') {
+            const studentName = (item.students as { name?: string }).name;
+            if (studentName) {
+              result.students = { name: studentName };
             }
           }
 
