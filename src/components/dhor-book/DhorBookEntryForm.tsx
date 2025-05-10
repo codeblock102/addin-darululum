@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -23,6 +24,7 @@ import { DialogFooter } from "@/components/ui/dialog";
 import { DhorBookEntrySchema, DhorBookEntryFormValues } from "./dhorBookValidation";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useQuranData } from "./useQuranData";
+import { toast } from "@/components/ui/use-toast";
 
 interface DhorBookEntryFormProps {
   onSubmit: (data: any) => void;
@@ -37,6 +39,7 @@ export function DhorBookEntryForm({ onSubmit, isPending, onCancel }: DhorBookEnt
   
   const { 
     juzData, 
+    juzLoading,
     surahData, 
     surahsInJuz, 
     selectedJuz, 
@@ -44,6 +47,12 @@ export function DhorBookEntryForm({ onSubmit, isPending, onCancel }: DhorBookEnt
     selectedSurah, 
     setSelectedSurah 
   } = useQuranData();
+  
+  // Debug console logs
+  console.log("juzData in form:", juzData);
+  console.log("surahData in form:", surahData);
+  console.log("selectedJuz in form:", selectedJuz);
+  console.log("surahsInJuz in form:", surahsInJuz);
   
   const form = useForm<DhorBookEntryFormValues>({
     resolver: zodResolver(DhorBookEntrySchema),
@@ -193,6 +202,12 @@ export function DhorBookEntryForm({ onSubmit, isPending, onCancel }: DhorBookEnt
                         // Reset surah when juz changes
                         setSelectedSurah(null);
                         form.setValue('current_surah', undefined);
+                        form.setValue('start_ayat', undefined);
+                        form.setValue('end_ayat', undefined);
+                        toast({
+                          title: `Selected Juz ${juzNumber}`,
+                          description: `Loading surahs for Juz ${juzNumber}...`,
+                        });
                       }}
                       value={field.value?.toString()}
                     >
@@ -206,7 +221,11 @@ export function DhorBookEntryForm({ onSubmit, isPending, onCancel }: DhorBookEnt
                           <SelectItem key={juz.id} value={juz.juz_number.toString()}>
                             Juz {juz.juz_number}
                           </SelectItem>
-                        ))}
+                        )) || (
+                          <SelectItem disabled value="loading">
+                            {juzLoading ? "Loading..." : "No Juz available"}
+                          </SelectItem>
+                        )}
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -225,6 +244,9 @@ export function DhorBookEntryForm({ onSubmit, isPending, onCancel }: DhorBookEnt
                         const surahNumber = parseInt(value);
                         field.onChange(surahNumber);
                         setSelectedSurah(surahNumber);
+                        toast({
+                          title: `Selected Surah ${surahNumber}`,
+                        });
                       }}
                       value={field.value?.toString()}
                       disabled={!selectedJuz || surahsInJuz.length === 0}
@@ -235,11 +257,17 @@ export function DhorBookEntryForm({ onSubmit, isPending, onCancel }: DhorBookEnt
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent className="max-h-[300px]">
-                        {surahsInJuz.map((surah) => (
-                          <SelectItem key={surah.id} value={surah.surah_number.toString()}>
-                            {surah.surah_number}. {surah.name}
+                        {surahsInJuz.length > 0 ? (
+                          surahsInJuz.map((surah) => (
+                            <SelectItem key={surah.id} value={surah.surah_number.toString()}>
+                              {surah.surah_number}. {surah.name}
+                            </SelectItem>
+                          ))
+                        ) : (
+                          <SelectItem disabled value="none">
+                            {selectedJuz ? "No surahs found for this Juz" : "Select a Juz first"}
                           </SelectItem>
-                        ))}
+                        )}
                       </SelectContent>
                     </Select>
                     <FormMessage />
