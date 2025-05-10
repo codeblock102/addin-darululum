@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { format } from "date-fns";
@@ -23,6 +23,7 @@ import {
 import { DialogFooter } from "@/components/ui/dialog";
 import { DhorBookEntrySchema, DhorBookEntryFormValues } from "./dhorBookValidation";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useQuranData } from "./useQuranData";
 
 interface DhorBookEntryFormProps {
   onSubmit: (data: any) => void;
@@ -33,6 +34,17 @@ interface DhorBookEntryFormProps {
 export function DhorBookEntryForm({ onSubmit, isPending, onCancel }: DhorBookEntryFormProps) {
   const [date, setDate] = useState<Date | undefined>(new Date());
   const [activeTab, setActiveTab] = useState("sabaq");
+  const [ayatOptions, setAyatOptions] = useState<number[]>([]);
+  
+  const { 
+    juzData, 
+    surahData, 
+    surahsInJuz, 
+    selectedJuz, 
+    setSelectedJuz, 
+    selectedSurah, 
+    setSelectedSurah 
+  } = useQuranData();
   
   const form = useForm<DhorBookEntryFormValues>({
     resolver: zodResolver(DhorBookEntrySchema),
@@ -49,6 +61,8 @@ export function DhorBookEntryForm({ onSubmit, isPending, onCancel }: DhorBookEnt
       detention: false,
       current_surah: undefined,
       current_juz: undefined,
+      start_ayat: undefined,
+      end_ayat: undefined,
       verses_memorized: undefined,
       memorization_quality: "average",
       tajweed_level: "",
@@ -56,6 +70,33 @@ export function DhorBookEntryForm({ onSubmit, isPending, onCancel }: DhorBookEnt
       teacher_notes: ""
     },
   });
+
+  // Update form values when juz or surah selection changes
+  useEffect(() => {
+    if (selectedJuz) {
+      form.setValue('current_juz', selectedJuz);
+    }
+    
+    if (selectedSurah) {
+      form.setValue('current_surah', selectedSurah);
+      
+      // Generate ayat options based on selected surah
+      const selectedSurahData = surahData?.find(s => s.surah_number === selectedSurah);
+      if (selectedSurahData) {
+        const totalAyat = selectedSurahData.total_ayat;
+        const ayatArray = Array.from({ length: totalAyat }, (_, i) => i + 1);
+        setAyatOptions(ayatArray);
+        
+        // Reset ayat selections when surah changes
+        form.setValue('start_ayat', 1);
+        form.setValue('end_ayat', undefined);
+      } else {
+        setAyatOptions([]);
+      }
+    } else {
+      setAyatOptions([]);
+    }
+  }, [selectedJuz, selectedSurah, surahData, form]);
 
   function handleSubmit(data: DhorBookEntryFormValues) {
     onSubmit({
@@ -135,19 +176,31 @@ export function DhorBookEntryForm({ onSubmit, isPending, onCancel }: DhorBookEnt
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormField
                 control={form.control}
-                name="current_surah"
+                name="current_juz"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Current Surah</FormLabel>
-                    <FormControl>
-                      <Input 
-                        type="number" 
-                        placeholder="1-114" 
-                        {...field} 
-                        value={field.value || ''} 
-                        onChange={e => field.onChange(e.target.value ? parseInt(e.target.value) : undefined)} 
-                      />
-                    </FormControl>
+                    <FormLabel>Juz</FormLabel>
+                    <Select
+                      onValueChange={(value) => {
+                        const juzNumber = parseInt(value);
+                        field.onChange(juzNumber);
+                        setSelectedJuz(juzNumber);
+                      }}
+                      value={field.value?.toString()}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select Juz" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {juzData?.map((juz) => (
+                          <SelectItem key={juz.id} value={juz.juz_number.toString()}>
+                            Juz {juz.juz_number}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -155,19 +208,98 @@ export function DhorBookEntryForm({ onSubmit, isPending, onCancel }: DhorBookEnt
 
               <FormField
                 control={form.control}
-                name="current_juz"
+                name="current_surah"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Current Juz</FormLabel>
-                    <FormControl>
-                      <Input 
-                        type="number" 
-                        placeholder="1-30" 
-                        {...field} 
-                        value={field.value || ''} 
-                        onChange={e => field.onChange(e.target.value ? parseInt(e.target.value) : undefined)} 
-                      />
-                    </FormControl>
+                    <FormLabel>Surah</FormLabel>
+                    <Select
+                      onValueChange={(value) => {
+                        const surahNumber = parseInt(value);
+                        field.onChange(surahNumber);
+                        setSelectedSurah(surahNumber);
+                      }}
+                      value={field.value?.toString()}
+                      disabled={!selectedJuz || surahsInJuz.length === 0}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder={selectedJuz ? "Select Surah" : "Select Juz first"} />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {surahsInJuz.map((surah) => (
+                          <SelectItem key={surah.id} value={surah.surah_number.toString()}>
+                            {surah.surah_number}. {surah.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="start_ayat"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Start Ayat</FormLabel>
+                    <Select
+                      onValueChange={(value) => {
+                        field.onChange(parseInt(value));
+                      }}
+                      value={field.value?.toString()}
+                      disabled={!selectedSurah || ayatOptions.length === 0}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder={selectedSurah ? "Select Ayat" : "Select Surah first"} />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {ayatOptions.map((ayat) => (
+                          <SelectItem key={`start-${ayat}`} value={ayat.toString()}>
+                            Ayat {ayat}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="end_ayat"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>End Ayat</FormLabel>
+                    <Select
+                      onValueChange={(value) => {
+                        field.onChange(parseInt(value));
+                      }}
+                      value={field.value?.toString()}
+                      disabled={!form.getValues('start_ayat') || ayatOptions.length === 0}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder={form.getValues('start_ayat') ? "Select Ayat" : "Select Start Ayat first"} />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {ayatOptions
+                          .filter((ayat) => ayat >= (form.getValues('start_ayat') || 1))
+                          .map((ayat) => (
+                            <SelectItem key={`end-${ayat}`} value={ayat.toString()}>
+                              Ayat {ayat}
+                            </SelectItem>
+                          ))}
+                      </SelectContent>
+                    </Select>
                     <FormMessage />
                   </FormItem>
                 )}
