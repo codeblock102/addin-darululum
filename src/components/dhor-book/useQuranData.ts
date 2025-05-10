@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
 export interface JuzData {
-  id: string;
+  id: number;  // Changed from string to number to match the database schema
   juz_number: number;
   surah_list: string;
 }
@@ -34,7 +34,7 @@ export const useQuranData = () => {
         console.error('Error fetching juz data:', error);
         return [] as JuzData[];
       }
-      return data as JuzData[];
+      return data as unknown as JuzData[]; // Added explicit type casting
     },
   });
 
@@ -85,8 +85,7 @@ export const useQuranData = () => {
           );
           
           setSurahsInJuz(filtered);
-          // Reset selected surah when juz changes
-          setSelectedSurah(null);
+          console.log("Surahs in selected juz:", filtered);
         } catch (error) {
           console.error('Error parsing surah list:', error);
           setSurahsInJuz([]);

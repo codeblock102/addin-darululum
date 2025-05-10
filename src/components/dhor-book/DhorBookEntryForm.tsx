@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -98,6 +97,12 @@ export function DhorBookEntryForm({ onSubmit, isPending, onCancel }: DhorBookEnt
     }
   }, [selectedJuz, selectedSurah, surahData, form]);
 
+  // Debug logs to help identify issues
+  useEffect(() => {
+    console.log("Selected Juz:", selectedJuz);
+    console.log("Surahs in Juz available:", surahsInJuz);
+  }, [selectedJuz, surahsInJuz]);
+
   function handleSubmit(data: DhorBookEntryFormValues) {
     onSubmit({
       ...data,
@@ -185,6 +190,9 @@ export function DhorBookEntryForm({ onSubmit, isPending, onCancel }: DhorBookEnt
                         const juzNumber = parseInt(value);
                         field.onChange(juzNumber);
                         setSelectedJuz(juzNumber);
+                        // Reset surah when juz changes
+                        setSelectedSurah(null);
+                        form.setValue('current_surah', undefined);
                       }}
                       value={field.value?.toString()}
                     >
@@ -223,7 +231,7 @@ export function DhorBookEntryForm({ onSubmit, isPending, onCancel }: DhorBookEnt
                     >
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder={selectedJuz ? "Select Surah" : "Select Juz first"} />
+                          <SelectValue placeholder={selectedJuz ? (surahsInJuz.length > 0 ? "Select Surah" : "No surahs found") : "Select Juz first"} />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
