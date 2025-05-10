@@ -101,7 +101,8 @@ export const useScheduleData = (teacherId: string, selectedStudentId: string | n
             // Check if it's a valid object (not an error) before trying to use it
             if (
               typeof item.students === 'object' && 
-              !('error' in item.students)
+              !('error' in item.students) &&
+              item.students
             ) {
               // Type assertion after validation
               const studentData = item.students as { name?: string };
@@ -153,6 +154,7 @@ export const useScheduleData = (teacherId: string, selectedStudentId: string | n
 
   // Filter schedules based on search query
   const filteredSchedules = schedules?.filter(schedule => {
+    // Add null check for students and name properties
     const studentName = schedule.students?.name?.toLowerCase() || '';
     const juzNumber = `Juz ${schedule.juz_number}`.toLowerCase();
     const surahNumber = schedule.surah_number ? `Surah ${schedule.surah_number}`.toLowerCase() : '';
