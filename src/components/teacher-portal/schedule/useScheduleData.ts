@@ -79,39 +79,29 @@ export const useScheduleData = (teacherId: string, selectedStudentId: string | n
         
         // Handle nested join errors and provide default values
         return (data || []).map(item => {
-          // Safely check if students property exists and is valid
-          let studentName = "Unknown Student";
-          let studentObj: { name: string } = { name: studentName };
-          
-          // First ensure item.students exists and handle null case explicitly
-          if (item.students !== null && item.students !== undefined) {
-            // Then check if it's an object without an error property
-            if (
-              typeof item.students === 'object' && 
-              !('error' in item.students)
-            ) {
-              // Now it's safe to cast to the expected type
-              const typedStudent = item.students as { name?: string };
-              if (typedStudent && typedStudent.name) {
-                studentName = typedStudent.name;
-                studentObj = { name: studentName };
-              }
-            }
-          }
-
-          // Create a properly typed object
-          return {
+          // Define the properly typed return object with default values
+          const result: RevisionScheduleWithStudentName = {
             id: item.id,
             student_id: item.student_id,
             juz_number: item.juz_number,
             surah_number: item.surah_number,
             scheduled_date: item.scheduled_date,
-            priority: item.priority || 'medium',
-            status: item.status || 'pending',
+            priority: (item.priority || 'medium') as "high" | "medium" | "low",
+            status: (item.status || 'pending') as "pending" | "completed" | "cancelled" | "postponed",
             created_at: item.created_at,
             notes: item.notes || '',
-            students: studentObj
-          } as RevisionScheduleWithStudentName;
+            students: { name: "Unknown Student" }
+          };
+          
+          // Only try to access students if it exists and is not null
+          if (item.students && typeof item.students === 'object') {
+            const studentName = (item.students as { name?: string }).name;
+            if (studentName) {
+              result.students = { name: studentName };
+            }
+          }
+
+          return result;
         });
       } catch (error) {
         console.error('Error fetching schedules:', error);
@@ -153,6 +143,7 @@ export const useScheduleData = (teacherId: string, selectedStudentId: string | n
 
   // Filter schedules based on search query
   const filteredSchedules = schedules?.filter(schedule => {
+    // Add null check for students and name properties
     const studentName = schedule.students?.name?.toLowerCase() || '';
     const juzNumber = `Juz ${schedule.juz_number}`.toLowerCase();
     const surahNumber = schedule.surah_number ? `Surah ${schedule.surah_number}`.toLowerCase() : '';
