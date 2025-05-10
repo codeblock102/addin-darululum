@@ -73,7 +73,7 @@ export const TeacherDhorBook = ({ teacherId }: TeacherDhorBookProps) => {
     <div className="space-y-6">
       <div>
         <h2 className="text-2xl font-bold tracking-tight">Dhor Book</h2>
-        <p className="text-muted-foreground">Record and track student progress using the Dhor Book system</p>
+        <p className="text-muted-foreground">Record and track student progress using the Progress Book system</p>
       </div>
 
       <StudentSearch
