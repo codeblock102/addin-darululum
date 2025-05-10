@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -32,7 +31,7 @@ interface DhorBookEntryFormProps {
 
 export function DhorBookEntryForm({ onSubmit, isPending, onCancel }: DhorBookEntryFormProps) {
   const [date, setDate] = useState<Date | undefined>(new Date());
-  const [activeTab, setActiveTab] = useState("basic");
+  const [activeTab, setActiveTab] = useState("sabaq");
   
   const form = useForm<DhorBookEntryFormValues>({
     resolver: zodResolver(DhorBookEntrySchema),
@@ -69,12 +68,14 @@ export function DhorBookEntryForm({ onSubmit, isPending, onCancel }: DhorBookEnt
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="basic">Basic Entry</TabsTrigger>
-            <TabsTrigger value="advanced">Progress Details</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-4">
+            <TabsTrigger value="sabaq">Sabaq</TabsTrigger>
+            <TabsTrigger value="sabaq-para">Sabaq Para</TabsTrigger>
+            <TabsTrigger value="revision">Revision</TabsTrigger>
+            <TabsTrigger value="progress">Progress</TabsTrigger>
           </TabsList>
           
-          <TabsContent value="basic" className="space-y-4 pt-4">
+          <TabsContent value="sabaq" className="space-y-4 pt-4">
             <FormField
               control={form.control}
               name="entry_date"
@@ -114,164 +115,159 @@ export function DhorBookEntryForm({ onSubmit, isPending, onCancel }: DhorBookEnt
               )}
             />
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="sabak"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Sabak</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Enter sabak" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="sabak_para"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Sabak Para</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Enter sabak para" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="dhor_1"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Dhor 1</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Enter dhor 1" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="dhor_1_mistakes"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Dhor 1 Mistakes</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="number"
-                        placeholder="0"
-                        {...field}
-                        onChange={e => field.onChange(parseInt(e.target.value) || 0)}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="dhor_2"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Dhor 2</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Enter dhor 2" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="dhor_2_mistakes"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Dhor 2 Mistakes</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="number"
-                        placeholder="0"
-                        {...field}
-                        onChange={e => field.onChange(parseInt(e.target.value) || 0)}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-
             <FormField
               control={form.control}
-              name="comments"
+              name="sabak"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Comments</FormLabel>
+                  <FormLabel>Sabak</FormLabel>
                   <FormControl>
-                    <Textarea
-                      placeholder="Enter comments"
-                      className="resize-none"
-                      {...field}
-                    />
+                    <Input placeholder="Enter sabak" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="points"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Points</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="number"
-                        placeholder="0"
-                        {...field}
-                        onChange={e => field.onChange(parseInt(e.target.value) || 0)}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+            <FormField
+              control={form.control}
+              name="dhor_1"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Dhor 1</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Enter dhor 1" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-              <FormField
-                control={form.control}
-                name="detention"
-                render={({ field }) => (
-                  <FormItem className="flex flex-row items-end space-x-2 space-y-0 pt-6">
-                    <FormControl>
-                      <Checkbox
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                      />
-                    </FormControl>
-                    <FormLabel className="font-normal cursor-pointer">Detention</FormLabel>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
+            <FormField
+              control={form.control}
+              name="dhor_1_mistakes"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Dhor 1 Mistakes</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="number"
+                      placeholder="0"
+                      {...field}
+                      onChange={e => field.onChange(parseInt(e.target.value) || 0)}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
           </TabsContent>
-          
-          <TabsContent value="advanced" className="space-y-4 pt-4">
+
+          <TabsContent value="sabaq-para" className="space-y-4 pt-4">
+            <FormField
+              control={form.control}
+              name="sabak_para"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Sabak Para</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Enter sabak para" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="dhor_2"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Dhor 2</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Enter dhor 2" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="dhor_2_mistakes"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Dhor 2 Mistakes</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="number"
+                      placeholder="0"
+                      {...field}
+                      onChange={e => field.onChange(parseInt(e.target.value) || 0)}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </TabsContent>
+
+          <TabsContent value="revision" className="space-y-4 pt-4">
+            <FormField
+              control={form.control}
+              name="revision_status"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Revision Status</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Status of revision" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="memorization_quality"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Memorization Quality</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select quality" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="excellent">Excellent</SelectItem>
+                      <SelectItem value="good">Good</SelectItem>
+                      <SelectItem value="average">Average</SelectItem>
+                      <SelectItem value="needsWork">Needs Work</SelectItem>
+                      <SelectItem value="horrible">Incomplete</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="tajweed_level"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Tajweed Level</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Tajweed proficiency level" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </TabsContent>
+
+          <TabsContent value="progress" className="space-y-4 pt-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormField
                 control={form.control}
@@ -336,59 +332,6 @@ export function DhorBookEntryForm({ onSubmit, isPending, onCancel }: DhorBookEnt
 
             <FormField
               control={form.control}
-              name="memorization_quality"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Memorization Quality</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select quality" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="excellent">Excellent</SelectItem>
-                      <SelectItem value="good">Good</SelectItem>
-                      <SelectItem value="average">Average</SelectItem>
-                      <SelectItem value="needsWork">Needs Work</SelectItem>
-                      <SelectItem value="horrible">Incomplete</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="tajweed_level"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Tajweed Level</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Tajweed proficiency level" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="revision_status"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Revision Status</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Status of revision" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
               name="teacher_notes"
               render={({ field }) => (
                 <FormItem>
@@ -404,6 +347,44 @@ export function DhorBookEntryForm({ onSubmit, isPending, onCancel }: DhorBookEnt
                 </FormItem>
               )}
             />
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="points"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Points</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        placeholder="0"
+                        {...field}
+                        onChange={e => field.onChange(parseInt(e.target.value) || 0)}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="detention"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-end space-x-2 space-y-0 pt-6">
+                    <FormControl>
+                      <Checkbox
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                    <FormLabel className="font-normal cursor-pointer">Detention</FormLabel>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
           </TabsContent>
         </Tabs>
 
