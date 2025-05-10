@@ -234,7 +234,7 @@ export function DhorBookEntryForm({ onSubmit, isPending, onCancel }: DhorBookEnt
                           <SelectValue placeholder={selectedJuz ? (surahsInJuz.length > 0 ? "Select Surah" : "No surahs found") : "Select Juz first"} />
                         </SelectTrigger>
                       </FormControl>
-                      <SelectContent>
+                      <SelectContent className="max-h-[300px]">
                         {surahsInJuz.map((surah) => (
                           <SelectItem key={surah.id} value={surah.surah_number.toString()}>
                             {surah.surah_number}. {surah.name}

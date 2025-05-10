@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
 export interface JuzData {
-  id: number;  // Changed from string to number to match the database schema
+  id: number;  // Number to match the database schema
   juz_number: number;
   surah_list: string;
 }
@@ -34,7 +34,7 @@ export const useQuranData = () => {
         console.error('Error fetching juz data:', error);
         return [] as JuzData[];
       }
-      return data as unknown as JuzData[]; // Added explicit type casting
+      return data as unknown as JuzData[];
     },
   });
 
@@ -64,7 +64,6 @@ export const useQuranData = () => {
       if (juz && juz.surah_list) {
         try {
           // Parse the surah list from the juz data
-          // Expected format is something like "1-2,3,4-6" 
           const surahRanges = juz.surah_list.split(',');
           const surahNumbers: number[] = [];
           
@@ -79,18 +78,27 @@ export const useQuranData = () => {
             }
           });
           
-          // Filter the surah data to only include those in this juz
-          const filtered = surahData.filter(surah => 
-            surahNumbers.includes(surah.surah_number)
-          );
+          // Log the parsed surah numbers for debugging
+          console.log("Parsed surah numbers:", surahNumbers);
           
-          setSurahsInJuz(filtered);
-          console.log("Surahs in selected juz:", filtered);
+          // Filter the surah data to only include those in this juz
+          if (surahData && surahNumbers.length > 0) {
+            const filtered = surahData.filter(surah => 
+              surahNumbers.includes(surah.surah_number)
+            );
+            
+            setSurahsInJuz(filtered);
+            console.log("Surahs in selected juz:", filtered);
+          } else {
+            console.log("No surah data or surah numbers available");
+            setSurahsInJuz([]);
+          }
         } catch (error) {
           console.error('Error parsing surah list:', error);
           setSurahsInJuz([]);
         }
       } else {
+        console.log("No surah_list found for juz:", selectedJuz);
         setSurahsInJuz([]);
       }
     } else {
