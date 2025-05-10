@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
@@ -90,8 +89,8 @@ export const useScheduleData = (teacherId: string, selectedStudentId: string | n
             juz_number: item.juz_number,
             surah_number: item.surah_number,
             scheduled_date: item.scheduled_date,
-            priority: item.priority || 'medium',
-            status: item.status || 'pending',
+            priority: (item.priority || 'medium') as "high" | "medium" | "low",
+            status: (item.status || 'pending') as "pending" | "completed" | "cancelled" | "postponed",
             created_at: item.created_at,
             notes: item.notes || '',
             students: defaultStudentObj
