@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { DashboardLayout } from "@/components/layouts/DashboardLayout";
 import { Card, CardContent } from "@/components/ui/card";
@@ -10,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { DhorBook as DhorBookComponent } from "@/components/dhor-book/DhorBook";
 import { TeacherStatsSection } from "@/components/teachers/TeacherStatsSection";
-import { Book, Search } from "lucide-react";
+import { Book, Search, Activity } from "lucide-react";
 
 const DhorBookPage = () => {
   const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);

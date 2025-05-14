@@ -1,4 +1,3 @@
-
 export interface DhorBookEntry {
   id: string;
   student_id: string;
@@ -16,6 +15,12 @@ export interface DhorBookEntry {
   detention: boolean;
   created_at: string;
   updated_at: string;
+  progress?: {
+    current_juz?: number | null;
+    current_surah?: number | null;
+    start_ayat?: number | null;
+    end_ayat?: number | null;
+  } | null;
 }
 
 export interface ParentComment {

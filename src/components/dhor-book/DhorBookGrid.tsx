@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { DhorBookEntry } from "@/types/dhor-book";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -11,9 +10,10 @@ interface DhorBookGridProps {
   studentId: string;
   teacherId: string;
   currentWeek: Date;
+  onRefresh: () => void;
 }
 
-export function DhorBookGrid({ entries, studentId, teacherId, currentWeek }: DhorBookGridProps) {
+export function DhorBookGrid({ entries, studentId, teacherId, currentWeek, onRefresh }: DhorBookGridProps) {
   const [isNewEntryOpen, setIsNewEntryOpen] = useState(false);
   
   const weekDays = Array.from({ length: 7 }, (_, i) => {
@@ -21,6 +21,30 @@ export function DhorBookGrid({ entries, studentId, teacherId, currentWeek }: Dho
     date.setDate(date.getDate() - date.getDay() + i);
     return date;
   });
+
+  const handleEntrySuccess = () => {
+    // Close the dialog and refresh the data
+    setIsNewEntryOpen(false);
+    console.log("Entry success - triggering refresh");
+    
+    // Call refresh immediately and then again after a short delay
+    // This ensures we capture both the dhor_book_entries and progress data
+    onRefresh();
+    
+    // Add multiple delay refreshes to ensure all data is loaded
+    setTimeout(() => {
+      console.log("First delayed refresh");
+      onRefresh();
+    }, 500);
+    
+    setTimeout(() => {
+      console.log("Second delayed refresh");
+      onRefresh();
+    }, 1500);
+  };
+
+  // Log the received entries to check for progress data
+  console.log("Entries received in DhorBookGrid:", entries);
 
   return (
     <div className="mt-6">
@@ -53,7 +77,11 @@ export function DhorBookGrid({ entries, studentId, teacherId, currentWeek }: Dho
                   <TableCell className="font-medium">
                     {format(date, 'E, MMM d')}
                   </TableCell>
-                  <TableCell>{entry?.sabak || '—'}</TableCell>
+                  <TableCell>
+                    {entry?.progress?.current_juz && entry.progress.current_surah && entry.progress.start_ayat && entry.progress.end_ayat
+                      ? `Juz ${entry.progress.current_juz}: S${entry.progress.current_surah}:${entry.progress.start_ayat}-${entry.progress.end_ayat}`
+                      : '—'} 
+                  </TableCell>
                   <TableCell>{entry?.sabak_para || '—'}</TableCell>
                   <TableCell>{entry?.dhor_1 || '—'}</TableCell>
                   <TableCell>{entry?.dhor_2 || '—'}</TableCell>
@@ -77,6 +105,7 @@ export function DhorBookGrid({ entries, studentId, teacherId, currentWeek }: Dho
         onOpenChange={setIsNewEntryOpen}
         studentId={studentId}
         teacherId={teacherId}
+        onSuccess={handleEntrySuccess}
       />
     </div>
   );
