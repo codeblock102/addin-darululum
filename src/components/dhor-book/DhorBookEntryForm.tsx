@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -25,6 +24,8 @@ import { DhorBookEntrySchema, DhorBookEntryFormValues } from "./dhorBookValidati
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useQuranData } from "./useQuranData";
 import { toast } from "@/components/ui/use-toast";
+import { getAyahRangeForSurahInJuz } from "@/utils/juzAyahMapping";
+import { calculatePages } from "@/utils/quranPageCalculation";
 
 interface DhorBookEntryFormProps {
   onSubmit: (data: any) => void;
@@ -36,12 +37,13 @@ export function DhorBookEntryForm({ onSubmit, isPending, onCancel }: DhorBookEnt
   const [date, setDate] = useState<Date | undefined>(new Date());
   const [activeTab, setActiveTab] = useState("sabaq");
   const [ayatOptions, setAyatOptions] = useState<number[]>([]);
+  const [calculatedPages, setCalculatedPages] = useState<number>(0);
   
   const { 
     juzData, 
     juzLoading,
-    surahData, 
     surahsInJuz, 
+    isLoadingSurahs,
     selectedJuz, 
     setSelectedJuz, 
     selectedSurah, 
@@ -50,7 +52,6 @@ export function DhorBookEntryForm({ onSubmit, isPending, onCancel }: DhorBookEnt
   
   // Debug console logs
   console.log("juzData in form:", juzData);
-  console.log("surahData in form:", surahData);
   console.log("selectedJuz in form:", selectedJuz);
   console.log("surahsInJuz in form:", surahsInJuz);
   
@@ -58,12 +59,16 @@ export function DhorBookEntryForm({ onSubmit, isPending, onCancel }: DhorBookEnt
     resolver: zodResolver(DhorBookEntrySchema),
     defaultValues: {
       entry_date: date,
-      sabak: "",
       sabak_para: "",
+      sabaq_para_juz: undefined,
+      sabaq_para_pages: undefined,
       dhor_1: "",
       dhor_1_mistakes: 0,
       dhor_2: "",
       dhor_2_mistakes: 0,
+      dhor_juz: undefined,
+      dhor_quarter_start: undefined,
+      dhor_quarters_covered: undefined,
       comments: "",
       points: 0,
       detention: false,
@@ -71,11 +76,10 @@ export function DhorBookEntryForm({ onSubmit, isPending, onCancel }: DhorBookEnt
       current_juz: undefined,
       start_ayat: undefined,
       end_ayat: undefined,
-      verses_memorized: undefined,
       memorization_quality: "average",
-      tajweed_level: "",
       revision_status: "",
-      teacher_notes: ""
+      teacher_notes: "",
+      quran_format: "15"
     },
   });
 
@@ -88,23 +92,42 @@ export function DhorBookEntryForm({ onSubmit, isPending, onCancel }: DhorBookEnt
     if (selectedSurah) {
       form.setValue('current_surah', selectedSurah);
       
-      // Generate ayat options based on selected surah
-      const selectedSurahData = surahData?.find(s => s.surah_number === selectedSurah);
-      if (selectedSurahData) {
-        const totalAyat = selectedSurahData.total_ayat;
-        const ayatArray = Array.from({ length: totalAyat }, (_, i) => i + 1);
+      // Get the ayah range for the selected surah in the selected juz
+      const ayahRange = getAyahRangeForSurahInJuz(selectedJuz || 0, selectedSurah);
+      
+      if (ayahRange) {
+        // Generate ayat options only for the range that belongs to the selected juz
+        const ayatArray = Array.from(
+          { length: ayahRange.endAyah - ayahRange.startAyah + 1 },
+          (_, i) => ayahRange.startAyah + i
+        );
         setAyatOptions(ayatArray);
         
         // Reset ayat selections when surah changes
-        form.setValue('start_ayat', 1);
+        form.setValue('start_ayat', ayahRange.startAyah);
         form.setValue('end_ayat', undefined);
+        setCalculatedPages(0);
       } else {
         setAyatOptions([]);
       }
     } else {
       setAyatOptions([]);
     }
-  }, [selectedJuz, selectedSurah, surahData, form]);
+  }, [selectedJuz, selectedSurah, form]);
+
+  // Add effect to calculate pages when ayats change
+  useEffect(() => {
+    const startAyah = form.watch('start_ayat');
+    const endAyah = form.watch('end_ayat');
+    const quranFormat = form.watch('quran_format') as "13" | "15";
+
+    if (startAyah && endAyah && quranFormat) {
+      const pages = calculatePages(quranFormat, startAyah, endAyah);
+      setCalculatedPages(pages);
+    } else {
+      setCalculatedPages(0);
+    }
+  }, [form.watch('start_ayat'), form.watch('end_ayat'), form.watch('quran_format')]);
 
   // Debug logs to help identify issues
   useEffect(() => {
@@ -113,11 +136,36 @@ export function DhorBookEntryForm({ onSubmit, isPending, onCancel }: DhorBookEnt
   }, [selectedJuz, surahsInJuz]);
 
   function handleSubmit(data: DhorBookEntryFormValues) {
-    onSubmit({
+    console.log("Form data before submission:", data);
+    
+    // Create a clean submission data object with all form values
+    const submissionData = {
       ...data,
       entry_date: format(date || new Date(), "yyyy-MM-dd"),
-      day_of_week: format(date || new Date(), "EEEE")
+      day_of_week: format(date || new Date(), "EEEE"),
+      current_juz: data.current_juz, 
+      current_surah: data.current_surah,
+      start_ayat: data.start_ayat,
+      end_ayat: data.end_ayat
+    };
+    
+    // Log all the fields to make sure they're preserved
+    console.log("Final submission data:", JSON.stringify(submissionData, null, 2));
+    console.log("Sabaq data being submitted:", {
+      current_juz: submissionData.current_juz,
+      current_surah: submissionData.current_surah,
+      start_ayat: submissionData.start_ayat,
+      end_ayat: submissionData.end_ayat,
     });
+    
+    // Validate critical fields are present
+    if (!submissionData.entry_date) {
+      console.error("Missing required field: entry_date");
+      return;
+    }
+    
+    // Submit the form data
+    onSubmit(submissionData);
   }
 
   return (
@@ -173,15 +221,30 @@ export function DhorBookEntryForm({ onSubmit, isPending, onCancel }: DhorBookEnt
           
           {/* Sabaq Tab */}
           <TabsContent value="sabaq" className="space-y-4 pt-4">
+            <div className="p-2 bg-muted/20 rounded-md text-sm text-muted-foreground mb-2">
+              <p>The <strong>Sabaq</strong> column in the grid displays data from Juz, Surah, and Ayat selections you make below.</p>
+            </div>
+            
             <FormField
               control={form.control}
-              name="sabak"
+              name="quran_format"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Sabaq</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Enter sabaq" {...field} />
-                  </FormControl>
+                  <FormLabel>Quran Format</FormLabel>
+                  <Select
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select Quran format" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="13">13 Pages</SelectItem>
+                      <SelectItem value="15">15 Pages</SelectItem>
+                    </SelectContent>
+                  </Select>
                   <FormMessage />
                 </FormItem>
               )}
@@ -210,6 +273,10 @@ export function DhorBookEntryForm({ onSubmit, isPending, onCancel }: DhorBookEnt
                         });
                       }}
                       value={field.value?.toString()}
+                      onOpenChange={(open) => {
+                        // Prevent the modal from closing when selecting a juz
+                        if (!open) return;
+                      }}
                     >
                       <FormControl>
                         <SelectTrigger>
@@ -249,15 +316,24 @@ export function DhorBookEntryForm({ onSubmit, isPending, onCancel }: DhorBookEnt
                         });
                       }}
                       value={field.value?.toString()}
-                      disabled={!selectedJuz || surahsInJuz.length === 0}
+                      disabled={!selectedJuz || juzLoading || isLoadingSurahs}
                     >
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder={selectedJuz ? (surahsInJuz.length > 0 ? "Select Surah" : "No surahs found") : "Select Juz first"} />
+                          <SelectValue placeholder={
+                            juzLoading || isLoadingSurahs ? "Loading data..." :
+                            !selectedJuz ? "Select Juz first" :
+                            surahsInJuz.length === 0 ? "No surahs found" :
+                            "Select Surah"
+                          } />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent className="max-h-[300px]">
-                        {surahsInJuz.length > 0 ? (
+                        {juzLoading || isLoadingSurahs ? (
+                          <SelectItem disabled value="loading">
+                            Loading data...
+                          </SelectItem>
+                        ) : surahsInJuz && surahsInJuz.length > 0 ? (
                           surahsInJuz.map((surah) => (
                             <SelectItem key={surah.id} value={surah.surah_number.toString()}>
                               {surah.surah_number}. {surah.name}
@@ -285,7 +361,10 @@ export function DhorBookEntryForm({ onSubmit, isPending, onCancel }: DhorBookEnt
                     <FormLabel>Start Ayat</FormLabel>
                     <Select
                       onValueChange={(value) => {
-                        field.onChange(parseInt(value));
+                        const ayatNumber = parseInt(value);
+                        field.onChange(ayatNumber);
+                        // Reset end ayat when start ayat changes
+                        form.setValue('end_ayat', undefined);
                       }}
                       value={field.value?.toString()}
                       disabled={!selectedSurah || ayatOptions.length === 0}
@@ -319,16 +398,22 @@ export function DhorBookEntryForm({ onSubmit, isPending, onCancel }: DhorBookEnt
                         field.onChange(parseInt(value));
                       }}
                       value={field.value?.toString()}
-                      disabled={!form.getValues('start_ayat') || ayatOptions.length === 0}
+                      disabled={!form.watch('start_ayat') || ayatOptions.length === 0}
                     >
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder={form.getValues('start_ayat') ? "Select Ayat" : "Select Start Ayat first"} />
+                          <SelectValue placeholder={
+                            !form.watch('start_ayat') ? "Select Start Ayat first" :
+                            "Select End Ayat"
+                          } />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
                         {ayatOptions
-                          .filter((ayat) => ayat >= (form.getValues('start_ayat') || 1))
+                          .filter((ayat) => {
+                            const startAyat = form.watch('start_ayat');
+                            return startAyat ? ayat >= startAyat : true;
+                          })
                           .map((ayat) => (
                             <SelectItem key={`end-${ayat}`} value={ayat.toString()}>
                               Ayat {ayat}
@@ -341,38 +426,55 @@ export function DhorBookEntryForm({ onSubmit, isPending, onCancel }: DhorBookEnt
                 )}
               />
             </div>
-
-            <FormField
-              control={form.control}
-              name="verses_memorized"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Verses Memorized</FormLabel>
-                  <FormControl>
-                    <Input 
-                      type="number" 
-                      placeholder="Number of verses memorized" 
-                      {...field} 
-                      value={field.value || ''} 
-                      onChange={e => field.onChange(e.target.value ? parseInt(e.target.value) : undefined)} 
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
           </TabsContent>
           
           {/* Sabaq Para Tab */}
           <TabsContent value="sabaq-para" className="space-y-4 pt-4">
             <FormField
               control={form.control}
-              name="sabak_para"
+              name="sabaq_para_juz"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Sabaq Para</FormLabel>
+                  <FormLabel>Sabaq Para - Juz</FormLabel>
+                  <Select
+                    onValueChange={(value) => field.onChange(parseInt(value))}
+                    value={field.value?.toString()}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select Juz for Sabaq Para" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {juzData?.map((juz) => (
+                        <SelectItem key={`sabaq-para-juz-${juz.id}`} value={juz.juz_number.toString()}>
+                          Juz {juz.juz_number}
+                        </SelectItem>
+                      )) || (
+                        <SelectItem disabled value="loading-juz-sabaq-para">
+                          {juzLoading ? "Loading Juz data..." : "No Juz data"}
+                        </SelectItem>
+                      )}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="sabaq_para_pages"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Sabaq Para - Pages Read</FormLabel>
                   <FormControl>
-                    <Input placeholder="Enter sabaq para" {...field} />
+                    <Input 
+                      type="number"
+                      placeholder="Enter number of pages" 
+                      {...field} 
+                      onChange={e => field.onChange(parseInt(e.target.value) || 0)}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -384,8 +486,12 @@ export function DhorBookEntryForm({ onSubmit, isPending, onCancel }: DhorBookEnt
               name="memorization_quality"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Memorization Quality</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormLabel>Sabaq Para - Memorization Quality</FormLabel>
+                  <Select 
+                    onValueChange={field.onChange} 
+                    value={field.value} // Zod schema makes it optional, RHF handles undefined
+                    defaultValue="average" // Provide a UI default if preferred
+                  >
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Select quality" />
@@ -396,7 +502,7 @@ export function DhorBookEntryForm({ onSubmit, isPending, onCancel }: DhorBookEnt
                       <SelectItem value="good">Good</SelectItem>
                       <SelectItem value="average">Average</SelectItem>
                       <SelectItem value="needsWork">Needs Work</SelectItem>
-                      <SelectItem value="horrible">Incomplete</SelectItem>
+                      <SelectItem value="horrible">Incomplete/Horrible</SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />
@@ -406,12 +512,12 @@ export function DhorBookEntryForm({ onSubmit, isPending, onCancel }: DhorBookEnt
             
             <FormField
               control={form.control}
-              name="tajweed_level"
+              name="sabak_para" // Existing text field for any general notes on Sabaq Para
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Tajweed Level</FormLabel>
+                  <FormLabel>Sabaq Para - Notes</FormLabel>
                   <FormControl>
-                    <Input placeholder="Tajweed proficiency level" {...field} />
+                    <Textarea placeholder="Enter any additional notes for sabaq para" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -421,15 +527,106 @@ export function DhorBookEntryForm({ onSubmit, isPending, onCancel }: DhorBookEnt
           
           {/* Revision Tab */}
           <TabsContent value="revision" className="space-y-4 pt-4">
+            <FormField
+              control={form.control}
+              name="dhor_juz"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Dhor - Juz</FormLabel>
+                  <Select
+                    onValueChange={(value) => field.onChange(parseInt(value))}
+                    value={field.value?.toString()}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select Juz for Dhor" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {juzData?.map((juz) => (
+                        <SelectItem key={`dhor-juz-${juz.id}`} value={juz.juz_number.toString()}>
+                          Juz {juz.juz_number}
+                        </SelectItem>
+                      )) || (
+                        <SelectItem disabled value="loading-juz-dhor">
+                          {juzLoading ? "Loading Juz data..." : "No Juz data"}
+                        </SelectItem>
+                      )}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="dhor_quarter_start"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Dhor - Starting Quarter</FormLabel>
+                    <Select
+                      onValueChange={(value) => field.onChange(parseInt(value))}
+                      value={field.value?.toString()}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select starting quarter" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="1">1st Quarter</SelectItem>
+                        <SelectItem value="2">2nd Quarter</SelectItem>
+                        <SelectItem value="3">3rd Quarter</SelectItem>
+                        <SelectItem value="4">4th Quarter</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="dhor_quarters_covered"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Dhor - Quarters Covered</FormLabel>
+                    <Select
+                      onValueChange={(value) => field.onChange(parseInt(value))}
+                      value={field.value?.toString()}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select quarters covered" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="1">1 Quarter</SelectItem>
+                        <SelectItem value="2">2 Quarters</SelectItem>
+                        <SelectItem value="3">3 Quarters</SelectItem>
+                        <SelectItem value="4">4 Quarters (Full Juz)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <div className="p-2 bg-muted/20 rounded-md text-sm text-muted-foreground my-2">
+              <p>The fields below (Dhor 1 & 2, and their mistakes) can be used for specific page numbers or notes if needed.</p>
+            </div>
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormField
                 control={form.control}
                 name="dhor_1"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Dhor 1</FormLabel>
+                    <FormLabel>Dhor 1 (Notes/Pages)</FormLabel>
                     <FormControl>
-                      <Input placeholder="Enter dhor 1" {...field} />
+                      <Input placeholder="Enter dhor 1 details" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -462,9 +659,9 @@ export function DhorBookEntryForm({ onSubmit, isPending, onCancel }: DhorBookEnt
                 name="dhor_2"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Dhor 2</FormLabel>
+                    <FormLabel>Dhor 2 (Notes/Pages)</FormLabel>
                     <FormControl>
-                      <Input placeholder="Enter dhor 2" {...field} />
+                      <Input placeholder="Enter dhor 2 details" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -493,12 +690,12 @@ export function DhorBookEntryForm({ onSubmit, isPending, onCancel }: DhorBookEnt
             
             <FormField
               control={form.control}
-              name="revision_status"
+              name="revision_status" 
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Revision Status</FormLabel>
+                  <FormLabel>Overall Revision Status</FormLabel>
                   <FormControl>
-                    <Input placeholder="Status of revision" {...field} />
+                    <Input placeholder="Status of overall revision" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -583,6 +780,13 @@ export function DhorBookEntryForm({ onSubmit, isPending, onCancel }: DhorBookEnt
             />
           </TabsContent>
         </Tabs>
+
+        {/* Add pages display */}
+        {calculatedPages > 0 && (
+          <div className="text-sm text-muted-foreground">
+            Pages to memorize: {calculatedPages} pages
+          </div>
+        )}
 
         <DialogFooter>
           <Button type="button" variant="secondary" onClick={onCancel}>

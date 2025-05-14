@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -23,6 +22,8 @@ interface Student {
   guardian_name: string | null;
   guardian_contact: string | null;
   status: 'active' | 'inactive';
+  completed_juz?: number[];
+  current_juz?: number | null;
 }
 
 interface StudentListProps {
@@ -43,6 +44,7 @@ export const StudentList = ({ searchQuery, onEdit }: StudentListProps) => {
         .order('name', { ascending: true });
 
       if (error) throw error;
+      console.log("Raw student data from Supabase:", data);
       return data as Student[];
     },
   });
@@ -81,6 +83,8 @@ export const StudentList = ({ searchQuery, onEdit }: StudentListProps) => {
           <TableHead>Guardian</TableHead>
           <TableHead>Contact</TableHead>
           <TableHead>Enrollment Date</TableHead>
+          <TableHead>Current Juz</TableHead>
+          <TableHead>Completed Juz</TableHead>
           <TableHead>Status</TableHead>
           <TableHead className="text-right">Actions</TableHead>
         </TableRow>
@@ -108,6 +112,12 @@ export const StudentList = ({ searchQuery, onEdit }: StudentListProps) => {
             <TableCell>{student.guardian_contact || '—'}</TableCell>
             <TableCell>
               {student.enrollment_date ? new Date(student.enrollment_date).toLocaleDateString() : '—'}
+            </TableCell>
+            <TableCell>{student.current_juz ?? 'None'}</TableCell>
+            <TableCell>
+              {student.completed_juz && student.completed_juz.length > 0 
+                ? student.completed_juz.join(', ') 
+                : 'None'}
             </TableCell>
             <TableCell>
               <span className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ring-1 ring-inset ${

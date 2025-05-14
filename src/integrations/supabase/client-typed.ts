@@ -1,4 +1,3 @@
-
 import { createClient } from "@supabase/supabase-js";
 import { Database } from "./types";
 
@@ -158,7 +157,20 @@ interface CustomDatabase extends Database {
 // Create the typed client
 export const typedClient = createClient<CustomDatabase>(
   SUPABASE_URL,
-  SUPABASE_PUBLISHABLE_KEY
+  SUPABASE_PUBLISHABLE_KEY,
+  {
+    auth: {
+      persistSession: true,
+      autoRefreshToken: true,
+    },
+    global: {
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': '*/*',
+        'apikey': SUPABASE_PUBLISHABLE_KEY,
+      },
+    },
+  }
 );
 
 export type { CustomDatabase };
