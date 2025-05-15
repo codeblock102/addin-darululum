@@ -8,7 +8,11 @@ import { useTeacherStatus } from "@/hooks/useTeacherStatus";
 import { SidebarNav } from "./sidebar/SidebarNav";
 import { SidebarUser } from "./sidebar/SidebarUser";
 
-export const Sidebar = () => {
+interface SidebarProps {
+  onCloseSidebar?: () => void;
+}
+
+export const Sidebar = ({ onCloseSidebar }: SidebarProps) => {
   const isMobile = useMediaQuery("(max-width: 768px)");
   const { isTeacher, isAdmin } = useTeacherStatus();
   const navItems = isTeacher ? teacherNavItems : adminNavItems;
@@ -21,8 +25,8 @@ export const Sidebar = () => {
   };
 
   return (
-    <div className={`flex h-screen flex-col ${styles.sidebar}`}>
-      <div className={`flex h-16 items-center ${styles.header} pl-5 pr-4 lg:pl-6 lg:pr-6`}>
+    <div className={`flex h-full w-full flex-col ${styles.sidebar}`}>
+      <div className={`flex h-16 items-center ${styles.header} justify-between pl-5 pr-4 lg:pl-6 lg:pr-6`}>
         <Link 
           to={isTeacher ? "/teacher-portal" : "/"} 
           className="flex items-center gap-2 font-semibold"
@@ -32,14 +36,14 @@ export const Sidebar = () => {
           ) : (
             <BookOpen className="h-6 w-6" />
           )}
-          <span className="hidden md:inline-block text-white">
+          <span className="text-white">
             {isAdmin ? "Admin Portal" : "Teacher Portal"}
           </span>
         </Link>
         {isMobile && (
-          <Button variant="ghost" size="icon" className="ml-auto">
+          <Button variant="ghost" size="icon" className="text-white" onClick={onCloseSidebar}>
             <ChevronLeft className="h-4 w-4" />
-            <span className="sr-only">Toggle Menu</span>
+            <span className="sr-only">Close Menu</span>
           </Button>
         )}
       </div>

@@ -101,16 +101,16 @@ const DhorBookPage = () => {
 
   return (
     <DashboardLayout>
-      <div className="space-y-6">
-        <div className="flex justify-between items-center">
+      <div className="space-y-4 sm:space-y-6">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
           <div>
-            <h1 className="text-2xl md:text-3xl font-bold mb-2">Progress Book System</h1>
-            <p className="text-gray-500 dark:text-gray-400">
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold mb-1 sm:mb-2">Progress Book System</h1>
+            <p className="text-sm text-gray-500 dark:text-gray-400">
               Comprehensive student progress tracking through Dhor Book entries
             </p>
           </div>
-          <Button className="flex items-center gap-2">
-            <Book className="h-4 w-4" />
+          <Button size="sm" className="flex items-center gap-2 text-xs sm:text-sm">
+            <Book className="h-3 w-3 sm:h-4 sm:w-4" />
             <span>Export Records</span>
           </Button>
         </div>
@@ -125,17 +125,17 @@ const DhorBookPage = () => {
         }} />
 
         {/* View mode tabs */}
-        <Card className="mt-6">
-          <CardContent className="p-6">
+        <Card className="mt-4 sm:mt-6">
+          <CardContent className="p-3 sm:p-6">
             <Tabs value={viewMode} onValueChange={(value) => setViewMode(value as "daily" | "classroom")}>
-              <div className="mb-6">
+              <div className="mb-4 sm:mb-6">
                 <TabsList className="w-full grid grid-cols-2">
-                  <TabsTrigger value="daily" className="flex items-center gap-2">
-                    <Book className="h-4 w-4" />
+                  <TabsTrigger value="daily" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
+                    <Book className="h-3 w-3 sm:h-4 sm:w-4" />
                     <span>Daily Records</span>
                   </TabsTrigger>
-                  <TabsTrigger value="classroom" className="flex items-center gap-2">
-                    <Users className="h-4 w-4" />
+                  <TabsTrigger value="classroom" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
+                    <Users className="h-3 w-3 sm:h-4 sm:w-4" />
                     <span>Classroom Records</span>
                   </TabsTrigger>
                 </TabsList>
@@ -143,18 +143,20 @@ const DhorBookPage = () => {
 
               <TabsContent value="daily">
                 <Tabs value={activeTab} onValueChange={setActiveTab}>
-                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
-                    <TabsList>
-                      <TabsTrigger value="all">All Students</TabsTrigger>
-                      <TabsTrigger value="recent">Recent Entries</TabsTrigger>
-                      <TabsTrigger value="reports">Reports</TabsTrigger>
-                    </TabsList>
+                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4 mb-3 sm:mb-4">
+                    <div className="overflow-x-auto w-full sm:w-auto">
+                      <TabsList className="flex-nowrap min-w-max">
+                        <TabsTrigger value="all" className="text-xs sm:text-sm">All Students</TabsTrigger>
+                        <TabsTrigger value="recent" className="text-xs sm:text-sm">Recent Entries</TabsTrigger>
+                        <TabsTrigger value="reports" className="text-xs sm:text-sm">Reports</TabsTrigger>
+                      </TabsList>
+                    </div>
 
                     <div className="relative w-full sm:w-auto">
-                      <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                      <Search className="absolute left-2.5 top-2.5 h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
                       <Input
                         placeholder="Search students..."
-                        className="pl-8 w-full sm:w-[250px]"
+                        className="pl-7 sm:pl-8 w-full sm:w-[250px] text-xs sm:text-sm h-8 sm:h-9"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                       />
@@ -162,21 +164,21 @@ const DhorBookPage = () => {
                   </div>
 
                   <TabsContent value="all">
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mt-4">
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-3 sm:gap-6 mt-3 sm:mt-4">
                       <div className="md:col-span-1">
-                        <div className="space-y-4">
+                        <div className="space-y-3 sm:space-y-4">
                           <div>
-                            <h3 className="mb-2 text-sm font-medium">Select a student</h3>
+                            <h3 className="mb-1 sm:mb-2 text-xs sm:text-sm font-medium">Select a student</h3>
                             <Select
                               value={selectedStudentId || undefined}
                               onValueChange={setSelectedStudentId}
                             >
-                              <SelectTrigger>
+                              <SelectTrigger className="text-xs sm:text-sm">
                                 <SelectValue placeholder="Choose a student" />
                               </SelectTrigger>
                               <SelectContent>
                                 {filteredStudents?.map(student => (
-                                  <SelectItem key={student.id} value={student.id}>
+                                  <SelectItem key={student.id} value={student.id} className="text-xs sm:text-sm">
                                     {student.name}
                                   </SelectItem>
                                 ))}
@@ -186,22 +188,22 @@ const DhorBookPage = () => {
                           
                           {isAdmin && (
                             <div>
-                              <h3 className="mb-2 text-sm font-medium">Select teacher</h3>
+                              <h3 className="mb-1 sm:mb-2 text-xs sm:text-sm font-medium">Select teacher</h3>
                               <Select
                                 value={selectedTeacherId || (teachers?.[0]?.id || undefined)}
                                 onValueChange={setSelectedTeacherId}
                               >
-                                <SelectTrigger>
+                                <SelectTrigger className="text-xs sm:text-sm">
                                   <SelectValue placeholder="Choose a teacher" />
                                 </SelectTrigger>
                                 <SelectContent>
                                   {teachers?.map(teacher => (
-                                    <SelectItem key={teacher.id} value={teacher.id}>
+                                    <SelectItem key={teacher.id} value={teacher.id} className="text-xs sm:text-sm">
                                       {teacher.name}
                                     </SelectItem>
                                   ))}
                                   {(!teachers || teachers.length === 0) && (
-                                    <SelectItem value="default">Default Teacher</SelectItem>
+                                    <SelectItem value="default" className="text-xs sm:text-sm">Default Teacher</SelectItem>
                                   )}
                                 </SelectContent>
                               </Select>
@@ -217,11 +219,11 @@ const DhorBookPage = () => {
                             teacherId={isTeacher ? teacherData?.id : (selectedTeacherId || teachers?.[0]?.id || 'default')} 
                           />
                         ) : (
-                          <div className="border rounded-lg flex items-center justify-center h-[400px] bg-muted/20">
+                          <div className="border rounded-lg flex items-center justify-center h-[300px] sm:h-[400px] bg-muted/20">
                             <div className="text-center">
-                              <Book className="h-10 w-10 mx-auto mb-4 text-muted-foreground" />
-                              <h3 className="text-lg font-medium mb-1">No Student Selected</h3>
-                              <p className="text-sm text-muted-foreground max-w-sm mx-auto">
+                              <Book className="h-8 w-8 sm:h-10 sm:w-10 mx-auto mb-3 sm:mb-4 text-muted-foreground" />
+                              <h3 className="text-base sm:text-lg font-medium mb-1">No Student Selected</h3>
+                              <p className="text-xs sm:text-sm text-muted-foreground max-w-sm mx-auto">
                                 Select a student from the sidebar to view or edit their Dhor Book entries.
                               </p>
                             </div>
@@ -232,16 +234,16 @@ const DhorBookPage = () => {
                   </TabsContent>
                   
                   <TabsContent value="recent">
-                    <div className="mt-4">
-                      <p className="text-muted-foreground text-center py-10">
+                    <div className="mt-3 sm:mt-4">
+                      <p className="text-muted-foreground text-center py-8 sm:py-10 text-xs sm:text-sm">
                         Recent Dhor Book entries across all students will be displayed here.
                       </p>
                     </div>
                   </TabsContent>
                   
                   <TabsContent value="reports">
-                    <div className="mt-4">
-                      <p className="text-muted-foreground text-center py-10">
+                    <div className="mt-3 sm:mt-4">
+                      <p className="text-muted-foreground text-center py-8 sm:py-10 text-xs sm:text-sm">
                         Generate and view reports based on Dhor Book data.
                       </p>
                     </div>
@@ -253,8 +255,8 @@ const DhorBookPage = () => {
                 {currentTeacherId ? (
                   <ClassroomRecords teacherId={currentTeacherId} />
                 ) : (
-                  <div className="border rounded-lg p-8 text-center">
-                    <p className="text-muted-foreground">
+                  <div className="border rounded-lg p-6 sm:p-8 text-center">
+                    <p className="text-muted-foreground text-xs sm:text-sm">
                       {teacherLoading ? 
                         "Loading teacher information..." : 
                         "Please select a teacher to view classroom records."}

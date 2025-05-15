@@ -295,7 +295,7 @@ export function ClassroomRecords({ teacherId }: ClassroomRecordsProps) {
           ) : topStudents.length > 0 ? (
             <div className="flex flex-wrap justify-center gap-4 md:gap-8">
               {topStudents.slice(0, 3).map((student, index) => (
-                <Card key={student.id} className={`w-full md:w-64 ${index === 0 ? 'border-yellow-500/50 shadow-lg' : ''}`}>
+                <Card key={student.id} className={`w-full sm:w-[250px] md:w-64 ${index === 0 ? 'border-yellow-500/50 shadow-lg' : ''}`}>
                   <CardContent className="pt-6 text-center flex flex-col items-center">
                     <div className="mb-4">
                       {LeaderboardRankIcons[index]}
@@ -348,7 +348,7 @@ export function ClassroomRecords({ teacherId }: ClassroomRecordsProps) {
       
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center justify-between">
+          <CardTitle className="flex items-center justify-between flex-wrap gap-3">
             <div className="flex items-center gap-2">
               <Calendar className="h-5 w-5" />
               <span>Classroom Records</span>
@@ -370,7 +370,7 @@ export function ClassroomRecords({ teacherId }: ClassroomRecordsProps) {
             </div>
           ) : (
             <>
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-6">
                 <Card className="bg-muted/40">
                   <CardContent className="pt-6">
                     <div className="text-sm text-muted-foreground">Total Students</div>
@@ -430,7 +430,7 @@ export function ClassroomRecords({ teacherId }: ClassroomRecordsProps) {
               </div>
 
               {filteredRecords && filteredRecords.length > 0 ? (
-                <div className="border rounded-md">
+                <div className="overflow-x-auto border rounded-md">
                   <Table>
                     <TableHeader>
                       <TableRow>

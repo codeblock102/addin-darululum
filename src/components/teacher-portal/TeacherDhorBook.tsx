@@ -83,27 +83,27 @@ export const TeacherDhorBook = ({ teacherId }: TeacherDhorBookProps) => {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-bold tracking-tight">Dhor Book</h2>
-        <p className="text-muted-foreground">Record and track student progress using the Progress Book system</p>
+        <h2 className="text-xl sm:text-2xl font-bold tracking-tight">Dhor Book</h2>
+        <p className="text-sm sm:text-base text-muted-foreground">Record and track student progress using the Progress Book system</p>
       </div>
 
       {/* View mode tabs - more prominent */}
       <Card className="overflow-hidden">
         <Tabs value={viewMode} onValueChange={(value) => setViewMode(value as "daily" | "classroom")} className="w-full">
-          <div className="bg-muted/40 px-4 py-3">
+          <div className="bg-muted/40 px-2 sm:px-4 py-3">
             <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="daily" className="flex items-center gap-2">
-                <BookOpen className="h-4 w-4" />
+              <TabsTrigger value="daily" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
+                <BookOpen className="h-3 w-3 sm:h-4 sm:w-4" />
                 <span>Daily Records</span>
               </TabsTrigger>
-              <TabsTrigger value="classroom" className="flex items-center gap-2">
-                <Users className="h-4 w-4" />
+              <TabsTrigger value="classroom" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
+                <Users className="h-3 w-3 sm:h-4 sm:w-4" />
                 <span>Classroom Records</span>
               </TabsTrigger>
             </TabsList>
           </div>
 
-          <CardContent className="p-6">
+          <CardContent className="p-3 sm:p-6">
             {viewMode === "daily" && (
               <>
                 <StudentSearch
@@ -115,15 +115,15 @@ export const TeacherDhorBook = ({ teacherId }: TeacherDhorBookProps) => {
 
                 {selectedStudentId && (
                   <div className="space-y-6 mt-6">
-                    <div className="flex justify-between items-center">
-                      <h3 className="text-xl font-semibold">{selectedStudentName}'s Progress</h3>
-                      <div className="flex gap-2">
-                        <Button variant="outline">
-                          <Calendar className="mr-2 h-4 w-4" />
+                    <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-3">
+                      <h3 className="text-lg sm:text-xl font-semibold">{selectedStudentName}'s Progress</h3>
+                      <div className="flex flex-wrap gap-2">
+                        <Button variant="outline" size="sm" className="text-xs sm:text-sm">
+                          <Calendar className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
                           Schedule Revision
                         </Button>
-                        <Button>
-                          <Plus className="mr-2 h-4 w-4" />
+                        <Button size="sm" className="text-xs sm:text-sm">
+                          <Plus className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
                           New Entry
                         </Button>
                       </div>
@@ -133,12 +133,14 @@ export const TeacherDhorBook = ({ teacherId }: TeacherDhorBookProps) => {
                     <StudentPerformanceMetrics studentId={selectedStudentId} />
                     
                     <Tabs value={activeTab} onValueChange={setActiveTab}>
-                      <TabsList>
-                        <TabsTrigger value="entries">Dhor Book Entries</TabsTrigger>
-                        <TabsTrigger value="attendance">Attendance</TabsTrigger>
-                        <TabsTrigger value="summary">Progress Summary</TabsTrigger>
-                        <TabsTrigger value="analytics">Analytics</TabsTrigger>
-                      </TabsList>
+                      <div className="overflow-x-auto">
+                        <TabsList className="w-full flex-nowrap min-w-max">
+                          <TabsTrigger value="entries" className="text-xs sm:text-sm">Dhor Book Entries</TabsTrigger>
+                          <TabsTrigger value="attendance" className="text-xs sm:text-sm">Attendance</TabsTrigger>
+                          <TabsTrigger value="summary" className="text-xs sm:text-sm">Progress Summary</TabsTrigger>
+                          <TabsTrigger value="analytics" className="text-xs sm:text-sm">Analytics</TabsTrigger>
+                        </TabsList>
+                      </div>
                       
                       <TabsContent value="entries" className="mt-4">
                         <DhorBook studentId={selectedStudentId} teacherId={teacherId} />
@@ -195,13 +197,13 @@ export const TeacherDhorBook = ({ teacherId }: TeacherDhorBookProps) => {
                 )}
 
                 {!selectedStudentId && (
-                  <Card className="p-12 text-center border-dashed bg-muted/40 mt-6">
+                  <Card className="p-6 sm:p-12 text-center border-dashed bg-muted/40 mt-6">
                     <div className="flex flex-col items-center gap-3">
-                      <div className="h-20 w-20 rounded-full bg-muted/60 flex items-center justify-center">
-                        <Search className="h-10 w-10 text-muted-foreground/60" />
+                      <div className="h-16 w-16 sm:h-20 sm:w-20 rounded-full bg-muted/60 flex items-center justify-center">
+                        <Search className="h-8 w-8 sm:h-10 sm:w-10 text-muted-foreground/60" />
                       </div>
-                      <h3 className="text-xl font-medium">Select a Student</h3>
-                      <p className="text-muted-foreground max-w-md">
+                      <h3 className="text-lg sm:text-xl font-medium">Select a Student</h3>
+                      <p className="text-sm sm:text-base text-muted-foreground max-w-md">
                         Please search and select a student above to view their Dhor Book entries, attendance records, and progress analytics.
                       </p>
                     </div>
