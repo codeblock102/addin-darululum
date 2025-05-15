@@ -25,6 +25,7 @@ export function useRealtimeLeaderboard(teacherId?: string, refreshCallback?: () 
           console.log('Progress change detected:', payload);
           // Invalidate the leaderboard queries to trigger a refresh
           queryClient.invalidateQueries({ queryKey: ['leaderboard'] });
+          queryClient.invalidateQueries({ queryKey: ['classroom-records'] });
           
           // Call additional refresh callback if provided
           if (refreshCallback) {
@@ -54,6 +55,7 @@ export function useRealtimeLeaderboard(teacherId?: string, refreshCallback?: () 
         (payload) => {
           console.log('Sabaq Para change detected:', payload);
           queryClient.invalidateQueries({ queryKey: ['leaderboard'] });
+          queryClient.invalidateQueries({ queryKey: ['classroom-records'] });
           
           // Call additional refresh callback if provided
           if (refreshCallback) {
@@ -83,6 +85,7 @@ export function useRealtimeLeaderboard(teacherId?: string, refreshCallback?: () 
         (payload) => {
           console.log('Juz Revisions change detected:', payload);
           queryClient.invalidateQueries({ queryKey: ['leaderboard'] });
+          queryClient.invalidateQueries({ queryKey: ['classroom-records'] });
           
           // Call additional refresh callback if provided
           if (refreshCallback) {
