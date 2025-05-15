@@ -5,7 +5,7 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/componen
 import { Button } from '@/components/ui/button';
 import { useLeaderboardData } from '@/hooks/useLeaderboardData';
 import { useRealtimeLeaderboard } from '@/hooks/useRealtimeLeaderboard';
-import { Trophy, ExternalLink } from 'lucide-react';
+import { Trophy, ExternalLink, CheckCircle, Circle } from 'lucide-react';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 
 interface LeaderboardWidgetProps {
@@ -14,13 +14,13 @@ interface LeaderboardWidgetProps {
 
 export const LeaderboardWidget = ({ teacherId }: LeaderboardWidgetProps) => {
   const navigate = useNavigate();
-  const { leaderboardData, isLoading } = useLeaderboardData(teacherId, { 
+  const { leaderboardData, isLoading, refreshData } = useLeaderboardData(teacherId, { 
     timeRange: 'week', 
     metricPriority: 'total' 
   });
   
   // Set up real-time updates
-  useRealtimeLeaderboard(teacherId);
+  useRealtimeLeaderboard(teacherId, refreshData);
   
   const topStudents = leaderboardData?.slice(0, 3) || [];
   
@@ -35,6 +35,14 @@ export const LeaderboardWidget = ({ teacherId }: LeaderboardWidgetProps) => {
   
   const handleViewLeaderboard = () => {
     navigate('/teacher-portal?tab=leaderboard');
+  };
+  
+  const getCompletionIcon = (completed: boolean) => {
+    return completed ? (
+      <CheckCircle className="h-3 w-3 text-green-500" />
+    ) : (
+      <Circle className="h-3 w-3 text-muted-foreground" />
+    );
   };
 
   return (
@@ -72,9 +80,22 @@ export const LeaderboardWidget = ({ teacherId }: LeaderboardWidgetProps) => {
                 
                 <div className="ml-2 flex-1 overflow-hidden">
                   <p className="truncate text-sm font-medium">{student.name}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {student.totalPoints} pts • {student.sabaqs + student.sabaqPara + student.dhor} activities
-                  </p>
+                  <div className="flex space-x-2 text-xs text-muted-foreground">
+                    <div className="flex items-center gap-1">
+                      {getCompletionIcon(student.sabaqs > 0)}
+                      <span>S</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      {getCompletionIcon(student.sabaqPara > 0)}
+                      <span>SP</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      {getCompletionIcon(student.dhor > 0)}
+                      <span>D</span>
+                    </div>
+                    <span className="ml-1">•</span>
+                    <span>{student.totalPoints} pts</span>
+                  </div>
                 </div>
               </div>
             ))}

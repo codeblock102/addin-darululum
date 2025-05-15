@@ -1,16 +1,23 @@
 
 import { motion } from 'framer-motion';
-import { StudentLeaderboardData } from '@/types/leaderboard';
+import { StudentLeaderboardData, StudentCompletionStatus } from '@/types/leaderboard';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Trophy, Award, Medal } from 'lucide-react';
+import { CheckCircle, Circle, Trophy, Award, Medal, Clock } from 'lucide-react';
 import { format } from 'date-fns';
 
 interface StudentRankItemProps {
   student: StudentLeaderboardData;
   isTopRank: boolean;
+  completionStatus?: StudentCompletionStatus;
+  highlightSubject?: 'sabaq' | 'sabaqPara' | 'dhor';
 }
 
-export const StudentRankItem = ({ student, isTopRank }: StudentRankItemProps) => {
+export const StudentRankItem = ({
+  student,
+  isTopRank,
+  completionStatus = { sabaq: false, sabaqPara: false, dhor: false },
+  highlightSubject
+}: StudentRankItemProps) => {
   const getInitials = (name: string) => {
     return name
       .split(' ')
@@ -50,6 +57,30 @@ export const StudentRankItem = ({ student, isTopRank }: StudentRankItemProps) =>
     }
   };
 
+  const getCompletionIcon = (completed: boolean, highlight: boolean = false) => {
+    return completed ? (
+      <CheckCircle 
+        className={`h-4 w-4 ${highlight ? 'text-green-500 animate-pulse' : 'text-green-500'}`}
+      />
+    ) : (
+      <Circle className="h-4 w-4 text-muted-foreground" />
+    );
+  };
+  
+  const getLastActivityDate = () => {
+    if (!student.lastActivity) return 'No activity';
+    
+    const date = new Date(student.lastActivity);
+    const now = new Date();
+    const isToday = date.toDateString() === now.toDateString();
+    
+    if (isToday) {
+      return 'Today';
+    }
+    
+    return format(date, 'MMM d');
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
@@ -71,19 +102,29 @@ export const StudentRankItem = ({ student, isTopRank }: StudentRankItemProps) =>
       <div className="flex-1 space-y-1">
         <p className="text-sm font-medium leading-none">{student.name}</p>
         <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
-          <span>Sabaq: {student.sabaqs}</span>
+          <div className="flex items-center gap-1">
+            {getCompletionIcon(completionStatus.sabaq, highlightSubject === 'sabaq')}
+            <span>Sabaq: {student.sabaqs}</span>
+          </div>
           <span>•</span>
-          <span>Sabaq Para: {student.sabaqPara}</span>
+          <div className="flex items-center gap-1">
+            {getCompletionIcon(completionStatus.sabaqPara, highlightSubject === 'sabaqPara')}
+            <span>Sabaq Para: {student.sabaqPara}</span>
+          </div>
           <span>•</span>
-          <span>Dhor: {student.dhor}</span>
+          <div className="flex items-center gap-1">
+            {getCompletionIcon(completionStatus.dhor, highlightSubject === 'dhor')}
+            <span>Dhor: {student.dhor}</span>
+          </div>
         </div>
       </div>
       
       <div className="text-right">
         <p className="text-sm font-medium leading-none">{student.totalPoints} pts</p>
         {student.lastActivity && (
-          <p className="text-xs text-muted-foreground">
-            Last: {format(new Date(student.lastActivity), 'MMM d')}
+          <p className="text-xs text-muted-foreground flex items-center gap-1 justify-end mt-1">
+            <Clock className="h-3 w-3" />
+            {getLastActivityDate()}
           </p>
         )}
       </div>
