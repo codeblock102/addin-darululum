@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { LeaderboardCard } from './LeaderboardCard';
+import { CheckSquare } from 'lucide-react';
 
 interface TeacherLeaderboardProps {
   teacherId: string;
@@ -23,33 +24,48 @@ export const TeacherLeaderboard = ({ teacherId }: TeacherLeaderboardProps) => {
         <Card>
           <CardHeader>
             <CardTitle>Understanding the Leaderboard</CardTitle>
-            <CardDescription>How students are ranked on the leaderboard</CardDescription>
+            <CardDescription>How students are ranked and tracked on the leaderboard</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <h4 className="font-medium mb-1">Metrics Tracked</h4>
-              <ul className="list-disc pl-5 text-sm text-muted-foreground">
-                <li><span className="font-medium">Sabaq:</span> Number of juz revisions completed</li>
-                <li><span className="font-medium">Sabaq Para:</span> Number of sabaq para entries</li>
-                <li><span className="font-medium">Dhor:</span> Number of dhor entries recorded</li>
-                <li><span className="font-medium">Points:</span> Total points earned from all activities</li>
-              </ul>
+              <h4 className="font-medium mb-1">Subject Tabs</h4>
+              <p className="text-sm text-muted-foreground">
+                The leaderboard is organized into subject-specific tabs (Sabaq, Sabaq Para, and Dhor).
+                Each tab provides a checklist format showing completion status for each student in that subject.
+              </p>
             </div>
             
             <div>
-              <h4 className="font-medium mb-1">Ranking Factors</h4>
+              <h4 className="font-medium mb-1">Checklist Indicators</h4>
+              <div className="flex items-center gap-2 mb-1">
+                <CheckSquare className="h-4 w-4 text-green-500" />
+                <span className="text-sm">Completed activity</span>
+              </div>
               <p className="text-sm text-muted-foreground">
-                Students are ranked based on your selected metric. By default, the ranking uses total points
-                earned, followed by total number of activities. You can change the ranking metric using the
-                selector above the leaderboard.
+                For each subject, students are marked with a checkmark if they've completed at least one activity
+                in that area. This provides a quick visual reference of student participation across subjects.
+              </p>
+            </div>
+            
+            <div>
+              <h4 className="font-medium mb-1">Filtering Options</h4>
+              <p className="text-sm text-muted-foreground">
+                Use the filter icon to access additional filtering options:
+                <ul className="list-disc pl-5 mt-1">
+                  <li>Time range (today, week, month, all time)</li>
+                  <li>Metrics for ranking (total points, or by specific subject)</li>
+                  <li>Participation filters (active vs inactive students)</li>
+                  <li>Completion status (complete vs incomplete subject requirements)</li>
+                </ul>
               </p>
             </div>
             
             <div>
               <h4 className="font-medium mb-1">Real-time Updates</h4>
               <p className="text-sm text-muted-foreground">
-                The leaderboard updates automatically whenever new entries are added to the system.
-                Students will move up or down the rankings based on their performance.
+                The leaderboard updates automatically whenever new entries are added to any of the tracking systems.
+                New achievements are immediately reflected in the rankings and completion status, with toast notifications
+                to alert you of changes.
               </p>
             </div>
           </CardContent>

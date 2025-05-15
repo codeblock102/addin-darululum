@@ -4,7 +4,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
 
-export function useRealtimeLeaderboard(teacherId?: string) {
+export function useRealtimeLeaderboard(teacherId?: string, refreshCallback?: () => void) {
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
@@ -25,6 +25,11 @@ export function useRealtimeLeaderboard(teacherId?: string) {
           console.log('Dhor book entry change detected:', payload);
           // Invalidate the leaderboard queries to trigger a refresh
           queryClient.invalidateQueries({ queryKey: ['leaderboard'] });
+          
+          // Call additional refresh callback if provided
+          if (refreshCallback) {
+            refreshCallback();
+          }
           
           if (payload.eventType === 'INSERT') {
             toast({
@@ -50,6 +55,11 @@ export function useRealtimeLeaderboard(teacherId?: string) {
           console.log('Sabaq Para change detected:', payload);
           queryClient.invalidateQueries({ queryKey: ['leaderboard'] });
           
+          // Call additional refresh callback if provided
+          if (refreshCallback) {
+            refreshCallback();
+          }
+          
           if (payload.eventType === 'INSERT') {
             toast({
               title: "New Sabaq Para Entry",
@@ -74,6 +84,11 @@ export function useRealtimeLeaderboard(teacherId?: string) {
           console.log('Juz Revisions change detected:', payload);
           queryClient.invalidateQueries({ queryKey: ['leaderboard'] });
           
+          // Call additional refresh callback if provided
+          if (refreshCallback) {
+            refreshCallback();
+          }
+          
           if (payload.eventType === 'INSERT') {
             toast({
               title: "New Revision Entry",
@@ -91,7 +106,7 @@ export function useRealtimeLeaderboard(teacherId?: string) {
       supabase.removeChannel(sabaqParaChannel);
       supabase.removeChannel(juzRevisionsChannel);
     };
-  }, [teacherId, queryClient, toast]);
+  }, [teacherId, queryClient, toast, refreshCallback]);
 
   return {};
 }
