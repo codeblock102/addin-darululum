@@ -24,16 +24,18 @@ export const useGradeSubmit = (teacherId: string, selectedStudent: string, stude
         contributor_name: "Teacher"
       };
       
+      // Create progress entry
       const { data: result, error } = await supabase
         .from('progress')
-        .insert([{
+        .insert({
           student_id: student.id,
           memorization_quality: data.memorization_quality,
           tajweed_level: data.tajweed_grade,
           teacher_notes: data.notes,
           date: new Date().toISOString().split('T')[0],
-          ...contributorInfo
-        }]);
+          contributor_id: contributorInfo.contributor_id,
+          contributor_name: contributorInfo.contributor_name
+        });
       
       if (error) throw new Error(error.message);
       return result;
