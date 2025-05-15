@@ -1,12 +1,13 @@
 import { useState } from "react";
-import { DhorBookEntry } from "@/types/dhor-book";
+// import { DhorBookEntry } from "@/types/dhor-book"; // Old type removed
+import { DailyActivityEntry } from "./DhorBook"; // Import new type from DhorBook.tsx
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { NewEntryDialog } from "./NewEntryDialog";
 import { format } from "date-fns";
 
 interface DhorBookGridProps {
-  entries: DhorBookEntry[];
+  entries: DailyActivityEntry[]; // Use the new type
   studentId: string;
   teacherId: string;
   currentWeek: Date;
@@ -23,27 +24,11 @@ export function DhorBookGrid({ entries, studentId, teacherId, currentWeek, onRef
   });
 
   const handleEntrySuccess = () => {
-    // Close the dialog and refresh the data
     setIsNewEntryOpen(false);
-    console.log("Entry success - triggering refresh");
-    
-    // Call refresh immediately and then again after a short delay
-    // This ensures we capture both the dhor_book_entries and progress data
-    onRefresh();
-    
-    // Add multiple delay refreshes to ensure all data is loaded
-    setTimeout(() => {
-      console.log("First delayed refresh");
-      onRefresh();
-    }, 500);
-    
-    setTimeout(() => {
-      console.log("Second delayed refresh");
-      onRefresh();
-    }, 1500);
+    console.log("Entry success - triggering refresh in DhorBookGrid");
+    onRefresh(); // Simplified refresh, DhorBook.tsx handles staggered if needed
   };
 
-  // Log the received entries to check for progress data
   console.log("Entries received in DhorBookGrid:", entries);
 
   return (
@@ -58,19 +43,25 @@ export function DhorBookGrid({ entries, studentId, teacherId, currentWeek, onRef
           <TableHeader>
             <TableRow>
               <TableHead>Date</TableHead>
-              <TableHead>Sabak</TableHead>
-              <TableHead>S. Para</TableHead>
+              <TableHead>Sabaq (Main Lesson)</TableHead>
+              <TableHead>Sabaq Para (Reading)</TableHead>
               <TableHead>Dhor 1</TableHead>
               <TableHead>Dhor 2</TableHead>
-              <TableHead className="text-center">M</TableHead>
+              {/* <TableHead>Dhor (Revisions)</TableHead> */}
+              <TableHead>Quality (Sabaq)</TableHead>
               <TableHead>Comments</TableHead>
-              <TableHead className="text-center">P</TableHead>
-              <TableHead className="text-center">DT</TableHead>
+              {/* Points and Detention might be added back if their data source is defined */}
+              {/* <TableHead className="text-center">P</TableHead> */}
+              {/* <TableHead className="text-center">DT</TableHead> */}
             </TableRow>
           </TableHeader>
           <TableBody>
             {weekDays.map((date) => {
-              const entry = entries.find(e => e.entry_date === format(date, 'yyyy-MM-dd'));
+              const dateString = format(date, 'yyyy-MM-dd');
+              const entry = entries.find(e => e.entry_date === dateString);
+              
+              const dhor1Entry = entry?.juz_revisions_data?.find(jr => jr.dhor_slot === 1);
+              const dhor2Entry = entry?.juz_revisions_data?.find(jr => jr.dhor_slot === 2);
               
               return (
                 <TableRow key={date.toISOString()}>
@@ -78,21 +69,57 @@ export function DhorBookGrid({ entries, studentId, teacherId, currentWeek, onRef
                     {format(date, 'E, MMM d')}
                   </TableCell>
                   <TableCell>
-                    {entry?.progress?.current_juz && entry.progress.current_surah && entry.progress.start_ayat && entry.progress.end_ayat
-                      ? `Juz ${entry.progress.current_juz}: S${entry.progress.current_surah}:${entry.progress.start_ayat}-${entry.progress.end_ayat}`
+                    {entry?.current_juz && entry.current_surah && entry.start_ayat && entry.end_ayat
+                      ? `J${entry.current_juz} S${entry.current_surah}:${entry.start_ayat}-${entry.end_ayat}`
                       : '—'} 
                   </TableCell>
-                  <TableCell>{entry?.sabak_para || '—'}</TableCell>
-                  <TableCell>{entry?.dhor_1 || '—'}</TableCell>
-                  <TableCell>{entry?.dhor_2 || '—'}</TableCell>
-                  <TableCell className="text-center">
-                    {entry ? (entry.dhor_1_mistakes + entry.dhor_2_mistakes) : '—'}
+                  <TableCell>
+                    {entry?.sabaq_para_data
+                      ? `J${entry.sabaq_para_data.juz_number} (${entry.sabaq_para_data.quarters_revised || 'N/A quarters'}) Q: ${entry.sabaq_para_data.quality_rating || 'N/A'}`
+                      : '—'}
                   </TableCell>
-                  <TableCell>{entry?.comments || '—'}</TableCell>
-                  <TableCell className="text-center">{entry?.points || '—'}</TableCell>
-                  <TableCell className="text-center">
-                    {entry?.detention ? '✓' : '—'}
+                  {/* Dhor 1 Cell */}
+                  <TableCell>
+                    {dhor1Entry
+                      ? `${dhor1Entry.juz_number ? `J${dhor1Entry.juz_number}` : (dhor1Entry.juz_revised ? `J${dhor1Entry.juz_revised}` : 'N/A')} ` +
+                        `${dhor1Entry.quarter_start ? `(Qtr ${dhor1Entry.quarter_start}` : ''}` +
+                        `${dhor1Entry.quarters_covered ? `, ${dhor1Entry.quarters_covered}c` : ''}` +
+                        `${dhor1Entry.quarter_start ? ')' : ''} ` +
+                        `Q: ${dhor1Entry.memorization_quality || 'N/A'}`
+                      : '—'}
                   </TableCell>
+                  {/* Dhor 2 Cell */}
+                  <TableCell>
+                    {dhor2Entry
+                      ? `${dhor2Entry.juz_number ? `J${dhor2Entry.juz_number}` : (dhor2Entry.juz_revised ? `J${dhor2Entry.juz_revised}` : 'N/A')} ` +
+                        `${dhor2Entry.quarter_start ? `(Qtr ${dhor2Entry.quarter_start}` : ''}` +
+                        `${dhor2Entry.quarters_covered ? `, ${dhor2Entry.quarters_covered}c` : ''}` +
+                        `${dhor2Entry.quarter_start ? ')' : ''} ` +
+                        `Q: ${dhor2Entry.memorization_quality || 'N/A'}`
+                      : '—'}
+                  </TableCell>
+                  {/* Dhor Revisions Cell - Combined - Commented out */}
+                  {/* <TableCell>
+                    {entry?.juz_revisions_data && entry.juz_revisions_data.length > 0
+                      ? entry.juz_revisions_data
+                          .sort((a, b) => (a.dhor_slot || 0) - (b.dhor_slot || 0)) // Sort by dhor_slot
+                          .map(jr => {
+                            const juzPart = jr.juz_number ? `J${jr.juz_number}` : (jr.juz_revised ? `J${jr.juz_revised}` : 'N/A');
+                            const quarterPart = jr.quarter_start
+                              ? `(Qtr ${jr.quarter_start}${jr.quarters_covered ? `, ${jr.quarters_covered}c` : ''})`
+                              : (jr.quarters_covered ? `(${jr.quarters_covered}c)` : '');
+                            const qualityPart = jr.memorization_quality ? `Q: ${jr.memorization_quality}` : 'Q: N/A';
+                            return `${juzPart} ${quarterPart} ${qualityPart}`.trim();
+                          })
+                          .join('; \n') // Join multiple entries with a semicolon and newline
+                      : '—'}
+                  </TableCell> */}
+                   <TableCell>
+                    {entry?.memorization_quality || '—'} 
+                  </TableCell>
+                  <TableCell>{entry?.comments || '—'}</TableCell> {/* Comments from DailyActivityEntry if populated */}
+                  {/* <TableCell className="text-center">{entry?.points || '—'}</TableCell> */}
+                  {/* <TableCell className="text-center">{entry?.detention ? '✓' : '—'}</TableCell> */}
                 </TableRow>
               );
             })}
@@ -106,6 +133,7 @@ export function DhorBookGrid({ entries, studentId, teacherId, currentWeek, onRef
         studentId={studentId}
         teacherId={teacherId}
         onSuccess={handleEntrySuccess}
+        // The DhorBookEntryForm within NewEntryDialog will need to be aware of the new data structure if its default values or submission relies on it.
       />
     </div>
   );

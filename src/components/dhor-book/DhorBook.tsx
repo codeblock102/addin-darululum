@@ -1,18 +1,33 @@
 import { useState, useCallback, useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { DhorBookEntry, StudentDhorSummary } from "@/types/dhor-book";
-import { getStartOfWeekISO } from "@/utils/dateUtils";
+import { StudentDhorSummary } from "@/types/dhor-book";
+import type { Database } from "@/types/supabase";
+import { getStartOfWeekISO, getWeekDates } from "@/utils/dateUtils";
 import { DhorBookGrid } from "./DhorBookGrid";
 import { DhorBookHeader } from "./DhorBookHeader";
 import { DhorBookSummary } from "./DhorBookSummary";
-import { Card } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Loader2 } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
-import { Progress } from "@/components/ui/progress";
+import { Progress as UiProgress } from "@/components/ui/progress";
 import { Activity } from "lucide-react";
 import { getTotalAyatsInJuz, getUniqueAyatsCoveredInJuz } from "@/utils/juzMetadata";
 import { useUpdateStudentCompletedJuz } from "./useUpdateStudentCompletedJuz";
+import { format, isValid } from "date-fns";
+
+// Define a helper type for table rows from our new Database type
+type DbTables = Database["public"]["Tables"];
+
+// Define a new structure for what an entry in the grid might look like
+export type DailyActivityEntry = DbTables["progress"]["Row"] & {
+  sabaq_para_data?: DbTables["sabaq_para"]["Row"] | null;
+  juz_revisions_data?: DbTables["juz_revisions"]["Row"][] | null; 
+  comments?: string | null;
+  points?: number | null;
+  detention?: boolean | null;
+  entry_date: string; 
+};
 
 interface DhorBookProps {
   studentId: string;
@@ -21,18 +36,18 @@ interface DhorBookProps {
 
 export function DhorBook({ studentId, teacherId }: DhorBookProps) {
   const [currentWeek, setCurrentWeek] = useState<Date>(new Date());
+  
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
-  // Get the ISO string for the start of the current week
   const currentWeekISO = getStartOfWeekISO(currentWeek);
 
-  // Set up query keys as constants for consistency
-  const entriesQueryKey = ['dhor-book-entries', studentId, currentWeekISO];
-  const summaryQueryKey = ['dhor-book-summary', studentId];
+  // Updated query key
+  const dailyActivityQueryKey = ['student-daily-activity', studentId, currentWeekISO];
+  const summaryQueryKey = ['dhor-book-summary', studentId]; // Assuming this remains based on 'student_dhor_summaries'
 
-  const { data: entries, isLoading: entriesLoading, refetch: refetchEntries } = useQuery<DhorBookEntry[]>({
-    queryKey: entriesQueryKey,
+  const { data: dailyActivities, isLoading: activitiesLoading, refetch: refetchActivities } = useQuery<DailyActivityEntry[]>({
+    queryKey: dailyActivityQueryKey,
     queryFn: async () => {
       const startOfWeek = new Date(new Date(currentWeek).setDate(currentWeek.getDate() - currentWeek.getDay()));
       const endOfWeek = new Date(new Date(currentWeek).setDate(currentWeek.getDate() - currentWeek.getDay() + 6));
@@ -40,70 +55,129 @@ export function DhorBook({ studentId, teacherId }: DhorBookProps) {
       const startOfWeekISO = startOfWeek.toISOString().split('T')[0];
       const endOfWeekISO = endOfWeek.toISOString().split('T')[0];
 
-      console.log(`Fetching dhor entries from ${startOfWeekISO} to ${endOfWeekISO}`);
+      console.log(`Fetching student activity from ${startOfWeekISO} to ${endOfWeekISO} for student ${studentId}`);
       
-      const { data: dhorEntries, error: dhorError } = await supabase
-        .from('dhor_book_entries')
-        .select('*') // Step 1: Fetch dhor_book_entries
-        .eq('student_id', studentId)
-        .gte('entry_date', startOfWeekISO)
-        .lte('entry_date', endOfWeekISO)
-        .order('entry_date', { ascending: true });
-
-      if (dhorError) {
-        console.error("Error fetching dhor book entries:", dhorError);
-        throw dhorError;
-      }
-      
-      if (!dhorEntries || dhorEntries.length === 0) {
-        console.log("No dhor entries found for this period.");
-        return [];
-      }
-
-      console.log("Fetched dhor entries:", dhorEntries);
-
-      // Step 2: Extract entry dates
-      const entryDates = dhorEntries.map(entry => entry.entry_date).filter(date => date);
-      if (entryDates.length === 0) {
-        return dhorEntries as DhorBookEntry[]; // Return dhor entries as is if no dates to fetch progress for
-      }
-
-      // Step 3: Fetch progress records for these dates
-      console.log(`Fetching progress records for student ${studentId} and dates:`, entryDates);
-      const { data: progressRecords, error: progressError } = await supabase
+      // Step 1: Fetch progress entries (main sabaq)
+      const { data: progressEntries, error: progressError } = await supabase
         .from('progress')
-        .select('date, current_juz, current_surah, start_ayat, end_ayat') // Added current_juz
+        .select('*') // Fetch all columns for now, can be optimized
         .eq('student_id', studentId)
-        .in('date', entryDates);
+        .gte('date', startOfWeekISO)
+        .lte('date', endOfWeekISO)
+        .order('date', { ascending: true });
 
       if (progressError) {
-        console.error("Error fetching progress records:", progressError);
-        // Proceed without progress data if it fails, but log the error
+        console.error("Error fetching progress entries:", progressError);
+        throw progressError;
       }
+      console.log("Fetched progress entries:", progressEntries);
 
-      console.log("Fetched progress records:", progressRecords);
-
-      // Step 4: Merge progress data into dhor entries
-      const progressMap = new Map();
-      if (progressRecords) {
-        progressRecords.forEach(p => progressMap.set(p.date, p));
+      // Step 2: Fetch sabaq_para entries
+      const { data: sabaqParaEntries, error: sabaqParaError } = await supabase
+        .from('sabaq_para')
+        .select('*')
+        .eq('student_id', studentId)
+        .gte('revision_date', startOfWeekISO)
+        .lte('revision_date', endOfWeekISO)
+        .order('revision_date', { ascending: true });
+        
+      if (sabaqParaError) {
+        console.error("Error fetching sabaq_para entries:", sabaqParaError);
+        // Decide if this should be a critical error or if we can proceed
       }
+      console.log("Fetched sabaq_para entries:", sabaqParaEntries);
 
-      const mergedEntries = dhorEntries.map(entry => {
-        const progressData = progressMap.get(entry.entry_date);
-        return {
-          ...entry,
-          progress: progressData ? {
-            current_juz: progressData.current_juz,
-            current_surah: progressData.current_surah,
-            start_ayat: progressData.start_ayat,
-            end_ayat: progressData.end_ayat
-          } : null
-        };
+      // Step 3: Fetch juz_revisions entries
+      const { data: juzRevisionEntries, error: juzRevisionError } = await supabase
+        .from('juz_revisions')
+        .select('*')
+        .eq('student_id', studentId)
+        .gte('revision_date', startOfWeekISO)
+        .lte('revision_date', endOfWeekISO)
+        .order('revision_date', { ascending: true });
+
+      if (juzRevisionError) {
+        console.error("Error fetching juz_revision entries:", juzRevisionError);
+        // Decide if this should be a critical error
+      }
+      console.log("Fetched juz_revision entries:", juzRevisionEntries);
+
+      // Step 4: Merge data. This is a simplified merge. 
+      // A more robust merge would create a list of all unique dates and then populate data for each date.
+      const activityMap = new Map<string, DailyActivityEntry>();
+
+      // Helper function to create a base/empty progress part
+      const createBaseProgressData = (dateStr: string, student_id: string, created_at_val?: string): DbTables["progress"]["Row"] => ({
+        id: crypto.randomUUID(), // Generate a unique ID for entries that don't have a base progress record
+        student_id: student_id,
+        date: dateStr,
+        current_juz: null,
+        current_surah: null,
+        start_ayat: null,
+        end_ayat: null,
+        pages_memorized: null,
+        verses_memorized: null,
+        memorization_quality: null,
+        teacher_notes: null,
+        completed_juz: [],
+        last_completed_surah: null,
+        last_revision_date: null,
+        notes: null,
+        revision_status: null,
+        created_at: created_at_val || new Date().toISOString(), 
+        // Ensure all non-optional fields from the progress table are included here with default/null values
       });
 
-      console.log("Merged entries with progress:", mergedEntries);
-      return mergedEntries as DhorBookEntry[];
+      progressEntries?.forEach(p => {
+        if (p.date) {
+          activityMap.set(p.date, { 
+            ...p, 
+            entry_date: p.date, // Standardize on entry_date
+            sabaq_para_data: null,
+            juz_revisions_data: [] 
+          });
+        }
+      });
+
+      sabaqParaEntries?.forEach(sp => {
+        if (sp.revision_date) {
+          const existing = activityMap.get(sp.revision_date);
+          if (existing) {
+            existing.sabaq_para_data = sp;
+          } else {
+            const baseProgress = createBaseProgressData(sp.revision_date, studentId, sp.created_at);
+            activityMap.set(sp.revision_date, {
+              ...baseProgress,
+              entry_date: sp.revision_date,
+              sabaq_para_data: sp,
+              juz_revisions_data: [],
+            });
+          }
+        }
+      });
+
+      juzRevisionEntries?.forEach(jr => {
+        if (jr.revision_date) {
+          const existing = activityMap.get(jr.revision_date);
+          if (existing) {
+            if (!existing.juz_revisions_data) existing.juz_revisions_data = [];
+            existing.juz_revisions_data.push(jr);
+          } else {
+            const baseProgress = createBaseProgressData(jr.revision_date, studentId, jr.created_at);
+            activityMap.set(jr.revision_date, {
+              ...baseProgress,
+              entry_date: jr.revision_date,
+              sabaq_para_data: null,
+              juz_revisions_data: [jr],
+            });
+          }
+        }
+      });
+      
+      const mergedActivities = Array.from(activityMap.values()).sort((a, b) => new Date(a.entry_date).getTime() - new Date(b.entry_date).getTime());
+
+      console.log("Merged daily activities:", mergedActivities);
+      return mergedActivities;
     },
     refetchOnWindowFocus: true,
     refetchOnMount: true,
@@ -142,7 +216,6 @@ export function DhorBook({ studentId, teacherId }: DhorBookProps) {
     refetchOnWindowFocus: false,
   });
 
-  // Query to fetch Juz progress for the selected student
   const { data: juzProgressData, isLoading: isLoadingJuzProgress } = useQuery({
     queryKey: ['student-juz-progress', studentId],
     queryFn: async () => {
@@ -193,10 +266,8 @@ export function DhorBook({ studentId, teacherId }: DhorBookProps) {
     enabled: !!studentId,
   });
 
-  // Get the mutation function for updating completed Juz
   const { mutate: updateCompletedJuz } = useUpdateStudentCompletedJuz();
 
-  // Effect to trigger completed Juz update when progress reaches 100%
   useEffect(() => {
     if (
       juzProgressData && 
@@ -211,32 +282,26 @@ export function DhorBook({ studentId, teacherId }: DhorBookProps) {
     }
   }, [juzProgressData, studentId, updateCompletedJuz]);
 
-  // Function to refresh both entries and summary
   const refreshData = useCallback(() => {
-    console.log("Refreshing dhor book data manually...");
-    
-    // First invalidate the queries in the cache
-    queryClient.invalidateQueries({ queryKey: entriesQueryKey });
+    console.log("Refreshing data manually...");
+    queryClient.invalidateQueries({ queryKey: dailyActivityQueryKey });
     queryClient.invalidateQueries({ queryKey: summaryQueryKey });
+    queryClient.invalidateQueries({ queryKey: ['student-juz-progress', studentId] });
     
-    // Then explicitly trigger refetches
     Promise.all([
-      refetchEntries(),
-      refetchSummary()
+      refetchActivities(),
+      refetchSummary(),
     ])
-    .then(([entriesResult, summaryResult]) => {
-      console.log("Refresh complete. New entries:", entriesResult.data);
-      toast({
-        title: "Data refreshed",
-        description: "The dhor book data has been updated."
-      });
+    .then(() => {
+      toast({ title: "Data refreshed", description: "The Dhor book data has been updated." });
     })
     .catch(error => {
       console.error("Error refreshing data:", error);
+      toast({ title: "Refresh Error", description: error.message, variant: "destructive" });
     });
-  }, [queryClient, refetchEntries, refetchSummary, entriesQueryKey, summaryQueryKey, toast]);
+  }, [queryClient, refetchActivities, refetchSummary, dailyActivityQueryKey, summaryQueryKey, studentId, toast]);
 
-  if (entriesLoading) {
+  if (activitiesLoading && studentId) {
     return (
       <div className="flex justify-center items-center min-h-[400px]">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -249,43 +314,50 @@ export function DhorBook({ studentId, teacherId }: DhorBookProps) {
       <DhorBookHeader 
         studentId={studentId} 
         currentWeek={currentWeek}
-        onWeekChange={setCurrentWeek}
+        onWeekChange={(newWeekStart) => {
+          setCurrentWeek(newWeekStart);
+        }}
       />
-      
-      {/* Display Juz Progress Bar */}
-      {studentId && (
-        <div className="my-4 p-4 border rounded-md">
-          <h3 className="mb-2 text-sm font-medium">Current Juz Progress</h3>
-          {isLoadingJuzProgress ? (
-            <div className="flex items-center text-sm text-muted-foreground"> <Activity className="h-4 w-4 mr-1 animate-spin"/> Loading...</div>
-          ) : juzProgressData?.currentJuz ? (
-            <div className="space-y-1">
-              <div className="flex justify-between text-xs text-muted-foreground">
-                <span>Juz {juzProgressData.currentJuz}</span>
-                <span>{juzProgressData.percentage}%</span>
-              </div>
-              <Progress value={juzProgressData.percentage} className="h-2" />
+      <CardContent className="mt-4">
+        {studentId ? (
+          <>
+            {/* Individual Student's Juz Progress */}
+            <div className="my-4 p-4 border rounded-md">
+              <h3 className="mb-2 text-sm font-medium">Current Juz Progress</h3>
+              {isLoadingJuzProgress ? (
+                <div className="flex items-center text-sm text-muted-foreground"> <Activity className="h-4 w-4 mr-1 animate-spin"/> Loading...</div>
+              ) : juzProgressData?.currentJuz ? (
+                <div className="space-y-1">
+                  <div className="flex justify-between text-xs text-muted-foreground">
+                    <span>Juz {juzProgressData.currentJuz}</span>
+                    <span>{juzProgressData.percentage}%</span>
+                  </div>
+                          <UiProgress value={juzProgressData.percentage} className="h-2" />
+                </div>
+              ) : (
+                <p className="text-sm text-muted-foreground">No Juz progress data found.</p>
+              )}
             </div>
-          ) : (
-            <p className="text-sm text-muted-foreground">No Juz progress data found.</p>
-          )}
-        </div>
-      )}
 
-      <DhorBookGrid 
-        entries={entries || []}
-        studentId={studentId}
-        teacherId={teacherId}
-        currentWeek={currentWeek}
-        onRefresh={refreshData}
-      />
-      
-      {summary && (
-        <DhorBookSummary 
-          summary={summary}
-          studentId={studentId}
-        />
-      )}
+            <DhorBookGrid 
+              entries={dailyActivities || []}
+              studentId={studentId}
+              teacherId={teacherId}
+              currentWeek={currentWeek}
+              onRefresh={refreshData}
+            />
+            
+            {summary && (
+              <DhorBookSummary 
+                summary={summary}
+                studentId={studentId}
+              />
+            )}
+          </>
+        ) : (
+          <p className="text-muted-foreground p-4 text-center">Select a student to view their weekly log.</p>
+        )}
+      </CardContent>
     </Card>
   );
 }
