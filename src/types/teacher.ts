@@ -1,4 +1,3 @@
-
 export interface TeacherFormValues {
   name: string;
   bio?: string;
@@ -79,4 +78,15 @@ export interface TimeSlot {
   days: string[];
   start_time: string;
   end_time: string;
+}
+
+export interface Student {
+  name: string;
+  id: string;
+  current_surah?: number;
+  current_juz?: number;
+  last_grade?: string;
+  memorization_quality?: string;
+  tajweed_level?: string;
+  status?: string;
 }
