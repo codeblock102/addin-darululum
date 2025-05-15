@@ -27,6 +27,11 @@ interface Student {
   tajweed_level?: string;
 }
 
+// Helper function to check if a value is an error object
+function isQueryError(obj: any): obj is { error: any } {
+  return obj && typeof obj === 'object' && 'error' in obj;
+}
+
 export const TeacherGrading = ({ teacherId }: GradingProps) => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -72,23 +77,26 @@ export const TeacherGrading = ({ teacherId }: GradingProps) => {
             };
           }
           
-          // Handle the case where progressData might be an error or empty
-          const progress = progressData && progressData.length > 0 ? progressData[0] : {
-            current_surah: undefined,
-            current_juz: undefined,
-            memorization_quality: undefined,
-            tajweed_level: undefined
-          };
-          
-          return {
-            id: student.id,
-            name: student.name,
-            status: student.status,
-            current_surah: progress.current_surah,
-            current_juz: progress.current_juz,
-            memorization_quality: progress.memorization_quality,
-            tajweed_level: progress.tajweed_level,
-          };
+          // Check if progressData is valid and not an error
+          if (progressData && progressData.length > 0 && !isQueryError(progressData[0])) {
+            const progress = progressData[0];
+            return {
+              id: student.id,
+              name: student.name,
+              status: student.status,
+              current_surah: progress.current_surah,
+              current_juz: progress.current_juz,
+              memorization_quality: progress.memorization_quality,
+              tajweed_level: progress.tajweed_level,
+            };
+          } else {
+            // Return basic student info without progress data
+            return {
+              id: student.id,
+              name: student.name,
+              status: student.status,
+            };
+          }
         })
       );
       

@@ -2,16 +2,19 @@
 import { FileDown, FileSpreadsheet } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Progress } from "@/types/progress";
+import { Tables } from "@/integrations/supabase/types";
 
-interface ExportOptionsProps {
+export interface ExportOptionsProps {
+  studentId: string;
+  studentName: string;
+  progressData: Progress[];
+  attendanceData: Tables<"attendance">[];
+  sabaqParaData: Tables<"sabaq_para">[];
+  juzRevisionsData: Tables<"juz_revisions">[];
+  toast: any;
   onExportPDF?: () => void;
   onExportCSV?: () => void;
-  studentId?: string;
-  studentName?: string;
-  progressData?: any[];
-  attendanceData?: any[];
-  dhorData?: any[];
-  toast?: any;
 }
 
 export const ExportOptions = ({ 
@@ -21,7 +24,8 @@ export const ExportOptions = ({
   studentName,
   progressData,
   attendanceData,
-  dhorData,
+  sabaqParaData,
+  juzRevisionsData,
   toast
 }: ExportOptionsProps) => {
   

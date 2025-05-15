@@ -13,22 +13,6 @@ import { Loader2, School2 } from "lucide-react";
 import type { Tables } from "@/integrations/supabase/types";
 import { Progress } from "@/types/progress";
 
-interface ProgressChartsProps {
-  progressData: Progress[];
-  sabaqParaData: Tables<"sabaq_para">[];
-  juzRevisionsData: Tables<"juz_revisions">[];
-}
-
-interface ExportOptionsProps {
-  studentId: string;
-  studentName: string;
-  progressData: Progress[];
-  attendanceData: Tables<"attendance">[];
-  sabaqParaData: Tables<"sabaq_para">[];
-  juzRevisionsData: Tables<"juz_revisions">[];
-  toast: any;
-}
-
 const StudentProgressPage = () => {
   const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
   const [selectedStudentName, setSelectedStudentName] = useState<string>("");
@@ -57,13 +41,16 @@ const StudentProgressPage = () => {
       if (!selectedStudentId) return [];
       
       const { data, error } = await supabase
-        .from("progress")
-        .select("*")
-        .eq("student_id", selectedStudentId)
-        .order("date", { ascending: true });
+        .from('progress')
+        .select(`
+          *,
+          students(name)
+        `)
+        .eq('student_id', selectedStudentId)
+        .order('date', { ascending: true });
       
       if (error) throw error;
-      return data as Progress[] || [];
+      return data as unknown as Progress[] || [];
     },
     enabled: !!selectedStudentId,
   });
