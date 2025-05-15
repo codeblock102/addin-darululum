@@ -1,6 +1,7 @@
+
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { getStartOfWeekISO } from "@/utils/dateUtils";
 import type { Database } from "@/types/supabase";
 
@@ -256,6 +257,7 @@ export function useDhorEntryMutation({
         });
       }
       
+      // Invalidate all relevant queries to ensure both tabs are updated
       if (currentStudentId) {
         queryClient.invalidateQueries({ queryKey: ['progress', currentStudentId], refetchType: 'all' });
         queryClient.invalidateQueries({ queryKey: ['sabaq_para', currentStudentId], refetchType: 'all' });
@@ -264,13 +266,17 @@ export function useDhorEntryMutation({
         queryClient.invalidateQueries({ queryKey: ['dhor-book-summary', currentStudentId], refetchType: 'all' }); 
       }
       
+      // Invalidate classroom records queries
       queryClient.invalidateQueries({ queryKey: ['progress'], refetchType: 'all' });
       queryClient.invalidateQueries({ queryKey: ['sabaq_para'], refetchType: 'all' });
       queryClient.invalidateQueries({ queryKey: ['juz_revisions'], refetchType: 'all' });
       queryClient.invalidateQueries({ queryKey: ['student-progress'], refetchType: 'all' });
       queryClient.invalidateQueries({ queryKey: ['teacher-summary'], refetchType: 'all' }); 
       queryClient.invalidateQueries({ queryKey: ['teacher-schedule'], refetchType: 'all' }); 
-      queryClient.invalidateQueries({ queryKey: ['revision-schedule'], refetchType: 'all' }); 
+      queryClient.invalidateQueries({ queryKey: ['revision-schedule'], refetchType: 'all' });
+      
+      // Specifically invalidate classroom-records queries to update the classroom tab
+      queryClient.invalidateQueries({ queryKey: ['classroom-records'], refetchType: 'all' });
       
       onSuccess?.(data);
       

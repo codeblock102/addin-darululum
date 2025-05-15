@@ -14,12 +14,14 @@ import { TeacherStatsSection } from "@/components/teachers/TeacherStatsSection";
 import { Book, Search, Activity, Users } from "lucide-react";
 import { useUserRole } from "@/hooks/useUserRole";
 import { useTeacherStatus } from "@/hooks/useTeacherStatus";
+import { useRealtimeLeaderboard } from "@/hooks/useRealtimeLeaderboard";
 
 const DhorBookPage = () => {
   const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState("all");
   const [viewMode, setViewMode] = useState<"daily" | "classroom">("daily");
+  const [selectedTeacherId, setSelectedTeacherId] = useState<string | null>(null);
   const { isAdmin, isTeacher } = useTeacherStatus();
 
   // Fetch the teacher ID for the current user if they are a teacher
@@ -81,13 +83,21 @@ const DhorBookPage = () => {
     }
   });
 
+  // Set up realtime updates to ensure both tabs are in sync
+  const currentTeacherId = isTeacher 
+    ? teacherData?.id 
+    : (selectedTeacherId || (teachers && teachers.length > 0 ? teachers[0].id : undefined));
+  
+  const { isSubscribed } = useRealtimeLeaderboard(currentTeacherId, () => {
+    console.log("Realtime update detected in DhorBook page, refreshing data");
+  });
+  
+  console.log("Current view mode:", viewMode, "teacherId:", currentTeacherId, "realtime subscribed:", isSubscribed);
+
   // Filter students based on search query
   const filteredStudents = students?.filter(student => 
     student.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
-
-  // Determine the current teacher ID (for logged-in teachers or selected teacher for admins)
-  const currentTeacherId = isTeacher ? teacherData?.id : (teachers && teachers.length > 0 ? teachers[0].id : undefined);
 
   return (
     <DashboardLayout>
@@ -174,10 +184,13 @@ const DhorBookPage = () => {
                             </Select>
                           </div>
                           
-                          {selectedStudentId && isAdmin && (
+                          {isAdmin && (
                             <div>
                               <h3 className="mb-2 text-sm font-medium">Select teacher</h3>
-                              <Select>
+                              <Select
+                                value={selectedTeacherId || (teachers?.[0]?.id || undefined)}
+                                onValueChange={setSelectedTeacherId}
+                              >
                                 <SelectTrigger>
                                   <SelectValue placeholder="Choose a teacher" />
                                 </SelectTrigger>
@@ -201,7 +214,7 @@ const DhorBookPage = () => {
                         {selectedStudentId ? (
                           <DhorBookComponent 
                             studentId={selectedStudentId} 
-                            teacherId={isTeacher ? teacherData?.id : (teachers?.[0]?.id || 'default')} 
+                            teacherId={isTeacher ? teacherData?.id : (selectedTeacherId || teachers?.[0]?.id || 'default')} 
                           />
                         ) : (
                           <div className="border rounded-lg flex items-center justify-center h-[400px] bg-muted/20">
