@@ -1,23 +1,38 @@
 
-/* Add these styles to handle the layout without the sidebar */
-.teacher-theme {
-  --teacher-primary: #8b5cf6;
-  --teacher-primary-hover: #7c3aed;
-  --teacher-primary-light: #ede9fe;
+/* Card hover effects */
+.card-hover {
+  @apply transition-all duration-300 hover:shadow-md hover:-translate-y-1;
 }
 
-.admin-theme {
-  --admin-primary: #f59e0b;
-  --admin-primary-hover: #d97706;
-  --admin-primary-light: #fef3c7;
+/* Student card styles */
+.student-card {
+  @apply rounded-lg overflow-hidden border border-border/40 shadow-sm hover:shadow-md transition-all duration-300;
 }
 
-.teacher-tabs-container {
-  position: sticky;
-  top: 0;
-  z-index: 10;
-  padding-top: 1rem;
-  padding-bottom: 1rem;
-  background-color: rgba(255, 255, 255, 0.8);
-  backdrop-filter: blur(8px);
+.student-card-header {
+  @apply p-4 bg-muted/30;
+}
+
+.student-card-content {
+  @apply p-4;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: rgba(155, 155, 155, 0.5);
+  border-radius: 20px;
+  border: transparent;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(155, 155, 155, 0.7);
 }
