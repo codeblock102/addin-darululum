@@ -15,7 +15,7 @@ export const useStudentGrades = (selectedStudent: string, students: any[]) => {
       
       const { data, error } = await supabase
         .from('progress')
-        .select('current_surah, current_juz, memorization_quality, tajweed_level, created_at, date, contributor_name')
+        .select('id, student_id, current_surah, current_juz, memorization_quality, created_at, date, contributor_name')
         .eq('student_id', student.id)
         .order('created_at', { ascending: false })
         .limit(10);

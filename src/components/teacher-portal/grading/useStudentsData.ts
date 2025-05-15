@@ -26,32 +26,26 @@ export const useStudentsData = () => {
               .select('current_surah, current_juz, memorization_quality')
               .eq('student_id', student.id)
               .order('created_at', { ascending: false })
-              .limit(1);
+              .limit(1)
+              .single();
             
-            if (progressError) {
-              console.error('Error fetching student progress:', progressError);
+            // If there's no progress data, return basic student info
+            if (progressError || !progressData) {
               return { 
                 id: student.id,
                 name: student.name,
                 status: student.status
-              };
+              } as Student;
             }
-            
-            const progress = progressData && progressData.length > 0 ? progressData[0] : {
-              current_surah: undefined,
-              current_juz: undefined,
-              memorization_quality: undefined
-            };
             
             // Create type-safe student object with progress data
             return {
               id: student.id,
               name: student.name,
               status: student.status,
-              current_surah: progress.current_surah,
-              current_juz: progress.current_juz,
-              memorization_quality: progress.memorization_quality,
-              tajweed_level: progress.tajweed_level
+              current_surah: progressData.current_surah,
+              current_juz: progressData.current_juz,
+              memorization_quality: progressData.memorization_quality
             } as Student;
           } catch (err) {
             console.error('Error processing student data:', err);

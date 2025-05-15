@@ -1,4 +1,3 @@
-
 export interface Progress {
   id: string;
   student_id?: string;
@@ -99,4 +98,23 @@ export interface ExportOptionsProps {
   sabaqParaData?: any[];
   juzRevisionsData?: any[];
   toast: any;
+}
+
+export interface ProgressOverviewProps {
+  studentName: string;
+  progressData: Progress[];
+}
+
+export interface ProgressData {
+  id: string;
+  student_id?: string;
+  current_surah?: number;
+  start_ayat?: number;
+  end_ayat?: number;
+  verses_memorized?: number;
+  date: string;
+  current_juz?: number;
+  completed_juz?: number[] | number;
+  memorization_quality?: 'excellent' | 'good' | 'average' | 'needsWork' | 'horrible';
+  last_revision_date?: string;
 }
