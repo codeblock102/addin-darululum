@@ -2,230 +2,290 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 import { getStartOfWeekISO } from "@/utils/dateUtils";
+import type { Database } from "@/types/supabase";
 
 interface UseDhorEntryMutationProps {
   studentId: string;
-  teacherId: string;
+  teacherId: string; 
   onSuccess?: (data?: any) => void;
 }
 
+// Define more specific types for form data parts to help with type safety
+// These reflect what the form might send.
+interface FormSabaqData {
+  current_juz?: number;
+  current_surah?: number;
+  start_ayat?: number;
+  end_ayat?: number;
+  memorization_quality?: Database["public"]["Enums"]["quality_rating"];
+}
+
+interface FormSabaqParaData {
+  sabaq_para_juz?: number;
+  sabaq_para_pages?: number; // Form field, potentially for future use or mapping
+  sabaq_para_memorization_quality?: Database["public"]["Enums"]["quality_rating"];
+  quarters_revised?: Database["public"]["Enums"]["quarter_revised"]; // Expected by sabaq_para table
+}
+
+// Comment out or remove old FormDhorData if no longer used elsewhere
+// interface FormDhorData {
+//   dhor_juz?: number;
+//   dhor_memorization_quality?: Database["public"]["Enums"]["quality_rating"];
+//   dhor_quarter_start?: number; 
+//   dhor_quarters_covered?: number; 
+// }
+
+// Combined form data type that the mutation function will receive
+export type DhorBookCombinedFormData = FormSabaqData & FormSabaqParaData & {
+  entry_date: string;
+  comments?: string; 
+  points?: number; 
+  detention?: boolean; 
+  
+  // Single Dhor fields from Zod schema (replaces dhor1_... and dhor2_...)
+  dhor_juz?: number;
+  dhor_memorization_quality?: Database["public"]["Enums"]["quality_rating"];
+  dhor_quarter_start?: number;
+  dhor_quarters_covered?: number;
+
+  // Legacy fields from when dhor_book_entries existed, can be cleaned up if not needed for logging
+  day_of_week?: string; 
+  sabak_para?: string; // This was a string, sabaq_para_juz is number now
+  dhor_1?: string; // Legacy dhor_1 string field
+  dhor_1_mistakes?: number; 
+  dhor_2?: string; // Legacy dhor_2 string field
+  dhor_2_mistakes?: number; 
+};
+
 export function useDhorEntryMutation({ 
   studentId, 
-  teacherId, 
+  teacherId, // Logged, not saved directly currently
   onSuccess 
 }: UseDhorEntryMutationProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
   const { mutate, isPending } = useMutation({
-    mutationFn: async (formData: any) => {
-      console.log("Creating new dhor book entry with data:", JSON.stringify(formData, null, 2));
+    mutationFn: async (formData: DhorBookCombinedFormData) => {
+      console.log("Processing dhor book related entries with data:", JSON.stringify(formData, null, 2));
       
+      const entryDate = formData.entry_date || new Date().toISOString().split('T')[0];
+      const results = [];
+
       try {
-        // Strip out any fields that don't belong in dhor_book_entries table
-        const dhorBookFields = { ...formData };
-        // Remove fields that should go to progress table
-        delete dhorBookFields.current_juz;
-        delete dhorBookFields.current_surah;
-        delete dhorBookFields.start_ayat;
-        delete dhorBookFields.end_ayat;
-        delete dhorBookFields.progress;
-        delete dhorBookFields.memorization_quality;
-        delete dhorBookFields.tajweed_level;
-        delete dhorBookFields.revision_status;
-        delete dhorBookFields.teacher_notes;
-        
-        console.log("Filtered dhor_book_entries fields:", JSON.stringify(dhorBookFields, null, 2));
-        
-        // First, insert into the dhor_book_entries table
-        const { data: dhorData, error: dhorError } = await supabase
-          .from('dhor_book_entries')
-          .insert([{
-            student_id: studentId,
-            teacher_id: teacherId,
-            entry_date: dhorBookFields.entry_date,
-            day_of_week: dhorBookFields.day_of_week || new Date(dhorBookFields.entry_date || Date.now()).toLocaleDateString('en-US', { weekday: 'long' }),
-            sabak_para: dhorBookFields.sabak_para,
-            sabaq_para_juz: dhorBookFields.sabaq_para_juz,
-            sabaq_para_pages: dhorBookFields.sabaq_para_pages,
-            dhor_1: dhorBookFields.dhor_1,
-            dhor_1_mistakes: dhorBookFields.dhor_1_mistakes || 0,
-            dhor_2: dhorBookFields.dhor_2,
-            dhor_2_mistakes: dhorBookFields.dhor_2_mistakes || 0,
-            dhor_juz: dhorBookFields.dhor_juz,
-            dhor_quarter_start: dhorBookFields.dhor_quarter_start,
-            dhor_quarters_covered: dhorBookFields.dhor_quarters_covered,
-            comments: dhorBookFields.comments,
-            points: dhorBookFields.points || 0,
-            detention: dhorBookFields.detention || false
-          }])
-          .select();
-      
-        if (dhorError) {
-          console.error("Error creating dhor book entry:", dhorError);
-          console.error("Error details:", JSON.stringify(dhorError, null, 2));
-          throw new Error(`Failed to insert dhor entry: ${dhorError.message}`);
-        }
-
-        if (!dhorData || dhorData.length === 0) {
-          console.error("No data returned after insertion. This may indicate a permission issue.");
-          throw new Error("Database insertion completed but no data was returned");
-        }
-
-        console.log("Successfully created dhor book entry:", dhorData);
-
-        // Check if we have explicit progress data from the form to sync
+        // 1. Insert Sabaq data into 'progress' table
         if (
-          formData.entry_date && // Ensure we have a date to link
-          formData.current_juz !== undefined && 
-          formData.current_surah !== undefined && 
-          formData.start_ayat !== undefined && 
+          formData.current_juz !== undefined &&
+          formData.current_surah !== undefined &&
+          formData.start_ayat !== undefined &&
           formData.end_ayat !== undefined
         ) {
-          try {
-            // Create the progress record using only the fields explicitly provided in formData
-            const progressRecord = {
-              student_id: studentId,
-              date: formData.entry_date, // Use the entry_date from the main form submission
-              current_surah: formData.current_surah,
-              current_juz: formData.current_juz,
-              start_ayat: formData.start_ayat,
-              end_ayat: formData.end_ayat,
-              // Include other relevant progress fields if they exist in formData
-              memorization_quality: formData.memorization_quality,
-              revision_status: formData.revision_status,
-              teacher_notes: formData.teacher_notes || formData.comments
-            };
-            
-            // Filter out any undefined/null values before insertion
-            const cleanProgressRecord = Object.fromEntries(
-              Object.entries(progressRecord).filter(([_, v]) => v !== undefined && v !== null)
-            );
-
-            console.log("Inserting CLEANED progress record from explicit form data:", JSON.stringify(cleanProgressRecord, null, 2));
-            
-            // Insert the cleaned progress record
-            const progressResult = await supabase
-              .from('progress')
-              .insert([cleanProgressRecord])
-              .select();
-
-            if (progressResult.error) {
-              console.error("Error syncing progress data to progress table:", progressResult.error);
-              console.error("Progress error details:", JSON.stringify(progressResult.error, null, 2));
-            } else {
-              console.log("Successfully added progress data from form:", progressResult.data);
-            }
-          } catch (progressInsertError) {
-            console.error("Exception during progress insertion:", progressInsertError);
+          const progressRecord: Database["public"]["Tables"]["progress"]["Insert"] = {
+            student_id: studentId,
+            date: entryDate,
+            current_juz: formData.current_juz,
+            current_surah: formData.current_surah,
+            start_ayat: formData.start_ayat,
+            end_ayat: formData.end_ayat,
+          };
+          if (formData.memorization_quality) {
+            progressRecord.memorization_quality = formData.memorization_quality;
           }
+          // teacher_notes could be added here if formData.comments is intended for it
+          // if (formData.comments) progressRecord.teacher_notes = formData.comments;
+
+          console.log("Inserting progress record:", JSON.stringify(progressRecord, null, 2));
+          const { data: progressData, error: progressError } = await supabase
+            .from('progress')
+            .insert([progressRecord]) // supabase client expects an array
+            .select();
+
+          if (progressError) {
+            console.error("Error inserting progress data:", progressError);
+            throw new Error(`Failed to insert progress data: ${progressError.message}`);
+          }
+          console.log("Successfully inserted progress data:", progressData);
+          results.push({ type: 'progress', data: progressData });
         } else {
-          console.log("Skipping progress table insertion because complete Sabaq data (Juz, Surah, Start/End Ayat, Date) was not found in form submission:", {
-            date: formData.entry_date,
-            juz: formData.current_juz,
-            surah: formData.current_surah,
-            start: formData.start_ayat,
-            end: formData.end_ayat
-          });
+          console.log("Skipping progress insert: Sabaq fields (juz, surah, start/end ayat) not provided.");
         }
 
-        // If we have schedule data, create a revision schedule
-        if (formData.schedule_date) {
-          try {
-            const { data: scheduleData, error: scheduleError } = await supabase
-              .from('revision_schedule')
-              .insert([{
-                student_id: studentId,
-                juz_number: formData.current_juz || 1,
-                surah_number: formData.current_surah,
-                scheduled_date: formData.schedule_date,
-                priority: formData.schedule_priority || 'medium',
-                status: formData.schedule_status || 'pending',
-                notes: formData.schedule_notes || formData.comments
-              }])
-              .select();
+        // 2. Insert Sabaq Para data into 'sabaq_para' table
+        if (
+          formData.sabaq_para_juz !== undefined &&
+          formData.sabaq_para_memorization_quality !== undefined &&
+          formData.quarters_revised !== undefined // This is required by sabaq_para table schema
+        ) {
+          const sabaqParaRecord: Database["public"]["Tables"]["sabaq_para"]["Insert"] = {
+            student_id: studentId,
+            revision_date: entryDate, 
+            juz_number: formData.sabaq_para_juz,
+            quality_rating: formData.sabaq_para_memorization_quality,
+            quarters_revised: formData.quarters_revised,
+          };
+          // if (formData.comments) sabaqParaRecord.teacher_notes = formData.comments;
 
-            if (scheduleError) {
-              console.error("Error creating revision schedule:", scheduleError);
-              console.error("Schedule error details:", JSON.stringify(scheduleError, null, 2));
-              // Do not throw, we already saved the dhor entry
-            } else {
-              console.log("Successfully added schedule data:", scheduleData);
-            }
-          } catch (scheduleInsertError) {
-            console.error("Exception during schedule insertion:", scheduleInsertError);
+          console.log("Inserting sabaq_para record:", JSON.stringify(sabaqParaRecord, null, 2));
+          const { data: sabaqParaData, error: sabaqParaError } = await supabase
+            .from('sabaq_para')
+            .insert([sabaqParaRecord]) 
+            .select();
+          
+          if (sabaqParaError) {
+            console.error("Error inserting sabaq_para data:", sabaqParaError);
+            throw new Error(`Failed to insert sabaq_para data: ${sabaqParaError.message}`);
+          }
+          console.log("Successfully inserted sabaq_para data:", sabaqParaData);
+          results.push({ type: 'sabaq_para', data: sabaqParaData });
+        } else {
+          console.log("Skipping sabaq_para insert: Sabaq Para fields (juz, quality, quarters_revised) not fully provided.");
+          if (formData.sabaq_para_pages !== undefined) {
+            console.warn("sabaq_para_pages was provided in form data but is not currently saved. The 'sabaq_para' table expects 'quarters_revised'. Update DB schema or form mapping if 'sabaq_para_pages' should be stored.");
           }
         }
 
-        return dhorData;
+        // 3. Insert Dhor (Juz Revisions) data into 'juz_revisions' table
+        if (formData.dhor_juz !== undefined) {
+          // Fetch the current max dhor_slot for this student and date
+          const { data: existingDhors, error: fetchDhorError } = await supabase
+            .from('juz_revisions')
+            .select('dhor_slot')
+            .eq('student_id', studentId)
+            .eq('revision_date', entryDate)
+            .order('dhor_slot', { ascending: false })
+            .limit(1);
+
+          if (fetchDhorError) {
+            console.error("Error fetching existing dhor slots:", fetchDhorError);
+            throw new Error(`Failed to fetch existing dhor slots: ${fetchDhorError.message}`);
+          }
+
+          const maxExistingSlot = existingDhors && existingDhors.length > 0 && existingDhors[0].dhor_slot ? existingDhors[0].dhor_slot : 0;
+          const newDhorSlot = maxExistingSlot + 1;
+
+          const juzRevisionRecord: Database["public"]["Tables"]["juz_revisions"]["Insert"] = {
+            student_id: studentId,
+            revision_date: entryDate,
+            juz_revised: formData.dhor_juz as number, // Correctly map to the required juz_revised column
+            dhor_slot: newDhorSlot,
+          };
+          if (formData.dhor_memorization_quality) {
+            juzRevisionRecord.memorization_quality = formData.dhor_memorization_quality;
+          }
+          if (formData.dhor_quarter_start !== undefined) { // Map to quarter_start column
+            juzRevisionRecord.quarter_start = formData.dhor_quarter_start;
+          }
+          if (formData.dhor_quarters_covered !== undefined) { // Map to quarters_covered column
+            juzRevisionRecord.quarters_covered = formData.dhor_quarters_covered;
+          }
+
+          console.log(`Inserting juz_revisions record with dhor_slot ${newDhorSlot}:`, JSON.stringify(juzRevisionRecord, null, 2));
+          const { data: juzRevisionData, error: juzRevisionError } = await supabase
+            .from('juz_revisions')
+            .insert([juzRevisionRecord]) 
+            .select();
+
+          if (juzRevisionError) {
+            console.error("Error inserting juz_revisions data:", juzRevisionError);
+            throw new Error(`Failed to insert Dhor data: ${juzRevisionError.message}`);
+          }
+          console.log("Successfully inserted Dhor data:", juzRevisionData);
+          results.push({ type: 'juz_revisions', data: juzRevisionData });
+        } else {
+          console.log("Skipping Dhor insert: dhor_juz not provided.");
+        }
+        
+        // Logging fields that are not directly mapped or saved after dhor_book_entries removal
+        console.log("Unsaved/Legacy form data fields & other context:", {
+            comments: formData.comments, 
+            points: formData.points, 
+            detention: formData.detention,
+            teacher_id: teacherId, // For logging context
+            day_of_week_legacy: formData.day_of_week, 
+            sabak_para_legacy: formData.sabak_para, 
+            dhor_1_string_legacy: formData.dhor_1, // Old string field
+            dhor_1_mistakes_legacy: formData.dhor_1_mistakes, 
+            dhor_2_string_legacy: formData.dhor_2, // Old string field
+            dhor_2_mistakes_legacy: formData.dhor_2_mistakes,
+            sabaq_para_pages_from_form: formData.sabaq_para_pages, // Not saved to sabaq_para currently
+            // dhor1_quarter_start and dhor1_quarters_covered are now mapped and saved if dhor1_juz is present
+            // dhor2_quarter_start and dhor2_quarters_covered are now mapped and saved if dhor2_juz is present
+        });
+
+        if (results.length === 0) {
+          console.warn("No data was inserted into any table. Check form data and conditions for insertion.");
+        }
+
+        return { entryDate, studentId, results };
       } catch (error) {
         console.error("Exception in mutation function:", error);
-        console.error("Stack trace:", error instanceof Error ? error.stack : 'No stack trace available');
-        throw error;
+        let errorMessage = "An unexpected error occurred during data submission.";
+        if (error instanceof Error) {
+          errorMessage = error.message;
+          console.error("Stack trace:", error.stack);
+        } else if (typeof error === 'string') {
+          errorMessage = error;
+        }
+        // Re-throw a new error with a more specific message if possible, or the original error
+        throw new Error(errorMessage);
       }
     },
     onSuccess: (data) => {
-      // Invalidate related queries with more specific keys
-      console.log("Mutation succeeded, invalidating queries");
+      console.log("Mutation succeeded, invalidating queries for student:", data?.studentId, "on date:", data?.entryDate);
       
-      // Get the entry date from the returned data
-      const entryDate = data?.[0]?.entry_date;
-      if (entryDate) {
-        // Convert to Date object to get the week start/end for precise invalidation
+      const entryDate = data?.entryDate;
+      const currentStudentId = data?.studentId;
+
+      if (entryDate && currentStudentId) {
         const entryDateObj = new Date(entryDate);
         const entryWeekISO = getStartOfWeekISO(entryDateObj);
         
-        console.log(`Entry date: ${entryDate}, week start ISO: ${entryWeekISO}`);
+        console.log(`Invalidating queries for student ${currentStudentId}, week start ISO: ${entryWeekISO}`);
         
-        // Invalidate the specific week for this entry - Force a refetch
         queryClient.invalidateQueries({ 
-          queryKey: ['dhor-book-entries', studentId, entryWeekISO],
-          refetchType: 'all'
+          queryKey: ['progress', currentStudentId, entryWeekISO],
+          refetchType: 'all' 
+        });
+         queryClient.invalidateQueries({ 
+          queryKey: ['sabaq_para', currentStudentId, entryWeekISO],
+          refetchType: 'all' 
+        });
+         queryClient.invalidateQueries({ 
+          queryKey: ['juz_revisions', currentStudentId, entryWeekISO],
+          refetchType: 'all' 
         });
       }
       
-      // Always invalidate these broader queries with refetch
-      queryClient.invalidateQueries({ 
-        queryKey: ['dhor-book-entries', studentId],
-        refetchType: 'all'
-      });
+      if (currentStudentId) {
+        queryClient.invalidateQueries({ queryKey: ['progress', currentStudentId], refetchType: 'all' });
+        queryClient.invalidateQueries({ queryKey: ['sabaq_para', currentStudentId], refetchType: 'all' });
+        queryClient.invalidateQueries({ queryKey: ['juz_revisions', currentStudentId], refetchType: 'all' });
+        queryClient.invalidateQueries({ queryKey: ['student-progress', currentStudentId], refetchType: 'all' });
+        queryClient.invalidateQueries({ queryKey: ['dhor-book-summary', currentStudentId], refetchType: 'all' }); 
+      }
       
-      queryClient.invalidateQueries({ 
-        queryKey: ['dhor-book-summary', studentId],
-        refetchType: 'all'
-      });
-      
-      // Also invalidate the broader queries
-      queryClient.invalidateQueries({ 
-        queryKey: ['dhor-book-entries'],
-        refetchType: 'all'
-      });
       queryClient.invalidateQueries({ queryKey: ['progress'], refetchType: 'all' });
+      queryClient.invalidateQueries({ queryKey: ['sabaq_para'], refetchType: 'all' });
+      queryClient.invalidateQueries({ queryKey: ['juz_revisions'], refetchType: 'all' });
       queryClient.invalidateQueries({ queryKey: ['student-progress'], refetchType: 'all' });
-      queryClient.invalidateQueries({ queryKey: ['teacher-summary'], refetchType: 'all' });
-      queryClient.invalidateQueries({ queryKey: ['teacher-schedule'], refetchType: 'all' });
-      queryClient.invalidateQueries({ queryKey: ['revision-schedule'], refetchType: 'all' });
+      queryClient.invalidateQueries({ queryKey: ['teacher-summary'], refetchType: 'all' }); 
+      queryClient.invalidateQueries({ queryKey: ['teacher-schedule'], refetchType: 'all' }); 
+      queryClient.invalidateQueries({ queryKey: ['revision-schedule'], refetchType: 'all' }); 
       
-      // Call the onSuccess callback
       onSuccess?.(data);
       
       toast({
         title: "Success",
-        description: "Dhor book entry created successfully."
+        description: "Student progress entries processed successfully."
       });
     },
     onError: (error) => {
-      console.error('Error creating entry:', error);
-      
-      // Check if it's a Supabase error with details
-      let errorMessage = "Failed to create entry. Please try again.";
-      
+      console.error('Error processing entries:', error);
+      let errorMessage = "Failed to process entries. Please try again.";
       if (error instanceof Error) {
         errorMessage = error.message;
         console.error('Error stack:', error.stack);
       }
-      
-      // Show more specific error to user
       toast({
         title: "Database Error",
         description: errorMessage,

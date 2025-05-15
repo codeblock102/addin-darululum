@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { DashboardLayout } from "@/components/layouts/DashboardLayout";
 import { Card } from "@/components/ui/card";
@@ -11,6 +10,7 @@ import { ExportOptions } from "@/components/student-progress/ExportOptions";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2, School2 } from "lucide-react";
+import type { Tables } from "@/integrations/supabase/types";
 
 const StudentProgressPage = () => {
   const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
@@ -34,7 +34,7 @@ const StudentProgressPage = () => {
     enabled: !!selectedStudentId,
   });
 
-  const { data: progressData, isLoading: progressLoading } = useQuery({
+  const { data: progressData, isLoading: progressLoading } = useQuery<Tables<"progress">[]>({
     queryKey: ["student-progress-data", selectedStudentId],
     queryFn: async () => {
       if (!selectedStudentId) return [];
@@ -51,7 +51,7 @@ const StudentProgressPage = () => {
     enabled: !!selectedStudentId,
   });
 
-  const { data: attendanceData, isLoading: attendanceLoading } = useQuery({
+  const { data: attendanceData, isLoading: attendanceLoading } = useQuery<Tables<"attendance">[]>({
     queryKey: ["student-attendance", selectedStudentId],
     queryFn: async () => {
       if (!selectedStudentId) return [];
@@ -68,16 +68,16 @@ const StudentProgressPage = () => {
     enabled: !!selectedStudentId,
   });
 
-  const { data: dhorData, isLoading: dhorLoading } = useQuery({
-    queryKey: ["student-dhor-data", selectedStudentId],
+  const { data: sabaqParaData, isLoading: sabaqParaLoading } = useQuery<Tables<"sabaq_para">[]>({
+    queryKey: ["student-sabaq-para-data", selectedStudentId],
     queryFn: async () => {
       if (!selectedStudentId) return [];
       
       const { data, error } = await supabase
-        .from("dhor_book_entries")
+        .from("sabaq_para")
         .select("*")
         .eq("student_id", selectedStudentId)
-        .order("entry_date", { ascending: true });
+        .order("revision_date", { ascending: true });
       
       if (error) throw error;
       return data || [];
@@ -85,7 +85,24 @@ const StudentProgressPage = () => {
     enabled: !!selectedStudentId,
   });
 
-  const isLoading = studentLoading || progressLoading || attendanceLoading || dhorLoading;
+  const { data: juzRevisionsData, isLoading: juzRevisionsLoading } = useQuery<Tables<"juz_revisions">[]>({
+    queryKey: ["student-juz-revisions-data", selectedStudentId],
+    queryFn: async () => {
+      if (!selectedStudentId) return [];
+      
+      const { data, error } = await supabase
+        .from("juz_revisions")
+        .select("*")
+        .eq("student_id", selectedStudentId)
+        .order("revision_date", { ascending: true });
+      
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!selectedStudentId,
+  });
+
+  const isLoading = studentLoading || progressLoading || attendanceLoading || sabaqParaLoading || juzRevisionsLoading;
 
   const handleStudentSelect = (studentId: string, studentName: string) => {
     setSelectedStudentId(studentId);
@@ -114,14 +131,16 @@ const StudentProgressPage = () => {
               <ProgressOverview 
                 studentName={selectedStudentName} 
                 progressData={progressData || []}
-                dhorData={dhorData || []} 
+                sabaqParaData={sabaqParaData || []}
+                juzRevisionsData={juzRevisionsData || []}
               />
               
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div className="lg:col-span-2">
                   <ProgressCharts 
                     progressData={progressData || []} 
-                    dhorData={dhorData || []} 
+                    sabaqParaData={sabaqParaData || []}
+                    juzRevisionsData={juzRevisionsData || []}
                   />
                 </div>
                 <div>
@@ -134,7 +153,8 @@ const StudentProgressPage = () => {
                 studentName={selectedStudentName}
                 progressData={progressData || []}
                 attendanceData={attendanceData || []}
-                dhorData={dhorData || []}
+                sabaqParaData={sabaqParaData || []}
+                juzRevisionsData={juzRevisionsData || []}
                 toast={toast}
               />
             </div>
