@@ -1,7 +1,7 @@
 
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Star, Award, Trophy, Confetti } from 'lucide-react';
+import { Star, Award, Trophy } from 'lucide-react';
 
 interface ConfettiEffectProps {
   active: boolean;
@@ -35,11 +35,10 @@ export const ConfettiEffect = ({ active, duration = 5000 }: ConfettiEffectProps)
       const duration = 1 + Math.random() * 2;
       const rotate = Math.random() * 360;
       
-      // Alternate between different icons
-      const IconComponent = i % 4 === 0 ? Star 
-        : i % 4 === 1 ? Award 
-        : i % 4 === 2 ? Trophy
-        : Confetti;
+      // Alternate between different icons that exist in lucide-react
+      const IconComponent = i % 3 === 0 ? Star 
+        : i % 3 === 1 ? Award 
+        : Trophy;
       
       const color = i % 3 === 0 
         ? 'text-yellow-500' 
