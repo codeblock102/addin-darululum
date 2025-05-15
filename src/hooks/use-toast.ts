@@ -1,6 +1,7 @@
 
-import { useToast as useToastHook } from "@/components/ui/use-toast"
-import { toast as toastAction } from "@/components/ui/use-toast"
+// Import from shadcn directly instead of our own file
+import { useToast as useToastOriginal, toast as toastOriginal } from "@/components/ui/toast";
 
-export const useToast = useToastHook;
-export const toast = toastAction;
+// Export the hooks with our own names
+export const useToast = useToastOriginal;
+export const toast = toastOriginal;

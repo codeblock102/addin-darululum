@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -71,6 +72,7 @@ export const TeacherGrading = ({ teacherId }: GradingProps) => {
             };
           }
           
+          // Handle the case where progressData might be an error or empty
           const progress = progressData && progressData.length > 0 ? progressData[0] : {
             current_surah: undefined,
             current_juz: undefined,

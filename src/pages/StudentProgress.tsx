@@ -11,6 +11,23 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2, School2 } from "lucide-react";
 import type { Tables } from "@/integrations/supabase/types";
+import { Progress } from "@/types/progress";
+
+interface ProgressChartsProps {
+  progressData: Progress[];
+  sabaqParaData: Tables<"sabaq_para">[];
+  juzRevisionsData: Tables<"juz_revisions">[];
+}
+
+interface ExportOptionsProps {
+  studentId: string;
+  studentName: string;
+  progressData: Progress[];
+  attendanceData: Tables<"attendance">[];
+  sabaqParaData: Tables<"sabaq_para">[];
+  juzRevisionsData: Tables<"juz_revisions">[];
+  toast: any;
+}
 
 const StudentProgressPage = () => {
   const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
@@ -34,7 +51,7 @@ const StudentProgressPage = () => {
     enabled: !!selectedStudentId,
   });
 
-  const { data: progressData, isLoading: progressLoading } = useQuery<Tables<"progress">[]>({
+  const { data: progressData, isLoading: progressLoading } = useQuery<Progress[]>({
     queryKey: ["student-progress-data", selectedStudentId],
     queryFn: async () => {
       if (!selectedStudentId) return [];
@@ -46,7 +63,7 @@ const StudentProgressPage = () => {
         .order("date", { ascending: true });
       
       if (error) throw error;
-      return data || [];
+      return data as Progress[] || [];
     },
     enabled: !!selectedStudentId,
   });
