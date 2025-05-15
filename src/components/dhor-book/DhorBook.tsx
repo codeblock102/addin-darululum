@@ -14,7 +14,6 @@ import { Progress as UiProgress } from "@/components/ui/progress";
 import { Activity } from "lucide-react";
 import { getTotalAyatsInJuz, getUniqueAyatsCoveredInJuz } from "@/utils/juzMetadata";
 import { useUpdateStudentCompletedJuz } from "./useUpdateStudentCompletedJuz";
-import { format, isValid } from "date-fns";
 
 // Define a helper type for table rows from our new Database type
 type DbTables = Database["public"]["Tables"];
@@ -304,13 +303,13 @@ export function DhorBook({ studentId, teacherId }: DhorBookProps) {
   if (activitiesLoading && studentId) {
     return (
       <div className="flex justify-center items-center min-h-[400px]">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <Loader2 className="h-6 w-6 sm:h-8 sm:w-8 animate-spin text-primary" />
       </div>
     );
   }
 
   return (
-    <Card className="p-6">
+    <Card className="p-2 sm:p-4 md:p-6 overflow-hidden">
       <DhorBookHeader 
         studentId={studentId} 
         currentWeek={currentWeek}
@@ -318,44 +317,50 @@ export function DhorBook({ studentId, teacherId }: DhorBookProps) {
           setCurrentWeek(newWeekStart);
         }}
       />
-      <CardContent className="mt-4">
+      <CardContent className="mt-2 sm:mt-4 p-0 sm:p-0">
         {studentId ? (
           <>
             {/* Individual Student's Juz Progress */}
-            <div className="my-4 p-4 border rounded-md">
-              <h3 className="mb-2 text-sm font-medium">Current Juz Progress</h3>
+            <div className="my-2 sm:my-4 p-3 sm:p-4 border rounded-md">
+              <h3 className="mb-2 text-xs sm:text-sm font-medium">Current Juz Progress</h3>
               {isLoadingJuzProgress ? (
-                <div className="flex items-center text-sm text-muted-foreground"> <Activity className="h-4 w-4 mr-1 animate-spin"/> Loading...</div>
+                <div className="flex items-center text-xs sm:text-sm text-muted-foreground"> <Activity className="h-3 w-3 sm:h-4 sm:w-4 mr-1 animate-spin"/> Loading...</div>
               ) : juzProgressData?.currentJuz ? (
                 <div className="space-y-1">
                   <div className="flex justify-between text-xs text-muted-foreground">
                     <span>Juz {juzProgressData.currentJuz}</span>
                     <span>{juzProgressData.percentage}%</span>
                   </div>
-                          <UiProgress value={juzProgressData.percentage} className="h-2" />
+                  <UiProgress value={juzProgressData.percentage} className="h-1.5 sm:h-2" />
                 </div>
               ) : (
-                <p className="text-sm text-muted-foreground">No Juz progress data found.</p>
+                <p className="text-xs sm:text-sm text-muted-foreground">No Juz progress data found.</p>
               )}
             </div>
 
-            <DhorBookGrid 
-              entries={dailyActivities || []}
-              studentId={studentId}
-              teacherId={teacherId}
-              currentWeek={currentWeek}
-              onRefresh={refreshData}
-            />
+            <div className="overflow-x-auto -mx-2 sm:mx-0">
+              <div className="min-w-[600px] px-2 sm:px-0 sm:min-w-full">
+                <DhorBookGrid 
+                  entries={dailyActivities || []}
+                  studentId={studentId}
+                  teacherId={teacherId}
+                  currentWeek={currentWeek}
+                  onRefresh={refreshData}
+                />
+              </div>
+            </div>
             
             {summary && (
-              <DhorBookSummary 
-                summary={summary}
-                studentId={studentId}
-              />
+              <div className="mt-3 sm:mt-6">
+                <DhorBookSummary 
+                  summary={summary}
+                  studentId={studentId}
+                />
+              </div>
             )}
           </>
         ) : (
-          <p className="text-muted-foreground p-4 text-center">Select a student to view their weekly log.</p>
+          <p className="text-xs sm:text-sm text-muted-foreground p-4 text-center">Select a student to view their weekly log.</p>
         )}
       </CardContent>
     </Card>

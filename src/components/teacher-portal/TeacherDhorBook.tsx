@@ -13,6 +13,7 @@ import { StudentSearch } from "@/components/student-progress/StudentSearch";
 import { AttendanceStats } from "@/components/student-progress/AttendanceStats";
 import { StudentPerformanceMetrics } from "@/components/student-progress/StudentPerformanceMetrics";
 import { useRealtimeLeaderboard } from "@/hooks/useRealtimeLeaderboard";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface TeacherDhorBookProps {
   teacherId: string;
@@ -24,6 +25,7 @@ export const TeacherDhorBook = ({ teacherId }: TeacherDhorBookProps) => {
   const [selectedStudentName, setSelectedStudentName] = useState<string>("");
   const [activeTab, setActiveTab] = useState("entries");
   const [viewMode, setViewMode] = useState<"daily" | "classroom">("daily");
+  const isMobile = useIsMobile();
 
   // Set up realtime updates for the records
   const { isSubscribed } = useRealtimeLeaderboard(teacherId, () => {
@@ -81,29 +83,29 @@ export const TeacherDhorBook = ({ teacherId }: TeacherDhorBookProps) => {
   };
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h2 className="text-xl sm:text-2xl font-bold tracking-tight">Dhor Book</h2>
-        <p className="text-sm sm:text-base text-muted-foreground">Record and track student progress using the Progress Book system</p>
+    <div className="space-y-4 md:space-y-6 pb-6 px-1 sm:px-0">
+      <div className="text-center sm:text-left">
+        <h2 className="text-lg sm:text-xl md:text-2xl font-bold tracking-tight">Dhor Book</h2>
+        <p className="text-xs sm:text-sm text-muted-foreground">Record and track student progress using the Progress Book system</p>
       </div>
 
       {/* View mode tabs - more prominent */}
       <Card className="overflow-hidden">
         <Tabs value={viewMode} onValueChange={(value) => setViewMode(value as "daily" | "classroom")} className="w-full">
-          <div className="bg-muted/40 px-2 sm:px-4 py-3">
+          <div className="bg-muted/40 px-2 py-2 sm:px-4 sm:py-3">
             <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="daily" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
+              <TabsTrigger value="daily" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm py-1.5">
                 <BookOpen className="h-3 w-3 sm:h-4 sm:w-4" />
                 <span>Daily Records</span>
               </TabsTrigger>
-              <TabsTrigger value="classroom" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
+              <TabsTrigger value="classroom" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm py-1.5">
                 <Users className="h-3 w-3 sm:h-4 sm:w-4" />
                 <span>Classroom Records</span>
               </TabsTrigger>
             </TabsList>
           </div>
 
-          <CardContent className="p-3 sm:p-6">
+          <CardContent className="p-2 sm:p-3 md:p-6 overflow-x-hidden">
             {viewMode === "daily" && (
               <>
                 <StudentSearch
@@ -114,17 +116,19 @@ export const TeacherDhorBook = ({ teacherId }: TeacherDhorBookProps) => {
                 />
 
                 {selectedStudentId && (
-                  <div className="space-y-6 mt-6">
-                    <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-3">
-                      <h3 className="text-lg sm:text-xl font-semibold">{selectedStudentName}'s Progress</h3>
+                  <div className="space-y-4 sm:space-y-6 mt-3 sm:mt-6">
+                    <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-2 sm:gap-3">
+                      <h3 className="text-base sm:text-lg md:text-xl font-semibold truncate">{selectedStudentName}'s Progress</h3>
                       <div className="flex flex-wrap gap-2">
-                        <Button variant="outline" size="sm" className="text-xs sm:text-sm">
-                          <Calendar className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
-                          Schedule Revision
+                        <Button variant="outline" size="sm" className="text-xs">
+                          <Calendar className="mr-1 h-3 w-3 sm:h-4 sm:w-4" />
+                          {!isMobile && <span>Schedule Revision</span>}
+                          {isMobile && <span>Schedule</span>}
                         </Button>
-                        <Button size="sm" className="text-xs sm:text-sm">
-                          <Plus className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
-                          New Entry
+                        <Button size="sm" className="text-xs">
+                          <Plus className="mr-1 h-3 w-3 sm:h-4 sm:w-4" />
+                          {!isMobile && <span>New Entry</span>}
+                          {isMobile && <span>New</span>}
                         </Button>
                       </div>
                     </div>
@@ -133,62 +137,62 @@ export const TeacherDhorBook = ({ teacherId }: TeacherDhorBookProps) => {
                     <StudentPerformanceMetrics studentId={selectedStudentId} />
                     
                     <Tabs value={activeTab} onValueChange={setActiveTab}>
-                      <div className="overflow-x-auto">
+                      <div className="overflow-x-auto -mx-2 px-2">
                         <TabsList className="w-full flex-nowrap min-w-max">
-                          <TabsTrigger value="entries" className="text-xs sm:text-sm">Dhor Book Entries</TabsTrigger>
-                          <TabsTrigger value="attendance" className="text-xs sm:text-sm">Attendance</TabsTrigger>
-                          <TabsTrigger value="summary" className="text-xs sm:text-sm">Progress Summary</TabsTrigger>
-                          <TabsTrigger value="analytics" className="text-xs sm:text-sm">Analytics</TabsTrigger>
+                          <TabsTrigger value="entries" className="text-xs">Dhor Book</TabsTrigger>
+                          <TabsTrigger value="attendance" className="text-xs">Attendance</TabsTrigger>
+                          <TabsTrigger value="summary" className="text-xs">Summary</TabsTrigger>
+                          <TabsTrigger value="analytics" className="text-xs">Analytics</TabsTrigger>
                         </TabsList>
                       </div>
                       
-                      <TabsContent value="entries" className="mt-4">
+                      <TabsContent value="entries" className="mt-3 sm:mt-4">
                         <DhorBook studentId={selectedStudentId} teacherId={teacherId} />
                       </TabsContent>
                       
-                      <TabsContent value="attendance" className="mt-4">
+                      <TabsContent value="attendance" className="mt-3 sm:mt-4">
                         <Card>
-                          <CardHeader>
-                            <CardTitle>Attendance Records</CardTitle>
-                            <CardDescription>View and track attendance for {selectedStudentName}</CardDescription>
+                          <CardHeader className="p-3 sm:p-4 md:p-6">
+                            <CardTitle className="text-sm sm:text-base">Attendance Records</CardTitle>
+                            <CardDescription className="text-xs">View and track attendance for {selectedStudentName}</CardDescription>
                           </CardHeader>
-                          <CardContent>
+                          <CardContent className="p-3 sm:p-4 md:p-6 pt-0">
                             {attendanceLoading ? (
-                              <div className="flex justify-center py-8">
-                                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                              <div className="flex justify-center py-6 sm:py-8">
+                                <Loader2 className="h-6 w-6 animate-spin text-primary" />
                               </div>
                             ) : attendanceData && attendanceData.length > 0 ? (
                               <AttendanceStats attendanceData={attendanceData} />
                             ) : (
-                              <div className="text-center py-8">
-                                <p className="text-muted-foreground">No attendance records found for this student.</p>
-                                <Button className="mt-4" variant="outline">Record Attendance</Button>
+                              <div className="text-center py-6 sm:py-8">
+                                <p className="text-xs sm:text-sm text-muted-foreground">No attendance records found for this student.</p>
+                                <Button className="mt-3 sm:mt-4" variant="outline" size="sm">Record Attendance</Button>
                               </div>
                             )}
                           </CardContent>
                         </Card>
                       </TabsContent>
                       
-                      <TabsContent value="summary" className="mt-4">
+                      <TabsContent value="summary" className="mt-3 sm:mt-4">
                         <Card>
-                          <CardHeader>
-                            <CardTitle>Progress Summary</CardTitle>
-                            <CardDescription>Overview of student's progress</CardDescription>
+                          <CardHeader className="p-3 sm:p-4 md:p-6">
+                            <CardTitle className="text-sm sm:text-base">Progress Summary</CardTitle>
+                            <CardDescription className="text-xs">Overview of student's progress</CardDescription>
                           </CardHeader>
-                          <CardContent>
-                            <p className="text-muted-foreground">Progress summary will be shown here based on Dhor Book entries.</p>
+                          <CardContent className="p-3 sm:p-4 md:p-6 pt-0">
+                            <p className="text-xs sm:text-sm text-muted-foreground">Progress summary will be shown here based on Dhor Book entries.</p>
                           </CardContent>
                         </Card>
                       </TabsContent>
                       
-                      <TabsContent value="analytics" className="mt-4">
+                      <TabsContent value="analytics" className="mt-3 sm:mt-4">
                         <Card>
-                          <CardHeader>
-                            <CardTitle>Progress Analytics</CardTitle>
-                            <CardDescription>Detailed analysis of student's performance</CardDescription>
+                          <CardHeader className="p-3 sm:p-4 md:p-6">
+                            <CardTitle className="text-sm sm:text-base">Progress Analytics</CardTitle>
+                            <CardDescription className="text-xs">Detailed analysis of student's performance</CardDescription>
                           </CardHeader>
-                          <CardContent>
-                            <p className="text-muted-foreground">Progress analytics will be shown here based on Dhor Book entries.</p>
+                          <CardContent className="p-3 sm:p-4 md:p-6 pt-0">
+                            <p className="text-xs sm:text-sm text-muted-foreground">Progress analytics will be shown here based on Dhor Book entries.</p>
                           </CardContent>
                         </Card>
                       </TabsContent>
@@ -197,13 +201,13 @@ export const TeacherDhorBook = ({ teacherId }: TeacherDhorBookProps) => {
                 )}
 
                 {!selectedStudentId && (
-                  <Card className="p-6 sm:p-12 text-center border-dashed bg-muted/40 mt-6">
+                  <Card className="p-4 sm:p-6 md:p-12 text-center border-dashed bg-muted/40 mt-3 sm:mt-6">
                     <div className="flex flex-col items-center gap-3">
-                      <div className="h-16 w-16 sm:h-20 sm:w-20 rounded-full bg-muted/60 flex items-center justify-center">
-                        <Search className="h-8 w-8 sm:h-10 sm:w-10 text-muted-foreground/60" />
+                      <div className="h-12 w-12 sm:h-16 sm:w-16 md:h-20 md:w-20 rounded-full bg-muted/60 flex items-center justify-center">
+                        <Search className="h-6 w-6 sm:h-8 sm:w-8 md:h-10 md:w-10 text-muted-foreground/60" />
                       </div>
-                      <h3 className="text-lg sm:text-xl font-medium">Select a Student</h3>
-                      <p className="text-sm sm:text-base text-muted-foreground max-w-md">
+                      <h3 className="text-base sm:text-lg md:text-xl font-medium">Select a Student</h3>
+                      <p className="text-xs sm:text-sm text-muted-foreground max-w-md">
                         Please search and select a student above to view their Dhor Book entries, attendance records, and progress analytics.
                       </p>
                     </div>

@@ -52,14 +52,16 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
         <Sidebar onCloseSidebar={() => setSidebarOpen(false)} />
       </div>
       
-      <BackgroundPattern isAdmin={isAdmin} className="flex-1">
-        <div className={`p-4 md:p-6 ${isMobile ? "pt-16" : ""}`}>
-          <div className="max-w-7xl mx-auto">
-            <RoleBadge isAdmin={isAdmin} isLoading={isLoading} />
-            <div className="animate-fadeIn">{children}</div>
+      <div className={`flex-1 ${isMobile ? "pt-16" : ""}`}>
+        <BackgroundPattern isAdmin={isAdmin}>
+          <div className="p-3 sm:p-4 md:p-6">
+            <div className="max-w-7xl mx-auto">
+              <RoleBadge isAdmin={isAdmin} isLoading={isLoading} />
+              <div className="animate-fadeIn">{children}</div>
+            </div>
           </div>
-        </div>
-      </BackgroundPattern>
+        </BackgroundPattern>
+      </div>
     </div>
   );
 }
