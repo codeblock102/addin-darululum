@@ -11,7 +11,6 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2, School2 } from "lucide-react";
 import type { Tables } from "@/integrations/supabase/types";
-import type { Progress, ProgressChartsProps, ExportOptionsProps } from "@/types/progress";
 
 const StudentProgressPage = () => {
   const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
@@ -35,7 +34,7 @@ const StudentProgressPage = () => {
     enabled: !!selectedStudentId,
   });
 
-  const { data: progressData, isLoading: progressLoading } = useQuery<Progress[]>({
+  const { data: progressData, isLoading: progressLoading } = useQuery<Tables<"progress">[]>({
     queryKey: ["student-progress-data", selectedStudentId],
     queryFn: async () => {
       if (!selectedStudentId) return [];
@@ -47,13 +46,7 @@ const StudentProgressPage = () => {
         .order("date", { ascending: true });
       
       if (error) throw error;
-      
-      // Convert the returned data to the Progress type
-      return (data || []).map(item => ({
-        ...item,
-        // Handle the case where completed_juz could be a number or an array
-        completed_juz: item.completed_juz || []
-      })) as unknown as Progress[];
+      return data || [];
     },
     enabled: !!selectedStudentId,
   });
@@ -145,7 +138,7 @@ const StudentProgressPage = () => {
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div className="lg:col-span-2">
                   <ProgressCharts 
-                    progressData={progressData || []}
+                    progressData={progressData || []} 
                     sabaqParaData={sabaqParaData || []}
                     juzRevisionsData={juzRevisionsData || []}
                   />
@@ -156,7 +149,7 @@ const StudentProgressPage = () => {
               </div>
               
               <ExportOptions 
-                studentId={selectedStudentId}
+                studentId={selectedStudentId} 
                 studentName={selectedStudentName}
                 progressData={progressData || []}
                 attendanceData={attendanceData || []}
