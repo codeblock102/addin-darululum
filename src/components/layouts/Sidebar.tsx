@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { useEffect } from "react";
 import { useMediaQuery } from "@/hooks/use-mobile";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight, ShieldCheck, BookOpen, Menu, X } from "lucide-react";
+import { ShieldCheck, BookOpen, ChevronLeft } from "lucide-react";
 import { adminNavItems, teacherNavItems } from "@/config/navigation";
 import { useTeacherStatus } from "@/hooks/useTeacherStatus";
 import { SidebarNav } from "./sidebar/SidebarNav";
@@ -43,18 +43,6 @@ export const Sidebar = ({ onCloseSidebar, toggleSidebar }: SidebarProps) => {
 
   return (
     <div className="relative h-full">
-      {/* Toggle button "bulge" that's always visible - even when sidebar is closed */}
-      {isMobile && toggleSidebar && (
-        <Button 
-          variant="ghost" 
-          size="icon" 
-          className="absolute -right-9 top-4 z-50 bg-background/80 backdrop-blur-sm shadow-sm rounded-l-none border-l-0"
-          onClick={toggleSidebar}
-        >
-          <ChevronRight className="h-4 w-4" />
-        </Button>
-      )}
-      
       <div className={`flex h-full w-full flex-col ${styles.sidebar}`}>
         <div className={`flex h-14 sm:h-16 items-center ${styles.header} justify-between pl-4 pr-2 sm:pl-5 sm:pr-4`}>
           <Link 

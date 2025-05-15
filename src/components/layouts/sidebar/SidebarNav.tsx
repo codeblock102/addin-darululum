@@ -39,7 +39,7 @@ export const SidebarNav = ({ items, isAdmin }: SidebarNavProps) => {
             )}
           >
             <item.icon className="h-5 w-5" />
-            <span className="hidden md:block">{item.label}</span>
+            <span>{item.label}</span>
           </Link>
         );
       })}

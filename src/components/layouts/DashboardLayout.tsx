@@ -6,6 +6,8 @@ import { LoadingSpinner } from "./dashboard/LoadingSpinner";
 import { BackgroundPattern } from "./dashboard/BackgroundPattern";
 import { RoleBadge } from "./dashboard/RoleBadge";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { Button } from "@/components/ui/button";
+import { ChevronRight } from "lucide-react";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -27,6 +29,8 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
     );
   }
 
+  const bulgeColor = isAdmin ? "bg-primary/90" : "bg-[#9b87f5]";
+
   return (
     <div className={`flex min-h-screen w-full overflow-hidden ${isAdmin ? "admin-theme" : "teacher-theme"}`}>
       {/* Sidebar with conditional display on mobile */}
@@ -37,6 +41,18 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
       `}>
         <Sidebar onCloseSidebar={() => setSidebarOpen(false)} toggleSidebar={toggleSidebar} />
       </div>
+      
+      {/* Toggle button "bulge" that's always visible on mobile - even when sidebar is closed */}
+      {isMobile && !sidebarOpen && (
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          className={`fixed top-3 left-0 z-50 rounded-r-md rounded-l-none border-l-0 shadow-md ${bulgeColor} text-white`}
+          onClick={toggleSidebar}
+        >
+          <ChevronRight className="h-4 w-4" />
+        </Button>
+      )}
       
       <div className={`flex-1 overflow-hidden ${isMobile ? "pt-16 pb-20" : ""}`}>
         <BackgroundPattern isAdmin={isAdmin}>
