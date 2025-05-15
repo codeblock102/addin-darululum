@@ -8,7 +8,7 @@ export interface Progress {
   verses_memorized?: number;
   date?: string;
   current_juz?: number;
-  completed_juz?: number;
+  completed_juz?: number[]; // Changed from number to number[] to match database schema
   memorization_quality?: 'excellent' | 'good' | 'average' | 'needsWork' | 'horrible';
   last_revision_date?: string;
   created_at: string;
