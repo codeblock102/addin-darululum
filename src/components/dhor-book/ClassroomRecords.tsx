@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -8,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
-import { Loader2, Search, Calendar, Check, X, AlertCircle } from "lucide-react";
+import { Loader2, Search, Calendar, Check, X, AlertCircle, Trophy, Medal, Award } from "lucide-react";
 import { format } from "date-fns";
 
 interface ClassroomRecordsProps {
@@ -33,6 +34,7 @@ interface StudentRecordSummary {
     date?: string;
     quality?: string;
   };
+  completionScore?: number;
 }
 
 export function ClassroomRecords({ teacherId }: ClassroomRecordsProps) {
@@ -151,6 +153,19 @@ export function ClassroomRecords({ teacherId }: ClassroomRecordsProps) {
           (jr) => jr.student_id === student?.id
         );
 
+        // Calculate completion score for leaderboard ranking
+        const completionScore = 
+          (progressRecord ? 1 : 0) + 
+          (sabaqParaRecord ? 1 : 0) + 
+          (juzRevisionRecord ? 1 : 0);
+
+        // Quality score - bonus points based on quality ratings
+        let qualityBonus = 0;
+        
+        if (progressRecord?.memorization_quality === 'excellent') qualityBonus += 0.5;
+        if (sabaqParaRecord?.quality_rating === 'excellent') qualityBonus += 0.5;
+        if (juzRevisionRecord?.memorization_quality === 'excellent') qualityBonus += 0.5;
+
         return {
           id: student?.id || "",
           name: student?.name || "",
@@ -169,10 +184,12 @@ export function ClassroomRecords({ teacherId }: ClassroomRecordsProps) {
             date: juzRevisionRecord?.revision_date,
             quality: juzRevisionRecord?.memorization_quality,
           },
+          completionScore: completionScore + qualityBonus
         };
       });
 
-      return studentSummaries;
+      // Sort by completion score for leaderboard
+      return studentSummaries.sort((a, b) => (b.completionScore || 0) - (a.completionScore || 0));
     },
     enabled: !!teacherStudents && teacherStudents.length > 0,
   });
@@ -193,6 +210,9 @@ export function ClassroomRecords({ teacherId }: ClassroomRecordsProps) {
 
     return matchesSearch;
   });
+
+  // Get top 3 students for the leaderboard
+  const topStudents = recordsData?.slice(0, 3) || [];
 
   const getQualityBadge = (quality?: string) => {
     if (!quality) return null;
@@ -239,6 +259,13 @@ export function ClassroomRecords({ teacherId }: ClassroomRecordsProps) {
   const isLoading = studentsLoading || recordsLoading;
   const hasError = studentsError || recordsError;
 
+  // Award components for top 3 places
+  const LeaderboardRankIcons = [
+    <Trophy key="1st" className="h-8 w-8 text-yellow-500" />,
+    <Medal key="2nd" className="h-8 w-8 text-zinc-400" />,
+    <Award key="3rd" className="h-8 w-8 text-amber-700" />
+  ];
+
   return (
     <div className="space-y-6">
       {hasError && (
@@ -250,6 +277,74 @@ export function ClassroomRecords({ teacherId }: ClassroomRecordsProps) {
           </CardContent>
         </Card>
       )}
+      
+      {/* Leaderboard section */}
+      <Card className="bg-gradient-to-r from-indigo-500/10 via-purple-500/10 to-pink-500/10">
+        <CardHeader>
+          <CardTitle className="flex items-center text-center justify-center">
+            <Trophy className="h-6 w-6 mr-2 text-yellow-500" />
+            <span>Today's Leaderboard</span>
+            <Trophy className="h-6 w-6 ml-2 text-yellow-500" />
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {isLoading ? (
+            <div className="flex justify-center py-8">
+              <Loader2 className="h-8 w-8 animate-spin" />
+            </div>
+          ) : topStudents.length > 0 ? (
+            <div className="flex flex-wrap justify-center gap-4 md:gap-8">
+              {topStudents.slice(0, 3).map((student, index) => (
+                <Card key={student.id} className={`w-full md:w-64 ${index === 0 ? 'border-yellow-500/50 shadow-lg' : ''}`}>
+                  <CardContent className="pt-6 text-center flex flex-col items-center">
+                    <div className="mb-4">
+                      {LeaderboardRankIcons[index]}
+                    </div>
+                    <h3 className="text-xl font-bold mb-2">{student.name}</h3>
+                    <div className="space-y-1 w-full mt-2">
+                      <div className="flex justify-between text-sm">
+                        <span>Sabaq:</span>
+                        <span>{student.sabaq.done ? 
+                          <Check className="h-4 w-4 text-green-500 inline ml-1" /> : 
+                          <X className="h-4 w-4 text-red-500 inline ml-1" />}
+                        </span>
+                      </div>
+                      <div className="flex justify-between text-sm">
+                        <span>Sabaq Para:</span>
+                        <span>{student.sabaqPara.done ? 
+                          <Check className="h-4 w-4 text-green-500 inline ml-1" /> : 
+                          <X className="h-4 w-4 text-red-500 inline ml-1" />}
+                        </span>
+                      </div>
+                      <div className="flex justify-between text-sm">
+                        <span>Dhor:</span>
+                        <span>{student.dhor.done ? 
+                          <Check className="h-4 w-4 text-green-500 inline ml-1" /> : 
+                          <X className="h-4 w-4 text-red-500 inline ml-1" />}
+                        </span>
+                      </div>
+                      <div className="pt-2">
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          className="w-full mt-2"
+                          onClick={() => window.location.href = `/dhor-book?studentId=${student.id}`}
+                        >
+                          View Details
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-6">
+              <p className="text-muted-foreground">No student records available for today's leaderboard.</p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
       
       <Card>
         <CardHeader>
@@ -339,6 +434,7 @@ export function ClassroomRecords({ teacherId }: ClassroomRecordsProps) {
                   <Table>
                     <TableHeader>
                       <TableRow>
+                        <TableHead>Rank</TableHead>
                         <TableHead>Student</TableHead>
                         <TableHead className="text-center">Sabaq</TableHead>
                         <TableHead className="text-center">Sabaq Para</TableHead>
@@ -347,8 +443,19 @@ export function ClassroomRecords({ teacherId }: ClassroomRecordsProps) {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {filteredRecords.map((record) => (
+                      {filteredRecords.map((record, index) => (
                         <TableRow key={record.id}>
+                          <TableCell>
+                            {index < 3 ? (
+                              <div className="flex items-center justify-center w-8 h-8 rounded-full bg-muted">
+                                {index === 0 && <Trophy className="h-4 w-4 text-yellow-500" />}
+                                {index === 1 && <Medal className="h-4 w-4 text-zinc-400" />}
+                                {index === 2 && <Award className="h-4 w-4 text-amber-700" />}
+                              </div>
+                            ) : (
+                              <span className="font-medium">{index + 1}</span>
+                            )}
+                          </TableCell>
                           <TableCell className="font-medium">{record.name}</TableCell>
                           <TableCell className="text-center">
                             <div className="flex flex-col items-center gap-1">
