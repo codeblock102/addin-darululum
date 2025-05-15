@@ -31,12 +31,12 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
 
   return (
     <div className={`flex min-h-screen w-full overflow-hidden ${isAdmin ? "admin-theme" : "teacher-theme"}`}>
-      {/* Mobile sidebar toggle button */}
+      {/* Mobile sidebar toggle button - ALWAYS visible */}
       {isMobile && (
         <Button 
           variant="ghost" 
           size="icon" 
-          className="fixed top-4 left-4 z-50 lg:hidden"
+          className="fixed top-4 left-4 z-50 bg-background/80 backdrop-blur-sm shadow-sm"
           onClick={toggleSidebar}
         >
           {sidebarOpen ? <X size={20} /> : <Menu size={20} />}

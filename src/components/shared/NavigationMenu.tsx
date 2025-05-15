@@ -33,7 +33,14 @@ export const NavigationMenu = ({ items }: NavigationMenuProps) => {
         <SidebarMenuItem key={index}>
           <SidebarMenuButton 
             isActive={isNavItemActive(item)}
-            onClick={() => navigate(item.href)}
+            onClick={() => {
+              navigate(item.href);
+              // On mobile, this additional behavior can help close the sidebar after navigation
+              if (isMobile && window.innerWidth < 768) {
+                const event = new CustomEvent('navigate-mobile');
+                window.dispatchEvent(event);
+              }
+            }}
             tooltip={!isMobile ? item.description : undefined}
             className={`transition-all duration-200 hover:bg-white/10 ${
               isNavItemActive(item) ? 'bg-white/20 text-white' : 'text-white/80 hover:text-white'

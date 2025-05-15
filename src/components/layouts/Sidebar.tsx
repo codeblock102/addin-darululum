@@ -1,5 +1,6 @@
 
 import { Link } from "react-router-dom";
+import { useEffect } from "react";
 import { useMediaQuery } from "@/hooks/use-mobile";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ShieldCheck, BookOpen } from "lucide-react";
@@ -23,6 +24,21 @@ export const Sidebar = ({ onCloseSidebar }: SidebarProps) => {
       : "bg-background border-r",
     header: isAdmin ? "border-b border-white/10" : "border-b",
   };
+
+  // Handle mobile navigation events
+  useEffect(() => {
+    const handleNavigation = () => {
+      if (onCloseSidebar) {
+        onCloseSidebar();
+      }
+    };
+
+    window.addEventListener('navigate-mobile', handleNavigation);
+    
+    return () => {
+      window.removeEventListener('navigate-mobile', handleNavigation);
+    };
+  }, [onCloseSidebar]);
 
   return (
     <div className={`flex h-full w-full flex-col ${styles.sidebar}`}>
