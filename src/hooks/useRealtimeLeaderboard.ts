@@ -2,7 +2,7 @@
 import { useEffect } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 
 export function useRealtimeLeaderboard(teacherId?: string, refreshCallback?: () => void) {
   const queryClient = useQueryClient();
@@ -11,18 +11,18 @@ export function useRealtimeLeaderboard(teacherId?: string, refreshCallback?: () 
   useEffect(() => {
     if (!teacherId) return;
 
-    // Set up subscriptions for all three tables
-    const dhorBookChannel = supabase
-      .channel('leaderboard-dhor-changes')
+    // Set up subscriptions for all three tables: progress, sabaq_para, and juz_revisions
+    const progressChannel = supabase
+      .channel('leaderboard-progress-changes')
       .on(
         'postgres_changes',
         {
           event: '*',
           schema: 'public',
-          table: 'dhor_book_entries'
+          table: 'progress'
         },
         (payload) => {
-          console.log('Dhor book entry change detected:', payload);
+          console.log('Progress change detected:', payload);
           // Invalidate the leaderboard queries to trigger a refresh
           queryClient.invalidateQueries({ queryKey: ['leaderboard'] });
           
@@ -33,8 +33,8 @@ export function useRealtimeLeaderboard(teacherId?: string, refreshCallback?: () 
           
           if (payload.eventType === 'INSERT') {
             toast({
-              title: "New Dhor Entry",
-              description: "Leaderboard updated with new Dhor entry.",
+              title: "New Progress Entry",
+              description: "Leaderboard updated with new progress entry.",
               duration: 3000,
             });
           }
@@ -102,7 +102,7 @@ export function useRealtimeLeaderboard(teacherId?: string, refreshCallback?: () 
 
     // Clean up subscriptions when component unmounts
     return () => {
-      supabase.removeChannel(dhorBookChannel);
+      supabase.removeChannel(progressChannel);
       supabase.removeChannel(sabaqParaChannel);
       supabase.removeChannel(juzRevisionsChannel);
     };

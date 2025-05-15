@@ -19,9 +19,17 @@ interface GradingProps {
 interface Student {
   name: string;
   id: string;
+  status?: string;
   current_surah?: number;
   current_juz?: number;
   last_grade?: string;
+  memorization_quality?: string;
+  tajweed_level?: string;
+}
+
+interface ProgressData {
+  current_surah?: number;
+  current_juz?: number;
   memorization_quality?: string;
   tajweed_level?: string;
 }
@@ -73,14 +81,13 @@ export const TeacherGrading = ({ teacherId }: GradingProps) => {
               id: student.id,
               name: student.name,
               status: student.status
-            };
+            } as Student;
           }
           
           // Properly handle the case when progressData exists but might be empty
           if (progressData && progressData.length > 0) {
-            // Ensure we're not trying to access properties on an error object
-            if (!isQueryError(progressData[0])) {
-              const progress = progressData[0];
+            try {
+              const progress = progressData[0] as ProgressData;
               return {
                 id: student.id,
                 name: student.name,
@@ -89,7 +96,9 @@ export const TeacherGrading = ({ teacherId }: GradingProps) => {
                 current_juz: progress.current_juz,
                 memorization_quality: progress.memorization_quality,
                 tajweed_level: progress.tajweed_level,
-              };
+              } as Student;
+            } catch (e) {
+              console.error('Error processing progress data:', e);
             }
           }
           
@@ -98,7 +107,7 @@ export const TeacherGrading = ({ teacherId }: GradingProps) => {
             id: student.id,
             name: student.name,
             status: student.status,
-          };
+          } as Student;
         })
       );
       
