@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { useEffect } from "react";
 import { useMediaQuery } from "@/hooks/use-mobile";
 import { Button } from "@/components/ui/button";
-import { ShieldCheck, BookOpen, ChevronLeft } from "lucide-react";
+import { ShieldCheck, BookOpen, ChevronRight } from "lucide-react";
 import { adminNavItems, teacherNavItems } from "@/config/navigation";
 import { useTeacherStatus } from "@/hooks/useTeacherStatus";
 import { SidebarNav } from "./sidebar/SidebarNav";
@@ -26,6 +26,8 @@ export const Sidebar = ({ onCloseSidebar, toggleSidebar }: SidebarProps) => {
     header: isAdmin ? "border-b border-white/10" : "border-b",
   };
 
+  const bulgeColor = isAdmin ? "bg-primary/90" : "bg-[#9b87f5]";
+
   // Handle mobile navigation events
   useEffect(() => {
     const handleNavigation = () => {
@@ -43,6 +45,18 @@ export const Sidebar = ({ onCloseSidebar, toggleSidebar }: SidebarProps) => {
 
   return (
     <div className="relative h-full">
+      {/* Toggle button "bulge" that's part of the sidebar */}
+      {isMobile && toggleSidebar && (
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          className={`absolute -right-9 top-4 z-50 rounded-r-md rounded-l-none border-l-0 shadow-md ${bulgeColor} text-white`}
+          onClick={toggleSidebar}
+        >
+          <ChevronRight className="h-4 w-4" />
+        </Button>
+      )}
+      
       <div className={`flex h-full w-full flex-col ${styles.sidebar}`}>
         <div className={`flex h-14 sm:h-16 items-center ${styles.header} justify-between pl-4 pr-2 sm:pl-5 sm:pr-4`}>
           <Link 
@@ -58,12 +72,6 @@ export const Sidebar = ({ onCloseSidebar, toggleSidebar }: SidebarProps) => {
               {isAdmin ? "Admin Portal" : "Teacher Portal"}
             </span>
           </Link>
-          {isMobile && (
-            <Button variant="ghost" size="icon" className="text-white" onClick={onCloseSidebar}>
-              <ChevronLeft className="h-4 w-4" />
-              <span className="sr-only">Close Menu</span>
-            </Button>
-          )}
         </div>
         
         <div className="flex-1 overflow-auto py-2 sm:py-4">
