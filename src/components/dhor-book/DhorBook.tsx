@@ -1,3 +1,4 @@
+
 import { useState, useCallback, useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -14,6 +15,7 @@ import { Progress as UiProgress } from "@/components/ui/progress";
 import { Activity } from "lucide-react";
 import { getTotalAyatsInJuz, getUniqueAyatsCoveredInJuz } from "@/utils/juzMetadata";
 import { useUpdateStudentCompletedJuz } from "./useUpdateStudentCompletedJuz";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 // Define a helper type for table rows from our new Database type
 type DbTables = Database["public"]["Tables"];
@@ -35,6 +37,7 @@ interface DhorBookProps {
 
 export function DhorBook({ studentId, teacherId }: DhorBookProps) {
   const [currentWeek, setCurrentWeek] = useState<Date>(new Date());
+  const isMobile = useIsMobile();
   
   const queryClient = useQueryClient();
   const { toast } = useToast();
@@ -302,14 +305,14 @@ export function DhorBook({ studentId, teacherId }: DhorBookProps) {
 
   if (activitiesLoading && studentId) {
     return (
-      <div className="flex justify-center items-center min-h-[400px]">
+      <div className="flex justify-center items-center min-h-[200px] sm:min-h-[300px]">
         <Loader2 className="h-6 w-6 sm:h-8 sm:w-8 animate-spin text-primary" />
       </div>
     );
   }
 
   return (
-    <Card className="p-2 sm:p-4 md:p-6 overflow-hidden">
+    <Card className="p-1 sm:p-3 md:p-4 overflow-hidden">
       <DhorBookHeader 
         studentId={studentId} 
         currentWeek={currentWeek}
@@ -317,11 +320,11 @@ export function DhorBook({ studentId, teacherId }: DhorBookProps) {
           setCurrentWeek(newWeekStart);
         }}
       />
-      <CardContent className="mt-2 sm:mt-4 p-0 sm:p-0">
+      <CardContent className="mt-2 p-0 sm:p-0">
         {studentId ? (
           <>
             {/* Individual Student's Juz Progress */}
-            <div className="my-2 sm:my-4 p-3 sm:p-4 border rounded-md">
+            <div className="my-2 sm:my-4 p-2 sm:p-4 border rounded-md">
               <h3 className="mb-2 text-xs sm:text-sm font-medium">Current Juz Progress</h3>
               {isLoadingJuzProgress ? (
                 <div className="flex items-center text-xs sm:text-sm text-muted-foreground"> <Activity className="h-3 w-3 sm:h-4 sm:w-4 mr-1 animate-spin"/> Loading...</div>
@@ -338,8 +341,8 @@ export function DhorBook({ studentId, teacherId }: DhorBookProps) {
               )}
             </div>
 
-            <div className="overflow-x-auto -mx-2 sm:mx-0">
-              <div className="min-w-[600px] px-2 sm:px-0 sm:min-w-full">
+            <div className="overflow-x-auto -mx-1 sm:mx-0">
+              <div className={isMobile ? "min-w-[500px] px-1" : "px-0 sm:min-w-full"}>
                 <DhorBookGrid 
                   entries={dailyActivities || []}
                   studentId={studentId}
@@ -351,7 +354,7 @@ export function DhorBook({ studentId, teacherId }: DhorBookProps) {
             </div>
             
             {summary && (
-              <div className="mt-3 sm:mt-6">
+              <div className="mt-3">
                 <DhorBookSummary 
                   summary={summary}
                   studentId={studentId}

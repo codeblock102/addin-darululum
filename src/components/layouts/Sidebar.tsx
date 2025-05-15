@@ -26,17 +26,17 @@ export const Sidebar = ({ onCloseSidebar }: SidebarProps) => {
 
   return (
     <div className={`flex h-full w-full flex-col ${styles.sidebar}`}>
-      <div className={`flex h-16 items-center ${styles.header} justify-between pl-5 pr-4 lg:pl-6 lg:pr-6`}>
+      <div className={`flex h-14 sm:h-16 items-center ${styles.header} justify-between pl-4 pr-2 sm:pl-5 sm:pr-4`}>
         <Link 
           to={isTeacher ? "/teacher-portal" : "/"} 
           className="flex items-center gap-2 font-semibold"
         >
           {isAdmin ? (
-            <ShieldCheck className="h-6 w-6 text-amber-400" />
+            <ShieldCheck className="h-5 w-5 sm:h-6 sm:w-6 text-amber-400" />
           ) : (
-            <BookOpen className="h-6 w-6" />
+            <BookOpen className="h-5 w-5 sm:h-6 sm:w-6" />
           )}
-          <span className="text-white">
+          <span className="text-white text-sm sm:text-base">
             {isAdmin ? "Admin Portal" : "Teacher Portal"}
           </span>
         </Link>
@@ -48,7 +48,7 @@ export const Sidebar = ({ onCloseSidebar }: SidebarProps) => {
         )}
       </div>
       
-      <div className="flex-1 overflow-auto py-4">
+      <div className="flex-1 overflow-auto py-2 sm:py-4">
         <SidebarNav items={navItems} isAdmin={isAdmin} />
       </div>
 

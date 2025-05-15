@@ -32,8 +32,6 @@ export const TeacherDhorBook = ({ teacherId }: TeacherDhorBookProps) => {
     console.log("Realtime update detected, refreshing classroom/student records");
   });
 
-  console.log("Current view mode:", viewMode, "teacherId:", teacherId, "realtime subscribed:", isSubscribed);
-
   // Check URL for studentId parameter
   useEffect(() => {
     const searchParams = new URLSearchParams(location.search);
@@ -83,24 +81,24 @@ export const TeacherDhorBook = ({ teacherId }: TeacherDhorBookProps) => {
   };
 
   return (
-    <div className="space-y-4 md:space-y-6 pb-6 px-1 sm:px-0">
+    <div className="space-y-4 md:space-y-6 pb-16 px-1 sm:px-0">
       <div className="text-center sm:text-left">
         <h2 className="text-lg sm:text-xl md:text-2xl font-bold tracking-tight">Dhor Book</h2>
-        <p className="text-xs sm:text-sm text-muted-foreground">Record and track student progress using the Progress Book system</p>
+        <p className="text-xs sm:text-sm text-muted-foreground">Record and track student progress</p>
       </div>
 
       {/* View mode tabs - more prominent */}
       <Card className="overflow-hidden">
         <Tabs value={viewMode} onValueChange={(value) => setViewMode(value as "daily" | "classroom")} className="w-full">
-          <div className="bg-muted/40 px-2 py-2 sm:px-4 sm:py-3">
+          <div className="bg-muted/40 px-2 py-2 sm:px-4">
             <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="daily" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm py-1.5">
+              <TabsTrigger value="daily" className="flex items-center gap-1 sm:gap-2 text-xs py-1.5">
                 <BookOpen className="h-3 w-3 sm:h-4 sm:w-4" />
                 <span>Daily Records</span>
               </TabsTrigger>
-              <TabsTrigger value="classroom" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm py-1.5">
+              <TabsTrigger value="classroom" className="flex items-center gap-1 sm:gap-2 text-xs py-1.5">
                 <Users className="h-3 w-3 sm:h-4 sm:w-4" />
-                <span>Classroom Records</span>
+                <span>Classroom</span>
               </TabsTrigger>
             </TabsList>
           </div>
@@ -116,19 +114,19 @@ export const TeacherDhorBook = ({ teacherId }: TeacherDhorBookProps) => {
                 />
 
                 {selectedStudentId && (
-                  <div className="space-y-4 sm:space-y-6 mt-3 sm:mt-6">
-                    <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-2 sm:gap-3">
-                      <h3 className="text-base sm:text-lg md:text-xl font-semibold truncate">{selectedStudentName}'s Progress</h3>
+                  <div className="space-y-4 mt-3">
+                    <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-2">
+                      <h3 className="text-base sm:text-lg md:text-xl font-semibold truncate">
+                        {selectedStudentName}'s Progress
+                      </h3>
                       <div className="flex flex-wrap gap-2">
                         <Button variant="outline" size="sm" className="text-xs">
                           <Calendar className="mr-1 h-3 w-3 sm:h-4 sm:w-4" />
-                          {!isMobile && <span>Schedule Revision</span>}
-                          {isMobile && <span>Schedule</span>}
+                          {!isMobile ? "Schedule Revision" : "Schedule"}
                         </Button>
                         <Button size="sm" className="text-xs">
                           <Plus className="mr-1 h-3 w-3 sm:h-4 sm:w-4" />
-                          {!isMobile && <span>New Entry</span>}
-                          {isMobile && <span>New</span>}
+                          {!isMobile ? "New Entry" : "New"}
                         </Button>
                       </div>
                     </div>
@@ -201,12 +199,12 @@ export const TeacherDhorBook = ({ teacherId }: TeacherDhorBookProps) => {
                 )}
 
                 {!selectedStudentId && (
-                  <Card className="p-4 sm:p-6 md:p-12 text-center border-dashed bg-muted/40 mt-3 sm:mt-6">
+                  <Card className="p-4 sm:p-6 md:p-12 text-center border-dashed bg-muted/40 mt-3">
                     <div className="flex flex-col items-center gap-3">
-                      <div className="h-12 w-12 sm:h-16 sm:w-16 md:h-20 md:w-20 rounded-full bg-muted/60 flex items-center justify-center">
-                        <Search className="h-6 w-6 sm:h-8 sm:w-8 md:h-10 md:w-10 text-muted-foreground/60" />
+                      <div className="h-12 w-12 sm:h-16 sm:w-16 rounded-full bg-muted/60 flex items-center justify-center">
+                        <Search className="h-6 w-6 sm:h-8 sm:w-8 text-muted-foreground/60" />
                       </div>
-                      <h3 className="text-base sm:text-lg md:text-xl font-medium">Select a Student</h3>
+                      <h3 className="text-base sm:text-lg font-medium">Select a Student</h3>
                       <p className="text-xs sm:text-sm text-muted-foreground max-w-md">
                         Please search and select a student above to view their Dhor Book entries, attendance records, and progress analytics.
                       </p>

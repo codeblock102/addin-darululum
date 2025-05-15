@@ -5,6 +5,7 @@ import { RevisionsList } from './RevisionsList';
 import { DifficultAyahList } from './DifficultAyahList';
 import { Loader2 } from 'lucide-react';
 import { JuzRevision } from '@/types/progress';
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface RevisionTabsProps {
   studentId: string;
@@ -16,13 +17,14 @@ interface RevisionTabsProps {
 
 export function RevisionTabs({ studentId, studentName, juzRevisions, loading, onAddJuzRevision }: RevisionTabsProps) {
   const [activeTab, setActiveTab] = useState("revisions");
+  const isMobile = useIsMobile();
 
   return (
     <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-      <TabsList className="mb-4 grid grid-cols-3">
-        <TabsTrigger value="revisions">Revisions</TabsTrigger>
-        <TabsTrigger value="schedule">Schedule</TabsTrigger>
-        <TabsTrigger value="difficult">Difficult Ayahs</TabsTrigger>
+      <TabsList className={`mb-4 grid ${isMobile ? "grid-cols-2" : "grid-cols-3"}`}>
+        <TabsTrigger value="revisions" className="text-xs sm:text-sm">Revisions</TabsTrigger>
+        {!isMobile && <TabsTrigger value="schedule" className="text-xs sm:text-sm">Schedule</TabsTrigger>}
+        <TabsTrigger value="difficult" className="text-xs sm:text-sm">Difficult Ayahs</TabsTrigger>
       </TabsList>
       
       <TabsContent value="revisions">
@@ -40,11 +42,13 @@ export function RevisionTabs({ studentId, studentName, juzRevisions, loading, on
         )}
       </TabsContent>
       
-      <TabsContent value="schedule">
-        <div className="text-center py-12">
-          <p className="text-muted-foreground">Coming Soon: Student Schedule</p>
-        </div>
-      </TabsContent>
+      {!isMobile && (
+        <TabsContent value="schedule">
+          <div className="text-center py-12">
+            <p className="text-muted-foreground">Coming Soon: Student Schedule</p>
+          </div>
+        </TabsContent>
+      )}
       
       <TabsContent value="difficult">
         <DifficultAyahList studentId={studentId} />
