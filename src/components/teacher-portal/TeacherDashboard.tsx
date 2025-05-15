@@ -15,6 +15,8 @@ import { TeacherAttendance } from "./TeacherAttendance";
 import { TeacherSchedule } from "./TeacherSchedule";
 import { TeacherPerformance } from "./dashboard/TeacherPerformance";
 import { TeacherMessagesEnhanced } from "./messaging/TeacherMessagesEnhanced";
+import { TeacherLeaderboard } from "./leaderboard/TeacherLeaderboard";
+import { LeaderboardWidget } from "./dashboard/LeaderboardWidget";
 
 export const TeacherDashboard = ({ teacher }: TeacherDashboardProps) => {
   const location = useLocation();
@@ -25,7 +27,7 @@ export const TeacherDashboard = ({ teacher }: TeacherDashboardProps) => {
     const searchParams = new URLSearchParams(location.search);
     const tabParam = searchParams.get('tab');
     
-    if (tabParam && ['students', 'dhor-book', 'attendance', 'schedule', 'performance', 'messages'].includes(tabParam)) {
+    if (tabParam && ['students', 'dhor-book', 'attendance', 'schedule', 'performance', 'messages', 'leaderboard'].includes(tabParam)) {
       setActiveTab(tabParam);
     } else {
       setActiveTab("overview");
@@ -46,6 +48,8 @@ export const TeacherDashboard = ({ teacher }: TeacherDashboardProps) => {
         return <TeacherPerformance teacherId={teacher.id} />;
       case "messages":
         return <TeacherMessagesEnhanced teacherId={teacher.id} teacherName={teacher.name} />;
+      case "leaderboard":
+        return <TeacherLeaderboard teacherId={teacher.id} />;
       default:
         return (
           <div className="space-y-6">
@@ -55,7 +59,10 @@ export const TeacherDashboard = ({ teacher }: TeacherDashboardProps) => {
             </div>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <TodayStudents teacherId={teacher.id} />
-              <RecentActivity teacherId={teacher.id} />
+              <div className="space-y-6">
+                <LeaderboardWidget teacherId={teacher.id} />
+                <RecentActivity teacherId={teacher.id} />
+              </div>
             </div>
           </div>
         );
