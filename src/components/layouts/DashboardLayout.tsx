@@ -6,7 +6,6 @@ import { LoadingSpinner } from "./dashboard/LoadingSpinner";
 import { BackgroundPattern } from "./dashboard/BackgroundPattern";
 import { RoleBadge } from "./dashboard/RoleBadge";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { ChevronRight } from "lucide-react";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -38,25 +37,6 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
       `}>
         <Sidebar onCloseSidebar={() => setSidebarOpen(false)} toggleSidebar={toggleSidebar} />
       </div>
-      
-      {/* Toggle button bulge that's visible when sidebar is closed */}
-      {isMobile && (
-        <button 
-          className={`
-            fixed z-50 top-20 left-0 h-12 w-8 flex items-center justify-center
-            rounded-r-lg shadow-lg transition-all duration-300
-            ${isAdmin 
-              ? "bg-primary/90 text-primary-foreground hover:bg-primary" 
-              : "bg-[#9b87f5] text-white hover:bg-[#8B5CF6]"
-            }
-            ${sidebarOpen ? "opacity-0" : "opacity-100"}
-          `}
-          onClick={toggleSidebar}
-          aria-label="Open sidebar"
-        >
-          <ChevronRight className="h-4 w-4" />
-        </button>
-      )}
       
       <div className={`flex-1 overflow-hidden ${isMobile ? "pt-16 pb-20" : ""}`}>
         <BackgroundPattern isAdmin={isAdmin}>
