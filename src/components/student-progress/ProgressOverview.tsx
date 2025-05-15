@@ -1,94 +1,96 @@
-import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+
+import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/types/progress";
+import { Badge } from "@/components/ui/badge";
 
 interface ProgressOverviewProps {
   studentName: string;
   progressData: Progress[];
-  sabaqParaData?: any[];
-  juzRevisionsData?: any[];
+  dhorData: any[];
 }
 
-export const ProgressOverview = ({ 
-  studentName, 
-  progressData,
-  sabaqParaData,
-  juzRevisionsData
-}: ProgressOverviewProps) => {
-  const latestProgress = progressData && progressData.length > 0 ? progressData[progressData.length - 1] : null;
+export function ProgressOverview({ studentName, progressData, dhorData }: ProgressOverviewProps) {
+  // Calculate key metrics
+  const latestProgress = progressData.length > 0 
+    ? progressData[progressData.length - 1] 
+    : null;
+    
+  const totalVersesMemorized = progressData.reduce(
+    (sum, entry) => sum + (entry.verses_memorized || 0), 
+    0
+  );
+  
+  const completedJuz = latestProgress?.completed_juz || 0;
+  
+  const currentSurah = latestProgress?.current_surah || 0;
+  const currentJuz = latestProgress?.current_juz || 0;
+  
+  const averageQualityRatings = progressData.reduce((acc, entry) => {
+    if (entry.memorization_quality) {
+      acc[entry.memorization_quality] = (acc[entry.memorization_quality] || 0) + 1;
+    }
+    return acc;
+  }, {} as Record<string, number>);
+  
+  const totalRatings = Object.values(averageQualityRatings).reduce((a, b) => a + b, 0);
+  
+  const bestPerformingQuality = totalRatings > 0 
+    ? Object.entries(averageQualityRatings).sort((a, b) => b[1] - a[1])[0][0] 
+    : "N/A";
 
-  // Calculate total verses memorized
-  const totalVersesMemorized = progressData.reduce((sum, entry) => {
-    return sum + (entry.verses_memorized || 0);
-  }, 0);
-
-  // Calculate completed juz
-  const completedJuzCount = latestProgress && latestProgress.completed_juz 
-    ? (Array.isArray(latestProgress.completed_juz) 
-        ? latestProgress.completed_juz.length 
-        : typeof latestProgress.completed_juz === 'number' 
-          ? latestProgress.completed_juz 
-          : 0)
+  // Get count of dhor entries with mistakes ≤ 3 (good performance)
+  const goodDhorEntries = dhorData.filter(entry => 
+    (entry.dhor_1_mistakes <= 3) && 
+    (entry.dhor_2_mistakes <= 3)
+  ).length;
+  
+  const dhorPerformancePercentage = dhorData.length > 0 
+    ? Math.round((goodDhorEntries / dhorData.length) * 100) 
     : 0;
 
-  // Calculate revision metrics
-  const totalRevisions = juzRevisionsData?.length || 0;
-  const recentRevisionQuality = juzRevisionsData && juzRevisionsData.length > 0
-    ? juzRevisionsData[0].memorization_quality
-    : 'N/A';
-
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>{studentName}'s Progress Overview</CardTitle>
-      </CardHeader>
-      <CardContent>
-        {latestProgress ? (
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="p-4 bg-muted/50 rounded-lg">
-              <p className="text-sm font-medium text-muted-foreground">Current Surah</p>
-              <p className="text-2xl font-bold">{latestProgress.current_surah || 'N/A'}</p>
-            </div>
-            
-            <div className="p-4 bg-muted/50 rounded-lg">
-              <p className="text-sm font-medium text-muted-foreground">Current Juz</p>
-              <p className="text-2xl font-bold">{latestProgress.current_juz || 'N/A'}</p>
-            </div>
-            
-            <div className="p-4 bg-muted/50 rounded-lg">
-              <p className="text-sm font-medium text-muted-foreground">Total Verses</p>
-              <p className="text-2xl font-bold">{totalVersesMemorized}</p>
-            </div>
-            
-            <div className="p-4 bg-muted/50 rounded-lg">
-              <p className="text-sm font-medium text-muted-foreground">Completed Juz</p>
-              <p className="text-2xl font-bold">{completedJuzCount}</p>
-            </div>
-            
-            <div className="p-4 bg-muted/50 rounded-lg">
-              <p className="text-sm font-medium text-muted-foreground">Memorization Quality</p>
-              <p className="text-xl font-bold capitalize">{latestProgress.memorization_quality || 'N/A'}</p>
-            </div>
-            
-            <div className="p-4 bg-muted/50 rounded-lg">
-              <p className="text-sm font-medium text-muted-foreground">Tajweed Level</p>
-              <p className="text-xl font-bold">{latestProgress.tajweed_level || 'N/A'}</p>
-            </div>
-            
-            <div className="p-4 bg-muted/50 rounded-lg">
-              <p className="text-sm font-medium text-muted-foreground">Total Revisions</p>
-              <p className="text-xl font-bold">{totalRevisions}</p>
-            </div>
-            
-            <div className="p-4 bg-muted/50 rounded-lg">
-              <p className="text-sm font-medium text-muted-foreground">Recent Quality</p>
-              <p className="text-xl font-bold capitalize">{recentRevisionQuality}</p>
+    <Card className="bg-gradient-to-br from-purple-50 to-white dark:from-gray-900 dark:to-gray-800">
+      <CardContent className="p-6">
+        <div className="flex flex-col md:flex-row justify-between gap-6">
+          <div>
+            <h2 className="text-2xl font-bold mb-1">{studentName}</h2>
+            <div className="flex items-center gap-2 mb-4">
+              <Badge variant="outline" className="bg-purple-100 text-purple-800 border-purple-200">
+                Current Juz: {currentJuz || "Not started"}
+              </Badge>
+              <Badge variant="outline" className="bg-blue-100 text-blue-800 border-blue-200">
+                Current Surah: {currentSurah || "Not started"}
+              </Badge>
             </div>
           </div>
-        ) : (
-          <p className="text-center py-4 text-muted-foreground">No progress data available for this student</p>
-        )}
+          
+          <div className="flex flex-wrap gap-6">
+            <div className="text-center">
+              <p className="text-sm font-medium text-muted-foreground">Total Memorized</p>
+              <p className="text-3xl font-bold">{totalVersesMemorized}</p>
+              <p className="text-xs text-muted-foreground">Verses</p>
+            </div>
+            
+            <div className="text-center">
+              <p className="text-sm font-medium text-muted-foreground">Completed</p>
+              <p className="text-3xl font-bold">{completedJuz}</p>
+              <p className="text-xs text-muted-foreground">Juz</p>
+            </div>
+            
+            <div className="text-center">
+              <p className="text-sm font-medium text-muted-foreground">Dhor Quality</p>
+              <p className="text-3xl font-bold">{dhorPerformancePercentage}%</p>
+              <p className="text-xs text-muted-foreground">Good Performance</p>
+            </div>
+            
+            <div className="text-center">
+              <p className="text-sm font-medium text-muted-foreground">Best Rating</p>
+              <p className="text-3xl font-bold capitalize">{bestPerformingQuality}</p>
+              <p className="text-xs text-muted-foreground">Memorization Quality</p>
+            </div>
+          </div>
+        </div>
       </CardContent>
     </Card>
   );
-};
+}
