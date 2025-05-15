@@ -30,7 +30,7 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   }
 
   return (
-    <div className={`flex min-h-screen w-full ${isAdmin ? "admin-theme" : "teacher-theme"}`}>
+    <div className={`flex min-h-screen w-full overflow-hidden ${isAdmin ? "admin-theme" : "teacher-theme"}`}>
       {/* Mobile sidebar toggle button */}
       {isMobile && (
         <Button 
@@ -52,9 +52,9 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
         <Sidebar onCloseSidebar={() => setSidebarOpen(false)} />
       </div>
       
-      <div className={`flex-1 ${isMobile ? "pt-16" : ""}`}>
+      <div className={`flex-1 overflow-hidden ${isMobile ? "pt-16 pb-20" : ""}`}>
         <BackgroundPattern isAdmin={isAdmin}>
-          <div className="p-3 sm:p-4 md:p-6">
+          <div className="p-3 sm:p-4 md:p-6 overflow-y-auto max-h-full">
             <div className="max-w-7xl mx-auto">
               <RoleBadge isAdmin={isAdmin} isLoading={isLoading} />
               <div className="animate-fadeIn">{children}</div>

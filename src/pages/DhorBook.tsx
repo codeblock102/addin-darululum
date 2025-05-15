@@ -92,8 +92,6 @@ const DhorBookPage = () => {
     console.log("Realtime update detected in DhorBook page, refreshing data");
   });
   
-  console.log("Current view mode:", viewMode, "teacherId:", currentTeacherId, "realtime subscribed:", isSubscribed);
-
   // Filter students based on search query
   const filteredStudents = students?.filter(student => 
     student.name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -101,15 +99,15 @@ const DhorBookPage = () => {
 
   return (
     <DashboardLayout>
-      <div className="space-y-4 sm:space-y-6">
+      <div className="space-y-4 sm:space-y-6 pb-16">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
           <div>
-            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold mb-1 sm:mb-2">Progress Book System</h1>
-            <p className="text-sm text-gray-500 dark:text-gray-400">
-              Comprehensive student progress tracking through Dhor Book entries
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold mb-1 sm:mb-2">Progress Book</h1>
+            <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">
+              Track student progress with Dhor Book entries
             </p>
           </div>
-          <Button size="sm" className="flex items-center gap-2 text-xs sm:text-sm">
+          <Button size="sm" className="flex items-center gap-2 text-xs sm:text-sm whitespace-nowrap">
             <Book className="h-3 w-3 sm:h-4 sm:w-4" />
             <span>Export Records</span>
           </Button>
@@ -126,29 +124,29 @@ const DhorBookPage = () => {
 
         {/* View mode tabs */}
         <Card className="mt-4 sm:mt-6">
-          <CardContent className="p-3 sm:p-6">
+          <CardContent className="p-2 sm:p-6">
             <Tabs value={viewMode} onValueChange={(value) => setViewMode(value as "daily" | "classroom")}>
-              <div className="mb-4 sm:mb-6">
+              <div className="mb-4">
                 <TabsList className="w-full grid grid-cols-2">
-                  <TabsTrigger value="daily" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
+                  <TabsTrigger value="daily" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm py-1.5">
                     <Book className="h-3 w-3 sm:h-4 sm:w-4" />
                     <span>Daily Records</span>
                   </TabsTrigger>
-                  <TabsTrigger value="classroom" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
+                  <TabsTrigger value="classroom" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm py-1.5">
                     <Users className="h-3 w-3 sm:h-4 sm:w-4" />
-                    <span>Classroom Records</span>
+                    <span>Classroom</span>
                   </TabsTrigger>
                 </TabsList>
               </div>
 
               <TabsContent value="daily">
                 <Tabs value={activeTab} onValueChange={setActiveTab}>
-                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4 mb-3 sm:mb-4">
-                    <div className="overflow-x-auto w-full sm:w-auto">
-                      <TabsList className="flex-nowrap min-w-max">
-                        <TabsTrigger value="all" className="text-xs sm:text-sm">All Students</TabsTrigger>
-                        <TabsTrigger value="recent" className="text-xs sm:text-sm">Recent Entries</TabsTrigger>
-                        <TabsTrigger value="reports" className="text-xs sm:text-sm">Reports</TabsTrigger>
+                  <div className="flex flex-col space-y-3 sm:space-y-0 sm:flex-row sm:justify-between sm:items-center mb-3">
+                    <div className="overflow-x-auto pb-2 sm:pb-0">
+                      <TabsList className="flex-nowrap w-full sm:w-auto">
+                        <TabsTrigger value="all" className="text-xs whitespace-nowrap">All Students</TabsTrigger>
+                        <TabsTrigger value="recent" className="text-xs whitespace-nowrap">Recent Entries</TabsTrigger>
+                        <TabsTrigger value="reports" className="text-xs whitespace-nowrap">Reports</TabsTrigger>
                       </TabsList>
                     </div>
 
@@ -164,52 +162,50 @@ const DhorBookPage = () => {
                   </div>
 
                   <TabsContent value="all">
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-3 sm:gap-6 mt-3 sm:mt-4">
-                      <div className="md:col-span-1">
-                        <div className="space-y-3 sm:space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-3">
+                      <div className="md:col-span-1 space-y-3">
+                        <div>
+                          <h3 className="mb-1 sm:mb-2 text-xs sm:text-sm font-medium">Select a student</h3>
+                          <Select
+                            value={selectedStudentId || undefined}
+                            onValueChange={setSelectedStudentId}
+                          >
+                            <SelectTrigger className="text-xs sm:text-sm">
+                              <SelectValue placeholder="Choose a student" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {filteredStudents?.map(student => (
+                                <SelectItem key={student.id} value={student.id} className="text-xs sm:text-sm">
+                                  {student.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        
+                        {isAdmin && (
                           <div>
-                            <h3 className="mb-1 sm:mb-2 text-xs sm:text-sm font-medium">Select a student</h3>
+                            <h3 className="mb-1 sm:mb-2 text-xs sm:text-sm font-medium">Select teacher</h3>
                             <Select
-                              value={selectedStudentId || undefined}
-                              onValueChange={setSelectedStudentId}
+                              value={selectedTeacherId || (teachers?.[0]?.id || undefined)}
+                              onValueChange={setSelectedTeacherId}
                             >
                               <SelectTrigger className="text-xs sm:text-sm">
-                                <SelectValue placeholder="Choose a student" />
+                                <SelectValue placeholder="Choose a teacher" />
                               </SelectTrigger>
                               <SelectContent>
-                                {filteredStudents?.map(student => (
-                                  <SelectItem key={student.id} value={student.id} className="text-xs sm:text-sm">
-                                    {student.name}
+                                {teachers?.map(teacher => (
+                                  <SelectItem key={teacher.id} value={teacher.id} className="text-xs sm:text-sm">
+                                    {teacher.name}
                                   </SelectItem>
                                 ))}
+                                {(!teachers || teachers.length === 0) && (
+                                  <SelectItem value="default" className="text-xs sm:text-sm">Default Teacher</SelectItem>
+                                )}
                               </SelectContent>
                             </Select>
                           </div>
-                          
-                          {isAdmin && (
-                            <div>
-                              <h3 className="mb-1 sm:mb-2 text-xs sm:text-sm font-medium">Select teacher</h3>
-                              <Select
-                                value={selectedTeacherId || (teachers?.[0]?.id || undefined)}
-                                onValueChange={setSelectedTeacherId}
-                              >
-                                <SelectTrigger className="text-xs sm:text-sm">
-                                  <SelectValue placeholder="Choose a teacher" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  {teachers?.map(teacher => (
-                                    <SelectItem key={teacher.id} value={teacher.id} className="text-xs sm:text-sm">
-                                      {teacher.name}
-                                    </SelectItem>
-                                  ))}
-                                  {(!teachers || teachers.length === 0) && (
-                                    <SelectItem value="default" className="text-xs sm:text-sm">Default Teacher</SelectItem>
-                                  )}
-                                </SelectContent>
-                              </Select>
-                            </div>
-                          )}
-                        </div>
+                        )}
                       </div>
                       
                       <div className="md:col-span-3">
@@ -219,8 +215,8 @@ const DhorBookPage = () => {
                             teacherId={isTeacher ? teacherData?.id : (selectedTeacherId || teachers?.[0]?.id || 'default')} 
                           />
                         ) : (
-                          <div className="border rounded-lg flex items-center justify-center h-[300px] sm:h-[400px] bg-muted/20">
-                            <div className="text-center">
+                          <div className="border rounded-lg flex items-center justify-center h-[200px] sm:h-[300px] bg-muted/20">
+                            <div className="text-center px-4">
                               <Book className="h-8 w-8 sm:h-10 sm:w-10 mx-auto mb-3 sm:mb-4 text-muted-foreground" />
                               <h3 className="text-base sm:text-lg font-medium mb-1">No Student Selected</h3>
                               <p className="text-xs sm:text-sm text-muted-foreground max-w-sm mx-auto">
@@ -234,7 +230,7 @@ const DhorBookPage = () => {
                   </TabsContent>
                   
                   <TabsContent value="recent">
-                    <div className="mt-3 sm:mt-4">
+                    <div className="mt-3">
                       <p className="text-muted-foreground text-center py-8 sm:py-10 text-xs sm:text-sm">
                         Recent Dhor Book entries across all students will be displayed here.
                       </p>
@@ -242,7 +238,7 @@ const DhorBookPage = () => {
                   </TabsContent>
                   
                   <TabsContent value="reports">
-                    <div className="mt-3 sm:mt-4">
+                    <div className="mt-3">
                       <p className="text-muted-foreground text-center py-8 sm:py-10 text-xs sm:text-sm">
                         Generate and view reports based on Dhor Book data.
                       </p>
