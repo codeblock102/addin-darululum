@@ -8,12 +8,15 @@ export function useIsMobile() {
 
   React.useEffect(() => {
     const mql = window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT - 1}px)`)
-    const onChange = () => {
+    
+    const handleChange = () => {
       setIsMobile(window.innerWidth < MOBILE_BREAKPOINT)
     }
-    mql.addEventListener("change", onChange)
-    setIsMobile(window.innerWidth < MOBILE_BREAKPOINT)
-    return () => mql.removeEventListener("change", onChange)
+    
+    mql.addEventListener("change", handleChange)
+    handleChange() // Set initial value
+    
+    return () => mql.removeEventListener("change", handleChange)
   }, [])
 
   return !!isMobile
@@ -21,7 +24,20 @@ export function useIsMobile() {
 
 // Add the useMediaQuery hook as an alias to useIsMobile for compatibility
 export const useMediaQuery = (query: string) => {
-  // We're ignoring the query parameter since our useIsMobile is hardcoded to check for mobile breakpoint
-  // In a more complete implementation, this would use the query parameter
-  return useIsMobile();
+  const [matches, setMatches] = React.useState(false)
+  
+  React.useEffect(() => {
+    const mediaQuery = window.matchMedia(query)
+    
+    const handleChange = () => {
+      setMatches(mediaQuery.matches)
+    }
+    
+    mediaQuery.addEventListener("change", handleChange)
+    handleChange() // Set initial value
+    
+    return () => mediaQuery.removeEventListener("change", handleChange)
+  }, [query])
+
+  return matches
 };
