@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -77,26 +76,29 @@ export const TeacherGrading = ({ teacherId }: GradingProps) => {
             };
           }
           
-          // Check if progressData is valid and not an error
-          if (progressData && progressData.length > 0 && !isQueryError(progressData[0])) {
-            const progress = progressData[0];
-            return {
-              id: student.id,
-              name: student.name,
-              status: student.status,
-              current_surah: progress.current_surah,
-              current_juz: progress.current_juz,
-              memorization_quality: progress.memorization_quality,
-              tajweed_level: progress.tajweed_level,
-            };
-          } else {
-            // Return basic student info without progress data
-            return {
-              id: student.id,
-              name: student.name,
-              status: student.status,
-            };
+          // Properly handle the case when progressData exists but might be empty
+          if (progressData && progressData.length > 0) {
+            // Ensure we're not trying to access properties on an error object
+            if (!isQueryError(progressData[0])) {
+              const progress = progressData[0];
+              return {
+                id: student.id,
+                name: student.name,
+                status: student.status,
+                current_surah: progress.current_surah,
+                current_juz: progress.current_juz,
+                memorization_quality: progress.memorization_quality,
+                tajweed_level: progress.tajweed_level,
+              };
+            }
           }
+          
+          // Return basic student info without progress data
+          return {
+            id: student.id,
+            name: student.name,
+            status: student.status,
+          };
         })
       );
       
