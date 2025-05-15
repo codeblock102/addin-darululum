@@ -6,8 +6,6 @@ import { LoadingSpinner } from "./dashboard/LoadingSpinner";
 import { BackgroundPattern } from "./dashboard/BackgroundPattern";
 import { RoleBadge } from "./dashboard/RoleBadge";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { Button } from "@/components/ui/button";
-import { Menu, X } from "lucide-react";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -31,25 +29,13 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
 
   return (
     <div className={`flex min-h-screen w-full overflow-hidden ${isAdmin ? "admin-theme" : "teacher-theme"}`}>
-      {/* Mobile sidebar toggle button - ALWAYS visible */}
-      {isMobile && (
-        <Button 
-          variant="ghost" 
-          size="icon" 
-          className="fixed top-4 left-4 z-50 bg-background/80 backdrop-blur-sm shadow-sm"
-          onClick={toggleSidebar}
-        >
-          {sidebarOpen ? <X size={20} /> : <Menu size={20} />}
-        </Button>
-      )}
-      
       {/* Sidebar with conditional display on mobile */}
       <div className={`
         ${sidebarOpen ? "translate-x-0" : "-translate-x-full"} 
         transition-transform duration-300 ease-in-out
         fixed inset-y-0 left-0 z-40 w-64 lg:relative lg:translate-x-0
       `}>
-        <Sidebar onCloseSidebar={() => setSidebarOpen(false)} />
+        <Sidebar onCloseSidebar={() => setSidebarOpen(false)} toggleSidebar={toggleSidebar} />
       </div>
       
       <div className={`flex-1 overflow-hidden ${isMobile ? "pt-16 pb-20" : ""}`}>
