@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2 } from "lucide-react";
+import { Progress } from "@/types/progress";
 
 interface StudentProgressProps {
   studentId: string;
@@ -23,7 +24,7 @@ export const StudentProgress = ({ studentId }: StudentProgressProps) => {
         .single();
 
       if (error) throw error;
-      return data;
+      return data as unknown as Progress;
     },
   });
 
@@ -71,7 +72,11 @@ export const StudentProgress = ({ studentId }: StudentProgressProps) => {
             </div>
             <div>
               <p className="text-sm font-medium">Completed Juz</p>
-              <p className="text-2xl font-bold">{progress?.completed_juz}</p>
+              <p className="text-2xl font-bold">
+                {Array.isArray(progress?.completed_juz) 
+                  ? progress?.completed_juz?.length
+                  : progress?.completed_juz}
+              </p>
             </div>
           </div>
         </CardContent>

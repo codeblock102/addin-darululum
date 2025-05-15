@@ -8,7 +8,7 @@ export interface Progress {
   verses_memorized?: number;
   date?: string;
   current_juz?: number;
-  completed_juz?: number;
+  completed_juz?: number[] | number; // Updated to support both number and array
   memorization_quality?: 'excellent' | 'good' | 'average' | 'needsWork' | 'horrible';
   last_revision_date?: string;
   created_at: string;
@@ -71,7 +71,7 @@ export interface Message {
   read_at?: string;
   category?: MessageCategory;
   updated_at?: string;
-  parent_message_id?: string; // Added this field to fix TypeScript error
+  parent_message_id?: string;
 }
 
 export type MessageType = 'direct' | 'announcement' | 'feedback';
@@ -82,4 +82,21 @@ export interface MessageRecipient {
   name: string;
   type: "student" | "teacher" | "parent" | "admin";
   isSpecial?: boolean; // Flag to indicate if this is a special recipient (not using UUID)
+}
+
+// Add interfaces for the chart and export components
+export interface ProgressChartsProps {
+  progressData: Progress[];
+  sabaqParaData?: any[];
+  juzRevisionsData?: any[];
+}
+
+export interface ExportOptionsProps {
+  studentId: string;
+  studentName: string;
+  progressData: Progress[];
+  attendanceData?: any[];
+  sabaqParaData?: any[];
+  juzRevisionsData?: any[];
+  toast: any;
 }
