@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -43,10 +42,13 @@ export function ClassroomRecords({ teacherId }: ClassroomRecordsProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [recordType, setRecordType] = useState<"all" | "incomplete" | "complete">("all");
   
+  console.log("ClassroomRecords component mounted for teacher:", teacherId, "selected date:", selectedDate);
+  
   // Fetch students associated with this teacher
-  const { data: teacherStudents, isLoading: studentsLoading } = useQuery({
+  const { data: teacherStudents, isLoading: studentsLoading, error: studentsError } = useQuery({
     queryKey: ["teacher-students", teacherId],
     queryFn: async () => {
+      console.log("Fetching teacher's students for:", teacherId);
       const { data, error } = await supabase
         .from("students_teachers")
         .select("student_name")
@@ -55,12 +57,15 @@ export function ClassroomRecords({ teacherId }: ClassroomRecordsProps) {
 
       if (error) {
         console.error("Error fetching teacher's students:", error);
-        return [];
+        throw error;
       }
 
       if (!data || data.length === 0) {
+        console.log("No students found for teacher:", teacherId);
         return [];
       }
+
+      console.log("Found students for teacher:", data.length);
 
       // Get full student details
       const studentPromises = data.map(async ({ student_name }) => {
@@ -84,14 +89,16 @@ export function ClassroomRecords({ teacherId }: ClassroomRecordsProps) {
   });
 
   // Fetch records for the given date
-  const { data: recordsData, isLoading: recordsLoading } = useQuery({
+  const { data: recordsData, isLoading: recordsLoading, error: recordsError } = useQuery({
     queryKey: ["classroom-records", selectedDate, teacherId],
     queryFn: async () => {
       if (!teacherStudents || teacherStudents.length === 0) {
+        console.log("No students to fetch records for");
         return [];
       }
 
       const studentIds = teacherStudents.map((student) => student?.id).filter(Boolean);
+      console.log("Fetching records for student IDs:", studentIds, "date:", selectedDate);
 
       // Fetch progress records (sabaq)
       const { data: progressData, error: progressError } = await supabase
@@ -125,6 +132,10 @@ export function ClassroomRecords({ teacherId }: ClassroomRecordsProps) {
       if (juzRevisionsError) {
         console.error("Error fetching juz revisions:", juzRevisionsError);
       }
+
+      console.log("Records fetched - Progress:", progressData?.length || 0, 
+                  "Sabaq Para:", sabaqParaData?.length || 0, 
+                  "Juz Revisions:", juzRevisionsData?.length || 0);
 
       // Create summary for each student
       const studentSummaries: StudentRecordSummary[] = teacherStudents.map((student) => {
@@ -225,9 +236,21 @@ export function ClassroomRecords({ teacherId }: ClassroomRecordsProps) {
   };
 
   const stats = getCompletionStats();
+  const isLoading = studentsLoading || recordsLoading;
+  const hasError = studentsError || recordsError;
 
   return (
     <div className="space-y-6">
+      {hasError && (
+        <Card className="border-red-300 bg-red-50 dark:bg-red-900/10">
+          <CardContent className="p-4">
+            <p className="text-red-600 dark:text-red-400">
+              Error loading classroom data. Please try refreshing the page.
+            </p>
+          </CardContent>
+        </Card>
+      )}
+      
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center justify-between">
@@ -246,7 +269,7 @@ export function ClassroomRecords({ teacherId }: ClassroomRecordsProps) {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          {(studentsLoading || recordsLoading) ? (
+          {isLoading ? (
             <div className="flex justify-center py-12">
               <Loader2 className="h-8 w-8 animate-spin" />
             </div>
@@ -285,7 +308,7 @@ export function ClassroomRecords({ teacherId }: ClassroomRecordsProps) {
                 </Card>
               </div>
               
-              <div className="flex justify-between items-center mb-4">
+              <div className="flex flex-col md:flex-row justify-between md:items-center gap-4 mb-4">
                 <div className="flex items-center gap-2 w-full max-w-xs">
                   <Search className="h-4 w-4 text-muted-foreground" />
                   <Input 
@@ -364,7 +387,11 @@ export function ClassroomRecords({ teacherId }: ClassroomRecordsProps) {
                             </div>
                           </TableCell>
                           <TableCell className="text-right">
-                            <Button variant="ghost" size="sm">
+                            <Button 
+                              variant="ghost" 
+                              size="sm" 
+                              onClick={() => window.location.href = `/dhor-book?studentId=${record.id}`}
+                            >
                               View Details
                             </Button>
                           </TableCell>
