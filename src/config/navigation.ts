@@ -12,6 +12,7 @@ export const adminNavItems: NavItem[] = [
   { href: "/settings", label: "Settings", icon: Settings, description: "System configuration" },
 ];
 
+// These items are no longer used in the sidebar but kept for reference
 export const teacherNavItems: NavItem[] = [
   { href: "/teacher-portal", label: "Dashboard", icon: Home, description: "Teacher dashboard" },
   { href: "/teacher-portal?tab=students", label: "My Students", icon: Users, description: "Manage your students" },
