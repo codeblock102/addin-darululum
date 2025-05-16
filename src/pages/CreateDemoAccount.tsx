@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { createMuftiAmmarAccount } from "@/utils/createTeacherAccount";
+import { createMuftiAmmarAccount, createNormalizedUsername } from "@/utils/createTeacherAccount";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/components/ui/use-toast";
@@ -12,6 +12,10 @@ const CreateDemoAccount = () => {
   const [result, setResult] = useState<any>(null);
   const { toast } = useToast();
   const navigate = useNavigate();
+  
+  // Pre-calculate the username that will be generated
+  const demoName = "Mufti Ammar Mulla";
+  const demoUsername = createNormalizedUsername(demoName);
   
   const handleCreateAccount = async () => {
     setIsLoading(true);
@@ -51,14 +55,22 @@ const CreateDemoAccount = () => {
       <Card className="w-full max-w-md shadow-lg">
         <CardHeader>
           <CardTitle>Create Demo Account</CardTitle>
-          <CardDescription>Create a demo teacher account for Mufti Ammar</CardDescription>
+          <CardDescription>Create a demo teacher account for Mufti Ammar Mulla</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <p><strong>Name:</strong> Mufti Ammar</p>
+            <p><strong>Name:</strong> {demoName}</p>
             <p><strong>Email:</strong> Ammarmulla21@gmail.com</p>
             <p><strong>Password:</strong> Ammarmulla2021</p>
-            <p><strong>Username:</strong> mufti.ammar</p>
+            <p><strong>Username:</strong> {demoUsername}</p>
+            <div className="bg-amber-50 p-3 rounded border border-amber-200 mt-3">
+              <p className="text-amber-800 text-sm font-medium">After creating the account, you can log in using:</p>
+              <ul className="list-disc pl-5 text-sm text-amber-700 mt-1">
+                <li>Username: <span className="font-mono">{demoUsername}</span></li>
+                <li>Email: <span className="font-mono">Ammarmulla21@gmail.com</span></li>
+                <li>Password: <span className="font-mono">Ammarmulla2021</span></li>
+              </ul>
+            </div>
           </div>
           
           {result && (

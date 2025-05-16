@@ -12,23 +12,44 @@ export const createNormalizedUsername = (name: string): string => {
 
 export const createTeacherWithAccount = async (name: string, email: string, password: string) => {
   try {
-    // 1. Create teacher record in the teachers table
-    const { data: teacherData, error: teacherError } = await supabase
+    console.log(`Attempting to create account for ${name} with email ${email}`);
+    
+    // Check if teacher already exists with this email
+    const { data: existingTeacher } = await supabase
       .from("teachers")
-      .insert([{
-        name: name,
-        email: email,
-        subject: "Islamic Studies",
-        experience: "10+ years",
-      }])
-      .select();
+      .select("id, name, email")
+      .eq("email", email)
+      .single();
+    
+    let teacherId = existingTeacher?.id;
+    let teacherData = existingTeacher;
+    
+    if (!existingTeacher) {
+      // 1. Create teacher record in the teachers table
+      const { data: newTeacherData, error: teacherError } = await supabase
+        .from("teachers")
+        .insert([{
+          name: name,
+          email: email,
+          subject: "Islamic Studies",
+          experience: "10+ years",
+        }])
+        .select();
 
-    if (teacherError) {
-      throw teacherError;
-    }
+      if (teacherError) {
+        console.error("Teacher creation error:", teacherError);
+        throw teacherError;
+      }
 
-    if (!teacherData || teacherData.length === 0) {
-      throw new Error("Failed to create teacher profile");
+      if (!newTeacherData || newTeacherData.length === 0) {
+        throw new Error("Failed to create teacher profile");
+      }
+      
+      teacherId = newTeacherData[0].id;
+      teacherData = newTeacherData[0];
+      console.log("Teacher record created:", teacherData);
+    } else {
+      console.log("Teacher already exists:", existingTeacher);
     }
 
     // 2. Generate username from name
@@ -41,24 +62,28 @@ export const createTeacherWithAccount = async (name: string, email: string, pass
       options: {
         data: {
           username: username,
-          teacher_id: teacherData[0].id,
+          teacher_id: teacherId,
           role: 'teacher'
         }
       }
     });
 
     if (userError) {
+      console.error("User account creation error:", userError);
       throw userError;
     }
+    
+    console.log("User account created:", userData);
 
     return {
       success: true,
-      teacher: teacherData[0],
+      teacher: teacherData,
       user: userData,
       username: username,
       message: `Teacher account created successfully. Username: ${username}`
     };
   } catch (error: any) {
+    console.error("Teacher account creation error:", error);
     return {
       success: false,
       error: error.message || "Failed to create teacher account"
@@ -69,7 +94,7 @@ export const createTeacherWithAccount = async (name: string, email: string, pass
 // Execute the account creation for Mufti Ammar
 export const createMuftiAmmarAccount = async () => {
   const result = await createTeacherWithAccount(
-    "Mufti Ammar", 
+    "Mufti Ammar Mulla", 
     "Ammarmulla21@gmail.com", 
     "Ammarmulla2021"
   );
