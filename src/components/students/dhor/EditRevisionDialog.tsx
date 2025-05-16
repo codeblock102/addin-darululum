@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQueryClient, useMutation } from "@tanstack/react-query";
@@ -24,7 +24,7 @@ interface EditRevisionDialogProps {
 
 const formSchema = z.object({
   juz_number: z.number().min(1).max(30),
-  memorization_quality: z.string(),
+  memorization_quality: z.enum(["excellent", "good", "average", "poor", "unsatisfactory"]),
   revision_date: z.string(),
   notes: z.string().optional(),
 });
@@ -52,7 +52,7 @@ export function EditRevisionDialog({
   });
 
   // Fetch revision data when the dialog opens
-  useState(() => {
+  useEffect(() => {
     if (open && revisionId) {
       setIsLoading(true);
       supabase

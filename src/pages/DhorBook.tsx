@@ -1,4 +1,5 @@
-import { useState } from "react";
+
+import { useState, useEffect } from "react";
 import { DashboardLayout } from "@/components/layouts/DashboardLayout";
 import { Card, CardContent } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
@@ -10,8 +11,7 @@ import { Input } from "@/components/ui/input";
 import { DhorBook as DhorBookComponent } from "@/components/dhor-book/DhorBook";
 import { ClassroomRecords } from "@/components/dhor-book/ClassroomRecords";
 import { TeacherStatsSection } from "@/components/teachers/TeacherStatsSection";
-import { Book, Search, Activity, Users } from "lucide-react";
-import { useUserRole } from "@/hooks/useUserRole";
+import { Book, Search, Users } from "lucide-react";
 import { useTeacherStatus } from "@/hooks/useTeacherStatus";
 import { useRealtimeLeaderboard } from "@/hooks/useRealtimeLeaderboard";
 
@@ -67,15 +67,6 @@ const DhorBookPage = () => {
     refetchInterval: 30000, // Refetch every 30 seconds
   });
 
-  // Set up realtime updates to ensure both tabs are in sync
-  const currentTeacherId = isTeacher 
-    ? teacherData?.id 
-    : (selectedTeacherId || (teachers && teachers.length > 0 ? teachers[0].id : undefined));
-  
-  const { isSubscribed } = useRealtimeLeaderboard(currentTeacherId, () => {
-    console.log("Realtime update detected in DhorBook page, refreshing data");
-  });
-  
   // Fetch active teachers for the teacher selector
   const { data: teachers } = useQuery({
     queryKey: ['active-teachers'],
@@ -91,6 +82,15 @@ const DhorBookPage = () => {
       }
       return data || [];
     }
+  });
+  
+  // Set up realtime updates to ensure both tabs are in sync
+  const currentTeacherId = isTeacher 
+    ? teacherData?.id 
+    : (selectedTeacherId || (teachers && teachers.length > 0 ? teachers[0]?.id : undefined));
+  
+  const { isSubscribed } = useRealtimeLeaderboard(currentTeacherId, () => {
+    console.log("Realtime update detected in DhorBook page, refreshing data");
   });
   
   // Filter students based on search query
@@ -188,7 +188,7 @@ const DhorBookPage = () => {
                           <div>
                             <h3 className="mb-1 sm:mb-2 text-xs sm:text-sm font-medium">Select teacher</h3>
                             <Select
-                              value={selectedTeacherId || (teachers?.[0]?.id || undefined)}
+                              value={selectedTeacherId || (teachers && teachers.length > 0 ? teachers[0]?.id : undefined)}
                               onValueChange={setSelectedTeacherId}
                             >
                               <SelectTrigger className="text-xs sm:text-sm">

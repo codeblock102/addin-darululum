@@ -1,5 +1,5 @@
 
-import { DailyActivityEntry } from "./DhorBook";
+import { DailyActivityEntry } from "@/types/dhor-book";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
