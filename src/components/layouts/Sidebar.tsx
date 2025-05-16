@@ -1,9 +1,9 @@
 
 import { Link } from "react-router-dom";
 import { useEffect } from "react";
-import { useMediaQuery } from "@/hooks/use-mobile";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { Button } from "@/components/ui/button";
-import { ShieldCheck, BookOpen, ChevronRight } from "lucide-react";
+import { ShieldCheck, BookOpen, ChevronLeft, X } from "lucide-react";
 import { adminNavItems, teacherNavItems } from "@/config/navigation";
 import { useTeacherStatus } from "@/hooks/useTeacherStatus";
 import { SidebarNav } from "./sidebar/SidebarNav";
@@ -15,7 +15,7 @@ interface SidebarProps {
 }
 
 export const Sidebar = ({ onCloseSidebar, toggleSidebar }: SidebarProps) => {
-  const isMobile = useMediaQuery("(max-width: 768px)");
+  const isMobile = useIsMobile();
   const { isTeacher, isAdmin } = useTeacherStatus();
   const navItems = isTeacher ? teacherNavItems : adminNavItems;
   
@@ -26,12 +26,10 @@ export const Sidebar = ({ onCloseSidebar, toggleSidebar }: SidebarProps) => {
     header: isAdmin ? "border-b border-white/10" : "border-b",
   };
 
-  const bulgeColor = isAdmin ? "bg-primary/90" : "bg-[#9b87f5]";
-
   // Handle mobile navigation events
   useEffect(() => {
     const handleNavigation = () => {
-      if (onCloseSidebar) {
+      if (onCloseSidebar && isMobile) {
         onCloseSidebar();
       }
     };
@@ -41,24 +39,24 @@ export const Sidebar = ({ onCloseSidebar, toggleSidebar }: SidebarProps) => {
     return () => {
       window.removeEventListener('navigate-mobile', handleNavigation);
     };
-  }, [onCloseSidebar]);
+  }, [onCloseSidebar, isMobile]);
 
   return (
-    <div className="relative h-full">
-      {/* Toggle button "bulge" that's part of the sidebar */}
-      {isMobile && toggleSidebar && (
+    <div className="relative h-full flex flex-col">
+      {/* Close button for mobile */}
+      {isMobile && onCloseSidebar && (
         <Button 
           variant="ghost" 
           size="icon" 
-          className={`absolute -right-9 top-4 z-50 rounded-r-md rounded-l-none border-l-0 shadow-md ${bulgeColor} text-white`}
-          onClick={toggleSidebar}
+          className={`absolute top-3 right-3 z-50 ${isAdmin ? "text-white hover:bg-white/10" : ""}`}
+          onClick={onCloseSidebar}
         >
-          <ChevronRight className="h-4 w-4" />
+          <X className="h-5 w-5" />
         </Button>
       )}
       
       <div className={`flex h-full w-full flex-col ${styles.sidebar}`}>
-        <div className={`flex h-14 sm:h-16 items-center ${styles.header} justify-between pl-4 pr-2 sm:pl-5 sm:pr-4`}>
+        <div className={`flex h-14 sm:h-16 items-center ${styles.header} justify-between pl-4 pr-5 sm:pl-5`}>
           <Link 
             to={isTeacher ? "/teacher-portal" : "/"} 
             className="flex items-center gap-2 font-semibold"
@@ -68,10 +66,22 @@ export const Sidebar = ({ onCloseSidebar, toggleSidebar }: SidebarProps) => {
             ) : (
               <BookOpen className="h-5 w-5 sm:h-6 sm:w-6" />
             )}
-            <span className="text-white text-sm sm:text-base">
+            <span className={`${isAdmin ? "text-white" : ""} text-sm sm:text-base`}>
               {isAdmin ? "Admin Portal" : "Teacher Portal"}
             </span>
           </Link>
+          
+          {!isMobile && toggleSidebar && (
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className={isAdmin ? "text-white hover:bg-white/10" : ""}
+              onClick={toggleSidebar}
+            >
+              <ChevronLeft className="h-4 w-4" />
+              <span className="sr-only">Collapse sidebar</span>
+            </Button>
+          )}
         </div>
         
         <div className="flex-1 overflow-auto py-2 sm:py-4">

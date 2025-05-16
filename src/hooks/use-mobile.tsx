@@ -7,16 +7,17 @@ export function useIsMobile() {
   const [isMobile, setIsMobile] = React.useState<boolean | undefined>(undefined)
 
   React.useEffect(() => {
-    const mql = window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT - 1}px)`)
-    
     const handleChange = () => {
       setIsMobile(window.innerWidth < MOBILE_BREAKPOINT)
     }
     
-    mql.addEventListener("change", handleChange)
-    handleChange() // Set initial value
+    // Add event listener
+    window.addEventListener("resize", handleChange)
     
-    return () => mql.removeEventListener("change", handleChange)
+    // Set initial value
+    handleChange()
+    
+    return () => window.removeEventListener("resize", handleChange)
   }, [])
 
   return !!isMobile
@@ -41,3 +42,12 @@ export const useMediaQuery = (query: string) => {
 
   return matches
 };
+
+// Added for better responsive design with specific breakpoints
+export const useBreakpoint = () => {
+  const isMobile = useMediaQuery("(max-width: 640px)")
+  const isTablet = useMediaQuery("(min-width: 641px) and (max-width: 1024px)")
+  const isDesktop = useMediaQuery("(min-width: 1025px)")
+
+  return { isMobile, isTablet, isDesktop }
+}

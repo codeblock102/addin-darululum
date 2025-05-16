@@ -41,7 +41,7 @@ export function useTeacherAccounts() {
           // Mock user data since we can't directly access auth.users
           let userData = null;
           
-          // If email exists, we could potentially check profiles or another public table
+          // If email exists, check profiles table
           if (teacher.email) {
             try {
               const { data: profileData } = await supabase
