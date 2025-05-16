@@ -22,6 +22,7 @@ import { Button } from "@/components/ui/button";
 import { Loader2, Search, User, UserCheck } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useNavigate } from "react-router-dom";
+import { AddStudentDialog } from "./students/AddStudentDialog";
 
 interface MyStudentsProps {
   teacherId: string;
@@ -92,10 +93,15 @@ export const MyStudents = ({ teacherId }: MyStudentsProps) => {
   return (
     <Card className="w-full overflow-hidden">
       <CardHeader>
-        <CardTitle className="text-xl">Students</CardTitle>
-        <CardDescription>
-          Students assigned to you
-        </CardDescription>
+        <div className="flex items-center justify-between">
+          <div>
+            <CardTitle className="text-xl">Students</CardTitle>
+            <CardDescription>
+              Students assigned to you
+            </CardDescription>
+          </div>
+          <AddStudentDialog teacherId={teacherId} />
+        </div>
         <div className="flex items-center space-x-2 mt-2">
           <div className="relative flex-1">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -199,7 +205,7 @@ export const MyStudents = ({ teacherId }: MyStudentsProps) => {
                   ? "No students found matching your search." 
                   : assignedStudents && assignedStudents.length > 0
                     ? "No student details available for your assignments."
-                    : "No students are currently assigned to you."}
+                    : "No students are currently assigned to you. Use the 'Add Student' button above to get started."}
               </div>
             )}
           </>

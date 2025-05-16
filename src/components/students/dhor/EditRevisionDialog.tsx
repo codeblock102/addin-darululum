@@ -77,8 +77,9 @@ export const EditRevisionDialog = ({
   const queryClient = useQueryClient();
   
   // Convert the database value to display value when initializing form
-  const initialDisplayQuality = revision.memorization_quality 
-    ? mapDbToDisplayQuality(revision.memorization_quality as DatabaseQualityValue) 
+  const dbQuality = revision.memorization_quality as DatabaseQualityValue | null;
+  const initialDisplayQuality = dbQuality 
+    ? mapDbToDisplayQuality(dbQuality) 
     : "average";
   
   const [formData, setFormData] = useState({
@@ -212,7 +213,7 @@ export const EditRevisionDialog = ({
             <Label htmlFor="memorization_quality">Memorization Quality</Label>
             <Select 
               value={formData.memorization_quality} 
-              onValueChange={(value: DisplayQualityValue) => setFormData(prev => ({ ...prev, memorization_quality: value }))}
+              onValueChange={(value: string) => setFormData(prev => ({ ...prev, memorization_quality: value as DisplayQualityValue }))}
             >
               <SelectTrigger id="memorization_quality">
                 <SelectValue placeholder="Select quality" />

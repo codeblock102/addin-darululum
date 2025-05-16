@@ -5,8 +5,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Loader2, Search, UserRound } from "lucide-react";
+import { Loader2, Search, UserPlus, UserRound } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { AddStudentDialog } from "../students/AddStudentDialog";
 
 interface StudentSearchProps {
   teacherId?: string;
@@ -80,10 +81,15 @@ export const StudentSearch = ({ teacherId }: StudentSearchProps) => {
   return (
     <Card className="h-auto lg:h-[350px]">
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Search className="h-5 w-5 text-primary" />
-          Find Student
-        </CardTitle>
+        <div className="flex items-center justify-between">
+          <CardTitle className="flex items-center gap-2">
+            <Search className="h-5 w-5 text-primary" />
+            Find Student
+          </CardTitle>
+          {teacherId && (
+            <AddStudentDialog teacherId={teacherId} />
+          )}
+        </div>
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
