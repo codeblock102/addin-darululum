@@ -318,19 +318,24 @@ export const TeacherAttendance = ({ teacherId }: TeacherAttendanceProps) => {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {attendanceRecords.map((record: any) => (
-                      <TableRow key={record.id}>
-                        <TableCell>
-                          {students?.find((s: any) => (s.student_id || s.id) === record.student_id)?.student_name || 'Unknown Student'}
-                        </TableCell>
-                        <TableCell>
-                          {getStatusBadge(record.status as AttendanceStatus)}
-                        </TableCell>
-                        <TableCell>
-                          {record.notes || '-'}
-                        </TableCell>
-                      </TableRow>
-                    ))}
+                    {attendanceRecords.map((record: any) => {
+                      // Find the matching student to display the name
+                      const studentName = students?.find((s: any) => 
+                        (s.student_id || s.id) === record.student_id
+                      )?.student_name || 'Unknown Student';
+                      
+                      return (
+                        <TableRow key={record.id}>
+                          <TableCell>{studentName}</TableCell>
+                          <TableCell>
+                            {getStatusBadge(record.status as AttendanceStatus)}
+                          </TableCell>
+                          <TableCell>
+                            {record.notes || '-'}
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
                   </TableBody>
                 </Table>
               )}
