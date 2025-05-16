@@ -34,22 +34,27 @@ export const TeacherAttendance = ({ teacherId }: TeacherAttendanceProps) => {
   const { data: students, isLoading: studentsLoading } = useQuery({
     queryKey: ['teacher-students', teacherId],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('students_teachers')
-        .select(`
-          id,
-          student_name,
-          student_id
-        `)
-        .eq('teacher_id', teacherId)
-        .eq('active', true);
+      try {
+        const { data, error } = await supabase
+          .from('students_teachers')
+          .select(`
+            id,
+            student_name,
+            student_id
+          `)
+          .eq('teacher_id', teacherId)
+          .eq('active', true);
+          
+        if (error) {
+          console.error('Error fetching students:', error);
+          return [];
+        }
         
-      if (error) {
-        console.error('Error fetching students:', error);
+        return data || [];
+      } catch (err) {
+        console.error('Exception fetching students:', err);
         return [];
       }
-      
-      return data;
     }
   });
   
@@ -72,7 +77,7 @@ export const TeacherAttendance = ({ teacherId }: TeacherAttendanceProps) => {
         return [];
       }
       
-      return data;
+      return data || [];
     },
     enabled: !!selectedStudent
   });
@@ -163,6 +168,19 @@ export const TeacherAttendance = ({ teacherId }: TeacherAttendanceProps) => {
     }
   };
   
+  // Helper function to safely get student name
+  const getStudentName = (studentId: string): string => {
+    if (!students || !Array.isArray(students)) return 'Unknown Student';
+    
+    const student = students.find((s: any) => 
+      (s.student_id || s.id) === studentId
+    );
+    
+    return student && typeof student === 'object' && 'student_name' in student 
+      ? student.student_name 
+      : 'Unknown Student';
+  };
+  
   return (
     <Card>
       <CardHeader>
@@ -177,7 +195,7 @@ export const TeacherAttendance = ({ teacherId }: TeacherAttendanceProps) => {
                 <SelectValue placeholder="Select student" />
               </SelectTrigger>
               <SelectContent>
-                {students?.map((student: any) => (
+                {Array.isArray(students) && students.map((student: any) => (
                   <SelectItem key={student.id} value={student.student_id || student.id}>
                     {student.student_name}
                   </SelectItem>
@@ -240,55 +258,57 @@ export const TeacherAttendance = ({ teacherId }: TeacherAttendanceProps) => {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {students?.filter((s: any) => s.student_id === selectedStudent || s.id === selectedStudent).map((student: any) => {
-                      const studentId = student.student_id || student.id;
-                      const attendanceRecord = getStudentAttendance(studentId);
-                      const status = attendanceRecord?.status || null;
-                      
-                      return (
-                        <TableRow key={studentId}>
-                          <TableCell>
-                            <div className="flex items-center gap-2">
-                              <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center">
-                                <UserRound className="h-4 w-4" />
+                    {Array.isArray(students) && students
+                      .filter((s: any) => s.student_id === selectedStudent || s.id === selectedStudent)
+                      .map((student: any) => {
+                        const studentId = student.student_id || student.id;
+                        const attendanceRecord = getStudentAttendance(studentId);
+                        const status = attendanceRecord?.status || null;
+                        
+                        return (
+                          <TableRow key={studentId}>
+                            <TableCell>
+                              <div className="flex items-center gap-2">
+                                <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center">
+                                  <UserRound className="h-4 w-4" />
+                                </div>
+                                <div>
+                                  <p className="font-medium">{student.student_name}</p>
+                                </div>
                               </div>
-                              <div>
-                                <p className="font-medium">{student.student_name}</p>
-                              </div>
-                            </div>
-                          </TableCell>
-                          <TableCell className="text-center">
-                            <Button 
-                              variant={status === 'present' ? 'default' : 'outline'}
-                              size="icon"
-                              className={status === 'present' ? 'bg-green-600 hover:bg-green-700' : ''}
-                              onClick={() => handleAttendanceChange(studentId, 'present')}
-                            >
-                              <Check className="h-4 w-4" />
-                            </Button>
-                          </TableCell>
-                          <TableCell className="text-center">
-                            <Button 
-                              variant={status === 'late' ? 'default' : 'outline'}
-                              size="icon"
-                              className={status === 'late' ? 'bg-yellow-600 hover:bg-yellow-700' : ''}
-                              onClick={() => handleAttendanceChange(studentId, 'late')}
-                            >
-                              <CalendarIcon className="h-4 w-4" />
-                            </Button>
-                          </TableCell>
-                          <TableCell className="text-center">
-                            <Button 
-                              variant={status === 'absent' ? 'default' : 'outline'}
-                              size="icon"
-                              className={status === 'absent' ? 'bg-red-600 hover:bg-red-700' : ''}
-                              onClick={() => handleAttendanceChange(studentId, 'absent')}
-                            >
-                              <X className="h-4 w-4" />
-                            </Button>
-                          </TableCell>
-                        </TableRow>
-                      );
+                            </TableCell>
+                            <TableCell className="text-center">
+                              <Button 
+                                variant={status === 'present' ? 'default' : 'outline'}
+                                size="icon"
+                                className={status === 'present' ? 'bg-green-600 hover:bg-green-700' : ''}
+                                onClick={() => handleAttendanceChange(studentId, 'present')}
+                              >
+                                <Check className="h-4 w-4" />
+                              </Button>
+                            </TableCell>
+                            <TableCell className="text-center">
+                              <Button 
+                                variant={status === 'late' ? 'default' : 'outline'}
+                                size="icon"
+                                className={status === 'late' ? 'bg-yellow-600 hover:bg-yellow-700' : ''}
+                                onClick={() => handleAttendanceChange(studentId, 'late')}
+                              >
+                                <CalendarIcon className="h-4 w-4" />
+                              </Button>
+                            </TableCell>
+                            <TableCell className="text-center">
+                              <Button 
+                                variant={status === 'absent' ? 'default' : 'outline'}
+                                size="icon"
+                                className={status === 'absent' ? 'bg-red-600 hover:bg-red-700' : ''}
+                                onClick={() => handleAttendanceChange(studentId, 'absent')}
+                              >
+                                <X className="h-4 w-4" />
+                              </Button>
+                            </TableCell>
+                          </TableRow>
+                        );
                     })}
                   </TableBody>
                 </Table>
@@ -318,24 +338,17 @@ export const TeacherAttendance = ({ teacherId }: TeacherAttendanceProps) => {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {attendanceRecords.map((record: any) => {
-                      // Find the matching student to display the name
-                      const studentName = students?.find((s: any) => 
-                        (s.student_id || s.id) === record.student_id
-                      )?.student_name || 'Unknown Student';
-                      
-                      return (
-                        <TableRow key={record.id}>
-                          <TableCell>{studentName}</TableCell>
-                          <TableCell>
-                            {getStatusBadge(record.status as AttendanceStatus)}
-                          </TableCell>
-                          <TableCell>
-                            {record.notes || '-'}
-                          </TableCell>
-                        </TableRow>
-                      );
-                    })}
+                    {attendanceRecords.map((record: any) => (
+                      <TableRow key={record.id}>
+                        <TableCell>{getStudentName(record.student_id)}</TableCell>
+                        <TableCell>
+                          {getStatusBadge(record.status as AttendanceStatus)}
+                        </TableCell>
+                        <TableCell>
+                          {record.notes || '-'}
+                        </TableCell>
+                      </TableRow>
+                    ))}
                   </TableBody>
                 </Table>
               )}
