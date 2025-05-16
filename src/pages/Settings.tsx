@@ -4,7 +4,7 @@ import { DashboardLayout } from "@/components/layouts/DashboardLayout";
 import { useSettings } from "@/hooks/useSettings";
 import { useUserRole } from "@/hooks/useUserRole";
 import { useNavigate } from "react-router-dom";
-import { toast } from "@/hooks/use-toast";
+import { useToast } from "@/components/ui/use-toast";
 import { Tabs } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Loader2 } from "lucide-react";
@@ -16,7 +16,7 @@ import { SettingsHeader } from "@/components/admin/settings/SettingsHeader";
 export default function Settings() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("appearance");
-  const { settings, updateSettings, isLoading, error } = useSettings();
+  const { settings, saveSettings, isLoading, error } = useSettings();
   const [isSaving, setIsSaving] = useState(false);
   const { isAdmin, isLoading: isRoleLoading } = useUserRole();
 
@@ -55,21 +55,13 @@ export default function Settings() {
 
   const handleUpdateSettings = async () => {
     setIsSaving(true);
-    const result = await updateSettings(settings);
+    await saveSettings(settings);
     setIsSaving(false);
     
-    if (result.success) {
-      toast({
-        title: "Settings updated",
-        description: "Your changes have been saved successfully."
-      });
-    } else {
-      toast({
-        title: "Failed to update settings",
-        description: "There was an error saving your changes.",
-        variant: "destructive"
-      });
-    }
+    toast({
+      title: "Settings updated",
+      description: "Your changes have been saved successfully."
+    });
   };
 
   return (
@@ -82,7 +74,7 @@ export default function Settings() {
               <div className="sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 pb-4">
                 <SettingsTabs />
               </div>
-              <SettingsContent settings={settings} updateSettings={updateSettings} />
+              <SettingsContent settings={settings} updateSettings={saveSettings} />
             </Tabs>
           </ScrollArea>
         </div>

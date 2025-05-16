@@ -1,4 +1,5 @@
-import { format, startOfWeek, addDays } from 'date-fns';
+
+import { format, startOfWeek, endOfWeek, addDays, addWeeks as dateAddWeeks, subWeeks as dateSubWeeks } from 'date-fns';
 
 /**
  * Gets the ISO date string (YYYY-MM-DD) for the start of the week (Sunday) for a given date.
@@ -9,7 +10,38 @@ export function getStartOfWeekISO(date: Date): string {
   // Assuming the week starts on Sunday
   const weekStart = startOfWeek(date, { weekStartsOn: 0 }); 
   return format(weekStart, 'yyyy-MM-dd');
-} 
+}
+
+/**
+ * Gets the ISO date string (YYYY-MM-DD) for the end of the week (Saturday) for a given date.
+ * @param date - The date object.
+ * @returns The ISO date string for the end of the week.
+ */
+export function getEndOfWeekISO(date: Date): string {
+  // Assuming the week ends on Saturday
+  const weekEnd = endOfWeek(date, { weekStartsOn: 0 });
+  return format(weekEnd, 'yyyy-MM-dd');
+}
+
+/**
+ * Adds specified number of weeks to a date
+ * @param date - The base date
+ * @param amount - Number of weeks to add
+ * @returns A new Date with weeks added
+ */
+export function addWeeks(date: Date, amount: number): Date {
+  return dateAddWeeks(date, amount);
+}
+
+/**
+ * Subtracts specified number of weeks from a date
+ * @param date - The base date
+ * @param amount - Number of weeks to subtract
+ * @returns A new Date with weeks subtracted
+ */
+export function subWeeks(date: Date, amount: number): Date {
+  return dateSubWeeks(date, amount);
+}
 
 /**
  * Gets an array of Date objects for each day of the week for a given date.
@@ -29,4 +61,4 @@ export function getWeekDates(dateInWeek: Date): Date[] {
     weekDates.push(addDays(weekStart, i));
   }
   return weekDates;
-} 
+}

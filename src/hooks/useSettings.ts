@@ -14,6 +14,45 @@ export interface SystemSettings {
   created_at: string;
   updated_at: string;
   settings?: Record<string, any>;
+  
+  // Additional properties that might be needed by components
+  appearance?: {
+    theme?: 'light' | 'dark' | 'system';
+    fontSize?: string;
+    colorScheme?: string;
+  };
+  notifications?: {
+    email?: boolean;
+    push?: boolean;
+    inApp?: boolean;
+  };
+  security?: {
+    twoFactor?: boolean;
+    passwordReset?: boolean;
+  };
+  academic?: {
+    grading?: string;
+    progress?: string;
+  };
+  data?: {
+    sync?: boolean;
+    export?: boolean;
+  };
+  integration?: {
+    apis?: string[];
+  };
+  localization?: {
+    language?: string;
+    dateFormat?: string;
+  };
+  user_experience?: {
+    onboarding?: boolean;
+    tips?: boolean;
+  };
+  advanced?: {
+    developerMode?: boolean;
+    debugMode?: boolean;
+  };
 }
 
 export const useSettings = () => {
@@ -34,8 +73,47 @@ export const useSettings = () => {
         notifications_enabled: true,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
-        settings: {}
-      };
+        settings: {},
+        
+        // Add placeholders for other required properties
+        appearance: {
+          theme: 'system',
+          fontSize: 'medium',
+          colorScheme: 'default',
+        },
+        notifications: {
+          email: true,
+          push: true,
+          inApp: true,
+        },
+        security: {
+          twoFactor: false,
+          passwordReset: true,
+        },
+        academic: {
+          grading: 'standard',
+          progress: 'weekly',
+        },
+        data: {
+          sync: true,
+          export: true,
+        },
+        integration: {
+          apis: [],
+        },
+        localization: {
+          language: 'en',
+          dateFormat: 'MM/DD/YYYY',
+        },
+        user_experience: {
+          onboarding: true,
+          tips: true,
+        },
+        advanced: {
+          developerMode: false,
+          debugMode: false,
+        },
+      } as SystemSettings;
     }
   });
 
@@ -103,6 +181,10 @@ export const useSettings = () => {
     } else {
       createSettingsMutation.mutate(newSettings as Omit<SystemSettings, 'id' | 'created_at' | 'updated_at'>);
     }
+    
+    return {
+      success: true
+    };
   };
 
   return {

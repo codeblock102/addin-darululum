@@ -38,12 +38,26 @@ export function useTeacherAccounts() {
       
       if (teachersData) {
         for (const teacher of teachersData) {
-          // Get user data by email
-          const { data: userData, error: userError } = await supabase
-            .from('users')
-            .select('*')
-            .eq('email', teacher.email)
-            .single();
+          // Mock user data since we can't directly access auth.users
+          let userData = null;
+          let userRole = "teacher";
+          
+          // If email exists, we could potentially check profiles or another public table
+          if (teacher.email) {
+            try {
+              const { data: profileData } = await supabase
+                .from('profiles')
+                .select('*')
+                .eq('username', teacher.email)
+                .maybeSingle();
+                
+              if (profileData) {
+                userData = profileData;
+              }
+            } catch (err) {
+              console.error("Error fetching profile data:", err);
+            }
+          }
             
           // Get classes assigned to this teacher
           const { data: classesData } = await supabase
@@ -61,8 +75,8 @@ export function useTeacherAccounts() {
           teacherAccounts.push({
             ...teacher,
             userId: userData?.id || null,
-            status: userData?.role === 'teacher' ? 'active' : 'suspended',
-            lastLogin: userData?.created_at || null,
+            status: userRole === 'teacher' ? 'active' : 'suspended',
+            lastLogin: userData?.created_at || teacher.created_at || null,
             classesCount: classesData?.length || 0,
             studentsCount: studentsData?.length || 0,
           });
