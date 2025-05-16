@@ -11,9 +11,18 @@ interface ClassSelectorProps {
   selectedClass?: string;
   setSelectedClass?: (value: string) => void;
   classesData?: any[];
+  label?: string;
 }
 
-export function ClassSelector({ classes, isLoading, form, selectedClass, setSelectedClass, classesData }: ClassSelectorProps) {
+export function ClassSelector({ 
+  classes, 
+  isLoading, 
+  form, 
+  selectedClass, 
+  setSelectedClass, 
+  classesData,
+  label = "Class"
+}: ClassSelectorProps) {
   // If we have direct props for value/onChange, use those (for components not using react-hook-form)
   const handleChange = (value: string) => {
     if (setSelectedClass) {
@@ -28,7 +37,7 @@ export function ClassSelector({ classes, isLoading, form, selectedClass, setSele
       name="class_id"
       render={({ field }) => (
         <FormItem>
-          <FormLabel className="text-gray-700 dark:text-gray-300">Class</FormLabel>
+          <FormLabel className="text-gray-700 dark:text-gray-300">{label}</FormLabel>
           <FormControl>
             <Select 
               onValueChange={(value) => {
@@ -47,7 +56,7 @@ export function ClassSelector({ classes, isLoading, form, selectedClass, setSele
                     Loading...
                   </div>
                 ) : (
-                  <SelectValue placeholder="Select a class" />
+                  <SelectValue placeholder={`Select a ${label.toLowerCase()}`} />
                 )}
               </SelectTrigger>
               <SelectContent>
