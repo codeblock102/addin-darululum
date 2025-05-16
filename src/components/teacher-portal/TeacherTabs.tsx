@@ -8,8 +8,7 @@ import {
   ClipboardList, 
   CalendarDays, 
   LineChart, 
-  MessageSquare,
-  Trophy 
+  MessageSquare
 } from "lucide-react";
 
 interface TeacherTabsProps {
@@ -46,11 +45,6 @@ export const TeacherTabs = ({ teacher, activeTab, onTabChange }: TeacherTabsProp
       id: "schedule", 
       label: "Schedule", 
       icon: <CalendarDays className="h-4 w-4" /> 
-    },
-    {
-      id: "leaderboard", 
-      label: "Leaderboard", 
-      icon: <Trophy className="h-4 w-4" />
     },
     { 
       id: "performance", 
