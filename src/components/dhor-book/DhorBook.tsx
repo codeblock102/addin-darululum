@@ -46,8 +46,7 @@ export function DhorBook({ studentId, teacherId }: DhorBookProps) {
 
   // Updated query key
   const dailyActivityQueryKey = ['student-daily-activity', studentId, currentWeekISO];
-  const summaryQueryKey = ['dhor-book-summary', studentId]; // Assuming this remains based on 'student_dhor_summaries'
-
+  
   const { data: dailyActivities, isLoading: activitiesLoading, refetch: refetchActivities } = useQuery<DailyActivityEntry[]>({
     queryKey: dailyActivityQueryKey,
     queryFn: async () => {
@@ -186,37 +185,17 @@ export function DhorBook({ studentId, teacherId }: DhorBookProps) {
     staleTime: 0,
   });
 
-  const { data: summary, refetch: refetchSummary } = useQuery<StudentDhorSummary | null>({
-    queryKey: summaryQueryKey,
-    queryFn: async () => {
-      console.log(`Fetching summary for student ${studentId}`);
-      
-      const { data, error } = await supabase
-        .from('student_dhor_summaries')
-        .select('*')
-        .eq('student_id', studentId)
-        .limit(1);
-
-      if (error) {
-        console.error("Error fetching student dhor summary:", error);
-        if (error.code !== 'PGRST116' && !error.message.includes("JSON object requested, multiple (or no) rows returned")) {
-             throw error;
-        }
-        return null;
-      }
-      
-      const summaryData = Array.isArray(data) ? data[0] : data;
-
-      if (summaryData) {
-        console.log("Fetched summary:", summaryData);
-        return summaryData as StudentDhorSummary;
-      } else {
-        console.log("No summary found for student, returning null.");
-        return null;
-      }
-    },
-    refetchOnWindowFocus: false,
-  });
+  // Create a mock summary since student_dhor_summaries table was dropped
+  const mockSummary: StudentDhorSummary = {
+    id: studentId,
+    student_id: studentId,
+    days_absent: 0,
+    total_points: 0,
+    total_detentions: 0,
+    last_updated_by: teacherId,
+    last_entry_date: new Date().toISOString(),
+    created_at: new Date().toISOString(),
+  };
 
   const { data: juzProgressData, isLoading: isLoadingJuzProgress } = useQuery({
     queryKey: ['student-juz-progress', studentId],
@@ -287,12 +266,9 @@ export function DhorBook({ studentId, teacherId }: DhorBookProps) {
   const refreshData = useCallback(() => {
     console.log("Refreshing data manually...");
     queryClient.invalidateQueries({ queryKey: dailyActivityQueryKey });
-    queryClient.invalidateQueries({ queryKey: summaryQueryKey });
-    queryClient.invalidateQueries({ queryKey: ['student-juz-progress', studentId] });
     
     Promise.all([
       refetchActivities(),
-      refetchSummary(),
     ])
     .then(() => {
       toast({ title: "Data refreshed", description: "The Dhor book data has been updated." });
@@ -301,7 +277,7 @@ export function DhorBook({ studentId, teacherId }: DhorBookProps) {
       console.error("Error refreshing data:", error);
       toast({ title: "Refresh Error", description: error.message, variant: "destructive" });
     });
-  }, [queryClient, refetchActivities, refetchSummary, dailyActivityQueryKey, summaryQueryKey, studentId, toast]);
+  }, [queryClient, refetchActivities, dailyActivityQueryKey, toast]);
 
   if (activitiesLoading && studentId) {
     return (
@@ -353,14 +329,13 @@ export function DhorBook({ studentId, teacherId }: DhorBookProps) {
               </div>
             </div>
             
-            {summary && (
-              <div className="mt-3">
-                <DhorBookSummary 
-                  summary={summary}
-                  studentId={studentId}
-                />
-              </div>
-            )}
+            {/* Using mock summary since student_dhor_summaries table was dropped */}
+            <div className="mt-3">
+              <DhorBookSummary 
+                summary={mockSummary}
+                studentId={studentId}
+              />
+            </div>
           </>
         ) : (
           <p className="text-xs sm:text-sm text-muted-foreground p-4 text-center">Select a student to view their weekly log.</p>
