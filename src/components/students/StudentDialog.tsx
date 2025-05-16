@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -38,9 +39,10 @@ interface StudentDialogProps {
   onOpenChange: (open: boolean) => void;
   selectedStudent: Student | null;
   onClose: () => void;
+  onSuccess?: (student: Student) => void; // Add callback for successful operations
 }
 
-export const StudentDialog = ({ open, onOpenChange, selectedStudent, onClose }: StudentDialogProps) => {
+export const StudentDialog = ({ open, onOpenChange, selectedStudent, onClose, onSuccess }: StudentDialogProps) => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [isProcessing, setIsProcessing] = useState(false);
@@ -94,26 +96,30 @@ export const StudentDialog = ({ open, onOpenChange, selectedStudent, onClose }: 
         completed_juz: formData.completed_juz.map(juz => Number(juz)),
       };
 
+      let studentData;
+
       if (selectedStudent) {
-        const { error } = await supabase
+        const { data, error } = await supabase
           .from('students')
           .update(submissionData)
           .eq('id', selectedStudent.id)
-          .select('id');
+          .select('*');
 
         if (error) throw error;
+        studentData = data?.[0];
 
         toast({
           title: "Success",
           description: "Student updated successfully",
         });
       } else {
-        const { error } = await supabase
+        const { data, error } = await supabase
           .from('students')
           .insert([submissionData])
-          .select('id');
+          .select('*');
 
         if (error) throw error;
+        studentData = data?.[0];
 
         toast({
           title: "Success",
@@ -122,6 +128,12 @@ export const StudentDialog = ({ open, onOpenChange, selectedStudent, onClose }: 
       }
 
       queryClient.invalidateQueries({ queryKey: ['students'] });
+      
+      // Call onSuccess callback if provided
+      if (onSuccess && studentData) {
+        onSuccess(studentData);
+      }
+      
       onClose();
       
     } catch (error: any) {

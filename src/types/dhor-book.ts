@@ -42,7 +42,7 @@ export interface StudentPerformanceMetrics {
   currentJuz: number;
 }
 
-// Mock data type for juz mastery since the table was removed
+// Updated JuzMastery type
 export interface JuzMastery {
   id: string;
   student_id: string;
@@ -54,4 +54,20 @@ export interface JuzMastery {
   students?: {
     name: string;
   };
+}
+
+export interface DhorEntry {
+  id: string;
+  student_id: string;
+  teacher_id: string;
+  entry_date: string;
+  dhor_1?: string;
+  dhor_1_mistakes?: number;
+  dhor_2?: string;
+  dhor_2_mistakes?: number;
+  points: number;
+  comments?: string;
+  day_of_week: string;
+  created_at: string;
+  updated_at: string;
 }

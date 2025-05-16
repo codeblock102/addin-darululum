@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -29,23 +30,52 @@ interface Student {
 interface StudentListProps {
   searchQuery: string;
   onEdit: (student: Student) => void;
+  teacherId?: string; // Optional teacherId to filter students by teacher
 }
 
-export const StudentList = ({ searchQuery, onEdit }: StudentListProps) => {
+export const StudentList = ({ searchQuery, onEdit, teacherId }: StudentListProps) => {
   const navigate = useNavigate();
   const [hoveredId, setHoveredId] = useState<string | null>(null);
 
   const { data: students, isLoading } = useQuery({
-    queryKey: ['students'],
+    queryKey: ['students', teacherId],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('students')
-        .select('*')
-        .order('name', { ascending: true });
+      // If teacherId is provided, get only students assigned to this teacher
+      if (teacherId) {
+        // First get the student names assigned to this teacher
+        const { data: assignments, error: assignmentsError } = await supabase
+          .from('students_teachers')
+          .select('student_name')
+          .eq('teacher_id', teacherId)
+          .eq('active', true);
+          
+        if (assignmentsError) throw assignmentsError;
+        
+        if (!assignments || assignments.length === 0) {
+          return [] as Student[];
+        }
+        
+        // Get the student records based on those names
+        const studentNames = assignments.map(assignment => assignment.student_name);
+        const { data, error } = await supabase
+          .from('students')
+          .select('*')
+          .in('name', studentNames)
+          .order('name', { ascending: true });
+          
+        if (error) throw error;
+        return data as Student[];
+      } else {
+        // Get all students (for admin view)
+        const { data, error } = await supabase
+          .from('students')
+          .select('*')
+          .order('name', { ascending: true });
 
-      if (error) throw error;
-      console.log("Raw student data from Supabase:", data);
-      return data as Student[];
+        if (error) throw error;
+        console.log("Raw student data from Supabase:", data);
+        return data as Student[];
+      }
     },
     // Add a refetch interval to keep the list updated
     refetchInterval: 30000, // Refresh every 30 seconds
