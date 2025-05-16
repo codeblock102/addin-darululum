@@ -27,7 +27,6 @@ export const handleUserSubmit = async (
         password: formData.password,
         options: {
           data: { 
-            username: formData.username,
             teacher_id: formData.teacherId,
             role: 'teacher'
           },
@@ -42,7 +41,7 @@ export const handleUserSubmit = async (
       
       console.log("User account created successfully:", data);
       onSuccess();
-      return "User account created successfully. They can now log in using their email or username.";
+      return "User account created successfully. They can now log in using their email.";
     }
   } catch (error: any) {
     console.error("User creation error details:", error);

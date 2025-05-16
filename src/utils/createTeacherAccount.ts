@@ -1,7 +1,7 @@
-
 import { supabase } from "@/integrations/supabase/client";
 
 // Helper function to create a normalized username from a person's name
+// We'll keep this function for internal use but won't use it for login anymore
 export const createNormalizedUsername = (name: string): string => {
   return name
     .toLowerCase()
@@ -52,9 +52,6 @@ export const createTeacherWithAccount = async (name: string, email: string, pass
       console.log("Teacher already exists:", existingTeacher);
     }
 
-    // 2. Generate username from name
-    const username = createNormalizedUsername(name);
-    
     // Check if a user with this email exists first
     const { data: existingUser } = await supabase.auth.signInWithPassword({
       email: email,
@@ -67,18 +64,16 @@ export const createTeacherWithAccount = async (name: string, email: string, pass
         success: true,
         teacher: teacherData,
         user: existingUser,
-        username: username,
         message: "Teacher account already exists. You can log in now."
       };
     }
 
-    // 3. Create user account with auto-confirmation
+    // Create user account with auto-confirmation
     const { data: userData, error: userError } = await supabase.auth.admin.createUser({
       email: email,
       password: password,
       email_confirm: true, // Auto-confirm email for testing
       user_metadata: {
-        username: username,
         teacher_id: teacherId,
         role: 'teacher'
       }
@@ -91,7 +86,6 @@ export const createTeacherWithAccount = async (name: string, email: string, pass
         password: password,
         options: {
           data: {
-            username: username,
             teacher_id: teacherId,
             role: 'teacher'
           }
@@ -109,7 +103,6 @@ export const createTeacherWithAccount = async (name: string, email: string, pass
         success: true,
         teacher: teacherData,
         user: regularUserData,
-        username: username,
         message: `Teacher account created. Please check email for confirmation or go to Supabase Console to confirm the email manually.`
       };
     }
@@ -120,8 +113,7 @@ export const createTeacherWithAccount = async (name: string, email: string, pass
       success: true,
       teacher: teacherData,
       user: userData,
-      username: username,
-      message: `Teacher account created successfully with auto-confirmation. Username: ${username}`
+      message: `Teacher account created successfully with auto-confirmation.`
     };
   } catch (error: any) {
     console.error("Teacher account creation error:", error);
