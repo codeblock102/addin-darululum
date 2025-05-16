@@ -47,38 +47,55 @@ const Auth = () => {
           if (error) throw error;
           navigate("/");
         } else {
-          // Username login requires checking for the user in profiles first
+          // Username login requires checking for the user in user metadata
           if (!username || !password) {
             throw new Error("Username and password are required");
           }
           
-          // Attempt to get the email associated with the username from user metadata
-          // We'll check for a user with this username
-          const { data: userData, error: userError } = await supabase
-            .from('profiles')  
-            .select('id')
-            .eq('username', username)
-            .single();
+          // First, try to find a user with this username in their metadata
+          // Without direct access to the auth.users table, we need to use a different approach
+          console.log("Attempting login with username:", username);
           
-          if (userError || !userData) {
-            throw new Error("Username not found. Please check your credentials.");
+          // Try signing in with the username as the email (if username format is an email)
+          const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+          if (emailPattern.test(username)) {
+            console.log("Username looks like an email, trying direct login");
+            const { error } = await supabase.auth.signInWithPassword({
+              email: username,
+              password,
+            });
+            if (!error) {
+              navigate("/");
+              return;
+            }
           }
           
-          // Get the user by ID to find their email
-          const { data: authData, error: authError } = await supabase.auth.admin.getUserById(userData.id);
+          // Fetch all teacher emails to check matching username
+          const { data: teachers } = await supabase
+            .from('teachers')
+            .select('email, name');
           
-          if (authError || !authData) {
-            throw new Error("Could not retrieve user details. Please try again or use email login.");
-          }
+          const normalizedUsername = username.toLowerCase().replace(/\s+/g, '.').replace(/[^a-z0-9.]/g, '');
+          console.log("Normalized username for search:", normalizedUsername);
           
-          // Now sign in with the email and provided password
-          const { error } = await supabase.auth.signInWithPassword({
-            email: authData.user.email,
-            password,
+          // Find a possible match by checking if any teacher would have this username pattern
+          const possibleTeacher = teachers?.find(teacher => {
+            const teacherUsername = teacher.name?.toLowerCase().replace(/\s+/g, '.').replace(/[^a-z0-9.]/g, '');
+            return teacherUsername === normalizedUsername;
           });
           
-          if (error) throw error;
-          navigate("/");
+          if (possibleTeacher?.email) {
+            console.log("Found potential matching teacher email:", possibleTeacher.email);
+            const { error } = await supabase.auth.signInWithPassword({
+              email: possibleTeacher.email,
+              password,
+            });
+            
+            if (error) throw error;
+            navigate("/");
+          } else {
+            throw new Error("Username not found. Please check your credentials or try logging in with email.");
+          }
         }
       } else if (mode === "forgotPassword") {
         // Handle password reset
