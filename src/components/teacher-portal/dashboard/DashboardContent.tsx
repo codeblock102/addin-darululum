@@ -7,19 +7,13 @@ import { TeacherPerformance } from "./TeacherPerformance";
 import { TeacherMessagesEnhanced } from "../messaging/TeacherMessagesEnhanced";
 import { DashboardOverview } from "./DashboardOverview";
 
-// This file is kept for backward compatibility
-// The functionality has been moved to DashboardContent.tsx and DashboardNav.tsx
-
-export { DashboardOverview } from "./DashboardOverview";
-export { useActiveTab } from "./DashboardNav";
-
-interface DashboardTabsProps {
+interface DashboardContentProps {
   activeTab: string;
   teacherId: string;
   teacherName?: string;
 }
 
-export const DashboardTabContent = ({ activeTab, teacherId, teacherName }: DashboardTabsProps) => {
+export const DashboardContent = ({ activeTab, teacherId, teacherName }: DashboardContentProps) => {
   switch (activeTab) {
     case "students":
       return <MyStudents teacherId={teacherId} />;
