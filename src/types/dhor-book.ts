@@ -42,12 +42,11 @@ export interface StudentPerformanceMetrics {
   currentJuz: number;
 }
 
-// Updated JuzMastery type
 export interface JuzMastery {
   id: string;
   student_id: string;
   juz_number: number;
-  mastery_level: 'mastered' | 'memorized' | 'in_progress' | 'not_started';
+  mastery_level: 'mastered' | 'memorized' | 'in_progress' | 'not_started' | 'learning' | 'reviewing' | null;
   last_revision_date: string | null;
   revision_count: number;
   consecutive_good_revisions: number;
@@ -56,18 +55,31 @@ export interface JuzMastery {
   };
 }
 
-export interface DhorEntry {
+export interface DailyActivityEntry {
   id: string;
   student_id: string;
   teacher_id: string;
   entry_date: string;
-  dhor_1?: string;
-  dhor_1_mistakes?: number;
-  dhor_2?: string;
-  dhor_2_mistakes?: number;
-  points: number;
+  current_juz?: number;
+  current_surah?: number;
+  start_ayat?: number;
+  end_ayat?: number;
+  sabaq_para_data?: {
+    juz_number: number;
+    quarters_revised?: string;
+    quality_rating?: string;
+  };
+  juz_revisions_data?: {
+    id: string;
+    dhor_slot: number;
+    juz_number?: number;
+    juz_revised?: number;
+    quarter_start?: number;
+    quarters_covered?: number;
+    memorization_quality?: string;
+  }[];
+  memorization_quality?: string;
   comments?: string;
-  day_of_week: string;
-  created_at: string;
-  updated_at: string;
+  day_of_week?: string;
+  points?: number;
 }

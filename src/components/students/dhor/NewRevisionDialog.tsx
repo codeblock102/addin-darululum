@@ -107,68 +107,6 @@ export const NewRevisionDialog = ({
 
       if (juzRevisionError) throw juzRevisionError;
 
-      // Then update the juz_mastery table for this student and juz
-      const { data: existingMastery, error: fetchMasteryError } = await supabase
-        .from("juz_mastery")
-        .select("*")
-        .eq("student_id", studentId)
-        .eq("juz_number", juzNumber)
-        .maybeSingle();
-
-      if (fetchMasteryError) throw fetchMasteryError;
-
-      let masteryLevel: "not_started" | "in_progress" | "memorized" | "mastered" = "in_progress";
-      let consecutiveGoodRevisions = 0;
-
-      if (existingMastery) {
-        // Update existing mastery record
-        consecutiveGoodRevisions = existingMastery.consecutive_good_revisions;
-
-        // Reset consecutive good revisions if this revision is not good
-        if (memorizationQuality === "excellent" || memorizationQuality === "good") {
-          consecutiveGoodRevisions += 1;
-        } else {
-          consecutiveGoodRevisions = 0;
-        }
-
-        // Determine mastery level based on consecutive good revisions
-        if (consecutiveGoodRevisions >= 5) {
-          masteryLevel = "mastered";
-        } else if (consecutiveGoodRevisions >= 3) {
-          masteryLevel = "memorized";
-        } else {
-          masteryLevel = "in_progress";
-        }
-
-        const { error: updateMasteryError } = await supabase
-          .from("juz_mastery")
-          .update({
-            last_revision_date: new Date().toISOString().split("T")[0],
-            revision_count: existingMastery.revision_count + 1,
-            consecutive_good_revisions: consecutiveGoodRevisions,
-            mastery_level: masteryLevel,
-          })
-          .eq("id", existingMastery.id);
-
-        if (updateMasteryError) throw updateMasteryError;
-      } else {
-        // Create new mastery record
-        if (memorizationQuality === "excellent" || memorizationQuality === "good") {
-          consecutiveGoodRevisions = 1;
-        }
-
-        const { error: createMasteryError } = await supabase.from("juz_mastery").insert({
-          student_id: studentId,
-          juz_number: juzNumber,
-          mastery_level: masteryLevel,
-          last_revision_date: new Date().toISOString().split("T")[0],
-          revision_count: 1,
-          consecutive_good_revisions: consecutiveGoodRevisions,
-        });
-
-        if (createMasteryError) throw createMasteryError;
-      }
-
       // Create a fully valid RevisionFormData object to satisfy TypeScript
       const formData: RevisionFormData = {
         juz_number: juzNumber!,
@@ -190,7 +128,7 @@ export const NewRevisionDialog = ({
       resetForm();
       onSuccess();
       onOpenChange(false);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error recording revision:", error);
       toast({
         variant: "destructive",

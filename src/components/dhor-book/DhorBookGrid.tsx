@@ -1,13 +1,13 @@
 
 import { useState } from "react";
-import { DailyActivityEntry } from "./DhorBook"; // Now importing from DhorBook.tsx
+import { DailyActivityEntry } from "@/types/dhor-book"; 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { NewEntryDialog } from "./NewEntryDialog";
 import { format } from "date-fns";
 
 interface DhorBookGridProps {
-  entries: DailyActivityEntry[]; // Use the new type
+  entries: DailyActivityEntry[]; 
   studentId: string;
   teacherId: string;
   currentWeek: Date;

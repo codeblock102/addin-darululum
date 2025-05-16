@@ -27,9 +27,7 @@ export const CompleteRevisions = () => {
         id: item.id,
         student_id: item.student_id,
         juz_number: item.juz_revised || item.juz_number, // Use either field that's available
-        mastery_level: item.memorization_quality === 'excellent' ? 'mastered' : 
-                       item.memorization_quality === 'good' ? 'memorized' : 
-                       item.memorization_quality === 'average' ? 'in_progress' : 'not_started',
+        mastery_level: getMasteryLevelFromQuality(item.memorization_quality),
         last_revision_date: item.revision_date,
         revision_count: 1,
         consecutive_good_revisions: 1,
@@ -39,6 +37,22 @@ export const CompleteRevisions = () => {
       return transformedData || [];
     }
   });
+  
+  // Helper function to map quality ratings to mastery levels
+  function getMasteryLevelFromQuality(quality: string | null): JuzMastery['mastery_level'] {
+    if (!quality) return "not_started";
+    
+    switch(quality) {
+      case "excellent":
+        return "mastered";
+      case "good":
+        return "memorized";
+      case "average":
+        return "in_progress";
+      default:
+        return "not_started";
+    }
+  }
 
   return (
     <Card>
