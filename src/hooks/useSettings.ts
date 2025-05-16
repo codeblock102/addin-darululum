@@ -3,9 +3,10 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
+import { SystemSettings as TypedSystemSettings } from '@/types/settings';
 
 // Define the settings interface to match src/types/settings.ts SystemSettings
-export interface SystemSettings {
+export interface SystemSettings extends TypedSystemSettings {
   id: string;
   user_id: string;
   theme: 'light' | 'dark' | 'system';
@@ -14,53 +15,6 @@ export interface SystemSettings {
   created_at: string;
   updated_at: string;
   settings?: Record<string, any>;
-  
-  appearance: {
-    theme: 'light' | 'dark' | 'system';
-    fontSize?: string;
-    colorScheme?: string;
-    sidebarCompact?: boolean;
-    highContrastMode?: boolean;
-    animationsEnabled?: boolean;
-    colorTheme?: string;
-    layoutDensity?: string;
-  };
-  notifications?: {
-    email?: boolean;
-    push?: boolean;
-    inApp?: boolean;
-  };
-  security?: {
-    twoFactor?: boolean;
-    passwordReset?: boolean;
-  };
-  academic?: {
-    grading?: string;
-    progress?: string;
-  };
-  data?: {
-    sync?: boolean;
-    export?: boolean;
-  };
-  integrations?: {
-    apis?: string[];
-  };
-  localization?: {
-    language?: string;
-    dateFormat?: string;
-  };
-  userExperience?: {
-    onboarding?: boolean;
-    tips?: boolean;
-  };
-  advancedOptions?: {
-    developerMode?: boolean;
-    debugMode?: boolean;
-  };
-  dataManagement?: {
-    retentionPeriod?: number;
-    backupFrequency?: string;
-  };
 }
 
 export const useSettings = () => {
@@ -87,49 +41,109 @@ export const useSettings = () => {
         appearance: {
           theme: 'system' as const,
           fontSize: 'medium',
-          colorScheme: 'default',
-          sidebarCompact: false,
+          colorTheme: 'default',
+          sidebarCompact: false, // Required field in both interfaces now
           highContrastMode: false,
           animationsEnabled: true,
-          colorTheme: 'default',
-          layoutDensity: 'normal'
+          layoutDensity: 'comfortable'
         },
         notifications: {
-          email: true,
-          push: true,
-          inApp: true,
+          emailNotifications: true,
+          progressAlerts: true,
+          attendanceReminders: true,
+          systemAnnouncements: true,
+          pushNotifications: true,
+          notificationPriority: 'all',
+          quietHours: {
+            enabled: false,
+            start: '22:00',
+            end: '08:00'
+          },
+          customTemplates: false
         },
         security: {
-          twoFactor: false,
-          passwordReset: true,
+          twoFactorAuth: false,
+          sessionTimeout: 30,
+          passwordExpiry: 90,
+          loginAttempts: 5,
+          ipWhitelist: {
+            enabled: false,
+            addresses: []
+          },
+          loginTimeRestrictions: {
+            enabled: false,
+            startTime: '08:00',
+            endTime: '18:00'
+          },
+          passwordPolicy: {
+            minLength: 8,
+            requireSpecialChar: true,
+            requireNumber: true,
+            requireUppercase: true
+          }
         },
         academic: {
-          grading: 'standard',
-          progress: 'weekly',
-        },
-        data: {
-          sync: true,
-          export: true,
-        },
-        integrations: {
-          apis: [],
+          defaultJuzPerWeek: 1,
+          attendanceThreshold: 80,
+          progressReportFrequency: 'weekly',
+          academicYearStart: '2023-09-01',
+          academicYearEnd: '2024-07-31',
+          gradingScale: 'percentage',
+          customAssessments: false,
+          curriculumCustomization: false,
+          milestoneTracking: true
         },
         localization: {
-          language: 'en',
+          language: 'english',
+          timeFormat: '12h',
           dateFormat: 'MM/DD/YYYY',
+          firstDayOfWeek: 'sunday',
+          region: 'US'
+        },
+        integrations: {
+          calendarSync: {
+            enabled: false,
+            provider: 'none'
+          },
+          communicationTools: {
+            enabled: false,
+            preferredPlatform: 'email'
+          },
+          externalApis: false,
+          automations: false
+        },
+        dataManagement: {
+          autoBackup: {
+            enabled: false,
+            frequency: 'weekly',
+            retention: 30
+          },
+          dataExport: {
+            includeStudentData: true,
+            includeTeacherData: true,
+            includeAttendance: true,
+            includeProgress: true
+          },
+          archivePolicy: {
+            autoArchive: false,
+            afterMonths: 12
+          }
         },
         userExperience: {
-          onboarding: true,
-          tips: true,
+          guidedTours: true,
+          keyboardShortcuts: true,
+          defaultLandingPage: 'dashboard',
+          widgetCustomization: false
         },
         advancedOptions: {
           developerMode: false,
-          debugMode: false,
-        },
-        dataManagement: {
-          retentionPeriod: 90,
-          backupFrequency: 'weekly',
-        },
+          detailedLogs: false,
+          featureFlags: {
+            betaFeatures: false,
+            experimentalUi: false
+          },
+          performanceMode: 'balanced'
+        }
       } as SystemSettings;
     }
   });
