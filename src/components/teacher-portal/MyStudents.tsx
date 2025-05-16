@@ -65,8 +65,7 @@ export const MyStudents = ({ teacherId }: MyStudentsProps) => {
       const { data, error } = await supabase
         .from('students')
         .select('id, name, enrollment_date, status')
-        .in('name', studentNames)
-        .order('name', { ascending: true });
+        .in('name', studentNames);
       
       if (error) {
         console.error('Error fetching student details:', error);
