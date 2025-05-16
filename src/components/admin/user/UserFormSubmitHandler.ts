@@ -31,12 +31,17 @@ export const handleUserSubmit = async (
         }
       });
       
-      if (error) throw error;
+      if (error) {
+        console.error("User creation error:", error);
+        throw error;
+      }
       
+      console.log("User account created successfully:", data);
       onSuccess();
       return "User invitation sent. They will need to confirm their email to activate the account.";
     }
   } catch (error: any) {
+    console.error("User creation error details:", error);
     onError(error.message);
     throw error;
   }
