@@ -3,7 +3,8 @@ import { TeacherDashboardProps } from "@/types/teacher";
 import { useTeacherSummary } from "@/hooks/useTeacherSummary";
 import { DashboardHeader } from "./DashboardHeader";
 import { TeacherTabs } from "./TeacherTabs";
-import { DashboardTabContent, useActiveTab } from "./dashboard/DashboardTabs";
+import { DashboardContent } from "./dashboard/DashboardContent";
+import { useActiveTab } from "./dashboard/DashboardNav";
 
 export const TeacherDashboard = ({ teacher }: TeacherDashboardProps) => {
   const { activeTab, setActiveTab } = useActiveTab();
@@ -19,7 +20,7 @@ export const TeacherDashboard = ({ teacher }: TeacherDashboardProps) => {
         onTabChange={setActiveTab} 
       />
       
-      <DashboardTabContent 
+      <DashboardContent 
         activeTab={activeTab} 
         teacherId={teacher.id}
         teacherName={teacher.name}
