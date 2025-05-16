@@ -15,7 +15,7 @@ export interface SystemSettings {
   updated_at: string;
   settings?: Record<string, any>;
   
-  // Additional properties that might be needed by components
+  // Additional properties used by components
   appearance?: {
     theme?: 'light' | 'dark' | 'system';
     fontSize?: string;
@@ -38,20 +38,24 @@ export interface SystemSettings {
     sync?: boolean;
     export?: boolean;
   };
-  integration?: {
+  integrations?: {
     apis?: string[];
   };
   localization?: {
     language?: string;
     dateFormat?: string;
   };
-  user_experience?: {
+  userExperience?: {
     onboarding?: boolean;
     tips?: boolean;
   };
-  advanced?: {
+  advancedOptions?: {
     developerMode?: boolean;
     debugMode?: boolean;
+  };
+  dataManagement?: {
+    retentionPeriod?: number;
+    backupFrequency?: string;
   };
 }
 
@@ -98,20 +102,24 @@ export const useSettings = () => {
           sync: true,
           export: true,
         },
-        integration: {
+        integrations: {
           apis: [],
         },
         localization: {
           language: 'en',
           dateFormat: 'MM/DD/YYYY',
         },
-        user_experience: {
+        userExperience: {
           onboarding: true,
           tips: true,
         },
-        advanced: {
+        advancedOptions: {
           developerMode: false,
           debugMode: false,
+        },
+        dataManagement: {
+          retentionPeriod: 90,
+          backupFrequency: 'weekly',
         },
       } as SystemSettings;
     }

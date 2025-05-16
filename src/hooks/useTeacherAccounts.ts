@@ -75,7 +75,7 @@ export function useTeacherAccounts() {
           teacherAccounts.push({
             ...teacher,
             userId: userData?.id || null,
-            status: userRole === 'teacher' ? 'active' : 'suspended',
+            status: "active", // Default to active since we can't determine from userRole
             lastLogin: userData?.created_at || teacher.created_at || null,
             classesCount: classesData?.length || 0,
             studentsCount: studentsData?.length || 0,
