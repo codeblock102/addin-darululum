@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -26,21 +26,26 @@ interface TeacherAttendanceProps {
 
 export const TeacherAttendance = ({ teacherId }: TeacherAttendanceProps) => {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
-  const [selectedClass, setSelectedClass] = useState<string | null>(null);
+  const [selectedStudent, setSelectedStudent] = useState<string | null>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
   
-  const { data: classes, isLoading: classesLoading } = useQuery({
-    queryKey: ['teacher-classes', teacherId],
+  // Fetch all students assigned to this teacher
+  const { data: students, isLoading: studentsLoading } = useQuery({
+    queryKey: ['teacher-students', teacherId],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('classes')
-        .select('id, name')
+        .from('students_teachers')
+        .select(`
+          id,
+          student_name,
+          student_id
+        `)
         .eq('teacher_id', teacherId)
-        .eq('status', 'active');
+        .eq('active', true);
         
       if (error) {
-        console.error('Error fetching classes:', error);
+        console.error('Error fetching students:', error);
         return [];
       }
       
@@ -48,43 +53,18 @@ export const TeacherAttendance = ({ teacherId }: TeacherAttendanceProps) => {
     }
   });
   
-  // Fetch students for selected class
-  const { data: students, isLoading: studentsLoading } = useQuery({
-    queryKey: ['class-students', selectedClass],
-    queryFn: async () => {
-      if (!selectedClass) return [];
-      
-      const { data, error } = await supabase
-        .from('class_enrollments')
-        .select(`
-          student_id,
-          students(id, name, guardian_name)
-        `)
-        .eq('class_id', selectedClass)
-        .eq('status', 'active');
-        
-      if (error) {
-        console.error('Error fetching class students:', error);
-        return [];
-      }
-      
-      return data.map((enrollment: any) => enrollment.students);
-    },
-    enabled: !!selectedClass
-  });
-  
-  // Fetch existing attendance records for the selected date and class
+  // Fetch existing attendance records for the selected date and student
   const { data: attendanceRecords, isLoading: attendanceLoading } = useQuery({
-    queryKey: ['attendance-records', selectedDate, selectedClass],
+    queryKey: ['attendance-records', selectedDate, selectedStudent],
     queryFn: async () => {
-      if (!selectedClass) return [];
+      if (!selectedStudent) return [];
       
       const dateString = format(selectedDate, 'yyyy-MM-dd');
       
       const { data, error } = await supabase
         .from('attendance')
         .select('*')
-        .eq('class_id', selectedClass)
+        .eq('student_id', selectedStudent)
         .eq('date', dateString);
         
       if (error) {
@@ -94,7 +74,7 @@ export const TeacherAttendance = ({ teacherId }: TeacherAttendanceProps) => {
       
       return data;
     },
-    enabled: !!selectedClass
+    enabled: !!selectedStudent
   });
   
   // Mutation for saving attendance
@@ -107,11 +87,10 @@ export const TeacherAttendance = ({ teacherId }: TeacherAttendanceProps) => {
         .from('attendance')
         .select('id')
         .eq('student_id', values.student_id)
-        .eq('class_id', selectedClass)
         .eq('date', dateString)
-        .single();
+        .maybeSingle();
         
-      if (checkError && checkError.code !== 'PGRST116') { // PGRST116 is the "no rows returned" error
+      if (checkError) {
         throw checkError;
       }
       
@@ -133,7 +112,6 @@ export const TeacherAttendance = ({ teacherId }: TeacherAttendanceProps) => {
           .from('attendance')
           .insert([{
             student_id: values.student_id,
-            class_id: selectedClass,
             date: dateString,
             status: values.status,
             notes: values.notes
@@ -144,7 +122,7 @@ export const TeacherAttendance = ({ teacherId }: TeacherAttendanceProps) => {
       }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['attendance-records', selectedDate, selectedClass] });
+      queryClient.invalidateQueries({ queryKey: ['attendance-records', selectedDate, selectedStudent] });
       toast({
         title: "Attendance Updated",
         description: "Student attendance has been recorded."
@@ -188,20 +166,20 @@ export const TeacherAttendance = ({ teacherId }: TeacherAttendanceProps) => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Class Attendance</CardTitle>
+        <CardTitle>Student Attendance</CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
         <div className="flex flex-col md:flex-row gap-4">
           <div className="flex-1">
-            <FormLabel>Class</FormLabel>
-            <Select value={selectedClass || ""} onValueChange={setSelectedClass}>
+            <FormLabel>Student</FormLabel>
+            <Select value={selectedStudent || ""} onValueChange={setSelectedStudent}>
               <SelectTrigger>
-                <SelectValue placeholder="Select class" />
+                <SelectValue placeholder="Select student" />
               </SelectTrigger>
               <SelectContent>
-                {classes?.map((cls: any) => (
-                  <SelectItem key={cls.id} value={cls.id}>
-                    {cls.name}
+                {students?.map((student: any) => (
+                  <SelectItem key={student.id} value={student.student_id || student.id}>
+                    {student.student_name}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -243,9 +221,9 @@ export const TeacherAttendance = ({ teacherId }: TeacherAttendanceProps) => {
             </TabsList>
             
             <TabsContent value="mark">
-              {(!selectedClass || !students) ? (
+              {!selectedStudent ? (
                 <div className="p-6 text-center text-muted-foreground">
-                  {!selectedClass ? "Please select a class to mark attendance" : "No students found in this class"}
+                  Please select a student to mark attendance
                 </div>
               ) : studentsLoading ? (
                 <div className="flex justify-center items-center h-32">
@@ -262,22 +240,20 @@ export const TeacherAttendance = ({ teacherId }: TeacherAttendanceProps) => {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {students.map((student: any) => {
-                      const attendanceRecord = getStudentAttendance(student.id);
+                    {students?.filter((s: any) => s.student_id === selectedStudent || s.id === selectedStudent).map((student: any) => {
+                      const studentId = student.student_id || student.id;
+                      const attendanceRecord = getStudentAttendance(studentId);
                       const status = attendanceRecord?.status || null;
                       
                       return (
-                        <TableRow key={student.id}>
+                        <TableRow key={studentId}>
                           <TableCell>
                             <div className="flex items-center gap-2">
                               <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center">
                                 <UserRound className="h-4 w-4" />
                               </div>
                               <div>
-                                <p className="font-medium">{student.name}</p>
-                                <p className="text-xs text-muted-foreground">
-                                  {student.guardian_name || 'No guardian info'}
-                                </p>
+                                <p className="font-medium">{student.student_name}</p>
                               </div>
                             </div>
                           </TableCell>
@@ -286,7 +262,7 @@ export const TeacherAttendance = ({ teacherId }: TeacherAttendanceProps) => {
                               variant={status === 'present' ? 'default' : 'outline'}
                               size="icon"
                               className={status === 'present' ? 'bg-green-600 hover:bg-green-700' : ''}
-                              onClick={() => handleAttendanceChange(student.id, 'present')}
+                              onClick={() => handleAttendanceChange(studentId, 'present')}
                             >
                               <Check className="h-4 w-4" />
                             </Button>
@@ -296,7 +272,7 @@ export const TeacherAttendance = ({ teacherId }: TeacherAttendanceProps) => {
                               variant={status === 'late' ? 'default' : 'outline'}
                               size="icon"
                               className={status === 'late' ? 'bg-yellow-600 hover:bg-yellow-700' : ''}
-                              onClick={() => handleAttendanceChange(student.id, 'late')}
+                              onClick={() => handleAttendanceChange(studentId, 'late')}
                             >
                               <CalendarIcon className="h-4 w-4" />
                             </Button>
@@ -306,7 +282,7 @@ export const TeacherAttendance = ({ teacherId }: TeacherAttendanceProps) => {
                               variant={status === 'absent' ? 'default' : 'outline'}
                               size="icon"
                               className={status === 'absent' ? 'bg-red-600 hover:bg-red-700' : ''}
-                              onClick={() => handleAttendanceChange(student.id, 'absent')}
+                              onClick={() => handleAttendanceChange(studentId, 'absent')}
                             >
                               <X className="h-4 w-4" />
                             </Button>
@@ -320,9 +296,9 @@ export const TeacherAttendance = ({ teacherId }: TeacherAttendanceProps) => {
             </TabsContent>
             
             <TabsContent value="view">
-              {!selectedClass ? (
+              {!selectedStudent ? (
                 <div className="p-6 text-center text-muted-foreground">
-                  Please select a class to view attendance records
+                  Please select a student to view attendance records
                 </div>
               ) : attendanceLoading ? (
                 <div className="flex justify-center items-center h-32">
@@ -345,7 +321,7 @@ export const TeacherAttendance = ({ teacherId }: TeacherAttendanceProps) => {
                     {attendanceRecords.map((record: any) => (
                       <TableRow key={record.id}>
                         <TableCell>
-                          {students?.find((s: any) => s.id === record.student_id)?.name || 'Unknown Student'}
+                          {students?.find((s: any) => (s.student_id || s.id) === record.student_id)?.student_name || 'Unknown Student'}
                         </TableCell>
                         <TableCell>
                           {getStatusBadge(record.status as AttendanceStatus)}
