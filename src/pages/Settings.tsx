@@ -16,7 +16,7 @@ const Settings = () => {
   const handleSave = () => {
     setIsSaving(true);
     // Call updateSettings, and when it's done, set isSaving to false
-    const result = updateSettings(settings);
+    updateSettings(settings);
     setIsSaving(false);
   };
   
