@@ -21,6 +21,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Loader2, Search, User, UserCheck } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useNavigate } from "react-router-dom";
 
 interface MyStudentsProps {
   teacherId: string;
@@ -29,36 +30,72 @@ interface MyStudentsProps {
 export const MyStudents = ({ teacherId }: MyStudentsProps) => {
   const [searchQuery, setSearchQuery] = useState("");
   const isMobile = useIsMobile();
+  const navigate = useNavigate();
   
-  // Fetch all students from the shared database
-  const { data: students, isLoading } = useQuery({
-    queryKey: ['all-students'],
+  // First fetch teacher's assigned students
+  const { data: assignedStudents, isLoading: loadingAssignments } = useQuery({
+    queryKey: ['teacher-student-assignments', teacherId],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('students')
-        .select('id, name, enrollment_date, status')
-        .order('name', { ascending: true });
-      
+      const { data: assignments, error } = await supabase
+        .from("students_teachers")
+        .select("student_name")
+        .eq("teacher_id", teacherId)
+        .eq("active", true);
+        
       if (error) {
-        console.error('Error fetching students:', error);
+        console.error('Error fetching student assignments:', error);
         return [];
       }
       
-      return data;
-    }
+      return assignments || [];
+    },
+    enabled: !!teacherId
   });
+  
+  // Then fetch details for those students
+  const { data: students, isLoading: loadingStudents } = useQuery({
+    queryKey: ['teacher-students-details', assignedStudents],
+    queryFn: async () => {
+      if (!assignedStudents || assignedStudents.length === 0) {
+        return [];
+      }
+      
+      const studentNames = assignedStudents.map(assignment => assignment.student_name);
+      
+      const { data, error } = await supabase
+        .from('students')
+        .select('id, name, enrollment_date, status')
+        .in('name', studentNames)
+        .order('name', { ascending: true });
+      
+      if (error) {
+        console.error('Error fetching student details:', error);
+        return [];
+      }
+      
+      return data || [];
+    },
+    enabled: !!assignedStudents && assignedStudents.length > 0,
+  });
+  
+  const isLoading = loadingAssignments || loadingStudents;
   
   // Filter students based on search query
   const filteredStudents = students?.filter(student => 
     student.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  // Handle click on "View Progress" button
+  const handleViewProgress = (studentId: string) => {
+    navigate(`/teacher-portal?tab=dhor-book&studentId=${studentId}`);
+  };
   
   return (
     <Card className="w-full overflow-hidden">
       <CardHeader>
         <CardTitle className="text-xl">Students</CardTitle>
         <CardDescription>
-          All students in the database
+          Students assigned to you
         </CardDescription>
         <div className="flex items-center space-x-2 mt-2">
           <div className="relative flex-1">
@@ -99,7 +136,12 @@ export const MyStudents = ({ teacherId }: MyStudentsProps) => {
                       <div className="text-sm text-muted-foreground">
                         Enrolled: {student.enrollment_date ? new Date(student.enrollment_date).toLocaleDateString() : 'N/A'}
                       </div>
-                      <Button variant="outline" size="sm" className="mt-2">
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="mt-2"
+                        onClick={() => handleViewProgress(student.id)}
+                      >
                         <UserCheck className="h-4 w-4 mr-2" />
                         View Progress
                       </Button>
@@ -137,7 +179,11 @@ export const MyStudents = ({ teacherId }: MyStudentsProps) => {
                             </span>
                           </TableCell>
                           <TableCell className="text-right">
-                            <Button variant="outline" size="sm">
+                            <Button 
+                              variant="outline" 
+                              size="sm"
+                              onClick={() => handleViewProgress(student.id)}
+                            >
                               <UserCheck className="h-4 w-4 mr-2" />
                               View Progress
                             </Button>
@@ -152,7 +198,9 @@ export const MyStudents = ({ teacherId }: MyStudentsProps) => {
               <div className="text-center py-8 text-muted-foreground">
                 {searchQuery 
                   ? "No students found matching your search." 
-                  : "No students found in the database."}
+                  : assignedStudents && assignedStudents.length > 0
+                    ? "No student details available for your assignments."
+                    : "No students are currently assigned to you."}
               </div>
             )}
           </>
