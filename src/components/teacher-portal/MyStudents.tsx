@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { 
   Card, 
@@ -19,19 +19,37 @@ import {
 } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Loader2, Search, User, UserCheck } from "lucide-react";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { Loader2, Search, Trash2, User, UserCheck, UserPlus } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useNavigate } from "react-router-dom";
 import { AddStudentDialog } from "./students/AddStudentDialog";
+import { useToast } from "@/hooks/use-toast";
 
 interface MyStudentsProps {
   teacherId: string;
 }
 
+interface Student {
+  id: string;
+  name: string;
+  enrollment_date: string | null;
+  status: 'active' | 'inactive';
+}
+
+interface StudentAssignment {
+  id: string;
+  student_name: string;
+}
+
 export const MyStudents = ({ teacherId }: MyStudentsProps) => {
   const [searchQuery, setSearchQuery] = useState("");
+  const [studentToDelete, setStudentToDelete] = useState<{ id: string, name: string } | null>(null);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const isMobile = useIsMobile();
   const navigate = useNavigate();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
   
   // First fetch teacher's assigned students
   const { data: assignedStudents, isLoading: loadingAssignments } = useQuery({
@@ -39,7 +57,7 @@ export const MyStudents = ({ teacherId }: MyStudentsProps) => {
     queryFn: async () => {
       const { data: assignments, error } = await supabase
         .from("students_teachers")
-        .select("student_name")
+        .select("id, student_name")
         .eq("teacher_id", teacherId)
         .eq("active", true);
         
@@ -48,7 +66,7 @@ export const MyStudents = ({ teacherId }: MyStudentsProps) => {
         return [];
       }
       
-      return assignments || [];
+      return assignments as StudentAssignment[] || [];
     },
     enabled: !!teacherId
   });
@@ -73,9 +91,39 @@ export const MyStudents = ({ teacherId }: MyStudentsProps) => {
         return [];
       }
       
-      return data || [];
+      return data as Student[] || [];
     },
     enabled: !!assignedStudents && assignedStudents.length > 0,
+  });
+  
+  const removeStudentMutation = useMutation({
+    mutationFn: async ({ assignmentId }: { assignmentId: string }) => {
+      const { error } = await supabase
+        .from('students_teachers')
+        .delete()
+        .eq('id', assignmentId);
+      
+      if (error) throw error;
+      return assignmentId;
+    },
+    onSuccess: () => {
+      toast({
+        title: "Student removed",
+        description: `${studentToDelete?.name} has been removed from your students.`,
+      });
+      
+      queryClient.invalidateQueries({ queryKey: ['teacher-student-assignments'] });
+      queryClient.invalidateQueries({ queryKey: ['teacher-students-details'] });
+      setIsDeleteDialogOpen(false);
+      setStudentToDelete(null);
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: `Failed to remove student: ${error.message}`,
+        variant: "destructive"
+      });
+    },
   });
   
   const isLoading = loadingAssignments || loadingStudents;
@@ -88,6 +136,27 @@ export const MyStudents = ({ teacherId }: MyStudentsProps) => {
   // Handle click on "View Progress" button
   const handleViewProgress = (studentId: string) => {
     navigate(`/teacher-portal?tab=dhor-book&studentId=${studentId}`);
+  };
+  
+  // Handle click on delete button
+  const handleDeleteClick = (student: Student) => {
+    const assignment = assignedStudents?.find(a => a.student_name === student.name);
+    if (assignment) {
+      setStudentToDelete({ id: assignment.id, name: student.name });
+      setIsDeleteDialogOpen(true);
+    } else {
+      toast({
+        title: "Error",
+        description: "Could not find the student assignment data.",
+        variant: "destructive"
+      });
+    }
+  };
+  
+  const handleConfirmDelete = () => {
+    if (studentToDelete) {
+      removeStudentMutation.mutate({ assignmentId: studentToDelete.id });
+    }
   };
   
   return (
@@ -132,7 +201,7 @@ export const MyStudents = ({ teacherId }: MyStudentsProps) => {
                           <User className="h-4 w-4 mr-2 text-muted-foreground" />
                           <span className="font-medium">{student.name}</span>
                         </div>
-                        <span className={`px-2 py-1 rounded-full text-xs ${
+                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                           student.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
                         }`}>
                           {student.status || 'N/A'}
@@ -141,15 +210,25 @@ export const MyStudents = ({ teacherId }: MyStudentsProps) => {
                       <div className="text-sm text-muted-foreground">
                         Enrolled: {student.enrollment_date ? new Date(student.enrollment_date).toLocaleDateString() : 'N/A'}
                       </div>
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
-                        className="mt-2"
-                        onClick={() => handleViewProgress(student.id)}
-                      >
-                        <UserCheck className="h-4 w-4 mr-2" />
-                        View Progress
-                      </Button>
+                      <div className="flex space-x-2">
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="flex-1"
+                          onClick={() => handleViewProgress(student.id)}
+                        >
+                          <UserCheck className="h-4 w-4 mr-2" />
+                          View Progress
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="flex-grow-0 text-red-500 hover:text-red-600 hover:bg-red-50"
+                          onClick={() => handleDeleteClick(student)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -177,21 +256,31 @@ export const MyStudents = ({ teacherId }: MyStudentsProps) => {
                             {student.enrollment_date ? new Date(student.enrollment_date).toLocaleDateString() : 'N/A'}
                           </TableCell>
                           <TableCell>
-                            <span className={`px-2 py-1 rounded-full text-xs ${
+                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                               student.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
                             }`}>
                               {student.status || 'N/A'}
                             </span>
                           </TableCell>
                           <TableCell className="text-right">
-                            <Button 
-                              variant="outline" 
-                              size="sm"
-                              onClick={() => handleViewProgress(student.id)}
-                            >
-                              <UserCheck className="h-4 w-4 mr-2" />
-                              View Progress
-                            </Button>
+                            <div className="flex justify-end gap-2">
+                              <Button 
+                                variant="outline" 
+                                size="sm"
+                                onClick={() => handleViewProgress(student.id)}
+                              >
+                                <UserCheck className="h-4 w-4 mr-2" />
+                                View Progress
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="text-red-500 hover:text-red-600 hover:bg-red-50 border-red-200"
+                                onClick={() => handleDeleteClick(student)}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
                           </TableCell>
                         </TableRow>
                       ))}
@@ -211,6 +300,26 @@ export const MyStudents = ({ teacherId }: MyStudentsProps) => {
           </>
         )}
       </CardContent>
+      
+      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Remove Student</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to remove {studentToDelete?.name} from your students? This will only remove the assignment, not delete the student from the system.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleConfirmDelete}
+              className="bg-red-600 text-white hover:bg-red-700"
+            >
+              {removeStudentMutation.isPending ? "Removing..." : "Remove"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Card>
   );
 };

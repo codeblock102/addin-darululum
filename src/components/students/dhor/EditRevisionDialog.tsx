@@ -89,7 +89,7 @@ export const EditRevisionDialog = ({
         teacher_notes: formData.teacher_notes,
       };
 
-      // Fix: Change 'revisions' to 'juz_revisions' to match the actual table name
+      // Use juz_revisions table name which matches the actual table in the database
       const { data, error } = await supabase
         .from('juz_revisions')
         .update(submissionData)
