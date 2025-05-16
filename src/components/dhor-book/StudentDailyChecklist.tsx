@@ -1,58 +1,77 @@
-import type { DailyActivityEntry } from "./DhorBook";
-import { CheckCircle2, XCircle } from "lucide-react";
+
+import { DailyActivityEntry } from "./DhorBook";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
+import { format } from "date-fns";
 
 interface StudentDailyChecklistProps {
-  activity: DailyActivityEntry | null | undefined;
+  studentId: string;
+  date: Date;
+  entries?: DailyActivityEntry[];
 }
 
-export function StudentDailyChecklist({ activity }: StudentDailyChecklistProps) {
-  const hasSabaq = 
-    activity &&
-    activity.current_juz !== null && activity.current_juz !== undefined &&
-    activity.current_surah !== null && activity.current_surah !== undefined &&
-    activity.start_ayat !== null && activity.start_ayat !== undefined &&
-    activity.end_ayat !== null && activity.end_ayat !== undefined;
-
-  const hasDhor = activity && activity.juz_revisions_data && activity.juz_revisions_data.length > 0;
+export function StudentDailyChecklist({ studentId, date, entries = [] }: StudentDailyChecklistProps) {
+  const dateStr = format(date, 'yyyy-MM-dd');
+  const todayEntries = entries.filter(entry => entry.entry_date === dateStr);
   
-  const hasSabaqPara = 
-    activity && 
-    activity.sabaq_para_data && 
-    activity.sabaq_para_data.juz_number !== null && activity.sabaq_para_data.juz_number !== undefined &&
-    activity.sabaq_para_data.quarters_revised !== null && activity.sabaq_para_data.quarters_revised !== undefined &&
-    activity.sabaq_para_data.quality_rating !== null && activity.sabaq_para_data.quality_rating !== undefined;
-
-  const renderStatus = (status: boolean | undefined | null, label: string) => {
-    return (
-      <div className="flex items-center space-x-2 p-2 border-b">
-        {status === undefined || status === null ? (
-          <XCircle className="h-5 w-5 text-gray-400" /> // Should not happen if activity prop is handled correctly
-        ) : status ? (
-          <CheckCircle2 className="h-5 w-5 text-green-500" />
-        ) : (
-          <XCircle className="h-5 w-5 text-red-500" />
-        )}
-        <span className="text-sm">{label}</span>
-      </div>
-    );
-  };
-
-  if (!activity) {
-    return (
-      <div className="mt-4 p-3 border rounded-md bg-gray-50">
-        {renderStatus(false, "Sabaq (Main Lesson)")}
-        {renderStatus(false, "Dhor (Revision)")}
-        {renderStatus(false, "Sabaq Para (Reading)")}
-        <p className="text-xs text-gray-500 mt-2">No activity recorded for this day.</p>
-      </div>
-    );
-  }
+  const hasSabaqEntry = todayEntries.some(entry => 
+    entry.current_juz !== undefined && 
+    entry.current_surah !== undefined && 
+    entry.start_ayat !== undefined && 
+    entry.end_ayat !== undefined
+  );
+  
+  const hasSabaqParaEntry = todayEntries.some(entry => 
+    entry.sabaq_para_data && entry.sabaq_para_data.juz_number !== undefined
+  );
+  
+  const hasDhor1Entry = todayEntries.some(entry => 
+    entry.juz_revisions_data && 
+    entry.juz_revisions_data.some(jr => jr.dhor_slot === 1)
+  );
+  
+  const hasDhor2Entry = todayEntries.some(entry => 
+    entry.juz_revisions_data && 
+    entry.juz_revisions_data.some(jr => jr.dhor_slot === 2)
+  );
   
   return (
-    <div className="mt-4 p-3 border rounded-md bg-gray-50">
-      {renderStatus(hasSabaq, "Sabaq (Main Lesson)")}
-      {renderStatus(hasDhor, "Dhor (Revision)")}
-      {renderStatus(hasSabaqPara, "Sabaq Para (Reading)")}
-    </div>
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-base">Daily Progress - {format(date, 'MMM d, yyyy')}</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-2">
+          <div className="flex items-center space-x-2">
+            <Checkbox id="sabaq" checked={hasSabaqEntry} disabled />
+            <Label htmlFor="sabaq" className={hasSabaqEntry ? "" : "text-muted-foreground"}>
+              Sabaq (Main Lesson)
+            </Label>
+          </div>
+          
+          <div className="flex items-center space-x-2">
+            <Checkbox id="sabaq-para" checked={hasSabaqParaEntry} disabled />
+            <Label htmlFor="sabaq-para" className={hasSabaqParaEntry ? "" : "text-muted-foreground"}>
+              Sabaq Para (Reading)
+            </Label>
+          </div>
+          
+          <div className="flex items-center space-x-2">
+            <Checkbox id="dhor1" checked={hasDhor1Entry} disabled />
+            <Label htmlFor="dhor1" className={hasDhor1Entry ? "" : "text-muted-foreground"}>
+              Dhor 1 (First Revision)
+            </Label>
+          </div>
+          
+          <div className="flex items-center space-x-2">
+            <Checkbox id="dhor2" checked={hasDhor2Entry} disabled />
+            <Label htmlFor="dhor2" className={hasDhor2Entry ? "" : "text-muted-foreground"}>
+              Dhor 2 (Second Revision)
+            </Label>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
   );
-} 
+}

@@ -38,11 +38,11 @@ export function DhorBookSummary({ summary }: DhorBookSummaryProps) {
           </CardHeader>
           <CardContent>
             <p className="text-sm text-muted-foreground">
-              {format(new Date(summary.last_entry_date), 'MMM d, yyyy')}
+              {summary.last_entry_date ? format(new Date(summary.last_entry_date), 'MMM d, yyyy') : 'No entries yet'}
             </p>
-            {summary.signature && (
+            {summary.last_updated_by && (
               <p className="text-sm text-muted-foreground mt-1">
-                By: {summary.signature}
+                By: {summary.last_updated_by}
               </p>
             )}
           </CardContent>

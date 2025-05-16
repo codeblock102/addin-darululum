@@ -1,6 +1,6 @@
+
 import { useState } from "react";
-// import { DhorBookEntry } from "@/types/dhor-book"; // Old type removed
-import { DailyActivityEntry } from "./DhorBook"; // Import new type from DhorBook.tsx
+import { DailyActivityEntry } from "./DhorBook"; // Now importing from DhorBook.tsx
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { NewEntryDialog } from "./NewEntryDialog";
@@ -47,12 +47,8 @@ export function DhorBookGrid({ entries, studentId, teacherId, currentWeek, onRef
               <TableHead>Sabaq Para (Reading)</TableHead>
               <TableHead>Dhor 1</TableHead>
               <TableHead>Dhor 2</TableHead>
-              {/* <TableHead>Dhor (Revisions)</TableHead> */}
               <TableHead>Quality (Sabaq)</TableHead>
               <TableHead>Comments</TableHead>
-              {/* Points and Detention might be added back if their data source is defined */}
-              {/* <TableHead className="text-center">P</TableHead> */}
-              {/* <TableHead className="text-center">DT</TableHead> */}
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -98,28 +94,10 @@ export function DhorBookGrid({ entries, studentId, teacherId, currentWeek, onRef
                         `Q: ${dhor2Entry.memorization_quality || 'N/A'}`
                       : '—'}
                   </TableCell>
-                  {/* Dhor Revisions Cell - Combined - Commented out */}
-                  {/* <TableCell>
-                    {entry?.juz_revisions_data && entry.juz_revisions_data.length > 0
-                      ? entry.juz_revisions_data
-                          .sort((a, b) => (a.dhor_slot || 0) - (b.dhor_slot || 0)) // Sort by dhor_slot
-                          .map(jr => {
-                            const juzPart = jr.juz_number ? `J${jr.juz_number}` : (jr.juz_revised ? `J${jr.juz_revised}` : 'N/A');
-                            const quarterPart = jr.quarter_start
-                              ? `(Qtr ${jr.quarter_start}${jr.quarters_covered ? `, ${jr.quarters_covered}c` : ''})`
-                              : (jr.quarters_covered ? `(${jr.quarters_covered}c)` : '');
-                            const qualityPart = jr.memorization_quality ? `Q: ${jr.memorization_quality}` : 'Q: N/A';
-                            return `${juzPart} ${quarterPart} ${qualityPart}`.trim();
-                          })
-                          .join('; \n') // Join multiple entries with a semicolon and newline
-                      : '—'}
-                  </TableCell> */}
                    <TableCell>
                     {entry?.memorization_quality || '—'} 
                   </TableCell>
-                  <TableCell>{entry?.comments || '—'}</TableCell> {/* Comments from DailyActivityEntry if populated */}
-                  {/* <TableCell className="text-center">{entry?.points || '—'}</TableCell> */}
-                  {/* <TableCell className="text-center">{entry?.detention ? '✓' : '—'}</TableCell> */}
+                  <TableCell>{entry?.comments || '—'}</TableCell>
                 </TableRow>
               );
             })}
@@ -133,7 +111,6 @@ export function DhorBookGrid({ entries, studentId, teacherId, currentWeek, onRef
         studentId={studentId}
         teacherId={teacherId}
         onSuccess={handleEntrySuccess}
-        // The DhorBookEntryForm within NewEntryDialog will need to be aware of the new data structure if its default values or submission relies on it.
       />
     </div>
   );

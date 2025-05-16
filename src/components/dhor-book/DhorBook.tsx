@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+
+import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -6,12 +7,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, FormProvider } from "react-hook-form";
 import * as z from "zod";
-import { Loader2, Save } from "lucide-react";
+import { Loader2, Save, Edit, Trash } from "lucide-react";
 import { ParentComment, StudentDhorSummary, RevisionSchedule, JuzMastery } from "@/types/dhor-book";
 
 interface DhorBookProps {
@@ -61,14 +61,14 @@ export const DhorBook = ({ studentId, teacherId }: DhorBookProps) => {
     enabled: !!studentId,
   });
 
-  // Fetch student's revision schedules
+  // Fetch student's revision schedules - using revision_schedule table (not revision_schedules)
   const { data: revisionSchedules, isLoading: schedulesLoading } = useQuery({
-    queryKey: ['revision-schedules', studentId],
+    queryKey: ['revision-schedule', studentId],
     queryFn: async () => {
       if (!studentId) return [];
 
       const { data, error } = await supabase
-        .from('revision_schedules')
+        .from('revision_schedule')
         .select('*')
         .eq('student_id', studentId)
         .order('scheduled_date', { ascending: false });
@@ -82,9 +82,10 @@ export const DhorBook = ({ studentId, teacherId }: DhorBookProps) => {
   // Form schema for Dhor Book entries
   const formSchema = z.object({
     points: z.number().min(0).max(100),
-    mistakes: z.number().min(0).max(50),
+    dhor_1_mistakes: z.number().min(0).max(50),
     entry_date: z.string(),
-    notes: z.string().optional(),
+    comments: z.string().optional(),
+    day_of_week: z.string().default(new Date().toLocaleString('en-US', { weekday: 'long' })),
   });
 
   // Form setup for Dhor Book entries
@@ -92,25 +93,31 @@ export const DhorBook = ({ studentId, teacherId }: DhorBookProps) => {
     resolver: zodResolver(formSchema),
     defaultValues: {
       points: 0,
-      mistakes: 0,
+      dhor_1_mistakes: 0,
       entry_date: new Date().toISOString().split('T')[0],
-      notes: "",
+      comments: "",
+      day_of_week: new Date().toLocaleString('en-US', { weekday: 'long' }),
     },
   });
 
   // Mutation for creating a new Dhor Book entry
   const createEntryMutation = useMutation({
     mutationFn: async (values: z.infer<typeof formSchema>) => {
+      // Create a proper entry object that matches the table schema
+      const entryData = {
+        student_id: studentId,
+        teacher_id: teacherId,
+        points: values.points,
+        dhor_1_mistakes: values.dhor_1_mistakes,
+        entry_date: values.entry_date,
+        comments: values.comments,
+        day_of_week: values.day_of_week,
+        detention: false
+      };
+
       const { data, error } = await supabase
         .from('dhor_book_entries')
-        .insert([{
-          student_id: studentId,
-          teacher_id: teacherId,
-          points: values.points,
-          mistakes: values.mistakes,
-          entry_date: values.entry_date,
-          notes: values.notes,
-        }]);
+        .insert([entryData]);
 
       if (error) {
         throw new Error(`Failed to create entry: ${error.message}`);
@@ -331,7 +338,7 @@ export const DhorBook = ({ studentId, teacherId }: DhorBookProps) => {
                     <FormItem>
                       <FormLabel>Points</FormLabel>
                       <FormControl>
-                        <Input type="number" placeholder="Enter points" {...field} />
+                        <Input type="number" placeholder="Enter points" {...field} onChange={(e) => field.onChange(parseFloat(e.target.value))} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -339,12 +346,12 @@ export const DhorBook = ({ studentId, teacherId }: DhorBookProps) => {
                 />
                 <FormField
                   control={form.control}
-                  name="mistakes"
+                  name="dhor_1_mistakes"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Mistakes</FormLabel>
                       <FormControl>
-                        <Input type="number" placeholder="Enter mistakes" {...field} />
+                        <Input type="number" placeholder="Enter mistakes" {...field} onChange={(e) => field.onChange(parseFloat(e.target.value))} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -365,7 +372,7 @@ export const DhorBook = ({ studentId, teacherId }: DhorBookProps) => {
                 />
                 <FormField
                   control={form.control}
-                  name="notes"
+                  name="comments"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Notes</FormLabel>
@@ -401,9 +408,9 @@ export const DhorBook = ({ studentId, teacherId }: DhorBookProps) => {
                 <ul className="mt-2 space-y-2">
                   {dhorBookEntries?.map(entry => (
                     <li key={entry.id} className="border rounded-md p-3">
-                      <p>Points: {entry.points}, Mistakes: {entry.mistakes}</p>
+                      <p>Points: {entry.points}, Mistakes: {entry.dhor_1_mistakes}</p>
                       <p>Date: {new Date(entry.entry_date).toLocaleDateString()}</p>
-                      {entry.notes && <p>Notes: {entry.notes}</p>}
+                      {entry.comments && <p>Notes: {entry.comments}</p>}
                     </li>
                   ))}
                 </ul>
@@ -543,9 +550,9 @@ export const DhorBook = ({ studentId, teacherId }: DhorBookProps) => {
           <CardContent>
             {schedulesLoading ? (
               <p>Loading schedules...</p>
-            ) : (
+            ) : revisionSchedules && revisionSchedules.length > 0 ? (
               <ul className="mt-2 space-y-2">
-                {revisionSchedules?.map(schedule => (
+                {revisionSchedules.map(schedule => (
                   <li key={schedule.id} className="border rounded-md p-3">
                     <p>Juz: {schedule.juz_number}, Date: {new Date(schedule.scheduled_date).toLocaleDateString()}</p>
                     <p>Priority: {schedule.priority}, Status: {schedule.status}</p>
@@ -553,6 +560,8 @@ export const DhorBook = ({ studentId, teacherId }: DhorBookProps) => {
                   </li>
                 ))}
               </ul>
+            ) : (
+              <p className="text-center text-muted-foreground py-4">No revision schedules found for this student.</p>
             )}
           </CardContent>
         </Card>
@@ -560,3 +569,28 @@ export const DhorBook = ({ studentId, teacherId }: DhorBookProps) => {
     </div>
   );
 };
+
+// Export a simple interface for use by other components that depend on DhorBook
+export interface DailyActivityEntry {
+  id: string;
+  entry_date: string;
+  current_juz?: number;
+  current_surah?: number;
+  start_ayat?: number;
+  end_ayat?: number;
+  memorization_quality?: string;
+  comments?: string;
+  sabaq_para_data?: {
+    juz_number: number;
+    quarters_revised?: string;
+    quality_rating?: string;
+  };
+  juz_revisions_data?: {
+    dhor_slot?: number;
+    juz_number?: number;
+    juz_revised?: number;
+    quarter_start?: number;
+    quarters_covered?: number;
+    memorization_quality?: string;
+  }[];
+}
