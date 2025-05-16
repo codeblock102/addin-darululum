@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -49,7 +49,7 @@ export function TeacherEditDialog({
   const queryClient = useQueryClient();
 
   // Update form data when teacher changes
-  useEffect(() => {
+  useState(() => {
     if (teacher) {
       setFormData({
         name: teacher.name || "",
@@ -60,7 +60,7 @@ export function TeacherEditDialog({
         bio: teacher.bio || ""
       });
     }
-  }, [teacher]);
+  });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -90,10 +90,19 @@ export function TeacherEditDialog({
         throw error;
       }
 
-      // Since we've removed the users table, we'll skip the email update in user records
-      // and just log that it would need to be updated in a real app
+      // If the email was changed, also update the user record
       if (teacher.email !== formData.email && teacher.userId) {
-        console.log(`In a production app, user email would be updated from ${teacher.email} to ${formData.email}`);
+        // This is a simplified example - in a real app, you might need more 
+        // complex logic for updating user emails in the auth system
+        const { error: userError } = await supabase
+          .from('users')
+          .update({ email: formData.email })
+          .eq('id', teacher.userId);
+
+        if (userError) {
+          console.error("Error updating user email:", userError);
+          // Continue anyway since the teacher record was updated
+        }
       }
 
       toast({
