@@ -16,7 +16,6 @@ import { TeacherSchedule } from "./TeacherSchedule";
 import { TeacherPerformance } from "./dashboard/TeacherPerformance";
 import { TeacherMessagesEnhanced } from "./messaging/TeacherMessagesEnhanced";
 import { TeacherLeaderboard } from "./leaderboard/TeacherLeaderboard";
-import { LeaderboardWidget } from "./dashboard/LeaderboardWidget";
 
 export const TeacherDashboard = ({ teacher }: TeacherDashboardProps) => {
   const location = useLocation();
@@ -59,10 +58,7 @@ export const TeacherDashboard = ({ teacher }: TeacherDashboardProps) => {
             </div>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <TodayStudents teacherId={teacher.id} />
-              <div className="space-y-6">
-                <LeaderboardWidget teacherId={teacher.id} />
-                <RecentActivity teacherId={teacher.id} />
-              </div>
+              <RecentActivity teacherId={teacher.id} />
             </div>
           </div>
         );
