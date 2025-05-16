@@ -22,12 +22,12 @@ interface EditRevisionDialogProps {
   onSuccess?: () => void;
 }
 
-// Use a single consistent enum for memorization quality
-type MemorizationQuality = "excellent" | "good" | "average" | "needsWork" | "horrible";
+// Define the consistent memorization quality types that match the database
+type MemorizationQuality = "excellent" | "good" | "average" | "poor" | "unsatisfactory";
 
 const formSchema = z.object({
   juz_number: z.number().min(1).max(30),
-  memorization_quality: z.enum(["excellent", "good", "average", "needsWork", "horrible"] as const),
+  memorization_quality: z.enum(["excellent", "good", "average", "poor", "unsatisfactory"] as const),
   revision_date: z.string(),
   notes: z.string().optional(),
 });
@@ -74,18 +74,10 @@ export function EditRevisionDialog({
             return;
           }
           if (data) {
-            // Map DB quality to form schema quality
-            let mappedQuality: MemorizationQuality = "average";
-            
-            if (data.memorization_quality === "excellent") mappedQuality = "excellent";
-            else if (data.memorization_quality === "good") mappedQuality = "good"; 
-            else if (data.memorization_quality === "average") mappedQuality = "average";
-            else if (data.memorization_quality === "poor" || 
-                    data.memorization_quality === "unsatisfactory") mappedQuality = "needsWork";
-            
+            // Directly map database quality to form schema quality since types are now aligned
             form.reset({
               juz_number: data.juz_revised || data.juz_number || 1,
-              memorization_quality: mappedQuality,
+              memorization_quality: data.memorization_quality as MemorizationQuality,
               revision_date: data.revision_date,
               notes: data.teacher_notes || "",
             });
@@ -96,20 +88,12 @@ export function EditRevisionDialog({
 
   const updateRevisionMutation = useMutation({
     mutationFn: async (values: z.infer<typeof formSchema>) => {
-      // Map form schema quality to DB quality
-      let dbQuality: string = "average";
-      
-      if (values.memorization_quality === "excellent") dbQuality = "excellent";
-      else if (values.memorization_quality === "good") dbQuality = "good";
-      else if (values.memorization_quality === "average") dbQuality = "average";
-      else if (values.memorization_quality === "needsWork") dbQuality = "poor";
-      else if (values.memorization_quality === "horrible") dbQuality = "unsatisfactory";
-      
+      // No mapping needed anymore since types are aligned
       const { error } = await supabase
         .from("juz_revisions")
         .update({
           juz_revised: values.juz_number,
-          memorization_quality: dbQuality,
+          memorization_quality: values.memorization_quality,
           revision_date: values.revision_date,
           teacher_notes: values.notes,
         })
@@ -118,8 +102,8 @@ export function EditRevisionDialog({
       if (error) throw error;
     },
     onSuccess: () => {
+      // Invalidate both individual student revisions and classroom records
       queryClient.invalidateQueries({ queryKey: ["juz-revisions", studentId] });
-      // Also invalidate classroom-records query to update the classroom tab
       queryClient.invalidateQueries({ queryKey: ["classroom-records"] });
       toast({
         title: "Revision Updated",
@@ -193,8 +177,8 @@ export function EditRevisionDialog({
                       <SelectItem value="excellent">Excellent</SelectItem>
                       <SelectItem value="good">Good</SelectItem>
                       <SelectItem value="average">Average</SelectItem>
-                      <SelectItem value="needsWork">Needs Work</SelectItem>
-                      <SelectItem value="horrible">Unsatisfactory</SelectItem>
+                      <SelectItem value="poor">Needs Work</SelectItem>
+                      <SelectItem value="unsatisfactory">Unsatisfactory</SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />

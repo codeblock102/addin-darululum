@@ -1,64 +1,73 @@
 
-import { format, startOfWeek, endOfWeek, addDays, addWeeks as dateAddWeeks, subWeeks as dateSubWeeks } from 'date-fns';
+import { format, addDays, subDays, addWeeks, subWeeks, parseISO, isValid, startOfWeek, endOfWeek } from 'date-fns';
 
-/**
- * Gets the ISO date string (YYYY-MM-DD) for the start of the week (Sunday) for a given date.
- * @param date - The date object.
- * @returns The ISO date string for the start of the week.
- */
-export function getStartOfWeekISO(date: Date): string {
-  // Assuming the week starts on Sunday
-  const weekStart = startOfWeek(date, { weekStartsOn: 0 }); 
-  return format(weekStart, 'yyyy-MM-dd');
-}
-
-/**
- * Gets the ISO date string (YYYY-MM-DD) for the end of the week (Saturday) for a given date.
- * @param date - The date object.
- * @returns The ISO date string for the end of the week.
- */
-export function getEndOfWeekISO(date: Date): string {
-  // Assuming the week ends on Saturday
-  const weekEnd = endOfWeek(date, { weekStartsOn: 0 });
-  return format(weekEnd, 'yyyy-MM-dd');
-}
-
-/**
- * Adds specified number of weeks to a date
- * @param date - The base date
- * @param amount - Number of weeks to add
- * @returns A new Date with weeks added
- */
-export function addWeeks(date: Date, amount: number): Date {
-  return dateAddWeeks(date, amount);
-}
-
-/**
- * Subtracts specified number of weeks from a date
- * @param date - The base date
- * @param amount - Number of weeks to subtract
- * @returns A new Date with weeks subtracted
- */
-export function subWeeks(date: Date, amount: number): Date {
-  return dateSubWeeks(date, amount);
-}
-
-/**
- * Gets an array of Date objects for each day of the week for a given date.
- * Assumes week starts on Sunday (index 0) for consistency with getStartOfWeekISO if used together,
- * but iterates to create a typical Mon-Sun or Sun-Sat sequence based on how startOfWeek is configured.
- * For this implementation, we'll use locale's default start of the week (often Monday for UI displays).
- * @param dateInWeek - A Date object falling within the desired week.
- * @returns An array of 7 Date objects for the week.
- */
-export function getWeekDates(dateInWeek: Date): Date[] {
-  // Get the start of the week. `startOfWeek` by default uses the locale.
-  // For more control, specify `weekStartsOn`: 0 for Sunday, 1 for Monday, etc.
-  // Let's use 0 (Sunday) to align with the existing getStartOfWeekISO, assuming UI will map day names correctly.
-  const weekStart = startOfWeek(dateInWeek, { weekStartsOn: 0 }); 
-  const weekDates: Date[] = [];
-  for (let i = 0; i < 7; i++) {
-    weekDates.push(addDays(weekStart, i));
+export function formatDate(date: Date | string, formatStr: string = 'yyyy-MM-dd'): string {
+  const parsedDate = typeof date === 'string' ? parseISO(date) : date;
+  
+  if (!isValid(parsedDate)) {
+    console.error('Invalid date provided to formatDate:', date);
+    return '';
   }
-  return weekDates;
+  
+  return format(parsedDate, formatStr);
+}
+
+export function getStartOfWeek(date: Date): Date {
+  return startOfWeek(date, { weekStartsOn: 0 }); // 0 means Sunday
+}
+
+export function getEndOfWeek(date: Date): Date {
+  return endOfWeek(date, { weekStartsOn: 0 }); // 0 means Sunday
+}
+
+export function getStartOfWeekISO(date: Date): string {
+  return formatDate(getStartOfWeek(date));
+}
+
+export function getEndOfWeekISO(date: Date): string {
+  return formatDate(getEndOfWeek(date));
+}
+
+export { addDays, subDays, addWeeks, subWeeks };
+
+export function getDatesBetween(startDate: Date, endDate: Date): Date[] {
+  const dates: Date[] = [];
+  let currentDate = new Date(startDate);
+
+  while (currentDate <= endDate) {
+    dates.push(new Date(currentDate));
+    currentDate.setDate(currentDate.getDate() + 1);
+  }
+
+  return dates;
+}
+
+export function isToday(date: Date | string): boolean {
+  const today = new Date();
+  const compareDate = typeof date === 'string' ? parseISO(date) : date;
+  
+  return (
+    compareDate.getDate() === today.getDate() &&
+    compareDate.getMonth() === today.getMonth() &&
+    compareDate.getFullYear() === today.getFullYear()
+  );
+}
+
+export function getWeekDates(date: Date): Date[] {
+  const start = getStartOfWeek(date);
+  return getDatesBetween(start, getEndOfWeek(date));
+}
+
+export function getWeekDatesISO(date: Date): string[] {
+  return getWeekDates(date).map(d => formatDate(d));
+}
+
+export function getDayName(date: Date | string, abbreviated: boolean = false): string {
+  const parsedDate = typeof date === 'string' ? parseISO(date) : date;
+  return format(parsedDate, abbreviated ? 'EEE' : 'EEEE');
+}
+
+export function getMonthName(date: Date | string, abbreviated: boolean = false): string {
+  const parsedDate = typeof date === 'string' ? parseISO(date) : date;
+  return format(parsedDate, abbreviated ? 'MMM' : 'MMMM');
 }

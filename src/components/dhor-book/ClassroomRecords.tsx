@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -46,60 +45,83 @@ export function ClassroomRecords({ teacherId }: ClassroomRecordsProps) {
   
   console.log("ClassroomRecords component mounted for teacher:", teacherId, "selected date:", selectedDate);
   
+  // Fetch ALL students (not just those with a student-teacher relationship)
+  const { data: allStudents, isLoading: allStudentsLoading } = useQuery({
+    queryKey: ["all-students"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("students")
+        .select("id, name, status")
+        .order("name", { ascending: true });
+        
+      if (error) {
+        console.error("Error fetching all students:", error);
+        throw error;
+      }
+      
+      return data || [];
+    },
+  });
+  
   // Fetch students associated with this teacher
   const { data: teacherStudents, isLoading: studentsLoading, error: studentsError } = useQuery({
     queryKey: ["teacher-students", teacherId],
     queryFn: async () => {
       console.log("Fetching teacher's students for:", teacherId);
-      const { data, error } = await supabase
+      
+      // First get the student associations
+      const { data: associations, error: associationsError } = await supabase
         .from("students_teachers")
         .select("student_name")
         .eq("teacher_id", teacherId)
         .eq("active", true);
 
-      if (error) {
-        console.error("Error fetching teacher's students:", error);
-        throw error;
+      if (associationsError) {
+        console.error("Error fetching teacher's student associations:", associationsError);
+        throw associationsError;
       }
-
-      if (!data || data.length === 0) {
-        console.log("No students found for teacher:", teacherId);
+      
+      // If we have no students OR if we don't have a teacherId yet, return an empty array
+      if (!associations || associations.length === 0 || !teacherId) {
+        console.log("No student associations found for teacher:", teacherId);
         return [];
       }
+      
+      console.log("Found student associations for teacher:", associations.length);
 
-      console.log("Found students for teacher:", data.length);
-
-      // Get full student details
-      const studentPromises = data.map(async ({ student_name }) => {
-        const { data: studentData, error: studentError } = await supabase
-          .from("students")
-          .select("id, name, status")
-          .eq("name", student_name)
-          .single();
-
-        if (studentError) {
-          console.error(`Error fetching student ${student_name}:`, studentError);
-          return null;
-        }
-
-        return studentData;
-      });
-
-      const students = await Promise.all(studentPromises);
-      return students.filter(student => student !== null);
+      // Get all student details
+      const studentNames = associations.map(a => a.student_name);
+      
+      const { data: studentsData, error: studentsError } = await supabase
+        .from("students")
+        .select("id, name, status")
+        .in("name", studentNames);
+        
+      if (studentsError) {
+        console.error("Error fetching student details:", studentsError);
+        throw studentsError;
+      }
+      
+      console.log("Found students for teacher:", studentsData?.length || 0);
+      
+      return studentsData || [];
     },
+    enabled: !!teacherId,
   });
 
-  // Fetch records for the given date
+  // Fetch records for the given date and all students
   const { data: recordsData, isLoading: recordsLoading, error: recordsError } = useQuery({
     queryKey: ["classroom-records", selectedDate, teacherId],
     queryFn: async () => {
-      if (!teacherStudents || teacherStudents.length === 0) {
+      // Use either teacherStudents if available or all students as fallback
+      const students = teacherStudents || allStudents;
+      
+      if (!students || students.length === 0) {
         console.log("No students to fetch records for");
         return [];
       }
 
-      const studentIds = teacherStudents.map((student) => student?.id).filter(Boolean);
+      const studentIds = students.map((student) => student?.id).filter(Boolean);
       console.log("Fetching records for student IDs:", studentIds, "date:", selectedDate);
 
       // Fetch progress records (sabaq)
@@ -140,7 +162,7 @@ export function ClassroomRecords({ teacherId }: ClassroomRecordsProps) {
                   "Juz Revisions:", juzRevisionsData?.length || 0);
 
       // Create summary for each student
-      const studentSummaries: StudentRecordSummary[] = teacherStudents.map((student) => {
+      const studentSummaries: StudentRecordSummary[] = students.map((student) => {
         const progressRecord = progressData?.find(
           (p) => p.student_id === student?.id
         );
@@ -191,7 +213,7 @@ export function ClassroomRecords({ teacherId }: ClassroomRecordsProps) {
       // Sort by completion score for leaderboard
       return studentSummaries.sort((a, b) => (b.completionScore || 0) - (a.completionScore || 0));
     },
-    enabled: !!teacherStudents && teacherStudents.length > 0,
+    enabled: !!(teacherStudents?.length > 0 || allStudents?.length > 0),
   });
 
   // Filter records based on search and record type
@@ -228,10 +250,10 @@ export function ClassroomRecords({ teacherId }: ClassroomRecordsProps) {
       case "average":
         variant = "outline";
         break;
-      case "needsWork":
+      case "poor":
         variant = "destructive";
         break;
-      case "horrible":
+      case "unsatisfactory":
         variant = "destructive";
         break;
     }
@@ -256,7 +278,7 @@ export function ClassroomRecords({ teacherId }: ClassroomRecordsProps) {
   };
 
   const stats = getCompletionStats();
-  const isLoading = studentsLoading || recordsLoading;
+  const isLoading = studentsLoading || recordsLoading || allStudentsLoading;
   const hasError = studentsError || recordsError;
 
   // Award components for top 3 places
@@ -510,7 +532,7 @@ export function ClassroomRecords({ teacherId }: ClassroomRecordsProps) {
               ) : (
                 <div className="text-center py-12 border rounded-md bg-muted/20">
                   <AlertCircle className="h-12 w-12 mx-auto mb-3 text-muted-foreground/50" />
-                  {teacherStudents && teacherStudents.length > 0 ? (
+                  {(teacherStudents && teacherStudents.length > 0) || (allStudents && allStudents.length > 0) ? (
                     <>
                       <h3 className="text-lg font-medium mb-1">No records found</h3>
                       <p className="text-muted-foreground">
