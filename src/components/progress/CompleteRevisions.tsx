@@ -13,7 +13,10 @@ export const CompleteRevisions = () => {
   } = useQuery({
     queryKey: ['complete-revisions'],
     queryFn: async () => {
-      const { data, error } = await supabase.from('juz_revisions').select(`
+      const {
+        data,
+        error
+      } = await supabase.from('juz_revisions').select(`
           *,
           students(name)
         `).order('juz_number', {
@@ -30,11 +33,10 @@ export const CompleteRevisions = () => {
         mastery_level: getMasteryLevelFromQuality(item.memorization_quality),
         last_revision_date: item.revision_date,
         revision_count: 1,
-        consecutive_good_revisions: 1,
         students: item.students
-      })) as JuzMastery[];
+      }));
       
-      return transformedData || [];
+      return transformedData;
     }
   });
   
@@ -54,18 +56,14 @@ export const CompleteRevisions = () => {
     }
   }
 
-  return (
-    <Card>
+  return <Card>
       <CardHeader className="bg-slate-900">
         <CardTitle>Complete Revisions</CardTitle>
       </CardHeader>
       <CardContent className="bg-slate-900">
-        {isLoading ? (
-          <div className="flex justify-center p-4">
+        {isLoading ? <div className="flex justify-center p-4">
             <Loader2 className="h-6 w-6 animate-spin" />
-          </div>
-        ) : (
-          <Table>
+          </div> : <Table>
             <TableHeader>
               <TableRow>
                 <TableHead>Student</TableHead>
@@ -76,8 +74,7 @@ export const CompleteRevisions = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {revisions?.map(revision => (
-                <TableRow key={revision.id}>
+              {revisions?.map(revision => <TableRow key={revision.id}>
                   <TableCell>{revision.students?.name}</TableCell>
                   <TableCell>{revision.juz_number}</TableCell>
                   <TableCell>
@@ -91,13 +88,10 @@ export const CompleteRevisions = () => {
                     </span>
                   </TableCell>
                   <TableCell>{revision.last_revision_date ? new Date(revision.last_revision_date).toLocaleDateString() : 'N/A'}</TableCell>
-                  <TableCell>{revision.revision_count || 1}</TableCell>
-                </TableRow>
-              ))}
+                  <TableCell>1</TableCell>
+                </TableRow>)}
             </TableBody>
-          </Table>
-        )}
+          </Table>}
       </CardContent>
-    </Card>
-  );
+    </Card>;
 };
