@@ -28,14 +28,6 @@ interface FormSabaqParaData {
   quarters_revised?: Database["public"]["Enums"]["quarter_revised"]; // Expected by sabaq_para table
 }
 
-// Comment out or remove old FormDhorData if no longer used elsewhere
-// interface FormDhorData {
-//   dhor_juz?: number;
-//   dhor_memorization_quality?: Database["public"]["Enums"]["quality_rating"];
-//   dhor_quarter_start?: number; 
-//   dhor_quarters_covered?: number; 
-// }
-
 // Combined form data type that the mutation function will receive
 export type DhorBookCombinedFormData = FormSabaqData & FormSabaqParaData & {
   entry_date: string;
@@ -209,8 +201,6 @@ export function useDhorEntryMutation({
             dhor_2_string_legacy: formData.dhor_2, // Old string field
             dhor_2_mistakes_legacy: formData.dhor_2_mistakes,
             sabaq_para_pages_from_form: formData.sabaq_para_pages, // Not saved to sabaq_para currently
-            // dhor1_quarter_start and dhor1_quarters_covered are now mapped and saved if dhor1_juz is present
-            // dhor2_quarter_start and dhor2_quarters_covered are now mapped and saved if dhor2_juz is present
         });
 
         if (results.length === 0) {
@@ -275,8 +265,11 @@ export function useDhorEntryMutation({
       queryClient.invalidateQueries({ queryKey: ['teacher-schedule'], refetchType: 'all' }); 
       queryClient.invalidateQueries({ queryKey: ['revision-schedule'], refetchType: 'all' });
       
-      // Specifically invalidate classroom-records queries to update the classroom tab
-      queryClient.invalidateQueries({ queryKey: ['classroom-records'], refetchType: 'all' });
+      // Specifically invalidate classroom-records query with the date parameter for the classroom tab
+      queryClient.invalidateQueries({ 
+        queryKey: ['classroom-records'],
+        refetchType: 'all'
+      });
       
       onSuccess?.(data);
       

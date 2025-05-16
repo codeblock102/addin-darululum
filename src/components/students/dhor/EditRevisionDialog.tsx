@@ -22,9 +22,12 @@ interface EditRevisionDialogProps {
   onSuccess?: () => void;
 }
 
+// Use a single consistent enum for memorization quality
+type MemorizationQuality = "excellent" | "good" | "average" | "needsWork" | "horrible";
+
 const formSchema = z.object({
   juz_number: z.number().min(1).max(30),
-  memorization_quality: z.enum(["excellent", "good", "average", "poor", "unsatisfactory"]),
+  memorization_quality: z.enum(["excellent", "good", "average", "needsWork", "horrible"] as const),
   revision_date: z.string(),
   notes: z.string().optional(),
 });
@@ -71,9 +74,18 @@ export function EditRevisionDialog({
             return;
           }
           if (data) {
+            // Map DB quality to form schema quality
+            let mappedQuality: MemorizationQuality = "average";
+            
+            if (data.memorization_quality === "excellent") mappedQuality = "excellent";
+            else if (data.memorization_quality === "good") mappedQuality = "good"; 
+            else if (data.memorization_quality === "average") mappedQuality = "average";
+            else if (data.memorization_quality === "poor" || 
+                    data.memorization_quality === "unsatisfactory") mappedQuality = "needsWork";
+            
             form.reset({
               juz_number: data.juz_revised || data.juz_number || 1,
-              memorization_quality: data.memorization_quality || "average",
+              memorization_quality: mappedQuality,
               revision_date: data.revision_date,
               notes: data.teacher_notes || "",
             });
@@ -84,11 +96,20 @@ export function EditRevisionDialog({
 
   const updateRevisionMutation = useMutation({
     mutationFn: async (values: z.infer<typeof formSchema>) => {
+      // Map form schema quality to DB quality
+      let dbQuality: string = "average";
+      
+      if (values.memorization_quality === "excellent") dbQuality = "excellent";
+      else if (values.memorization_quality === "good") dbQuality = "good";
+      else if (values.memorization_quality === "average") dbQuality = "average";
+      else if (values.memorization_quality === "needsWork") dbQuality = "poor";
+      else if (values.memorization_quality === "horrible") dbQuality = "unsatisfactory";
+      
       const { error } = await supabase
         .from("juz_revisions")
         .update({
           juz_revised: values.juz_number,
-          memorization_quality: values.memorization_quality,
+          memorization_quality: dbQuality,
           revision_date: values.revision_date,
           teacher_notes: values.notes,
         })
@@ -98,6 +119,8 @@ export function EditRevisionDialog({
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["juz-revisions", studentId] });
+      // Also invalidate classroom-records query to update the classroom tab
+      queryClient.invalidateQueries({ queryKey: ["classroom-records"] });
       toast({
         title: "Revision Updated",
         description: `The revision for ${studentName} has been updated successfully.`,
@@ -170,10 +193,8 @@ export function EditRevisionDialog({
                       <SelectItem value="excellent">Excellent</SelectItem>
                       <SelectItem value="good">Good</SelectItem>
                       <SelectItem value="average">Average</SelectItem>
-                      <SelectItem value="poor">Poor</SelectItem>
-                      <SelectItem value="unsatisfactory">
-                        Unsatisfactory
-                      </SelectItem>
+                      <SelectItem value="needsWork">Needs Work</SelectItem>
+                      <SelectItem value="horrible">Unsatisfactory</SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />

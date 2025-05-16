@@ -15,6 +15,7 @@ import { SettingsHeader } from "@/components/admin/settings/SettingsHeader";
 
 export default function Settings() {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [activeTab, setActiveTab] = useState("appearance");
   const { settings, saveSettings, isLoading, error } = useSettings();
   const [isSaving, setIsSaving] = useState(false);
@@ -74,7 +75,7 @@ export default function Settings() {
               <div className="sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 pb-4">
                 <SettingsTabs />
               </div>
-              <SettingsContent settings={settings} updateSettings={saveSettings} />
+              <SettingsContent settings={settings} />
             </Tabs>
           </ScrollArea>
         </div>
