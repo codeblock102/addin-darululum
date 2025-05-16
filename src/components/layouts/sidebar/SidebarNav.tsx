@@ -2,6 +2,7 @@
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { NavItem } from "@/types/navigation";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface SidebarNavProps {
   items: NavItem[];
@@ -10,6 +11,7 @@ interface SidebarNavProps {
 
 export const SidebarNav = ({ items, isAdmin }: SidebarNavProps) => {
   const location = useLocation();
+  const isMobile = useIsMobile();
   
   const styles = {
     navItem: {
@@ -22,24 +24,45 @@ export const SidebarNav = ({ items, isAdmin }: SidebarNavProps) => {
     }
   };
 
+  const isNavItemActive = (item: NavItem) => {
+    if (item.exact) {
+      return location.pathname === item.href && !location.search;
+    }
+    
+    if (item.href.includes('?tab=')) {
+      const [path, search] = item.href.split('?');
+      return location.pathname === path && location.search.includes(search);
+    }
+    
+    return location.pathname === item.href;
+  };
+
+  const handleNavigation = (event: React.MouseEvent<HTMLAnchorElement>) => {
+    if (isMobile) {
+      // Only dispatch on mobile to close sidebar
+      const navEvent = new CustomEvent('navigate-mobile');
+      window.dispatchEvent(navEvent);
+    }
+  };
+
   return (
     <nav className="grid gap-1 px-2">
       {items.map((item, index) => {
-        const isActive = item.href.includes('?tab=')
-          ? location.pathname === '/teacher-portal' && location.search.includes(item.href.split('?')[1])
-          : location.pathname === item.href;
+        const isActive = isNavItemActive(item);
           
         return (
           <Link
             key={index}
             to={item.href}
+            onClick={handleNavigation}
             className={cn(
               "flex items-center gap-3 rounded-lg pl-3 pr-3 py-3 text-sm font-medium transition-all",
               isActive ? styles.navItem.active : styles.navItem.inactive
             )}
+            title={item.description}
           >
-            <item.icon className="h-5 w-5" />
-            <span>{item.label}</span>
+            <item.icon className="h-5 w-5 min-w-5" />
+            <span className="truncate">{item.label}</span>
           </Link>
         );
       })}

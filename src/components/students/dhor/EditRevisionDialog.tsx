@@ -22,7 +22,7 @@ interface EditRevisionDialogProps {
   onSuccess?: () => void;
 }
 
-// Define the consistent memorization quality types that match the database
+// Define the consistent memorization quality types
 type MemorizationQuality = "excellent" | "good" | "average" | "poor" | "unsatisfactory";
 
 const formSchema = z.object({
@@ -74,10 +74,12 @@ export function EditRevisionDialog({
             return;
           }
           if (data) {
-            // Directly map database quality to form schema quality since types are now aligned
+            // Map database quality to form schema quality
+            const quality = data.memorization_quality as MemorizationQuality;
+            
             form.reset({
               juz_number: data.juz_revised || data.juz_number || 1,
-              memorization_quality: data.memorization_quality as MemorizationQuality,
+              memorization_quality: quality,
               revision_date: data.revision_date,
               notes: data.teacher_notes || "",
             });
@@ -88,7 +90,7 @@ export function EditRevisionDialog({
 
   const updateRevisionMutation = useMutation({
     mutationFn: async (values: z.infer<typeof formSchema>) => {
-      // No mapping needed anymore since types are aligned
+      // Map values directly to database fields
       const { error } = await supabase
         .from("juz_revisions")
         .update({
@@ -127,7 +129,7 @@ export function EditRevisionDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[425px] w-[95%] max-w-[95%] sm:w-auto">
         <DialogHeader>
           <DialogTitle>Edit Revision</DialogTitle>
           <DialogDescription>

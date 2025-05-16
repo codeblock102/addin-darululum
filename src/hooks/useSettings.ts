@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
 
-// Define the settings interface
+// Define the settings interface to match src/types/settings.ts SystemSettings
 export interface SystemSettings {
   id: string;
   user_id: string;
@@ -15,9 +15,8 @@ export interface SystemSettings {
   updated_at: string;
   settings?: Record<string, any>;
   
-  // Additional properties used by components
-  appearance?: {
-    theme?: 'light' | 'dark' | 'system';
+  appearance: {
+    theme: 'light' | 'dark' | 'system';
     fontSize?: string;
     colorScheme?: string;
     sidebarCompact?: boolean;
@@ -84,9 +83,9 @@ export const useSettings = () => {
         updated_at: new Date().toISOString(),
         settings: {},
         
-        // Add placeholders for other required properties
+        // Required properties for SystemSettings interface
         appearance: {
-          theme: 'system',
+          theme: 'system' as const,
           fontSize: 'medium',
           colorScheme: 'default',
           sidebarCompact: false,
