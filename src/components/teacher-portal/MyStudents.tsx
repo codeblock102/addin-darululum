@@ -25,6 +25,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { useNavigate } from "react-router-dom";
 import { AddStudentDialog } from "./students/AddStudentDialog";
 import { useToast } from "@/hooks/use-toast";
+import { hasPermission } from "@/utils/roleUtils";
 
 interface MyStudentsProps {
   teacherId: string;
@@ -44,12 +45,24 @@ interface StudentAssignment {
 
 export const MyStudents = ({ teacherId }: MyStudentsProps) => {
   const [searchQuery, setSearchQuery] = useState("");
-  const [studentToDelete, setStudentToDelete] = useState<{ id: string, name: string } | null>(null);
+  const [studentToDelete, setStudentToDelete] = useState<{ id: string, name: string, studentId: string } | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isDeleteType, setIsDeleteType] = useState<'remove' | 'delete'>('remove');
+  const [canDeleteStudents, setCanDeleteStudents] = useState(false);
   const isMobile = useIsMobile();
   const navigate = useNavigate();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  
+  // Check if teacher has permission to delete students
+  useState(() => {
+    const checkPermission = async () => {
+      const hasDeletePermission = await hasPermission("manage_students");
+      setCanDeleteStudents(hasDeletePermission);
+    };
+    
+    checkPermission();
+  }, []);
   
   // First fetch teacher's assigned students
   const { data: assignedStudents, isLoading: loadingAssignments } = useQuery({
@@ -126,6 +139,44 @@ export const MyStudents = ({ teacherId }: MyStudentsProps) => {
     },
   });
   
+  const deleteStudentMutation = useMutation({
+    mutationFn: async (studentId: string) => {
+      // First, remove any student-teacher relationships
+      const { error: relationshipError } = await supabase
+        .from('students_teachers')
+        .delete()
+        .eq('student_name', studentToDelete?.name || '');
+      
+      if (relationshipError) throw relationshipError;
+      
+      // Then delete the student
+      const { error } = await supabase
+        .from('students')
+        .delete()
+        .eq('id', studentId);
+      
+      if (error) throw error;
+      return studentId;
+    },
+    onSuccess: () => {
+      toast({
+        title: "Student deleted",
+        description: `${studentToDelete?.name} has been permanently deleted from the database.`,
+      });
+      queryClient.invalidateQueries({ queryKey: ['teacher-student-assignments'] });
+      queryClient.invalidateQueries({ queryKey: ['teacher-students-details'] });
+      setIsDeleteDialogOpen(false);
+      setStudentToDelete(null);
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: `Failed to delete student: ${error.message}`,
+        variant: "destructive"
+      });
+    },
+  });
+  
   const isLoading = loadingAssignments || loadingStudents;
   
   // Filter students based on search query
@@ -139,10 +190,11 @@ export const MyStudents = ({ teacherId }: MyStudentsProps) => {
   };
   
   // Handle click on delete button
-  const handleDeleteClick = (student: Student) => {
+  const handleDeleteClick = (student: Student, deleteType: 'remove' | 'delete') => {
     const assignment = assignedStudents?.find(a => a.student_name === student.name);
     if (assignment) {
-      setStudentToDelete({ id: assignment.id, name: student.name });
+      setStudentToDelete({ id: assignment.id, name: student.name, studentId: student.id });
+      setIsDeleteType(deleteType);
       setIsDeleteDialogOpen(true);
     } else {
       toast({
@@ -155,7 +207,11 @@ export const MyStudents = ({ teacherId }: MyStudentsProps) => {
   
   const handleConfirmDelete = () => {
     if (studentToDelete) {
-      removeStudentMutation.mutate({ assignmentId: studentToDelete.id });
+      if (isDeleteType === 'delete' && canDeleteStudents) {
+        deleteStudentMutation.mutate(studentToDelete.studentId);
+      } else {
+        removeStudentMutation.mutate({ assignmentId: studentToDelete.id });
+      }
     }
   };
   
@@ -220,14 +276,26 @@ export const MyStudents = ({ teacherId }: MyStudentsProps) => {
                           <UserCheck className="h-4 w-4 mr-2" />
                           View Progress
                         </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="flex-grow-0 text-red-500 hover:text-red-600 hover:bg-red-50"
-                          onClick={() => handleDeleteClick(student)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
+                        <div className="flex gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="text-red-500 hover:text-red-600 hover:bg-red-50"
+                            onClick={() => handleDeleteClick(student, 'remove')}
+                          >
+                            <User className="h-4 w-4" />
+                          </Button>
+                          {canDeleteStudents && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="text-red-500 hover:text-red-600 hover:bg-red-50"
+                              onClick={() => handleDeleteClick(student, 'delete')}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          )}
+                        </div>
                       </div>
                     </div>
                   ))}
@@ -275,11 +343,23 @@ export const MyStudents = ({ teacherId }: MyStudentsProps) => {
                               <Button
                                 variant="outline"
                                 size="sm"
-                                className="text-red-500 hover:text-red-600 hover:bg-red-50 border-red-200"
-                                onClick={() => handleDeleteClick(student)}
+                                className="text-amber-500 hover:text-amber-600 hover:bg-amber-50 border-amber-200"
+                                onClick={() => handleDeleteClick(student, 'remove')}
+                                title="Remove from your students"
                               >
-                                <Trash2 className="h-4 w-4" />
+                                <User className="h-4 w-4" />
                               </Button>
+                              {canDeleteStudents && (
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="text-red-500 hover:text-red-600 hover:bg-red-50 border-red-200"
+                                  onClick={() => handleDeleteClick(student, 'delete')}
+                                  title="Delete student from database"
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              )}
                             </div>
                           </TableCell>
                         </TableRow>
@@ -304,9 +384,17 @@ export const MyStudents = ({ teacherId }: MyStudentsProps) => {
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Remove Student</AlertDialogTitle>
+            <AlertDialogTitle>{isDeleteType === 'delete' ? 'Delete Student' : 'Remove Student'}</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to remove {studentToDelete?.name} from your students? This will only remove the assignment, not delete the student from the system.
+              {isDeleteType === 'delete' ? (
+                <>
+                  Are you sure you want to delete {studentToDelete?.name}? This action cannot be undone and will permanently remove the student from the database.
+                </>
+              ) : (
+                <>
+                  Are you sure you want to remove {studentToDelete?.name} from your students? This will only remove the assignment, not delete the student from the system.
+                </>
+              )}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -315,7 +403,9 @@ export const MyStudents = ({ teacherId }: MyStudentsProps) => {
               onClick={handleConfirmDelete}
               className="bg-red-600 text-white hover:bg-red-700"
             >
-              {removeStudentMutation.isPending ? "Removing..." : "Remove"}
+              {deleteStudentMutation.isPending || removeStudentMutation.isPending ? 
+                (isDeleteType === 'delete' ? "Deleting..." : "Removing...") : 
+                (isDeleteType === 'delete' ? "Delete" : "Remove")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
