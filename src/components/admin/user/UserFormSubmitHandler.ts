@@ -30,7 +30,8 @@ export const handleUserSubmit = async (
             username: formData.username,
             teacher_id: formData.teacherId,
             role: 'teacher'
-          }
+          },
+          emailRedirectTo: window.location.origin + '/auth'
         }
       });
       

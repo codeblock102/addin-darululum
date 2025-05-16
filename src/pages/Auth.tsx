@@ -7,10 +7,11 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import { ArrowLeft, Eye, EyeOff, LockKeyhole, Mail, User } from "lucide-react";
+import { ArrowLeft, Eye, EyeOff, LockKeyhole, Mail, User, AlertTriangle } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { createNormalizedUsername } from "@/utils/createTeacherAccount";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 type AuthMode = "signIn" | "signUp" | "forgotPassword";
 
@@ -22,6 +23,7 @@ const Auth = () => {
   const [mode, setMode] = useState<AuthMode>("signIn");
   const [showPassword, setShowPassword] = useState(false);
   const [authMethod, setAuthMethod] = useState<"email" | "username">("email");
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
   const { session } = useAuth();
@@ -35,6 +37,7 @@ const Auth = () => {
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+    setErrorMessage(null);
 
     try {
       if (mode === "signIn") {
@@ -42,11 +45,20 @@ const Auth = () => {
         if (authMethod === "email") {
           // Sign in with email and password
           console.log(`Attempting to login with email: ${email}`);
-          const { error } = await supabase.auth.signInWithPassword({
+          const { data, error } = await supabase.auth.signInWithPassword({
             email,
             password,
           });
-          if (error) throw error;
+          
+          if (error) {
+            if (error.message.includes("Email not confirmed")) {
+              setErrorMessage("Email not confirmed. Please check your inbox for a confirmation email or create a new demo account.");
+            } else {
+              setErrorMessage(error.message);
+            }
+            throw error;
+          }
+          
           toast({
             title: "Login successful",
             description: "Welcome back!"
@@ -55,6 +67,7 @@ const Auth = () => {
         } else {
           // Username login requires checking for the user in user metadata
           if (!username || !password) {
+            setErrorMessage("Username and password are required");
             throw new Error("Username and password are required");
           }
           
@@ -65,10 +78,11 @@ const Auth = () => {
           const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
           if (emailPattern.test(username)) {
             console.log("Username looks like an email, trying direct login");
-            const { error } = await supabase.auth.signInWithPassword({
+            const { data, error } = await supabase.auth.signInWithPassword({
               email: username,
               password,
             });
+            
             if (!error) {
               toast({
                 title: "Login successful",
@@ -76,6 +90,8 @@ const Auth = () => {
               });
               navigate("/");
               return;
+            } else {
+              setErrorMessage(error.message);
             }
           }
           
@@ -86,6 +102,7 @@ const Auth = () => {
           
           if (!teachers || teachers.length === 0) {
             console.log("No teachers found in database");
+            setErrorMessage("No teachers found. Please create a teacher account first.");
             throw new Error("No teachers found. Please create a teacher account first.");
           }
           
@@ -105,18 +122,22 @@ const Auth = () => {
           
           if (possibleTeacher?.email) {
             console.log("Found potential matching teacher email:", possibleTeacher.email);
-            const { error } = await supabase.auth.signInWithPassword({
+            const { data, error } = await supabase.auth.signInWithPassword({
               email: possibleTeacher.email,
               password,
             });
             
-            if (error) throw error;
+            if (error) {
+              setErrorMessage(error.message);
+              throw error;
+            }
             toast({
               title: "Login successful",
               description: "Welcome back!"
             });
             navigate("/");
           } else {
+            setErrorMessage("Username not found. Please check your credentials or try logging in with email.");
             throw new Error("Username not found. Please check your credentials or try logging in with email.");
           }
         }
@@ -150,6 +171,9 @@ const Auth = () => {
       }
     } catch (error: any) {
       console.error("Authentication error:", error);
+      if (!errorMessage) {
+        setErrorMessage(error.message);
+      }
       toast({
         title: "Error",
         description: error.message,
@@ -347,6 +371,14 @@ const Auth = () => {
         </CardHeader>
         
         <CardContent>
+          {errorMessage && (
+            <Alert variant="destructive" className="mb-4">
+              <AlertTriangle className="h-4 w-4" />
+              <AlertTitle>Error</AlertTitle>
+              <AlertDescription>{errorMessage}</AlertDescription>
+            </Alert>
+          )}
+          
           {renderAuthForm()}
         </CardContent>
         
@@ -356,7 +388,7 @@ const Auth = () => {
           </p>
           <Link 
             to="/create-demo-account" 
-            className="text-sm text-primary hover:underline text-center"
+            className="text-sm text-primary hover:underline text-center font-medium"
           >
             Create demo teacher account
           </Link>

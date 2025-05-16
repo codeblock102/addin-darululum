@@ -2,10 +2,11 @@
 import { useState } from "react";
 import { createMuftiAmmarAccount, createNormalizedUsername } from "@/utils/createTeacherAccount";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { useToast } from "@/components/ui/use-toast";
 import { useNavigate } from "react-router-dom";
-import { Loader2 } from "lucide-react";
+import { Loader2, AlertTriangle, CheckCircle } from "lucide-react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 const CreateDemoAccount = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -26,7 +27,7 @@ const CreateDemoAccount = () => {
       if (result.success) {
         toast({
           title: "Success!",
-          description: `Teacher account created for Mufti Ammar. Username: ${result.username}`,
+          description: `Teacher account created for Mufti Ammar. Try logging in now.`,
         });
       } else {
         toast({
@@ -63,24 +64,37 @@ const CreateDemoAccount = () => {
             <p><strong>Email:</strong> Ammarmulla21@gmail.com</p>
             <p><strong>Password:</strong> Ammarmulla2021</p>
             <p><strong>Username:</strong> {demoUsername}</p>
-            <div className="bg-amber-50 p-3 rounded border border-amber-200 mt-3">
-              <p className="text-amber-800 text-sm font-medium">After creating the account, you can log in using:</p>
-              <ul className="list-disc pl-5 text-sm text-amber-700 mt-1">
-                <li>Username: <span className="font-mono">{demoUsername}</span></li>
-                <li>Email: <span className="font-mono">Ammarmulla21@gmail.com</span></li>
-                <li>Password: <span className="font-mono">Ammarmulla2021</span></li>
-              </ul>
-            </div>
+            
+            <Alert variant="warning" className="bg-amber-50 text-amber-800 border-amber-200 mt-3">
+              <AlertTriangle className="h-4 w-4" />
+              <AlertTitle>Important Login Information</AlertTitle>
+              <AlertDescription className="text-sm mt-1">
+                <p>After creating the account, you can log in using either:</p>
+                <ul className="list-disc pl-5 mt-1">
+                  <li>Username: <span className="font-mono">{demoUsername}</span></li>
+                  <li>Email: <span className="font-mono">Ammarmulla21@gmail.com</span></li>
+                  <li>Password: <span className="font-mono">Ammarmulla2021</span></li>
+                </ul>
+                <p className="mt-2">
+                  <strong>Note:</strong> If login fails, the email may need confirmation in the Supabase dashboard.
+                </p>
+              </AlertDescription>
+            </Alert>
           </div>
           
           {result && (
-            <div className={`p-4 rounded-md text-sm mt-4 ${result.success ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-800'}`}>
-              <p className="font-medium">{result.success ? 'Success!' : 'Error'}</p>
-              <p>{result.success 
-                ? `Teacher account created. Username: ${result.username}`
-                : result.error}
-              </p>
-            </div>
+            <Alert 
+              variant={result.success ? "default" : "destructive"}
+              className={`p-4 rounded-md text-sm mt-4 ${result.success ? 'bg-green-50 text-green-800 border-green-200' : 'bg-red-50 text-red-800 border-red-200'}`}
+            >
+              {result.success ? <CheckCircle className="h-4 w-4" /> : <AlertTriangle className="h-4 w-4" />}
+              <AlertTitle>{result.success ? 'Success!' : 'Error'}</AlertTitle>
+              <AlertDescription>
+                {result.message || result.error || (result.success 
+                  ? `Teacher account created. Try logging in now.`
+                  : "Failed to create teacher account")}
+              </AlertDescription>
+            </Alert>
           )}
           
           <div className="flex flex-col space-y-2">
@@ -102,6 +116,11 @@ const CreateDemoAccount = () => {
             </Button>
           </div>
         </CardContent>
+        <CardFooter className="flex justify-center">
+          <p className="text-xs text-gray-500 text-center">
+            This creates a demo account for testing purposes only.
+          </p>
+        </CardFooter>
       </Card>
     </div>
   );
