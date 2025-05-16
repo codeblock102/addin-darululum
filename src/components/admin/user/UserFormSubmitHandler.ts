@@ -26,7 +26,8 @@ export const handleUserSubmit = async (
         options: {
           data: { 
             username: formData.username,
-            teacher_id: formData.teacherId
+            teacher_id: formData.teacherId,
+            role: 'teacher'
           }
         }
       });
@@ -38,7 +39,7 @@ export const handleUserSubmit = async (
       
       console.log("User account created successfully:", data);
       onSuccess();
-      return "User invitation sent. They will need to confirm their email to activate the account.";
+      return "User account created successfully. They can now log in using their email or username.";
     }
   } catch (error: any) {
     console.error("User creation error details:", error);

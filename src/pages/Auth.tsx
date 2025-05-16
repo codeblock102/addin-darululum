@@ -11,7 +11,7 @@ import { ArrowLeft, Eye, EyeOff, LockKeyhole, Mail, User } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-type AuthMode = "signIn" | "forgotPassword";
+type AuthMode = "signIn" | "signUp" | "forgotPassword";
 
 const Auth = () => {
   const [email, setEmail] = useState("");
@@ -45,6 +45,10 @@ const Auth = () => {
             password,
           });
           if (error) throw error;
+          toast({
+            title: "Login successful",
+            description: "Welcome back!"
+          });
           navigate("/");
         } else {
           // Username login requires checking for the user in user metadata
@@ -53,7 +57,6 @@ const Auth = () => {
           }
           
           // First, try to find a user with this username in their metadata
-          // Without direct access to the auth.users table, we need to use a different approach
           console.log("Attempting login with username:", username);
           
           // Try signing in with the username as the email (if username format is an email)
@@ -65,6 +68,10 @@ const Auth = () => {
               password,
             });
             if (!error) {
+              toast({
+                title: "Login successful",
+                description: "Welcome back!"
+              });
               navigate("/");
               return;
             }
@@ -75,6 +82,7 @@ const Auth = () => {
             .from('teachers')
             .select('email, name');
           
+          // Normalize username for better matching
           const normalizedUsername = username.toLowerCase().replace(/\s+/g, '.').replace(/[^a-z0-9.]/g, '');
           console.log("Normalized username for search:", normalizedUsername);
           
@@ -92,11 +100,22 @@ const Auth = () => {
             });
             
             if (error) throw error;
+            toast({
+              title: "Login successful",
+              description: "Welcome back!"
+            });
             navigate("/");
           } else {
             throw new Error("Username not found. Please check your credentials or try logging in with email.");
           }
         }
+      } else if (mode === "signUp") {
+        // Handle sign up (we're not enabling public signup, but the UI is prepared)
+        toast({
+          title: "Registration disabled",
+          description: "Public registration is currently disabled. Please contact an administrator.",
+          variant: "destructive",
+        });
       } else if (mode === "forgotPassword") {
         // Handle password reset
         if (authMethod === "email") {
@@ -303,12 +322,16 @@ const Auth = () => {
           <CardTitle className="text-2xl font-bold text-center">
             {mode === "forgotPassword" 
               ? "Reset Password" 
-              : "Sign In"}
+              : mode === "signUp" 
+                ? "Create an Account"
+                : "Sign In"}
           </CardTitle>
           <CardDescription className="text-center">
             {mode === "forgotPassword"
               ? "Enter your email to receive a password reset link"
-              : "Sign in to your account to continue"}
+              : mode === "signUp"
+                ? "Create your account to get started"
+                : "Sign in to your account to continue"}
           </CardDescription>
         </CardHeader>
         

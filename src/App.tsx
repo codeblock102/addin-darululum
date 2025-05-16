@@ -20,6 +20,7 @@ import TeacherPortal from './pages/TeacherPortal';
 import Auth from './pages/Auth';
 import { ProtectedRoute } from './components/auth/ProtectedRoute';
 import AdminDashboard from './pages/admin/Dashboard';
+import CreateDemoAccount from './pages/CreateDemoAccount';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -38,6 +39,7 @@ function App() {
           <AuthProvider>
             <Routes>
               <Route path="/auth" element={<Auth />} />
+              <Route path="/create-demo-account" element={<CreateDemoAccount />} />
               <Route path="/" element={
                 <ProtectedRoute>
                   <Index />
