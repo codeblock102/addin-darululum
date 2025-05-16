@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import {
   Dialog,
@@ -88,8 +89,9 @@ export const EditRevisionDialog = ({
         teacher_notes: formData.teacher_notes,
       };
 
+      // Fix: Change 'revisions' to 'juz_revisions' to match the actual table name
       const { data, error } = await supabase
-        .from('revisions')
+        .from('juz_revisions')
         .update(submissionData)
         .eq('id', revisionData.id)
         .select();
