@@ -217,12 +217,18 @@ export const useSettings = () => {
       success: true
     };
   };
+  
+  // Add updateSettings function to fix Settings.tsx error
+  const updateSettings = (newSettings: Partial<SystemSettings>) => {
+    return saveSettings(newSettings);
+  };
 
   return {
     settings,
     isLoading: isLoading || updateSettingsMutation.isPending || createSettingsMutation.isPending,
     isError,
     error,
-    saveSettings
+    saveSettings,
+    updateSettings
   };
 };

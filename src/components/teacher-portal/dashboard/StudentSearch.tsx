@@ -16,13 +16,13 @@ export const StudentSearch = ({ teacherId }: StudentSearchProps) => {
   const [searchQuery, setSearchQuery] = useState("");
   const navigate = useNavigate();
   
-  const { data: students, isLoading } = useQuery({
-    queryKey: ["teacher-students", teacherId],
+  // First, fetch student names assigned to this teacher
+  const { data: assignedStudents, isLoading: loadingAssignments } = useQuery({
+    queryKey: ["teacher-assigned-students", teacherId],
     queryFn: async () => {
       if (!teacherId) return [];
       
       try {
-        // First get the student names assigned to this teacher
         const { data: assignments, error: assignmentsError } = await supabase
           .from("students_teachers")
           .select("student_name")
@@ -31,13 +31,26 @@ export const StudentSearch = ({ teacherId }: StudentSearchProps) => {
           
         if (assignmentsError) throw assignmentsError;
         
-        // If no assignments, return empty array
-        if (!assignments || assignments.length === 0) {
-          return [];
-        }
-        
+        return assignments || [];
+      } catch (error) {
+        console.error("Error fetching student assignments:", error);
+        return [];
+      }
+    },
+    enabled: !!teacherId,
+  });
+  
+  // Then, fetch actual student details
+  const { data: students, isLoading: loadingStudentDetails } = useQuery({
+    queryKey: ["teacher-student-details", assignedStudents],
+    queryFn: async () => {
+      if (!assignedStudents || assignedStudents.length === 0) {
+        return [];
+      }
+      
+      try {
         // Get student details using the student names
-        const studentNames = assignments.map(assignment => assignment.student_name);
+        const studentNames = assignedStudents.map(assignment => assignment.student_name);
         const { data: studentsData, error: studentsError } = await supabase
           .from("students")
           .select("id, name")
@@ -47,12 +60,14 @@ export const StudentSearch = ({ teacherId }: StudentSearchProps) => {
         if (studentsError) throw studentsError;
         return studentsData || [];
       } catch (error) {
-        console.error("Error fetching students:", error);
+        console.error("Error fetching student details:", error);
         return [];
       }
     },
-    enabled: !!teacherId,
+    enabled: !!assignedStudents && assignedStudents.length > 0,
   });
+  
+  const isLoading = loadingAssignments || loadingStudentDetails;
   
   const filteredStudents = students?.filter(student => 
     student.name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -89,7 +104,11 @@ export const StudentSearch = ({ teacherId }: StudentSearchProps) => {
               </div>
             ) : filteredStudents.length === 0 ? (
               <div className="text-center p-4 text-gray-500">
-                {searchQuery ? "No matching students found" : "No students found"}
+                {searchQuery 
+                  ? "No matching students found" 
+                  : assignedStudents && assignedStudents.length > 0
+                    ? "No student details available for your assignments."
+                    : "No students assigned to you"}
               </div>
             ) : (
               filteredStudents.map((student) => (

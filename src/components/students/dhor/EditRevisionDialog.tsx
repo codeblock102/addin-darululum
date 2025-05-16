@@ -24,6 +24,20 @@ interface EditRevisionDialogProps {
 
 // Define the consistent memorization quality types
 type MemorizationQuality = "excellent" | "good" | "average" | "needsWork" | "horrible";
+type DatabaseQualityValue = "excellent" | "good" | "average" | "poor" | "unsatisfactory";
+
+// Quality mapping between form and database values
+const qualityFormToDb = (formValue: MemorizationQuality): DatabaseQualityValue => {
+  if (formValue === "needsWork") return "poor";
+  if (formValue === "horrible") return "unsatisfactory";
+  return formValue as DatabaseQualityValue;
+};
+
+const qualityDbToForm = (dbValue: string): MemorizationQuality => {
+  if (dbValue === "poor") return "needsWork";
+  if (dbValue === "unsatisfactory") return "horrible";
+  return dbValue as MemorizationQuality;
+};
 
 const formSchema = z.object({
   juz_number: z.number().min(1).max(30),
@@ -74,19 +88,8 @@ export function EditRevisionDialog({
             return;
           }
           if (data) {
-            // Map database quality to form schema quality
-            let quality: MemorizationQuality = "average";
-            
-            // Map 'poor' and 'unsatisfactory' from DB to 'needsWork' and 'horrible'
-            if (data.memorization_quality === 'poor') {
-              quality = "needsWork";
-            } else if (data.memorization_quality === 'unsatisfactory') {
-              quality = "horrible";
-            } else if (data.memorization_quality === 'excellent' || 
-                     data.memorization_quality === 'good' || 
-                     data.memorization_quality === 'average') {
-              quality = data.memorization_quality as MemorizationQuality;
-            }
+            // Map database quality to form schema quality using our helper function
+            const quality = qualityDbToForm(data.memorization_quality || "average");
             
             form.reset({
               juz_number: data.juz_revised || data.juz_number || 1,
@@ -101,14 +104,8 @@ export function EditRevisionDialog({
 
   const updateRevisionMutation = useMutation({
     mutationFn: async (values: z.infer<typeof formSchema>) => {
-      // Map values from form to database fields
-      // Convert 'needsWork' and 'horrible' back to 'poor' and 'unsatisfactory' for DB
-      let dbQuality = values.memorization_quality;
-      if (values.memorization_quality === 'needsWork') {
-        dbQuality = 'poor';
-      } else if (values.memorization_quality === 'horrible') {
-        dbQuality = 'unsatisfactory';
-      }
+      // Map values from form to database fields using our helper function
+      const dbQuality = qualityFormToDb(values.memorization_quality);
       
       const { error } = await supabase
         .from("juz_revisions")
