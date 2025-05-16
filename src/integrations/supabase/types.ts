@@ -194,20 +194,6 @@ export type Database = {
             referencedRelation: "communications"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "communications_recipient_id_fkey"
-            columns: ["recipient_id"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "communications_sender_id_fkey"
-            columns: ["sender_id"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
         ]
       }
       dhor_book_entries: {
@@ -292,47 +278,6 @@ export type Database = {
           surah_list?: string
         }
         Relationships: []
-      }
-      juz_mastery: {
-        Row: {
-          consecutive_good_revisions: number | null
-          created_at: string
-          id: string
-          juz_number: number
-          last_revision_date: string | null
-          mastery_level: Database["public"]["Enums"]["mastery_level"] | null
-          revision_count: number | null
-          student_id: string | null
-        }
-        Insert: {
-          consecutive_good_revisions?: number | null
-          created_at?: string
-          id?: string
-          juz_number: number
-          last_revision_date?: string | null
-          mastery_level?: Database["public"]["Enums"]["mastery_level"] | null
-          revision_count?: number | null
-          student_id?: string | null
-        }
-        Update: {
-          consecutive_good_revisions?: number | null
-          created_at?: string
-          id?: string
-          juz_number?: number
-          last_revision_date?: string | null
-          mastery_level?: Database["public"]["Enums"]["mastery_level"] | null
-          revision_count?: number | null
-          student_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "juz_mastery_student_id_fkey"
-            columns: ["student_id"]
-            isOneToOne: false
-            referencedRelation: "students"
-            referencedColumns: ["id"]
-          },
-        ]
       }
       juz_revisions: {
         Row: {
@@ -664,50 +609,6 @@ export type Database = {
           },
         ]
       }
-      student_dhor_summaries: {
-        Row: {
-          created_at: string
-          days_absent: number
-          id: string
-          last_entry_date: string
-          last_updated_by: string | null
-          signature: string | null
-          student_id: string | null
-          total_points: number
-          updated_at: string
-        }
-        Insert: {
-          created_at?: string
-          days_absent?: number
-          id?: string
-          last_entry_date?: string
-          last_updated_by?: string | null
-          signature?: string | null
-          student_id?: string | null
-          total_points?: number
-          updated_at?: string
-        }
-        Update: {
-          created_at?: string
-          days_absent?: number
-          id?: string
-          last_entry_date?: string
-          last_updated_by?: string | null
-          signature?: string | null
-          student_id?: string | null
-          total_points?: number
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "student_dhor_summaries_student_id_fkey"
-            columns: ["student_id"]
-            isOneToOne: false
-            referencedRelation: "students"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       students: {
         Row: {
           completed_juz: number[] | null
@@ -803,30 +704,6 @@ export type Database = {
         }
         Relationships: []
       }
-      system_settings: {
-        Row: {
-          created_at: string
-          id: string
-          settings: Json
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          settings?: Json
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          settings?: Json
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
       teachers: {
         Row: {
           bio: string | null
@@ -857,59 +734,6 @@ export type Database = {
           name?: string
           phone?: string | null
           subject?: string
-        }
-        Relationships: []
-      }
-      user_roles: {
-        Row: {
-          created_at: string
-          id: string
-          role_id: string
-          user_id: string
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          role_id: string
-          user_id: string
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          role_id?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "user_roles_role_id_fkey"
-            columns: ["role_id"]
-            isOneToOne: false
-            referencedRelation: "roles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      users: {
-        Row: {
-          created_at: string
-          email: string
-          id: string
-          role: Database["public"]["Enums"]["user_role"]
-          username: string
-        }
-        Insert: {
-          created_at?: string
-          email: string
-          id?: string
-          role: Database["public"]["Enums"]["user_role"]
-          username: string
-        }
-        Update: {
-          created_at?: string
-          email?: string
-          id?: string
-          role?: Database["public"]["Enums"]["user_role"]
-          username?: string
         }
         Relationships: []
       }

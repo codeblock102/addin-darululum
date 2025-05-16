@@ -176,9 +176,7 @@ export const TeacherAttendance = ({ teacherId }: TeacherAttendanceProps) => {
       (s.student_id || s.id) === studentId
     );
     
-    return student && typeof student === 'object' && 'student_name' in student 
-      ? student.student_name 
-      : 'Unknown Student';
+    return student ? student.student_name || 'Unknown Student' : 'Unknown Student';
   };
   
   return (
@@ -261,6 +259,7 @@ export const TeacherAttendance = ({ teacherId }: TeacherAttendanceProps) => {
                     {Array.isArray(students) && students
                       .filter((s: any) => s.student_id === selectedStudent || s.id === selectedStudent)
                       .map((student: any) => {
+                        if (!student) return null;
                         const studentId = student.student_id || student.id;
                         const attendanceRecord = getStudentAttendance(studentId);
                         const status = attendanceRecord?.status || null;
@@ -273,7 +272,7 @@ export const TeacherAttendance = ({ teacherId }: TeacherAttendanceProps) => {
                                   <UserRound className="h-4 w-4" />
                                 </div>
                                 <div>
-                                  <p className="font-medium">{student.student_name}</p>
+                                  <p className="font-medium">{student.student_name || 'Unknown Student'}</p>
                                 </div>
                               </div>
                             </TableCell>
