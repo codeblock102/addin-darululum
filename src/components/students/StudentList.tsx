@@ -47,6 +47,8 @@ export const StudentList = ({ searchQuery, onEdit }: StudentListProps) => {
       console.log("Raw student data from Supabase:", data);
       return data as Student[];
     },
+    // Add a refetch interval to keep the list updated
+    refetchInterval: 30000, // Refresh every 30 seconds
   });
 
   const filteredStudents = students?.filter(

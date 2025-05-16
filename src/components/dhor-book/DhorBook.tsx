@@ -1,371 +1,562 @@
-
-import { useState, useCallback, useEffect } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useState, useEffect } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { StudentDhorSummary } from "@/types/dhor-book";
-import type { Database } from "@/types/supabase";
-import { getStartOfWeekISO, getWeekDates } from "@/utils/dateUtils";
-import { DhorBookGrid } from "./DhorBookGrid";
-import { DhorBookHeader } from "./DhorBookHeader";
-import { DhorBookSummary } from "./DhorBookSummary";
-import { Card, CardContent } from "@/components/ui/card";
-import { Loader2 } from "lucide-react";
-import { useToast } from "@/components/ui/use-toast";
-import { Progress as UiProgress } from "@/components/ui/progress";
-import { Activity } from "lucide-react";
-import { getTotalAyatsInJuz, getUniqueAyatsCoveredInJuz } from "@/utils/juzMetadata";
-import { useUpdateStudentCompletedJuz } from "./useUpdateStudentCompletedJuz";
-import { useIsMobile } from "@/hooks/use-mobile";
-
-// Define a helper type for table rows from our new Database type
-type DbTables = Database["public"]["Tables"];
-
-// Define a new structure for what an entry in the grid might look like
-export type DailyActivityEntry = DbTables["progress"]["Row"] & {
-  sabaq_para_data?: DbTables["sabaq_para"]["Row"] | null;
-  juz_revisions_data?: DbTables["juz_revisions"]["Row"][] | null; 
-  comments?: string | null;
-  points?: number | null;
-  detention?: boolean | null;
-  entry_date: string; 
-};
+import { useToast } from "@/hooks/use-toast";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm, FormProvider } from "react-hook-form";
+import * as z from "zod";
+import { Loader2, Save } from "lucide-react";
+import { ParentComment, StudentDhorSummary, RevisionSchedule, JuzMastery } from "@/types/dhor-book";
 
 interface DhorBookProps {
   studentId: string;
   teacherId: string;
 }
 
-export function DhorBook({ studentId, teacherId }: DhorBookProps) {
-  const [currentWeek, setCurrentWeek] = useState<Date>(new Date());
-  const isMobile = useIsMobile();
-  
-  const queryClient = useQueryClient();
+export const DhorBook = ({ studentId, teacherId }: DhorBookProps) => {
   const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const [isEditingComment, setIsEditingComment] = useState<string | null>(null);
+  const [editedComment, setEditedComment] = useState("");
 
-  const currentWeekISO = getStartOfWeekISO(currentWeek);
-
-  // Updated query key
-  const dailyActivityQueryKey = ['student-daily-activity', studentId, currentWeekISO];
-  const summaryQueryKey = ['dhor-book-summary', studentId]; // Assuming this remains based on 'student_dhor_summaries'
-
-  const { data: dailyActivities, isLoading: activitiesLoading, refetch: refetchActivities } = useQuery<DailyActivityEntry[]>({
-    queryKey: dailyActivityQueryKey,
+  // Fetch student's dhor book entries
+  const { data: dhorBookEntries, isLoading: entriesLoading } = useQuery({
+    queryKey: ['dhor-book-entries', studentId],
     queryFn: async () => {
-      const startOfWeek = new Date(new Date(currentWeek).setDate(currentWeek.getDate() - currentWeek.getDay()));
-      const endOfWeek = new Date(new Date(currentWeek).setDate(currentWeek.getDate() - currentWeek.getDay() + 6));
-      
-      const startOfWeekISO = startOfWeek.toISOString().split('T')[0];
-      const endOfWeekISO = endOfWeek.toISOString().split('T')[0];
+      if (!studentId) return [];
 
-      console.log(`Fetching student activity from ${startOfWeekISO} to ${endOfWeekISO} for student ${studentId}`);
-      
-      // Step 1: Fetch progress entries (main sabaq)
-      const { data: progressEntries, error: progressError } = await supabase
-        .from('progress')
-        .select('*') // Fetch all columns for now, can be optimized
-        .eq('student_id', studentId)
-        .gte('date', startOfWeekISO)
-        .lte('date', endOfWeekISO)
-        .order('date', { ascending: true });
-
-      if (progressError) {
-        console.error("Error fetching progress entries:", progressError);
-        throw progressError;
-      }
-      console.log("Fetched progress entries:", progressEntries);
-
-      // Step 2: Fetch sabaq_para entries
-      const { data: sabaqParaEntries, error: sabaqParaError } = await supabase
-        .from('sabaq_para')
-        .select('*')
-        .eq('student_id', studentId)
-        .gte('revision_date', startOfWeekISO)
-        .lte('revision_date', endOfWeekISO)
-        .order('revision_date', { ascending: true });
-        
-      if (sabaqParaError) {
-        console.error("Error fetching sabaq_para entries:", sabaqParaError);
-        // Decide if this should be a critical error or if we can proceed
-      }
-      console.log("Fetched sabaq_para entries:", sabaqParaEntries);
-
-      // Step 3: Fetch juz_revisions entries
-      const { data: juzRevisionEntries, error: juzRevisionError } = await supabase
-        .from('juz_revisions')
-        .select('*')
-        .eq('student_id', studentId)
-        .gte('revision_date', startOfWeekISO)
-        .lte('revision_date', endOfWeekISO)
-        .order('revision_date', { ascending: true });
-
-      if (juzRevisionError) {
-        console.error("Error fetching juz_revision entries:", juzRevisionError);
-        // Decide if this should be a critical error
-      }
-      console.log("Fetched juz_revision entries:", juzRevisionEntries);
-
-      // Step 4: Merge data. This is a simplified merge. 
-      // A more robust merge would create a list of all unique dates and then populate data for each date.
-      const activityMap = new Map<string, DailyActivityEntry>();
-
-      // Helper function to create a base/empty progress part
-      const createBaseProgressData = (dateStr: string, student_id: string, created_at_val?: string): DbTables["progress"]["Row"] => ({
-        id: crypto.randomUUID(), // Generate a unique ID for entries that don't have a base progress record
-        student_id: student_id,
-        date: dateStr,
-        current_juz: null,
-        current_surah: null,
-        start_ayat: null,
-        end_ayat: null,
-        pages_memorized: null,
-        verses_memorized: null,
-        memorization_quality: null,
-        teacher_notes: null,
-        completed_juz: [],
-        last_completed_surah: null,
-        last_revision_date: null,
-        notes: null,
-        revision_status: null,
-        created_at: created_at_val || new Date().toISOString(), 
-        // Ensure all non-optional fields from the progress table are included here with default/null values
-      });
-
-      progressEntries?.forEach(p => {
-        if (p.date) {
-          activityMap.set(p.date, { 
-            ...p, 
-            entry_date: p.date, // Standardize on entry_date
-            sabaq_para_data: null,
-            juz_revisions_data: [] 
-          });
-        }
-      });
-
-      sabaqParaEntries?.forEach(sp => {
-        if (sp.revision_date) {
-          const existing = activityMap.get(sp.revision_date);
-          if (existing) {
-            existing.sabaq_para_data = sp;
-          } else {
-            const baseProgress = createBaseProgressData(sp.revision_date, studentId, sp.created_at);
-            activityMap.set(sp.revision_date, {
-              ...baseProgress,
-              entry_date: sp.revision_date,
-              sabaq_para_data: sp,
-              juz_revisions_data: [],
-            });
-          }
-        }
-      });
-
-      juzRevisionEntries?.forEach(jr => {
-        if (jr.revision_date) {
-          const existing = activityMap.get(jr.revision_date);
-          if (existing) {
-            if (!existing.juz_revisions_data) existing.juz_revisions_data = [];
-            existing.juz_revisions_data.push(jr);
-          } else {
-            const baseProgress = createBaseProgressData(jr.revision_date, studentId, jr.created_at);
-            activityMap.set(jr.revision_date, {
-              ...baseProgress,
-              entry_date: jr.revision_date,
-              sabaq_para_data: null,
-              juz_revisions_data: [jr],
-            });
-          }
-        }
-      });
-      
-      const mergedActivities = Array.from(activityMap.values()).sort((a, b) => new Date(a.entry_date).getTime() - new Date(b.entry_date).getTime());
-
-      console.log("Merged daily activities:", mergedActivities);
-      return mergedActivities;
-    },
-    refetchOnWindowFocus: true,
-    refetchOnMount: true,
-    staleTime: 0,
-  });
-
-  const { data: summary, refetch: refetchSummary } = useQuery<StudentDhorSummary | null>({
-    queryKey: summaryQueryKey,
-    queryFn: async () => {
-      console.log(`Fetching summary for student ${studentId}`);
-      
       const { data, error } = await supabase
-        .from('student_dhor_summaries')
+        .from('dhor_book_entries')
         .select('*')
         .eq('student_id', studentId)
-        .limit(1);
+        .order('entry_date', { ascending: false });
 
-      if (error) {
-        console.error("Error fetching student dhor summary:", error);
-        if (error.code !== 'PGRST116' && !error.message.includes("JSON object requested, multiple (or no) rows returned")) {
-             throw error;
-        }
-        return null;
-      }
-      
-      const summaryData = Array.isArray(data) ? data[0] : data;
-
-      if (summaryData) {
-        console.log("Fetched summary:", summaryData);
-        return summaryData as StudentDhorSummary;
-      } else {
-        console.log("No summary found for student, returning null.");
-        return null;
-      }
-    },
-    refetchOnWindowFocus: false,
-  });
-
-  const { data: juzProgressData, isLoading: isLoadingJuzProgress } = useQuery({
-    queryKey: ['student-juz-progress', studentId],
-    queryFn: async () => {
-      if (!studentId) return null;
-
-      const { data: latestProgress, error: latestError } = await supabase
-        .from('progress')
-        .select('current_juz')
-        .eq('student_id', studentId)
-        .order('date', { ascending: false })
-        .limit(1)
-        .maybeSingle();
-
-      if (latestError) {
-        console.error("Error fetching latest progress:", latestError);
-        return { currentJuz: null, percentage: 0 };
-      }
-      
-      const currentJuz = latestProgress?.current_juz;
-      if (!currentJuz) {
-        return { currentJuz: null, percentage: 0 };
-      }
-
-      const { data: allJuzProgress, error: allProgressError } = await supabase
-        .from('progress')
-        .select('current_juz, current_surah, start_ayat, end_ayat')
-        .eq('student_id', studentId)
-        .eq('current_juz', currentJuz);
-
-      if (allProgressError) {
-        console.error("Error fetching all progress for Juz:", allProgressError);
-        return { currentJuz: currentJuz, percentage: 0 };
-      }
-
-      const totalAyatsInJuz = getTotalAyatsInJuz(currentJuz);
-      if (totalAyatsInJuz === 0) {
-        return { currentJuz: currentJuz, percentage: 0 };
-      }
-
-      const uniqueAyatsCovered = getUniqueAyatsCoveredInJuz(allJuzProgress || [], currentJuz);
-      const percentage = Math.round((uniqueAyatsCovered.size / totalAyatsInJuz) * 100);
-      
-      return {
-        currentJuz: currentJuz,
-        percentage: percentage
-      };
+      if (error) throw error;
+      return data || [];
     },
     enabled: !!studentId,
   });
 
-  const { mutate: updateCompletedJuz } = useUpdateStudentCompletedJuz();
+  // Fetch student's parent comments
+  const { data: parentComments, isLoading: commentsLoading } = useQuery({
+    queryKey: ['parent-comments', studentId],
+    queryFn: async () => {
+      if (!studentId) return [];
 
-  useEffect(() => {
-    if (
-      juzProgressData && 
-      juzProgressData.percentage === 100 && 
-      juzProgressData.currentJuz
-    ) {
-      console.log(`Triggering update for completed Juz: ${juzProgressData.currentJuz}`);
-      updateCompletedJuz({ 
-        studentId: studentId, 
-        newlyCompletedJuz: juzProgressData.currentJuz 
+      const { data, error } = await supabase
+        .from('parent_comments')
+        .select('*')
+        .eq('student_id', studentId)
+        .order('entry_date', { ascending: false });
+
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!studentId,
+  });
+
+  // Fetch student's revision schedules
+  const { data: revisionSchedules, isLoading: schedulesLoading } = useQuery({
+    queryKey: ['revision-schedules', studentId],
+    queryFn: async () => {
+      if (!studentId) return [];
+
+      const { data, error } = await supabase
+        .from('revision_schedules')
+        .select('*')
+        .eq('student_id', studentId)
+        .order('scheduled_date', { ascending: false });
+
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!studentId,
+  });
+
+  // Form schema for Dhor Book entries
+  const formSchema = z.object({
+    points: z.number().min(0).max(100),
+    mistakes: z.number().min(0).max(50),
+    entry_date: z.string(),
+    notes: z.string().optional(),
+  });
+
+  // Form setup for Dhor Book entries
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      points: 0,
+      mistakes: 0,
+      entry_date: new Date().toISOString().split('T')[0],
+      notes: "",
+    },
+  });
+
+  // Mutation for creating a new Dhor Book entry
+  const createEntryMutation = useMutation({
+    mutationFn: async (values: z.infer<typeof formSchema>) => {
+      const { data, error } = await supabase
+        .from('dhor_book_entries')
+        .insert([{
+          student_id: studentId,
+          teacher_id: teacherId,
+          points: values.points,
+          mistakes: values.mistakes,
+          entry_date: values.entry_date,
+          notes: values.notes,
+        }]);
+
+      if (error) {
+        throw new Error(`Failed to create entry: ${error.message}`);
+      }
+
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['dhor-book-entries', studentId] });
+      toast({
+        title: "Entry Created",
+        description: "New Dhor Book entry has been successfully saved.",
       });
-    }
-  }, [juzProgressData, studentId, updateCompletedJuz]);
+      form.reset();
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error Creating Entry",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
 
-  const refreshData = useCallback(() => {
-    console.log("Refreshing data manually...");
-    queryClient.invalidateQueries({ queryKey: dailyActivityQueryKey });
-    queryClient.invalidateQueries({ queryKey: summaryQueryKey });
-    queryClient.invalidateQueries({ queryKey: ['student-juz-progress', studentId] });
-    
-    Promise.all([
-      refetchActivities(),
-      refetchSummary(),
-    ])
-    .then(() => {
-      toast({ title: "Data refreshed", description: "The Dhor book data has been updated." });
-    })
-    .catch(error => {
-      console.error("Error refreshing data:", error);
-      toast({ title: "Refresh Error", description: error.message, variant: "destructive" });
-    });
-  }, [queryClient, refetchActivities, refetchSummary, dailyActivityQueryKey, summaryQueryKey, studentId, toast]);
+  // Form schema for Parent Comments
+  const commentFormSchema = z.object({
+    comment: z.string().min(1, "Comment is required"),
+    entry_date: z.string(),
+  });
 
-  if (activitiesLoading && studentId) {
-    return (
-      <div className="flex justify-center items-center min-h-[200px] sm:min-h-[300px]">
-        <Loader2 className="h-6 w-6 sm:h-8 sm:w-8 animate-spin text-primary" />
-      </div>
-    );
-  }
+  // Form setup for Parent Comments
+  const commentForm = useForm<z.infer<typeof commentFormSchema>>({
+    resolver: zodResolver(commentFormSchema),
+    defaultValues: {
+      comment: "",
+      entry_date: new Date().toISOString().split('T')[0],
+    },
+  });
+
+  // Mutation for creating a new Parent Comment
+  const createCommentMutation = useMutation({
+    mutationFn: async (values: z.infer<typeof commentFormSchema>) => {
+      const { data, error } = await supabase
+        .from('parent_comments')
+        .insert([{
+          student_id: studentId,
+          comment: values.comment,
+          entry_date: values.entry_date,
+        }]);
+
+      if (error) {
+        throw new Error(`Failed to create comment: ${error.message}`);
+      }
+
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['parent-comments', studentId] });
+      toast({
+        title: "Comment Created",
+        description: "New parent comment has been successfully saved.",
+      });
+      commentForm.reset();
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error Creating Comment",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Mutation for updating a Parent Comment
+  const updateCommentMutation = useMutation({
+    mutationFn: async ({ id, comment }: { id: string, comment: string }) => {
+      const { data, error } = await supabase
+        .from('parent_comments')
+        .update({ comment: comment })
+        .eq('id', id);
+
+      if (error) {
+        throw new Error(`Failed to update comment: ${error.message}`);
+      }
+
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['parent-comments', studentId] });
+      toast({
+        title: "Comment Updated",
+        description: "Parent comment has been successfully updated.",
+      });
+      setIsEditingComment(null);
+      setEditedComment("");
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error Updating Comment",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Mutation for deleting a Parent Comment
+  const deleteCommentMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const { data, error } = await supabase
+        .from('parent_comments')
+        .delete()
+        .eq('id', id);
+
+      if (error) {
+        throw new Error(`Failed to delete comment: ${error.message}`);
+      }
+
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['parent-comments', studentId] });
+      toast({
+        title: "Comment Deleted",
+        description: "Parent comment has been successfully deleted.",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error Deleting Comment",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Function to handle form submission for Dhor Book entries
+  const onSubmit = (values: z.infer<typeof formSchema>) => {
+    createEntryMutation.mutate(values);
+  };
+
+  // Function to handle form submission for Parent Comments
+  const onCommentSubmit = (values: z.infer<typeof commentFormSchema>) => {
+    createCommentMutation.mutate(values);
+  };
+
+  // Function to handle updating a comment
+  const handleUpdateComment = (id: string, comment: string) => {
+    updateCommentMutation.mutate({ id: id, comment: comment });
+  };
+
+  // Function to handle deleting a comment
+  const handleDeleteComment = (id: string) => {
+    deleteCommentMutation.mutate(id);
+  };
+
+  const { data: studentSummary, isLoading: summaryLoading } = useQuery({
+    queryKey: ['dhor-summary', studentId],
+    queryFn: async () => {
+      if (!studentId) return null;
+
+      // Instead of querying student_dhor_summaries, we'll calculate summary from dhor_book_entries
+      const { data, error } = await supabase
+        .from('dhor_book_entries')
+        .select('*')
+        .eq('student_id', studentId)
+        .order('entry_date', { ascending: false });
+      
+      if (error) throw error;
+      
+      // If no entries exist yet, return a default summary
+      if (!data || data.length === 0) {
+        return {
+          id: 'new-summary',
+          student_id: studentId,
+          days_absent: 0,
+          total_points: 0,
+          last_updated_by: null,
+          last_entry_date: new Date().toISOString(),
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        };
+      }
+      
+      // Calculate summary from entries
+      const totalPoints = data.reduce((sum, entry) => sum + (entry.points || 0), 0);
+      const lastEntry = data[0]; // Most recent entry (due to descending order)
+      
+      return {
+        id: `summary-${studentId}`,
+        student_id: studentId,
+        days_absent: 0, // Would need to calculate from attendance records
+        total_points: totalPoints,
+        last_updated_by: null,
+        last_entry_date: lastEntry.entry_date,
+        created_at: data[data.length-1].created_at,
+        updated_at: lastEntry.created_at
+      };
+    },
+    enabled: !!studentId
+  });
 
   return (
-    <Card className="p-1 sm:p-3 md:p-4 overflow-hidden">
-      <DhorBookHeader 
-        studentId={studentId} 
-        currentWeek={currentWeek}
-        onWeekChange={(newWeekStart) => {
-          setCurrentWeek(newWeekStart);
-        }}
-      />
-      <CardContent className="mt-2 p-0 sm:p-0">
-        {studentId ? (
-          <>
-            {/* Individual Student's Juz Progress */}
-            <div className="my-2 sm:my-4 p-2 sm:p-4 border rounded-md">
-              <h3 className="mb-2 text-xs sm:text-sm font-medium">Current Juz Progress</h3>
-              {isLoadingJuzProgress ? (
-                <div className="flex items-center text-xs sm:text-sm text-muted-foreground"> <Activity className="h-3 w-3 sm:h-4 sm:w-4 mr-1 animate-spin"/> Loading...</div>
-              ) : juzProgressData?.currentJuz ? (
-                <div className="space-y-1">
-                  <div className="flex justify-between text-xs text-muted-foreground">
-                    <span>Juz {juzProgressData.currentJuz}</span>
-                    <span>{juzProgressData.percentage}%</span>
-                  </div>
-                  <UiProgress value={juzProgressData.percentage} className="h-1.5 sm:h-2" />
-                </div>
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      {/* Left Column: Dhor Book Entries */}
+      <div>
+        <Card>
+          <CardHeader>
+            <CardTitle>Dhor Book Entries</CardTitle>
+            <CardDescription>Record and track student progress</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <FormProvider {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                <FormField
+                  control={form.control}
+                  name="points"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Points</FormLabel>
+                      <FormControl>
+                        <Input type="number" placeholder="Enter points" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="mistakes"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Mistakes</FormLabel>
+                      <FormControl>
+                        <Input type="number" placeholder="Enter mistakes" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="entry_date"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Entry Date</FormLabel>
+                      <FormControl>
+                        <Input type="date" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="notes"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Notes</FormLabel>
+                      <FormControl>
+                        <Textarea placeholder="Enter notes" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <Button type="submit" disabled={createEntryMutation.isPending}>
+                  {createEntryMutation.isPending ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Saving...
+                    </>
+                  ) : (
+                    <>
+                      <Save className="mr-2 h-4 w-4" />
+                      Create Entry
+                    </>
+                  )}
+                </Button>
+              </form>
+            </FormProvider>
+
+            {/* Display Dhor Book Entries */}
+            <div className="mt-6">
+              <h4 className="text-sm font-medium">Recent Entries</h4>
+              {entriesLoading ? (
+                <p>Loading entries...</p>
               ) : (
-                <p className="text-xs sm:text-sm text-muted-foreground">No Juz progress data found.</p>
+                <ul className="mt-2 space-y-2">
+                  {dhorBookEntries?.map(entry => (
+                    <li key={entry.id} className="border rounded-md p-3">
+                      <p>Points: {entry.points}, Mistakes: {entry.mistakes}</p>
+                      <p>Date: {new Date(entry.entry_date).toLocaleDateString()}</p>
+                      {entry.notes && <p>Notes: {entry.notes}</p>}
+                    </li>
+                  ))}
+                </ul>
               )}
             </div>
+          </CardContent>
+        </Card>
+      </div>
 
-            <div className="overflow-x-auto -mx-1 sm:mx-0">
-              <div className={isMobile ? "min-w-[500px] px-1" : "px-0 sm:min-w-full"}>
-                <DhorBookGrid 
-                  entries={dailyActivities || []}
-                  studentId={studentId}
-                  teacherId={teacherId}
-                  currentWeek={currentWeek}
-                  onRefresh={refreshData}
+      {/* Right Column: Parent Comments and Revision Schedules */}
+      <div>
+        <Card>
+          <CardHeader>
+            <CardTitle>Parent Comments</CardTitle>
+            <CardDescription>Communicate with parents about student progress</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <FormProvider {...commentForm}>
+              <form onSubmit={commentForm.handleSubmit(onCommentSubmit)} className="space-y-4">
+                <FormField
+                  control={commentForm.control}
+                  name="comment"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Comment</FormLabel>
+                      <FormControl>
+                        <Textarea placeholder="Enter comment" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
-              </div>
+                <FormField
+                  control={commentForm.control}
+                  name="entry_date"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Entry Date</FormLabel>
+                      <FormControl>
+                        <Input type="date" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <Button type="submit" disabled={createCommentMutation.isPending}>
+                  {createCommentMutation.isPending ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Saving...
+                    </>
+                  ) : (
+                    <>
+                      <Save className="mr-2 h-4 w-4" />
+                      Create Comment
+                    </>
+                  )}
+                </Button>
+              </form>
+            </FormProvider>
+
+            {/* Display Parent Comments */}
+            <div className="mt-6">
+              <h4 className="text-sm font-medium">Recent Comments</h4>
+              {commentsLoading ? (
+                <p>Loading comments...</p>
+              ) : (
+                <ul className="mt-2 space-y-2">
+                  {parentComments?.map(comment => (
+                    <li key={comment.id} className="border rounded-md p-3">
+                      {isEditingComment === comment.id ? (
+                        <div className="space-y-2">
+                          <Textarea
+                            value={editedComment}
+                            onChange={(e) => setEditedComment(e.target.value)}
+                            placeholder="Edit comment"
+                          />
+                          <div className="flex justify-end space-x-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => {
+                                setIsEditingComment(null);
+                                setEditedComment("");
+                              }}
+                            >
+                              Cancel
+                            </Button>
+                            <Button
+                              size="sm"
+                              onClick={() => handleUpdateComment(comment.id, editedComment)}
+                            >
+                              Update
+                            </Button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="space-y-2">
+                          <p>{comment.comment}</p>
+                          <p className="text-xs text-muted-foreground">
+                            Date: {new Date(comment.entry_date).toLocaleDateString()}
+                          </p>
+                          <div className="flex justify-end space-x-2">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => {
+                                setIsEditingComment(comment.id);
+                                setEditedComment(comment.comment);
+                              }}
+                            >
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => handleDeleteComment(comment.id)}
+                            >
+                              <Trash className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </div>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              )}
             </div>
-            
-            {summary && (
-              <div className="mt-3">
-                <DhorBookSummary 
-                  summary={summary}
-                  studentId={studentId}
-                />
-              </div>
+          </CardContent>
+        </Card>
+
+        <Card className="mt-6">
+          <CardHeader>
+            <CardTitle>Revision Schedules</CardTitle>
+            <CardDescription>Plan and track student revisions</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {schedulesLoading ? (
+              <p>Loading schedules...</p>
+            ) : (
+              <ul className="mt-2 space-y-2">
+                {revisionSchedules?.map(schedule => (
+                  <li key={schedule.id} className="border rounded-md p-3">
+                    <p>Juz: {schedule.juz_number}, Date: {new Date(schedule.scheduled_date).toLocaleDateString()}</p>
+                    <p>Priority: {schedule.priority}, Status: {schedule.status}</p>
+                    {schedule.notes && <p>Notes: {schedule.notes}</p>}
+                  </li>
+                ))}
+              </ul>
             )}
-          </>
-        ) : (
-          <p className="text-xs sm:text-sm text-muted-foreground p-4 text-center">Select a student to view their weekly log.</p>
-        )}
-      </CardContent>
-    </Card>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
   );
-}
+};
