@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -10,9 +10,8 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
+  DialogDescription,
   DialogFooter,
-  DialogDescription
 } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { UserPlus } from "lucide-react";
@@ -24,6 +23,7 @@ import {
   SelectTrigger, 
   SelectValue 
 } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
 
 interface AddStudentDialogProps {
   teacherId: string;
@@ -42,7 +42,9 @@ export const AddStudentDialog = ({ teacherId }: AddStudentDialogProps) => {
     enrollmentDate: new Date().toISOString().split('T')[0],
     guardianName: "",
     guardianContact: "",
-    status: "active" as "active" | "inactive" // Fix: Explicitly type as the required enum values
+    status: "active" as "active" | "inactive",
+    completedJuz: [] as number[],
+    currentJuz: "_none_"
   });
   
   const handleSubmit = async (e: React.FormEvent) => {
@@ -65,9 +67,12 @@ export const AddStudentDialog = ({ teacherId }: AddStudentDialogProps) => {
       
       if (lookupError) throw lookupError;
       
+      // Map the completed Juz to numbers
+      const completedJuz = formData.completedJuz.map(juz => Number(juz));
+      
       // If student doesn't exist, create them
       if (!existingStudent) {
-        // Fix: Pass a single object instead of an array and use proper status type
+        // Create the student with all the form data
         const { data: newStudent, error: createError } = await supabase
           .from('students')
           .insert({ 
@@ -76,7 +81,9 @@ export const AddStudentDialog = ({ teacherId }: AddStudentDialogProps) => {
             date_of_birth: formData.dateOfBirth || null,
             guardian_name: formData.guardianName || null,
             guardian_contact: formData.guardianContact || null,
-            status: formData.status
+            status: formData.status,
+            current_juz: formData.currentJuz === "_none_" ? null : Number(formData.currentJuz),
+            completed_juz: completedJuz
           })
           .select('id')
           .single();
@@ -84,6 +91,20 @@ export const AddStudentDialog = ({ teacherId }: AddStudentDialogProps) => {
         if (createError) throw createError;
         studentId = newStudent.id;
       } else {
+        // Update existing student with new information
+        const { error: updateError } = await supabase
+          .from('students')
+          .update({
+            date_of_birth: formData.dateOfBirth || null,
+            guardian_name: formData.guardianName || null,
+            guardian_contact: formData.guardianContact || null,
+            status: formData.status,
+            current_juz: formData.currentJuz === "_none_" ? null : Number(formData.currentJuz),
+            completed_juz: completedJuz
+          })
+          .eq('id', existingStudent.id);
+          
+        if (updateError) throw updateError;
         studentId = existingStudent.id;
       }
       
@@ -110,7 +131,9 @@ export const AddStudentDialog = ({ teacherId }: AddStudentDialogProps) => {
         enrollmentDate: new Date().toISOString().split('T')[0],
         guardianName: "",
         guardianContact: "",
-        status: "active"
+        status: "active",
+        completedJuz: [],
+        currentJuz: "_none_"
       });
       setActiveTab("basic");
       setOpen(false);
@@ -140,7 +163,7 @@ export const AddStudentDialog = ({ teacherId }: AddStudentDialogProps) => {
           Add Student
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-lg">
+      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Add New Student</DialogTitle>
           <DialogDescription>
@@ -151,14 +174,14 @@ export const AddStudentDialog = ({ teacherId }: AddStudentDialogProps) => {
         <form onSubmit={handleSubmit} className="space-y-4 pt-2">
           <Tabs value={activeTab} onValueChange={setActiveTab}>
             <TabsList className="grid grid-cols-3 mb-4">
-              <TabsTrigger value="basic">Basic Info</TabsTrigger>
+              <TabsTrigger value="basic">Student Info</TabsTrigger>
               <TabsTrigger value="guardian">Guardian</TabsTrigger>
-              <TabsTrigger value="additional">Additional</TabsTrigger>
+              <TabsTrigger value="quran">Quran Progress</TabsTrigger>
             </TabsList>
             
             <TabsContent value="basic" className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="studentName">Student Name <span className="text-red-500">*</span></Label>
+                <Label htmlFor="studentName">Full Name <span className="text-red-500">*</span></Label>
                 <Input
                   id="studentName"
                   placeholder="Enter student's full name"
@@ -168,25 +191,43 @@ export const AddStudentDialog = ({ teacherId }: AddStudentDialogProps) => {
                 />
               </div>
               
-              <div className="space-y-2">
-                <Label htmlFor="dateOfBirth">Date of Birth</Label>
-                <Input
-                  id="dateOfBirth"
-                  type="date"
-                  value={formData.dateOfBirth}
-                  onChange={(e) => setFormData(prev => ({ ...prev, dateOfBirth: e.target.value }))}
-                />
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="dateOfBirth">Date of Birth</Label>
+                  <Input
+                    id="dateOfBirth"
+                    type="date"
+                    value={formData.dateOfBirth}
+                    onChange={(e) => setFormData(prev => ({ ...prev, dateOfBirth: e.target.value }))}
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="enrollmentDate">Enrollment Date <span className="text-red-500">*</span></Label>
+                  <Input
+                    id="enrollmentDate"
+                    type="date"
+                    value={formData.enrollmentDate}
+                    onChange={(e) => setFormData(prev => ({ ...prev, enrollmentDate: e.target.value }))}
+                    required
+                  />
+                </div>
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="enrollmentDate">Enrollment Date <span className="text-red-500">*</span></Label>
-                <Input
-                  id="enrollmentDate"
-                  type="date"
-                  value={formData.enrollmentDate}
-                  onChange={(e) => setFormData(prev => ({ ...prev, enrollmentDate: e.target.value }))}
-                  required
-                />
+                <Label htmlFor="status">Status</Label>
+                <Select 
+                  value={formData.status} 
+                  onValueChange={(value: "active" | "inactive") => setFormData(prev => ({ ...prev, status: value }))}
+                >
+                  <SelectTrigger id="status">
+                    <SelectValue placeholder="Select status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="active">Active</SelectItem>
+                    <SelectItem value="inactive">Inactive</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </TabsContent>
             
@@ -212,21 +253,52 @@ export const AddStudentDialog = ({ teacherId }: AddStudentDialogProps) => {
               </div>
             </TabsContent>
             
-            <TabsContent value="additional" className="space-y-4">
+            <TabsContent value="quran" className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="status">Status</Label>
+                <Label htmlFor="currentJuz">Current Juz</Label>
                 <Select 
-                  value={formData.status} 
-                  onValueChange={(value: "active" | "inactive") => setFormData(prev => ({ ...prev, status: value }))}
+                  value={formData.currentJuz}
+                  onValueChange={(value) => setFormData(prev => ({ ...prev, currentJuz: value }))}
                 >
-                  <SelectTrigger id="status">
-                    <SelectValue placeholder="Select status" />
+                  <SelectTrigger id="currentJuz">
+                    <SelectValue placeholder="Select current Juz" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="active">Active</SelectItem>
-                    <SelectItem value="inactive">Inactive</SelectItem>
+                    <SelectItem value="_none_">None</SelectItem>
+                    {Array.from({ length: 30 }, (_, i) => i + 1).map(juz => (
+                      <SelectItem key={juz} value={juz.toString()}>Juz {juz}</SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>Completed Ajza</Label>
+                <div className="grid grid-cols-6 gap-x-4 gap-y-2 rounded-md border p-4">
+                  {Array.from({ length: 30 }, (_, i) => i + 1).map(juz => {
+                    const isCurrentJuz = formData.currentJuz !== "_none_" && parseInt(formData.currentJuz) === juz;
+                    return (
+                      <div key={juz} className={`flex items-center space-x-2 ${isCurrentJuz ? 'opacity-50' : ''}`}>
+                        <Checkbox
+                          id={`juz-${juz}`}
+                          checked={formData.completedJuz.includes(juz)}
+                          onCheckedChange={(checked) => {
+                            setFormData(prev => {
+                              const current = prev.completedJuz;
+                              const updated = checked
+                                ? [...current, juz].sort((a,b) => a-b)
+                                : current.filter(j => j !== juz);
+                              return { ...prev, completedJuz: updated };
+                            });
+                          }}
+                          disabled={isCurrentJuz}
+                        />
+                        <Label htmlFor={`juz-${juz}`} className="text-sm font-medium leading-none cursor-pointer">
+                          Juz {juz}
+                        </Label>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
             </TabsContent>
           </Tabs>
