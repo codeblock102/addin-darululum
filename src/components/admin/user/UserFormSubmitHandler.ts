@@ -19,6 +19,8 @@ export const handleUserSubmit = async (
       onError("Updating existing users requires admin privileges. This feature is disabled.");
       return "Operation not permitted";
     } else {
+      console.log("Creating new user with data:", formData);
+      
       // Sign up a new user
       const { data, error } = await supabase.auth.signUp({
         email: formData.email,

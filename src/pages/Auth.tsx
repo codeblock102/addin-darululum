@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { ArrowLeft, Eye, EyeOff, LockKeyhole, Mail, User } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { createNormalizedUsername } from "@/utils/createTeacherAccount";
 
 type AuthMode = "signIn" | "signUp" | "forgotPassword";
 
@@ -40,6 +41,7 @@ const Auth = () => {
         // Handle sign in based on selected method
         if (authMethod === "email") {
           // Sign in with email and password
+          console.log(`Attempting to login with email: ${email}`);
           const { error } = await supabase.auth.signInWithPassword({
             email,
             password,
@@ -82,13 +84,22 @@ const Auth = () => {
             .from('teachers')
             .select('email, name');
           
+          if (!teachers || teachers.length === 0) {
+            console.log("No teachers found in database");
+            throw new Error("No teachers found. Please create a teacher account first.");
+          }
+          
+          console.log("Found teachers:", teachers);
+          
           // Normalize username for better matching
           const normalizedUsername = username.toLowerCase().replace(/\s+/g, '.').replace(/[^a-z0-9.]/g, '');
           console.log("Normalized username for search:", normalizedUsername);
           
           // Find a possible match by checking if any teacher would have this username pattern
-          const possibleTeacher = teachers?.find(teacher => {
-            const teacherUsername = teacher.name?.toLowerCase().replace(/\s+/g, '.').replace(/[^a-z0-9.]/g, '');
+          const possibleTeacher = teachers.find(teacher => {
+            // Check normalized name (for teacher "Mufti Ammar" -> "mufti.ammar")
+            const teacherUsername = createNormalizedUsername(teacher.name);
+            console.log(`Checking teacher: ${teacher.name} -> ${teacherUsername}`);
             return teacherUsername === normalizedUsername;
           });
           
@@ -343,6 +354,12 @@ const Auth = () => {
           <p className="text-sm text-gray-500 text-center">
             Only admin-created accounts can access this system. Public registration is disabled.
           </p>
+          <Link 
+            to="/create-demo-account" 
+            className="text-sm text-primary hover:underline text-center"
+          >
+            Create demo teacher account
+          </Link>
         </CardFooter>
       </Card>
     </div>
