@@ -20,6 +20,11 @@ export interface SystemSettings {
     theme?: 'light' | 'dark' | 'system';
     fontSize?: string;
     colorScheme?: string;
+    sidebarCompact?: boolean;
+    highContrastMode?: boolean;
+    animationsEnabled?: boolean;
+    colorTheme?: string;
+    layoutDensity?: string;
   };
   notifications?: {
     email?: boolean;
@@ -84,6 +89,11 @@ export const useSettings = () => {
           theme: 'system',
           fontSize: 'medium',
           colorScheme: 'default',
+          sidebarCompact: false,
+          highContrastMode: false,
+          animationsEnabled: true,
+          colorTheme: 'default',
+          layoutDensity: 'normal'
         },
         notifications: {
           email: true,

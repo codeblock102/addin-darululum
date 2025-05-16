@@ -40,7 +40,6 @@ export function useTeacherAccounts() {
         for (const teacher of teachersData) {
           // Mock user data since we can't directly access auth.users
           let userData = null;
-          let userRole = "teacher";
           
           // If email exists, we could potentially check profiles or another public table
           if (teacher.email) {
