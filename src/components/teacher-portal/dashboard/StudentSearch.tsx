@@ -51,11 +51,11 @@ export const StudentSearch = ({ teacherId }: StudentSearchProps) => {
       try {
         // Get student details using the student names
         const studentNames = assignedStudents.map(assignment => assignment.student_name);
+        
         const { data: studentsData, error: studentsError } = await supabase
           .from("students")
           .select("id, name")
-          .in("name", studentNames)
-          .order("name");
+          .in("name", studentNames);
           
         if (studentsError) throw studentsError;
         return studentsData || [];

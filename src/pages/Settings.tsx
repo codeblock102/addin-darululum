@@ -1,85 +1,45 @@
 
 import { useState } from "react";
 import { DashboardLayout } from "@/components/layouts/DashboardLayout";
-import { useSettings } from "@/hooks/useSettings";
-import { useUserRole } from "@/hooks/useUserRole";
-import { useNavigate } from "react-router-dom";
-import { useToast } from "@/components/ui/use-toast";
-import { Tabs } from "@/components/ui/tabs";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Loader2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { SettingsTabs } from "@/components/admin/settings/SettingsTabs";
-import { SettingsContent } from "@/components/admin/settings/SettingsContent";
 import { SettingsHeader } from "@/components/admin/settings/SettingsHeader";
+import { SettingsContent } from "@/components/admin/settings/SettingsContent";
+import { SettingsTabs } from "@/components/admin/settings/SettingsTabs";
+import { useSettings } from "@/hooks/useSettings";
+import { LoadingState } from "@/components/teacher-portal/LoadingState";
 
-export default function Settings() {
-  const navigate = useNavigate();
-  const { toast } = useToast();
+const Settings = () => {
   const [activeTab, setActiveTab] = useState("appearance");
-  const { settings, saveSettings, isLoading, error } = useSettings();
-  const [isSaving, setIsSaving] = useState(false);
-  const { isAdmin, isLoading: isRoleLoading } = useUserRole();
-
-  if (!isRoleLoading && !isAdmin) {
-    toast({
-      title: "Access Denied",
-      description: "Only administrators can access the settings page",
-      variant: "destructive"
-    });
-    navigate("/");
-    return null;
-  }
-
-  if (isLoading || isRoleLoading) {
+  const { settings, isLoading, updateSettings } = useSettings();
+  
+  if (isLoading) {
     return (
       <DashboardLayout>
-        <div className="flex h-[50vh] w-full items-center justify-center">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <div className="flex items-center justify-center min-h-screen">
+          <LoadingState />
         </div>
       </DashboardLayout>
     );
   }
-
-  if (error) {
-    return (
-      <DashboardLayout>
-        <div className="flex h-[50vh] w-full flex-col items-center justify-center gap-2">
-          <p className="text-destructive">Error loading settings</p>
-          <Button onClick={() => window.location.reload()} variant="outline">
-            Retry
-          </Button>
-        </div>
-      </DashboardLayout>
-    );
-  }
-
-  const handleUpdateSettings = async () => {
-    setIsSaving(true);
-    await saveSettings(settings);
-    setIsSaving(false);
-    
-    toast({
-      title: "Settings updated",
-      description: "Your changes have been saved successfully."
-    });
-  };
-
+  
   return (
     <DashboardLayout>
-      <div className="container mx-auto py-6 max-w-7xl">
-        <SettingsHeader isSaving={isSaving} onSave={handleUpdateSettings} />
-        <div className="flex flex-col gap-6">
-          <ScrollArea className="h-[calc(100vh-12rem)]">
-            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-              <div className="sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 pb-4">
-                <SettingsTabs />
-              </div>
-              <SettingsContent settings={settings} />
-            </Tabs>
-          </ScrollArea>
+      <div className="container mx-auto py-6 space-y-6 max-w-5xl">
+        <SettingsHeader />
+        
+        <div className="grid grid-cols-1 md:grid-cols-[240px_1fr] gap-6">
+          <SettingsTabs activeTab={activeTab} setActiveTab={setActiveTab} />
+          
+          <div className="space-y-6">
+            <SettingsContent 
+              activeTab={activeTab} 
+              settings={settings} 
+              updateSettings={updateSettings} 
+            />
+          </div>
         </div>
       </div>
     </DashboardLayout>
   );
-}
+};
+
+export default Settings;

@@ -1,258 +1,249 @@
+// First, let's define consistent types for memorization quality
+type DisplayQualityValue = "excellent" | "good" | "average" | "needsWork" | "horrible";
+type DatabaseQualityValue = "excellent" | "good" | "average" | "poor" | "unsatisfactory";
 
-import { useState, useEffect } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useQueryClient, useMutation } from "@tanstack/react-query";
+// Mapping function to convert between display and database values
+const mapDisplayToDbQuality = (value: DisplayQualityValue): DatabaseQualityValue => {
+  const mapping: Record<DisplayQualityValue, DatabaseQualityValue> = {
+    excellent: "excellent",
+    good: "good",
+    average: "average",
+    needsWork: "poor",
+    horrible: "unsatisfactory"
+  };
+  return mapping[value];
+};
+
+const mapDbToDisplayQuality = (value: DatabaseQualityValue): DisplayQualityValue => {
+  const mapping: Record<DatabaseQualityValue, DisplayQualityValue> = {
+    excellent: "excellent",
+    good: "good",
+    average: "average",
+    poor: "needsWork",
+    unsatisfactory: "horrible"
+  };
+  return mapping[value];
+};
+
+import { useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/components/ui/use-toast";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { 
+  Select, 
+  SelectContent, 
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue 
+} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import * as z from "zod";
+import { useToast } from "@/hooks/use-toast";
+
+interface Revision {
+  id: string;
+  revision_date: string | null;
+  juz_number: number | null;
+  quarter_start: number | null;
+  quarters_covered: number | null;
+  dhor_slot: number | null;
+  memorization_quality: string | null;
+  teacher_notes: string | null;
+}
 
 interface EditRevisionDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  revisionId: string;
-  studentId: string;
-  studentName: string;
-  onSuccess?: () => void;
+  revision: Revision;
+  onClose: () => void;
 }
 
-// Define the consistent memorization quality types
-type MemorizationQuality = "excellent" | "good" | "average" | "needsWork" | "horrible";
-type DatabaseQualityValue = "excellent" | "good" | "average" | "poor" | "unsatisfactory";
-
-// Quality mapping between form and database values
-const qualityFormToDb = (formValue: MemorizationQuality): DatabaseQualityValue => {
-  if (formValue === "needsWork") return "poor";
-  if (formValue === "horrible") return "unsatisfactory";
-  return formValue as DatabaseQualityValue;
-};
-
-const qualityDbToForm = (dbValue: string): MemorizationQuality => {
-  if (dbValue === "poor") return "needsWork";
-  if (dbValue === "unsatisfactory") return "horrible";
-  return dbValue as MemorizationQuality;
-};
-
-const formSchema = z.object({
-  juz_number: z.number().min(1).max(30),
-  memorization_quality: z.enum(["excellent", "good", "average", "needsWork", "horrible"] as const),
-  revision_date: z.string(),
-  notes: z.string().optional(),
-});
-
-export function EditRevisionDialog({
-  open,
-  onOpenChange,
-  revisionId,
-  studentId,
-  studentName,
-  onSuccess,
-}: EditRevisionDialogProps) {
-  const [isLoading, setIsLoading] = useState(false);
+export const EditRevisionDialog = ({ 
+  open, 
+  onOpenChange, 
+  revision, 
+  onClose 
+}: EditRevisionDialogProps) => {
+  const [isProcessing, setIsProcessing] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
-
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      juz_number: 1,
-      memorization_quality: "average",
-      revision_date: new Date().toISOString().split("T")[0],
-      notes: "",
-    },
+  
+  // Convert the database value to display value when initializing form
+  const initialDisplayQuality = revision.memorization_quality 
+    ? mapDbToDisplayQuality(revision.memorization_quality as DatabaseQualityValue) 
+    : "average";
+  
+  const [formData, setFormData] = useState({
+    revision_date: revision.revision_date || new Date().toISOString().split('T')[0],
+    juz_number: revision.juz_number?.toString() || "",
+    quarter_start: revision.quarter_start?.toString() || "1",
+    quarters_covered: revision.quarters_covered?.toString() || "1",
+    dhor_slot: revision.dhor_slot?.toString() || "1",
+    memorization_quality: initialDisplayQuality,
+    teacher_notes: revision.teacher_notes || ""
   });
-
-  // Fetch revision data when the dialog opens
-  useEffect(() => {
-    if (open && revisionId) {
-      setIsLoading(true);
-      supabase
-        .from("juz_revisions")
-        .select("*")
-        .eq("id", revisionId)
-        .single()
-        .then(({ data, error }) => {
-          setIsLoading(false);
-          if (error) {
-            toast({
-              title: "Error fetching revision",
-              description: error.message,
-              variant: "destructive",
-            });
-            return;
-          }
-          if (data) {
-            // Map database quality to form schema quality using our helper function
-            const quality = qualityDbToForm(data.memorization_quality || "average");
-            
-            form.reset({
-              juz_number: data.juz_revised || data.juz_number || 1,
-              memorization_quality: quality,
-              revision_date: data.revision_date,
-              notes: data.teacher_notes || "",
-            });
-          }
-        });
-    }
-  }, [open, revisionId, form, toast]);
-
-  const updateRevisionMutation = useMutation({
-    mutationFn: async (values: z.infer<typeof formSchema>) => {
-      // Map values from form to database fields using our helper function
-      const dbQuality = qualityFormToDb(values.memorization_quality);
+  
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsProcessing(true);
+    
+    try {
+      // Convert the display quality value to database value for saving
+      const dbQualityValue = mapDisplayToDbQuality(formData.memorization_quality as DisplayQualityValue);
       
       const { error } = await supabase
-        .from("juz_revisions")
+        .from('juz_revisions')
         .update({
-          juz_revised: values.juz_number,
-          memorization_quality: dbQuality,
-          revision_date: values.revision_date,
-          teacher_notes: values.notes,
+          revision_date: formData.revision_date,
+          juz_number: parseInt(formData.juz_number),
+          quarter_start: parseInt(formData.quarter_start),
+          quarters_covered: parseInt(formData.quarters_covered),
+          dhor_slot: parseInt(formData.dhor_slot),
+          memorization_quality: dbQualityValue,
+          teacher_notes: formData.teacher_notes
         })
-        .eq("id", revisionId);
-
+        .eq('id', revision.id);
+        
       if (error) throw error;
-    },
-    onSuccess: () => {
-      // Invalidate both individual student revisions and classroom records
-      queryClient.invalidateQueries({ queryKey: ["juz-revisions", studentId] });
-      queryClient.invalidateQueries({ queryKey: ["classroom-records"] });
+      
       toast({
         title: "Revision Updated",
-        description: `The revision for ${studentName} has been updated successfully.`,
+        description: "The revision record has been successfully updated."
       });
-      onOpenChange(false);
-      if (onSuccess) onSuccess();
-    },
-    onError: (error) => {
+      
+      queryClient.invalidateQueries({ queryKey: ['revisions'] });
+      queryClient.invalidateQueries({ queryKey: ['student-revisions'] });
+      onClose();
+      
+    } catch (error: any) {
       toast({
-        title: "Error Updating Revision",
+        title: "Error",
         description: error.message,
-        variant: "destructive",
+        variant: "destructive"
       });
-    },
-  });
-
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    updateRevisionMutation.mutate(values);
-  }
+      console.error("Failed to update revision:", error);
+    } finally {
+      setIsProcessing(false);
+    }
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px] w-[95%] max-w-[95%] sm:w-auto">
+      <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Edit Revision</DialogTitle>
-          <DialogDescription>
-            Update the revision details for {studentName}.
-          </DialogDescription>
         </DialogHeader>
-
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <FormField
-              control={form.control}
-              name="juz_number"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Juz Number</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="number"
-                      min={1}
-                      max={30}
-                      placeholder="Enter Juz Number"
-                      {...field}
-                      onChange={(e) => field.onChange(parseInt(e.target.value))}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="memorization_quality"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Memorization Quality</FormLabel>
-                  <Select
-                    onValueChange={field.onChange}
-                    defaultValue={field.value}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select quality" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="excellent">Excellent</SelectItem>
-                      <SelectItem value="good">Good</SelectItem>
-                      <SelectItem value="average">Average</SelectItem>
-                      <SelectItem value="needsWork">Needs Work</SelectItem>
-                      <SelectItem value="horrible">Unsatisfactory</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="revision_date"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Revision Date</FormLabel>
-                  <FormControl>
-                    <Input type="date" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="notes"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Notes</FormLabel>
-                  <FormControl>
-                    <Textarea
-                      placeholder="Add any notes about this revision"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormDescription>
-                    Optional notes about this revision session.
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <div className="flex justify-end space-x-2">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => onOpenChange(false)}
-              >
-                Cancel
-              </Button>
-              <Button type="submit" disabled={updateRevisionMutation.isPending}>
-                {updateRevisionMutation.isPending ? "Updating..." : "Update"}
-              </Button>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="revision_date">Revision Date</Label>
+              <Input
+                id="revision_date"
+                type="date"
+                value={formData.revision_date}
+                onChange={(e) => setFormData(prev => ({ ...prev, revision_date: e.target.value }))}
+                required
+              />
             </div>
-          </form>
-        </Form>
+            <div className="space-y-2">
+              <Label htmlFor="dhor_slot">Dhor Slot</Label>
+              <Input
+                id="dhor_slot"
+                type="number"
+                min={1}
+                max={8}
+                value={formData.dhor_slot}
+                onChange={(e) => setFormData(prev => ({ ...prev, dhor_slot: e.target.value }))}
+                required
+              />
+            </div>
+          </div>
+          <div className="grid grid-cols-3 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="juz_number">Juz Number</Label>
+              <Input
+                id="juz_number"
+                type="number"
+                min={1}
+                max={30}
+                value={formData.juz_number}
+                onChange={(e) => setFormData(prev => ({ ...prev, juz_number: e.target.value }))}
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="quarter_start">Quarter Start</Label>
+              <Select value={formData.quarter_start} onValueChange={(value) => setFormData(prev => ({ ...prev, quarter_start: value }))}>
+                <SelectTrigger id="quarter_start">
+                  <SelectValue placeholder="Select quarter" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="1">1st</SelectItem>
+                  <SelectItem value="2">2nd</SelectItem>
+                  <SelectItem value="3">3rd</SelectItem>
+                  <SelectItem value="4">4th</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="quarters_covered">Quarters Covered</Label>
+              <Select value={formData.quarters_covered} onValueChange={(value) => setFormData(prev => ({ ...prev, quarters_covered: value }))}>
+                <SelectTrigger id="quarters_covered">
+                  <SelectValue placeholder="Select quarters" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="1">1</SelectItem>
+                  <SelectItem value="2">2</SelectItem>
+                  <SelectItem value="3">3</SelectItem>
+                  <SelectItem value="4">4</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="memorization_quality">Memorization Quality</Label>
+            <Select 
+              value={formData.memorization_quality} 
+              onValueChange={(value) => setFormData(prev => ({ ...prev, memorization_quality: value }))}
+            >
+              <SelectTrigger id="memorization_quality">
+                <SelectValue placeholder="Select quality" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="excellent">Excellent</SelectItem>
+                <SelectItem value="good">Good</SelectItem>
+                <SelectItem value="average">Average</SelectItem>
+                <SelectItem value="needsWork">Needs Work</SelectItem>
+                <SelectItem value="horrible">Horrible</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="teacher_notes">Teacher Notes</Label>
+            <Textarea
+              id="teacher_notes"
+              placeholder="Enter notes about the revision"
+              value={formData.teacher_notes}
+              onChange={(e) => setFormData(prev => ({ ...prev, teacher_notes: e.target.value }))}
+            />
+          </div>
+          <div className="flex justify-end space-x-2">
+            <Button type="button" variant="outline" onClick={onClose}>
+              Cancel
+            </Button>
+            <Button type="submit" disabled={isProcessing}>
+              {isProcessing ? "Updating..." : "Update Revision"}
+            </Button>
+          </div>
+        </form>
       </DialogContent>
     </Dialog>
   );
-}
+};
