@@ -42,7 +42,7 @@ export const AddStudentDialog = ({ teacherId }: AddStudentDialogProps) => {
     enrollmentDate: new Date().toISOString().split('T')[0],
     guardianName: "",
     guardianContact: "",
-    status: "active"
+    status: "active" as "active" | "inactive" // Fix: Explicitly type as the required enum values
   });
   
   const handleSubmit = async (e: React.FormEvent) => {
@@ -54,7 +54,7 @@ export const AddStudentDialog = ({ teacherId }: AddStudentDialogProps) => {
         throw new Error("Student name is required");
       }
       
-      // First, create or check if the student exists in students table
+      // First, check if the student exists in students table
       const { data: existingStudent, error: lookupError } = await supabase
         .from('students')
         .select('id, name')
@@ -67,16 +67,17 @@ export const AddStudentDialog = ({ teacherId }: AddStudentDialogProps) => {
       
       // If student doesn't exist, create them
       if (!existingStudent) {
+        // Fix: Pass a single object instead of an array and use proper status type
         const { data: newStudent, error: createError } = await supabase
           .from('students')
-          .insert([{ 
+          .insert({ 
             name: formData.studentName,
             enrollment_date: formData.enrollmentDate,
             date_of_birth: formData.dateOfBirth || null,
             guardian_name: formData.guardianName || null,
             guardian_contact: formData.guardianContact || null,
-            status: formData.status || 'active'
-          }])
+            status: formData.status
+          })
           .select('id')
           .single();
           
@@ -89,11 +90,11 @@ export const AddStudentDialog = ({ teacherId }: AddStudentDialogProps) => {
       // Now assign student to teacher
       const { error: assignmentError } = await supabase
         .from('students_teachers')
-        .insert([{
+        .insert({
           teacher_id: teacherId,
           student_name: formData.studentName,
           active: true
-        }]);
+        });
         
       if (assignmentError) throw assignmentError;
       
@@ -216,7 +217,7 @@ export const AddStudentDialog = ({ teacherId }: AddStudentDialogProps) => {
                 <Label htmlFor="status">Status</Label>
                 <Select 
                   value={formData.status} 
-                  onValueChange={(value) => setFormData(prev => ({ ...prev, status: value }))}
+                  onValueChange={(value: "active" | "inactive") => setFormData(prev => ({ ...prev, status: value }))}
                 >
                   <SelectTrigger id="status">
                     <SelectValue placeholder="Select status" />
