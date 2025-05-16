@@ -23,11 +23,11 @@ interface EditRevisionDialogProps {
 }
 
 // Define the consistent memorization quality types
-type MemorizationQuality = "excellent" | "good" | "average" | "poor" | "unsatisfactory";
+type MemorizationQuality = "excellent" | "good" | "average" | "needsWork" | "horrible";
 
 const formSchema = z.object({
   juz_number: z.number().min(1).max(30),
-  memorization_quality: z.enum(["excellent", "good", "average", "poor", "unsatisfactory"] as const),
+  memorization_quality: z.enum(["excellent", "good", "average", "needsWork", "horrible"] as const),
   revision_date: z.string(),
   notes: z.string().optional(),
 });
@@ -75,7 +75,18 @@ export function EditRevisionDialog({
           }
           if (data) {
             // Map database quality to form schema quality
-            const quality = data.memorization_quality as MemorizationQuality;
+            let quality: MemorizationQuality = "average";
+            
+            // Map 'poor' and 'unsatisfactory' from DB to 'needsWork' and 'horrible'
+            if (data.memorization_quality === 'poor') {
+              quality = "needsWork";
+            } else if (data.memorization_quality === 'unsatisfactory') {
+              quality = "horrible";
+            } else if (data.memorization_quality === 'excellent' || 
+                     data.memorization_quality === 'good' || 
+                     data.memorization_quality === 'average') {
+              quality = data.memorization_quality as MemorizationQuality;
+            }
             
             form.reset({
               juz_number: data.juz_revised || data.juz_number || 1,
@@ -90,12 +101,20 @@ export function EditRevisionDialog({
 
   const updateRevisionMutation = useMutation({
     mutationFn: async (values: z.infer<typeof formSchema>) => {
-      // Map values directly to database fields
+      // Map values from form to database fields
+      // Convert 'needsWork' and 'horrible' back to 'poor' and 'unsatisfactory' for DB
+      let dbQuality = values.memorization_quality;
+      if (values.memorization_quality === 'needsWork') {
+        dbQuality = 'poor';
+      } else if (values.memorization_quality === 'horrible') {
+        dbQuality = 'unsatisfactory';
+      }
+      
       const { error } = await supabase
         .from("juz_revisions")
         .update({
           juz_revised: values.juz_number,
-          memorization_quality: values.memorization_quality,
+          memorization_quality: dbQuality,
           revision_date: values.revision_date,
           teacher_notes: values.notes,
         })
@@ -179,8 +198,8 @@ export function EditRevisionDialog({
                       <SelectItem value="excellent">Excellent</SelectItem>
                       <SelectItem value="good">Good</SelectItem>
                       <SelectItem value="average">Average</SelectItem>
-                      <SelectItem value="poor">Needs Work</SelectItem>
-                      <SelectItem value="unsatisfactory">Unsatisfactory</SelectItem>
+                      <SelectItem value="needsWork">Needs Work</SelectItem>
+                      <SelectItem value="horrible">Unsatisfactory</SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />
