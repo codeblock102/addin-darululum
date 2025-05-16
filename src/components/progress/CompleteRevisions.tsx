@@ -1,8 +1,11 @@
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Loader2 } from "lucide-react";
+import { JuzMastery } from "@/types/dhor-book";
+
 export const CompleteRevisions = () => {
   const {
     data: revisions,
@@ -13,16 +16,30 @@ export const CompleteRevisions = () => {
       const {
         data,
         error
-      } = await supabase.from('juz_mastery').select(`
+      } = await supabase.from('juz_revisions').select(`
           *,
           students(name)
         `).order('juz_number', {
         ascending: true
       });
+      
       if (error) throw error;
-      return data;
+      
+      // Transform data to match the expected format
+      const transformedData = data?.map(item => ({
+        id: item.id,
+        student_id: item.student_id,
+        juz_number: item.juz_number,
+        mastery_level: item.memorization_quality || 'in_progress',
+        last_revision_date: item.revision_date,
+        revision_count: 1,
+        students: item.students
+      }));
+      
+      return transformedData;
     }
   });
+
   return <Card>
       <CardHeader className="bg-slate-900">
         <CardTitle>Complete Revisions</CardTitle>
@@ -45,12 +62,17 @@ export const CompleteRevisions = () => {
                   <TableCell>{revision.students?.name}</TableCell>
                   <TableCell>{revision.juz_number}</TableCell>
                   <TableCell>
-                    <span className={`px-2 py-1 rounded-full text-xs ${revision.mastery_level === 'mastered' ? 'bg-green-100 text-green-800' : revision.mastery_level === 'memorized' ? 'bg-blue-100 text-blue-800' : revision.mastery_level === 'in_progress' ? 'bg-yellow-100 text-yellow-800' : 'bg-gray-100 text-gray-800'}`}>
+                    <span className={`px-2 py-1 rounded-full text-xs ${
+                      revision.mastery_level === 'mastered' ? 'bg-green-100 text-green-800' : 
+                      revision.mastery_level === 'memorized' ? 'bg-blue-100 text-blue-800' : 
+                      revision.mastery_level === 'in_progress' ? 'bg-yellow-100 text-yellow-800' : 
+                      'bg-gray-100 text-gray-800'
+                    }`}>
                       {revision.mastery_level}
                     </span>
                   </TableCell>
                   <TableCell>{revision.last_revision_date ? new Date(revision.last_revision_date).toLocaleDateString() : 'N/A'}</TableCell>
-                  <TableCell>{revision.revision_count}</TableCell>
+                  <TableCell>1</TableCell>
                 </TableRow>)}
             </TableBody>
           </Table>}

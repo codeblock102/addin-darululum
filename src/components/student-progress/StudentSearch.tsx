@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Search } from "lucide-react";
@@ -70,7 +69,7 @@ export const StudentSearch = ({
           const { data, error } = await supabase
             .from("students")
             .select("id, name")
-            .order("name");
+            .order("name", { ascending: true });
             
           if (error) throw error;
           
@@ -81,7 +80,8 @@ export const StudentSearch = ({
         return [] as Student[];
       }
     },
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 30000, // 30 seconds
+    refetchInterval: 30000, // Refresh every 30 seconds to get newly added students
   });
   
   // Find selected student name when studentId changes

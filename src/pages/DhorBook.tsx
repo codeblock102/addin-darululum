@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { DashboardLayout } from "@/components/layouts/DashboardLayout";
 import { Card, CardContent } from "@/components/ui/card";
@@ -49,9 +48,9 @@ const DhorBookPage = () => {
     enabled: isTeacher,
   });
 
-  // Fetch all students
+  // Fetch all students - this is the key part that needs to be fixed
   const { data: students, isLoading: studentsLoading } = useQuery({
-    queryKey: ['all-students'],
+    queryKey: ['all-students-for-dhor'],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('students')
@@ -63,9 +62,20 @@ const DhorBookPage = () => {
         return [];
       }
       return data || [];
-    }
+    },
+    // Refresh the data more frequently to capture new students
+    refetchInterval: 30000, // Refetch every 30 seconds
   });
 
+  // Set up realtime updates to ensure both tabs are in sync
+  const currentTeacherId = isTeacher 
+    ? teacherData?.id 
+    : (selectedTeacherId || (teachers && teachers.length > 0 ? teachers[0].id : undefined));
+  
+  const { isSubscribed } = useRealtimeLeaderboard(currentTeacherId, () => {
+    console.log("Realtime update detected in DhorBook page, refreshing data");
+  });
+  
   // Fetch active teachers for the teacher selector
   const { data: teachers } = useQuery({
     queryKey: ['active-teachers'],
@@ -81,15 +91,6 @@ const DhorBookPage = () => {
       }
       return data || [];
     }
-  });
-
-  // Set up realtime updates to ensure both tabs are in sync
-  const currentTeacherId = isTeacher 
-    ? teacherData?.id 
-    : (selectedTeacherId || (teachers && teachers.length > 0 ? teachers[0].id : undefined));
-  
-  const { isSubscribed } = useRealtimeLeaderboard(currentTeacherId, () => {
-    console.log("Realtime update detected in DhorBook page, refreshing data");
   });
   
   // Filter students based on search query

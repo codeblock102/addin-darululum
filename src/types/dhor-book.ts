@@ -1,3 +1,4 @@
+
 export interface ParentComment {
   id: string;
   student_id: string;
@@ -14,7 +15,6 @@ export interface StudentDhorSummary {
   total_points: number;
   last_updated_by: string | null;
   last_entry_date: string;
-  signature: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -40,4 +40,18 @@ export interface StudentPerformanceMetrics {
   progressTrend: 'improving' | 'steady' | 'declining' | 'unknown';
   completedJuz: number;
   currentJuz: number;
+}
+
+// Mock data type for juz mastery since the table was removed
+export interface JuzMastery {
+  id: string;
+  student_id: string;
+  juz_number: number;
+  mastery_level: 'mastered' | 'memorized' | 'in_progress' | 'not_started';
+  last_revision_date: string | null;
+  revision_count: number;
+  consecutive_good_revisions: number;
+  students?: {
+    name: string;
+  };
 }
