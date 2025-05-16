@@ -9,6 +9,7 @@ import { LoadingState } from "@/components/teacher-portal/LoadingState";
 import { Tabs } from "@/components/ui/tabs";
 
 const Settings = () => {
+  const [activeTab, setActiveTab] = useState("appearance");
   const [isSaving, setIsSaving] = useState(false);
   const { settings, isLoading, updateSettings } = useSettings();
   
@@ -35,7 +36,7 @@ const Settings = () => {
         <SettingsHeader isSaving={isSaving} onSave={handleSave} />
         
         <div className="grid grid-cols-1 md:grid-cols-[240px_1fr] gap-6">
-          <Tabs defaultValue="appearance">
+          <Tabs defaultValue={activeTab} onValueChange={setActiveTab} value={activeTab}>
             <SettingsTabs />
             
             <div className="space-y-6">
