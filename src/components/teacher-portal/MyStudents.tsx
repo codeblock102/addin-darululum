@@ -24,7 +24,7 @@ import { Loader2, Search, Trash2, User, UserCheck, UserPlus } from "lucide-react
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useNavigate } from "react-router-dom";
 import { AddStudentDialog } from "./students/AddStudentDialog";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/components/ui/use-toast";
 import { hasPermission } from "@/utils/roleUtils";
 
 interface MyStudentsProps {
@@ -48,21 +48,10 @@ export const MyStudents = ({ teacherId }: MyStudentsProps) => {
   const [studentToDelete, setStudentToDelete] = useState<{ id: string, name: string, studentId: string } | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isDeleteType, setIsDeleteType] = useState<'remove' | 'delete'>('remove');
-  const [canDeleteStudents, setCanDeleteStudents] = useState(false);
   const isMobile = useIsMobile();
   const navigate = useNavigate();
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  
-  // Check if teacher has permission to delete students
-  useEffect(() => {
-    const checkPermission = async () => {
-      const hasDeletePermission = await hasPermission("manage_students");
-      setCanDeleteStudents(hasDeletePermission);
-    };
-    
-    checkPermission();
-  }, []);
   
   // First fetch teacher's assigned students
   const { data: assignedStudents, isLoading: loadingAssignments } = useQuery({
@@ -207,7 +196,7 @@ export const MyStudents = ({ teacherId }: MyStudentsProps) => {
   
   const handleConfirmDelete = () => {
     if (studentToDelete) {
-      if (isDeleteType === 'delete' && canDeleteStudents) {
+      if (isDeleteType === 'delete') {
         deleteStudentMutation.mutate(studentToDelete.studentId);
       } else {
         removeStudentMutation.mutate({ assignmentId: studentToDelete.id });
@@ -286,17 +275,15 @@ export const MyStudents = ({ teacherId }: MyStudentsProps) => {
                           >
                             <User className="h-4 w-4" />
                           </Button>
-                          {canDeleteStudents && (
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className="text-red-500 hover:text-red-600 hover:bg-red-50"
-                              onClick={() => handleDeleteClick(student, 'delete')}
-                              title="Delete student from database"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          )}
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="text-red-500 hover:text-red-600 hover:bg-red-50"
+                            onClick={() => handleDeleteClick(student, 'delete')}
+                            title="Delete student from database"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
                         </div>
                       </div>
                     </div>
@@ -351,17 +338,15 @@ export const MyStudents = ({ teacherId }: MyStudentsProps) => {
                               >
                                 <User className="h-4 w-4" />
                               </Button>
-                              {canDeleteStudents && (
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  className="text-red-500 hover:text-red-600 hover:bg-red-50 border-red-200"
-                                  onClick={() => handleDeleteClick(student, 'delete')}
-                                  title="Delete student from database"
-                                >
-                                  <Trash2 className="h-4 w-4" />
-                                </Button>
-                              )}
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="text-red-500 hover:text-red-600 hover:bg-red-50 border-red-200"
+                                onClick={() => handleDeleteClick(student, 'delete')}
+                                title="Delete student from database"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
                             </div>
                           </TableCell>
                         </TableRow>
