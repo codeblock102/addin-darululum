@@ -1,5 +1,5 @@
 
-import { TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
   LayoutDashboard, Bell, Shield, BookOpen, Globe, 
   Network, Database, UserCheck, Bug 

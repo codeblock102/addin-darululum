@@ -1,3 +1,4 @@
+
 // First, let's define consistent types for memorization quality
 type DisplayQualityValue = "excellent" | "good" | "average" | "needsWork" | "horrible";
 type DatabaseQualityValue = "excellent" | "good" | "average" | "poor" | "unsatisfactory";
@@ -211,7 +212,7 @@ export const EditRevisionDialog = ({
             <Label htmlFor="memorization_quality">Memorization Quality</Label>
             <Select 
               value={formData.memorization_quality} 
-              onValueChange={(value) => setFormData(prev => ({ ...prev, memorization_quality: value }))}
+              onValueChange={(value: DisplayQualityValue) => setFormData(prev => ({ ...prev, memorization_quality: value }))}
             >
               <SelectTrigger id="memorization_quality">
                 <SelectValue placeholder="Select quality" />
