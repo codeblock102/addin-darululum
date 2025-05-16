@@ -26,8 +26,10 @@ export const CompleteRevisions = () => {
       const transformedData = data?.map(item => ({
         id: item.id,
         student_id: item.student_id,
-        juz_number: item.juz_number,
-        mastery_level: item.memorization_quality || 'in_progress',
+        juz_number: item.juz_revised || item.juz_number, // Use either field that's available
+        mastery_level: item.memorization_quality === 'excellent' ? 'mastered' : 
+                       item.memorization_quality === 'good' ? 'memorized' : 
+                       item.memorization_quality === 'average' ? 'in_progress' : 'not_started',
         last_revision_date: item.revision_date,
         revision_count: 1,
         consecutive_good_revisions: 1,
