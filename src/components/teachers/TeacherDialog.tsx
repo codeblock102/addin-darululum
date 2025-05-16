@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -122,6 +123,15 @@ export const TeacherDialog = ({ selectedTeacher, open, onOpenChange, onClose }: 
     return password;
   };
 
+  // Create a valid username from teacher name
+  const createValidUsername = (name: string) => {
+    return name
+      .toLowerCase()
+      .replace(/\s+/g, '.') // Replace spaces with dots
+      .replace(/[^a-z0-9.]/g, '') // Remove any characters that aren't letters, numbers, or dots
+      .trim(); // Remove any leading/trailing spaces
+  };
+
   const handleSubmit = async (values: z.infer<typeof teacherSchema>) => {
     try {
       setIsSubmitting(true);
@@ -196,11 +206,15 @@ export const TeacherDialog = ({ selectedTeacher, open, onOpenChange, onClose }: 
 
           const newTeacher = teacherData?.[0];
           
+          // Create a valid username from the teacher's name
+          const username = createValidUsername(values.name);
+          
           // Create the user account
           console.log("Creating user account with:", {
             email: values.email,
             password: password.length,
-            teacher_id: newTeacher?.id
+            teacher_id: newTeacher?.id,
+            username
           });
           
           const { data: userData, error: userError } = await supabase.auth.signUp({
@@ -208,7 +222,7 @@ export const TeacherDialog = ({ selectedTeacher, open, onOpenChange, onClose }: 
             password: password,
             options: {
               data: {
-                username: values.name.toLowerCase().replace(/\s+/g, '.'),
+                username: username,
                 teacher_id: newTeacher?.id,
                 role: 'teacher'
               }
@@ -227,8 +241,8 @@ export const TeacherDialog = ({ selectedTeacher, open, onOpenChange, onClose }: 
             toast({
               title: "Success",
               description: values.generatePassword 
-                ? `Teacher and user account created! Temporary password: ${password}`
-                : "Teacher and user account created successfully!",
+                ? `Teacher and user account created! Username: ${username} | Temporary password: ${password}`
+                : `Teacher and user account created! Username: ${username}`,
             });
           }
         } else {
