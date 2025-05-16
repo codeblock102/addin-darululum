@@ -33,7 +33,7 @@ export const TeacherTabs = ({ teacher, activeTab, onTabChange }: TeacherTabsProp
     },
     { 
       id: "dhor-book", 
-      label: "Dhor Book", 
+      label: "Progress Book", 
       icon: <BookOpen className="h-4 w-4" /> 
     },
     { 
