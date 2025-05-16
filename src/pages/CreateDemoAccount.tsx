@@ -63,7 +63,6 @@ const CreateDemoAccount = () => {
             <p><strong>Name:</strong> {demoName}</p>
             <p><strong>Email:</strong> Ammarmulla21@gmail.com</p>
             <p><strong>Password:</strong> Ammarmulla2021</p>
-            <p><strong>Username:</strong> {demoUsername}</p>
             
             <Alert 
               variant="default" 
@@ -72,9 +71,8 @@ const CreateDemoAccount = () => {
               <AlertTriangle className="h-4 w-4" />
               <AlertTitle>Important Login Information</AlertTitle>
               <AlertDescription className="text-sm mt-1">
-                <p>After creating the account, you can log in using either:</p>
+                <p>After creating the account, you can log in using:</p>
                 <ul className="list-disc pl-5 mt-1">
-                  <li>Username: <span className="font-mono">{demoUsername}</span></li>
                   <li>Email: <span className="font-mono">Ammarmulla21@gmail.com</span></li>
                   <li>Password: <span className="font-mono">Ammarmulla2021</span></li>
                 </ul>
