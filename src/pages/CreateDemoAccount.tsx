@@ -65,7 +65,10 @@ const CreateDemoAccount = () => {
             <p><strong>Password:</strong> Ammarmulla2021</p>
             <p><strong>Username:</strong> {demoUsername}</p>
             
-            <Alert variant="warning" className="bg-amber-50 text-amber-800 border-amber-200 mt-3">
+            <Alert 
+              variant="default" 
+              className="bg-amber-50 text-amber-800 border-amber-200 mt-3"
+            >
               <AlertTriangle className="h-4 w-4" />
               <AlertTitle>Important Login Information</AlertTitle>
               <AlertDescription className="text-sm mt-1">
