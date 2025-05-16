@@ -197,7 +197,13 @@ export const TeacherDialog = ({ selectedTeacher, open, onOpenChange, onClose }: 
           const newTeacher = teacherData?.[0];
           
           // Create the user account
-          const { error: userError } = await supabase.auth.signUp({
+          console.log("Creating user account with:", {
+            email: values.email,
+            password: password.length,
+            teacher_id: newTeacher?.id
+          });
+          
+          const { data: userData, error: userError } = await supabase.auth.signUp({
             email: values.email,
             password: password,
             options: {
@@ -217,6 +223,7 @@ export const TeacherDialog = ({ selectedTeacher, open, onOpenChange, onClose }: 
               variant: "destructive",
             });
           } else {
+            console.log("User account created successfully:", userData);
             toast({
               title: "Success",
               description: values.generatePassword 
