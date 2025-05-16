@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { 
@@ -55,7 +55,7 @@ export const MyStudents = ({ teacherId }: MyStudentsProps) => {
   const queryClient = useQueryClient();
   
   // Check if teacher has permission to delete students
-  useState(() => {
+  useEffect(() => {
     const checkPermission = async () => {
       const hasDeletePermission = await hasPermission("manage_students");
       setCanDeleteStudents(hasDeletePermission);
@@ -280,8 +280,9 @@ export const MyStudents = ({ teacherId }: MyStudentsProps) => {
                           <Button
                             variant="outline"
                             size="sm"
-                            className="text-red-500 hover:text-red-600 hover:bg-red-50"
+                            className="text-amber-500 hover:text-amber-600 hover:bg-amber-50"
                             onClick={() => handleDeleteClick(student, 'remove')}
+                            title="Remove from your students"
                           >
                             <User className="h-4 w-4" />
                           </Button>
@@ -291,6 +292,7 @@ export const MyStudents = ({ teacherId }: MyStudentsProps) => {
                               size="sm"
                               className="text-red-500 hover:text-red-600 hover:bg-red-50"
                               onClick={() => handleDeleteClick(student, 'delete')}
+                              title="Delete student from database"
                             >
                               <Trash2 className="h-4 w-4" />
                             </Button>

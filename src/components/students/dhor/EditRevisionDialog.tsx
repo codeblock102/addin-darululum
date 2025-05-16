@@ -123,11 +123,7 @@ export function EditRevisionDialog({ open, onOpenChange, revision }: EditRevisio
 
   const onSubmit = (data: FormValues) => {
     setIsLoading(true);
-    updateRevision.mutate(data, {
-      onSettled: () => {
-        setIsLoading(false);
-      }
-    });
+    updateRevision.mutate(data);
   };
 
   return (
