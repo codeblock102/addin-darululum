@@ -17,10 +17,16 @@ export function useAttendanceRecords() {
       const { data, error } = await supabase
         .from("students")
         .select("id, name")
-        .eq("status", "active");
+        .eq("status", "active")
+        .order("name", { ascending: true });
       
-      if (error) throw error;
-      return data;
+      if (error) {
+        console.error("Error fetching students:", error);
+        throw error;
+      }
+      
+      console.log(`Found ${data?.length || 0} students for attendance records`);
+      return data || [];
     },
   });
 
@@ -63,8 +69,13 @@ export function useAttendanceRecords() {
       
       const { data, error } = await query;
       
-      if (error) throw error;
-      return data;
+      if (error) {
+        console.error("Error fetching attendance records:", error);
+        throw error;
+      }
+      
+      console.log(`Found ${data?.length || 0} attendance records`);
+      return data || [];
     },
   });
 

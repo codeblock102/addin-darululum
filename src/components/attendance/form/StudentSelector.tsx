@@ -25,16 +25,19 @@ export function StudentSelector({
   const { data: students, isLoading } = useQuery({
     queryKey: ['all-students-selector'],
     queryFn: async () => {
+      console.log("Fetching all students for selector");
       const { data, error } = await supabase
         .from('students')
-        .select('id, name')
+        .select('id, name, status')
         .eq('status', 'active')
         .order('name', { ascending: true });
         
       if (error) {
+        console.error("Error fetching students for selector:", error);
         throw error;
       }
       
+      console.log(`Found ${data?.length || 0} students for selector`);
       return data || [];
     }
   });
@@ -76,11 +79,17 @@ export function StudentSelector({
                 )}
               </SelectTrigger>
               <SelectContent>
-                {students?.map((student) => (
-                  <SelectItem key={student.id} value={student.id}>
-                    {student.name}
+                {students?.length ? (
+                  students.map((student) => (
+                    <SelectItem key={student.id} value={student.id}>
+                      {student.name}
+                    </SelectItem>
+                  ))
+                ) : (
+                  <SelectItem value="no-students" disabled>
+                    No students available
                   </SelectItem>
-                ))}
+                )}
               </SelectContent>
             </Select>
           </FormControl>

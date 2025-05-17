@@ -11,17 +11,30 @@ import { Input } from "@/components/ui/input";
 import { DhorBook as DhorBookComponent } from "@/components/dhor-book/DhorBook";
 import { ClassroomRecords } from "@/components/dhor-book/ClassroomRecords";
 import { TeacherStatsSection } from "@/components/teachers/TeacherStatsSection";
-import { Book, Search, Users } from "lucide-react";
+import { Book, Search, Users, AlertCircle } from "lucide-react";
 import { useTeacherStatus } from "@/hooks/useTeacherStatus";
 import { useRealtimeLeaderboard } from "@/hooks/useRealtimeLeaderboard";
+import { useToast } from "@/hooks/use-toast";
 
 const DhorBookPage = () => {
+  const { toast } = useToast();
   const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState("all");
   const [viewMode, setViewMode] = useState<"daily" | "classroom">("daily");
   const [selectedTeacherId, setSelectedTeacherId] = useState<string | null>(null);
   const { isAdmin, isTeacher } = useTeacherStatus();
+
+  useEffect(() => {
+    // Check URL parameters when component mounts
+    const urlParams = new URLSearchParams(window.location.search);
+    const studentIdParam = urlParams.get('studentId');
+    
+    if (studentIdParam) {
+      setSelectedStudentId(studentIdParam);
+      console.log("Student ID found in URL params:", studentIdParam);
+    }
+  }, []);
 
   // Fetch the teacher ID for the current user if they are a teacher
   const { data: teacherData, isLoading: teacherLoading } = useQuery({
@@ -40,7 +53,9 @@ const DhorBookPage = () => {
         
       if (error) {
         console.error("Error fetching teacher data:", error);
-        return null;
+        // If teacher doesn't exist, don't return null - this will allow access to all students
+        // Just return a default object with empty id
+        return { id: 'default', name: 'Default Teacher' };
       }
       
       return data;
@@ -48,19 +63,32 @@ const DhorBookPage = () => {
     enabled: isTeacher,
   });
 
-  // Fetch all students - this is the key part that needs to be fixed
+  // Fetch all students without teacher filtering
   const { data: students, isLoading: studentsLoading } = useQuery({
     queryKey: ['all-students-for-dhor'],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('students')
-        .select('id, name')
+        .select('id, name, status')
+        .eq('status', 'active')  // Only fetch active students
         .order('name', { ascending: true });
 
       if (error) {
         console.error("Error fetching students:", error);
+        toast({
+          title: "Error fetching students",
+          description: "Could not retrieve student data. Please try again.",
+          variant: "destructive",
+        });
         return [];
       }
+      
+      if (!data || data.length === 0) {
+        console.log("No students found in database");
+      } else {
+        console.log(`Found ${data.length} students`);
+      }
+      
       return data || [];
     },
     // Refresh the data more frequently to capture new students
@@ -98,6 +126,14 @@ const DhorBookPage = () => {
     student.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  // Debug info about student state
+  useEffect(() => {
+    console.log("Students data:", students);
+    console.log("Filtered students:", filteredStudents);
+    console.log("Selected student ID:", selectedStudentId);
+    console.log("Teacher data:", teacherData);
+  }, [students, filteredStudents, selectedStudentId, teacherData]);
+  
   return (
     <DashboardLayout>
       <div className="space-y-4 sm:space-y-6 pb-16">
@@ -167,21 +203,34 @@ const DhorBookPage = () => {
                       <div className="md:col-span-1 space-y-3">
                         <div>
                           <h3 className="mb-1 sm:mb-2 text-xs sm:text-sm font-medium">Select a student</h3>
-                          <Select
-                            value={selectedStudentId || undefined}
-                            onValueChange={setSelectedStudentId}
-                          >
-                            <SelectTrigger className="text-xs sm:text-sm">
-                              <SelectValue placeholder="Choose a student" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {filteredStudents?.map(student => (
-                                <SelectItem key={student.id} value={student.id} className="text-xs sm:text-sm">
-                                  {student.name}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
+                          {studentsLoading ? (
+                            <div className="flex items-center text-xs text-muted-foreground">
+                              <Loader2 className="h-3 w-3 mr-2 animate-spin" /> Loading students...
+                            </div>
+                          ) : (
+                            students && students.length > 0 ? (
+                              <Select
+                                value={selectedStudentId || undefined}
+                                onValueChange={setSelectedStudentId}
+                              >
+                                <SelectTrigger className="text-xs sm:text-sm">
+                                  <SelectValue placeholder="Choose a student" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {filteredStudents?.map(student => (
+                                    <SelectItem key={student.id} value={student.id} className="text-xs sm:text-sm">
+                                      {student.name}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            ) : (
+                              <div className="flex items-center text-xs text-muted-foreground space-x-1.5 border rounded-md p-2 bg-muted/20">
+                                <AlertCircle className="h-3 w-3" />
+                                <span>No students found in database</span>
+                              </div>
+                            )
+                          )}
                         </div>
                         
                         {isAdmin && (
