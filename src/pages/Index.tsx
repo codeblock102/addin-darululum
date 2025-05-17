@@ -3,20 +3,36 @@ import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { DashboardLayout } from "@/components/layouts/DashboardLayout";
 import { useRBAC } from '@/hooks/useRBAC';
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function Index() {
   const { isAdmin, isTeacher, isLoading } = useRBAC();
+  const { session } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!isLoading) {
-      if (isAdmin) {
-        navigate('/admin');
-      } else if (isTeacher) {
-        navigate('/teacher-portal');
-      }
+    // Only navigate after loading is complete
+    if (isLoading) return;
+
+    if (!session) {
+      // If not logged in, redirect to auth page
+      navigate('/auth');
+      return;
     }
-  }, [isAdmin, isTeacher, isLoading, navigate]);
+    
+    console.log("Role check on Index page: isAdmin=", isAdmin, "isTeacher=", isTeacher);
+    
+    if (isTeacher) {
+      console.log("Redirecting to teacher portal");
+      navigate('/teacher-portal');
+    } else if (isAdmin) {
+      console.log("Redirecting to admin dashboard");
+      navigate('/admin');
+    } else {
+      // Default fallback for other roles
+      console.log("No specific role portal available, staying on index");
+    }
+  }, [isAdmin, isTeacher, isLoading, session, navigate]);
 
   return (
     <DashboardLayout>
