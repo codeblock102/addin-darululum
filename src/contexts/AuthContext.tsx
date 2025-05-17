@@ -50,7 +50,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (_event, currentSession) => {
         console.log("Auth state changed:", _event, !!currentSession);
+        
+        // Update the session state
         setSession(currentSession);
+        
+        // If we have a new session, let's fetch user role metadata
+        if (currentSession?.user) {
+          console.log("User metadata:", currentSession.user.user_metadata);
+        }
+        
         if (!currentSession && !isLoading) {
           // Only show toast for actual logouts, not initial loading
           toast({

@@ -12,55 +12,32 @@ import { ProfileNotFound } from "@/components/teacher-portal/ProfileNotFound";
 import { Teacher } from "@/types/teacher";
 import { Button } from "@/components/ui/button";
 import { RefreshCcw } from "lucide-react";
+import { useRBAC } from "@/hooks/useRBAC";
 
 const TeacherPortal = () => {
   const { session, refreshSession } = useAuth();
   const { toast } = useToast();
-  const [isTeacher, setIsTeacher] = useState<boolean | null>(null);
+  const { isTeacher, isLoading: isRoleLoading } = useRBAC();
   const [isCheckingRole, setIsCheckingRole] = useState(true);
 
-  // Check if the logged-in user is a teacher
+  // Use RBAC hook to check role, and also verify teacher profile exists
   useEffect(() => {
     const checkTeacherStatus = async () => {
       if (!session?.user?.email) {
-        setIsTeacher(false);
         setIsCheckingRole(false);
         return;
       }
       
       try {
         setIsCheckingRole(true);
-        const { data, error } = await supabase
-          .from('teachers')
-          .select('id')
-          .eq('email', session.user.email);
-          
-        if (error) {
-          console.error("Error checking teacher status:", error);
-          toast({
-            title: "Error checking teacher status",
-            description: error.message,
-            variant: "destructive"
-          });
-          setIsTeacher(false);
-        } else {
-          setIsTeacher(data && data.length > 0);
-        }
-      } catch (error) {
-        console.error("Error checking teacher status:", error);
-        toast({
-          title: "Error checking access",
-          description: "Failed to verify your teacher status. Please try again.",
-          variant: "destructive"
-        });
-        setIsTeacher(false);
+        // Additional check will happen in useQuery below
       } finally {
         setIsCheckingRole(false);
       }
     };
     
     checkTeacherStatus();
-  }, [session, toast]);
+  }, [session]);
 
   const { 
     data: teacherData, 
@@ -85,7 +62,7 @@ const TeacherPortal = () => {
       
       return data as Teacher;
     },
-    enabled: !!session?.user?.email && isTeacher === true,
+    enabled: !!session?.user?.email && isTeacher === true && !isRoleLoading,
     retry: 1,
     staleTime: 5 * 60 * 1000 // 5 minutes
   });
@@ -96,6 +73,7 @@ const TeacherPortal = () => {
   };
 
   if (error) {
+    console.error("Error loading teacher profile:", error);
     toast({
       title: "Error loading profile",
       description: "Could not load your teacher profile. Please try again later.",
@@ -105,7 +83,7 @@ const TeacherPortal = () => {
 
   return (
     <DashboardLayout>
-      {(isLoading || isCheckingRole) ? (
+      {(isLoading || isCheckingRole || isRoleLoading) ? (
         <LoadingState />
       ) : !isTeacher ? (
         <AccessDenied />
