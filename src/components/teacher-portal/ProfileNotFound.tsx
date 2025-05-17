@@ -2,7 +2,7 @@
 import { Button } from "@/components/ui/button";
 import { useNavigate, Link } from "react-router-dom";
 import { Card } from "@/components/ui/card";
-import { RefreshCcw, UserPlus } from "lucide-react";
+import { RefreshCcw, UserPlus, ArrowLeft } from "lucide-react";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
@@ -15,6 +15,7 @@ interface ProfileNotFoundProps {
 export const ProfileNotFound = ({ email, onRefresh }: ProfileNotFoundProps) => {
   const navigate = useNavigate();
   const [isChecking, setIsChecking] = useState(false);
+  const [isCreating, setIsCreating] = useState(false);
   const { toast } = useToast();
   
   const handleManualCheck = async () => {
@@ -53,13 +54,12 @@ export const ProfileNotFound = ({ email, onRefresh }: ProfileNotFoundProps) => {
           window.location.reload();
         }
       } else {
-        // Profile doesn't exist, navigate to create profile page
+        // Profile doesn't exist, show message
         toast({
           title: "No profile found",
-          description: "No teacher profile was found. Redirecting to create one...",
+          description: "No teacher profile was found with your email. Please create one.",
           variant: "default"
         });
-        navigate('/create-teacher-profile');
       }
     } catch (error) {
       console.error("Error checking for profile:", error);
@@ -72,6 +72,11 @@ export const ProfileNotFound = ({ email, onRefresh }: ProfileNotFoundProps) => {
       setIsChecking(false);
     }
   };
+
+  const handleCreateProfile = () => {
+    setIsCreating(true);
+    navigate('/create-teacher-profile');
+  };
   
   return (
     <Card className="p-6 flex flex-col items-center justify-center text-center">
@@ -82,11 +87,15 @@ export const ProfileNotFound = ({ email, onRefresh }: ProfileNotFoundProps) => {
           : "We couldn't find a teacher profile associated with your account. This portal is only for registered teachers."
         }
       </p>
+      
+      <div className="bg-amber-50 border border-amber-200 rounded-md p-4 mb-6 w-full max-w-md">
+        <p className="text-amber-800 text-sm">
+          <strong>Note:</strong> Your user account has the teacher role, but requires a matching teacher profile in our database.
+          Please create a teacher profile or contact an administrator for assistance.
+        </p>
+      </div>
+      
       <div className="flex flex-col space-y-3 w-full max-w-xs">
-        <Button onClick={() => navigate('/')} variant="outline" className="w-full">
-          Return to Dashboard
-        </Button>
-        
         <Button 
           onClick={handleManualCheck}
           variant="default"
@@ -95,6 +104,16 @@ export const ProfileNotFound = ({ email, onRefresh }: ProfileNotFoundProps) => {
         >
           <RefreshCcw className={`h-4 w-4 mr-2 ${isChecking ? "animate-spin" : ""}`} />
           {isChecking ? "Checking..." : "Check for Profile"}
+        </Button>
+        
+        <Button 
+          onClick={handleCreateProfile}
+          variant="default" 
+          className="w-full bg-green-600 hover:bg-green-700"
+          disabled={isCreating}
+        >
+          <UserPlus className="h-4 w-4 mr-2" />
+          {isCreating ? "Redirecting..." : "Create Teacher Profile"}
         </Button>
         
         <Button 
@@ -107,11 +126,13 @@ export const ProfileNotFound = ({ email, onRefresh }: ProfileNotFoundProps) => {
           Refresh Page
         </Button>
         
-        <Button asChild variant="link" className="w-full">
-          <Link to="/create-teacher-profile" className="flex items-center justify-center">
-            <UserPlus className="h-4 w-4 mr-2" />
-            Create Teacher Profile
-          </Link>
+        <Button 
+          onClick={() => navigate('/')} 
+          variant="outline" 
+          className="w-full"
+        >
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          Return to Dashboard
         </Button>
       </div>
     </Card>
