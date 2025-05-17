@@ -10,16 +10,14 @@ import { LoadingState } from "@/components/teacher-portal/LoadingState";
 import { AccessDenied } from "@/components/teacher-portal/AccessDenied";
 import { ProfileNotFound } from "@/components/teacher-portal/ProfileNotFound";
 import { Teacher } from "@/types/teacher";
-import { Button } from "@/components/ui/button";
-import { RefreshCcw } from "lucide-react";
 import { useRBAC } from "@/hooks/useRBAC";
-import { Card } from "@/components/ui/card";
 
 const TeacherPortal = () => {
   const { session, refreshSession } = useAuth();
   const { toast } = useToast();
   const { isTeacher, isAdmin, isLoading: isRoleLoading } = useRBAC();
   const [isCheckingRole, setIsCheckingRole] = useState(true);
+  const [refreshKey, setRefreshKey] = useState(0); // Add a key to force refresh
 
   // Use RBAC hook to check role, and also verify teacher profile exists
   useEffect(() => {
@@ -32,14 +30,13 @@ const TeacherPortal = () => {
       try {
         setIsCheckingRole(true);
         console.log("Checking teacher status for email:", session.user.email);
-        // Additional check will happen in useQuery below
       } finally {
         setIsCheckingRole(false);
       }
     };
     
     checkTeacherStatus();
-  }, [session]);
+  }, [session, refreshKey]);
 
   const { 
     data: teacherData, 
@@ -47,13 +44,12 @@ const TeacherPortal = () => {
     error,
     refetch 
   } = useQuery({
-    queryKey: ['teacher-profile', session?.user?.email],
+    queryKey: ['teacher-profile', session?.user?.email, refreshKey],
     queryFn: async () => {
       if (!session?.user?.email) return null;
       
       console.log("Fetching teacher profile for email:", session.user.email);
       
-      // Use maybeSingle instead of single to avoid error when no profile is found
       const { data, error } = await supabase
         .from('teachers')
         .select('id, name, subject, experience, email, bio, phone')
@@ -70,11 +66,14 @@ const TeacherPortal = () => {
     },
     enabled: !!session?.user?.email && (isTeacher === true || isAdmin === true) && !isRoleLoading,
     retry: 1,
-    staleTime: 5 * 60 * 1000 // 5 minutes
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    refetchOnWindowFocus: false // Disable automatic refetch on window focus
   });
 
   const handleRefresh = async () => {
+    console.log("Refreshing teacher data...");
     await refreshSession();
+    setRefreshKey(prev => prev + 1); // Force a refresh of the query
     refetch();
   };
 

@@ -1,3 +1,4 @@
+
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Toaster } from "@/components/ui/toaster";
 import { ThemeProvider } from "@/components/theme-provider";
@@ -21,6 +22,7 @@ import Settings from "@/pages/Settings";
 import Preferences from "@/pages/Preferences";
 import CreateDemoAccount from "@/pages/CreateDemoAccount";
 import CreateTeacherProfileForTestAccount from "@/pages/CreateTeacherProfileForTestAccount";
+import { DatabaseSeeder } from "@/pages/admin/DatabaseSeeder"; // Fix import
 
 function App() {
   return (
