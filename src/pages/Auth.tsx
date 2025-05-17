@@ -22,7 +22,7 @@ const Auth = () => {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { session } = useAuth();
+  const { session, refreshSession } = useAuth();
 
   useEffect(() => {
     if (session) {
@@ -47,11 +47,15 @@ const Auth = () => {
         if (error) {
           if (error.message.includes("Email not confirmed")) {
             setErrorMessage("Email not confirmed. Please check your inbox for a confirmation email or create a new demo account.");
+          } else if (error.message.includes("Invalid login credentials")) {
+            setErrorMessage("Invalid email or password. Please try again or reset your password.");
           } else {
             setErrorMessage(error.message);
           }
           throw error;
         }
+        
+        await refreshSession();
         
         toast({
           title: "Login successful",
@@ -59,18 +63,41 @@ const Auth = () => {
         });
         navigate("/");
       } else if (mode === "signUp") {
-        // Handle sign up (we're not enabling public signup, but the UI is prepared)
-        toast({
-          title: "Registration disabled",
-          description: "Public registration is currently disabled. Please contact an administrator.",
-          variant: "destructive",
+        // Handle sign up
+        const { data, error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            data: { role: 'teacher' },
+            emailRedirectTo: `${window.location.origin}/auth`
+          }
         });
+        
+        if (error) {
+          if (error.message.includes("User already registered")) {
+            setErrorMessage("This email is already registered. Please sign in instead.");
+          } else {
+            setErrorMessage(error.message);
+          }
+          throw error;
+        }
+        
+        toast({
+          title: "Registration successful",
+          description: "Please check your email for confirmation link.",
+        });
+        setMode("signIn");
       } else if (mode === "forgotPassword") {
         // Handle password reset
         const { error } = await supabase.auth.resetPasswordForEmail(email, {
           redirectTo: `${window.location.origin}/auth/reset-password`,
         });
-        if (error) throw error;
+        
+        if (error) {
+          setErrorMessage(error.message);
+          throw error;
+        }
+        
         toast({
           title: "Password Reset Email Sent",
           description: "Check your email for a password reset link",
@@ -79,12 +106,10 @@ const Auth = () => {
       }
     } catch (error: any) {
       console.error("Authentication error:", error);
-      if (!errorMessage) {
-        setErrorMessage(error.message);
-      }
+      
       toast({
         title: "Error",
-        description: error.message,
+        description: errorMessage || "An unexpected error occurred",
         variant: "destructive",
       });
     } finally {
@@ -168,18 +193,40 @@ const Auth = () => {
           </div>
         </div>
         
-        <Button
-          type="button"
-          variant="link"
-          className="w-full -mt-2 text-sm text-right"
-          onClick={() => setMode("forgotPassword")}
-        >
-          Forgot Password?
-        </Button>
+        {mode === "signIn" && (
+          <Button
+            type="button"
+            variant="link"
+            className="w-full -mt-2 text-sm text-right"
+            onClick={() => setMode("forgotPassword")}
+          >
+            Forgot Password?
+          </Button>
+        )}
         
         <Button type="submit" className="w-full" disabled={isLoading}>
-          {isLoading ? "Processing..." : "Sign In"}
+          {isLoading ? "Processing..." : mode === "signIn" ? "Sign In" : "Sign Up"}
         </Button>
+        
+        <div className="text-center mt-4">
+          {mode === "signIn" ? (
+            <Button 
+              type="button" 
+              variant="link" 
+              onClick={() => setMode("signUp")}
+            >
+              Don't have an account? Sign up
+            </Button>
+          ) : (
+            <Button 
+              type="button" 
+              variant="link" 
+              onClick={() => setMode("signIn")}
+            >
+              Already have an account? Sign in
+            </Button>
+          )}
+        </div>
       </form>
     );
   };
@@ -227,7 +274,9 @@ const Auth = () => {
         
         <CardFooter className="flex flex-col space-y-2">
           <p className="text-sm text-gray-500 text-center">
-            Only admin-created accounts can access this system. Public registration is disabled.
+            {mode === "signUp" 
+              ? "By signing up, you agree to our Terms of Service and Privacy Policy."
+              : "Access the system with your account credentials."}
           </p>
           <Link 
             to="/create-demo-account" 

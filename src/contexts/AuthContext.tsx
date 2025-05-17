@@ -48,10 +48,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     // Set up auth state listener FIRST to avoid missing auth events
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
-        console.log("Auth state changed:", _event, !!session);
-        setSession(session);
-        if (!session && !isLoading) {
+      (_event, currentSession) => {
+        console.log("Auth state changed:", _event, !!currentSession);
+        setSession(currentSession);
+        if (!currentSession && !isLoading) {
           // Only show toast for actual logouts, not initial loading
           toast({
             title: "Logged out",
@@ -64,13 +64,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     );
 
     // THEN check for existing session
-    supabase.auth.getSession().then(({ data: { session }, error }) => {
-      console.log("Initial session check:", !!session, error);
+    supabase.auth.getSession().then(({ data: { session: currentSession }, error }) => {
+      console.log("Initial session check:", !!currentSession, error);
       if (error) {
         console.error("Error retrieving session:", error);
         setError("Failed to retrieve session");
       }
-      setSession(session);
+      setSession(currentSession);
       setIsLoading(false);
     });
 
