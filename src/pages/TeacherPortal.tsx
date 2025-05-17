@@ -50,6 +50,7 @@ const TeacherPortal = () => {
     queryFn: async () => {
       if (!session?.user?.email) return null;
       
+      // Use maybeSingle instead of single to avoid error when no profile is found
       const { data, error } = await supabase
         .from('teachers')
         .select('id, name, subject, experience, email, bio, phone')
@@ -61,7 +62,7 @@ const TeacherPortal = () => {
         throw error;
       }
       
-      return data as Teacher;
+      return data as Teacher | null;
     },
     enabled: !!session?.user?.email && (isTeacher === true || isAdmin === true) && !isRoleLoading,
     retry: 1,
