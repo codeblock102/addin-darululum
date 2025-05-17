@@ -10,9 +10,9 @@ export function useAttendanceRecords() {
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [dateFilter, setDateFilter] = useState<Date | null>(null);
 
-  // Query to get students for the dropdown
+  // Query to get all students
   const { data: students, isLoading: isLoadingStudents } = useQuery({
-    queryKey: ["students"],
+    queryKey: ["students-for-attendance"],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("students")

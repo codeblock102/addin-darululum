@@ -3,6 +3,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Loader2 } from "lucide-react";
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { UseFormReturn } from "react-hook-form";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 interface StudentSelectorProps {
   students?: { id: string; name: string }[];
@@ -14,13 +16,28 @@ interface StudentSelectorProps {
 }
 
 export function StudentSelector({ 
-  students, 
-  isLoading, 
   form, 
   disabled = false,
   selectedStudent,
   setSelectedStudent 
 }: StudentSelectorProps) {
+  // Fetch all students
+  const { data: students, isLoading } = useQuery({
+    queryKey: ['all-students-selector'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('students')
+        .select('id, name')
+        .eq('status', 'active');
+        
+      if (error) {
+        throw error;
+      }
+      
+      return data || [];
+    }
+  });
+
   // If we have direct props for value/onChange, use those (for components not using react-hook-form)
   const handleChange = (value: string) => {
     if (setSelectedStudent) {

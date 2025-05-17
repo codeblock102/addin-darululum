@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -40,11 +39,29 @@ export const MyStudents = ({ teacherId }: MyStudentsProps) => {
   const [isDeleteType, setIsDeleteType] = useState<'remove' | 'delete'>('remove');
   const isMobile = useIsMobile();
   
-  // First fetch teacher's assigned students
-  const { data: assignedStudents, isLoading: loadingAssignments } = useQuery({
+  // Fetch all students instead of just assigned ones
+  const { data: students, isLoading } = useQuery({
+    queryKey: ['all-students-list'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('students')
+        .select('id, name, enrollment_date, status')
+        .eq('status', 'active');
+      
+      if (error) {
+        console.error('Error fetching students:', error);
+        return [];
+      }
+      
+      return data as Student[] || [];
+    }
+  });
+  
+  // Keep track of assigned students for UI differentiation
+  const { data: assignedStudents } = useQuery({
     queryKey: ['teacher-student-assignments', teacherId],
     queryFn: async () => {
-      const { data: assignments, error } = await supabase
+      const { data, error } = await supabase
         .from("students_teachers")
         .select("id, student_name")
         .eq("teacher_id", teacherId)
@@ -55,37 +72,10 @@ export const MyStudents = ({ teacherId }: MyStudentsProps) => {
         return [];
       }
       
-      return assignments as StudentAssignment[] || [];
+      return data as StudentAssignment[] || [];
     },
     enabled: !!teacherId
   });
-  
-  // Then fetch details for those students
-  const { data: students, isLoading: loadingStudents } = useQuery({
-    queryKey: ['teacher-students-details', assignedStudents],
-    queryFn: async () => {
-      if (!assignedStudents || assignedStudents.length === 0) {
-        return [];
-      }
-      
-      const studentNames = assignedStudents.map(assignment => assignment.student_name);
-      
-      const { data, error } = await supabase
-        .from('students')
-        .select('id, name, enrollment_date, status')
-        .in('name', studentNames);
-      
-      if (error) {
-        console.error('Error fetching student details:', error);
-        return [];
-      }
-      
-      return data as Student[] || [];
-    },
-    enabled: !!assignedStudents && assignedStudents.length > 0,
-  });
-  
-  const isLoading = loadingAssignments || loadingStudents;
   
   // Filter students based on search query
   const filteredStudents = students?.filter(student => 
@@ -99,7 +89,7 @@ export const MyStudents = ({ teacherId }: MyStudentsProps) => {
           <div>
             <CardTitle className="text-xl">Students</CardTitle>
             <CardDescription>
-              Students assigned to you
+              All active students in the system
             </CardDescription>
           </div>
           <AddStudentDialog teacherId={teacherId} />
@@ -133,9 +123,7 @@ export const MyStudents = ({ teacherId }: MyStudentsProps) => {
               <div className="text-center py-8 text-muted-foreground">
                 {searchQuery 
                   ? "No students found matching your search." 
-                  : assignedStudents && assignedStudents.length > 0
-                    ? "No student details available for your assignments."
-                    : "No students are currently assigned to you. Use the 'Add Student' button above to get started."}
+                  : "No active students found in the system."}
               </div>
             )}
           </>
