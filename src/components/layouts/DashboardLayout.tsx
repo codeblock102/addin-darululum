@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from "react";
 import { Sidebar } from "./Sidebar";
-import { useUserRole } from "@/hooks/useUserRole";
+import { useRBAC } from "@/hooks/useRBAC";
 import { LoadingSpinner } from "./dashboard/LoadingSpinner";
 import { BackgroundPattern } from "./dashboard/BackgroundPattern";
 import { RoleBadge } from "./dashboard/RoleBadge";
@@ -14,7 +14,7 @@ interface DashboardLayoutProps {
 }
 
 export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
-  const { isAdmin, isTeacher, isLoading } = useUserRole();
+  const { isAdmin, isTeacher, isLoading } = useRBAC();
   const isMobile = useIsMobile();
   const [sidebarOpen, setSidebarOpen] = useState(!isMobile);
   
@@ -31,8 +31,7 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
 
   if (isLoading) {
     return (
-      <div className={`flex h-screen w-full ${isAdmin ? "admin-theme" : "teacher-theme"}`}>
-        {sidebarOpen && <Sidebar />}
+      <div className="flex h-screen w-full">
         <LoadingSpinner />
       </div>
     );

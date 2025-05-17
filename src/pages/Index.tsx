@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { DashboardLayout } from "@/components/layouts/DashboardLayout";
 import { useRBAC } from '@/hooks/useRBAC';
 import { useAuth } from "@/contexts/AuthContext";
+import { Loader2 } from "lucide-react";
 
 export default function Index() {
   const { isAdmin, isTeacher, isLoading } = useRBAC();
@@ -30,19 +31,28 @@ export default function Index() {
       navigate('/admin');
     } else {
       // Default fallback for other roles
-      console.log("No specific role portal available, staying on index");
+      console.log("No specific role portal available, redirecting to auth");
+      navigate('/auth');
     }
   }, [isAdmin, isTeacher, isLoading, session, navigate]);
 
-  return (
-    <DashboardLayout>
-      <div className="flex flex-col items-center justify-center min-h-[70vh]">
-        <div className="animate-pulse">
-          <div className="h-8 w-8 rounded-full border-4 border-t-transparent border-primary animate-spin mb-4 mx-auto"></div>
-        </div>
-        <h1 className="text-2xl font-medium mb-2">Redirecting to your dashboard...</h1>
+  if (isLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen">
+        <Loader2 className="h-8 w-8 animate-spin text-primary mb-4" />
+        <h1 className="text-2xl font-medium mb-2">Loading your dashboard...</h1>
         <p className="text-muted-foreground">Please wait while we determine your role.</p>
       </div>
-    </DashboardLayout>
+    );
+  }
+
+  return (
+    <div className="flex flex-col items-center justify-center min-h-[70vh]">
+      <div className="animate-pulse">
+        <div className="h-8 w-8 rounded-full border-4 border-t-transparent border-primary animate-spin mb-4 mx-auto"></div>
+      </div>
+      <h1 className="text-2xl font-medium mb-2">Redirecting to your dashboard...</h1>
+      <p className="text-muted-foreground">Please wait while we determine your role.</p>
+    </div>
   );
 }
