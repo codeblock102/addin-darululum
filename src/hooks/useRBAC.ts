@@ -61,9 +61,9 @@ export const useRBAC = () => {
               userRole = 'teacher';
               console.log("Role determined by teacher association: teacher");
             } else {
-              // Default fallback
-              userRole = 'admin';
-              console.log("No roles found, defaulting to: admin");
+              // Last resort fallback - this could be a student or we need a default
+              userRole = 'student';
+              console.log("Defaulting to student role");
             }
           }
         }
@@ -92,7 +92,8 @@ export const useRBAC = () => {
   return { 
     role, 
     isAdmin: role === 'admin',
-    isTeacher: role === 'teacher', 
+    isTeacher: role === 'teacher',
+    isStudent: role === 'student', 
     permissions, 
     hasPermission, 
     isLoading 

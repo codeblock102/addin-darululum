@@ -10,17 +10,20 @@ import { RolePermission } from "@/utils/roleUtils";
 interface ProtectedRouteProps {
   children: React.ReactNode;
   requireAdmin?: boolean;
+  requireTeacher?: boolean;
   requiredPermissions?: RolePermission[];
 }
 
 export const ProtectedRoute = ({ 
   children, 
   requireAdmin = false,
+  requireTeacher = false,
   requiredPermissions = [] 
 }: ProtectedRouteProps) => {
   const { session, isLoading: authLoading } = useAuth();
   const { 
     isAdmin, 
+    isTeacher,
     isLoading: rbacLoading, 
     hasPermission 
   } = useRBAC();
@@ -41,15 +44,27 @@ export const ProtectedRoute = ({
       return;
     }
     
-    // Check for admin role if required
-    if (requireAdmin && !rbacLoading && !isAdmin && session) {
-      toast({
-        title: "Access Denied",
-        description: "You don't have permission to access this area",
-        variant: "destructive"
-      });
-      navigate("/");
-      return;
+    // Check for required roles
+    if (!isLoading && session) {
+      if (requireAdmin && !isAdmin) {
+        toast({
+          title: "Access Denied",
+          description: "This area requires administrator privileges",
+          variant: "destructive"
+        });
+        navigate("/");
+        return;
+      }
+      
+      if (requireTeacher && !isTeacher && !isAdmin) {
+        toast({
+          title: "Access Denied",
+          description: "This area requires teacher privileges",
+          variant: "destructive"
+        });
+        navigate("/");
+        return;
+      }
     }
     
     // Check for specific permissions if required
@@ -65,7 +80,7 @@ export const ProtectedRoute = ({
         navigate("/");
       }
     }
-  }, [session, isLoading, isAdmin, rbacLoading, requireAdmin, requiredPermissions, navigate, toast, hasPermission]);
+  }, [session, isLoading, isAdmin, isTeacher, rbacLoading, requireAdmin, requireTeacher, requiredPermissions, navigate, toast, hasPermission]);
 
   if (isLoading) {
     return (
@@ -78,6 +93,10 @@ export const ProtectedRoute = ({
   // Show content only if authenticated and has proper role/permissions
   if (session) {
     if (requireAdmin && !isAdmin) {
+      return null;
+    }
+    
+    if (requireTeacher && !isTeacher && !isAdmin) {
       return null;
     }
     

@@ -31,7 +31,8 @@ export const handleUserSubmit = async (
         options: {
           data: { 
             teacher_id: formData.teacherId,
-            role: userRole
+            role: userRole,
+            username: formData.username
           },
           emailRedirectTo: window.location.origin + '/auth'
         }

@@ -51,7 +51,7 @@ function App() {
                 </ProtectedRoute>
               } />
               <Route path="/teacher-portal" element={
-                <ProtectedRoute>
+                <ProtectedRoute requireTeacher={true}>
                   <TeacherPortal />
                 </ProtectedRoute>
               } />
@@ -61,27 +61,27 @@ function App() {
                 </ProtectedRoute>
               } />
               <Route path="/students" element={
-                <ProtectedRoute>
+                <ProtectedRoute requireTeacher={true}>
                   <Students />
                 </ProtectedRoute>
               } />
               <Route path="/classes" element={
-                <ProtectedRoute>
+                <ProtectedRoute requireTeacher={true}>
                   <Classes />
                 </ProtectedRoute>
               } />
               <Route path="/dhor-book" element={
-                <ProtectedRoute>
+                <ProtectedRoute requireTeacher={true}>
                   <DhorBook />
                 </ProtectedRoute>
               } />
               <Route path="/schedule" element={
-                <ProtectedRoute>
+                <ProtectedRoute requireTeacher={true}>
                   <Schedule />
                 </ProtectedRoute>
               } />
               <Route path="/attendance" element={
-                <ProtectedRoute>
+                <ProtectedRoute requireTeacher={true}>
                   <Attendance />
                 </ProtectedRoute>
               } />
@@ -91,7 +91,7 @@ function App() {
                 </ProtectedRoute>
               } />
               <Route path="/student-progress/:studentId" element={
-                <ProtectedRoute>
+                <ProtectedRoute requireTeacher={true}>
                   <StudentProgressPage />
                 </ProtectedRoute>
               } />
