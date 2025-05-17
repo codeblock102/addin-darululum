@@ -1,7 +1,7 @@
 
 import { supabase } from "@/integrations/supabase/client";
 
-type RolePermission = 
+export type RolePermission = 
   | "view_reports" 
   | "export_reports" 
   | "manage_students" 
@@ -50,16 +50,20 @@ export const getUserPermissions = async (): Promise<RolePermission[]> => {
     
     if (!session) return [];
 
-    const { data, error } = await supabase.rpc('get_user_permissions', {
-      user_id: session.user.id
-    });
+    // Using a query instead of RPC since the get_user_permissions RPC function doesn't exist yet
+    const { data, error } = await supabase
+      .from('role_permissions')
+      .select('permission')
+      .innerJoin('user_roles', 'role_permissions.role_id = user_roles.role_id')
+      .eq('user_roles.user_id', session.user.id);
 
     if (error) {
       console.error('Error fetching user permissions:', error);
       return [];
     }
 
-    return data || [];
+    // Extract the permissions from the joined data
+    return data ? data.map(item => item.role_permissions.permission) : [];
   } catch (error) {
     console.error('Unexpected error fetching permissions:', error);
     return [];
