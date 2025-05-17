@@ -24,12 +24,32 @@ export const useRBAC = () => {
       try {
         setIsLoading(true);
         
-        // First, try to get role from user metadata (most reliable source)
+        // First, check if user has a teacher profile - this should take priority
+        if (session.user.email) {
+          const { data: teacherData, error: teacherError } = await supabase
+            .from('teachers')
+            .select('id')
+            .eq('email', session.user.email)
+            .maybeSingle();
+          
+          if (teacherData && !teacherError) {
+            console.log("User has a teacher profile, setting role to teacher");
+            setRole('teacher');
+            
+            // Fetch user permissions
+            const userPermissions = await getUserPermissions(session.user.id);
+            setPermissions(userPermissions);
+            setIsLoading(false);
+            return; // Exit early since we've confirmed teacher role
+          }
+        }
+        
+        // If not a teacher, try to get role from user metadata (second priority)
         let userRole = session.user.user_metadata?.role as UserRole || null;
         console.log("User role from metadata:", userRole);
         
         if (!userRole) {
-          // Second, check user_roles table via RPC function
+          // Third, check user_roles table via RPC function
           const { data: userRoleData, error: userRoleError } = await supabase.rpc(
             'get_user_role_id',
             { p_user_id: session.user.id }
@@ -47,25 +67,13 @@ export const useRBAC = () => {
               userRole = roleData.name as UserRole;
               console.log("Role from database:", roleData.name);
             }
-          } else {
-            console.log("No role found in user_roles table, checking teacher association");
-            
-            // Third, check if user is associated with a teacher
-            const { data: teacherData } = await supabase
-              .from('teachers')
-              .select('id')
-              .eq('email', session.user.email)
-              .maybeSingle();
-            
-            if (teacherData) {
-              userRole = 'teacher';
-              console.log("Role determined by teacher association: teacher");
-            } else {
-              // Last resort fallback - this could be a student or we need a default
-              userRole = 'student';
-              console.log("Defaulting to student role");
-            }
           }
+        }
+        
+        // Set a default role if none found
+        if (!userRole) {
+          userRole = 'admin'; // Default to admin as fallback
+          console.log("No role found, defaulting to:", userRole);
         }
         
         setRole(userRole);

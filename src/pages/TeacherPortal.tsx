@@ -50,6 +50,8 @@ const TeacherPortal = () => {
     queryFn: async () => {
       if (!session?.user?.email) return null;
       
+      console.log("Fetching teacher profile for email:", session.user.email);
+      
       // Use maybeSingle instead of single to avoid error when no profile is found
       const { data, error } = await supabase
         .from('teachers')
@@ -62,6 +64,7 @@ const TeacherPortal = () => {
         throw error;
       }
       
+      console.log("Teacher profile fetch result:", data);
       return data as Teacher | null;
     },
     enabled: !!session?.user?.email && (isTeacher === true || isAdmin === true) && !isRoleLoading,
@@ -106,14 +109,10 @@ const TeacherPortal = () => {
     return (
       <DashboardLayout>
         <div className="space-y-4">
-          <Card className="p-6">
-            <h2 className="text-xl font-bold mb-4">Teacher Profile Not Found</h2>
-            <p className="mb-4">We couldn't find a teacher profile associated with your email ({session?.user?.email}).</p>
-            <Button variant="outline" onClick={handleRefresh} className="mt-2">
-              <RefreshCcw className="h-4 w-4 mr-2" />
-              Refresh
-            </Button>
-          </Card>
+          <ProfileNotFound 
+            email={session?.user?.email} 
+            onRefresh={handleRefresh} 
+          />
         </div>
       </DashboardLayout>
     );
