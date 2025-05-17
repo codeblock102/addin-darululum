@@ -8,6 +8,7 @@ export const useTeacherStatus = () => {
   const [isTeacher, setIsTeacher] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [teacherId, setTeacherId] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const checkTeacherStatus = async () => {
@@ -15,10 +16,15 @@ export const useTeacherStatus = () => {
         setIsTeacher(false);
         setIsAdmin(false);
         setTeacherId(null);
+        setIsLoading(false);
         return;
       }
       
       try {
+        // Check if user is an admin from metadata
+        const isUserAdmin = session.user.user_metadata?.role === 'admin';
+        setIsAdmin(isUserAdmin);
+        
         // Check if user is a teacher by looking for their record in the teachers table
         const { data, error } = await supabase
           .from('teachers')
@@ -28,7 +34,9 @@ export const useTeacherStatus = () => {
         if (error) throw error;
         
         const isUserTeacher = data && data.length > 0;
-        setIsTeacher(isUserTeacher);
+        // Set teacher status based on database or admin status
+        const finalTeacherStatus = isUserTeacher || isUserAdmin;
+        setIsTeacher(finalTeacherStatus);
         
         // Set teacher ID if found
         if (isUserTeacher && data && data.length > 0) {
@@ -37,21 +45,19 @@ export const useTeacherStatus = () => {
           setTeacherId(null);
         }
         
-        // Check if user is admin from metadata or role
-        const isUserAdmin = session.user.user_metadata?.role === 'admin';
-        setIsAdmin(isUserAdmin);
-        
-        console.log(`Teacher status check: isTeacher=${isUserTeacher}, isAdmin=${isUserAdmin}, teacherId=${isUserTeacher ? data[0].id : null}`);
+        console.log(`Teacher status check: isTeacher=${finalTeacherStatus}, isAdmin=${isUserAdmin}, teacherId=${isUserTeacher ? data[0].id : null}`);
       } catch (error) {
         console.error("Error checking teacher status:", error);
         setIsTeacher(false);
         setIsAdmin(false);
         setTeacherId(null);
+      } finally {
+        setIsLoading(false);
       }
     };
     
     checkTeacherStatus();
   }, [session]);
 
-  return { isTeacher, isAdmin, teacherId };
+  return { isTeacher, isAdmin, teacherId, isLoading };
 };

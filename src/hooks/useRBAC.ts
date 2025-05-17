@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -22,9 +23,7 @@ export const useRBAC = () => {
 
       try {
         setIsLoading(true);
-        
-        // For the time being, all users with sessions have teacher role at minimum
-        setRole('teacher');
+        let userRole: UserRole | null = null;
         
         // First, check if user has a teacher profile - this should take priority
         if (session.user.email) {
@@ -37,29 +36,33 @@ export const useRBAC = () => {
           
           if (teacherData && !teacherError) {
             console.log("Found teacher profile:", teacherData);
-            setRole('teacher');
+            userRole = 'teacher';
           } else {
             console.log("No teacher profile found or error:", teacherError);
-            // Still keeping the role as teacher for now to grant access to all students
-            setRole('teacher');
+            userRole = null;
           }
         }
         
-        // If user metadata specifies a role, use that
-        const userRole = session.user.user_metadata?.role as UserRole || null;
-        console.log("User role from metadata:", userRole);
+        // If user metadata specifies a role, use that (admin overrides teacher)
+        const metadataRole = session.user.user_metadata?.role as UserRole | null;
+        console.log("User role from metadata:", metadataRole);
         
-        if (userRole === 'admin') {
-          setRole('admin'); // If metadata says admin, override to admin
+        if (metadataRole === 'admin') {
+          userRole = 'admin'; // If metadata says admin, override to admin
+        } else if (!userRole && metadataRole === 'teacher') {
+          userRole = 'teacher'; // Only set to teacher if not already set
         }
+        
+        setRole(userRole);
         
         // Fetch user permissions
         const userPermissions = await getUserPermissions(session.user.id);
         setPermissions(userPermissions);
+        
+        console.log(`RBAC role check complete: role=${userRole}`);
       } catch (error) {
         console.error("Error fetching user role and permissions:", error);
-        // Default to teacher role for now to ensure access
-        setRole('teacher');
+        setRole(null);
         setPermissions([]);
       } finally {
         setIsLoading(false);
