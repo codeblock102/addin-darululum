@@ -25,7 +25,7 @@ export const hasPermission = async (requiredPermission: RolePermission): Promise
 
     // Call the Supabase RPC function to check permissions
     const { data, error } = await supabase.rpc('has_permission', {
-      user_id: session.user.id,
+      p_user_id: session.user.id,
       required_permission: requiredPermission
     });
 
@@ -53,7 +53,7 @@ export const getUserPermissions = async (): Promise<RolePermission[]> => {
     // First get the user's role ID
     const { data: roleIdData, error: roleIdError } = await supabase.rpc(
       'get_user_role_id', 
-      { user_id: session.user.id }
+      { p_user_id: session.user.id }
     );
     
     if (roleIdError || !roleIdData) {

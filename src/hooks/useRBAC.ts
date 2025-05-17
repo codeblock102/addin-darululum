@@ -32,7 +32,7 @@ export const useRBAC = () => {
           // Second, check user_roles table via RPC function
           const { data: userRoleData, error: userRoleError } = await supabase.rpc(
             'get_user_role_id',
-            { user_id: session.user.id }
+            { p_user_id: session.user.id }
           );
           
           if (userRoleData && !userRoleError) {

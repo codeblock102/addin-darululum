@@ -776,14 +776,16 @@ export type Database = {
         Returns: undefined
       }
       get_user_role_id: {
-        Args: { user_id: string }
+        Args: { p_user_id: string }
         Returns: string
       }
       has_permission: {
-        Args: {
-          user_id: string
-          required_permission: Database["public"]["Enums"]["role_permission"]
-        }
+        Args:
+          | { p_user_id: string; required_permission: string }
+          | {
+              user_id: string
+              required_permission: Database["public"]["Enums"]["role_permission"]
+            }
         Returns: boolean
       }
     }
