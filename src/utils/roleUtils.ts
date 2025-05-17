@@ -56,8 +56,14 @@ export const getUserPermissions = async (): Promise<RolePermission[]> => {
       { p_user_id: session.user.id }
     );
     
-    if (roleIdError || !roleIdData) {
+    if (roleIdError) {
       console.error('Error getting user role ID:', roleIdError);
+      return [];
+    }
+    
+    // If no role ID found, return empty permissions array
+    if (!roleIdData) {
+      console.log('No role assigned for user');
       return [];
     }
     
