@@ -8,14 +8,12 @@ import { AdminMessaging } from "@/components/admin/messaging/AdminMessaging";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useState } from "react";
 import { Loader2 } from "lucide-react";
-import { useAuth } from "@/contexts/AuthContext";
-import { useUserRole } from "@/hooks/useUserRole";
+import { useRBAC } from "@/hooks/useRBAC";
 import { Card } from "@/components/ui/card";
 
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState("overview");
-  const { isAdmin, isLoading } = useUserRole();
-  const { session } = useAuth();
+  const { isAdmin, isLoading } = useRBAC();
 
   if (isLoading) {
     return (
