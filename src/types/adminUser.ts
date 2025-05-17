@@ -4,6 +4,7 @@ export interface UserFormData {
   username: string;
   password: string;
   teacherId: string | null;
+  role?: string;
 }
 
 export interface UserDialogProps {

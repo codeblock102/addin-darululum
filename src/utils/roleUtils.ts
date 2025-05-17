@@ -50,11 +50,21 @@ export const getUserPermissions = async (): Promise<RolePermission[]> => {
     
     if (!session) return [];
 
-    // Using a more direct query approach since the get_user_permissions RPC function doesn't exist yet
+    // Use a direct query approach to get permissions for the user
     const { data, error } = await supabase
-      .from('role_permissions')
-      .select('permission, role_id')
-      .eq('role_id', supabase.rpc('get_user_role_id', { user_id: session.user.id }));
+      .from('roles')
+      .select(`
+        id, 
+        name,
+        role_permissions (
+          permission
+        )
+      `)
+      .eq('id', 
+        supabase.rpc('get_user_role_id', { 
+          user_id: session.user.id 
+        })
+      );
 
     if (error) {
       console.error('Error fetching user permissions:', error);
@@ -62,7 +72,21 @@ export const getUserPermissions = async (): Promise<RolePermission[]> => {
     }
 
     // Extract the permissions from the data
-    return data ? data.map(item => item.permission as RolePermission) : [];
+    if (!data || data.length === 0) return [];
+    
+    // Extract permissions from the nested query result
+    const permissions: RolePermission[] = [];
+    data.forEach(role => {
+      if (role.role_permissions && Array.isArray(role.role_permissions)) {
+        role.role_permissions.forEach((rp: any) => {
+          if (rp.permission) {
+            permissions.push(rp.permission as RolePermission);
+          }
+        });
+      }
+    });
+    
+    return permissions;
   } catch (error) {
     console.error('Unexpected error fetching permissions:', error);
     return [];
