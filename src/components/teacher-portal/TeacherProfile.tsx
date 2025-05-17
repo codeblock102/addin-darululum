@@ -11,31 +11,18 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Label } from "@/components/ui/label";
 import { Loader2, Save, User } from "lucide-react";
 import { Link } from "react-router-dom";
-
-interface Teacher {
-  id: string;
-  name: string;
-  subject: string;
-  experience: string;
-  email?: string;
-  bio?: string;
-  phone?: string;
-}
-
-interface TeacherProfileProps {
-  teacher: Teacher;
-}
+import { Teacher } from "@/types/teacher";
 
 export function TeacherProfile({ teacher }: { teacher: Teacher }) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   
   const [formData, setFormData] = useState({
-    name: teacher.name || "",
-    email: teacher.email || "",
-    phone: teacher.phone || "",
-    bio: teacher.bio || "",
-    experience: teacher.experience || "",
+    name: teacher?.name || "",
+    email: teacher?.email || "",
+    phone: teacher?.phone || "",
+    bio: teacher?.bio || "",
+    experience: teacher?.experience || "",
   });
   
   const updateProfileMutation = useMutation({
@@ -87,14 +74,14 @@ export function TeacherProfile({ teacher }: { teacher: Teacher }) {
         <CardContent>
           <div className="flex items-center space-x-4 mb-6">
             <Avatar className="h-20 w-20">
-              <AvatarImage src="" alt={teacher.name} />
+              <AvatarImage src="" alt={teacher?.name || "Teacher"} />
               <AvatarFallback className="text-lg">
                 <User className="h-10 w-10" />
               </AvatarFallback>
             </Avatar>
             <div>
-              <h3 className="text-xl font-medium">{teacher.name}</h3>
-              <p className="text-sm text-muted-foreground">{teacher.subject} Teacher</p>
+              <h3 className="text-xl font-medium">{teacher?.name || "Teacher"}</h3>
+              <p className="text-sm text-muted-foreground">{teacher?.subject || "Subject"} Teacher</p>
             </div>
           </div>
           
