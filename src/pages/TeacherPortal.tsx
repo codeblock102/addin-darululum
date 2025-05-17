@@ -13,11 +13,12 @@ import { Teacher } from "@/types/teacher";
 import { Button } from "@/components/ui/button";
 import { RefreshCcw } from "lucide-react";
 import { useRBAC } from "@/hooks/useRBAC";
+import { Card } from "@/components/ui/card";
 
 const TeacherPortal = () => {
   const { session, refreshSession } = useAuth();
   const { toast } = useToast();
-  const { isTeacher, isLoading: isRoleLoading } = useRBAC();
+  const { isTeacher, isAdmin, isLoading: isRoleLoading } = useRBAC();
   const [isCheckingRole, setIsCheckingRole] = useState(true);
 
   // Use RBAC hook to check role, and also verify teacher profile exists
@@ -53,7 +54,7 @@ const TeacherPortal = () => {
         .from('teachers')
         .select('id, name, subject, experience, email, bio, phone')
         .eq('email', session.user.email)
-        .single();
+        .maybeSingle();
       
       if (error) {
         console.error('Error fetching teacher profile:', error);
@@ -62,7 +63,7 @@ const TeacherPortal = () => {
       
       return data as Teacher;
     },
-    enabled: !!session?.user?.email && isTeacher === true && !isRoleLoading,
+    enabled: !!session?.user?.email && (isTeacher === true || isAdmin === true) && !isRoleLoading,
     retry: 1,
     staleTime: 5 * 60 * 1000 // 5 minutes
   });
@@ -81,25 +82,46 @@ const TeacherPortal = () => {
     });
   }
 
-  return (
-    <DashboardLayout>
-      {(isLoading || isCheckingRole || isRoleLoading) ? (
+  // Show loading state while checking roles or fetching teacher data
+  if (isLoading || isCheckingRole || isRoleLoading) {
+    return (
+      <DashboardLayout>
         <LoadingState />
-      ) : !isTeacher ? (
+      </DashboardLayout>
+    );
+  }
+
+  // Show access denied if user is not a teacher
+  if (!isTeacher && !isAdmin) {
+    return (
+      <DashboardLayout>
         <AccessDenied />
-      ) : !teacherData && !isLoading ? (
+      </DashboardLayout>
+    );
+  }
+
+  // Show profile not found if teacher data is missing
+  if (!teacherData) {
+    return (
+      <DashboardLayout>
         <div className="space-y-4">
-          <ProfileNotFound />
-          <div className="flex justify-center">
-            <Button variant="outline" onClick={handleRefresh} className="mt-4">
+          <Card className="p-6">
+            <h2 className="text-xl font-bold mb-4">Teacher Profile Not Found</h2>
+            <p className="mb-4">We couldn't find a teacher profile associated with your email ({session?.user?.email}).</p>
+            <Button variant="outline" onClick={handleRefresh} className="mt-2">
               <RefreshCcw className="h-4 w-4 mr-2" />
               Refresh
             </Button>
-          </div>
+          </Card>
         </div>
-      ) : (
-        teacherData && <TeacherDashboard teacher={teacherData} />
-      )}
+      </DashboardLayout>
+    );
+  }
+
+  // Show teacher dashboard if we have teacher data
+  return (
+    <DashboardLayout>
+      {teacherData && <TeacherDashboard teacher={teacherData} />}
     </DashboardLayout>
   );
 };

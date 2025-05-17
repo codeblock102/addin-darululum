@@ -33,8 +33,11 @@ export const ProtectedRoute = ({
   const isLoading = authLoading || rbacLoading;
 
   useEffect(() => {
+    // Only redirect after loading is complete
+    if (isLoading) return;
+    
     // Check if user is authenticated
-    if (!isLoading && !session) {
+    if (!session) {
       toast({
         title: "Authentication required",
         description: "Please sign in to access this page",
@@ -45,30 +48,28 @@ export const ProtectedRoute = ({
     }
     
     // Check for required roles
-    if (!isLoading && session) {
-      if (requireAdmin && !isAdmin) {
-        toast({
-          title: "Access Denied",
-          description: "This area requires administrator privileges",
-          variant: "destructive"
-        });
-        navigate("/");
-        return;
-      }
-      
-      if (requireTeacher && !isTeacher && !isAdmin) {
-        toast({
-          title: "Access Denied",
-          description: "This area requires teacher privileges",
-          variant: "destructive"
-        });
-        navigate("/");
-        return;
-      }
+    if (requireAdmin && !isAdmin) {
+      toast({
+        title: "Access Denied",
+        description: "This area requires administrator privileges",
+        variant: "destructive"
+      });
+      navigate("/");
+      return;
+    }
+    
+    if (requireTeacher && !isTeacher && !isAdmin) {
+      toast({
+        title: "Access Denied",
+        description: "This area requires teacher privileges",
+        variant: "destructive"
+      });
+      navigate("/");
+      return;
     }
     
     // Check for specific permissions if required
-    if (requiredPermissions.length > 0 && !rbacLoading && session) {
+    if (requiredPermissions.length > 0) {
       const hasAllPermissions = requiredPermissions.every(permission => hasPermission(permission));
       
       if (!hasAllPermissions) {
@@ -90,25 +91,5 @@ export const ProtectedRoute = ({
     );
   }
 
-  // Show content only if authenticated and has proper role/permissions
-  if (session) {
-    if (requireAdmin && !isAdmin) {
-      return null;
-    }
-    
-    if (requireTeacher && !isTeacher && !isAdmin) {
-      return null;
-    }
-    
-    if (requiredPermissions.length > 0) {
-      const hasAllPermissions = requiredPermissions.every(permission => hasPermission(permission));
-      if (!hasAllPermissions) {
-        return null;
-      }
-    }
-    
-    return <>{children}</>;
-  }
-  
-  return null;
+  return <>{children}</>;
 };
