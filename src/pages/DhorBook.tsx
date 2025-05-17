@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { DashboardLayout } from "@/components/layouts/DashboardLayout";
 import { Card, CardContent } from "@/components/ui/card";
@@ -23,7 +22,7 @@ const DhorBookPage = () => {
   const [activeTab, setActiveTab] = useState("all");
   const [viewMode, setViewMode] = useState<"daily" | "classroom">("daily");
   const [selectedTeacherId, setSelectedTeacherId] = useState<string | null>(null);
-  const { isAdmin, isTeacher } = useTeacherStatus();
+  const { isAdmin, isTeacher, teacherId } = useTeacherStatus();
 
   useEffect(() => {
     // Check URL parameters when component mounts
@@ -36,66 +35,15 @@ const DhorBookPage = () => {
     }
   }, []);
 
-  // Fetch the teacher ID for the current user if they are a teacher
-  const { data: teacherData, isLoading: teacherLoading } = useQuery({
-    queryKey: ['current-teacher'],
-    queryFn: async () => {
-      if (!isTeacher) return null;
-      
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.user?.email) return null;
+  // Set the current teacher ID based on the user's role
+  useEffect(() => {
+    if (isTeacher && teacherId) {
+      console.log("Setting current teacher ID from hook:", teacherId);
+      setSelectedTeacherId(teacherId);
+    }
+  }, [isTeacher, teacherId]);
 
-      const { data, error } = await supabase
-        .from('teachers')
-        .select('id, name')
-        .eq('email', session.user.email)
-        .single();
-        
-      if (error) {
-        console.error("Error fetching teacher data:", error);
-        // If teacher doesn't exist, don't return null - this will allow access to all students
-        // Just return a default object with empty id
-        return { id: 'default', name: 'Default Teacher' };
-      }
-      
-      return data;
-    },
-    enabled: isTeacher,
-  });
-
-  // Fetch all students without teacher filtering
-  const { data: students, isLoading: studentsLoading } = useQuery({
-    queryKey: ['all-students-for-dhor'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('students')
-        .select('id, name, status')
-        .eq('status', 'active')  // Only fetch active students
-        .order('name', { ascending: true });
-
-      if (error) {
-        console.error("Error fetching students:", error);
-        toast({
-          title: "Error fetching students",
-          description: "Could not retrieve student data. Please try again.",
-          variant: "destructive",
-        });
-        return [];
-      }
-      
-      if (!data || data.length === 0) {
-        console.log("No students found in database");
-      } else {
-        console.log(`Found ${data.length} students`);
-      }
-      
-      return data || [];
-    },
-    // Refresh the data more frequently to capture new students
-    refetchInterval: 30000, // Refetch every 30 seconds
-  });
-
-  // Fetch active teachers for the teacher selector
+  // Fetch all teachers for the teacher selector (for admins)
   const { data: teachers } = useQuery({
     queryKey: ['active-teachers'],
     queryFn: async () => {
@@ -112,9 +60,37 @@ const DhorBookPage = () => {
     }
   });
   
+  // Fetch all students without teacher filtering to ensure we can see all students
+  const { data: students, isLoading: studentsLoading } = useQuery({
+    queryKey: ['all-students-for-dhor'],
+    queryFn: async () => {
+      console.log("Fetching ALL students for Dhor Book");
+      const { data, error } = await supabase
+        .from('students')
+        .select('id, name, status')
+        .eq('status', 'active')  // Only fetch active students
+        .order('name', { ascending: true });
+
+      if (error) {
+        console.error("Error fetching students:", error);
+        toast({
+          title: "Error fetching students",
+          description: "Could not retrieve student data. Please try again.",
+          variant: "destructive",
+        });
+        return [];
+      }
+      
+      console.log(`Found ${data?.length || 0} total active students`);
+      return data || [];
+    },
+    // Refresh the data more frequently to capture new students
+    refetchInterval: 30000, // Refetch every 30 seconds
+  });
+  
   // Set up realtime updates to ensure both tabs are in sync
   const currentTeacherId = isTeacher 
-    ? teacherData?.id 
+    ? teacherId 
     : (selectedTeacherId || (teachers && teachers.length > 0 ? teachers[0]?.id : undefined));
   
   const { isSubscribed } = useRealtimeLeaderboard(currentTeacherId, () => {
@@ -131,8 +107,8 @@ const DhorBookPage = () => {
     console.log("Students data:", students);
     console.log("Filtered students:", filteredStudents);
     console.log("Selected student ID:", selectedStudentId);
-    console.log("Teacher data:", teacherData);
-  }, [students, filteredStudents, selectedStudentId, teacherData]);
+    console.log("Current teacher ID:", currentTeacherId);
+  }, [students, filteredStudents, selectedStudentId, currentTeacherId]);
   
   return (
     <DashboardLayout>
@@ -262,7 +238,7 @@ const DhorBookPage = () => {
                         {selectedStudentId ? (
                           <DhorBookComponent 
                             studentId={selectedStudentId} 
-                            teacherId={isTeacher ? teacherData?.id : (selectedTeacherId || teachers?.[0]?.id || 'default')} 
+                            teacherId={currentTeacherId || 'default'} 
                           />
                         ) : (
                           <div className="border rounded-lg flex items-center justify-center h-[200px] sm:h-[300px] bg-muted/20">
@@ -303,7 +279,7 @@ const DhorBookPage = () => {
                 ) : (
                   <div className="border rounded-lg p-6 sm:p-8 text-center">
                     <p className="text-muted-foreground text-xs sm:text-sm">
-                      {teacherLoading ? 
+                      {studentsLoading ? 
                         "Loading teacher information..." : 
                         "Please select a teacher to view classroom records."}
                     </p>
