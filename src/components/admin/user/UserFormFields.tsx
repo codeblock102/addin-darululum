@@ -11,6 +11,7 @@ interface UserFormFieldsProps {
   teachers: { id: string; name: string }[];
   handleInputChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   handleTeacherChange: (value: string) => void;
+  handleRoleChange: (value: string) => void;
 }
 
 export const UserFormFields = ({
@@ -19,7 +20,8 @@ export const UserFormFields = ({
   isEdit,
   teachers,
   handleInputChange,
-  handleTeacherChange
+  handleTeacherChange,
+  handleRoleChange
 }: UserFormFieldsProps) => {
   return (
     <>
@@ -70,13 +72,32 @@ export const UserFormFields = ({
       </div>
       
       <div className="space-y-2">
-        <Label htmlFor="teacherId">Assign to Teacher</Label>
+        <Label htmlFor="role">User Role <span className="text-red-500">*</span></Label>
+        <Select
+          value={formData.role || "teacher"}
+          onValueChange={handleRoleChange}
+        >
+          <SelectTrigger className="w-full">
+            <SelectValue placeholder="Select user role" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="teacher">Teacher</SelectItem>
+            <SelectItem value="admin">Administrator</SelectItem>
+          </SelectContent>
+        </Select>
+        <p className="text-xs text-gray-500">
+          Teachers can manage students and classes. Administrators have access to all system features.
+        </p>
+      </div>
+      
+      <div className="space-y-2">
+        <Label htmlFor="teacherId">Assign to Teacher Profile</Label>
         <Select
           value={formData.teacherId || "none"}
           onValueChange={handleTeacherChange}
         >
           <SelectTrigger className="w-full">
-            <SelectValue placeholder="Select a teacher (optional)" />
+            <SelectValue placeholder="Select a teacher profile (optional)" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="none">None</SelectItem>
@@ -88,7 +109,7 @@ export const UserFormFields = ({
           </SelectContent>
         </Select>
         <p className="text-xs text-gray-500">
-          Linking a user to a teacher allows them to access the teacher portal with that teacher's data.
+          Linking a user to a teacher profile allows them to access the teacher portal with that teacher's data.
         </p>
       </div>
     </>

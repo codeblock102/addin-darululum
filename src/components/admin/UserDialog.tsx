@@ -25,7 +25,8 @@ export const UserDialog = ({ selectedUser, teachers, onSuccess }: UserDialogProp
     email: "",
     username: "",
     password: "",
-    teacherId: null
+    teacherId: null,
+    role: "teacher" // Default to teacher role
   });
 
   useEffect(() => {
@@ -34,14 +35,16 @@ export const UserDialog = ({ selectedUser, teachers, onSuccess }: UserDialogProp
         email: selectedUser.email || "",
         username: selectedUser.username || "",
         password: "", // Don't populate password for security reasons
-        teacherId: selectedUser.teacherId || null
+        teacherId: selectedUser.teacherId || null,
+        role: selectedUser.role || "teacher"
       });
     } else {
       setFormData({
         email: "",
         username: "",
         password: "",
-        teacherId: null
+        teacherId: null,
+        role: "teacher" // Default to teacher role
       });
     }
     setErrors({});
@@ -62,6 +65,10 @@ export const UserDialog = ({ selectedUser, teachers, onSuccess }: UserDialogProp
 
   const handleTeacherChange = (value: string) => {
     setFormData(prev => ({ ...prev, teacherId: value === "none" ? null : value }));
+  };
+
+  const handleRoleChange = (value: string) => {
+    setFormData(prev => ({ ...prev, role: value }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -135,6 +142,7 @@ export const UserDialog = ({ selectedUser, teachers, onSuccess }: UserDialogProp
           teachers={teachers}
           handleInputChange={handleInputChange}
           handleTeacherChange={handleTeacherChange}
+          handleRoleChange={handleRoleChange}
         />
         
         <DialogFooter>
