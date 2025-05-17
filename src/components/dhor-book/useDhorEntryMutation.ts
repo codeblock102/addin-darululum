@@ -1,4 +1,3 @@
-
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -84,13 +83,11 @@ export function useDhorEntryMutation({
           if (formData.memorization_quality) {
             progressRecord.memorization_quality = formData.memorization_quality;
           }
-          // teacher_notes could be added here if formData.comments is intended for it
-          // if (formData.comments) progressRecord.teacher_notes = formData.comments;
 
           console.log("Inserting progress record:", JSON.stringify(progressRecord, null, 2));
           const { data: progressData, error: progressError } = await supabase
             .from('progress')
-            .insert([progressRecord]) // supabase client expects an array
+            .insert([progressRecord]) 
             .select();
 
           if (progressError) {
@@ -217,7 +214,6 @@ export function useDhorEntryMutation({
         } else if (typeof error === 'string') {
           errorMessage = error;
         }
-        // Re-throw a new error with a more specific message if possible, or the original error
         throw new Error(errorMessage);
       }
     },

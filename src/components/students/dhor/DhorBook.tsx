@@ -33,6 +33,7 @@ export const DhorBook = ({ studentId, studentName }: DhorBookProps) => {
     },
   });
 
+  // Allow any teacher to view and add entries for any student
   const { data: difficultAyahs, isLoading, refetch } = useQuery({
     queryKey: ['difficult-ayahs', studentId],
     queryFn: async () => {
@@ -113,4 +114,4 @@ export const DhorBook = ({ studentId, studentName }: DhorBookProps) => {
       />
     </div>
   );
-};
+}

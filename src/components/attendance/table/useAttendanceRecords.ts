@@ -10,7 +10,7 @@ export function useAttendanceRecords() {
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [dateFilter, setDateFilter] = useState<Date | null>(null);
 
-  // Query to get all students
+  // Query to get all students - with no filtering by teacher
   const { data: students, isLoading: isLoadingStudents } = useQuery({
     queryKey: ["students-for-attendance"],
     queryFn: async () => {

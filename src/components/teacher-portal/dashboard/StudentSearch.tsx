@@ -17,7 +17,7 @@ export const StudentSearch = ({ teacherId }: StudentSearchProps) => {
   const [searchQuery, setSearchQuery] = useState("");
   const navigate = useNavigate();
   
-  // Fetch all students instead of just assigned ones
+  // Fetch all students
   const { data: students, isLoading } = useQuery({
     queryKey: ["all-students"],
     queryFn: async () => {
@@ -25,7 +25,8 @@ export const StudentSearch = ({ teacherId }: StudentSearchProps) => {
         const { data, error } = await supabase
           .from("students")
           .select("id, name")
-          .eq("status", "active");
+          .eq("status", "active")
+          .order("name", { ascending: true });
           
         if (error) throw error;
         return data || [];
