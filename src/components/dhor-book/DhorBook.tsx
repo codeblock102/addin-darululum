@@ -8,7 +8,6 @@ import { ChevronLeft, ChevronRight, Calendar, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DhorBookGrid } from "./DhorBookGrid";
 import { DailyActivityEntry } from "@/types/dhor-book";
-import { useToast } from "@/hooks/use-toast";
 
 interface DhorBookProps {
   studentId: string;
@@ -19,7 +18,6 @@ export const DhorBook = ({ studentId, teacherId }: DhorBookProps) => {
   const [currentWeek, setCurrentWeek] = useState(new Date());
   const [entries, setEntries] = useState<DailyActivityEntry[]>([]);
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const { toast } = useToast();
 
   // Format dates for display
   const weekStart = startOfWeek(currentWeek);
@@ -94,10 +92,6 @@ export const DhorBook = ({ studentId, teacherId }: DhorBookProps) => {
         console.error("Error fetching progress:", progressError);
       }
 
-      console.log("Juz revisions:", juzRevisions);
-      console.log("Sabaq para:", sabaqPara);
-      console.log("Progress entries:", progressEntries);
-
       // Combine data from different tables into comprehensive entries
       let combinedEntries: DailyActivityEntry[] = [];
       
@@ -157,49 +151,9 @@ export const DhorBook = ({ studentId, teacherId }: DhorBookProps) => {
             memorization_quality: progressForDate?.memorization_quality,
           } as DailyActivityEntry;
         });
-      } else {
-        // If no dhor book entries, create entries based on other data tables
-        // Create a map of all dates that have any entries
-        const allDates = new Set<string>();
-        
-        // Add dates from juz revisions
-        Object.keys(juzRevisionsByDate).forEach(date => allDates.add(date));
-        
-        // Add dates from sabaq para
-        Object.keys(sabaqParaByDate).forEach(date => allDates.add(date));
-        
-        // Add dates from progress
-        Object.keys(progressByDate).forEach(date => allDates.add(date));
-        
-        // For each unique date, create an entry
-        allDates.forEach(dateKey => {
-          const juzRevisionsForDate = juzRevisionsByDate[dateKey] || [];
-          const sabaqParaForDate = sabaqParaByDate[dateKey];
-          const progressForDate = progressByDate[dateKey];
-          
-          if (juzRevisionsForDate.length > 0 || sabaqParaForDate || progressForDate) {
-            combinedEntries.push({
-              id: `synthetic-${dateKey}`,
-              entry_date: dateKey,
-              student_id: studentId,
-              teacher_id: teacherId,
-              comments: progressForDate?.notes || "",
-              juz_revisions_data: juzRevisionsForDate,
-              sabaq_para_data: sabaqParaForDate,
-              progress_data: progressForDate,
-              // Extract these fields from progress if available
-              current_juz: progressForDate?.current_juz,
-              current_surah: progressForDate?.current_surah,
-              start_ayat: progressForDate?.start_ayat,
-              end_ayat: progressForDate?.end_ayat,
-              memorization_quality: progressForDate?.memorization_quality,
-            } as DailyActivityEntry);
-          }
-        });
       }
       
       console.log(`Found ${combinedEntries.length} dhor book entries for the week`);
-      console.log("Combined entries:", combinedEntries);
       return combinedEntries;
     },
     enabled: !!studentId,
@@ -213,26 +167,13 @@ export const DhorBook = ({ studentId, teacherId }: DhorBookProps) => {
   }, [entriesData]);
 
   // Handle refresh request
-  const handleRefresh = async () => {
+  const handleRefresh = () => {
     setIsRefreshing(true);
-    try {
-      await refetch();
-      toast({
-        title: "Data refreshed",
-        description: "The latest student records have been loaded.",
-      });
-    } catch (error) {
-      console.error("Error refreshing data:", error);
-      toast({
-        variant: "destructive",
-        title: "Refresh failed",
-        description: "Could not load the latest data. Please try again.",
-      });
-    } finally {
+    refetch().finally(() => {
       setTimeout(() => {
         setIsRefreshing(false);
       }, 500); // Brief delay to show refresh indicator
-    }
+    });
   };
 
   if (!studentId) {
