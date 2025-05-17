@@ -2,7 +2,7 @@
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
-import { RefreshCcw } from "lucide-react";
+import { RefreshCcw, UserPlus } from "lucide-react";
 
 interface ProfileNotFoundProps {
   email?: string;
@@ -17,7 +17,7 @@ export const ProfileNotFound = ({ email, onRefresh }: ProfileNotFoundProps) => {
       <h2 className="text-2xl font-bold mb-4">Teacher Profile Not Found</h2>
       <p className="text-gray-600 mb-6">
         {email 
-          ? `We couldn't find a teacher profile associated with your email (${email}).`
+          ? `We couldn't find a teacher profile associated with your email (${email}). You need to create a teacher profile to access the teacher portal.`
           : "We couldn't find a teacher profile associated with your account. This portal is only for registered teachers."
         }
       </p>
@@ -26,7 +26,7 @@ export const ProfileNotFound = ({ email, onRefresh }: ProfileNotFoundProps) => {
           Return to Dashboard
         </Button>
         {onRefresh ? (
-          <Button onClick={onRefresh} variant="outline">
+          <Button onClick={onRefresh} variant="default">
             <RefreshCcw className="h-4 w-4 mr-2" />
             Refresh
           </Button>

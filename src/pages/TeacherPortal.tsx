@@ -31,6 +31,7 @@ const TeacherPortal = () => {
       
       try {
         setIsCheckingRole(true);
+        console.log("Checking teacher status for email:", session.user.email);
         // Additional check will happen in useQuery below
       } finally {
         setIsCheckingRole(false);
@@ -95,7 +96,7 @@ const TeacherPortal = () => {
     );
   }
 
-  // Show access denied if user is not a teacher
+  // Show access denied if user is not a teacher or admin
   if (!isTeacher && !isAdmin) {
     return (
       <DashboardLayout>
