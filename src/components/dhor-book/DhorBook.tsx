@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -51,6 +50,27 @@ export const DhorBook = ({ studentId, teacherId }: DhorBookProps) => {
   const handleCurrentWeek = () => {
     setCurrentWeek(new Date());
   };
+
+  // Fetch student data to verify the student exists
+  const { data: studentData, isLoading: isStudentLoading } = useQuery({
+    queryKey: ['student-detail', studentId],
+    queryFn: async () => {
+      if (!studentId) return null;
+      
+      const { data, error } = await supabase
+        .from('students')
+        .select('*')
+        .eq('id', studentId)
+        .single();
+      
+      if (error) {
+        console.error("Error fetching student:", error);
+        return null;
+      }
+      return data;
+    },
+    enabled: !!studentId,
+  });
 
   // Fetch student's dhor book entries
   const { data: dhorBookEntries, isLoading: entriesLoading } = useQuery({
@@ -430,190 +450,209 @@ export const DhorBook = ({ studentId, teacherId }: DhorBookProps) => {
 
   return (
     <div className="space-y-4">
-      {/* Week Navigation */}
-      <div className="flex justify-between items-center">
-        <Button variant="outline" size="sm" onClick={handlePrevWeek}>
-          Previous Week
-        </Button>
-        <div className="text-center">
-          <h3 className="text-sm font-medium">{weekRangeDisplay}</h3>
-          <Button variant="link" size="sm" onClick={handleCurrentWeek} className="text-xs">
-            Go to Current Week
-          </Button>
+      {isStudentLoading ? (
+        <div className="flex justify-center py-8">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <span className="ml-2">Loading student data...</span>
         </div>
-        <Button variant="outline" size="sm" onClick={handleNextWeek}>
-          Next Week
-        </Button>
-      </div>
-      
-      {/* Dhor Book Grid for displaying entries */}
-      <DhorBookGrid 
-        entries={dhorBookEntries || []}
-        studentId={studentId}
-        teacherId={teacherId}
-        currentWeek={currentWeek}
-        onRefresh={handleRefresh}
-      />
+      ) : !studentData ? (
+        <div className="flex flex-col items-center justify-center py-12 text-center space-y-4">
+          <div className="rounded-full bg-yellow-100 dark:bg-yellow-900 p-3">
+            <Loader2 className="h-6 w-6 text-yellow-500" />
+          </div>
+          <h3 className="text-lg font-medium">Student Not Found</h3>
+          <p className="text-sm text-muted-foreground max-w-md">
+            The selected student could not be found. Please check that the student ID is correct and try again.
+          </p>
+        </div>
+      ) : (
+        <>
+          {/* Week Navigation */}
+          <div className="flex justify-between items-center">
+            <Button variant="outline" size="sm" onClick={handlePrevWeek}>
+              Previous Week
+            </Button>
+            <div className="text-center">
+              <h3 className="text-sm font-medium">{weekRangeDisplay}</h3>
+              <Button variant="link" size="sm" onClick={handleCurrentWeek} className="text-xs">
+                Go to Current Week
+              </Button>
+            </div>
+            <Button variant="outline" size="sm" onClick={handleNextWeek}>
+              Next Week
+            </Button>
+          </div>
+          
+          {/* Dhor Book Grid for displaying entries */}
+          <DhorBookGrid 
+            entries={dhorBookEntries || []}
+            studentId={studentId}
+            teacherId={teacherId}
+            currentWeek={currentWeek}
+            onRefresh={queryClient.invalidateQueries}
+          />
 
-      {/* Parent Comments Section */}
-      <Card className="mt-4">
-        <CardHeader>
-          <CardTitle>Parent Comments</CardTitle>
-          <CardDescription>Recent comments from parents</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            <Form {...commentForm}>
-              <form onSubmit={commentForm.handleSubmit(onCommentSubmit)} className="space-y-4">
-                <FormField
-                  control={commentForm.control}
-                  name="comment"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>New Comment</FormLabel>
-                      <FormControl>
-                        <Textarea placeholder="Add a new comment" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={commentForm.control}
-                  name="entry_date"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Date</FormLabel>
-                      <FormControl>
-                        <Input type="date" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <Button 
-                  type="submit" 
-                  disabled={createCommentMutation.isPending}
-                  className="w-full"
-                >
-                  {createCommentMutation.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
-                  Save Comment
-                </Button>
-              </form>
-            </Form>
+          {/* Parent Comments Section */}
+          <Card className="mt-4">
+            <CardHeader>
+              <CardTitle>Parent Comments</CardTitle>
+              <CardDescription>Recent comments from parents</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <Form {...commentForm}>
+                  <form onSubmit={commentForm.handleSubmit(onCommentSubmit)} className="space-y-4">
+                    <FormField
+                      control={commentForm.control}
+                      name="comment"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>New Comment</FormLabel>
+                          <FormControl>
+                            <Textarea placeholder="Add a new comment" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={commentForm.control}
+                      name="entry_date"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Date</FormLabel>
+                          <FormControl>
+                            <Input type="date" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <Button 
+                      type="submit" 
+                      disabled={createCommentMutation.isPending}
+                      className="w-full"
+                    >
+                      {createCommentMutation.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+                      Save Comment
+                    </Button>
+                  </form>
+                </Form>
 
-            <div className="divide-y">
-              {commentsLoading ? (
+                <div className="divide-y">
+                  {commentsLoading ? (
+                    <div className="flex justify-center py-4">
+                      <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                    </div>
+                  ) : parentComments && parentComments.length > 0 ? (
+                    parentComments.map((comment) => (
+                      <div key={comment.id} className="py-3">
+                        <div className="flex justify-between items-start">
+                          <div className="text-sm font-medium">
+                            {new Date(comment.entry_date).toLocaleDateString()}
+                          </div>
+                          <div className="flex items-center space-x-1">
+                            <Button 
+                              variant="ghost" 
+                              size="sm"
+                              onClick={() => {
+                                setIsEditingComment(comment.id);
+                                setEditedComment(comment.comment);
+                              }}
+                            >
+                              <Edit className="h-3.5 w-3.5" />
+                            </Button>
+                            <Button 
+                              variant="ghost" 
+                              size="sm"
+                              onClick={() => handleDeleteComment(comment.id)}
+                            >
+                              <Trash className="h-3.5 w-3.5" />
+                            </Button>
+                          </div>
+                        </div>
+                        {isEditingComment === comment.id ? (
+                          <div className="mt-2 space-y-2">
+                            <Textarea 
+                              value={editedComment} 
+                              onChange={(e) => setEditedComment(e.target.value)}
+                              className="text-sm"
+                            />
+                            <div className="flex justify-end space-x-2">
+                              <Button 
+                                size="sm" 
+                                variant="outline" 
+                                onClick={() => setIsEditingComment(null)}
+                              >
+                                Cancel
+                              </Button>
+                              <Button 
+                                size="sm" 
+                                onClick={() => handleUpdateComment(comment.id, editedComment)}
+                              >
+                                Save
+                              </Button>
+                            </div>
+                          </div>
+                        ) : (
+                          <p className="mt-1 text-sm">{comment.comment}</p>
+                        )}
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-sm text-muted-foreground py-4 text-center">No comments yet.</p>
+                  )}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Revision Schedule Section */}
+          <Card className="mt-4">
+            <CardHeader>
+              <CardTitle>Scheduled Revisions</CardTitle>
+              <CardDescription>Upcoming revisions for this student</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {schedulesLoading ? (
                 <div className="flex justify-center py-4">
                   <Loader2 className="h-6 w-6 animate-spin text-primary" />
                 </div>
-              ) : parentComments && parentComments.length > 0 ? (
-                parentComments.map((comment) => (
-                  <div key={comment.id} className="py-3">
-                    <div className="flex justify-between items-start">
-                      <div className="text-sm font-medium">
-                        {new Date(comment.entry_date).toLocaleDateString()}
-                      </div>
-                      <div className="flex items-center space-x-1">
-                        <Button 
-                          variant="ghost" 
-                          size="sm"
-                          onClick={() => {
-                            setIsEditingComment(comment.id);
-                            setEditedComment(comment.comment);
-                          }}
-                        >
-                          <Edit className="h-3.5 w-3.5" />
-                        </Button>
-                        <Button 
-                          variant="ghost" 
-                          size="sm"
-                          onClick={() => handleDeleteComment(comment.id)}
-                        >
-                          <Trash className="h-3.5 w-3.5" />
-                        </Button>
-                      </div>
-                    </div>
-                    {isEditingComment === comment.id ? (
-                      <div className="mt-2 space-y-2">
-                        <Textarea 
-                          value={editedComment} 
-                          onChange={(e) => setEditedComment(e.target.value)}
-                          className="text-sm"
-                        />
-                        <div className="flex justify-end space-x-2">
-                          <Button 
-                            size="sm" 
-                            variant="outline" 
-                            onClick={() => setIsEditingComment(null)}
-                          >
-                            Cancel
-                          </Button>
-                          <Button 
-                            size="sm" 
-                            onClick={() => handleUpdateComment(comment.id, editedComment)}
-                          >
-                            Save
-                          </Button>
+              ) : revisionSchedules && revisionSchedules.length > 0 ? (
+                <div className="space-y-3">
+                  {revisionSchedules.map((schedule) => (
+                    <Card key={schedule.id} className="p-3 bg-muted/40">
+                      <div className="flex justify-between">
+                        <div>
+                          <p className="text-sm font-medium">Juz {schedule.juz_number} {schedule.surah_number && `(Surah ${schedule.surah_number})`}</p>
+                          <p className="text-xs text-muted-foreground">
+                            Scheduled: {new Date(schedule.scheduled_date).toLocaleDateString()}
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          <span className={`
+                            inline-flex items-center rounded-full px-2 py-1 text-xs
+                            ${schedule.priority === 'high' ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300' : 
+                              schedule.priority === 'medium' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300' : 
+                              'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300'}
+                          `}>
+                            {schedule.priority} priority
+                          </span>
+                          <p className="text-xs mt-1">
+                            Status: <span className="font-medium">{schedule.status}</span>
+                          </p>
                         </div>
                       </div>
-                    ) : (
-                      <p className="mt-1 text-sm">{comment.comment}</p>
-                    )}
-                  </div>
-                ))
+                    </Card>
+                  ))}
+                </div>
               ) : (
-                <p className="text-sm text-muted-foreground py-4 text-center">No comments yet.</p>
+                <p className="text-sm text-muted-foreground py-4 text-center">No scheduled revisions for this week.</p>
               )}
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Revision Schedule Section */}
-      <Card className="mt-4">
-        <CardHeader>
-          <CardTitle>Scheduled Revisions</CardTitle>
-          <CardDescription>Upcoming revisions for this student</CardDescription>
-        </CardHeader>
-        <CardContent>
-          {schedulesLoading ? (
-            <div className="flex justify-center py-4">
-              <Loader2 className="h-6 w-6 animate-spin text-primary" />
-            </div>
-          ) : revisionSchedules && revisionSchedules.length > 0 ? (
-            <div className="space-y-3">
-              {revisionSchedules.map((schedule) => (
-                <Card key={schedule.id} className="p-3 bg-muted/40">
-                  <div className="flex justify-between">
-                    <div>
-                      <p className="text-sm font-medium">Juz {schedule.juz_number} {schedule.surah_number && `(Surah ${schedule.surah_number})`}</p>
-                      <p className="text-xs text-muted-foreground">
-                        Scheduled: {new Date(schedule.scheduled_date).toLocaleDateString()}
-                      </p>
-                    </div>
-                    <div className="text-right">
-                      <span className={`
-                        inline-flex items-center rounded-full px-2 py-1 text-xs
-                        ${schedule.priority === 'high' ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300' : 
-                          schedule.priority === 'medium' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300' : 
-                          'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300'}
-                      `}>
-                        {schedule.priority} priority
-                      </span>
-                      <p className="text-xs mt-1">
-                        Status: <span className="font-medium">{schedule.status}</span>
-                      </p>
-                    </div>
-                  </div>
-                </Card>
-              ))}
-            </div>
-          ) : (
-            <p className="text-sm text-muted-foreground py-4 text-center">No scheduled revisions for this week.</p>
-          )}
-        </CardContent>
-      </Card>
+            </CardContent>
+          </Card>
+        </>
+      )}
     </div>
   );
 };

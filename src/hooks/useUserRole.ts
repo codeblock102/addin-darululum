@@ -6,7 +6,7 @@ import { useAuth } from "@/contexts/AuthContext";
 export const useUserRole = () => {
   const { session } = useAuth();
   const [isAdmin, setIsAdmin] = useState(false);
-  const [isTeacher, setIsTeacher] = useState(true); // Default to true for now
+  const [isTeacher, setIsTeacher] = useState(true); // Default to true to ensure access
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -26,13 +26,14 @@ export const useUserRole = () => {
         if (session.user.user_metadata?.role === 'admin') {
           setIsAdmin(true);
         } else {
-          // Check for admin role in database
+          // Check for teacher profile data, but don't turn off teacher access if not found
           const { data: teacherData } = await supabase
             .from('teachers')
             .select('id')
             .eq('email', session.user.email);
           
           // If we have teacher data, confirm teacher status
+          // But even without it, we'll still treat them as a teacher for now
           setIsTeacher(true);
           
           // Admin check (could be based on some other criteria)
@@ -40,7 +41,7 @@ export const useUserRole = () => {
         }
       } catch (error) {
         console.error("Error checking user role:", error);
-        // Default to teacher for now
+        // Default to teacher to ensure access
         setIsAdmin(false);
         setIsTeacher(true);
       } finally {

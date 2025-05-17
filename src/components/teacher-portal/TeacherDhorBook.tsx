@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { DhorBook } from "@/components/dhor-book/DhorBook";
 import { ClassroomRecords } from "@/components/dhor-book/ClassroomRecords";
-import { Loader2, Plus, Calendar, Search, BookOpen, Users } from "lucide-react";
+import { Loader2, Plus, Calendar, Search, BookOpen, Users, AlertCircle } from "lucide-react";
 import { StudentSearch } from "@/components/student-progress/StudentSearch";
 import { AttendanceStats } from "@/components/student-progress/AttendanceStats";
 import { StudentPerformanceMetrics } from "@/components/student-progress/StudentPerformanceMetrics";
@@ -48,17 +48,41 @@ export const TeacherDhorBook = ({ teacherId }: TeacherDhorBookProps) => {
           
         if (data) {
           setSelectedStudentName(data.name);
+        } else {
+          console.log("Student not found with ID:", studentId);
         }
       };
       fetchStudentName();
     }
   }, [location.search]);
 
+  // Verify student exists
+  const { data: studentVerification, isLoading: studentVerifyLoading } = useQuery({
+    queryKey: ['verify-student', selectedStudentId],
+    queryFn: async () => {
+      if (!selectedStudentId) return null;
+      
+      const { data, error } = await supabase
+        .from('students')
+        .select('id, name')
+        .eq('id', selectedStudentId)
+        .single();
+      
+      if (error) {
+        console.error("Error verifying student:", error);
+        return null;
+      }
+      
+      return data;
+    },
+    enabled: !!selectedStudentId
+  });
+
   // Fetch attendance records for the selected student
   const { data: attendanceData, isLoading: attendanceLoading } = useQuery({
     queryKey: ['student-attendance', selectedStudentId],
     queryFn: async () => {
-      if (!selectedStudentId) return [];
+      if (!selectedStudentId || !studentVerification) return [];
       
       const { data, error } = await supabase
         .from('attendance')
@@ -69,7 +93,7 @@ export const TeacherDhorBook = ({ teacherId }: TeacherDhorBookProps) => {
       if (error) throw error;
       return data || [];
     },
-    enabled: !!selectedStudentId,
+    enabled: !!selectedStudentId && !!studentVerification,
   });
 
   // Handler for student selection
@@ -113,11 +137,28 @@ export const TeacherDhorBook = ({ teacherId }: TeacherDhorBookProps) => {
                   showHeader={false}
                 />
 
-                {selectedStudentId && (
+                {studentVerifyLoading && selectedStudentId && (
+                  <div className="flex justify-center py-8">
+                    <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                    <span className="ml-2">Verifying student...</span>
+                  </div>
+                )}
+
+                {selectedStudentId && !studentVerifyLoading && !studentVerification && (
+                  <div className="flex flex-col items-center justify-center p-6 text-center space-y-3 mt-4 border rounded-lg bg-muted/20">
+                    <AlertCircle className="h-8 w-8 text-yellow-500" />
+                    <h3 className="text-base font-medium">Student Not Found</h3>
+                    <p className="text-sm text-muted-foreground max-w-md">
+                      The student with ID {selectedStudentId} could not be found. Please select a different student.
+                    </p>
+                  </div>
+                )}
+
+                {selectedStudentId && studentVerification && (
                   <div className="space-y-4 mt-3">
                     <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-2">
                       <h3 className="text-base sm:text-lg md:text-xl font-semibold truncate">
-                        {selectedStudentName}'s Progress
+                        {studentVerification.name}'s Progress
                       </h3>
                       <div className="flex flex-wrap gap-2">
                         <Button variant="outline" size="sm" className="text-xs">
@@ -152,7 +193,7 @@ export const TeacherDhorBook = ({ teacherId }: TeacherDhorBookProps) => {
                         <Card>
                           <CardHeader className="p-3 sm:p-4 md:p-6">
                             <CardTitle className="text-sm sm:text-base">Attendance Records</CardTitle>
-                            <CardDescription className="text-xs">View and track attendance for {selectedStudentName}</CardDescription>
+                            <CardDescription className="text-xs">View and track attendance for {studentVerification.name}</CardDescription>
                           </CardHeader>
                           <CardContent className="p-3 sm:p-4 md:p-6 pt-0">
                             {attendanceLoading ? (
