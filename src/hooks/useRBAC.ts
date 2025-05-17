@@ -26,6 +26,7 @@ export const useRBAC = () => {
         
         // First, check if user has a teacher profile - this should take priority
         if (session.user.email) {
+          console.log("Checking for teacher profile with email:", session.user.email);
           const { data: teacherData, error: teacherError } = await supabase
             .from('teachers')
             .select('id')
@@ -33,7 +34,7 @@ export const useRBAC = () => {
             .maybeSingle();
           
           if (teacherData && !teacherError) {
-            console.log("User has a teacher profile, setting role to teacher");
+            console.log("Found teacher profile:", teacherData);
             setRole('teacher');
             
             // Fetch user permissions
@@ -41,6 +42,8 @@ export const useRBAC = () => {
             setPermissions(userPermissions);
             setIsLoading(false);
             return; // Exit early since we've confirmed teacher role
+          } else {
+            console.log("No teacher profile found or error:", teacherError);
           }
         }
         
