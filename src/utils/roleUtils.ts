@@ -50,7 +50,18 @@ export const getUserPermissions = async (): Promise<RolePermission[]> => {
     
     if (!session) return [];
 
-    // Use a direct query approach to get permissions for the user
+    // First get the user's role ID
+    const { data: roleIdData, error: roleIdError } = await supabase.rpc(
+      'get_user_role_id', 
+      { user_id: session.user.id }
+    );
+    
+    if (roleIdError || !roleIdData) {
+      console.error('Error getting user role ID:', roleIdError);
+      return [];
+    }
+    
+    // Then use the role ID to get permissions
     const { data, error } = await supabase
       .from('roles')
       .select(`
@@ -60,11 +71,7 @@ export const getUserPermissions = async (): Promise<RolePermission[]> => {
           permission
         )
       `)
-      .eq('id', 
-        supabase.rpc('get_user_role_id', { 
-          user_id: session.user.id 
-        })
-      );
+      .eq('id', roleIdData);
 
     if (error) {
       console.error('Error fetching user permissions:', error);

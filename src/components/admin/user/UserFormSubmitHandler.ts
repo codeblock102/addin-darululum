@@ -52,13 +52,14 @@ export const handleUserSubmit = async (
           if (roleError || !roleData) {
             console.warn("Could not find teacher role:", roleError);
           } else {
-            // Use raw SQL query to create user_role association
-            // This bypasses the type checking issue with table access
-            const { error: userRoleError } = await supabase
-              .rpc('create_user_role', {
+            // Use the create_user_role RPC function
+            const { error: userRoleError } = await supabase.rpc(
+              'create_user_role', 
+              {
                 p_user_id: data.user.id,
                 p_role_id: roleData.id
-              });
+              }
+            );
               
             if (userRoleError) {
               console.error("Error assigning role to user:", userRoleError);
