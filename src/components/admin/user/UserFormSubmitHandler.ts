@@ -41,27 +41,32 @@ export const handleUserSubmit = async (
       
       // If user created successfully and has a teacher ID, create a user_role entry
       if (data.user && formData.teacherId) {
-        // Find the appropriate role ID first
-        const { data: roleData, error: roleError } = await supabase
-          .from('roles')
-          .select('id')
-          .eq('name', 'teacher')
-          .single();
-          
-        if (roleError || !roleData) {
-          console.warn("Could not find teacher role:", roleError);
-        } else {
-          // Create user_role association
-          const { error: userRoleError } = await supabase
-            .from('user_roles')
-            .insert({
-              user_id: data.user.id,
-              role_id: roleData.id
-            });
+        try {
+          // Find the appropriate role ID first
+          const { data: roleData, error: roleError } = await supabase
+            .from('roles')
+            .select('id')
+            .eq('name', 'teacher')
+            .single();
             
-          if (userRoleError) {
-            console.error("Error assigning role to user:", userRoleError);
+          if (roleError || !roleData) {
+            console.warn("Could not find teacher role:", roleError);
+          } else {
+            // Use raw SQL query to create user_role association
+            // This bypasses the type checking issue with table access
+            const { error: userRoleError } = await supabase
+              .rpc('create_user_role', {
+                p_user_id: data.user.id,
+                p_role_id: roleData.id
+              });
+              
+            if (userRoleError) {
+              console.error("Error assigning role to user:", userRoleError);
+            }
           }
+        } catch (roleError) {
+          console.error("Error setting up user role:", roleError);
+          // Continue anyway, as the user account has been created
         }
       }
       
