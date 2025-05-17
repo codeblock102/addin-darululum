@@ -4,7 +4,7 @@ import { DailyActivityEntry } from "@/types/dhor-book";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { NewEntryDialog } from "./NewEntryDialog";
-import { format } from "date-fns";
+import { format, isEqual, parseISO } from "date-fns";
 
 interface DhorBookGridProps {
   entries: DailyActivityEntry[]; 
@@ -26,7 +26,7 @@ export function DhorBookGrid({ entries, studentId, teacherId, currentWeek, onRef
   const handleEntrySuccess = () => {
     setIsNewEntryOpen(false);
     console.log("Entry success - triggering refresh in DhorBookGrid");
-    onRefresh(); // Simplified refresh, DhorBook.tsx handles staggered if needed
+    onRefresh(); // Refresh the data after adding a new entry
   };
 
   console.log("Entries received in DhorBookGrid:", entries);
@@ -54,7 +54,18 @@ export function DhorBookGrid({ entries, studentId, teacherId, currentWeek, onRef
           <TableBody>
             {weekDays.map((date) => {
               const dateString = format(date, 'yyyy-MM-dd');
-              const entry = entries.find(e => e.entry_date === dateString);
+              
+              // Find any entries for this date
+              const entry = entries.find(e => {
+                // Handle both string dates and Date objects
+                const entryDate = typeof e.entry_date === 'string' 
+                  ? e.entry_date
+                  : format(e.entry_date, 'yyyy-MM-dd');
+                  
+                return entryDate === dateString;
+              });
+              
+              console.log(`Checking date ${dateString}, found entry:`, entry);
               
               const dhor1Entry = entry?.juz_revisions_data?.find(jr => jr.dhor_slot === 1);
               const dhor2Entry = entry?.juz_revisions_data?.find(jr => jr.dhor_slot === 2);
