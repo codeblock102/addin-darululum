@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input";
 import { DhorBook as DhorBookComponent } from "@/components/dhor-book/DhorBook";
 import { ClassroomRecords } from "@/components/dhor-book/ClassroomRecords";
 import { TeacherStatsSection } from "@/components/teachers/TeacherStatsSection";
-import { Book, Search, Users, AlertCircle } from "lucide-react";
+import { Book, Search, Users, AlertCircle, Loader2 } from "lucide-react";
 import { useTeacherStatus } from "@/hooks/useTeacherStatus";
 import { useRealtimeLeaderboard } from "@/hooks/useRealtimeLeaderboard";
 import { useToast } from "@/hooks/use-toast";
