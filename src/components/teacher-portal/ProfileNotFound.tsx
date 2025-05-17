@@ -5,6 +5,7 @@ import { Card } from "@/components/ui/card";
 import { RefreshCcw, UserPlus } from "lucide-react";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/components/ui/use-toast";
 
 interface ProfileNotFoundProps {
   email?: string;
@@ -14,9 +15,17 @@ interface ProfileNotFoundProps {
 export const ProfileNotFound = ({ email, onRefresh }: ProfileNotFoundProps) => {
   const navigate = useNavigate();
   const [isChecking, setIsChecking] = useState(false);
+  const { toast } = useToast();
   
   const handleManualCheck = async () => {
-    if (!email) return;
+    if (!email) {
+      toast({
+        title: "No email provided",
+        description: "Cannot check for a profile without an email address.",
+        variant: "destructive"
+      });
+      return;
+    }
     
     setIsChecking(true);
     
@@ -28,8 +37,16 @@ export const ProfileNotFound = ({ email, onRefresh }: ProfileNotFoundProps) => {
         .eq('email', email)
         .maybeSingle();
       
-      if (data && !error) {
+      if (error) throw error;
+      
+      if (data && data.id) {
         // Profile exists, refresh the page to show it
+        toast({
+          title: "Profile found!",
+          description: "Your teacher profile has been found. Refreshing...",
+          variant: "default"
+        });
+        
         if (onRefresh) {
           onRefresh();
         } else {
@@ -37,10 +54,20 @@ export const ProfileNotFound = ({ email, onRefresh }: ProfileNotFoundProps) => {
         }
       } else {
         // Profile doesn't exist, navigate to create profile page
+        toast({
+          title: "No profile found",
+          description: "No teacher profile was found. Redirecting to create one...",
+          variant: "default"
+        });
         navigate('/create-teacher-profile');
       }
     } catch (error) {
       console.error("Error checking for profile:", error);
+      toast({
+        title: "Error checking profile",
+        description: "There was a problem checking for your teacher profile. Please try again.",
+        variant: "destructive"
+      });
     } finally {
       setIsChecking(false);
     }
@@ -60,34 +87,24 @@ export const ProfileNotFound = ({ email, onRefresh }: ProfileNotFoundProps) => {
           Return to Dashboard
         </Button>
         
-        {onRefresh ? (
-          <Button 
-            onClick={onRefresh} 
-            variant="default"
-            disabled={isChecking}
-            className="w-full"
-          >
-            <RefreshCcw className="h-4 w-4 mr-2" />
-            {isChecking ? "Checking..." : "Refresh"}
-          </Button>
-        ) : (
-          <Button 
-            onClick={() => navigate('/auth')} 
-            variant="default"
-            className="w-full"
-          >
-            Sign in with a Different Account
-          </Button>
-        )}
-        
         <Button 
           onClick={handleManualCheck}
           variant="default"
           disabled={isChecking || !email}
           className="w-full"
         >
-          <RefreshCcw className="h-4 w-4 mr-2" />
+          <RefreshCcw className={`h-4 w-4 mr-2 ${isChecking ? "animate-spin" : ""}`} />
           {isChecking ? "Checking..." : "Check for Profile"}
+        </Button>
+        
+        <Button 
+          onClick={onRefresh} 
+          variant="outline"
+          disabled={isChecking || !onRefresh}
+          className="w-full"
+        >
+          <RefreshCcw className="h-4 w-4 mr-2" />
+          Refresh Page
         </Button>
         
         <Button asChild variant="link" className="w-full">

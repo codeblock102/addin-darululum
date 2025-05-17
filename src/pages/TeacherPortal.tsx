@@ -19,9 +19,9 @@ const TeacherPortal = () => {
   const [isCheckingRole, setIsCheckingRole] = useState(true);
   const [refreshKey, setRefreshKey] = useState(0); // Add a key to force refresh
 
-  // Use RBAC hook to check role, and also verify teacher profile exists
+  // Force a check for teacher profile on mount and when refreshKey changes
   useEffect(() => {
-    const checkTeacherStatus = async () => {
+    const checkTeacherProfile = async () => {
       if (!session?.user?.email) {
         setIsCheckingRole(false);
         return;
@@ -30,12 +30,30 @@ const TeacherPortal = () => {
       try {
         setIsCheckingRole(true);
         console.log("Checking teacher status for email:", session.user.email);
+        
+        // Explicitly check if a teacher profile exists in the database
+        const { data, error } = await supabase
+          .from('teachers')
+          .select('id')
+          .eq('email', session.user.email)
+          .maybeSingle();
+          
+        if (error) throw error;
+        
+        console.log("Teacher profile check result:", data ? "Found" : "Not found");
+        
+        // Force refetch of the query
+        if (data) {
+          refetch();
+        }
+      } catch (error) {
+        console.error("Error checking teacher profile:", error);
       } finally {
         setIsCheckingRole(false);
       }
     };
     
-    checkTeacherStatus();
+    checkTeacherProfile();
   }, [session, refreshKey]);
 
   const { 
@@ -64,7 +82,7 @@ const TeacherPortal = () => {
       console.log("Teacher profile fetch result:", data);
       return data as Teacher | null;
     },
-    enabled: !!session?.user?.email && (isTeacher === true || isAdmin === true) && !isRoleLoading,
+    enabled: !!session?.user?.email,
     retry: 1,
     staleTime: 5 * 60 * 1000, // 5 minutes
     refetchOnWindowFocus: false // Disable automatic refetch on window focus
@@ -95,16 +113,8 @@ const TeacherPortal = () => {
     );
   }
 
-  // Show access denied if user is not a teacher or admin
-  if (!isTeacher && !isAdmin) {
-    return (
-      <DashboardLayout>
-        <AccessDenied />
-      </DashboardLayout>
-    );
-  }
-
-  // Show profile not found if teacher data is missing
+  // Show profile not found if teacher data is missing, regardless of RBAC role
+  // This will help with cases where a user might be assigned a teacher role but doesn't have a profile yet
   if (!teacherData) {
     return (
       <DashboardLayout>
