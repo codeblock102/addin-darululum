@@ -10,7 +10,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Loader2, AlertCircle } from "lucide-react";
-import { UserFormData, UserDialogProps, FormErrors } from "@/types/adminUser";
+import { UserFormData, UserDialogProps, FormErrors, UserRole } from "@/types/adminUser";
 import { UserFormFields } from "./user/UserFormFields";
 import { validateUserForm } from "./user/UserFormValidation";
 import { handleUserSubmit } from "./user/UserFormSubmitHandler";
@@ -68,7 +68,8 @@ export const UserDialog = ({ selectedUser, teachers, onSuccess }: UserDialogProp
   };
 
   const handleRoleChange = (value: string) => {
-    setFormData(prev => ({ ...prev, role: value }));
+    // Ensure the value is cast to UserRole type
+    setFormData(prev => ({ ...prev, role: value as UserRole }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
