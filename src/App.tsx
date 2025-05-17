@@ -22,7 +22,7 @@ import Settings from "@/pages/Settings";
 import Preferences from "@/pages/Preferences";
 import CreateDemoAccount from "@/pages/CreateDemoAccount";
 import CreateTeacherProfileForTestAccount from "@/pages/CreateTeacherProfileForTestAccount";
-import { DatabaseSeeder } from "@/pages/admin/DatabaseSeeder"; // Fix import
+import DatabaseSeeder from "@/pages/admin/DatabaseSeeder"; // Fixed import
 
 function App() {
   return (
