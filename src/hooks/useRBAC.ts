@@ -71,7 +71,7 @@ export const useRBAC = () => {
         setRole(userRole);
         
         // Fetch user permissions
-        const userPermissions = await getUserPermissions();
+        const userPermissions = await getUserPermissions(session.user.id);
         setPermissions(userPermissions);
       } catch (error) {
         console.error("Error fetching user role and permissions:", error);

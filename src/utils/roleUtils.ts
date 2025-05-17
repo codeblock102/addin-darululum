@@ -44,16 +44,19 @@ export const hasPermission = async (requiredPermission: RolePermission): Promise
 /**
  * Get all permissions for the current user
  */
-export const getUserPermissions = async (): Promise<RolePermission[]> => {
+export const getUserPermissions = async (userId?: string): Promise<RolePermission[]> => {
   try {
     const { data: { session } } = await supabase.auth.getSession();
     
     if (!session) return [];
 
+    // Use provided userId or get from session
+    const userIdToUse = userId || session.user.id;
+
     // First get the user's role ID
     const { data: roleIdData, error: roleIdError } = await supabase.rpc(
       'get_user_role_id', 
-      { p_user_id: session.user.id }
+      { p_user_id: userIdToUse }
     );
     
     if (roleIdError) {

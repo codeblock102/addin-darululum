@@ -2,10 +2,10 @@
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { DashboardLayout } from "@/components/layouts/DashboardLayout";
-import { useUserRole } from '@/hooks/useUserRole';
+import { useRBAC } from '@/hooks/useRBAC';
 
 export default function Index() {
-  const { isAdmin, isTeacher, isLoading } = useUserRole();
+  const { isAdmin, isTeacher, isLoading } = useRBAC();
   const navigate = useNavigate();
 
   useEffect(() => {
