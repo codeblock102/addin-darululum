@@ -1,172 +1,141 @@
+
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Search } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
-
-interface Student {
-  id: string;
-  name: string;
-  grade?: string;
-}
+import { Loader2, Search, AlertCircle } from "lucide-react";
 
 interface StudentSearchProps {
   onStudentSelect: (studentId: string, studentName: string) => void;
-  selectedStudentId?: string;
+  selectedStudentId?: string | null;
   teacherId?: string;
-  className?: string;
   showHeader?: boolean;
+  showAllStudents?: boolean; // Add a prop to explicitly show all students
 }
 
 export const StudentSearch = ({ 
   onStudentSelect, 
-  selectedStudentId,
-  teacherId,
-  className = "mb-6",
-  showHeader = true
+  selectedStudentId, 
+  teacherId, 
+  showHeader = true,
+  showAllStudents = false
 }: StudentSearchProps) => {
-  const [open, setOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedName, setSelectedName] = useState("");
   
-  // Determine whether to fetch all students or just those for a specific teacher
-  const { data: students, isLoading } = useQuery({
-    queryKey: teacherId ? ["teacher-students", teacherId] : ["all-students"],
+  // Fetch students with optional teacher filter
+  const {
+    data: students,
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ["students-search", teacherId, showAllStudents],
     queryFn: async () => {
+      console.log("Fetching students with teacherId:", teacherId, "showAllStudents:", showAllStudents);
+      
       try {
-        if (teacherId) {
-          // Get students assigned to a specific teacher
-          const { data: assignments, error: assignmentsError } = await supabase
+        let query = supabase.from("students").select("id, name").eq("status", "active");
+        
+        // Only filter by teacher if not showing all students and teacher ID is provided
+        if (teacherId && !showAllStudents) {
+          // First, check if any students are explicitly assigned to this teacher
+          const { data: assignedStudents } = await supabase
             .from("students_teachers")
             .select("student_name")
-            .eq("teacher_id", teacherId)
-            .eq("active", true);
+            .eq("teacher_id", teacherId);
             
-          if (assignmentsError) throw assignmentsError;
+          console.log("Teacher assigned students:", assignedStudents?.length || 0);
           
-          // If no assignments, return empty array
-          if (!assignments || assignments.length === 0) {
-            return [] as Student[];
+          // If there are specifically assigned students, get them
+          if (assignedStudents && assignedStudents.length > 0) {
+            // Get student names from assignments
+            const studentNames = assignedStudents.map(s => s.student_name);
+            if (studentNames.length > 0) {
+              query = query.in("name", studentNames);
+            }
           }
-          
-          // Get student details - use student names from assignments
-          const studentNames = assignments.map(assignment => assignment.student_name);
-          const { data: studentsData, error: studentsError } = await supabase
-            .from("students")
-            .select("id, name")
-            .in("name", studentNames)
-            .order("name");
-            
-          if (studentsError) throw studentsError;
-          return (studentsData || []) as Student[];
-        } else {
-          // Get all students
-          const { data, error } = await supabase
-            .from("students")
-            .select("id, name")
-            .order("name", { ascending: true });
-            
-          if (error) throw error;
-          
-          return (data || []) as Student[];
         }
+        
+        const { data, error } = await query.order("name");
+        
+        if (error) {
+          console.error("Error fetching students:", error);
+          throw error;
+        }
+        
+        console.log(`Found ${data?.length || 0} students for search component`);
+        return data || [];
       } catch (error) {
-        console.error("Error fetching students:", error);
-        return [] as Student[];
+        console.error("Error in student search query:", error);
+        return [];
       }
     },
-    staleTime: 30000, // 30 seconds
-    refetchInterval: 30000, // Refresh every 30 seconds to get newly added students
   });
-  
-  // Find selected student name when studentId changes
-  useEffect(() => {
-    if (students && selectedStudentId) {
-      const student = students.find(s => s.id === selectedStudentId);
-      if (student) {
-        setSelectedName(student.name);
-      }
-    }
-  }, [selectedStudentId, students]);
-  
+
+  // Filter students based on search query
   const filteredStudents = students?.filter(student =>
     student.name.toLowerCase().includes(searchQuery.toLowerCase())
-  ) || [];
-  
+  );
+
+  // Handle search input change
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value);
+  };
+
   return (
-    <Card className={className}>
+    <Card className={`${!showHeader ? 'border-0 shadow-none' : ''}`}>
       {showHeader && (
-        <CardHeader className="pb-3">
+        <CardHeader>
           <CardTitle>Student Search</CardTitle>
+          <CardDescription>
+            Find a student to view their progress
+          </CardDescription>
         </CardHeader>
       )}
-      <CardContent>
-        <div className="flex flex-col sm:flex-row gap-2">
-          <div className="w-full">
-            <Popover open={open} onOpenChange={setOpen}>
-              <PopoverTrigger asChild>
-                <Button 
-                  variant="outline" 
-                  role="combobox" 
-                  aria-expanded={open} 
-                  className="w-full justify-between"
-                >
-                  {selectedName || "Select student..."}
-                  <Search className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-full p-0" align="start">
-                <Command>
-                  <CommandInput 
-                    placeholder="Search student..."
-                    className="h-9"
-                    value={searchQuery}
-                    onValueChange={setSearchQuery}
-                  />
-                  <CommandList>
-                    <CommandEmpty>No students found.</CommandEmpty>
-                    <CommandGroup>
-                      {isLoading ? (
-                        <>
-                          <CommandItem>
-                            <Skeleton className="h-5 w-full" />
-                          </CommandItem>
-                          <CommandItem>
-                            <Skeleton className="h-5 w-full" />
-                          </CommandItem>
-                        </>
-                      ) : (
-                        filteredStudents.map(student => (
-                          <CommandItem
-                            key={student.id}
-                            value={student.id}
-                            onSelect={() => {
-                              onStudentSelect(student.id, student.name);
-                              setSelectedName(student.name);
-                              setOpen(false);
-                            }}
-                          >
-                            <div className="flex items-center">
-                              <span>{student.name}</span>
-                              {student.grade && (
-                                <span className="ml-2 text-xs bg-gray-100 dark:bg-gray-800 px-2 py-0.5 rounded">
-                                  Grade {student.grade}
-                                </span>
-                              )}
-                            </div>
-                          </CommandItem>
-                        ))
-                      )}
-                    </CommandGroup>
-                  </CommandList>
-                </Command>
-              </PopoverContent>
-            </Popover>
+      
+      <CardContent className={!showHeader ? 'p-0' : undefined}>
+        <div className="flex flex-col gap-4">
+          <div className="relative">
+            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Input
+              type="search"
+              placeholder="Search students by name..."
+              className="pl-8"
+              value={searchQuery}
+              onChange={handleSearchChange}
+            />
+          </div>
+          
+          <div className="border rounded-md overflow-hidden">
+            {isLoading ? (
+              <div className="flex justify-center items-center p-4">
+                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                <span>Loading students...</span>
+              </div>
+            ) : error ? (
+              <div className="flex items-center justify-center p-4 text-red-500">
+                <AlertCircle className="h-4 w-4 mr-2" />
+                <span>Error loading students</span>
+              </div>
+            ) : filteredStudents && filteredStudents.length > 0 ? (
+              <div className="max-h-60 overflow-y-auto">
+                {filteredStudents.map((student) => (
+                  <Button
+                    key={student.id}
+                    variant={selectedStudentId === student.id ? "secondary" : "ghost"}
+                    className={`w-full justify-start text-left px-3 py-2 h-auto ${selectedStudentId === student.id ? "bg-secondary" : ""}`}
+                    onClick={() => onStudentSelect(student.id, student.name)}
+                  >
+                    {student.name}
+                  </Button>
+                ))}
+              </div>
+            ) : (
+              <div className="p-4 text-center text-muted-foreground">
+                {searchQuery ? "No students matching your search" : "No students found"}
+              </div>
+            )}
           </div>
         </div>
       </CardContent>

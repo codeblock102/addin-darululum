@@ -135,6 +135,7 @@ export const TeacherDhorBook = ({ teacherId }: TeacherDhorBookProps) => {
                   selectedStudentId={selectedStudentId}
                   teacherId={teacherId}
                   showHeader={false}
+                  showAllStudents={true} // Add this prop to show all students
                 />
 
                 {studentVerifyLoading && selectedStudentId && (
