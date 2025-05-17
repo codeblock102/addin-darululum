@@ -26,18 +26,41 @@ export const useRBAC = () => {
         
         // First, try to get role from user metadata
         const userRole = session.user.user_metadata?.role as UserRole || null;
+        console.log("User role from metadata:", userRole);
         
         if (userRole) {
           setRole(userRole);
         } else {
-          // Fallback to checking if user is a teacher
-          const { data: teacherData } = await supabase
-            .from('teachers')
-            .select('id')
-            .eq('email', session.user.email)
-            .maybeSingle();
+          // Fallback to checking user_roles table
+          const { data: userRoleData, error: userRoleError } = await supabase.rpc(
+            'get_user_role_id',
+            { user_id: session.user.id }
+          );
           
-          setRole(teacherData ? 'teacher' : 'admin');
+          if (userRoleData && !userRoleError) {
+            // If we found a role in the user_roles table, get its name
+            const { data: roleData } = await supabase
+              .from('roles')
+              .select('name')
+              .eq('id', userRoleData)
+              .single();
+              
+            if (roleData) {
+              setRole(roleData.name as UserRole);
+              console.log("Role from database:", roleData.name);
+            }
+          } else {
+            // Final fallback - check if user is associated with a teacher
+            const { data: teacherData } = await supabase
+              .from('teachers')
+              .select('id')
+              .eq('email', session.user.email)
+              .maybeSingle();
+            
+            const isTeacherRole = teacherData ? true : false;
+            setRole(isTeacherRole ? 'teacher' : 'admin');
+            console.log("Role from teacher check:", isTeacherRole ? 'teacher' : 'admin');
+          }
         }
         
         // Fetch user permissions
