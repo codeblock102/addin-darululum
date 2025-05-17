@@ -1,6 +1,6 @@
 
 import { Button } from "@/components/ui/button";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { RefreshCcw, UserPlus } from "lucide-react";
 
@@ -21,7 +21,7 @@ export const ProfileNotFound = ({ email, onRefresh }: ProfileNotFoundProps) => {
           : "We couldn't find a teacher profile associated with your account. This portal is only for registered teachers."
         }
       </p>
-      <div className="space-x-4">
+      <div className="space-x-4 space-y-3">
         <Button onClick={() => navigate('/')} variant="outline">
           Return to Dashboard
         </Button>
@@ -35,6 +35,14 @@ export const ProfileNotFound = ({ email, onRefresh }: ProfileNotFoundProps) => {
             Sign in with a Different Account
           </Button>
         )}
+        <div className="pt-2">
+          <Button asChild variant="link">
+            <Link to="/create-teacher-profile" className="flex items-center">
+              <UserPlus className="h-4 w-4 mr-2" />
+              Create Teacher Profile
+            </Link>
+          </Button>
+        </div>
       </div>
     </Card>
   );

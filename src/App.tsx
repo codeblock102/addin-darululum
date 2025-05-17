@@ -1,112 +1,163 @@
-
-import { AuthProvider } from '@/contexts/AuthContext';
-import Attendance from '@/pages/Attendance';
-import Classes from '@/pages/Classes';
-import Index from '@/pages/Index';
-import NotFound from '@/pages/NotFound';
-import Preferences from '@/pages/Preferences';
-import DhorBook from '@/pages/DhorBook';
-import Schedule from '@/pages/Schedule';
-import Settings from '@/pages/Settings';
-import Students from '@/pages/Students';
-import Teachers from '@/pages/Teachers';
-import { ThemeProvider } from '@/components/theme-provider';
-import { TooltipProvider } from "@/components/ui/tooltip"
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { Route, Routes } from 'react-router-dom';
-import { Toaster } from "@/components/ui/toaster"
-import StudentProgressPage from './pages/StudentProgress';
-import TeacherPortal from './pages/TeacherPortal';
-import Auth from './pages/Auth';
-import { ProtectedRoute } from './components/auth/ProtectedRoute';
-import AdminDashboard from './pages/admin/Dashboard';
-import CreateDemoAccount from './pages/CreateDemoAccount';
-
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      retry: 1,
-      staleTime: 5 * 60 * 1000, // 5 minutes
-    },
-  },
-});
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { Toaster } from "@/components/ui/toaster";
+import { ThemeProvider } from "@/components/theme-provider";
+import Index from "@/pages/Index";
+import NotFound from "@/pages/NotFound";
+import Students from "@/pages/Students";
+import Teachers from "@/pages/Teachers";
+import StudentDetail from "@/pages/StudentDetail";
+import TeacherPortal from "@/pages/TeacherPortal";
+import Classes from "@/pages/Classes";
+import Progress from "@/pages/Progress";
+import DhorBook from "@/pages/DhorBook";
+import Schedule from "@/pages/Schedule";
+import Attendance from "@/pages/Attendance";
+import StudentProgress from "@/pages/StudentProgress";
+import TeacherAccounts from "@/pages/TeacherAccounts";
+import Auth from "@/pages/Auth";
+import Dashboard from "@/pages/admin/Dashboard";
+import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
+import Settings from "@/pages/Settings";
+import Preferences from "@/pages/Preferences";
+import CreateDemoAccount from "@/pages/CreateDemoAccount";
+import CreateTeacherProfileForTestAccount from "@/pages/CreateTeacherProfileForTestAccount";
 
 function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <ThemeProvider defaultTheme="system" storageKey="theme">
-        <TooltipProvider>
-          <AuthProvider>
-            <Routes>
-              <Route path="/auth" element={<Auth />} />
-              <Route path="/create-demo-account" element={<CreateDemoAccount />} />
-              <Route path="/" element={
-                <ProtectedRoute>
-                  <Index />
-                </ProtectedRoute>
-              } />
-              <Route path="/admin" element={
-                <ProtectedRoute requireAdmin={true}>
-                  <AdminDashboard />
-                </ProtectedRoute>
-              } />
-              <Route path="/teacher-portal" element={
-                <ProtectedRoute requireTeacher={true}>
-                  <TeacherPortal />
-                </ProtectedRoute>
-              } />
-              <Route path="/teachers" element={
-                <ProtectedRoute requireAdmin={true}>
-                  <Teachers />
-                </ProtectedRoute>
-              } />
-              <Route path="/students" element={
-                <ProtectedRoute requireTeacher={true}>
-                  <Students />
-                </ProtectedRoute>
-              } />
-              <Route path="/classes" element={
-                <ProtectedRoute requireTeacher={true}>
-                  <Classes />
-                </ProtectedRoute>
-              } />
-              <Route path="/dhor-book" element={
-                <ProtectedRoute requireTeacher={true}>
-                  <DhorBook />
-                </ProtectedRoute>
-              } />
-              <Route path="/schedule" element={
-                <ProtectedRoute requireTeacher={true}>
-                  <Schedule />
-                </ProtectedRoute>
-              } />
-              <Route path="/attendance" element={
-                <ProtectedRoute requireTeacher={true}>
-                  <Attendance />
-                </ProtectedRoute>
-              } />
-              <Route path="/settings" element={
-                <ProtectedRoute>
-                  <Settings />
-                </ProtectedRoute>
-              } />
-              <Route path="/student-progress/:studentId" element={
-                <ProtectedRoute requireTeacher={true}>
-                  <StudentProgressPage />
-                </ProtectedRoute>
-              } />
-              <Route path="/preferences" element={
-                <ProtectedRoute>
-                  <Preferences />
-                </ProtectedRoute>
-              } />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-            <Toaster />
-          </AuthProvider>
-        </TooltipProvider>
-      </ThemeProvider>
-    </QueryClientProvider>
+    <ThemeProvider defaultTheme="light" storageKey="vite-ui-theme">
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<Index />} />
+          <Route path="/auth" element={<Auth />} />
+          <Route path="/create-demo-account" element={<CreateDemoAccount />} />
+          <Route path="/create-teacher-profile" element={<CreateTeacherProfileForTestAccount />} />
+          
+          <Route
+            path="/students"
+            element={
+              <ProtectedRoute>
+                <Students />
+              </ProtectedRoute>
+            }
+          />
+          
+          <Route path="*" element={<NotFound />} />
+          <Route
+            path="/teachers"
+            element={
+              <ProtectedRoute requireAdmin>
+                <Teachers />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/teachers/:id"
+            element={
+              <ProtectedRoute requireAdmin>
+                <StudentDetail />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/teacher-portal"
+            element={
+              <ProtectedRoute requireTeacher>
+                <TeacherPortal />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/classes"
+            element={
+              <ProtectedRoute>
+                <Classes />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/progress"
+            element={
+              <ProtectedRoute>
+                <Progress />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/dhor-book"
+            element={
+              <ProtectedRoute>
+                <DhorBook />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/schedule"
+            element={
+              <ProtectedRoute>
+                <Schedule />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/attendance"
+            element={
+              <ProtectedRoute>
+                <Attendance />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/student-progress"
+            element={
+              <ProtectedRoute>
+                <StudentProgress />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/teacher-accounts"
+            element={
+              <ProtectedRoute requireAdmin>
+                <TeacherAccounts />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin"
+            element={
+              <ProtectedRoute requireAdmin>
+                <Dashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/settings"
+            element={
+              <ProtectedRoute>
+                <Settings />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/preferences"
+            element={
+              <ProtectedRoute>
+                <Preferences />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/database-seeder"
+            element={
+              <ProtectedRoute requireAdmin>
+                <DatabaseSeeder />
+              </ProtectedRoute>
+            }
+          />
+        </Routes>
+      </BrowserRouter>
+      <Toaster />
+    </ThemeProvider>
   );
 }
 

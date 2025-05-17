@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -278,12 +277,20 @@ const Auth = () => {
               ? "By signing up, you agree to our Terms of Service and Privacy Policy."
               : "Access the system with your account credentials."}
           </p>
-          <Link 
-            to="/create-demo-account" 
-            className="text-sm text-primary hover:underline text-center font-medium"
-          >
-            Create demo teacher account
-          </Link>
+          <div className="flex flex-col items-center space-y-2">
+            <Link 
+              to="/create-demo-account" 
+              className="text-sm text-primary hover:underline text-center font-medium"
+            >
+              Create demo teacher account
+            </Link>
+            <Link 
+              to="/create-teacher-profile" 
+              className="text-sm text-primary hover:underline text-center font-medium"
+            >
+              Create teacher profile for test account
+            </Link>
+          </div>
         </CardFooter>
       </Card>
     </div>
