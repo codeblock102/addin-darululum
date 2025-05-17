@@ -21,14 +21,15 @@ export function StudentSelector({
   selectedStudent,
   setSelectedStudent 
 }: StudentSelectorProps) {
-  // Fetch all students
+  // Fetch all active students without teacher filtering
   const { data: students, isLoading } = useQuery({
     queryKey: ['all-students-selector'],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('students')
         .select('id, name')
-        .eq('status', 'active');
+        .eq('status', 'active')
+        .order('name', { ascending: true });
         
       if (error) {
         throw error;
