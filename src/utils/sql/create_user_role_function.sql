@@ -17,4 +17,3 @@ $function$;
 -- Add policy to allow admins to create user roles
 -- This requires the user_roles table to have RLS enabled
 -- and the admins need to have appropriate policies
-

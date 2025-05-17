@@ -21,6 +21,9 @@ export const handleUserSubmit = async (
     } else {
       console.log("Creating new user with data:", formData);
       
+      // Default to 'teacher' role if not specified
+      const userRole = formData.role || 'teacher';
+      
       // Sign up a new user
       const { data, error } = await supabase.auth.signUp({
         email: formData.email,
@@ -28,7 +31,7 @@ export const handleUserSubmit = async (
         options: {
           data: { 
             teacher_id: formData.teacherId,
-            role: formData.role || 'teacher'
+            role: userRole
           },
           emailRedirectTo: window.location.origin + '/auth'
         }
@@ -39,18 +42,18 @@ export const handleUserSubmit = async (
         throw error;
       }
       
-      // If user created successfully and has a teacher ID, create a user_role entry
-      if (data.user && formData.teacherId) {
+      // When user created successfully, always create a user_role entry with teacher role
+      if (data.user) {
         try {
-          // Find the appropriate role ID first
+          // Find the appropriate role ID
           const { data: roleData, error: roleError } = await supabase
             .from('roles')
             .select('id')
-            .eq('name', 'teacher')
+            .eq('name', userRole)
             .single();
             
           if (roleError || !roleData) {
-            console.warn("Could not find teacher role:", roleError);
+            console.warn("Could not find role:", roleError);
           } else {
             // Use the create_user_role RPC function
             const { error: userRoleError } = await supabase.rpc(
