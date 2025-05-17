@@ -28,7 +28,7 @@ export const handleUserSubmit = async (
         options: {
           data: { 
             teacher_id: formData.teacherId,
-            role: 'teacher'
+            role: formData.role || 'teacher'
           },
           emailRedirectTo: window.location.origin + '/auth'
         }
@@ -37,6 +37,32 @@ export const handleUserSubmit = async (
       if (error) {
         console.error("User creation error:", error);
         throw error;
+      }
+      
+      // If user created successfully and has a teacher ID, create a user_role entry
+      if (data.user && formData.teacherId) {
+        // Find the appropriate role ID first
+        const { data: roleData, error: roleError } = await supabase
+          .from('roles')
+          .select('id')
+          .eq('name', 'teacher')
+          .single();
+          
+        if (roleError || !roleData) {
+          console.warn("Could not find teacher role:", roleError);
+        } else {
+          // Create user_role association
+          const { error: userRoleError } = await supabase
+            .from('user_roles')
+            .insert({
+              user_id: data.user.id,
+              role_id: roleData.id
+            });
+            
+          if (userRoleError) {
+            console.error("Error assigning role to user:", userRoleError);
+          }
+        }
       }
       
       console.log("User account created successfully:", data);

@@ -1,7 +1,6 @@
+
 import { supabase } from "@/integrations/supabase/client";
 
-// Helper function to create a normalized username from a person's name
-// We'll keep this function for internal use but won't use it for login anymore
 export const createNormalizedUsername = (name: string): string => {
   return name
     .toLowerCase()
@@ -19,7 +18,7 @@ export const createTeacherWithAccount = async (name: string, email: string, pass
       .from("teachers")
       .select("id, name, email")
       .eq("email", email)
-      .single();
+      .maybeSingle();
     
     let teacherId = existingTeacher?.id;
     let teacherData = existingTeacher;
@@ -53,34 +52,59 @@ export const createTeacherWithAccount = async (name: string, email: string, pass
     }
 
     // Check if a user with this email exists first
-    const { data: existingUser } = await supabase.auth.signInWithPassword({
+    const { data: { user: existingUser }, error: signInError } = await supabase.auth.signInWithPassword({
       email: email,
       password: password
     });
     
-    if (existingUser && existingUser.user) {
+    if (existingUser) {
       console.log("User account already exists:", existingUser);
+      
+      // Update user metadata if teacher_id is missing
+      if (!existingUser.user_metadata?.teacher_id) {
+        await supabase.auth.updateUser({
+          data: {
+            teacher_id: teacherId,
+            role: 'teacher'
+          }
+        });
+      }
+      
       return {
         success: true,
         teacher: teacherData,
-        user: existingUser,
+        user: { user: existingUser },
         message: "Teacher account already exists. You can log in now."
       };
     }
 
-    // Create user account with auto-confirmation
-    const { data: userData, error: userError } = await supabase.auth.admin.createUser({
-      email: email,
-      password: password,
-      email_confirm: true, // Auto-confirm email for testing
-      user_metadata: {
-        teacher_id: teacherId,
-        role: 'teacher'
-      }
-    });
+    try {
+      // Try creating user account with auto-confirmation
+      console.log("Attempting to create user with admin API");
+      const { data: userData, error: userError } = await supabase.auth.admin.createUser({
+        email: email,
+        password: password,
+        email_confirm: true, // Auto-confirm email
+        user_metadata: {
+          teacher_id: teacherId,
+          role: 'teacher'
+        }
+      });
 
-    if (userError) {
-      // Fallback to regular signup if admin API fails
+      if (!userError && userData) {
+        console.log("User account created with auto-confirmation:", userData);
+        return {
+          success: true,
+          teacher: teacherData,
+          user: userData,
+          message: `Teacher account created successfully with auto-confirmation.`
+        };
+      } else {
+        throw userError || new Error("Failed to create user with admin API");
+      }
+    } catch (adminError) {
+      console.log("Admin API failed, falling back to regular signup", adminError);
+      // Fallback to regular signup
       const { data: regularUserData, error: regularUserError } = await supabase.auth.signUp({
         email: email,
         password: password,
@@ -88,7 +112,8 @@ export const createTeacherWithAccount = async (name: string, email: string, pass
           data: {
             teacher_id: teacherId,
             role: 'teacher'
-          }
+          },
+          emailRedirectTo: `${window.location.origin}/auth`
         }
       });
       
@@ -103,18 +128,9 @@ export const createTeacherWithAccount = async (name: string, email: string, pass
         success: true,
         teacher: teacherData,
         user: regularUserData,
-        message: `Teacher account created. Please check email for confirmation or go to Supabase Console to confirm the email manually.`
+        message: `Teacher account created. Please check email for confirmation or contact an administrator to confirm your email.`
       };
     }
-    
-    console.log("User account created with auto-confirmation:", userData);
-
-    return {
-      success: true,
-      teacher: teacherData,
-      user: userData,
-      message: `Teacher account created successfully with auto-confirmation.`
-    };
   } catch (error: any) {
     console.error("Teacher account creation error:", error);
     return {
