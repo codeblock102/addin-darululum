@@ -2,7 +2,7 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { DhorBookEntryForm } from "./DhorBookEntryForm";
 import { useDhorEntryMutation } from "./useDhorEntryMutation";
-import { toast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 
 export interface NewEntryDialogProps {
   open: boolean;
@@ -19,6 +19,7 @@ export function NewEntryDialog({
   teacherId,
   onSuccess
 }: NewEntryDialogProps) {
+  const { toast } = useToast();
   const { mutate, isPending } = useDhorEntryMutation({
     studentId,
     teacherId,
@@ -30,15 +31,9 @@ export function NewEntryDialog({
       });
       onSuccess?.(data);
       onOpenChange(false);
-    },
-    onError: (error) => {
-      console.error("Error creating entry:", error);
-      toast({
-        title: "Error",
-        description: "There was a problem saving the entry. Please try again.",
-        variant: "destructive",
-      });
     }
+    // Removed onError as it doesn't exist in UseDhorEntryMutationProps
+    // Instead, we're relying on the internal error handling in useDhorEntryMutation
   });
 
   return (
