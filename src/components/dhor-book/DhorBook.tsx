@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -39,122 +38,140 @@ export const DhorBook = ({ studentId, teacherId }: DhorBookProps) => {
     queryFn: async () => {
       console.log(`Fetching dhor book for student ${studentId} between ${format(weekStart, 'yyyy-MM-dd')} and ${format(weekEnd, 'yyyy-MM-dd')}`);
       
-      // Get entries from dhor_book_entries table for this week
-      const { data: dhorEntries, error } = await supabase
+      // Fetch all data sources
+      const { data: dhorEntriesData, error: dhorError } = await supabase
         .from('dhor_book_entries')
         .select('*')
         .eq('student_id', studentId)
         .gte('entry_date', format(weekStart, 'yyyy-MM-dd'))
-        .lte('entry_date', format(weekEnd, 'yyyy-MM-dd'))
-        .order('entry_date', { ascending: false });
+        .lte('entry_date', format(weekEnd, 'yyyy-MM-dd'));
 
-      if (error) {
-        console.error("Error fetching dhor book entries:", error);
-        throw error;
+      if (dhorError) {
+        console.error("Error fetching dhor_book_entries:", dhorError);
+        // Decide if to throw or return empty/partial, for now, continue if possible
       }
-      
-      // Get juz_revisions for this student and week to attach to entries
+      const dhorEntries = dhorEntriesData || [];
+
       const { data: juzRevisions, error: juzError } = await supabase
         .from('juz_revisions')
         .select('*')
         .eq('student_id', studentId)
         .gte('revision_date', format(weekStart, 'yyyy-MM-dd'))
-        .lte('revision_date', format(weekEnd, 'yyyy-MM-dd'))
-        .order('revision_date', { ascending: false });
-      
-      if (juzError) {
-        console.error("Error fetching juz revisions:", juzError);
-      }
-      
-      // Get sabaq_para entries for this student and week
+        .lte('revision_date', format(weekEnd, 'yyyy-MM-dd'));
+      if (juzError) console.error("Error fetching juz revisions:", juzError);
+
       const { data: sabaqPara, error: sabaqError } = await supabase
         .from('sabaq_para')
         .select('*')
         .eq('student_id', studentId)
         .gte('revision_date', format(weekStart, 'yyyy-MM-dd'))
-        .lte('revision_date', format(weekEnd, 'yyyy-MM-dd'))
-        .order('revision_date', { ascending: false });
-      
-      if (sabaqError) {
-        console.error("Error fetching sabaq para:", sabaqError);
-      }
-      
-      // Get progress entries for this student and week
+        .lte('revision_date', format(weekEnd, 'yyyy-MM-dd'));
+      if (sabaqError) console.error("Error fetching sabaq para:", sabaqError);
+
       const { data: progressEntries, error: progressError } = await supabase
         .from('progress')
         .select('*')
         .eq('student_id', studentId)
         .gte('date', format(weekStart, 'yyyy-MM-dd'))
-        .lte('date', format(weekEnd, 'yyyy-MM-dd'))
-        .order('date', { ascending: false });
-      
-      if (progressError) {
-        console.error("Error fetching progress:", progressError);
-      }
+        .lte('date', format(weekEnd, 'yyyy-MM-dd'));
+      if (progressError) console.error("Error fetching progress:", progressError);
 
-      // Combine data from different tables into comprehensive entries
-      let combinedEntries: DailyActivityEntry[] = [];
+      // --- Data Consolidation Logic ---
+      const combinedEntriesMap: Record<string, Partial<DailyActivityEntry>> = {};
+
+      // Helper to initialize an entry in the map
+      const ensureEntry = (dateKey: string) => {
+        if (!combinedEntriesMap[dateKey]) {
+          combinedEntriesMap[dateKey] = {
+            id: `generated-${dateKey}-${studentId}`, // Default ID, can be overridden by dhorEntry.id
+            student_id: studentId,
+            entry_date: dateKey,
+            teacher_id: teacherId || 'system-unknown', // Ensure teacher_id is present
+            juz_revisions_data: [], // Initialize as empty array
+          };
+        }
+      };
+
+      // 1. Process dhorEntries (legacy or otherwise)
+      dhorEntries.forEach(dEntry => {
+        const dateKey = dEntry.entry_date;
+        ensureEntry(dateKey);
+        combinedEntriesMap[dateKey] = {
+          ...combinedEntriesMap[dateKey], // Keep generated fields if dEntry doesn't have them all
+          ...dEntry, // Spread dEntry, potentially overriding id, teacher_id
+          juz_revisions_data: combinedEntriesMap[dateKey]?.juz_revisions_data || [], // Preserve if already populated
+        };
+      });
+
+      // 2. Merge progress data
+      (progressEntries || []).forEach(pEntry => {
+        if (!pEntry.date) return;
+        const dateKey = pEntry.date;
+        ensureEntry(dateKey);
+        const existingEntry = combinedEntriesMap[dateKey];
+        combinedEntriesMap[dateKey] = {
+          ...existingEntry,
+          current_juz: pEntry.current_juz ?? existingEntry?.current_juz,
+          current_surah: pEntry.current_surah ?? existingEntry?.current_surah,
+          start_ayat: pEntry.start_ayat ?? existingEntry?.start_ayat,
+          end_ayat: pEntry.end_ayat ?? existingEntry?.end_ayat,
+          memorization_quality: pEntry.memorization_quality || existingEntry?.memorization_quality,
+          comments: (pEntry as { comments?: string }).comments || existingEntry?.comments,
+        };
+      });
+
+      // 3. Merge sabaq_para data
+      (sabaqPara || []).forEach(spEntry => {
+        if (!spEntry.revision_date) return;
+        const dateKey = spEntry.revision_date;
+        ensureEntry(dateKey);
+        const existingEntry = combinedEntriesMap[dateKey];
+        combinedEntriesMap[dateKey] = {
+          ...existingEntry,
+          sabaq_para_data: spEntry,
+          comments: existingEntry?.comments || spEntry.teacher_notes, // Prefer existing comments
+        };
+      });
+
+      // 4. Merge juz_revisions data
+      (juzRevisions || []).forEach(jrEntry => {
+        if (!jrEntry.revision_date) return;
+        const dateKey = jrEntry.revision_date;
+        ensureEntry(dateKey);
+        const existingEntry = combinedEntriesMap[dateKey];
+        const updatedRevisions = [
+          ...(existingEntry?.juz_revisions_data || []),
+          jrEntry,
+        ].sort((a, b) => (a.dhor_slot || 0) - (b.dhor_slot || 0)); // Sort by dhor_slot
+
+        // Deduplicate revisions based on id (PK of juz_revisions) if necessary, assuming new ones are appended
+        // For simplicity, this example appends; a real-world scenario might need upsert logic for revisions.
+        const uniqueRevisions = Array.from(new Map(updatedRevisions.map(r => [r.id, r])).values());
+
+        combinedEntriesMap[dateKey] = {
+          ...existingEntry,
+          juz_revisions_data: uniqueRevisions,
+        };
+      });
       
-      // First, organize juz revisions by date and dhor_slot
-      const juzRevisionsByDate: Record<string, any[]> = {};
-      if (juzRevisions) {
-        juzRevisions.forEach(revision => {
-          const dateKey = revision.revision_date;
-          if (!juzRevisionsByDate[dateKey]) {
-            juzRevisionsByDate[dateKey] = [];
-          }
-          juzRevisionsByDate[dateKey].push(revision);
-        });
-      }
+      // Convert map to array
+      // Filter out days that have no actual data beyond the generated shell
+      let finalCombinedEntries: DailyActivityEntry[] = Object.values(combinedEntriesMap)
+        .filter(entry => 
+          (entry.id && !entry.id.startsWith('generated-')) || // It's a real dhorEntry
+          entry.current_juz !== undefined || // Check for actual progress data field
+          entry.sabaq_para_data || 
+          (entry.juz_revisions_data && entry.juz_revisions_data.length > 0)
+        )
+        .map(entry => entry as DailyActivityEntry); // Cast to full type
+
+      // Sort entries by date (newest first)
+      finalCombinedEntries.sort((a, b) => 
+        new Date(b.entry_date).getTime() - new Date(a.entry_date).getTime()
+      );
       
-      // Second, organize sabaq para data by date
-      const sabaqParaByDate: Record<string, any> = {};
-      if (sabaqPara) {
-        sabaqPara.forEach(para => {
-          const dateKey = para.revision_date;
-          sabaqParaByDate[dateKey] = para;
-        });
-      }
-      
-      // Third, organize progress entries by date
-      const progressByDate: Record<string, any> = {};
-      if (progressEntries) {
-        progressEntries.forEach(progress => {
-          if (progress.date) {
-            const dateKey = progress.date;
-            progressByDate[dateKey] = progress;
-          }
-        });
-      }
-      
-      // Use dhor book entries as the primary source and attach related data
-      if (dhorEntries && dhorEntries.length > 0) {
-        combinedEntries = dhorEntries.map(entry => {
-          const dateKey = entry.entry_date;
-          // Attach juz revisions for this date
-          const juzRevisionsForDate = juzRevisionsByDate[dateKey] || [];
-          // Attach sabaq para for this date
-          const sabaqParaForDate = sabaqParaByDate[dateKey];
-          // Attach progress for this date
-          const progressForDate = progressByDate[dateKey];
-          
-          return {
-            ...entry,
-            juz_revisions_data: juzRevisionsForDate,
-            sabaq_para_data: sabaqParaForDate,
-            progress_data: progressForDate,
-            // Extract these fields from progress if available
-            current_juz: progressForDate?.current_juz,
-            current_surah: progressForDate?.current_surah,
-            start_ayat: progressForDate?.start_ayat,
-            end_ayat: progressForDate?.end_ayat,
-            memorization_quality: progressForDate?.memorization_quality,
-          } as DailyActivityEntry;
-        });
-      }
-      
-      console.log(`Found ${combinedEntries.length} dhor book entries for the week`);
-      return combinedEntries;
+      console.log(`Consolidated ${finalCombinedEntries.length} dhor book entries for the week`);
+      return finalCombinedEntries;
     },
     enabled: !!studentId,
   });
