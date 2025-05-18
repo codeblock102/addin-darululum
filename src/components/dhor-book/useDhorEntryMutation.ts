@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { getStartOfWeekISO } from "@/utils/dateUtils";
+import { format, startOfWeek, endOfWeek } from "date-fns";
 import type { Database } from "@/types/supabase";
 
 interface UseDhorEntryMutationProps {
@@ -220,25 +220,39 @@ export function useDhorEntryMutation({
     onSuccess: (data) => {
       console.log("Mutation succeeded, invalidating queries for student:", data?.studentId, "on date:", data?.entryDate);
       
-      const entryDate = data?.entryDate;
+      const entryDateString = data?.entryDate;
       const currentStudentId = data?.studentId;
 
-      if (entryDate && currentStudentId) {
-        const entryDateObj = new Date(entryDate);
-        const entryWeekISO = getStartOfWeekISO(entryDateObj);
+      if (entryDateString && currentStudentId) {
+        // Parse entryDateString carefully. Assuming it's 'YYYY-MM-DD'.
+        // Appending T00:00:00 helps ensure it's parsed as local time midnight.
+        const entryDateObj = new Date(entryDateString + "T00:00:00");
         
-        console.log(`Invalidating queries for student ${currentStudentId}, week start ISO: ${entryWeekISO}`);
-        
+        // Calculate week start and end for the "dhor-book-entries" query key
+        const weekStartForDhorKey = startOfWeek(entryDateObj);
+        const weekEndForDhorKey = endOfWeek(entryDateObj);
+        const weekStartStr = format(weekStartForDhorKey, 'yyyy-MM-dd');
+        const weekEndStr = format(weekEndForDhorKey, 'yyyy-MM-dd');
+
+        console.log(`Invalidating dhor-book-entries for student ${currentStudentId}, week: ${weekStartStr} to ${weekEndStr}`);
+        queryClient.invalidateQueries({
+          queryKey: ["dhor-book-entries", currentStudentId, weekStartStr, weekEndStr],
+          refetchType: 'all'
+        });
+
+        // Existing invalidations (example, keep your actual ones)
+        // const entryWeekISO = getStartOfWeekISO(entryDateObj); // If you still use this for other keys
+        // console.log(`Invalidating queries for student ${currentStudentId}, week start ISO: ${entryWeekISO}`);
         queryClient.invalidateQueries({ 
-          queryKey: ['progress', currentStudentId, entryWeekISO],
+          queryKey: ['progress', currentStudentId /*, entryWeekISO or other params as needed */],
           refetchType: 'all' 
         });
          queryClient.invalidateQueries({ 
-          queryKey: ['sabaq_para', currentStudentId, entryWeekISO],
+          queryKey: ['sabaq_para', currentStudentId /*, entryWeekISO or other params as needed */],
           refetchType: 'all' 
         });
          queryClient.invalidateQueries({ 
-          queryKey: ['juz_revisions', currentStudentId, entryWeekISO],
+          queryKey: ['juz_revisions', currentStudentId /*, entryWeekISO or other params as needed */],
           refetchType: 'all' 
         });
       }
@@ -267,7 +281,14 @@ export function useDhorEntryMutation({
         refetchType: 'all'
       });
       
-      onSuccess?.(data);
+      // onSuccess prop call from the component using the mutation
+      // This should be called after invalidations if it triggers further refetches manually.
+      // The original code had this: onSuccess?.(data);
+      // It's better if component relies on automatic refetch from invalidation.
+      // If onSuccess?.(data) is critical for UI changes (like closing dialog), keep it.
+      if (onSuccess) { // Check if original onSuccess callback exists (it's optional in props)
+        onSuccess(data);
+      }
       
       toast({
         title: "Success",
