@@ -75,31 +75,39 @@ export function DhorBookEntryForm({ onSubmit, isPending, onCancel }: DhorBookEnt
     },
   });
 
+  // Update form when juz or surah changes and fetch ayahs
   useEffect(() => {
     if (selectedJuz) {
       form.setValue('current_juz', selectedJuz);
-    }
-    
-    if (selectedSurah) {
-      form.setValue('current_surah', selectedSurah);
-      const ayahRange = getAyahRangeForSurahInJuz(selectedJuz || 0, selectedSurah);
-      if (ayahRange) {
-        const ayatArray = Array.from(
-          { length: ayahRange.endAyah - ayahRange.startAyah + 1 },
-          (_, i) => ayahRange.startAyah + i
-        );
-        setAyatOptions(ayatArray);
-        form.setValue('start_ayat', ayahRange.startAyah);
-        form.setValue('end_ayat', undefined);
-        setCalculatedPages(0);
-      } else {
-        setAyatOptions([]);
+      
+      if (selectedSurah) {
+        form.setValue('current_surah', selectedSurah);
+        console.log(`Getting ayah range for Juz ${selectedJuz}, Surah ${selectedSurah}`);
+        
+        const ayahRange = getAyahRangeForSurahInJuz(selectedJuz, selectedSurah);
+        if (ayahRange) {
+          console.log(`Ayah range found: ${ayahRange.startAyah}-${ayahRange.endAyah}`);
+          const ayatArray = Array.from(
+            { length: ayahRange.endAyah - ayahRange.startAyah + 1 },
+            (_, i) => ayahRange.startAyah + i
+          );
+          setAyatOptions(ayatArray);
+          // Reset ayat selections when surah changes
+          form.setValue('start_ayat', ayahRange.startAyah);
+          form.setValue('end_ayat', undefined);
+          setCalculatedPages(0);
+        } else {
+          console.warn(`No ayah range found for Juz ${selectedJuz}, Surah ${selectedSurah}`);
+          setAyatOptions([]);
+        }
       }
     } else {
+      // Reset if no juz selected
       setAyatOptions([]);
     }
   }, [selectedJuz, selectedSurah, form]);
 
+  // Calculate pages based on ayat range
   useEffect(() => {
     const startAyah = form.watch('start_ayat');
     const endAyah = form.watch('end_ayat');
@@ -199,68 +207,166 @@ export function DhorBookEntryForm({ onSubmit, isPending, onCancel }: DhorBookEnt
             />
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormField control={form.control} name="current_juz" render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Juz</FormLabel>
-                    <Select
-                      onValueChange={(value) => {
-                        const juzNumber = parseInt(value); field.onChange(juzNumber); setSelectedJuz(juzNumber);
-                        setSelectedSurah(null); form.setValue('current_surah', undefined); form.setValue('start_ayat', undefined); form.setValue('end_ayat', undefined);
-                      }}
-                      value={field.value?.toString()}
-                    >
-                      <FormControl><SelectTrigger><SelectValue placeholder="Select Juz" /></SelectTrigger></FormControl>
-                      <SelectContent>
-                        {juzData?.map((juz) => (<SelectItem key={juz.id} value={juz.juz_number.toString()}>Juz {juz.juz_number}</SelectItem>)) 
-                         || (<SelectItem disabled value="loading">{juzLoading ? "Loading..." : "No Juz available"}</SelectItem>)}
-                      </SelectContent>
-                    </Select><FormMessage />
-                  </FormItem>)} />
+                <FormItem>
+                  <FormLabel>Juz</FormLabel>
+                  <Select
+                    onValueChange={(value) => {
+                      const juzNumber = parseInt(value);
+                      console.log(`Selected Juz: ${juzNumber}`);
+                      field.onChange(juzNumber);
+                      setSelectedJuz(juzNumber);
+                      setSelectedSurah(null);
+                      form.setValue('current_surah', undefined);
+                      form.setValue('start_ayat', undefined);
+                      form.setValue('end_ayat', undefined);
+                    }}
+                    value={field.value?.toString()}
+                  >
+                    <FormControl><SelectTrigger><SelectValue placeholder="Select Juz" /></SelectTrigger></FormControl>
+                    <SelectContent>
+                      {juzData?.map((juz) => (
+                        <SelectItem key={juz.id} value={juz.juz_number.toString()}>
+                          Juz {juz.juz_number}
+                        </SelectItem>
+                      ))}
+                      {(!juzData || juzData.length === 0) && (
+                        <SelectItem disabled value="loading">
+                          {juzLoading ? "Loading..." : "No Juz available"}
+                        </SelectItem>
+                      )}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )} />
               <FormField control={form.control} name="current_surah" render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Surah</FormLabel>
-                    <Select
-                      onValueChange={(value) => { const surahNumber = parseInt(value); field.onChange(surahNumber); setSelectedSurah(surahNumber); }}
-                      value={field.value?.toString()} disabled={!selectedJuz || juzLoading || isLoadingSurahs}
-                    >
-                      <FormControl><SelectTrigger><SelectValue placeholder={juzLoading || isLoadingSurahs ? "Loading data..." : !selectedJuz ? "Select Juz first" : surahsInJuz.length === 0 ? "No surahs found" : "Select Surah"} /></SelectTrigger></FormControl>
-                      <SelectContent className="max-h-[300px]">
-                        {juzLoading || isLoadingSurahs ? (<SelectItem disabled value="loading">Loading data...</SelectItem>) 
-                         : surahsInJuz && surahsInJuz.length > 0 ? (surahsInJuz.map((surah) => (<SelectItem key={surah.id} value={surah.surah_number.toString()}>{surah.surah_number}. {surah.name}</SelectItem>))) 
-                         : (<SelectItem disabled value="none">{selectedJuz ? "No surahs found for this Juz" : "Select a Juz first"}</SelectItem>)}
-                      </SelectContent>
-                    </Select><FormMessage />
-                  </FormItem>)} />
+                <FormItem>
+                  <FormLabel>Surah</FormLabel>
+                  <Select
+                    onValueChange={(value) => {
+                      const surahNumber = parseInt(value);
+                      console.log(`Selected Surah: ${surahNumber}`);
+                      field.onChange(surahNumber);
+                      setSelectedSurah(surahNumber);
+                    }}
+                    value={field.value?.toString()}
+                    disabled={!selectedJuz || juzLoading || isLoadingSurahs}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue 
+                          placeholder={
+                            juzLoading || isLoadingSurahs 
+                              ? "Loading data..." 
+                              : !selectedJuz 
+                              ? "Select Juz first" 
+                              : surahsInJuz.length === 0 
+                              ? "No surahs found" 
+                              : "Select Surah"
+                          } 
+                        />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent className="max-h-[300px]">
+                      {juzLoading || isLoadingSurahs ? (
+                        <SelectItem disabled value="loading">Loading data...</SelectItem>
+                      ) : surahsInJuz && surahsInJuz.length > 0 ? (
+                        surahsInJuz.map((surah) => (
+                          <SelectItem key={surah.id} value={surah.surah_number.toString()}>
+                            {surah.surah_number}. {surah.name}
+                          </SelectItem>
+                        ))
+                      ) : (
+                        <SelectItem disabled value="none">
+                          {selectedJuz ? "No surahs found for this Juz" : "Select a Juz first"}
+                        </SelectItem>
+                      )}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )} />
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormField control={form.control} name="start_ayat" render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Start Ayat</FormLabel>
-                    <Select
-                      onValueChange={(value) => { const ayatNumber = parseInt(value); field.onChange(ayatNumber); form.setValue('end_ayat', undefined); }}
-                      value={field.value?.toString()} disabled={!selectedSurah || ayatOptions.length === 0}
-                    >
-                      <FormControl><SelectTrigger><SelectValue placeholder={selectedSurah ? "Select Ayat" : "Select Surah first"} /></SelectTrigger></FormControl>
-                      <SelectContent>
-                        {ayatOptions.map((ayat) => (<SelectItem key={`start-${ayat}`} value={ayat.toString()}>Ayat {ayat}</SelectItem>))}
-                      </SelectContent>
-                    </Select><FormMessage />
-                  </FormItem>)} />
+                <FormItem>
+                  <FormLabel>Start Ayat</FormLabel>
+                  <Select
+                    onValueChange={(value) => {
+                      const ayatNumber = parseInt(value);
+                      console.log(`Selected Start Ayat: ${ayatNumber}`);
+                      field.onChange(ayatNumber);
+                      // Reset end ayat when start changes
+                      form.setValue('end_ayat', undefined);
+                    }}
+                    value={field.value?.toString()}
+                    disabled={!selectedSurah || ayatOptions.length === 0}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder={selectedSurah ? "Select Ayat" : "Select Surah first"} />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {ayatOptions.length > 0 ? (
+                        ayatOptions.map((ayat) => (
+                          <SelectItem key={`start-${ayat}`} value={ayat.toString()}>
+                            Ayat {ayat}
+                          </SelectItem>
+                        ))
+                      ) : (
+                        <SelectItem disabled value="no-ayats">
+                          {selectedSurah ? "No ayats available" : "Select Surah first"}
+                        </SelectItem>
+                      )}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )} />
               <FormField control={form.control} name="end_ayat" render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>End Ayat</FormLabel>
-                    <Select
-                      onValueChange={(value) => { field.onChange(parseInt(value)); }}
-                      value={field.value?.toString()} disabled={!form.watch('start_ayat') || ayatOptions.length === 0}
-                    >
-                      <FormControl><SelectTrigger><SelectValue placeholder={!form.watch('start_ayat') ? "Select Start Ayat first" : "Select End Ayat"} /></SelectTrigger></FormControl>
-                      <SelectContent>
-                        {ayatOptions.filter((ayat) => { const startAyat = form.watch('start_ayat'); return startAyat ? ayat >= startAyat : true; })
-                          .map((ayat) => (<SelectItem key={`end-${ayat}`} value={ayat.toString()}>Ayat {ayat}</SelectItem>))}
-                      </SelectContent>
-                    </Select><FormMessage />
-                  </FormItem>)} />
+                <FormItem>
+                  <FormLabel>End Ayat</FormLabel>
+                  <Select
+                    onValueChange={(value) => {
+                      const ayatNumber = parseInt(value);
+                      console.log(`Selected End Ayat: ${ayatNumber}`);
+                      field.onChange(ayatNumber);
+                    }}
+                    value={field.value?.toString()}
+                    disabled={!form.watch('start_ayat') || ayatOptions.length === 0}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue 
+                          placeholder={!form.watch('start_ayat') ? "Select Start Ayat first" : "Select End Ayat"} 
+                        />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {form.watch('start_ayat') && ayatOptions.length > 0 ? (
+                        ayatOptions
+                          .filter(ayat => {
+                            const startAyat = form.watch('start_ayat');
+                            return startAyat ? ayat >= startAyat : true;
+                          })
+                          .map((ayat) => (
+                            <SelectItem key={`end-${ayat}`} value={ayat.toString()}>
+                              Ayat {ayat}
+                            </SelectItem>
+                          ))
+                      ) : (
+                        <SelectItem disabled value="no-end-ayats">
+                          {form.watch('start_ayat') ? "No end ayats available" : "Select Start Ayat first"}
+                        </SelectItem>
+                      )}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )} />
             </div>
-             <FormField
+            <FormField
               control={form.control}
               name="memorization_quality"
               render={({ field }) => (

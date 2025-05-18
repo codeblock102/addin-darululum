@@ -1,6 +1,8 @@
+
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { DhorBookEntryForm } from "./DhorBookEntryForm";
 import { useDhorEntryMutation } from "./useDhorEntryMutation";
+import { toast } from "@/components/ui/use-toast";
 
 export interface NewEntryDialogProps {
   open: boolean;
@@ -21,14 +23,24 @@ export function NewEntryDialog({
     studentId,
     teacherId,
     onSuccess: (data) => {
+      console.log("Entry created successfully:", data);
+      toast({
+        title: "Entry Added",
+        description: "The dhor book entry has been saved successfully.",
+      });
       onSuccess?.(data);
       onOpenChange(false);
+    },
+    onError: (error) => {
+      console.error("Error creating entry:", error);
+      toast({
+        title: "Error",
+        description: "There was a problem saving the entry. Please try again.",
+        variant: "destructive",
+      });
     }
   });
 
-  // Render the form within the dialog. 
-  // The Dialog component itself handles visibility based on the `open` prop.
-  // This keeps DhorBookEntryForm in the tree, preserving its state when the dialog is hidden/reshown.
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent 
