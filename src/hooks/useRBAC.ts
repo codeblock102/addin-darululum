@@ -33,8 +33,35 @@ export const useRBAC = () => {
           console.log("User is admin based on metadata");
         }
         
-        // If not already identified as admin, check for teacher profile
-        if (!isUserAdmin && session.user.email) {
+        // If not already identified as admin, check user_roles table
+        if (!userRole) {
+          try {
+            // Get role from user_roles table
+            const { data: roleData, error: roleError } = await supabase
+              .from('user_roles')
+              .select('roles:role_id(name)')
+              .eq('user_id', session.user.id)
+              .single();
+
+            if (roleData && !roleError) {
+              const roleName = roleData.roles?.name;
+              console.log("Role from database:", roleName);
+              
+              if (roleName === 'admin') {
+                userRole = 'admin';
+                console.log("User is admin based on database role");
+              } else if (roleName === 'teacher') {
+                userRole = 'teacher';
+                console.log("User is teacher based on database role");
+              }
+            }
+          } catch (error) {
+            console.log("Error fetching user role from database:", error);
+          }
+        }
+        
+        // If still not identified, check for teacher profile
+        if (!userRole && session.user.email) {
           console.log("Checking for teacher profile with email:", session.user.email);
           const { data: teacherData, error: teacherError } = await supabase
             .from('teachers')
