@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { RolePermission, getUserPermissions } from "@/utils/roleUtils";
+import { RolePermission } from "@/utils/roleUtils";
 
 export type UserRole = 'admin' | 'teacher' | 'student';
 
@@ -24,7 +24,7 @@ export const useRBAC = () => {
     // Set a timeout to prevent infinite loading
     const timeoutId = setTimeout(() => {
       if (isLoading) {
-        console.error("Role check timed out after 5 seconds");
+        console.log("Role check timed out after 3 seconds");
         setIsLoading(false);
         setError("Role check timed out");
         abortController.abort();
@@ -36,7 +36,7 @@ export const useRBAC = () => {
           setRole(cachedRole);
         }
       }
-    }, 5000); // 5 second timeout
+    }, 3000); // Shorter 3 second timeout for better UX
 
     const fetchRoleAndPermissions = async () => {
       if (!session) {
@@ -58,73 +58,41 @@ export const useRBAC = () => {
           console.log("User is admin based on metadata");
         }
         
-        // If not already identified as admin, check user_roles table
+        // Skip database calls if admin is already determined from metadata
         if (!userRole && !abortController.signal.aborted) {
           try {
-            // Get role from user_roles table with timeout protection
-            const rolePromise = supabase
-              .from('user_roles')
-              .select('roles:role_id(name)')
-              .eq('user_id', session.user.id)
-              .maybeSingle();
-              
-            const timeoutPromise = new Promise<null>((_, reject) => 
-              setTimeout(() => reject(new Error("Database query timed out")), 3000)
-            );
-            
-            const roleData = await Promise.race([rolePromise, timeoutPromise])
-              .catch(err => {
-                console.error("Role query failed or timed out:", err);
-                return null;
-              });
-
-            if (roleData && !roleData.error && roleData.data) {
-              const roleName = roleData.data.roles?.name;
-              console.log("Role from database:", roleName);
-              
-              if (roleName === 'admin') {
-                userRole = 'admin';
-                console.log("User is admin based on database role");
-              } else if (roleName === 'teacher') {
-                userRole = 'teacher';
-                console.log("User is teacher based on database role");
+            // Check for teacher profile
+            if (session.user.email && !abortController.signal.aborted) {
+              console.log("Checking for teacher profile with email:", session.user.email);
+              try {
+                const teacherPromise = supabase
+                  .from('teachers')
+                  .select('id')
+                  .eq('email', session.user.email)
+                  .maybeSingle();
+                  
+                const timeoutPromise = new Promise<null>((_, reject) => 
+                  setTimeout(() => reject(new Error("Teacher lookup timed out")), 2000)
+                );
+                
+                const teacherData = await Promise.race([teacherPromise, timeoutPromise])
+                  .catch(err => {
+                    console.error("Teacher query failed or timed out:", err);
+                    return null;
+                  });
+                
+                if (teacherData && !teacherData.error && teacherData.data) {
+                  console.log("Found teacher profile:", teacherData.data);
+                  userRole = 'teacher';
+                } else {
+                  console.log("No teacher profile found or error:", teacherData?.error || "No data");
+                }
+              } catch (error) {
+                console.log("Error or timeout checking teacher profile:", error);
               }
-            } else if (roleData && roleData.error) {
-              console.error("Error fetching user role:", roleData.error);
             }
           } catch (error) {
-            console.log("Error or timeout fetching user role from database:", error);
-          }
-        }
-        
-        // If still not identified, check for teacher profile
-        if (!userRole && session.user.email && !abortController.signal.aborted) {
-          console.log("Checking for teacher profile with email:", session.user.email);
-          try {
-            const teacherPromise = supabase
-              .from('teachers')
-              .select('id')
-              .eq('email', session.user.email)
-              .maybeSingle();
-              
-            const timeoutPromise = new Promise<null>((_, reject) => 
-              setTimeout(() => reject(new Error("Teacher lookup timed out")), 3000)
-            );
-            
-            const teacherData = await Promise.race([teacherPromise, timeoutPromise])
-              .catch(err => {
-                console.error("Teacher query failed or timed out:", err);
-                return null;
-              });
-            
-            if (teacherData && !teacherData.error && teacherData.data) {
-              console.log("Found teacher profile:", teacherData.data);
-              userRole = 'teacher';
-            } else {
-              console.log("No teacher profile found or error:", teacherData?.error || "No data");
-            }
-          } catch (error) {
-            console.log("Error or timeout checking teacher profile:", error);
+            console.error("Error fetching role from database:", error);
           }
         }
         
@@ -137,22 +105,9 @@ export const useRBAC = () => {
           localStorage.removeItem('userRole');
         }
         
-        // Try to fetch permissions in parallel but don't block UI updates
-        if (!abortController.signal.aborted && session.user.id) {
-          getUserPermissions(session.user.id)
-            .then(userPermissions => {
-              if (!abortController.signal.aborted) {
-                setPermissions(userPermissions);
-              }
-            })
-            .catch(error => {
-              console.error("Error fetching permissions:", error);
-            });
-        }
-        
         console.log(`RBAC role check complete: role=${userRole}`);
       } catch (error) {
-        console.error("Error fetching user role and permissions:", error);
+        console.error("Error fetching user role:", error);
         setError("Failed to check user permissions");
       } finally {
         // Only set loading to false if we haven't aborted
@@ -172,8 +127,11 @@ export const useRBAC = () => {
   }, [session, role]);
 
   const hasPermission = (requiredPermission: RolePermission): boolean => {
-    // Give all permissions for now to ensure functionality
-    return true;
+    // Give all permissions to admins
+    if (role === 'admin') return true;
+    
+    // Check if the permission is in the permissions array
+    return permissions.includes(requiredPermission);
   };
 
   return { 

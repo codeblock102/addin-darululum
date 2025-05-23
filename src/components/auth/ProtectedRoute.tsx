@@ -37,10 +37,10 @@ export const ProtectedRoute = ({
   const isLoading = authLoading || (rbacLoading && !timeoutReached);
 
   useEffect(() => {
-    // Set up timeout to prevent infinite loading
+    // Set up timeout to prevent infinite loading (shorter timeout)
     const timeoutId = setTimeout(() => {
       if (!permissionChecked) {
-        console.warn("Permission check timed out after 5 seconds");
+        console.warn("Permission check timed out after 3 seconds");
         setTimeoutReached(true);
         
         // Show error toast
@@ -50,7 +50,7 @@ export const ProtectedRoute = ({
           variant: "destructive"
         });
       }
-    }, 5000);
+    }, 3000); // 3 second timeout for better UX
     
     return () => clearTimeout(timeoutId);
   }, [permissionChecked, toast]);
@@ -128,12 +128,21 @@ export const ProtectedRoute = ({
       <div className="min-h-screen flex flex-col items-center justify-center p-4">
         <Loader2 className="h-8 w-8 animate-spin text-primary mb-4" />
         <p className="mb-4 text-muted-foreground">Checking permissions...</p>
-        <Button 
-          variant="link" 
-          onClick={() => setTimeoutReached(true)}
-        >
-          Continue with limited access
-        </Button>
+        <div className="flex flex-col gap-2">
+          <Button 
+            variant="link" 
+            onClick={() => setTimeoutReached(true)}
+          >
+            Continue with limited access
+          </Button>
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={() => navigate('/auth')}
+          >
+            Go to login page
+          </Button>
+        </div>
       </div>
     );
   }
