@@ -1,4 +1,3 @@
-
 import { useNavigate } from "react-router-dom";
 import { 
   Table, 
@@ -72,24 +71,24 @@ export const StudentTable = ({
       }
     ];
 
-    // Define actions for mobile view - fixing the type issue
+    // Fix the type issue with actions - create an array of action objects with the correct type
     const mobileActions = [
       {
         label: "View Progress",
         onClick: (student: Student) => handleViewProgress(student.id),
-        icon: UserCheck,
+        icon: UserCheck as React.ElementType,
         variant: "outline" as const
       },
       {
         label: "Remove",
         onClick: (student: Student) => handleDeleteClick(student, 'remove'),
-        icon: User,
+        icon: User as React.ElementType,
         variant: "outline" as const
       },
       {
         label: "Delete",
         onClick: (student: Student) => handleDeleteClick(student, 'delete'),
-        icon: Trash2,
+        icon: Trash2 as React.ElementType,
         variant: "outline" as const
       }
     ];
@@ -170,4 +169,3 @@ export const StudentTable = ({
     </div>
   );
 };
-

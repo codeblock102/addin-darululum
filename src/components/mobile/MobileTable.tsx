@@ -149,4 +149,4 @@ export const MobileTable = ({ data, columns, onRowClick, actions = [] }: MobileT
       })}
     </div>
   );
-};
+}
