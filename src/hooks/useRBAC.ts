@@ -25,8 +25,16 @@ export const useRBAC = () => {
         setIsLoading(true);
         let userRole: UserRole | null = null;
         
-        // First, check if user has a teacher profile - this should take priority
-        if (session.user.email) {
+        // First, check if user has admin role from metadata
+        // This is the most reliable way to detect admins
+        const isUserAdmin = session.user.user_metadata?.role === 'admin';
+        if (isUserAdmin) {
+          userRole = 'admin';
+          console.log("User is admin based on metadata");
+        }
+        
+        // If not already identified as admin, check for teacher profile
+        if (!isUserAdmin && session.user.email) {
           console.log("Checking for teacher profile with email:", session.user.email);
           const { data: teacherData, error: teacherError } = await supabase
             .from('teachers')
@@ -41,16 +49,6 @@ export const useRBAC = () => {
             console.log("No teacher profile found or error:", teacherError);
             userRole = null;
           }
-        }
-        
-        // If user metadata specifies a role, use that (admin overrides teacher)
-        const metadataRole = session.user.user_metadata?.role as UserRole | null;
-        console.log("User role from metadata:", metadataRole);
-        
-        if (metadataRole === 'admin') {
-          userRole = 'admin'; // If metadata says admin, override to admin
-        } else if (!userRole && metadataRole === 'teacher') {
-          userRole = 'teacher'; // Only set to teacher if not already set
         }
         
         setRole(userRole);

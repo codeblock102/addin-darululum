@@ -13,7 +13,7 @@ export const BottomNavigation = () => {
 
   // Different navigation items for admin and teacher roles
   const adminNavItems = [
-    { icon: Home, label: "Dashboard", href: "/" },
+    { icon: Home, label: "Dashboard", href: "/admin" }, // Updated to correct admin dashboard path
     { icon: Users, label: "Teachers", href: "/teachers" },
     { icon: Users, label: "Students", href: "/students" },
     { icon: Book, label: "Progress", href: "/dhor-book" },

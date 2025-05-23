@@ -17,18 +17,20 @@ export default function Index() {
 
     if (!session) {
       // If not logged in, redirect to auth page
+      console.log("No session, redirecting to auth");
       navigate('/auth');
       return;
     }
     
     console.log("Role check on Index page: isAdmin=", isAdmin, "isTeacher=", isTeacher);
     
-    if (isTeacher) {
-      console.log("Redirecting to teacher portal");
-      navigate('/teacher-portal');
-    } else if (isAdmin) {
-      console.log("Redirecting to admin dashboard");
+    // Be explicit about the admin check to ensure proper redirection
+    if (isAdmin) {
+      console.log("User is admin, redirecting to admin dashboard");
       navigate('/admin');
+    } else if (isTeacher) {
+      console.log("User is teacher, redirecting to teacher portal");
+      navigate('/teacher-portal');
     } else {
       // Default fallback for other roles
       console.log("No specific role portal available, redirecting to auth");
