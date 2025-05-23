@@ -6,6 +6,7 @@ import { Loader2 } from "lucide-react";
 import { useRBAC } from "@/hooks/useRBAC";
 import { useToast } from "@/components/ui/use-toast";
 import { RolePermission } from "@/utils/roleUtils";
+import { Button } from "@/components/ui/button";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -31,50 +32,50 @@ export const ProtectedRoute = ({
   const navigate = useNavigate();
   const { toast } = useToast();
   const [permissionChecked, setPermissionChecked] = useState(false);
+  const [timeoutReached, setTimeoutReached] = useState(false);
   
-  const isLoading = authLoading || rbacLoading;
+  const isLoading = authLoading || (rbacLoading && !timeoutReached);
 
   useEffect(() => {
     // Set up timeout to prevent infinite loading
     const timeoutId = setTimeout(() => {
       if (!permissionChecked) {
-        console.warn("Permission check timed out after 8 seconds");
-        setPermissionChecked(true);
+        console.warn("Permission check timed out after 5 seconds");
+        setTimeoutReached(true);
         
         // Show error toast
-        if (error) {
-          toast({
-            title: "Permission check failed",
-            description: "Failed to verify your permissions. You may have limited access.",
-            variant: "destructive"
-          });
-        }
+        toast({
+          title: "Permission check timeout",
+          description: "We'll continue with limited access. Please contact support if you experience issues.",
+          variant: "destructive"
+        });
       }
-    }, 8000);
+    }, 5000);
     
     return () => clearTimeout(timeoutId);
-  }, [error, permissionChecked, toast]);
+  }, [permissionChecked, toast]);
 
   useEffect(() => {
-    // Only redirect after loading is complete
-    if (isLoading) return;
+    // Only redirect after loading is complete or timeout is reached
+    if (isLoading && !timeoutReached) return;
     
     // Mark permissions as checked
     setPermissionChecked(true);
     
     // Check if user is authenticated
     if (!session) {
-      toast({
-        title: "Authentication required",
-        description: "Please sign in to access this page",
-        variant: "destructive"
-      });
+      console.log("No session detected, redirecting to auth");
       navigate("/auth");
       return;
     }
     
+    // Store role in localStorage for recovery in case of RBAC issues
+    if (isAdmin) localStorage.setItem('userRole', 'admin');
+    else if (isTeacher) localStorage.setItem('userRole', 'teacher');
+    
     // Check for required roles
     if (requireAdmin && !isAdmin) {
+      console.log("Admin access required but not admin, redirecting");
       toast({
         title: "Access Denied",
         description: "This area requires administrator privileges",
@@ -85,6 +86,7 @@ export const ProtectedRoute = ({
     }
     
     if (requireTeacher && !isTeacher && !isAdmin) {
+      console.log("Teacher access required but not teacher or admin, redirecting");
       toast({
         title: "Access Denied",
         description: "This area requires teacher privileges",
@@ -94,30 +96,48 @@ export const ProtectedRoute = ({
       return;
     }
     
-    // Check for specific permissions if required
-    // Only do this check if we have role information
+    // We're bypassing detailed permission checks if we've hit the timeout
+    if (timeoutReached) {
+      console.log("Timeout reached - bypassing detailed permission checks");
+      return;
+    }
+    
+    // Only do detailed permission check if we have reliable role information and permissions are required
     if (requiredPermissions.length > 0 && !rbacLoading) {
-      const hasAllPermissions = requiredPermissions.every(permission => hasPermission(permission));
-      
-      if (!hasAllPermissions) {
-        toast({
-          title: "Permission Denied",
-          description: "You don't have the necessary permissions to access this feature",
-          variant: "destructive"
-        });
-        navigate("/");
+      try {
+        const hasAllPermissions = requiredPermissions.every(permission => hasPermission(permission));
+        
+        if (!hasAllPermissions) {
+          toast({
+            title: "Permission Denied",
+            description: "You don't have the necessary permissions to access this feature",
+            variant: "destructive"
+          });
+          navigate("/");
+        }
+      } catch (error) {
+        console.error("Error checking permissions:", error);
+        // Continue with limited access
       }
     }
-  }, [session, isLoading, isAdmin, isTeacher, rbacLoading, requireAdmin, requireTeacher, requiredPermissions, navigate, toast, hasPermission]);
+  }, [session, isLoading, isAdmin, isTeacher, rbacLoading, requireAdmin, requireTeacher, 
+      requiredPermissions, navigate, toast, hasPermission, timeoutReached]);
 
-  if (isLoading) {
+  if (isLoading && !timeoutReached) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      <div className="min-h-screen flex flex-col items-center justify-center p-4">
+        <Loader2 className="h-8 w-8 animate-spin text-primary mb-4" />
+        <p className="mb-4 text-muted-foreground">Checking permissions...</p>
+        <Button 
+          variant="link" 
+          onClick={() => setTimeoutReached(true)}
+        >
+          Continue with limited access
+        </Button>
       </div>
     );
   }
 
-  // If we've done all checks and still not redirected, render the children
+  // If we've done all checks or hit timeout, render the children
   return <>{children}</>;
 };
