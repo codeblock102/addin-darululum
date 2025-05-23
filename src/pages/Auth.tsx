@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -19,6 +20,7 @@ const Auth = () => {
   const [mode, setMode] = useState<AuthMode>("signIn");
   const [showPassword, setShowPassword] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isCheckingRole, setIsCheckingRole] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
   const { session, refreshSession } = useAuth();
@@ -28,6 +30,44 @@ const Auth = () => {
       navigate("/");
     }
   }, [session, navigate]);
+
+  const checkUserRole = async (user: any) => {
+    try {
+      setIsCheckingRole(true);
+      
+      // First check if user has admin role from metadata (fastest method)
+      const isUserAdmin = user.user_metadata?.role === 'admin';
+      if (isUserAdmin) {
+        console.log("User is admin based on metadata");
+        localStorage.setItem('userRole', 'admin');
+        return 'admin';
+      }
+      
+      // If not admin from metadata, check for teacher profile in database
+      if (user.email) {
+        console.log("Checking for teacher profile with email:", user.email);
+        try {
+          const { data: teacherData, error } = await supabase
+            .from('teachers')
+            .select('id')
+            .eq('email', user.email)
+            .maybeSingle();
+            
+          if (teacherData) {
+            console.log("Found teacher profile:", teacherData);
+            localStorage.setItem('userRole', 'teacher');
+            return 'teacher';
+          }
+        } catch (error) {
+          console.error("Error checking teacher profile:", error);
+        }
+      }
+      
+      return null;
+    } finally {
+      setIsCheckingRole(false);
+    }
+  };
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -56,11 +96,26 @@ const Auth = () => {
         
         await refreshSession();
         
-        toast({
-          title: "Login successful",
-          description: "Welcome back!"
-        });
-        navigate("/");
+        // Check user role and redirect accordingly
+        if (data.user) {
+          const role = await checkUserRole(data.user);
+          
+          toast({
+            title: "Login successful",
+            description: `Welcome back${role ? ` as ${role}` : ''}!`
+          });
+          
+          // Redirect based on role
+          if (role === 'admin') {
+            navigate("/admin");
+          } else if (role === 'teacher') {
+            navigate("/teacher-portal");
+          } else {
+            // Default redirect if role cannot be determined
+            navigate("/");
+          }
+          return; // Exit early after redirection
+        }
       } else if (mode === "signUp") {
         // Handle sign up
         const { data, error } = await supabase.auth.signUp({
