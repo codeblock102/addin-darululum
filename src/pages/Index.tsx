@@ -13,7 +13,10 @@ export default function Index() {
 
   useEffect(() => {
     // Only navigate after loading is complete
-    if (isLoading) return;
+    if (isLoading) {
+      console.log("RBAC is still loading, waiting...");
+      return;
+    }
 
     if (!session) {
       // If not logged in, redirect to auth page
@@ -24,37 +27,33 @@ export default function Index() {
     
     console.log("Role check on Index page: isAdmin=", isAdmin, "isTeacher=", isTeacher);
     
-    // Be explicit about the admin check to ensure proper redirection
-    if (isAdmin) {
+    // Add a more robust check to ensure we only redirect when we have definitive role information
+    if (isAdmin === true) {
       console.log("User is admin, redirecting to admin dashboard");
       navigate('/admin');
-    } else if (isTeacher) {
+      return;
+    } 
+    
+    if (isTeacher === true) {
       console.log("User is teacher, redirecting to teacher portal");
       navigate('/teacher-portal');
-    } else {
-      // Default fallback for other roles
+      return;
+    }
+
+    // Only redirect to auth if we've completed the role check and found no roles
+    if (!isAdmin && !isTeacher && !isLoading) {
       console.log("No specific role portal available, redirecting to auth");
       navigate('/auth');
     }
   }, [isAdmin, isTeacher, isLoading, session, navigate]);
 
-  if (isLoading) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-screen">
-        <Loader2 className="h-8 w-8 animate-spin text-primary mb-4" />
-        <h1 className="text-2xl font-medium mb-2">Loading your dashboard...</h1>
-        <p className="text-muted-foreground">Please wait while we determine your role.</p>
-      </div>
-    );
-  }
-
   return (
-    <div className="flex flex-col items-center justify-center min-h-[70vh]">
-      <div className="animate-pulse">
-        <div className="h-8 w-8 rounded-full border-4 border-t-transparent border-primary animate-spin mb-4 mx-auto"></div>
-      </div>
-      <h1 className="text-2xl font-medium mb-2">Redirecting to your dashboard...</h1>
+    <div className="flex flex-col items-center justify-center min-h-screen">
+      <Loader2 className="h-8 w-8 animate-spin text-primary mb-4" />
+      <h1 className="text-2xl font-medium mb-2">Loading your dashboard...</h1>
       <p className="text-muted-foreground">Please wait while we determine your role.</p>
+      {isLoading && <p className="text-sm text-muted-foreground mt-2">Checking your permissions...</p>}
+      {!isLoading && <p className="text-sm text-muted-foreground mt-2">Redirecting to the appropriate dashboard...</p>}
     </div>
   );
 }
