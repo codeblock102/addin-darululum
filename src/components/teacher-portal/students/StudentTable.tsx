@@ -52,7 +52,7 @@ export const StudentTable = ({
       { 
         key: "name",
         title: "Name",
-        isPrimary: true,
+        primary: true,
         render: (value: string) => (
           <div className="flex items-center">
             <User className="h-4 w-4 mr-2 text-muted-foreground" />
@@ -63,36 +63,32 @@ export const StudentTable = ({
       { 
         key: "enrollment_date",
         title: "Enrollment Date",
-        render: (value: string) => value ? new Date(value).toLocaleDateString() : 'N/A',
-        isSecondary: true
+        render: (value: string) => value ? new Date(value).toLocaleDateString() : 'N/A'
       },
       { 
         key: "status",
         title: "Status",
-        isStatus: true,
-        statusMap: {
-          active: { label: "Active", variant: "success" },
-          inactive: { label: "Inactive", variant: "danger" }
-        }
+        status: true
       }
     ];
 
-    const getActions = (student: Student) => [
+    // Define actions for mobile view - fixing the type issue
+    const mobileActions = [
       {
         label: "View Progress",
-        onClick: () => handleViewProgress(student.id),
+        onClick: (student: Student) => handleViewProgress(student.id),
         icon: UserCheck,
         variant: "outline" as const
       },
       {
         label: "Remove",
-        onClick: () => handleDeleteClick(student, 'remove'),
+        onClick: (student: Student) => handleDeleteClick(student, 'remove'),
         icon: User,
         variant: "outline" as const
       },
       {
         label: "Delete",
-        onClick: () => handleDeleteClick(student, 'delete'),
+        onClick: (student: Student) => handleDeleteClick(student, 'delete'),
         icon: Trash2,
         variant: "outline" as const
       }
@@ -102,8 +98,7 @@ export const StudentTable = ({
       <MobileTable
         columns={columns}
         data={students}
-        actions={getActions}
-        keyField="id"
+        actions={mobileActions}
       />
     );
   }
@@ -175,3 +170,4 @@ export const StudentTable = ({
     </div>
   );
 };
+
