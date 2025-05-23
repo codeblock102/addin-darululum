@@ -1,13 +1,15 @@
 
 import { useNavigate, useLocation } from "react-router-dom";
-import { Home, Users, Book, CalendarDays, MessageSquare } from "lucide-react";
+import { Home, Users, Book, CalendarDays, LogOut } from "lucide-react";
 import { useTeacherStatus } from "@/hooks/useTeacherStatus";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/contexts/AuthContext";
 
 export const BottomNavigation = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { isTeacher, isAdmin } = useTeacherStatus();
+  const { signOut } = useAuth();
 
   // Different navigation items for admin and teacher roles
   const adminNavItems = [
@@ -15,7 +17,7 @@ export const BottomNavigation = () => {
     { icon: Users, label: "Teachers", href: "/teachers" },
     { icon: Users, label: "Students", href: "/students" },
     { icon: Book, label: "Progress", href: "/dhor-book" },
-    { icon: CalendarDays, label: "Schedule", href: "/schedule" }
+    { icon: LogOut, label: "Logout", action: signOut }
   ];
 
   const teacherNavItems = [
@@ -23,12 +25,14 @@ export const BottomNavigation = () => {
     { icon: Users, label: "Students", href: "/teacher-portal?tab=students" },
     { icon: Book, label: "Progress", href: "/teacher-portal?tab=dhor-book" },
     { icon: CalendarDays, label: "Schedule", href: "/teacher-portal?tab=schedule" },
-    { icon: MessageSquare, label: "Messages", href: "/teacher-portal?tab=messages" }
+    { icon: LogOut, label: "Logout", action: signOut }
   ];
 
   const navItems = isAdmin ? adminNavItems : teacherNavItems;
 
-  const isActive = (item: { href: string }) => {
+  const isActive = (item: { href?: string }) => {
+    if (!item.href) return false;
+    
     if (item.href.includes('?tab=')) {
       const [path, search] = item.href.split('?');
       return location.pathname === path && location.search.includes(search);
@@ -37,13 +41,21 @@ export const BottomNavigation = () => {
     return location.pathname === item.href;
   };
 
+  const handleNavigation = (item: { href?: string; action?: () => Promise<void> }) => {
+    if (item.action) {
+      item.action();
+    } else if (item.href) {
+      navigate(item.href);
+    }
+  };
+
   return (
     <div className="fixed bottom-0 left-0 z-50 w-full h-16 bg-background border-t lg:hidden">
       <div className="grid h-full grid-cols-5">
         {navItems.map((item, index) => (
           <button
             key={index}
-            onClick={() => navigate(item.href)}
+            onClick={() => handleNavigation(item)}
             type="button"
             className={cn(
               "inline-flex flex-col items-center justify-center px-1 hover:bg-gray-50 dark:hover:bg-gray-800 group",
