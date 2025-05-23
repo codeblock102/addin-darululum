@@ -13,17 +13,6 @@ export const SidebarNav = ({ items, isAdmin }: SidebarNavProps) => {
   const location = useLocation();
   const isMobile = useIsMobile();
   
-  const styles = {
-    navItem: {
-      active: isAdmin 
-        ? "bg-white/15 text-amber-400 font-medium backdrop-blur-sm border-l-2 border-amber-500" 
-        : "bg-accent text-accent-foreground",
-      inactive: isAdmin 
-        ? "text-gray-300 hover:bg-white/10 hover:text-amber-400 border-l-2 border-transparent" 
-        : "hover:bg-accent/50 hover:text-accent-foreground"
-    }
-  };
-
   const isNavItemActive = (item: NavItem) => {
     if (item.exact) {
       return location.pathname === item.href && !location.search;
@@ -56,12 +45,23 @@ export const SidebarNav = ({ items, isAdmin }: SidebarNavProps) => {
             to={item.href}
             onClick={handleNavigation}
             className={cn(
-              "flex items-center gap-3 rounded-lg pl-3 pr-3 py-3 text-sm font-medium transition-all",
-              isActive ? styles.navItem.active : styles.navItem.inactive
+              "flex items-center gap-3 rounded-lg pl-3 pr-3 py-2.5 text-sm font-medium transition-all",
+              isAdmin 
+                ? (isActive 
+                  ? "bg-white/15 text-amber-400 font-medium backdrop-blur-sm border-l-2 border-amber-500"
+                  : "text-gray-300 hover:bg-white/10 hover:text-amber-400 border-l-2 border-transparent")
+                : (isActive 
+                  ? "bg-blue-50 text-blue-600 font-medium border-l-2 border-blue-500"
+                  : "text-gray-700 hover:bg-gray-100/60 hover:text-blue-600 border-l-2 border-transparent")
             )}
             title={item.description}
           >
-            <item.icon className="h-5 w-5 min-w-5" />
+            <item.icon className={cn(
+              "h-5 w-5 min-w-5",
+              isAdmin 
+                ? (isActive ? "text-amber-400" : "text-gray-400")
+                : (isActive ? "text-blue-600" : "text-gray-500")
+            )} />
             <span className="truncate">{item.label}</span>
           </Link>
         );

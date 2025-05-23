@@ -32,8 +32,7 @@ export function NewEntryDialog({
       onSuccess?.(data);
       onOpenChange(false);
     }
-    // Removed onError as it doesn't exist in UseDhorEntryMutationProps
-    // Instead, we're relying on the internal error handling in useDhorEntryMutation
+    // Note: onError is handled internally in useDhorEntryMutation
   });
 
   return (

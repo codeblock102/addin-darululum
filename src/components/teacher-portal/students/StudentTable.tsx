@@ -11,6 +11,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { User, UserCheck, Trash2 } from "lucide-react";
 import { Student, StudentAssignment } from "../MyStudents";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { MobileTable } from "@/components/mobile/MobileTable";
 
 interface StudentTableProps {
   students: Student[];
@@ -28,6 +30,7 @@ export const StudentTable = ({
   setIsDeleteType
 }: StudentTableProps) => {
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
 
   // Handle click on "View Progress" button
   const handleViewProgress = (studentId: string) => {
@@ -43,6 +46,67 @@ export const StudentTable = ({
       setIsDeleteDialogOpen(true);
     }
   };
+
+  if (isMobile) {
+    const columns = [
+      { 
+        key: "name",
+        title: "Name",
+        isPrimary: true,
+        render: (value: string) => (
+          <div className="flex items-center">
+            <User className="h-4 w-4 mr-2 text-muted-foreground" />
+            <span>{value}</span>
+          </div>
+        )
+      },
+      { 
+        key: "enrollment_date",
+        title: "Enrollment Date",
+        render: (value: string) => value ? new Date(value).toLocaleDateString() : 'N/A',
+        isSecondary: true
+      },
+      { 
+        key: "status",
+        title: "Status",
+        isStatus: true,
+        statusMap: {
+          active: { label: "Active", variant: "success" },
+          inactive: { label: "Inactive", variant: "danger" }
+        }
+      }
+    ];
+
+    const getActions = (student: Student) => [
+      {
+        label: "View Progress",
+        onClick: () => handleViewProgress(student.id),
+        icon: UserCheck,
+        variant: "outline" as const
+      },
+      {
+        label: "Remove",
+        onClick: () => handleDeleteClick(student, 'remove'),
+        icon: User,
+        variant: "outline" as const
+      },
+      {
+        label: "Delete",
+        onClick: () => handleDeleteClick(student, 'delete'),
+        icon: Trash2,
+        variant: "outline" as const
+      }
+    ];
+
+    return (
+      <MobileTable
+        columns={columns}
+        data={students}
+        actions={getActions}
+        keyField="id"
+      />
+    );
+  }
 
   return (
     <div className="overflow-x-auto">

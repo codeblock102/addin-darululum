@@ -8,6 +8,8 @@ import { RoleBadge } from "./dashboard/RoleBadge";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { BottomNavigation } from "@/components/mobile/BottomNavigation";
+import { useLocation } from "react-router-dom";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -17,6 +19,7 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   const { isAdmin, isTeacher, isLoading } = useRBAC();
   const isMobile = useIsMobile();
   const [sidebarOpen, setSidebarOpen] = useState(!isMobile);
+  const location = useLocation();
   
   // Close sidebar on mobile by default
   useEffect(() => {
@@ -26,6 +29,13 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
       setSidebarOpen(true);
     }
   }, [isMobile]);
+
+  // Close sidebar when route changes on mobile
+  useEffect(() => {
+    if (isMobile) {
+      setSidebarOpen(false);
+    }
+  }, [location.pathname, location.search, isMobile]);
 
   const toggleSidebar = () => setSidebarOpen(prev => !prev);
 
@@ -62,7 +72,7 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
         </Button>
       )}
       
-      <div className={`flex-1 overflow-hidden transition-all duration-300 ${isMobile ? "pt-16 pb-20" : ""}`}>
+      <div className={`flex-1 overflow-hidden transition-all duration-300 ${isMobile ? "pb-20 pt-16" : ""}`}>
         <BackgroundPattern isAdmin={isAdmin}>
           <div className="p-3 sm:p-4 md:p-6 overflow-y-auto max-h-full">
             <div className="max-w-7xl mx-auto">
@@ -72,6 +82,11 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
           </div>
         </BackgroundPattern>
       </div>
+
+      {/* Bottom mobile navigation - only visible on mobile */}
+      {isMobile && !isLoading && (isTeacher || isAdmin) && (
+        <BottomNavigation />
+      )}
     </div>
   );
 }

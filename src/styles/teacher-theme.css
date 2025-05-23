@@ -1,0 +1,138 @@
+
+/* Teacher theme specific styles */
+.teacher-theme {
+  --teacher-bg: 210 40% 98%;
+  --teacher-card: 0 0% 100%;
+  --teacher-border: 214.3 31.8% 91.4%;
+  --teacher-primary: 221.2 83.2% 53.3%;  /* Blue primary color */
+  --teacher-accent: 213.1 94% 67.8%;
+  
+  /* Apply teacher theme to common elements */
+  background-color: hsl(210 40% 98%);
+  color: hsl(222.2 47.4% 11.2%);
+}
+
+/* Card styling */
+.teacher-theme .card,
+.teacher-theme .stats-card {
+  @apply bg-white border border-gray-100 shadow-sm rounded-xl transition-all duration-300;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+.teacher-theme .card:hover,
+.teacher-theme .stats-card:hover {
+  @apply border-blue-200;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+}
+
+/* Table styling */
+.teacher-theme .table {
+  @apply bg-white border border-gray-100 rounded-lg overflow-hidden;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
+}
+
+.teacher-theme .table th {
+  @apply bg-gray-50 text-gray-700 font-medium border-b border-gray-100 px-4 py-3;
+}
+
+.teacher-theme .table td {
+  @apply px-4 py-3 border-b border-gray-100 text-gray-700;
+}
+
+.teacher-theme .table tr:hover {
+  @apply bg-blue-50/50;
+}
+
+/* Dialog styling */
+.teacher-theme .dialog-content {
+  @apply bg-white border border-gray-100 shadow-xl animate-fadeIn rounded-xl;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+/* Form elements */
+.teacher-theme input, 
+.teacher-theme select, 
+.teacher-theme textarea {
+  @apply bg-white border-gray-200 focus:border-blue-400 text-gray-700
+    transition-all duration-200;
+}
+
+/* Button styling */
+.teacher-theme .button-primary,
+.teacher-theme button[data-variant="default"] {
+  @apply bg-blue-500 hover:bg-blue-600 text-white font-medium;
+}
+
+.teacher-theme .button-secondary,
+.teacher-theme button[data-variant="outline"] {
+  @apply bg-white hover:bg-gray-50 text-gray-800 border border-gray-200 hover:border-blue-300;
+}
+
+/* Text styling */
+.teacher-theme h1, 
+.teacher-theme h2, 
+.teacher-theme h3, 
+.teacher-theme h4 {
+  @apply text-gray-800 font-bold;
+}
+
+.teacher-theme p, 
+.teacher-theme span, 
+.teacher-theme div {
+  @apply text-gray-600;
+}
+
+.teacher-theme .text-muted-foreground {
+  @apply text-gray-500;
+}
+
+/* Sidebar specific */
+.teacher-theme .sidebar {
+  @apply bg-white border-r border-gray-100;
+}
+
+/* Mobile optimizations */
+@media (max-width: 640px) {
+  .teacher-theme .card {
+    @apply p-3 rounded-lg;
+  }
+  
+  .teacher-theme .table-wrapper {
+    @apply -mx-3 px-3 overflow-x-auto;
+  }
+  
+  .teacher-theme .form-grid {
+    @apply grid-cols-1 gap-3;
+  }
+}
+
+/* Status indicators */
+.teacher-theme .status-active {
+  @apply bg-green-100 text-green-700 border border-green-200 px-2 py-0.5 rounded-full text-xs font-medium;
+}
+
+.teacher-theme .status-inactive {
+  @apply bg-gray-100 text-gray-700 border border-gray-200 px-2 py-0.5 rounded-full text-xs font-medium;
+}
+
+.teacher-theme .status-warning {
+  @apply bg-yellow-100 text-yellow-700 border border-yellow-200 px-2 py-0.5 rounded-full text-xs font-medium;
+}
+
+.teacher-theme .status-danger {
+  @apply bg-red-100 text-red-700 border border-red-200 px-2 py-0.5 rounded-full text-xs font-medium;
+}
+
+/* Mobile bottom navigation */
+.teacher-theme .bottom-navigation {
+  @apply bg-white border-t border-gray-100;
+}
+
+.teacher-theme .bottom-navigation button {
+  @apply text-gray-500 hover:bg-gray-50;
+}
+
+.teacher-theme .bottom-navigation button.active {
+  @apply text-blue-600 bg-blue-50;
+}
