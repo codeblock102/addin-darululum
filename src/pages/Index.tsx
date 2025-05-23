@@ -11,12 +11,12 @@ export default function Index() {
   const [errorOccurred, setErrorOccurred] = useState(false);
 
   useEffect(() => {
-    // Set a maximum timeout for the loading state
+    // Set a maximum timeout for the loading state (shorter timeout)
     const timeoutId = setTimeout(() => {
       console.log("Timeout reached, showing escape options");
       setIsLoading(false);
       setErrorOccurred(true);
-    }, 3000); // 3 seconds timeout
+    }, 2000); // 2 seconds timeout for better UX
 
     // Try to redirect based on local storage role if available
     const role = localStorage.getItem('userRole');
