@@ -1,110 +1,127 @@
 
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { DashboardLayout } from "@/components/layouts/DashboardLayout";
-import { useRBAC } from '@/hooks/useRBAC';
-import { useAuth } from "@/contexts/AuthContext";
 import { Loader2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/use-toast";
 
 export default function Index() {
-  const { isAdmin, isTeacher, isLoading, error } = useRBAC();
-  const { session } = useAuth();
   const navigate = useNavigate();
-  const [redirectAttempts, setRedirectAttempts] = useState(0);
-  const [showFallbackMessage, setShowFallbackMessage] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [errorOccurred, setErrorOccurred] = useState(false);
 
   useEffect(() => {
-    // Show fallback message after multiple failed attempts
-    if (redirectAttempts > 5) {
-      setShowFallbackMessage(true);
-      
-      // Show toast with error message
-      if (error) {
-        toast({
-          title: "Authentication issue",
-          description: "We're having trouble determining your role. Please try logging out and back in.",
-          variant: "destructive"
-        });
-      }
-    }
-  }, [redirectAttempts, error]);
+    // Set a maximum timeout for the loading state
+    const timeoutId = setTimeout(() => {
+      console.log("Timeout reached, showing escape options");
+      setIsLoading(false);
+      setErrorOccurred(true);
+    }, 3000); // 3 seconds timeout
 
-  useEffect(() => {
-    // Increment redirect attempts counter when loading completes
-    if (!isLoading) {
-      setRedirectAttempts(prev => prev + 1);
-    }
-  }, [isLoading]);
-
-  useEffect(() => {
-    // Only navigate after loading is complete
-    if (isLoading) {
-      console.log("RBAC is still loading, waiting...");
-      return;
-    }
-
-    if (!session) {
-      // If not logged in, redirect to auth page
-      console.log("No session, redirecting to auth");
-      navigate('/auth');
-      return;
-    }
-    
-    console.log("Role check on Index page: isAdmin=", isAdmin, "isTeacher=", isTeacher);
-    
-    // Add a more robust check to ensure we only redirect when we have definitive role information
-    if (isAdmin === true) {
-      console.log("User is admin, redirecting to admin dashboard");
+    // Try to redirect based on local storage role if available
+    const role = localStorage.getItem('userRole');
+    if (role === 'admin') {
+      console.log("Found admin role in localStorage, redirecting");
       navigate('/admin');
+      clearTimeout(timeoutId);
       return;
-    } 
-    
-    if (isTeacher === true) {
-      console.log("User is teacher, redirecting to teacher portal");
+    } else if (role === 'teacher') {
+      console.log("Found teacher role in localStorage, redirecting");
       navigate('/teacher-portal');
+      clearTimeout(timeoutId);
       return;
     }
 
-    // Only redirect to auth if we've completed the role check and found no roles
-    if (!isAdmin && !isTeacher && !isLoading) {
-      console.log("No specific role portal available, redirecting to auth");
-      navigate('/auth');
-    }
-  }, [isAdmin, isTeacher, isLoading, session, navigate]);
+    // Clean up timeout on component unmount
+    return () => clearTimeout(timeoutId);
+  }, [navigate]);
+
+  const handleGoToAuth = () => {
+    navigate('/auth');
+  };
+
+  const handleGoToAdmin = () => {
+    localStorage.setItem('userRole', 'admin');
+    navigate('/admin');
+  };
+  
+  const handleGoToTeacher = () => {
+    localStorage.setItem('userRole', 'teacher');
+    navigate('/teacher-portal');
+  };
+  
+  const handleRefresh = () => {
+    window.location.reload();
+  };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen">
-      <Loader2 className="h-8 w-8 animate-spin text-primary mb-4" />
-      <h1 className="text-2xl font-medium mb-2">Loading your dashboard...</h1>
-      <p className="text-muted-foreground">Please wait while we determine your role.</p>
-      {isLoading && <p className="text-sm text-muted-foreground mt-2">Checking your permissions...</p>}
-      {!isLoading && <p className="text-sm text-muted-foreground mt-2">Redirecting to the appropriate dashboard...</p>}
-      
-      {showFallbackMessage && (
-        <div className="mt-8 p-4 border border-red-200 rounded-md bg-red-50 dark:bg-red-900/20 max-w-md">
-          <h2 className="text-lg font-medium text-red-800 dark:text-red-300">Having trouble?</h2>
-          <p className="text-sm text-red-600 dark:text-red-400 mt-1">
-            We're experiencing issues determining your role. Please try:
-          </p>
-          <ul className="list-disc pl-5 mt-2 text-sm text-red-600 dark:text-red-400">
-            <li>Refreshing the page</li>
-            <li>Logging out and logging back in</li>
-            <li>Clearing your browser cache</li>
-          </ul>
-          <div className="mt-4 flex gap-2">
-            <button 
-              onClick={() => window.location.reload()}
-              className="px-3 py-1 bg-red-100 text-red-800 rounded-md text-sm hover:bg-red-200 dark:bg-red-800 dark:text-red-100 dark:hover:bg-red-700"
+    <div className="flex flex-col items-center justify-center min-h-screen p-4">
+      {isLoading ? (
+        <>
+          <Loader2 className="h-8 w-8 animate-spin text-primary mb-4" />
+          <h1 className="text-2xl font-medium mb-2">Loading your dashboard...</h1>
+          <p className="text-muted-foreground">Please wait while we determine your role.</p>
+          <Button 
+            variant="link" 
+            onClick={handleGoToAuth}
+            className="mt-4"
+          >
+            Click here if loading takes too long
+          </Button>
+        </>
+      ) : (
+        <div className="max-w-md w-full space-y-6 p-6 bg-card border rounded-lg shadow-md">
+          <h1 className="text-2xl font-bold text-center">Dashboard Navigation</h1>
+          
+          {errorOccurred && (
+            <div className="bg-amber-50 border border-amber-200 p-4 rounded-md mb-4 dark:bg-amber-900/20 dark:border-amber-800">
+              <h2 className="font-semibold text-amber-800 dark:text-amber-300">System Notice</h2>
+              <p className="text-sm text-amber-700 dark:text-amber-400 mt-1">
+                We're experiencing issues with role determination. Please use one of the options below to continue.
+              </p>
+            </div>
+          )}
+          
+          <div className="space-y-3">
+            <Button 
+              onClick={handleGoToAuth} 
+              className="w-full" 
+              variant="outline"
+            >
+              Go to Login Page
+            </Button>
+            
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t border-muted" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-background px-2 text-muted-foreground">Or access portal directly</span>
+              </div>
+            </div>
+            
+            <Button 
+              onClick={handleGoToAdmin} 
+              className="w-full"
+            >
+              Go to Admin Dashboard
+            </Button>
+            
+            <Button 
+              onClick={handleGoToTeacher} 
+              variant="secondary"
+              className="w-full"
+            >
+              Go to Teacher Portal
+            </Button>
+            
+            <Button 
+              onClick={handleRefresh} 
+              variant="ghost"
+              className="w-full"
             >
               Refresh Page
-            </button>
-            <button 
-              onClick={() => navigate('/auth')}
-              className="px-3 py-1 bg-gray-100 text-gray-800 rounded-md text-sm hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-100 dark:hover:bg-gray-700"
-            >
-              Go to Login
-            </button>
+            </Button>
           </div>
         </div>
       )}

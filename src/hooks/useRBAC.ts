@@ -8,7 +8,11 @@ export type UserRole = 'admin' | 'teacher' | 'student';
 
 export const useRBAC = () => {
   const { session } = useAuth();
-  const [role, setRole] = useState<UserRole | null>(null);
+  const [role, setRole] = useState<UserRole | null>(() => {
+    // Try to get cached role from localStorage first for immediate response
+    const cachedRole = localStorage.getItem('userRole') as UserRole | null;
+    return cachedRole;
+  });
   const [permissions, setPermissions] = useState<RolePermission[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -20,18 +24,26 @@ export const useRBAC = () => {
     // Set a timeout to prevent infinite loading
     const timeoutId = setTimeout(() => {
       if (isLoading) {
-        console.error("Role check timed out after 10 seconds");
+        console.error("Role check timed out after 5 seconds");
         setIsLoading(false);
         setError("Role check timed out");
         abortController.abort();
+        
+        // If we have a cached role, use that
+        const cachedRole = localStorage.getItem('userRole') as UserRole | null;
+        if (cachedRole && !role) {
+          console.log("Using cached role from localStorage:", cachedRole);
+          setRole(cachedRole);
+        }
       }
-    }, 10000); // 10 second timeout
+    }, 5000); // 5 second timeout
 
     const fetchRoleAndPermissions = async () => {
       if (!session) {
         setRole(null);
         setPermissions([]);
         setIsLoading(false);
+        localStorage.removeItem('userRole'); // Clear cached role if no session
         return;
       }
 
@@ -50,19 +62,24 @@ export const useRBAC = () => {
         if (!userRole && !abortController.signal.aborted) {
           try {
             // Get role from user_roles table with timeout protection
-            const { data: roleData, error: roleError } = await Promise.race([
-              supabase
-                .from('user_roles')
-                .select('roles:role_id(name)')
-                .eq('user_id', session.user.id)
-                .maybeSingle(),
-              new Promise<any>((_, reject) => 
-                setTimeout(() => reject(new Error("Database query timed out")), 5000)
-              )
-            ]);
+            const rolePromise = supabase
+              .from('user_roles')
+              .select('roles:role_id(name)')
+              .eq('user_id', session.user.id)
+              .maybeSingle();
+              
+            const timeoutPromise = new Promise<null>((_, reject) => 
+              setTimeout(() => reject(new Error("Database query timed out")), 3000)
+            );
+            
+            const roleData = await Promise.race([rolePromise, timeoutPromise])
+              .catch(err => {
+                console.error("Role query failed or timed out:", err);
+                return null;
+              });
 
-            if (roleData && !roleError) {
-              const roleName = roleData.roles?.name;
+            if (roleData && !roleData.error && roleData.data) {
+              const roleName = roleData.data.roles?.name;
               console.log("Role from database:", roleName);
               
               if (roleName === 'admin') {
@@ -72,8 +89,8 @@ export const useRBAC = () => {
                 userRole = 'teacher';
                 console.log("User is teacher based on database role");
               }
-            } else if (roleError) {
-              console.error("Error fetching user role:", roleError);
+            } else if (roleData && roleData.error) {
+              console.error("Error fetching user role:", roleData.error);
             }
           } catch (error) {
             console.log("Error or timeout fetching user role from database:", error);
@@ -84,23 +101,27 @@ export const useRBAC = () => {
         if (!userRole && session.user.email && !abortController.signal.aborted) {
           console.log("Checking for teacher profile with email:", session.user.email);
           try {
-            const { data: teacherData, error: teacherError } = await Promise.race([
-              supabase
-                .from('teachers')
-                .select('id')
-                .eq('email', session.user.email)
-                .maybeSingle(),
-              new Promise<any>((_, reject) => 
-                setTimeout(() => reject(new Error("Teacher lookup timed out")), 5000)
-              )
-            ]);
+            const teacherPromise = supabase
+              .from('teachers')
+              .select('id')
+              .eq('email', session.user.email)
+              .maybeSingle();
+              
+            const timeoutPromise = new Promise<null>((_, reject) => 
+              setTimeout(() => reject(new Error("Teacher lookup timed out")), 3000)
+            );
             
-            if (teacherData && !teacherError) {
-              console.log("Found teacher profile:", teacherData);
+            const teacherData = await Promise.race([teacherPromise, timeoutPromise])
+              .catch(err => {
+                console.error("Teacher query failed or timed out:", err);
+                return null;
+              });
+            
+            if (teacherData && !teacherData.error && teacherData.data) {
+              console.log("Found teacher profile:", teacherData.data);
               userRole = 'teacher';
             } else {
-              console.log("No teacher profile found or error:", teacherError);
-              userRole = null;
+              console.log("No teacher profile found or error:", teacherData?.error || "No data");
             }
           } catch (error) {
             console.log("Error or timeout checking teacher profile:", error);
@@ -109,29 +130,29 @@ export const useRBAC = () => {
         
         setRole(userRole);
         
-        // Only fetch permissions if we've identified a role and haven't aborted
-        try {
-          if (!abortController.signal.aborted && session.user.id) {
-            // Get permissions in parallel but don't block UI updates
-            getUserPermissions(session.user.id)
-              .then(userPermissions => {
-                if (!abortController.signal.aborted) {
-                  setPermissions(userPermissions);
-                }
-              })
-              .catch(error => {
-                console.error("Error fetching permissions:", error);
-              });
-          }
-        } catch (error) {
-          console.error("Error setting up permissions fetch:", error);
+        // Cache role in localStorage for faster recovery
+        if (userRole) {
+          localStorage.setItem('userRole', userRole);
+        } else {
+          localStorage.removeItem('userRole');
+        }
+        
+        // Try to fetch permissions in parallel but don't block UI updates
+        if (!abortController.signal.aborted && session.user.id) {
+          getUserPermissions(session.user.id)
+            .then(userPermissions => {
+              if (!abortController.signal.aborted) {
+                setPermissions(userPermissions);
+              }
+            })
+            .catch(error => {
+              console.error("Error fetching permissions:", error);
+            });
         }
         
         console.log(`RBAC role check complete: role=${userRole}`);
       } catch (error) {
         console.error("Error fetching user role and permissions:", error);
-        setRole(null);
-        setPermissions([]);
         setError("Failed to check user permissions");
       } finally {
         // Only set loading to false if we haven't aborted
@@ -148,21 +169,18 @@ export const useRBAC = () => {
       clearTimeout(timeoutId);
       abortController.abort();
     };
-  }, [session]);
+  }, [session, role]);
 
   const hasPermission = (requiredPermission: RolePermission): boolean => {
     // Give all permissions for now to ensure functionality
     return true;
-    // Original implementation:
-    // return permissions.includes(requiredPermission);
   };
 
-  // Return a more complete set of properties
   return { 
     role, 
     isAdmin: role === 'admin', 
-    isTeacher: role === 'teacher' || role === 'admin', // Admins should have teacher access too
-    isStudent: role === 'student', 
+    isTeacher: role === 'teacher' || role === 'admin',
+    isStudent: role === 'student',
     permissions, 
     hasPermission, 
     isLoading,
