@@ -1,6 +1,6 @@
 
 import { useNavigate, useLocation } from "react-router-dom";
-import { Home, Users, Book, CalendarDays, MessageSquare, Settings } from "lucide-react";
+import { Home, Users, Book, CalendarDays, MessageSquare } from "lucide-react";
 import { useTeacherStatus } from "@/hooks/useTeacherStatus";
 import { cn } from "@/lib/utils";
 
@@ -15,7 +15,7 @@ export const BottomNavigation = () => {
     { icon: Users, label: "Teachers", href: "/teachers" },
     { icon: Users, label: "Students", href: "/students" },
     { icon: Book, label: "Progress", href: "/dhor-book" },
-    { icon: Settings, label: "Settings", href: "/settings" }
+    { icon: CalendarDays, label: "Schedule", href: "/schedule" }
   ];
 
   const teacherNavItems = [

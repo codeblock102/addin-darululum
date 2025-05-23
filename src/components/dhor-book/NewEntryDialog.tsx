@@ -32,7 +32,6 @@ export function NewEntryDialog({
       onSuccess?.(data);
       onOpenChange(false);
     }
-    // Note: onError is handled internally in useDhorEntryMutation
   });
 
   return (

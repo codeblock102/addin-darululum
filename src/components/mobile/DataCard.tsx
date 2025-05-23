@@ -31,7 +31,7 @@ export const DataCard = ({
   className,
 }: DataCardProps) => {
   // Map status variant to appropriate Tailwind classes
-  const getStatusClasses = (variant: string) => {
+  const getStatusClasses = (variant: "default" | "success" | "warning" | "danger" | "info") => {
     const baseClasses = "text-xs font-medium px-2 py-0.5 rounded-full";
     
     switch (variant) {
