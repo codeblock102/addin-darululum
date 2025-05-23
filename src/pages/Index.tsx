@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Loader2 } from "lucide-react";
@@ -12,12 +13,21 @@ export default function Index() {
   const { session } = useAuth();
 
   useEffect(() => {
-    // Set a maximum timeout for the loading state (shorter timeout)
+    // Set a maximum timeout for the loading state (even shorter timeout)
     const timeoutId = setTimeout(() => {
       console.log("Timeout reached, showing escape options");
       setIsLoading(false);
       setErrorOccurred(true);
-    }, 2000); // 2 seconds timeout for better UX
+    }, 1000); // 1 second timeout for better UX
+    
+    // Direct access to auth page - should always be immediately available
+    const authPath = window.location.pathname;
+    if (authPath === '/auth') {
+      console.log("On auth page, clearing timeout");
+      setIsLoading(false);
+      clearTimeout(timeoutId);
+      return;
+    }
 
     // If the user is logged in, check their role and redirect accordingly
     if (session) {
@@ -119,9 +129,9 @@ export default function Index() {
           <Button 
             variant="link" 
             onClick={handleGoToAuth}
-            className="mt-4"
+            className="mt-4 text-primary font-medium hover:underline"
           >
-            Click here if loading takes too long
+            Click here to login
           </Button>
         </>
       ) : (
@@ -140,8 +150,7 @@ export default function Index() {
           <div className="space-y-3">
             <Button 
               onClick={handleGoToAuth} 
-              className="w-full" 
-              variant="outline"
+              className="w-full bg-primary text-primary-foreground" 
             >
               Go to Login Page
             </Button>
