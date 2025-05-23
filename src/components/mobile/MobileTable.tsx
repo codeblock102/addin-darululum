@@ -34,7 +34,8 @@ export const MobileTable = ({ data, columns, onRowClick, actions = [] }: MobileT
     (col) => col.key !== primaryColumn.key && (!statusColumn || col.key !== statusColumn.key)
   );
 
-  const getStatusVariant = (value: any): "default" | "success" | "warning" | "danger" | "info" => {
+  // Convert status to badge variant that's compatible with our Badge component
+  const getStatusVariant = (value: any): "default" | "secondary" | "destructive" | "outline" | "success" => {
     if (typeof value === "string") {
       switch (value.toLowerCase()) {
         case "active":
@@ -45,12 +46,12 @@ export const MobileTable = ({ data, columns, onRowClick, actions = [] }: MobileT
         case "pending":
         case "in progress":
         case "partial":
-          return "warning";
+          return "secondary";
         case "inactive":
         case "rejected":
         case "failed":
         case "absent":
-          return "danger";
+          return "destructive";
         default:
           return "default";
       }
@@ -102,7 +103,7 @@ export const MobileTable = ({ data, columns, onRowClick, actions = [] }: MobileT
                 
                 {status && (
                   <Badge
-                    variant={status.variant as "default" | "success" | "warning" | "danger" | "info"}
+                    variant={status.variant}
                     className={cn("text-xs")}
                   >
                     {status.label}
