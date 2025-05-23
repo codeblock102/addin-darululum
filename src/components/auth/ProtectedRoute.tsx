@@ -1,5 +1,5 @@
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Loader2 } from "lucide-react";
@@ -25,16 +25,42 @@ export const ProtectedRoute = ({
     isAdmin, 
     isTeacher,
     isLoading: rbacLoading, 
-    hasPermission 
+    hasPermission,
+    error
   } = useRBAC();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [permissionChecked, setPermissionChecked] = useState(false);
   
   const isLoading = authLoading || rbacLoading;
 
   useEffect(() => {
+    // Set up timeout to prevent infinite loading
+    const timeoutId = setTimeout(() => {
+      if (!permissionChecked) {
+        console.warn("Permission check timed out after 8 seconds");
+        setPermissionChecked(true);
+        
+        // Show error toast
+        if (error) {
+          toast({
+            title: "Permission check failed",
+            description: "Failed to verify your permissions. You may have limited access.",
+            variant: "destructive"
+          });
+        }
+      }
+    }, 8000);
+    
+    return () => clearTimeout(timeoutId);
+  }, [error, permissionChecked, toast]);
+
+  useEffect(() => {
     // Only redirect after loading is complete
     if (isLoading) return;
+    
+    // Mark permissions as checked
+    setPermissionChecked(true);
     
     // Check if user is authenticated
     if (!session) {
@@ -69,7 +95,8 @@ export const ProtectedRoute = ({
     }
     
     // Check for specific permissions if required
-    if (requiredPermissions.length > 0) {
+    // Only do this check if we have role information
+    if (requiredPermissions.length > 0 && !rbacLoading) {
       const hasAllPermissions = requiredPermissions.every(permission => hasPermission(permission));
       
       if (!hasAllPermissions) {
@@ -91,5 +118,6 @@ export const ProtectedRoute = ({
     );
   }
 
+  // If we've done all checks and still not redirected, render the children
   return <>{children}</>;
 };
