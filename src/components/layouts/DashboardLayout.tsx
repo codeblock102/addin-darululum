@@ -50,17 +50,19 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   return (
     <div className={`flex min-h-screen w-full overflow-hidden ${isAdmin ? "admin-theme" : "teacher-theme"}`}>
       {/* Sidebar with conditional display on mobile */}
-      <div className={`
-        ${sidebarOpen ? "translate-x-0" : "-translate-x-full"} 
-        transition-transform duration-300 ease-in-out
-        fixed inset-y-0 left-0 z-40 w-64 lg:relative lg:translate-x-0
-        ${isMobile ? "shadow-xl" : ""}
-      `}>
-        <Sidebar onCloseSidebar={() => setSidebarOpen(false)} toggleSidebar={toggleSidebar} />
-      </div>
+      {!isMobile && (
+        <div className={`
+          ${sidebarOpen ? "translate-x-0" : "-translate-x-full"} 
+          transition-transform duration-300 ease-in-out
+          fixed inset-y-0 left-0 z-40 w-64 lg:relative lg:translate-x-0
+          ${isMobile ? "shadow-xl" : ""}
+        `}>
+          <Sidebar onCloseSidebar={() => setSidebarOpen(false)} toggleSidebar={toggleSidebar} />
+        </div>
+      )}
       
-      {/* Mobile menu button - only visible on mobile */}
-      {isMobile && !sidebarOpen && (
+      {/* Mobile menu button - only visible on mobile when not using bottom navigation */}
+      {(isMobile && !sidebarOpen && (!isTeacher && !isAdmin)) && (
         <Button
           variant="ghost"
           size="icon"
@@ -72,11 +74,11 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
         </Button>
       )}
       
-      <div className={`flex-1 overflow-hidden transition-all duration-300 ${isMobile ? "pb-20 pt-16" : ""}`}>
+      <div className={`flex-1 overflow-hidden transition-all duration-300 ${isMobile ? "pb-20" : ""}`}>
         <BackgroundPattern isAdmin={isAdmin}>
           <div className="p-3 sm:p-4 md:p-6 overflow-y-auto max-h-full">
             <div className="max-w-7xl mx-auto">
-              <RoleBadge isAdmin={isAdmin} isLoading={isLoading} />
+              {!isMobile && <RoleBadge isAdmin={isAdmin} isLoading={isLoading} />}
               <div className="animate-fadeIn">{children}</div>
             </div>
           </div>
@@ -89,4 +91,4 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
       )}
     </div>
   );
-}
+};

@@ -10,6 +10,7 @@ import {
   LineChart, 
   MessageSquare
 } from "lucide-react";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface TeacherTabsProps {
   teacher: Teacher;
@@ -19,6 +20,10 @@ interface TeacherTabsProps {
 
 export const TeacherTabs = ({ teacher, activeTab, onTabChange }: TeacherTabsProps) => {
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
+  
+  // If on mobile, don't render the tabs as they're redundant with the bottom navigation
+  if (isMobile) return null;
   
   const tabs = [
     { 

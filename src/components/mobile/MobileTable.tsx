@@ -1,108 +1,151 @@
 
+import React from "react";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
-import { DataCard } from "./DataCard";
-import { ChevronRight } from "lucide-react";
-
-interface Column {
-  key: string;
-  title: string;
-  render?: (value: any, row: any) => React.ReactNode;
-  isStatus?: boolean;
-  statusMap?: Record<string, { label: string; variant: string }>;
-  isPrimary?: boolean;
-  isSecondary?: boolean;
-}
+import { Button } from "@/components/ui/button";
 
 interface MobileTableProps {
-  columns: Column[];
   data: any[];
-  onRowClick?: (row: any) => void;
-  keyField?: string;
-  actions?: (row: any) => {
+  columns: {
+    title: string;
+    key: string;
+    render?: (value: any, record: any) => React.ReactNode;
+    primary?: boolean;
+    status?: boolean;
+  }[];
+  onRowClick?: (record: any) => void;
+  actions?: {
+    icon: React.ElementType;
     label: string;
-    onClick: () => void;
-    icon?: React.ElementType;
+    onClick: (record: any) => void;
     variant?: "default" | "outline" | "ghost" | "link" | "destructive" | "secondary";
   }[];
-  className?: string;
 }
 
-export const MobileTable = ({
-  columns,
-  data,
-  onRowClick,
-  keyField = "id",
-  actions,
-  className,
-}: MobileTableProps) => {
-  // Find primary column for title
-  const primaryColumn = columns.find(col => col.isPrimary) || columns[0];
-  // Find secondary column for subtitle
-  const secondaryColumn = columns.find(col => col.isSecondary);
-  // Find status column
-  const statusColumn = columns.find(col => col.isStatus);
+export const MobileTable = ({ data, columns, onRowClick, actions = [] }: MobileTableProps) => {
+  // Find primary column to use as card title
+  const primaryColumn = columns.find((col) => col.primary) || columns[0];
+  
+  // Find status column if any
+  const statusColumn = columns.find((col) => col.status);
+  
+  // Get non-primary and non-status columns for the details
+  const detailColumns = columns.filter(
+    (col) => col.key !== primaryColumn.key && (!statusColumn || col.key !== statusColumn.key)
+  );
+
+  const getStatusVariant = (value: any): "default" | "success" | "warning" | "danger" | "info" => {
+    if (typeof value === "string") {
+      switch (value.toLowerCase()) {
+        case "active":
+        case "completed":
+        case "approved":
+        case "present":
+          return "success";
+        case "pending":
+        case "in progress":
+        case "partial":
+          return "warning";
+        case "inactive":
+        case "rejected":
+        case "failed":
+        case "absent":
+          return "danger";
+        default:
+          return "default";
+      }
+    }
+    return "default";
+  };
+
+  const renderValue = (column: any, record: any) => {
+    const value = record[column.key];
+    if (column.render) {
+      return column.render(value, record);
+    }
+    return value;
+  };
+
+  if (data.length === 0) {
+    return (
+      <div className="text-center p-6 bg-gray-50 rounded-lg dark:bg-gray-800/30">
+        <p className="text-muted-foreground">No data available</p>
+      </div>
+    );
+  }
 
   return (
-    <div className={cn("space-y-4", className)}>
-      {data.length === 0 ? (
-        <div className="text-center py-8 text-muted-foreground text-sm">
-          No data available
-        </div>
-      ) : (
-        data.map(row => {
-          // Extract title from primary column
-          const title = primaryColumn.render 
-            ? primaryColumn.render(row[primaryColumn.key], row) 
-            : row[primaryColumn.key];
-            
-          // Extract subtitle from secondary column if available
-          const subtitle = secondaryColumn && (
-            secondaryColumn.render 
-              ? secondaryColumn.render(row[secondaryColumn.key], row) 
-              : row[secondaryColumn.key]
-          );
-            
-          // Extract status if available
-          const status = statusColumn && statusColumn.statusMap && {
-            label: statusColumn.statusMap[row[statusColumn.key]]?.label || row[statusColumn.key],
-            variant: statusColumn.statusMap[row[statusColumn.key]]?.variant || 'default'
-          };
-            
-          // Build details
-          const details = columns
-            .filter(col => !col.isPrimary && !col.isSecondary && !col.isStatus)
-            .map(col => ({
-              label: col.title,
-              value: col.render ? col.render(row[col.key], row) : row[col.key]
-            }));
-            
-          // Build actions
-          const rowActions = actions ? actions(row) : [];
-          if (onRowClick) {
-            rowActions.push({
-              label: "View",
-              onClick: () => onRowClick(row),
-              icon: ChevronRight,
-              variant: "ghost"
-            });
-          }
-            
-          return (
-            <DataCard 
-              key={row[keyField]} 
-              title={title} 
-              subtitle={subtitle}
-              status={status}
-              details={details}
-              actions={rowActions}
-              className={onRowClick ? "cursor-pointer" : ""}
-              // Add onClick to the whole card if onRowClick is provided
-              onClick={onRowClick ? () => onRowClick(row) : undefined}
-            />
-          );
-        })
-      )}
+    <div className="space-y-3">
+      {data.map((record, index) => {
+        // Get status info if applicable
+        const status = statusColumn ? {
+          label: renderValue(statusColumn, record),
+          variant: getStatusVariant(record[statusColumn.key])
+        } : undefined;
+
+        return (
+          <div
+            key={index}
+            className={cn(
+              "border rounded-lg overflow-hidden shadow-sm bg-card text-card-foreground",
+              onRowClick ? "cursor-pointer active:bg-muted/50" : ""
+            )}
+            onClick={onRowClick ? () => onRowClick(record) : undefined}
+          >
+            <div className="p-4">
+              <div className="flex justify-between items-start mb-2">
+                <div className="space-y-1">
+                  <h3 className="font-medium text-sm sm:text-base">
+                    {renderValue(primaryColumn, record)}
+                  </h3>
+                </div>
+                
+                {status && (
+                  <Badge
+                    variant={status.variant as "default" | "success" | "warning" | "danger" | "info"}
+                    className={cn("text-xs")}
+                  >
+                    {status.label}
+                  </Badge>
+                )}
+              </div>
+              
+              {detailColumns.length > 0 && (
+                <div className="mt-3 space-y-2">
+                  {detailColumns.map((column) => (
+                    <div key={column.key} className="flex justify-between text-sm">
+                      <span className="text-muted-foreground text-xs">{column.title}</span>
+                      <span className="font-medium text-xs">{renderValue(column, record)}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+              
+              {actions.length > 0 && (
+                <div className="mt-4 flex flex-wrap gap-2">
+                  {actions.map((action, actionIndex) => (
+                    <Button
+                      key={actionIndex}
+                      size="sm"
+                      variant={action.variant || "outline"}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        action.onClick(record);
+                      }}
+                      className="text-xs"
+                    >
+                      {action.icon && (
+                        <action.icon className="h-3.5 w-3.5 mr-1" />
+                      )}
+                      {action.label}
+                    </Button>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        );
+      })}
     </div>
   );
 };
