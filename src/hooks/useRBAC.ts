@@ -24,7 +24,7 @@ export const useRBAC = () => {
     // Set a timeout to prevent infinite loading
     const timeoutId = setTimeout(() => {
       if (isLoading) {
-        console.log("Role check timed out after 3 seconds");
+        console.log("Role check timed out after 2 seconds");
         setIsLoading(false);
         setError("Role check timed out");
         abortController.abort();
@@ -36,7 +36,7 @@ export const useRBAC = () => {
           setRole(cachedRole);
         }
       }
-    }, 3000); // Shorter 3 second timeout for better UX
+    }, 2000); // Shorter 2 second timeout for better UX
 
     const fetchRoleAndPermissions = async () => {
       if (!session) {
@@ -55,56 +55,36 @@ export const useRBAC = () => {
         const isUserAdmin = session.user.user_metadata?.role === 'admin';
         if (isUserAdmin) {
           userRole = 'admin';
+          localStorage.setItem('userRole', userRole);
           console.log("User is admin based on metadata");
         }
         
         // Skip database calls if admin is already determined from metadata
         if (!userRole && !abortController.signal.aborted) {
-          try {
-            // Check for teacher profile
-            if (session.user.email && !abortController.signal.aborted) {
-              console.log("Checking for teacher profile with email:", session.user.email);
-              try {
-                const teacherPromise = supabase
-                  .from('teachers')
-                  .select('id')
-                  .eq('email', session.user.email)
-                  .maybeSingle();
-                  
-                const timeoutPromise = new Promise<null>((_, reject) => 
-                  setTimeout(() => reject(new Error("Teacher lookup timed out")), 2000)
-                );
-                
-                const teacherData = await Promise.race([teacherPromise, timeoutPromise])
-                  .catch(err => {
-                    console.error("Teacher query failed or timed out:", err);
-                    return null;
-                  });
-                
-                if (teacherData && !teacherData.error && teacherData.data) {
-                  console.log("Found teacher profile:", teacherData.data);
-                  userRole = 'teacher';
-                } else {
-                  console.log("No teacher profile found or error:", teacherData?.error || "No data");
-                }
-              } catch (error) {
-                console.log("Error or timeout checking teacher profile:", error);
+          // Check for teacher profile (only if not already determined to be admin)
+          if (session.user.email && !abortController.signal.aborted) {
+            console.log("Checking for teacher profile with email:", session.user.email);
+            try {
+              const { data: teacherData, error } = await supabase
+                .from('teachers')
+                .select('id')
+                .eq('email', session.user.email)
+                .maybeSingle();
+              
+              if (teacherData) {
+                console.log("Found teacher profile:", teacherData);
+                userRole = 'teacher';
+                localStorage.setItem('userRole', userRole);
+              } else {
+                console.log("No teacher profile found or error:", error?.message || "No data");
               }
+            } catch (error) {
+              console.log("Error checking teacher profile:", error);
             }
-          } catch (error) {
-            console.error("Error fetching role from database:", error);
           }
         }
         
         setRole(userRole);
-        
-        // Cache role in localStorage for faster recovery
-        if (userRole) {
-          localStorage.setItem('userRole', userRole);
-        } else {
-          localStorage.removeItem('userRole');
-        }
-        
         console.log(`RBAC role check complete: role=${userRole}`);
       } catch (error) {
         console.error("Error fetching user role:", error);

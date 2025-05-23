@@ -1,14 +1,15 @@
-
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function Index() {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(true);
   const [errorOccurred, setErrorOccurred] = useState(false);
+  const { session } = useAuth();
 
   useEffect(() => {
     // Set a maximum timeout for the loading state (shorter timeout)
@@ -18,23 +19,77 @@ export default function Index() {
       setErrorOccurred(true);
     }, 2000); // 2 seconds timeout for better UX
 
-    // Try to redirect based on local storage role if available
-    const role = localStorage.getItem('userRole');
-    if (role === 'admin') {
-      console.log("Found admin role in localStorage, redirecting");
-      navigate('/admin');
-      clearTimeout(timeoutId);
-      return;
-    } else if (role === 'teacher') {
-      console.log("Found teacher role in localStorage, redirecting");
-      navigate('/teacher-portal');
+    // If the user is logged in, check their role and redirect accordingly
+    if (session) {
+      // Check user metadata for admin role (fastest)
+      const isAdmin = session.user.user_metadata?.role === 'admin';
+      
+      if (isAdmin) {
+        console.log("User is admin based on metadata, redirecting");
+        localStorage.setItem('userRole', 'admin');
+        navigate('/admin');
+        clearTimeout(timeoutId);
+        return;
+      }
+      
+      // Try to redirect based on local storage role if available
+      const role = localStorage.getItem('userRole');
+      if (role === 'admin') {
+        console.log("Found admin role in localStorage, redirecting");
+        navigate('/admin');
+        clearTimeout(timeoutId);
+        return;
+      } else if (role === 'teacher') {
+        console.log("Found teacher role in localStorage, redirecting");
+        navigate('/teacher-portal');
+        clearTimeout(timeoutId);
+        return;
+      } else {
+        // If no role found but user is logged in, check email for teacher profile
+        // This could be a first-time login or cache was cleared
+        checkTeacherProfile(session.user.email);
+      }
+    } else {
+      // If user is not logged in, redirect to auth page
+      console.log("No session detected, redirecting to auth");
+      navigate("/auth");
       clearTimeout(timeoutId);
       return;
     }
 
     // Clean up timeout on component unmount
     return () => clearTimeout(timeoutId);
-  }, [navigate]);
+  }, [navigate, session]);
+
+  // Function to check if the user's email is associated with a teacher profile
+  const checkTeacherProfile = async (email: string | undefined) => {
+    if (!email) {
+      setIsLoading(false);
+      return;
+    }
+
+    try {
+      const { supabase } = await import("@/integrations/supabase/client");
+      const { data } = await supabase
+        .from('teachers')
+        .select('id')
+        .eq('email', email)
+        .maybeSingle();
+        
+      if (data) {
+        console.log("Found teacher profile, redirecting");
+        localStorage.setItem('userRole', 'teacher');
+        navigate('/teacher-portal');
+      } else {
+        // No specific role found, show the dashboard navigation options
+        setIsLoading(false);
+      }
+    } catch (error) {
+      console.error("Error checking teacher profile:", error);
+      setIsLoading(false);
+      setErrorOccurred(true);
+    }
+  };
 
   const handleGoToAuth = () => {
     navigate('/auth');
