@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { useNavigate, Link } from "react-router-dom";
 import { Card } from "@/components/ui/card";
@@ -10,9 +9,10 @@ import { useToast } from "@/components/ui/use-toast";
 interface ProfileNotFoundProps {
   email?: string;
   onRefresh?: () => void;
+  isAdmin?: boolean;
 }
 
-export const ProfileNotFound = ({ email, onRefresh }: ProfileNotFoundProps) => {
+export const ProfileNotFound = ({ email, onRefresh, isAdmin = false }: ProfileNotFoundProps) => {
   const navigate = useNavigate();
   const [isChecking, setIsChecking] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
@@ -88,12 +88,21 @@ export const ProfileNotFound = ({ email, onRefresh }: ProfileNotFoundProps) => {
         }
       </p>
       
-      <div className="bg-amber-50 border border-amber-200 rounded-md p-4 mb-6 w-full max-w-md">
-        <p className="text-amber-800 text-sm">
-          <strong>Note:</strong> Your user account has the teacher role, but requires a matching teacher profile in our database.
-          Please create a teacher profile or contact an administrator for assistance.
-        </p>
-      </div>
+      {isAdmin ? (
+        <div className="bg-blue-50 border border-blue-200 rounded-md p-4 mb-6 w-full max-w-md">
+          <p className="text-blue-800 text-sm">
+            <strong>Admin Note:</strong> As an administrator, you can create a teacher profile for yourself to test the teacher portal features, 
+            or you can go back to the admin dashboard where you can access all system features.
+          </p>
+        </div>
+      ) : (
+        <div className="bg-amber-50 border border-amber-200 rounded-md p-4 mb-6 w-full max-w-md">
+          <p className="text-amber-800 text-sm">
+            <strong>Note:</strong> Your user account has the teacher role, but requires a matching teacher profile in our database.
+            Please create a teacher profile or contact an administrator for assistance.
+          </p>
+        </div>
+      )}
       
       <div className="flex flex-col space-y-3 w-full max-w-xs">
         <Button 
@@ -127,12 +136,12 @@ export const ProfileNotFound = ({ email, onRefresh }: ProfileNotFoundProps) => {
         </Button>
         
         <Button 
-          onClick={() => navigate('/')} 
+          onClick={() => navigate(isAdmin ? '/admin' : '/')} 
           variant="outline" 
           className="w-full"
         >
           <ArrowLeft className="h-4 w-4 mr-2" />
-          Return to Dashboard
+          {isAdmin ? "Return to Admin Dashboard" : "Return to Dashboard"}
         </Button>
       </div>
     </Card>

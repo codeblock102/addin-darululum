@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -11,6 +10,7 @@ export const useRBAC = () => {
   const [role, setRole] = useState<UserRole | null>(() => {
     // Try to get cached role from localStorage first for immediate response
     const cachedRole = localStorage.getItem('userRole') as UserRole | null;
+    console.log("useRBAC initial from localStorage:", cachedRole);
     return cachedRole;
   });
   const [permissions, setPermissions] = useState<RolePermission[]>([]);
@@ -36,7 +36,7 @@ export const useRBAC = () => {
           setRole(cachedRole);
         }
       }
-    }, 2000); // Shorter 2 second timeout for better UX
+    }, 2000);
 
     const fetchRoleAndPermissions = async () => {
       if (!session) {
@@ -52,35 +52,40 @@ export const useRBAC = () => {
         let userRole: UserRole | null = null;
         
         // First, check if user has admin role from metadata (fastest method)
+        console.log("Checking user metadata for role:", session.user.user_metadata);
         const isUserAdmin = session.user.user_metadata?.role === 'admin';
         if (isUserAdmin) {
           userRole = 'admin';
           localStorage.setItem('userRole', userRole);
           console.log("User is admin based on metadata");
+          setRole(userRole);
+          setIsLoading(false);
+          return; // Exit early if admin role is confirmed
         }
         
-        // Skip database calls if admin is already determined from metadata
-        if (!userRole && !abortController.signal.aborted) {
-          // Check for teacher profile (only if not already determined to be admin)
-          if (session.user.email && !abortController.signal.aborted) {
-            console.log("Checking for teacher profile with email:", session.user.email);
-            try {
-              const { data: teacherData, error } = await supabase
-                .from('teachers')
-                .select('id')
-                .eq('email', session.user.email)
-                .maybeSingle();
-              
-              if (teacherData) {
-                console.log("Found teacher profile:", teacherData);
-                userRole = 'teacher';
-                localStorage.setItem('userRole', userRole);
-              } else {
-                console.log("No teacher profile found or error:", error?.message || "No data");
-              }
-            } catch (error) {
-              console.log("Error checking teacher profile:", error);
+        // If not admin, check for teacher profile
+        if (session.user.email && !abortController.signal.aborted) {
+          console.log("Checking for teacher profile with email:", session.user.email);
+          try {
+            const { data: teacherData, error } = await supabase
+              .from('teachers')
+              .select('id')
+              .eq('email', session.user.email)
+              .maybeSingle();
+            
+            if (teacherData) {
+              console.log("Found teacher profile:", teacherData);
+              userRole = 'teacher';
+              localStorage.setItem('userRole', userRole);
+            } else {
+              console.log("No teacher profile found or error:", error?.message || "No data");
+              // If no role is found, clear any cached role
+              localStorage.removeItem('userRole');
             }
+          } catch (error) {
+            console.log("Error checking teacher profile:", error);
+            // On error, clear any cached role
+            localStorage.removeItem('userRole');
           }
         }
         
@@ -89,6 +94,8 @@ export const useRBAC = () => {
       } catch (error) {
         console.error("Error fetching user role:", error);
         setError("Failed to check user permissions");
+        // On error, clear any cached role
+        localStorage.removeItem('userRole');
       } finally {
         // Only set loading to false if we haven't aborted
         if (!abortController.signal.aborted) {
@@ -104,7 +111,7 @@ export const useRBAC = () => {
       clearTimeout(timeoutId);
       abortController.abort();
     };
-  }, [session, role]);
+  }, [session]); // Remove role from dependencies to prevent loops
 
   const hasPermission = (requiredPermission: RolePermission): boolean => {
     // Give all permissions to admins

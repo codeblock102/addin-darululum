@@ -1,169 +1,105 @@
-
-import { useState, useEffect } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import { ArrowLeft, Eye, EyeOff, LockKeyhole, Mail, AlertTriangle } from "lucide-react";
+import { Eye, EyeOff, LockKeyhole, Mail, AlertTriangle, Loader2 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-
-type AuthMode = "signIn" | "signUp" | "forgotPassword";
 
 const Auth = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [mode, setMode] = useState<AuthMode>("signIn");
   const [showPassword, setShowPassword] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [isCheckingRole, setIsCheckingRole] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { session, refreshSession } = useAuth();
+  const { refreshSession } = useAuth();
 
-  useEffect(() => {
-    if (session) {
-      navigate("/");
-    }
-  }, [session, navigate]);
-
-  const checkUserRole = async (user: any) => {
-    try {
-      setIsCheckingRole(true);
-      
-      // First check if user has admin role from metadata (fastest method)
-      const isUserAdmin = user.user_metadata?.role === 'admin';
-      if (isUserAdmin) {
-        console.log("User is admin based on metadata");
-        localStorage.setItem('userRole', 'admin');
-        return 'admin';
-      }
-      
-      // If not admin from metadata, check for teacher profile in database
-      if (user.email) {
-        console.log("Checking for teacher profile with email:", user.email);
-        try {
-          const { data: teacherData, error } = await supabase
-            .from('teachers')
-            .select('id')
-            .eq('email', user.email)
-            .maybeSingle();
-            
-          if (teacherData) {
-            console.log("Found teacher profile:", teacherData);
-            localStorage.setItem('userRole', 'teacher');
-            return 'teacher';
-          }
-        } catch (error) {
-          console.error("Error checking teacher profile:", error);
-        }
-      }
-      
-      return null;
-    } finally {
-      setIsCheckingRole(false);
-    }
-  };
-
-  const handleAuth = async (e: React.FormEvent) => {
+  const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setErrorMessage(null);
 
     try {
-      if (mode === "signIn") {
-        // Handle sign in with email and password
-        console.log(`Attempting to login with email: ${email}`);
-        const { data, error } = await supabase.auth.signInWithPassword({
-          email,
-          password,
-        });
-        
-        if (error) {
-          if (error.message.includes("Email not confirmed")) {
-            setErrorMessage("Email not confirmed. Please check your inbox for a confirmation email or create a new demo account.");
-          } else if (error.message.includes("Invalid login credentials")) {
-            setErrorMessage("Invalid email or password. Please try again or reset your password.");
-          } else {
-            setErrorMessage(error.message);
-          }
-          throw error;
+      console.log(`Attempting to login with email: ${email}`);
+      const { data, error: signInError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (signInError) {
+        if (signInError.message.includes("Invalid login credentials")) {
+          setErrorMessage("Invalid email or password. Please try again.");
+        } else {
+          setErrorMessage(signInError.message);
         }
-        
-        await refreshSession();
-        
-        // Check user role and redirect accordingly
-        if (data.user) {
-          const role = await checkUserRole(data.user);
-          
-          toast({
-            title: "Login successful",
-            description: `Welcome back${role ? ` as ${role}` : ''}!`
-          });
-          
-          // Redirect based on role
-          if (role === 'admin') {
-            navigate("/admin");
-          } else if (role === 'teacher') {
-            navigate("/teacher-portal");
-          } else {
-            // Default redirect if role cannot be determined
-            navigate("/");
-          }
-          return; // Exit early after redirection
-        }
-      } else if (mode === "signUp") {
-        // Handle sign up
-        const { data, error } = await supabase.auth.signUp({
-          email,
-          password,
-          options: {
-            data: { role: 'teacher' },
-            emailRedirectTo: `${window.location.origin}/auth`
-          }
-        });
-        
-        if (error) {
-          if (error.message.includes("User already registered")) {
-            setErrorMessage("This email is already registered. Please sign in instead.");
-          } else {
-            setErrorMessage(error.message);
-          }
-          throw error;
-        }
-        
-        toast({
-          title: "Registration successful",
-          description: "Please check your email for confirmation link.",
-        });
-        setMode("signIn");
-      } else if (mode === "forgotPassword") {
-        // Handle password reset
-        const { error } = await supabase.auth.resetPasswordForEmail(email, {
-          redirectTo: `${window.location.origin}/auth/reset-password`,
-        });
-        
-        if (error) {
-          setErrorMessage(error.message);
-          throw error;
-        }
-        
-        toast({
-          title: "Password Reset Email Sent",
-          description: "Check your email for a password reset link",
-        });
-        setMode("signIn");
+        throw signInError;
       }
-    } catch (error: any) {
-      console.error("Authentication error:", error);
+
+      if (!data.user) {
+        setErrorMessage("Login failed. User data not found.");
+        throw new Error("User data not found after sign in.");
+      }
       
+      await refreshSession();
+
+      const { data: { user: refreshedUser }, error: refreshedUserError } = await supabase.auth.getUser();
+
+      if (refreshedUserError || !refreshedUser) {
+        setErrorMessage("Login failed. Could not retrieve user details after session refresh.");
+        if (refreshedUserError) throw refreshedUserError;
+        throw new Error("Refreshed user is null after session refresh.");
+      }
+
+      console.log("Checking user metadata:", refreshedUser.user_metadata);
+      if (refreshedUser.user_metadata?.role === 'admin') {
+        localStorage.setItem('userRole', 'admin');
+        toast({
+          title: "Login Successful",
+          description: "Welcome back, Admin! Redirecting...",
+        });
+        navigate("/admin");
+        return;
+      }
+
+      if (refreshedUser.email) {
+        console.log("Checking for teacher profile with email:", refreshedUser.email);
+        const { data: teacherData, error: teacherError } = await supabase
+          .from('teachers')
+          .select('id')
+          .eq('email', refreshedUser.email)
+          .maybeSingle();
+
+        if (teacherError) {
+          console.error("Error checking teacher profile:", teacherError.message);
+        } else if (teacherData) {
+          localStorage.setItem('userRole', 'teacher');
+          toast({
+            title: "Login Successful",
+            description: "Welcome back, Teacher! Redirecting...",
+          });
+          navigate("/teacher-portal");
+          return;
+        }
+      }
+
+      console.log("No role found, redirecting to role setup");
       toast({
-        title: "Error",
-        description: errorMessage || "An unexpected error occurred",
+        title: "Role Setup Required",
+        description: "Your account needs a role assignment. Please select your role.",
+      });
+      navigate("/role-setup");
+
+    } catch (error: any) {
+      console.error("Authentication error:", error.message);
+      toast({
+        title: "Login Error",
+        description: errorMessage || "An unexpected error occurred during login. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -171,181 +107,90 @@ const Auth = () => {
     }
   };
 
-  const renderAuthForm = () => {
-    if (mode === "forgotPassword") {
-      return (
-        <form onSubmit={handleAuth} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
-            <div className="relative">
-              <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-              <Input
-                id="email"
-                type="email"
-                placeholder="Enter your email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="pl-10"
-                required
-              />
-            </div>
-          </div>
-          <Button type="submit" className="w-full" disabled={isLoading}>
-            {isLoading ? "Processing..." : "Send Reset Link"}
-          </Button>
-          <Button
-            type="button"
-            variant="link"
-            className="w-full"
-            onClick={() => setMode("signIn")}
-          >
-            Back to Sign In
-          </Button>
-        </form>
-      );
-    }
-
-    return (
-      <form onSubmit={handleAuth} className="space-y-4">
-        <div className="space-y-2">
-          <Label htmlFor="email">Email</Label>
-          <div className="relative">
-            <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-            <Input
-              id="email"
-              type="email"
-              placeholder="Enter your email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="pl-10"
-              required
-            />
-          </div>
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="email-password">Password</Label>
-          <div className="relative">
-            <LockKeyhole className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-            <Input
-              id="email-password"
-              type={showPassword ? "text" : "password"}
-              placeholder="Enter your password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="pl-10 pr-10"
-              required
-            />
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              className="absolute right-0 top-0 h-full px-3 py-2 text-gray-400 hover:text-gray-500"
-              onClick={() => setShowPassword(!showPassword)}
-            >
-              {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-            </Button>
-          </div>
-        </div>
-        
-        {mode === "signIn" && (
-          <Button
-            type="button"
-            variant="link"
-            className="w-full -mt-2 text-sm text-right"
-            onClick={() => setMode("forgotPassword")}
-          >
-            Forgot Password?
-          </Button>
-        )}
-        
-        <Button type="submit" className="w-full" disabled={isLoading}>
-          {isLoading ? "Processing..." : mode === "signIn" ? "Sign In" : "Sign Up"}
-        </Button>
-        
-        <div className="text-center mt-4">
-          {mode === "signIn" ? (
-            <Button 
-              type="button" 
-              variant="link" 
-              onClick={() => setMode("signUp")}
-            >
-              Don't have an account? Sign up
-            </Button>
-          ) : (
-            <Button 
-              type="button" 
-              variant="link" 
-              onClick={() => setMode("signIn")}
-            >
-              Already have an account? Sign in
-            </Button>
-          )}
-        </div>
-      </form>
-    );
-  };
-
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 px-4">
-      <Button
-        variant="ghost"
-        className="absolute top-4 left-4"
-        onClick={() => navigate(-1)}
-      >
-        <ArrowLeft className="mr-2" />
-        Back
-      </Button>
-      
-      <Card className="w-full max-w-md shadow-lg border-t-4 border-t-primary">
-        <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold text-center">
-            {mode === "forgotPassword" 
-              ? "Reset Password" 
-              : mode === "signUp" 
-                ? "Create an Account"
-                : "Sign In"}
-          </CardTitle>
-          <CardDescription className="text-center">
-            {mode === "forgotPassword"
-              ? "Enter your email to receive a password reset link"
-              : mode === "signUp"
-                ? "Create your account to get started"
-                : "Sign in to your account to continue"}
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 to-slate-800 p-4">
+      <Card className="w-full max-w-md shadow-2xl bg-slate-800 border-slate-700 text-white">
+        <CardHeader className="text-center">
+          <img src="/logo.png" alt="Darul Uloom Logo" className="w-20 h-20 mx-auto mb-4 rounded-full" />
+          <CardTitle className="text-3xl font-bold text-sky-400">Darul Uloom Login</CardTitle>
+          <CardDescription className="text-slate-400">
+            Access your dashboard
           </CardDescription>
         </CardHeader>
-        
         <CardContent>
           {errorMessage && (
-            <Alert variant="destructive" className="mb-4">
-              <AlertTriangle className="h-4 w-4" />
-              <AlertTitle>Error</AlertTitle>
+            <Alert variant="destructive" className="mb-4 bg-red-500/10 border-red-500/50 text-red-300">
+              <AlertTriangle className="h-4 w-4 !text-red-400" />
+              <AlertTitle>Login Failed</AlertTitle>
               <AlertDescription>{errorMessage}</AlertDescription>
             </Alert>
           )}
-          
-          {renderAuthForm()}
+          <form onSubmit={handleSignIn} className="space-y-6">
+            <div className="space-y-2">
+              <Label htmlFor="email" className="text-slate-300">Email</Label>
+              <div className="relative">
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-500" />
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="you@example.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="pl-10 bg-slate-700 border-slate-600 text-white placeholder-slate-500 focus:ring-sky-500 focus:border-sky-500"
+                  required
+                  autoComplete="email"
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="password" className="text-slate-300">Password</Label>
+              <div className="relative">
+                <LockKeyhole className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-500" />
+                <Input
+                  id="password"
+                  type={showPassword ? "text" : "password"}
+                  placeholder="••••••••"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="pl-10 pr-10 bg-slate-700 border-slate-600 text-white placeholder-slate-500 focus:ring-sky-500 focus:border-sky-500"
+                  required
+                  autoComplete="current-password"
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="absolute right-1 top-1/2 -translate-y-1/2 h-7 px-3 text-slate-500 hover:text-sky-400"
+                  onClick={() => setShowPassword(!showPassword)}
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                >
+                  {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                </Button>
+              </div>
+            </div>
+            <Button 
+              type="submit" 
+              className="w-full bg-sky-500 hover:bg-sky-600 text-white font-semibold py-3 transition-colors duration-150 ease-in-out"
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                  Signing In...
+                </>
+              ) : (
+                "Sign In"
+              )}
+            </Button>
+          </form>
         </CardContent>
-        
-        <CardFooter className="flex flex-col space-y-2">
-          <p className="text-sm text-gray-500 text-center">
-            {mode === "signUp" 
-              ? "By signing up, you agree to our Terms of Service and Privacy Policy."
-              : "Access the system with your account credentials."}
+        <CardFooter className="flex flex-col items-center space-y-2 pt-6">
+          <p className="text-xs text-slate-500">
+            &copy; {new Date().getFullYear()} Darul Uloom. All rights reserved.
           </p>
-          <div className="flex flex-col items-center space-y-2">
-            <Link 
-              to="/create-demo-account" 
-              className="text-sm text-primary hover:underline text-center font-medium"
-            >
-              Create demo teacher account
-            </Link>
-            <Link 
-              to="/create-teacher-profile" 
-              className="text-sm text-primary hover:underline text-center font-medium"
-            >
-              Create teacher profile for test account
-            </Link>
-          </div>
+           <p className="text-xs text-slate-500">
+            Need help? <a href="mailto:support@example.com" className="text-sky-500 hover:underline">Contact Support</a>
+          </p>
         </CardFooter>
       </Card>
     </div>

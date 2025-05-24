@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -33,11 +32,12 @@ export const ProtectedRoute = ({
   const { toast } = useToast();
   const [permissionChecked, setPermissionChecked] = useState(false);
   const [timeoutReached, setTimeoutReached] = useState(false);
+  const [redirectCount, setRedirectCount] = useState(0);
   
   const isLoading = authLoading || (rbacLoading && !timeoutReached);
 
   useEffect(() => {
-    // Set up timeout to prevent infinite loading (shorter timeout)
+    // Set up timeout to prevent infinite loading
     const timeoutId = setTimeout(() => {
       if (!permissionChecked) {
         console.warn("Permission check timed out after 3 seconds");
@@ -50,7 +50,7 @@ export const ProtectedRoute = ({
           variant: "destructive"
         });
       }
-    }, 3000); // 3 second timeout for better UX
+    }, 3000);
     
     return () => clearTimeout(timeoutId);
   }, [permissionChecked, toast]);
@@ -68,14 +68,27 @@ export const ProtectedRoute = ({
       navigate("/auth");
       return;
     }
+
+    // Prevent infinite redirect loop
+    if (redirectCount >= 3) {
+      console.log("Too many redirects, allowing access to prevent loop");
+      return;
+    }
     
     // Store role in localStorage for recovery in case of RBAC issues
-    if (isAdmin) localStorage.setItem('userRole', 'admin');
-    else if (isTeacher) localStorage.setItem('userRole', 'teacher');
+    if (isAdmin) {
+      localStorage.setItem('userRole', 'admin');
+      setRedirectCount(0); // Reset redirect count on successful role determination
+    }
+    else if (isTeacher) {
+      localStorage.setItem('userRole', 'teacher');
+      setRedirectCount(0); // Reset redirect count on successful role determination
+    }
     
     // Check for required roles
     if (requireAdmin && !isAdmin) {
       console.log("Admin access required but not admin, redirecting");
+      setRedirectCount(prev => prev + 1);
       toast({
         title: "Access Denied",
         description: "This area requires administrator privileges",
@@ -87,6 +100,7 @@ export const ProtectedRoute = ({
     
     if (requireTeacher && !isTeacher && !isAdmin) {
       console.log("Teacher access required but not teacher or admin, redirecting");
+      setRedirectCount(prev => prev + 1);
       toast({
         title: "Access Denied",
         description: "This area requires teacher privileges",
@@ -108,6 +122,7 @@ export const ProtectedRoute = ({
         const hasAllPermissions = requiredPermissions.every(permission => hasPermission(permission));
         
         if (!hasAllPermissions) {
+          setRedirectCount(prev => prev + 1);
           toast({
             title: "Permission Denied",
             description: "You don't have the necessary permissions to access this feature",
@@ -121,7 +136,7 @@ export const ProtectedRoute = ({
       }
     }
   }, [session, isLoading, isAdmin, isTeacher, rbacLoading, requireAdmin, requireTeacher, 
-      requiredPermissions, navigate, toast, hasPermission, timeoutReached]);
+      requiredPermissions, navigate, toast, hasPermission, timeoutReached, redirectCount]);
 
   if (isLoading && !timeoutReached) {
     return (
@@ -138,7 +153,10 @@ export const ProtectedRoute = ({
           <Button 
             variant="outline" 
             size="sm"
-            onClick={() => navigate('/auth')}
+            onClick={() => {
+              localStorage.removeItem('userRole');
+              navigate('/auth');
+            }}
           >
             Go to login page
           </Button>
