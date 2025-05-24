@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
@@ -59,19 +58,21 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           console.log("User metadata:", currentSession.user.user_metadata);
         }
         
-        if (!currentSession && !isLoading) {
-          // Only show toast for actual logouts, not initial loading
+        // We only set isLoading to false here, after the initial check or an auth event.
+        // Avoids showing logout toast on initial load if there was no session.
+        if (!currentSession && !isLoadingInitialCheck) { 
           toast({
             title: "Logged out",
             description: "You have been logged out of your account.",
             variant: "default"
           });
         }
-        setIsLoading(false);
+        setIsLoading(false); 
       }
     );
 
     // THEN check for existing session
+    let isLoadingInitialCheck = true;
     supabase.auth.getSession().then(({ data: { session: currentSession }, error }) => {
       console.log("Initial session check:", !!currentSession, error);
       if (error) {
@@ -80,12 +81,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
       setSession(currentSession);
       setIsLoading(false);
+      isLoadingInitialCheck = false;
     });
 
     return () => {
       subscription.unsubscribe();
     };
-  }, [toast, isLoading]);
+  }, [toast]); // Removed isLoading from dependency array
 
   const signOut = async () => {
     try {

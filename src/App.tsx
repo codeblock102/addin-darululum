@@ -1,4 +1,3 @@
-
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Toaster } from "@/components/ui/toaster";
 import { ThemeProvider } from "@/components/theme-provider";
@@ -23,6 +22,8 @@ import Preferences from "@/pages/Preferences";
 import CreateDemoAccount from "@/pages/CreateDemoAccount";
 import CreateTeacherProfileForTestAccount from "@/pages/CreateTeacherProfileForTestAccount";
 import DatabaseSeeder from "@/pages/admin/DatabaseSeeder";
+import SetupAdmin from "@/pages/admin/SetupAdmin";
+import ManualRoleSetup from "@/pages/admin/ManualRoleSetup";
 
 function App() {
   return (
@@ -33,6 +34,8 @@ function App() {
           <Route path="/auth" element={<Auth />} />
           <Route path="/create-demo-account" element={<CreateDemoAccount />} />
           <Route path="/create-teacher-profile" element={<CreateTeacherProfileForTestAccount />} />
+          <Route path="/admin/setup" element={<SetupAdmin />} />
+          <Route path="/role-setup" element={<ManualRoleSetup />} />
           
           <Route
             path="/students"

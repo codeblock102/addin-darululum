@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery } from "@tanstack/react-query";
@@ -11,6 +10,7 @@ import { AccessDenied } from "@/components/teacher-portal/AccessDenied";
 import { ProfileNotFound } from "@/components/teacher-portal/ProfileNotFound";
 import { Teacher } from "@/types/teacher";
 import { useRBAC } from "@/hooks/useRBAC";
+import { Shield } from "lucide-react";
 
 const TeacherPortal = () => {
   const { session, refreshSession } = useAuth();
@@ -30,6 +30,13 @@ const TeacherPortal = () => {
       try {
         setIsCheckingRole(true);
         console.log("Checking teacher status for email:", session.user.email);
+        
+        // Skip this check for admin users
+        if (isAdmin) {
+          console.log("User is admin, skipping teacher profile check");
+          setIsCheckingRole(false);
+          return;
+        }
         
         // Explicitly check if a teacher profile exists in the database
         const { data, error } = await supabase
@@ -54,7 +61,7 @@ const TeacherPortal = () => {
     };
     
     checkTeacherProfile();
-  }, [session, refreshKey]);
+  }, [session, refreshKey, isAdmin]);
 
   const { 
     data: teacherData, 
@@ -65,6 +72,12 @@ const TeacherPortal = () => {
     queryKey: ['teacher-profile', session?.user?.email, refreshKey],
     queryFn: async () => {
       if (!session?.user?.email) return null;
+      
+      // Skip the query for admin users
+      if (isAdmin) {
+        console.log("Admin user, skipping teacher profile query");
+        return null;
+      }
       
       console.log("Fetching teacher profile for email:", session.user.email);
       
@@ -82,7 +95,7 @@ const TeacherPortal = () => {
       console.log("Teacher profile fetch result:", data);
       return data as Teacher | null;
     },
-    enabled: !!session?.user?.email,
+    enabled: !!session?.user?.email && !isAdmin, // Only enabled for non-admin users
     retry: 1,
     staleTime: 5 * 60 * 1000, // 5 minutes
     refetchOnWindowFocus: false // Disable automatic refetch on window focus
@@ -105,7 +118,7 @@ const TeacherPortal = () => {
   }
 
   // Show loading state while checking roles or fetching teacher data
-  if (isLoading || isCheckingRole || isRoleLoading) {
+  if ((isLoading || isCheckingRole || isRoleLoading) && !isAdmin) {
     return (
       <DashboardLayout>
         <LoadingState />
@@ -113,15 +126,42 @@ const TeacherPortal = () => {
     );
   }
 
-  // Show profile not found if teacher data is missing, regardless of RBAC role
-  // This will help with cases where a user might be assigned a teacher role but doesn't have a profile yet
+  // If user is admin, they should be able to view the teacher portal with a generic profile
+  if (isAdmin) {
+    // Create a temporary teacher profile for admin view
+    const adminViewProfile: Teacher = {
+      id: 'admin-view',
+      name: 'Admin View',
+      subject: 'Administration',
+      experience: 'Administrator',
+      email: session?.user?.email || 'admin@example.com',
+      bio: 'Viewing the teacher portal as an administrator',
+      phone: ''
+    };
+    
+    return (
+      <DashboardLayout>
+        <div className="p-4 mb-6 bg-blue-50 border border-blue-200 rounded-md flex items-center">
+          <Shield className="text-blue-600 mr-3 h-5 w-5 flex-shrink-0" />
+          <p className="text-blue-800 text-sm">
+            <strong>Admin Mode:</strong> You are viewing the teacher portal with administrator privileges. 
+            Some teacher-specific features may require a teacher profile.
+          </p>
+        </div>
+        <TeacherDashboard teacher={adminViewProfile} />
+      </DashboardLayout>
+    );
+  }
+
+  // Show profile not found if teacher data is missing (for non-admin users)
   if (!teacherData) {
     return (
       <DashboardLayout>
         <div className="space-y-4">
           <ProfileNotFound 
             email={session?.user?.email} 
-            onRefresh={handleRefresh} 
+            onRefresh={handleRefresh}
+            isAdmin={isAdmin}
           />
         </div>
       </DashboardLayout>
