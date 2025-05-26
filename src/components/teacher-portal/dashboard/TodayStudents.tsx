@@ -14,14 +14,11 @@ export const TodayStudents = ({ teacherId }: TodayStudentsProps) => {
   const { data: todayStudents, isLoading } = useQuery({
     queryKey: ["today-students", teacherId, today],
     queryFn: async () => {
-      // Here you would fetch actual data from your database
-      // For now, returning sample data
-      return [
-        { name: "Ahmad Hassan", class: "Morning Hifz", time: "8:00 AM - 9:30 AM", status: "present" },
-        { name: "Fatima Ahmed", class: "Morning Hifz", time: "8:00 AM - 9:30 AM", status: "absent" },
-        { name: "Mohammed Ali", class: "Afternoon Tajweed", time: "2:00 PM - 3:30 PM", status: "pending" },
-        { name: "Sara Mahmoud", class: "Afternoon Tajweed", time: "2:00 PM - 3:30 PM", status: "pending" }
-      ];
+      // TODO: Implement actual data fetching for students scheduled today
+      // This should involve fetching classes for the teacher scheduled for the current day,
+      // then fetching students enrolled in those classes, and their attendance status.
+      console.log("Placeholder: TodayStudents queryFn needs actual implementation. TeacherID:", teacherId, "Day:", today);
+      return []; // Returning empty array to remove sample data
     }
   });
   
