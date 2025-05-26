@@ -1,4 +1,3 @@
-
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { SummaryData } from "@/types/teacher";
@@ -119,7 +118,8 @@ export const useTeacherSummary = (teacherId: string) => {
       }
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
-    retry: 1
+    retry: 1,
+    enabled: !!teacherId && teacherId !== 'admin-view'
   });
 };
 

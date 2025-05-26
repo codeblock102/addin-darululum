@@ -9,7 +9,7 @@ export const WeeklySchedule = () => {
   
   return (
     <Card className="h-auto lg:h-96 border border-purple-100 dark:border-purple-900/30 shadow-sm">
-      <CardHeader className="bg-purple-50 dark:bg-purple-900/20">
+      <CardHeader className="">
         <CardTitle className="text-purple-700 dark:text-purple-300 flex items-center gap-2">
           <Calendar className="h-5 w-5" />
           Weekly Schedule

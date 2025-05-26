@@ -1,4 +1,3 @@
-
 import { TeacherDashboardProps } from "@/types/teacher";
 import { useTeacherSummary } from "@/hooks/useTeacherSummary";
 import { DashboardHeader } from "./DashboardHeader";
@@ -14,11 +13,11 @@ export const TeacherDashboard = ({ teacher }: TeacherDashboardProps) => {
     <div className="space-y-6 animate-fadeIn">
       <DashboardHeader teacher={teacher} />
       
-      <TeacherTabs 
+      {/* <TeacherTabs 
         teacher={teacher} 
         activeTab={activeTab} 
         onTabChange={setActiveTab} 
-      />
+      /> */}
       
       <DashboardContent 
         activeTab={activeTab} 

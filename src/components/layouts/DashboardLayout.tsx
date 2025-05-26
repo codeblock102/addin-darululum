@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Sidebar } from "./Sidebar";
 import { useRBAC } from "@/hooks/useRBAC";
@@ -10,6 +9,7 @@ import { Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { BottomNavigation } from "@/components/mobile/BottomNavigation";
 import { useLocation } from "react-router-dom";
+import { cn } from "@/lib/utils";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -21,7 +21,6 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   const [sidebarOpen, setSidebarOpen] = useState(!isMobile);
   const location = useLocation();
   
-  // Close sidebar on mobile by default
   useEffect(() => {
     if (isMobile) {
       setSidebarOpen(false);
@@ -30,62 +29,71 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
     }
   }, [isMobile]);
 
-  // Close sidebar when route changes on mobile
   useEffect(() => {
-    if (isMobile) {
+    if (isMobile && sidebarOpen) {
       setSidebarOpen(false);
     }
-  }, [location.pathname, location.search, isMobile]);
+  }, [location.pathname, location.search, isMobile, sidebarOpen]);
 
   const toggleSidebar = () => setSidebarOpen(prev => !prev);
 
   if (isLoading) {
     return (
-      <div className="flex h-screen w-full">
+      <div className="flex h-screen w-full items-center justify-center">
         <LoadingSpinner />
       </div>
     );
   }
 
+  const sidebarWidthClass = "w-64";
+  const collapsedSidebarWidthClass = "md:w-16";
+
   return (
     <div className={`flex min-h-screen w-full overflow-hidden ${isAdmin ? "admin-theme" : "teacher-theme"}`}>
-      {/* Sidebar with conditional display on mobile */}
-      {!isMobile && (
-        <div className={`
-          ${sidebarOpen ? "translate-x-0" : "-translate-x-full"} 
-          transition-transform duration-300 ease-in-out
-          fixed inset-y-0 left-0 z-40 w-64 lg:relative lg:translate-x-0
-          ${isMobile ? "shadow-xl" : ""}
-        `}>
-          <Sidebar onCloseSidebar={() => setSidebarOpen(false)} toggleSidebar={toggleSidebar} />
-        </div>
-      )}
-      
-      {/* Mobile menu button - only visible on mobile when not using bottom navigation */}
-      {(isMobile && !sidebarOpen && (!isTeacher && !isAdmin)) && (
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={toggleSidebar}
-          className="fixed top-4 left-4 z-30 bg-background/80 backdrop-blur-sm shadow-md rounded-full"
-        >
-          <Menu className="h-5 w-5" />
-          <span className="sr-only">Open menu</span>
-        </Button>
-      )}
-      
-      <div className={`flex-1 overflow-hidden transition-all duration-300 ${isMobile ? "pb-20" : ""}`}>
+      <div
+        className={cn(
+          "fixed inset-y-0 left-0 z-40 bg-background border-r transition-all duration-300 ease-in-out",
+          isMobile && sidebarOpen && `${sidebarWidthClass} translate-x-0 shadow-xl`,
+          isMobile && !sidebarOpen && `${sidebarWidthClass} -translate-x-full`,
+          !isMobile && (sidebarOpen ? sidebarWidthClass : collapsedSidebarWidthClass)
+        )}
+      >
+        <Sidebar
+          onCloseSidebar={() => setSidebarOpen(false)}
+          toggleSidebar={toggleSidebar}
+          isOpen={sidebarOpen}
+        />
+      </div>
+
+      <div
+        className={cn(
+          "flex-1 overflow-x-hidden overflow-y-auto transition-all duration-300",
+          isMobile ? "pb-16" : "",
+          !isMobile && (sidebarOpen ? `md:ml-64` : `md:ml-16`)
+        )}
+      >
+        {isMobile && (
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={toggleSidebar}
+            className="fixed top-4 left-4 z-50 lg:hidden bg-background/70 backdrop-blur-sm"
+          >
+            <Menu className="h-5 w-5" />
+            <span className="sr-only">Toggle Menu</span>
+          </Button>
+        )}
+        
         <BackgroundPattern isAdmin={isAdmin}>
-          <div className="p-3 sm:p-4 md:p-6 overflow-y-auto max-h-full">
+          <div className="p-3 sm:p-4 md:p-6">
             <div className="max-w-7xl mx-auto">
               {!isMobile && <RoleBadge isAdmin={isAdmin} isLoading={isLoading} />}
-              <div className="animate-fadeIn">{children}</div>
+              <div className="animate-fadeIn mt-4 md:mt-0">{children}</div>
             </div>
           </div>
         </BackgroundPattern>
       </div>
 
-      {/* Bottom mobile navigation - only visible on mobile */}
       {isMobile && !isLoading && (isTeacher || isAdmin) && (
         <BottomNavigation />
       )}

@@ -44,7 +44,7 @@ export function AttendanceDataTable({ isLoading, attendanceRecords }: Attendance
     <ScrollArea className="h-[400px]">
       <div className="border border-purple-100 dark:border-purple-900/30 rounded-lg overflow-hidden">
         <Table>
-          <TableHeader className="bg-purple-50 dark:bg-purple-900/20 sticky top-0 z-10">
+          <TableHeader className=" dark:bg-purple-900/20 sticky top-0 z-10">
             <TableRow>
               <TableHead className="text-purple-700 dark:text-purple-300">Date</TableHead>
               <TableHead className="text-purple-700 dark:text-purple-300">Student</TableHead>
@@ -55,7 +55,7 @@ export function AttendanceDataTable({ isLoading, attendanceRecords }: Attendance
           </TableHeader>
           <TableBody>
             {attendanceRecords.map((record) => (
-              <TableRow key={record.id} className="hover:bg-purple-50/50 dark:hover:bg-purple-900/10 transition-colors">
+              <TableRow key={record.id} className=" transition-colors">
                 <TableCell className="text-gray-900 dark:text-gray-200 font-medium">
                   {format(parseISO(record.date), "PPP")}
                 </TableCell>

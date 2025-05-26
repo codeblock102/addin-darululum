@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -40,9 +39,6 @@ const teacherSchema = z.object({
   subject: z.string().min(2, {
     message: "Subject must be at least 2 characters.",
   }).optional(),
-  experience: z.string().min(2, {
-    message: "Experience must be at least 2 characters.",
-  }).optional(),
   bio: z.string().optional().nullable(),
   createAccount: z.boolean().default(true),
   generatePassword: z.boolean().default(true),
@@ -73,7 +69,6 @@ export const TeacherDialog = ({ selectedTeacher, open, onOpenChange, onClose }: 
       email: null,
       phone: null,
       subject: "",
-      experience: "",
       bio: null,
       createAccount: true,
       generatePassword: true,
@@ -92,7 +87,6 @@ export const TeacherDialog = ({ selectedTeacher, open, onOpenChange, onClose }: 
         email: selectedTeacher.email || null,
         phone: selectedTeacher.phone || null,
         subject: selectedTeacher.subject || "",
-        experience: selectedTeacher.experience || "",
         bio: selectedTeacher.bio || null,
         createAccount: false, // Don't create account when editing
         generatePassword: true, 
@@ -104,7 +98,6 @@ export const TeacherDialog = ({ selectedTeacher, open, onOpenChange, onClose }: 
         email: null,
         phone: null,
         subject: "",
-        experience: "",
         bio: null,
         createAccount: true,
         generatePassword: true,
@@ -145,7 +138,6 @@ export const TeacherDialog = ({ selectedTeacher, open, onOpenChange, onClose }: 
             email: values.email || null,
             phone: values.phone || null,
             subject: values.subject || "",
-            experience: values.experience || "",
             bio: values.bio || null
           })
           .eq("id", selectedTeacher.id);
@@ -173,7 +165,6 @@ export const TeacherDialog = ({ selectedTeacher, open, onOpenChange, onClose }: 
             email: values.email || null,
             phone: values.phone || null,
             subject: values.subject || "",
-            experience: values.experience || "",
             bio: values.bio || null
           }])
           .select();
@@ -333,19 +324,6 @@ export const TeacherDialog = ({ selectedTeacher, open, onOpenChange, onClose }: 
                   <FormLabel>Subject</FormLabel>
                   <FormControl>
                     <Input placeholder="Teacher's Subject" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="experience"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Experience</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Teacher's Experience" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

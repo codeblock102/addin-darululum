@@ -1,4 +1,3 @@
-
 import { useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
 
@@ -10,7 +9,7 @@ export const useActiveTab = () => {
     const searchParams = new URLSearchParams(location.search);
     const tabParam = searchParams.get('tab');
     
-    if (tabParam && ['students', 'dhor-book', 'attendance', 'schedule', 'performance', 'messages'].includes(tabParam)) {
+    if (tabParam && ['students', 'progress-book', 'attendance', 'schedule', 'performance', 'messages'].includes(tabParam)) {
       setActiveTab(tabParam);
     } else {
       setActiveTab("overview");

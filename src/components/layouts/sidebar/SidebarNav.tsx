@@ -1,4 +1,3 @@
-
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { NavItem } from "@/types/navigation";
@@ -7,9 +6,10 @@ import { useIsMobile } from "@/hooks/use-mobile";
 interface SidebarNavProps {
   items: NavItem[];
   isAdmin: boolean;
+  isOpen?: boolean;
 }
 
-export const SidebarNav = ({ items, isAdmin }: SidebarNavProps) => {
+export const SidebarNav = ({ items, isAdmin, isOpen }: SidebarNavProps) => {
   const location = useLocation();
   const isMobile = useIsMobile();
   
@@ -62,7 +62,9 @@ export const SidebarNav = ({ items, isAdmin }: SidebarNavProps) => {
                 ? (isActive ? "text-amber-400" : "text-gray-400")
                 : (isActive ? "text-blue-600" : "text-gray-500")
             )} />
-            <span className="truncate">{item.label}</span>
+            {(isOpen !== false || isMobile) && (
+              <span className="truncate transition-opacity duration-300">{item.label}</span>
+            )}
           </Link>
         );
       })}

@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -40,8 +39,8 @@ export const TodayStudents = ({ teacherId }: TodayStudentsProps) => {
   };
   
   return (
-    <Card className="h-auto lg:h-96">
-      <CardHeader className="bg-indigo-50 dark:bg-indigo-900/20">
+    <Card className="h-auto">
+      <CardHeader className="">
         <CardTitle className="text-indigo-700 dark:text-indigo-300 flex items-center gap-2">
           <CalendarClock className="h-5 w-5" />
           Today's Students

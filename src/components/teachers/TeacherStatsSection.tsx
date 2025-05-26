@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Users, School, Database, BookOpen, Calendar } from "lucide-react";
 
@@ -6,7 +5,6 @@ interface TeacherStatsProps {
   stats: {
     totalTeachers?: number;
     totalStudents?: number;
-    averageExperience?: number;
     subjectCount?: number;
     activeTeachers?: number;
     totalClasses?: number;
@@ -58,12 +56,6 @@ export function TeacherStatsSection({ stats }: TeacherStatsProps) {
       value: stats.totalClasses || 0,
       icon: <Calendar className="h-4 w-4 text-orange-500" />,
       description: "Active teaching classes"
-    },
-    {
-      title: "Avg. Experience",
-      value: `${stats.averageExperience?.toFixed(1) || 0} yrs`,
-      icon: <Database className="h-4 w-4 text-indigo-500" />,
-      description: "Average teacher experience"
     }
   ];
 

@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -46,7 +45,7 @@ export const StudentSearch = ({ teacherId }: StudentSearchProps) => {
   };
   
   return (
-    <Card className="h-auto lg:h-[350px]">
+    <Card className="h-auto">
       <CardHeader>
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2">

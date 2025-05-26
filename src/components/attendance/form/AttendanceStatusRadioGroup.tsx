@@ -27,7 +27,7 @@ export function AttendanceStatusRadioGroup({ form }: AttendanceStatusRadioGroupP
               value={field.value}
               className="flex flex-col space-y-2"
             >
-              <div className="flex items-center space-x-2 p-2 rounded-md hover:bg-purple-50 dark:hover:bg-purple-900/10 transition-colors">
+              <div className="flex items-center space-x-2 p-2 rounded-md  transition-colors">
                 <RadioGroupItem 
                   value="present" 
                   id="present" 
@@ -38,7 +38,7 @@ export function AttendanceStatusRadioGroup({ form }: AttendanceStatusRadioGroupP
                   Present
                 </label>
               </div>
-              <div className="flex items-center space-x-2 p-2 rounded-md hover:bg-purple-50 dark:hover:bg-purple-900/10 transition-colors">
+              <div className="flex items-center space-x-2 p-2 rounded-md  transition-colors">
                 <RadioGroupItem 
                   value="absent" 
                   id="absent" 
@@ -49,7 +49,7 @@ export function AttendanceStatusRadioGroup({ form }: AttendanceStatusRadioGroupP
                   Absent
                 </label>
               </div>
-              <div className="flex items-center space-x-2 p-2 rounded-md hover:bg-purple-50 dark:hover:bg-purple-900/10 transition-colors">
+              <div className="flex items-center space-x-2 p-2 rounded-md  transition-colors">
                 <RadioGroupItem 
                   value="late" 
                   id="late" 

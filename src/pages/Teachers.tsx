@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { DashboardLayout } from "@/components/layouts/DashboardLayout";
@@ -34,9 +33,6 @@ const Teachers = () => {
         totalTeachers: teachers?.length || 0,
         totalStudents: students?.length || 0,
         activeTeachers: teachers?.filter(t => t.email).length || 0,
-        averageExperience: teachers && teachers.length > 0 
-          ? teachers.reduce((acc, teacher) => acc + (parseInt(teacher.experience) || 0), 0) / teachers.length
-          : 0,
         subjectCount: teachers 
           ? new Set(teachers.map(t => t.subject)).size
           : 0,

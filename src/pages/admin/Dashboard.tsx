@@ -1,4 +1,3 @@
-
 import { DashboardLayout } from "@/components/layouts/DashboardLayout";
 import { AdminHeader } from "@/components/admin/AdminHeader";
 import { DashboardStats } from "@/components/dashboard/DashboardStats";
@@ -44,7 +43,7 @@ export default function AdminDashboard() {
         <WelcomeHeader />
         
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full max-w-md grid-cols-3 bg-gray-900">
+          <TabsList className="grid w-full max-w-md grid-cols-3">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="analytics">Analytics</TabsTrigger>
             <TabsTrigger value="messages">Messages</TabsTrigger>

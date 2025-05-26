@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { DashboardLayout } from "@/components/layouts/DashboardLayout";
 import { AttendanceForm } from "@/components/attendance/AttendanceForm";
@@ -37,8 +36,8 @@ const Attendance = () => {
         </div>
         
         <Card className="border border-purple-200 dark:border-purple-800/40 shadow-sm overflow-hidden">
-          <CardHeader className="bg-gradient-to-r from-purple-100 to-purple-50 dark:from-purple-900/30 dark:to-purple-800/20">
-            <div className="flex items-center justify-between">
+          <CardHeader>
+            <div className="flex justify-between items-center">
               <div className="flex items-center gap-2">
                 <CardTitle className="text-2xl font-bold text-purple-700 dark:text-purple-300">
                   Attendance Dashboard

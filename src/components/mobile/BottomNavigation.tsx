@@ -1,4 +1,3 @@
-
 import { useNavigate, useLocation } from "react-router-dom";
 import { Home, Users, Book, CalendarDays, LogOut } from "lucide-react";
 import { useTeacherStatus } from "@/hooks/useTeacherStatus";
@@ -30,15 +29,20 @@ export const BottomNavigation = () => {
 
   const navItems = isAdmin ? adminNavItems : teacherNavItems;
 
-  const isActive = (item: { href?: string }) => {
+  const isActive = (item: { href?: string; label?: string }) => {
     if (!item.href) return false;
+
+    // Specifically handle Dashboard for teachers to be exact
+    if (item.label === "Dashboard" && (item.href === "/teacher-portal" || item.href === "/admin")) {
+      return location.pathname === item.href && location.search === "";
+    }
     
     if (item.href.includes('?tab=')) {
       const [path, search] = item.href.split('?');
       return location.pathname === path && location.search.includes(search);
     }
     
-    return location.pathname === item.href;
+    return location.pathname === item.href && location.search === ""; // Make default check exact as well
   };
 
   const handleNavigation = (item: { href?: string; action?: () => Promise<void> }) => {
