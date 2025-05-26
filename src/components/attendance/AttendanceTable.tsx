@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -17,105 +16,54 @@ interface AttendanceRecord {
   date: string;
   status: string;
   notes?: string;
-  student: {
+  students: {
     id: string;
     name: string;
-  };
-  class_schedule?: {
-    class_name?: string;
-  };
+  } | null;
+  classes: {
+    name: string;
+  } | null;
+  student_id: string | null;
+  class_id: string | null;
 }
 
 export function AttendanceTable({ teacherId }: AttendanceTableProps) {
   const [searchQuery, setSearchQuery] = useState("");
   
-  const { data: attendanceRecords, isLoading } = useQuery({
+  const { data: attendanceRecords, isLoading } = useQuery<AttendanceRecord[], Error>({
     queryKey: ['attendance-records', teacherId],
     queryFn: async () => {
-      try {
-        // Simple query to avoid excessive type instantiation
-        const { data, error } = await supabase
-          .from('attendance')
-          .select(`
-            id, date, status, notes, 
-            student_id, class_id
-          `);
-          
-        if (error) throw error;
+      const { data, error } = await supabase
+        .from('attendance')
+        .select(`
+          id, date, status, notes, student_id, class_id,
+          students (id, name), 
+          classes (id, name)
+        `)
+        .order('date', { ascending: false });
         
-        // If no data, return sample data for development
-        if (!data || data.length === 0) {
-          return [
-            {
-              id: "1",
-              date: "2025-05-01",
-              status: "present",
-              notes: "Arrived on time",
-              student: { id: "101", name: "Ahmed Ali" },
-              class_schedule: { class_name: "Morning Hifz Class" }
-            },
-            {
-              id: "2",
-              date: "2025-05-01",
-              status: "absent",
-              notes: "Called in sick",
-              student: { id: "102", name: "Sara Khan" },
-              class_schedule: { class_name: "Morning Hifz Class" }
-            },
-            {
-              id: "3",
-              date: "2025-05-01",
-              status: "late",
-              notes: "10 minutes late",
-              student: { id: "103", name: "Muhammad Yousuf" },
-              class_schedule: { class_name: "Afternoon Tajweed" }
-            }
-          ] as AttendanceRecord[];
-        }
-        
-        // For each attendance record, get the student and class details
-        const enhancedRecords = await Promise.all(data.map(async (record) => {
-          // Get student details
-          const { data: studentData } = await supabase
-            .from('students')
-            .select('id, name')
-            .eq('id', record.student_id)
-            .single();
-            
-          // Get class details if available
-          let className = "N/A";
-          if (record.class_id) {
-            const { data: classData } = await supabase
-              .from('classes')
-              .select('name')
-              .eq('id', record.class_id)
-              .single();
-              
-            if (classData) {
-              className = classData.name;
-            }
-          }
-          
-          return {
-            ...record,
-            student: studentData || { id: record.student_id || "", name: "Unknown Student" },
-            class_schedule: { class_name: className }
-          };
-        }));
-        
-        return enhancedRecords as AttendanceRecord[];
-      } catch (error) {
+      if (error) {
         console.error("Error fetching attendance records:", error);
+        throw error;
+      }
+      
+      if (!data) {
         return [] as AttendanceRecord[];
       }
+      
+      return data.map(record => ({
+        ...record,
+        students: record.students, 
+        classes: record.classes,
+      })) as AttendanceRecord[];
     }
   });
   
   // Filter records by search query
   const filteredRecords = attendanceRecords?.filter(record =>
-    record.student.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    record.students?.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     record.status.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    (record.class_schedule?.class_name?.toLowerCase() || "").includes(searchQuery.toLowerCase())
+    (record.classes?.name?.toLowerCase() || "").includes(searchQuery.toLowerCase())
   );
 
   // Function to handle search input changes

@@ -1,4 +1,3 @@
-
 import { format, parseISO } from "date-fns";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -10,13 +9,13 @@ type AttendanceRecord = {
   date: string;
   status: string;
   notes?: string;
-  student: {
+  students: {
     id: string;
     name: string;
-  };
-  class_schedule?: {
-    class_name?: string;
-  };
+  } | null;
+  classes: {
+    name?: string;
+  } | null;
 };
 
 interface AttendanceDataTableProps {
@@ -60,10 +59,10 @@ export function AttendanceDataTable({ isLoading, attendanceRecords }: Attendance
                   {format(parseISO(record.date), "PPP")}
                 </TableCell>
                 <TableCell className="text-gray-900 dark:text-gray-200">
-                  {record.student.name}
+                  {record.students?.name || "Unknown Student"}
                 </TableCell>
                 <TableCell className="text-gray-900 dark:text-gray-200">
-                  {record.class_schedule?.class_name || "N/A"}
+                  {record.classes?.name || "N/A"}
                 </TableCell>
                 <TableCell>
                   <StatusBadge status={record.status as any} />
