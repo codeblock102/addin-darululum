@@ -45,7 +45,24 @@ export const StudentPerformanceMetrics = ({ studentId }: StudentPerformanceMetri
     enabled: !!studentId,
   });
 
-  const isLoading = attendanceLoading || progressLoading || sabaqParaLoading || juzRevisionsLoading;
+  const { data: studentData, isLoading: studentDataLoading } = useQuery<Tables<"students"> | null>({
+    queryKey: ['student-data-metrics', studentId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('students')
+        .select('*')
+        .eq('id', studentId)
+        .single();
+      if (error) {
+        console.error("Error fetching student data for metrics:", error.message);
+        return null; 
+      }
+      return data;
+    },
+    enabled: !!studentId,
+  });
+
+  const isLoading = attendanceLoading || progressLoading || sabaqParaLoading || juzRevisionsLoading || studentDataLoading;
 
   if (isLoading) {
     return (
@@ -64,6 +81,11 @@ export const StudentPerformanceMetrics = ({ studentId }: StudentPerformanceMetri
   const currentJuz = latestProgress?.current_juz || 0;
   const completedJuz = latestProgress?.completed_juz || 0;
 
+  // Calculate total memorized juz from the student's record
+  const totalMemorizedJuzCount = Array.isArray(studentData?.completed_juz) 
+    ? studentData.completed_juz.length 
+    : 0;
+
   const totalSabaqParaEntries = sabaqParaEntries?.length || 0;
   const totalJuzRevisionsEntries = juzRevisionsEntries?.length || 0;
 
@@ -81,8 +103,8 @@ export const StudentPerformanceMetrics = ({ studentId }: StudentPerformanceMetri
       
       <Card>
         <CardContent className="p-4">
-          <div className="text-sm font-medium text-muted-foreground">Juz Progress (Sabaq)</div>
-          <div className="text-2xl font-bold mt-1">{completedJuz} / 30</div>
+          <div className="text-sm font-medium text-muted-foreground">Total Memorized Juz</div>
+          <div className="text-2xl font-bold mt-1">{totalMemorizedJuzCount} / 30</div>
           <div className="mt-1 text-xs text-muted-foreground">
             Currently on Juz {currentJuz || 'N/A'}
           </div>
