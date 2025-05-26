@@ -123,8 +123,8 @@ export const StudentSearch = ({
                 {filteredStudents.map((student) => (
                   <Button
                     key={student.id}
-                    variant={selectedStudentId === student.id ? "secondary" : "black"}
-                    className={`w-full justify-start text-left px-3 py-2 h-auto ${selectedStudentId === student.id ? "bg-secondary" : ""}`}
+                    variant={selectedStudentId === student.id ? "secondary" : "secondary"}
+                    className={`w-full justify-start text-left px-3 py-2 h-auto ${selectedStudentId === student.id ? "bg-secondary" : ""}text-black`}
                     onClick={() => onStudentSelect(student.id, student.name)}
                   >
                     {student.name}
