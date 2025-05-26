@@ -1,6 +1,31 @@
+/**
+ * @file src/config/defaultSettings.ts
+ * @summary This file defines the default system settings for the application.
+ * 
+ * It exports a `DEFAULT_SETTINGS` constant, which is an object conforming to the `SystemSettings` type.
+ * This object provides the initial values for various application settings, categorized into sections like:
+ * - `appearance`: Theme, layout, font size, animations.
+ * - `notifications`: Email, push notifications, alerts, quiet hours.
+ * - `security`: Two-factor authentication, session timeout, password policies.
+ * - `academic`: Default academic parameters, grading, curriculum settings.
+ * - `localization`: Language, date/time formats, region.
+ * - `integrations`: Calendar sync, communication tools.
+ * - `dataManagement`: Backup policies, data export options, archiving.
+ * - `userExperience`: Guided tours, keyboard shortcuts, default landing page.
+ * - `advancedOptions`: Developer mode, detailed logs, feature flags.
+ *
+ * These default settings are likely used when a user first uses the application or when specific settings
+ * have not yet been customized by an administrator or user.
+ */
 
 import { SystemSettings } from "@/types/settings";
 
+/**
+ * @const DEFAULT_SETTINGS
+ * @description An object containing the default values for all system settings.
+ * This configuration is used as the baseline for application behavior and can be overridden
+ * by user-specific or admin-configured settings.
+ */
 export const DEFAULT_SETTINGS: SystemSettings = {
   appearance: {
     theme: 'light',

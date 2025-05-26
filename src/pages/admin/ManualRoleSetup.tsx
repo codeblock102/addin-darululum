@@ -1,3 +1,18 @@
+/**
+ * @file ManualRoleSetup.tsx
+ * @description This file defines the `ManualRoleSetup` component, an administrative tool for manually assigning a role (admin or teacher) to the currently authenticated user.
+ * It is likely used during initial setup or for testing purposes where automated role assignment might not be in place.
+ * The component displays the current user's email and metadata, allows selection of either 'admin' or 'teacher' role via radio buttons,
+ * and provides a button to apply the selected role.
+ * When a role is set:
+ * 1. It updates the user's metadata in Supabase Auth using `supabase.auth.updateUser()`.
+ * 2. If the selected role is 'teacher', it checks if a corresponding record exists in the 'teachers' table using the user's email.
+ *    If no record exists, it creates one with placeholder details (name defaults to email, subject to 'To be determined').
+ * 3. Stores the selected role in `localStorage` for immediate client-side use.
+ * 4. Calls `refreshSession()` from `AuthContext` to update the application's auth state.
+ * 5. Displays a success toast and redirects the user to the appropriate dashboard (`/admin` or `/teacher-portal`) after a short delay.
+ * Error handling is included to display toast notifications for failures during the process.
+ */
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -9,6 +24,12 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
+/**
+ * @function ManualRoleSetup
+ * @description A component that allows manual setting of user roles (admin or teacher).
+ * It updates user metadata in Supabase, potentially creates a teacher record, refreshes the session, and redirects.
+ * @returns {JSX.Element} The rendered manual role setup page.
+ */
 export default function ManualRoleSetup() {
   const [isLoading, setIsLoading] = useState(false);
   const [selectedRole, setSelectedRole] = useState<'admin' | 'teacher'>('admin');
@@ -20,6 +41,13 @@ export default function ManualRoleSetup() {
   const [userInfo, setUserInfo] = useState<{email: string, metadata: any} | null>(null);
   
   useEffect(() => {
+    /**
+     * @function fetchUserInfo
+     * @description Fetches and sets the current authenticated user's email and metadata.
+     * Used for display purposes on the role setup page.
+     * @async
+     * @returns {Promise<void>}
+     */
     const fetchUserInfo = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
@@ -32,6 +60,17 @@ export default function ManualRoleSetup() {
     fetchUserInfo();
   }, []);
 
+  /**
+   * @function handleRoleSetup
+   * @description Handles the logic for setting the selected role for the current user.
+   * It updates the user's metadata in Supabase Auth.
+   * If the role is 'teacher', it ensures a corresponding record exists in the 'teachers' table, creating one if necessary.
+   * It then stores the role in localStorage, refreshes the session, shows a toast, and redirects.
+   * @async
+   * @input None directly, uses `selectedRole` state.
+   * @output Updates user role in Supabase, localStorage, and auth context, then navigates the user.
+   * @returns {Promise<void>}
+   */
   const handleRoleSetup = async () => {
     setIsLoading(true);
     
@@ -73,7 +112,8 @@ export default function ManualRoleSetup() {
               email: userEmail,
               name: userEmail, // Use email as name for now
               subject: 'To be determined', // Placeholder
-              bio: 'Profile to be completed.' // Placeholder
+              bio: 'Profile to be completed.', // Placeholder
+              experience: 'Not specified' // Placeholder for experience
               // Add any other required fields with default/placeholder values
             }]);
 

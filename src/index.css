@@ -1,3 +1,11 @@
+/**
+ * @file src/index.css
+ * @summary This is the main global CSS file for the application.
+ * 
+ * It imports various other CSS files from the `src/styles` directory to organize
+ * the overall styling of the application. This includes base styles, theme definitions,
+ * animations, component-specific styles, and role-specific themes (admin, teacher).
+ */
 
 @import './styles/base.css';
 @import './styles/theme.css';

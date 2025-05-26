@@ -1,4 +1,13 @@
-
+/**
+ * @file DatabaseSeeder.tsx
+ * @description This file defines the `DatabaseSeeder` component, an administrative tool used to populate the database with initial student data.
+ * It provides a user interface with a button that, when clicked, triggers a seeding process.
+ * This process involves two main steps:
+ * 1. Calling `seedStudentsTable()` to add a predefined set of student records (e.g., 10 students with Juz and completed Juz information) to the 'students' table.
+ * 2. If a `teacherId` is set (currently placeholder, intended to be dynamically provided), it calls `assignStudentsToTeacher()` to link these newly seeded students to a specific teacher.
+ * The component manages loading states during the seeding operation and provides user feedback via toast notifications for success or failure of each step.
+ * It is intended for setup or testing purposes to quickly get a populated database.
+ */
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -6,11 +15,29 @@ import { seedStudentsTable, assignStudentsToTeacher } from "@/utils/seedDatabase
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
 
+/**
+ * @function DatabaseSeeder
+ * @description A component that allows administrators to seed the database with student data and assign them to a teacher.
+ * It provides a button to trigger the seeding process and displays feedback using toasts.
+ * @returns {JSX.Element} The rendered database seeder page.
+ */
 export default function DatabaseSeeder() {
   const [isLoading, setIsLoading] = useState(false);
   const [teacherId, setTeacherId] = useState(""); // Replace with actual teacher ID when available
   const { toast } = useToast();
 
+  /**
+   * @function handleSeedDatabase
+   * @description Asynchronously seeds the database with student data.
+   * It first calls `seedStudentsTable` to add student records.
+   * If successful and a `teacherId` is available, it then calls `assignStudentsToTeacher`.
+   * Provides toast notifications for success or failure of each operation.
+   * Manages an `isLoading` state to disable the button during the process.
+   * @async
+   * @input None directly, but uses `teacherId` state if set.
+   * @output Populates the database and displays toast messages indicating the outcome.
+   * @returns {Promise<void>}
+   */
   const handleSeedDatabase = async () => {
     setIsLoading(true);
     

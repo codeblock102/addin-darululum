@@ -1,3 +1,11 @@
+/**
+ * @file StudentDetail.tsx
+ * @description This file defines the `StudentDetail` component, which displays detailed information about a specific student.
+ * It fetches student data and their progress entries from a Supabase backend.
+ * The component includes sections for student information, progress overview (chart and list), and a Dhor (memorization) book.
+ * It allows users to navigate back to the students list and add new progress entries for the student.
+ * The component handles loading and error states, displaying appropriate messages to the user.
+ */
 
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
@@ -26,6 +34,15 @@ interface Student {
   status: 'active' | 'inactive';
 }
 
+/**
+ * @function StudentDetail
+ * @description The main component for displaying a student's details and progress.
+ * It fetches student data and progress entries based on the student ID from the URL parameters.
+ * It uses Tanstack Query for data fetching and caching.
+ * It displays student information, a progress chart, a progress list, and a Dhor book.
+ * It also provides functionality to add new progress entries.
+ * @returns {JSX.Element} The rendered student detail page.
+ */
 const StudentDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -35,6 +52,13 @@ const StudentDetail = () => {
 
   const { data: student, isLoading: studentLoading, error: studentError } = useQuery({
     queryKey: ['student', id],
+    /**
+     * @function queryFn (for student data)
+     * @description Fetches the details of a specific student from the Supabase 'students' table.
+     * @async
+     * @throws {Error} If the student ID is not provided or if there is an error fetching the data.
+     * @returns {Promise<Student>} A promise that resolves to the student object.
+     */
     queryFn: async () => {
       if (!id) throw new Error("Student ID is required");
       
@@ -52,6 +76,14 @@ const StudentDetail = () => {
 
   const { data: progressEntries, isLoading: progressLoading } = useQuery({
     queryKey: ['student-progress', id],
+    /**
+     * @function queryFn (for progress entries)
+     * @description Fetches the progress entries for a specific student from the Supabase 'progress' table.
+     * The entries are ordered by date in descending order.
+     * @async
+     * @throws {Error} If the student ID is not provided or if there is an error fetching the data.
+     * @returns {Promise<any[]>} A promise that resolves to an array of progress entries.
+     */
     queryFn: async () => {
       if (!id) throw new Error("Student ID is required");
       
@@ -78,6 +110,10 @@ const StudentDetail = () => {
     }
   }, [studentError, navigate, toast]);
 
+  /**
+   * @section Loading State
+   * @description Displays a skeleton loader while student data is being fetched.
+   */
   if (studentLoading) {
     return (
       <DashboardLayout>
@@ -98,6 +134,10 @@ const StudentDetail = () => {
     );
   }
 
+  /**
+   * @section Not Found State
+   * @description Displays a "Student Not Found" message if the student data is not available.
+   */
   if (!student) {
     return (
       <DashboardLayout>
@@ -112,6 +152,11 @@ const StudentDetail = () => {
     );
   }
 
+  /**
+   * @section Main Content
+   * @description Renders the main content of the student detail page, including student information,
+   * progress overview, and Dhor book, once the student data is loaded.
+   */
   return (
     <DashboardLayout>
       <div className="space-y-6">
@@ -212,12 +257,7 @@ const StudentDetail = () => {
             </TabsTrigger>
           </TabsList>
           <TabsContent value="dhor-book">
-            {student && session?.user?.id && (
-              <DhorBook 
-                studentId={student.id}
-                teacherId={session?.user?.id || ''}
-              />
-            )}
+            <DhorBook studentId={student.id} />
           </TabsContent>
           <TabsContent value="revisions">
             {student && (

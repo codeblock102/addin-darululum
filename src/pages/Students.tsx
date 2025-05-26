@@ -1,4 +1,11 @@
-
+/**
+ * @file Students.tsx
+ * @description This file defines the `Students` page component, which is responsible for displaying and managing a list of students.
+ * It features functionality to search for students, view summary statistics (like total students, active students, and average attendance),
+ * add new students, and edit existing student details through a dialog interface.
+ * The component utilizes other custom components like `StudentDialog` for adding/editing students and `StudentList` for displaying them.
+ * State management for search queries, selected student for editing, and dialog visibility is handled within this component.
+ */
 import { useState } from "react";
 import { DashboardLayout } from "@/components/layouts/DashboardLayout";
 import { StudentDialog } from "@/components/students/StudentDialog";
@@ -19,6 +26,13 @@ interface Student {
   status: 'active' | 'inactive';
 }
 
+/**
+ * @function Students
+ * @description The main component for the students management page.
+ * It handles the display of student statistics, a search input for filtering students,
+ * a list of students, and a dialog for adding or editing student information.
+ * @returns {JSX.Element} The rendered students page.
+ */
 const Students = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
@@ -31,16 +45,38 @@ const Students = () => {
     avgAttendance: 95
   };
 
+  /**
+   * @function handleEditStudent
+   * @description Sets the selected student and opens the dialog for editing.
+   * @param {Student} student - The student object to be edited.
+   * @input student - The student data to populate the edit dialog.
+   * @output Opens the student editing dialog pre-filled with the selected student's information.
+   * @returns {void}
+   */
   const handleEditStudent = (student: Student) => {
     setSelectedStudent(student);
     setIsDialogOpen(true);
   };
 
+  /**
+   * @function handleAddStudent
+   * @description Clears any selected student and opens the dialog for adding a new student.
+   * @input None.
+   * @output Opens the student dialog in "add new" mode.
+   * @returns {void}
+   */
   const handleAddStudent = () => {
     setSelectedStudent(null);
     setIsDialogOpen(true);
   };
 
+  /**
+   * @function handleCloseDialog
+   * @description Clears the selected student and closes the student dialog.
+   * @input None.
+   * @output Closes the student dialog and resets the selected student state.
+   * @returns {void}
+   */
   const handleCloseDialog = () => {
     setSelectedStudent(null);
     setIsDialogOpen(false);
