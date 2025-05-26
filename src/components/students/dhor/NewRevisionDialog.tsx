@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -118,7 +117,7 @@ export const NewRevisionDialog = ({
       };
 
       // Update any related revision schedule items for this juz
-      await updateRevisionSchedule(studentId, juzNumber!, formData);
+      // await updateRevisionSchedule(studentId, juzNumber!, formData); // Commented out
 
       toast({
         title: "Revision recorded successfully",
@@ -140,6 +139,7 @@ export const NewRevisionDialog = ({
     }
   };
 
+  /* // Commented out updateRevisionSchedule function
   const updateRevisionSchedule = async (
     studentId: string,
     juzNumber: number,
@@ -187,6 +187,7 @@ export const NewRevisionDialog = ({
       });
     }
   };
+  */ // Commented out updateRevisionSchedule function end
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
