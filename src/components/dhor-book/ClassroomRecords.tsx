@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Input } from "@/components/ui/input";
 import { Loader2, Search, Calendar, Check, X, AlertCircle, Trophy, Medal, Award } from "lucide-react";
 import { format } from "date-fns";
+import { useNavigate } from 'react-router-dom';
 
 interface ClassroomRecordsProps {
   teacherId: string;
@@ -37,6 +38,7 @@ interface StudentRecordSummary {
 }
 
 export function ClassroomRecords({ teacherId }: ClassroomRecordsProps) {
+  const navigate = useNavigate();
   const [selectedDate, setSelectedDate] = useState<string>(
     format(new Date(), "yyyy-MM-dd")
   );
@@ -350,7 +352,7 @@ export function ClassroomRecords({ teacherId }: ClassroomRecordsProps) {
                           variant="outline" 
                           size="sm"
                           className="w-full mt-2"
-                          onClick={() => window.location.href = `/dhor-book?studentId=${student.id}`}
+                          onClick={() => navigate(`/students/${student.id}`)}
                         >
                           View Details
                         </Button>
@@ -519,7 +521,7 @@ export function ClassroomRecords({ teacherId }: ClassroomRecordsProps) {
                             <Button 
                               variant="ghost" 
                               size="sm" 
-                              onClick={() => window.location.href = `/dhor-book?studentId=${record.id}`}
+                              onClick={() => navigate(`/students/${record.id}`)}
                             >
                               View Details
                             </Button>

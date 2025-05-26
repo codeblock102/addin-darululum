@@ -80,6 +80,15 @@ function App() {
             }
           />
           
+          <Route
+            path="/students/:id"
+            element={
+              <ProtectedRoute>
+                <StudentDetail />
+              </ProtectedRoute>
+            }
+          />
+          
           <Route path="*" element={<NotFound />} />
           <Route
             path="/teachers"

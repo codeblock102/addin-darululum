@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
@@ -93,22 +92,17 @@ export const LeaderboardCard = ({ teacherId, className = '' }: LeaderboardCardPr
       return leaderboardData.filter(student => student.sabaqPara > 0);
     }
     
-    if (subjectTab === 'dhor') {
-      return leaderboardData.filter(student => student.dhor > 0);
-    }
-    
     return leaderboardData;
   };
   
   // Get checklist data for a student
   const getStudentCompletionStatus = (studentId: string) => {
     const student = leaderboardData.find(s => s.id === studentId);
-    if (!student) return { sabaq: false, sabaqPara: false, dhor: false };
+    if (!student) return { sabaq: false, sabaqPara: false };
     
     return {
       sabaq: student.sabaqs > 0,
       sabaqPara: student.sabaqPara > 0,
-      dhor: student.dhor > 0
     };
   };
   
@@ -168,7 +162,6 @@ export const LeaderboardCard = ({ teacherId, className = '' }: LeaderboardCardPr
                   <SelectItem value="total">Total Points</SelectItem>
                   <SelectItem value="sabaq">Sabaq</SelectItem>
                   <SelectItem value="sabaqPara">Sabaq Para</SelectItem>
-                  <SelectItem value="dhor">Dhor</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -202,11 +195,10 @@ export const LeaderboardCard = ({ teacherId, className = '' }: LeaderboardCardPr
       
       <CardContent>
         <Tabs defaultValue="all" className="w-full">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="all" onClick={() => setSubjectTab('all')}>All</TabsTrigger>
             <TabsTrigger value="sabaq" onClick={() => setSubjectTab('sabaq')}>Sabaq</TabsTrigger>
             <TabsTrigger value="sabaqPara" onClick={() => setSubjectTab('sabaqPara')}>Sabaq Para</TabsTrigger>
-            <TabsTrigger value="dhor" onClick={() => setSubjectTab('dhor')}>Dhor</TabsTrigger>
           </TabsList>
           
           <TabsContent value="all" className="mt-3">
@@ -308,41 +300,6 @@ export const LeaderboardCard = ({ teacherId, className = '' }: LeaderboardCardPr
                 <p className="text-lg font-medium">No Sabaq Para Activity</p>
                 <p className="text-sm text-muted-foreground">
                   No students have completed Sabaq Para activities in this time period
-                </p>
-              </div>
-            )}
-          </TabsContent>
-          
-          <TabsContent value="dhor" className="mt-3">
-            <div className="mb-3 flex justify-between items-center">
-              <h4 className="text-sm font-medium">Dhor Checklist</h4>
-              <Badge variant="outline" className="h-5">
-                {filteredStudents.length} students
-              </Badge>
-            </div>
-            
-            {isLoading ? (
-              <div className="flex justify-center p-6">
-                <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
-              </div>
-            ) : filteredStudents.length > 0 ? (
-              <div className="space-y-3">
-                {filteredStudents.map((student) => (
-                  <StudentRankItem 
-                    key={student.id} 
-                    student={student}
-                    isTopRank={student.rank === 1}
-                    completionStatus={getStudentCompletionStatus(student.id)}
-                    highlightSubject="dhor"
-                  />
-                ))}
-              </div>
-            ) : (
-              <div className="flex flex-col items-center justify-center py-10 text-center">
-                <CheckSquare className="h-12 w-12 text-muted-foreground mb-2" />
-                <p className="text-lg font-medium">No Dhor Activity</p>
-                <p className="text-sm text-muted-foreground">
-                  No students have completed Dhor activities in this time period
                 </p>
               </div>
             )}

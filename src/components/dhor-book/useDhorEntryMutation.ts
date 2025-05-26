@@ -40,12 +40,13 @@ export type DhorBookCombinedFormData = FormSabaqData & FormSabaqParaData & {
   dhor_quarter_start?: number;
   dhor_quarters_covered?: number;
 
-  // Legacy fields from when dhor_book_entries existed, can be cleaned up if not needed for logging
+  // Legacy fields that were previously related to dhor_book_entries, 
+  // kept for logging if needed, but can be cleaned up if logging is not required for them.
   day_of_week?: string; 
-  sabak_para?: string; // This was a string, sabaq_para_juz is number now
-  dhor_1?: string; // Legacy dhor_1 string field
+  sabak_para?: string; 
+  dhor_1?: string; 
   dhor_1_mistakes?: number; 
-  dhor_2?: string; // Legacy dhor_2 string field
+  dhor_2?: string; 
   dhor_2_mistakes?: number; 
 };
 
@@ -185,7 +186,8 @@ export function useDhorEntryMutation({
           console.log("Skipping Dhor insert: dhor_juz not provided.");
         }
         
-        // Logging fields that are not directly mapped or saved after dhor_book_entries removal
+        // Log any remaining form data fields that are not directly mapped or saved,
+        // including legacy fields for context if needed.
         console.log("Unsaved/Legacy form data fields & other context:", {
             comments: formData.comments, 
             points: formData.points, 
@@ -193,11 +195,11 @@ export function useDhorEntryMutation({
             teacher_id: teacherId, // For logging context
             day_of_week_legacy: formData.day_of_week, 
             sabak_para_legacy: formData.sabak_para, 
-            dhor_1_string_legacy: formData.dhor_1, // Old string field
+            dhor_1_string_legacy: formData.dhor_1, 
             dhor_1_mistakes_legacy: formData.dhor_1_mistakes, 
-            dhor_2_string_legacy: formData.dhor_2, // Old string field
+            dhor_2_string_legacy: formData.dhor_2, 
             dhor_2_mistakes_legacy: formData.dhor_2_mistakes,
-            sabaq_para_pages_from_form: formData.sabaq_para_pages, // Not saved to sabaq_para currently
+            sabaq_para_pages_from_form: formData.sabaq_para_pages, 
         });
 
         if (results.length === 0) {
