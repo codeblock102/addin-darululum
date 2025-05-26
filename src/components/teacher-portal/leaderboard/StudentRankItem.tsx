@@ -1,9 +1,9 @@
-
 import { motion } from 'framer-motion';
 import { StudentLeaderboardData, StudentCompletionStatus } from '@/types/leaderboard';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { CheckCircle, Circle, Trophy, Award, Medal, Clock } from 'lucide-react';
 import { format } from 'date-fns';
+import { useNavigate } from 'react-router-dom';
 
 interface StudentRankItemProps {
   student: StudentLeaderboardData;
@@ -15,9 +15,15 @@ interface StudentRankItemProps {
 export const StudentRankItem = ({
   student,
   isTopRank,
-  completionStatus = { sabaq: false, sabaqPara: false, dhor: false },
+  completionStatus = { sabaq: false, sabaqPara: false },
   highlightSubject
 }: StudentRankItemProps) => {
+  const navigate = useNavigate();
+
+  const handleNavigateToStudent = () => {
+    navigate(`/students/${student.id}`);
+  };
+
   const getInitials = (name: string) => {
     return name
       .split(' ')
@@ -87,7 +93,8 @@ export const StudentRankItem = ({
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.95 }}
       transition={{ duration: 0.2 }}
-      className={`relative flex items-center space-x-4 rounded-md border p-3 ${getRankBgColor()} ${isTopRank ? 'border-amber-300 dark:border-amber-700' : 'border-border'}`}
+      className={`relative flex items-center space-x-4 rounded-md border p-3 ${getRankBgColor()} ${isTopRank ? 'border-amber-300 dark:border-amber-700' : 'border-border'} cursor-pointer hover:shadow-md`}
+      onClick={handleNavigateToStudent}
     >
       <div className="flex items-center justify-center w-8">
         {getRankIcon()}
@@ -110,11 +117,6 @@ export const StudentRankItem = ({
           <div className="flex items-center gap-1">
             {getCompletionIcon(completionStatus.sabaqPara, highlightSubject === 'sabaqPara')}
             <span>Sabaq Para: {student.sabaqPara}</span>
-          </div>
-          <span>•</span>
-          <div className="flex items-center gap-1">
-            {getCompletionIcon(completionStatus.dhor, highlightSubject === 'dhor')}
-            <span>Dhor: {student.dhor}</span>
           </div>
         </div>
       </div>

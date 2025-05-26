@@ -38,20 +38,7 @@ export const DhorBook = ({ studentId, teacherId }: DhorBookProps) => {
     queryFn: async () => {
       console.log(`Fetching dhor book for student ${studentId} between ${format(weekStart, 'yyyy-MM-dd')} and ${format(weekEnd, 'yyyy-MM-dd')}`);
       
-      // Fetch all data sources
-      const { data: dhorEntriesData, error: dhorError } = await supabase
-        .from('dhor_book_entries')
-        .select('*')
-        .eq('student_id', studentId)
-        .gte('entry_date', format(weekStart, 'yyyy-MM-dd'))
-        .lte('entry_date', format(weekEnd, 'yyyy-MM-dd'));
-
-      if (dhorError) {
-        console.error("Error fetching dhor_book_entries:", dhorError);
-        // Decide if to throw or return empty/partial, for now, continue if possible
-      }
-      const dhorEntries = dhorEntriesData || [];
-
+      // Fetch all data sources (excluding dhor_book_entries)
       const { data: juzRevisions, error: juzError } = await supabase
         .from('juz_revisions')
         .select('*')
@@ -79,11 +66,10 @@ export const DhorBook = ({ studentId, teacherId }: DhorBookProps) => {
       // --- Data Consolidation Logic ---
       const combinedEntriesMap: Record<string, Partial<DailyActivityEntry>> = {};
 
-      // Helper to initialize an entry in the map
       const ensureEntry = (dateKey: string) => {
         if (!combinedEntriesMap[dateKey]) {
           combinedEntriesMap[dateKey] = {
-            id: `generated-${dateKey}-${studentId}`, // Default ID, can be overridden by dhorEntry.id
+            id: `generated-${dateKey}-${studentId}`, // Default ID
             student_id: studentId,
             entry_date: dateKey,
             teacher_id: teacherId || 'system-unknown', // Ensure teacher_id is present
@@ -91,17 +77,6 @@ export const DhorBook = ({ studentId, teacherId }: DhorBookProps) => {
           };
         }
       };
-
-      // 1. Process dhorEntries (legacy or otherwise)
-      dhorEntries.forEach(dEntry => {
-        const dateKey = dEntry.entry_date;
-        ensureEntry(dateKey);
-        combinedEntriesMap[dateKey] = {
-          ...combinedEntriesMap[dateKey], // Keep generated fields if dEntry doesn't have them all
-          ...dEntry, // Spread dEntry, potentially overriding id, teacher_id
-          juz_revisions_data: combinedEntriesMap[dateKey]?.juz_revisions_data || [], // Preserve if already populated
-        };
-      });
 
       // 2. Merge progress data
       (progressEntries || []).forEach(pEntry => {
@@ -158,7 +133,6 @@ export const DhorBook = ({ studentId, teacherId }: DhorBookProps) => {
       // Filter out days that have no actual data beyond the generated shell
       let finalCombinedEntries: DailyActivityEntry[] = Object.values(combinedEntriesMap)
         .filter(entry => 
-          (entry.id && !entry.id.startsWith('generated-')) || // It's a real dhorEntry
           entry.current_juz !== undefined || // Check for actual progress data field
           entry.sabaq_para_data || 
           (entry.juz_revisions_data && entry.juz_revisions_data.length > 0)

@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -58,12 +57,6 @@ export function useLeaderboardData(teacherId?: string, filters: LeaderboardFilte
         return acc;
       }, {} as Record<string, string>);
 
-      // Get dhor book entries
-      let dhorBookQuery = supabase
-        .from('dhor_book_entries')
-        .select('student_id, entry_date, points')
-        .in('student_id', studentIds);
-      
       // Get sabaq para entries  
       let sabaqParaQuery = supabase
         .from('sabaq_para')
@@ -79,19 +72,16 @@ export function useLeaderboardData(teacherId?: string, filters: LeaderboardFilte
       // Apply date filter if needed
       if (timeRangeDate) {
         const dateString = timeRangeDate.toISOString().split('T')[0];
-        dhorBookQuery = dhorBookQuery.gte('entry_date', dateString);
         sabaqParaQuery = sabaqParaQuery.gte('revision_date', dateString);
         juzRevisionsQuery = juzRevisionsQuery.gte('revision_date', dateString);
       }
       
       // Execute queries
-      const [dhorResult, sabaqParaResult, juzRevisionsResult] = await Promise.all([
-        dhorBookQuery,
+      const [sabaqParaResult, juzRevisionsResult] = await Promise.all([
         sabaqParaQuery,
         juzRevisionsQuery
       ]);
       
-      if (dhorResult.error) throw dhorResult.error;
       if (sabaqParaResult.error) throw sabaqParaResult.error;
       if (juzRevisionsResult.error) throw juzRevisionsResult.error;
       
@@ -110,23 +100,6 @@ export function useLeaderboardData(teacherId?: string, filters: LeaderboardFilte
           lastActivity: '',
         };
       });
-      
-      // Add Dhor book entries
-      if (dhorResult.data) {
-        dhorResult.data.forEach(entry => {
-          const studentId = entry.student_id;
-          if (studentId && studentStats[studentId]) {
-            studentStats[studentId].dhor += 1;
-            studentStats[studentId].totalPoints += entry.points || 0;
-            
-            // Track last activity
-            if (!studentStats[studentId].lastActivity || 
-                entry.entry_date > studentStats[studentId].lastActivity) {
-              studentStats[studentId].lastActivity = entry.entry_date;
-            }
-          }
-        });
-      }
       
       // Add Sabaq Para entries
       if (sabaqParaResult.data) {
@@ -166,14 +139,14 @@ export function useLeaderboardData(teacherId?: string, filters: LeaderboardFilte
       // Apply additional filters
       if (filters.participationFilter !== 'all') {
         leaderboardArray = leaderboardArray.filter(student => {
-          const hasActivity = student.sabaqs > 0 || student.sabaqPara > 0 || student.dhor > 0;
+          const hasActivity = student.sabaqs > 0 || student.sabaqPara > 0;
           return filters.participationFilter === 'active' ? hasActivity : !hasActivity;
         });
       }
       
       if (filters.completionStatus !== 'all') {
         leaderboardArray = leaderboardArray.filter(student => {
-          const hasAllSubjects = student.sabaqs > 0 && student.sabaqPara > 0 && student.dhor > 0;
+          const hasAllSubjects = student.sabaqs > 0 && student.sabaqPara > 0;
           return filters.completionStatus === 'complete' ? hasAllSubjects : !hasAllSubjects;
         });
       }
@@ -187,19 +160,18 @@ export function useLeaderboardData(teacherId?: string, filters: LeaderboardFilte
         case 'sabaqPara':
           sortedArray = leaderboardArray.sort((a, b) => b.sabaqPara - a.sabaqPara);
           break;
-        case 'dhor':
-          sortedArray = leaderboardArray.sort((a, b) => b.dhor - a.dhor);
-          break;
         case 'total':
         default:
           sortedArray = leaderboardArray.sort((a, b) => {
-            // First by total points
-            const pointsDiff = b.totalPoints - a.totalPoints;
+            // First by total points (now only from sabaqs, assuming 1 point per sabaq)
+            const pointsA = a.sabaqs;
+            const pointsB = b.sabaqs;
+            const pointsDiff = pointsB - pointsA;
             if (pointsDiff !== 0) return pointsDiff;
             
             // Then by total activities
-            const totalActivitiesA = a.sabaqs + a.sabaqPara + a.dhor;
-            const totalActivitiesB = b.sabaqs + b.sabaqPara + b.dhor;
+            const totalActivitiesA = a.sabaqs + a.sabaqPara;
+            const totalActivitiesB = b.sabaqs + b.sabaqPara;
             return totalActivitiesB - totalActivitiesA;
           });
       }
