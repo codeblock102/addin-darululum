@@ -1,4 +1,3 @@
-
 import { CalendarCheck } from "lucide-react";
 import { format } from "date-fns";
 import { 
@@ -12,7 +11,7 @@ export function AttendanceFormHeader() {
   const today = new Date();
   
   return (
-    <CardHeader className="bg-gradient-to-r from-purple-50 to-white dark:from-purple-900/20 dark:to-gray-900 border-b border-purple-100 dark:border-purple-900/30">
+    <CardHeader className="border-b border-purple-100 dark:border-purple-900/30">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <CardTitle className="text-purple-700 dark:text-purple-300">Mark Attendance</CardTitle>

@@ -13,7 +13,6 @@ interface Teacher {
   id: string;
   name: string;
   subject: string;
-  experience: string;
   bio?: string;
   email?: string;
   phone?: string;
@@ -43,7 +42,7 @@ export const TeacherList = ({
       const {
         data,
         error
-      } = await supabase.from('teachers').select('id, name, subject, experience, email, phone, bio');
+      } = await supabase.from('teachers').select('id, name, subject, email, phone, bio');
       if (error) {
         toast({
           title: "Error fetching teachers",
@@ -109,7 +108,6 @@ export const TeacherList = ({
             <TableHead>Name</TableHead>
             <TableHead>Subject</TableHead>
             <TableHead>Students</TableHead>
-            <TableHead>Experience</TableHead>
             <TableHead>Contact</TableHead>
             <TableHead className="text-right">Actions</TableHead>
           </TableRow>
@@ -139,35 +137,8 @@ export const TeacherList = ({
                     <span>{teacher.students}</span>
                   </div>
                 </TableCell>
-                <TableCell>{teacher.experience}</TableCell>
-                <TableCell>
-                  <div className="flex space-x-2">
-                    {teacher.email && <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                              <Mail className="h-4 w-4 text-slate-500" />
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p>{teacher.email}</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>}
-                    {teacher.phone && <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                              <Phone className="h-4 w-4 text-slate-500" />
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p>{teacher.phone}</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>}
-                  </div>
-                </TableCell>
+                <TableCell>{teacher.email ? <a href={`mailto:${teacher.email}`} className="text-blue-600 hover:underline">{teacher.email}</a> : "N/A"}</TableCell>
+                <TableCell>{teacher.phone || "N/A"}</TableCell>
                 <TableCell className="text-right space-x-2">
                   <Button variant="outline" size="sm" onClick={() => onEdit(teacher)} title="Edit teacher" className="bg-slate-950 hover:bg-slate-800">
                     <Pencil className="h-4 w-4" />

@@ -63,7 +63,7 @@ const Students = () => {
 
           <div className="grid gap-4 md:grid-cols-3">
             <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 bg-purple-50 dark:bg-purple-900/20">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 dark:bg-purple-900/20">
                 <CardTitle className="text-sm font-medium text-purple-700 dark:text-purple-300">Total Students</CardTitle>
                 <Users className="h-4 w-4 text-purple-600 dark:text-purple-400" />
               </CardHeader>

@@ -1,4 +1,3 @@
-
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { LogOut } from "lucide-react";
@@ -6,12 +5,14 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/use-toast";
 import { getInitials } from "@/utils/stringUtils";
+import { cn } from "@/lib/utils";
 
 interface SidebarUserProps {
   isAdmin: boolean;
+  isOpen?: boolean;
 }
 
-export const SidebarUser = ({ isAdmin }: SidebarUserProps) => {
+export const SidebarUser = ({ isAdmin, isOpen }: SidebarUserProps) => {
   const navigate = useNavigate();
   const { session, signOut } = useAuth();
   const user = session?.user;
@@ -35,29 +36,46 @@ export const SidebarUser = ({ isAdmin }: SidebarUserProps) => {
   };
 
   return (
-    <div className={`mt-auto ${isAdmin ? "border-t border-white/5" : "border-t"} px-4 py-4`}>
-      <div className="flex items-center gap-3 rounded-lg px-2 py-2">
-        <Avatar className={`h-10 w-10 ${isAdmin ? "ring-2 ring-amber-500/50" : ""}`}>
+    <div className={cn(
+      "mt-auto",
+      isAdmin ? "border-t border-white/5" : "border-t",
+      isOpen === false ? "px-1 py-2 sm:px-2 sm:py-4" : "px-4 py-4"
+    )}>
+      <div className={cn(
+        "flex items-center rounded-lg",
+        isOpen === false ? "justify-center gap-1 sm:gap-2" : "gap-3 px-2 py-2"
+      )}>
+        <Avatar className={cn(
+          "h-9 w-9 sm:h-10 sm:w-10",
+          isAdmin ? "ring-1 sm:ring-2 ring-amber-500/50" : ""
+        )}>
           <AvatarImage alt="User avatar" />
           <AvatarFallback className={isAdmin ? "bg-amber-500 text-[#121827] font-semibold" : "bg-primary text-primary-foreground"}>
             {getInitials(user?.email)}
           </AvatarFallback>
         </Avatar>
-        <div className="hidden md:block">
-          <div className="text-sm font-medium text-white">
-            {user?.email?.split("@")[0] || "User"}
+        {isOpen !== false && (
+          <div className="transition-opacity duration-300">
+            <div className={`text-sm font-medium ${isAdmin ? "text-white" : ""}`}>
+              {user?.email?.split("@")[0] || "User"}
+            </div>
+            <div className={`text-xs ${isAdmin ? "text-amber-400" : "text-muted-foreground"}`}>
+              {isAdmin ? "Administrator" : "Teacher"}
+            </div>
           </div>
-          <div className={`text-xs ${isAdmin ? "text-amber-400" : "text-muted-foreground"}`}>
-            {isAdmin ? "Administrator" : "Teacher"}
-          </div>
-        </div>
+        )}
         <Button 
           variant={isAdmin ? "ghost" : "ghost"} 
           size="icon" 
-          className={`ml-auto ${isAdmin ? "hover:bg-white/10 text-white" : ""}`}
+          className={cn(
+            "transition-all duration-300", 
+            isAdmin ? "hover:bg-white/10 text-white" : "hover:bg-gray-100",
+            isOpen === false ? "" : "ml-auto"
+          )}
           onClick={handleSignOut}
+          title="Log out"
         >
-          <LogOut className={`h-5 w-5 ${isAdmin ? "text-amber-400" : ""}`} />
+          <LogOut className={cn("h-5 w-5", isAdmin ? "text-amber-400" : "")} />
           <span className="sr-only">Log out</span>
         </Button>
       </div>

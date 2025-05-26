@@ -48,6 +48,50 @@ export default function ManualRoleSetup() {
       if (updateResponse.error) {
         throw new Error(`Failed to update user metadata: ${updateResponse.error.message}`);
       }
+
+      // If the role is teacher, ensure a teacher record exists
+      if (selectedRole === 'teacher' && updateResponse.data.user?.email) {
+        const userEmail = updateResponse.data.user.email;
+        console.log(`Selected role is teacher. Checking/creating teacher record for ${userEmail}`);
+
+        const { data: existingTeacher, error: checkError } = await supabase
+          .from('teachers')
+          .select('id')
+          .eq('email', userEmail)
+          .maybeSingle();
+
+        if (checkError) {
+          console.error("Error checking for existing teacher record:", checkError.message);
+          // Decide if this should be a fatal error or just a warning
+        }
+
+        if (!existingTeacher) {
+          console.log(`No existing teacher record found for ${userEmail}. Creating one.`);
+          const { error: insertError } = await supabase
+            .from('teachers')
+            .insert([{ 
+              email: userEmail,
+              name: userEmail, // Use email as name for now
+              subject: 'To be determined', // Placeholder
+              bio: 'Profile to be completed.' // Placeholder
+              // Add any other required fields with default/placeholder values
+            }]);
+
+          if (insertError) {
+            console.error("Error creating teacher record:", insertError.message);
+            toast({
+              title: "Teacher Record Creation Failed",
+              description: `Could not create a teacher database entry: ${insertError.message}. Please complete your profile later.`,
+              variant: "destructive",
+            });
+            // Decide if this should prevent login or just warn
+          } else {
+            console.log(`Successfully created teacher record for ${userEmail}`);
+          }
+        } else {
+          console.log(`Teacher record already exists for ${userEmail}`);
+        }
+      }
       
       // Also set in localStorage for immediate use
       localStorage.setItem('userRole', selectedRole);

@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
@@ -12,7 +11,7 @@ export const QuickActions = ({ teacherId }: QuickActionsProps) => {
   const navigate = useNavigate();
   
   return (
-    <Card className="h-auto lg:h-[350px]">
+    <Card className="h-auto">
       <CardHeader>
         <CardTitle>Quick Actions</CardTitle>
       </CardHeader>
@@ -20,7 +19,7 @@ export const QuickActions = ({ teacherId }: QuickActionsProps) => {
         <div className="space-y-3">
           <Button 
             variant="outline" 
-            className="w-full justify-start text-left"
+            className="w-full justify-start text-left text-foreground"
             onClick={() => navigate('/attendance')}
           >
             <CalendarCheck className="mr-2 h-4 w-4" />
@@ -29,7 +28,7 @@ export const QuickActions = ({ teacherId }: QuickActionsProps) => {
           
           <Button 
             variant="outline" 
-            className="w-full justify-start text-left"
+            className="w-full justify-start text-left text-foreground"
             onClick={() => navigate('/student-progress')}
           >
             <BookOpen className="mr-2 h-4 w-4" />
@@ -38,21 +37,14 @@ export const QuickActions = ({ teacherId }: QuickActionsProps) => {
           
           <Button 
             variant="outline" 
-            className="w-full justify-start text-left"
+            className="w-full justify-start text-left text-foreground"
             onClick={() => navigate('/teacher-portal?tab=students')}
           >
             <Users className="mr-2 h-4 w-4" />
             View My Students
           </Button>
           
-          <Button 
-            variant="outline" 
-            className="w-full justify-start text-left"
-            onClick={() => navigate('/schedule')}
-          >
-            <CalendarPlus className="mr-2 h-4 w-4" />
-            Add to Schedule
-          </Button>
+         
         </div>
       </CardContent>
     </Card>

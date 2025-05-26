@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { format } from "date-fns";
 import {
@@ -111,10 +110,6 @@ export function TeacherDetailDialog({
                     <div>
                       <h4 className="text-sm font-medium text-muted-foreground">Subject</h4>
                       <p>{teacher.subject}</p>
-                    </div>
-                    <div>
-                      <h4 className="text-sm font-medium text-muted-foreground">Experience</h4>
-                      <p>{teacher.experience} years</p>
                     </div>
                   </CardContent>
                 </Card>

@@ -34,7 +34,7 @@ export const RecentActivity = () => {
   
   return (
     <Card className="h-auto lg:h-96">
-      <CardHeader className="bg-purple-50 dark:bg-purple-900/20">
+      <CardHeader className="">
         <CardTitle className="text-purple-700 dark:text-purple-300">Recent Activity</CardTitle>
       </CardHeader>
       <CardContent>

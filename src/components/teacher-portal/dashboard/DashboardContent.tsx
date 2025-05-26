@@ -1,4 +1,3 @@
-
 import { MyStudents } from "../MyStudents";
 import { TeacherDhorBook } from "../TeacherDhorBook";
 import { TeacherAttendance } from "../TeacherAttendance";
@@ -17,7 +16,7 @@ export const DashboardContent = ({ activeTab, teacherId, teacherName }: Dashboar
   switch (activeTab) {
     case "students":
       return <MyStudents teacherId={teacherId} />;
-    case "dhor-book":
+    case "progress-book":
       return <TeacherDhorBook teacherId={teacherId} />;
     case "attendance":
       return <TeacherAttendance teacherId={teacherId} />; 

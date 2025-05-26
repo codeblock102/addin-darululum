@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useQueryClient, useMutation } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -18,15 +17,15 @@ export function TeacherProfile({ teacher }: { teacher: Teacher }) {
   const queryClient = useQueryClient();
   
   const [formData, setFormData] = useState({
-    name: teacher?.name || "",
-    email: teacher?.email || "",
-    phone: teacher?.phone || "",
-    bio: teacher?.bio || "",
-    experience: teacher?.experience || "",
+    name: teacher.name || "",
+    email: teacher.email || "",
+    phone: teacher.phone || "",
+    subject: teacher.subject || "",
+    bio: teacher.bio || "",
   });
   
   const updateProfileMutation = useMutation({
-    mutationFn: async (updatedData: Partial<Teacher>) => {
+    mutationFn: async (updatedData: Partial<Omit<Teacher, 'id'>>) => {
       const { data, error } = await supabase
         .from('teachers')
         .update(updatedData)
@@ -43,23 +42,23 @@ export function TeacherProfile({ teacher }: { teacher: Teacher }) {
         description: "Your profile has been successfully updated.",
       });
     },
-    onError: (error: Error) => {
+    onError: (error) => {
       toast({
-        title: "Error",
-        description: `Failed to update profile: ${error.message}`,
+        title: "Update Failed",
+        description: error.message || "Could not update your profile. Please try again.",
         variant: "destructive",
       });
     },
   });
   
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
   
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    updateProfileMutation.mutate(formData);
+    const { ...dataToSubmit } = formData;
+    updateProfileMutation.mutate(dataToSubmit);
   };
   
   return (
@@ -108,6 +107,7 @@ export function TeacherProfile({ teacher }: { teacher: Teacher }) {
                     value={formData.email}
                     onChange={handleChange}
                     placeholder="Your email address"
+                    disabled
                   />
                 </div>
               </div>
@@ -123,15 +123,14 @@ export function TeacherProfile({ teacher }: { teacher: Teacher }) {
                     placeholder="Your phone number"
                   />
                 </div>
-                
                 <div className="space-y-2">
-                  <Label htmlFor="experience">Teaching Experience</Label>
+                  <Label htmlFor="subject">Subject Taught</Label>
                   <Input
-                    id="experience"
-                    name="experience"
-                    value={formData.experience}
+                    id="subject"
+                    name="subject"
+                    value={formData.subject}
                     onChange={handleChange}
-                    placeholder="Years of teaching experience"
+                    placeholder="e.g., Hifz, Tafseer"
                   />
                 </div>
               </div>
@@ -143,8 +142,8 @@ export function TeacherProfile({ teacher }: { teacher: Teacher }) {
                   name="bio"
                   value={formData.bio}
                   onChange={handleChange}
-                  placeholder="Tell us about yourself and your teaching experience"
-                  className="min-h-[120px]"
+                  placeholder="Briefly describe your teaching background and approach."
+                  rows={4}
                 />
               </div>
             </div>
@@ -160,10 +159,7 @@ export function TeacherProfile({ teacher }: { teacher: Teacher }) {
                   Saving...
                 </>
               ) : (
-                <>
-                  <Save className="mr-2 h-4 w-4" />
-                  Save Changes
-                </>
+                "Save Changes"
               )}
             </Button>
           </form>

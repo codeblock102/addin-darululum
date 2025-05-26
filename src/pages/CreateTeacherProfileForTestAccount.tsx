@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -55,11 +54,10 @@ const CreateTeacherProfileForTestAccount = () => {
             name: "Mufti Ammar Mulla",
             email: testEmail,
             subject: "Islamic Studies",
-            experience: "10+ years",
             bio: "Islamic studies educator with expertise in Quranic teachings."
           }
         ])
-        .select();
+        .select("id, name, email, subject, bio, phone");
 
       if (error) throw error;
 

@@ -83,7 +83,7 @@ const TeacherPortal = () => {
       
       const { data, error } = await supabase
         .from('teachers')
-        .select('id, name, subject, experience, email, bio, phone')
+        .select('id, name, subject, email, bio, phone')
         .eq('email', session.user.email)
         .maybeSingle();
       
@@ -133,7 +133,6 @@ const TeacherPortal = () => {
       id: 'admin-view',
       name: 'Admin View',
       subject: 'Administration',
-      experience: 'Administrator',
       email: session?.user?.email || 'admin@example.com',
       bio: 'Viewing the teacher portal as an administrator',
       phone: ''
@@ -143,7 +142,7 @@ const TeacherPortal = () => {
       <DashboardLayout>
         <div className="p-4 mb-6 bg-blue-50 border border-blue-200 rounded-md flex items-center">
           <Shield className="text-blue-600 mr-3 h-5 w-5 flex-shrink-0" />
-          <p className="text-blue-800 text-sm">
+          <p className="text-sm">
             <strong>Admin Mode:</strong> You are viewing the teacher portal with administrator privileges. 
             Some teacher-specific features may require a teacher profile.
           </p>
