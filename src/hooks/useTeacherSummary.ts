@@ -91,26 +91,17 @@ export const useTeacherSummary = (teacherId: string) => {
           else averageQuality = 'Poor';
         }
         
-        // Get pending revision count
-        const { data: pendingRevisions, error: pendingError } = await supabase
-          .from('revision_schedule')
-          .select('id')
-          .eq('status', 'pending')
-          .lte('scheduled_date', today);
-          
-        if (pendingError) throw pendingError;
-        
         return {
           totalStudents: students?.length || 0,
           activeClasses: classes?.length || 0,
-          upcomingRevisions: pendingRevisions?.length || 0,
+          upcomingRevisions: 0,
           completionRate: progressEntries?.length ? Math.round((progressEntries.length / (students?.length || 1)) * 100) : 0,
           studentsCount: students?.length || 0,
           recentProgressEntries: progressEntries?.length || 0,
           todayClasses: classes?.length || 0,
           averageQuality,
           totalRevisions: revisions?.length || 0,
-          pendingRevisions: pendingRevisions?.length || 0
+          pendingRevisions: 0
         };
       } catch (error) {
         console.error("Error fetching teacher summary:", error);

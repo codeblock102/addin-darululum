@@ -406,47 +406,6 @@ export type Database = {
           },
         ]
       }
-      revision_schedule: {
-        Row: {
-          created_at: string | null
-          id: string
-          juz_number: number
-          priority: string | null
-          scheduled_date: string
-          status: string | null
-          student_id: string | null
-          surah_number: number | null
-        }
-        Insert: {
-          created_at?: string | null
-          id?: string
-          juz_number: number
-          priority?: string | null
-          scheduled_date: string
-          status?: string | null
-          student_id?: string | null
-          surah_number?: number | null
-        }
-        Update: {
-          created_at?: string | null
-          id?: string
-          juz_number?: number
-          priority?: string | null
-          scheduled_date?: string
-          status?: string | null
-          student_id?: string | null
-          surah_number?: number | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "revision_schedule_student_id_fkey"
-            columns: ["student_id"]
-            isOneToOne: false
-            referencedRelation: "students"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       role_permissions: {
         Row: {
           created_at: string
