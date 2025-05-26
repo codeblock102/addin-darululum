@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useLocation } from "react-router-dom";
@@ -158,7 +157,7 @@ export const TeacherDhorBook = ({ teacherId }: TeacherDhorBookProps) => {
                 {selectedStudentId && studentVerification && (
                   <div className="space-y-4 mt-3">
                     <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-2">
-                      <h3 className="text-base sm:text-lg md:text-xl font-semibold truncate">
+                      <h3 className="text-base sm:text-lg md:text-xl font-semibold truncate text-foreground">
                         {studentVerification.name}'s Progress
                       </h3>
                       <div className="flex flex-wrap gap-2">

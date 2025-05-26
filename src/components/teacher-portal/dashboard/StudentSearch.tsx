@@ -41,7 +41,7 @@ export const StudentSearch = ({ teacherId }: StudentSearchProps) => {
   ) || [];
   
   const handleStudentClick = (studentId: string) => {
-    navigate(`/teacher-portal?tab=dhor-book&studentId=${studentId}`);
+    navigate(`/teacher-portal?tab=progress-book&studentId=${studentId}`);
   };
   
   return (
@@ -85,7 +85,7 @@ export const StudentSearch = ({ teacherId }: StudentSearchProps) => {
                 <Button
                   key={student.id}
                   variant="ghost"
-                  className="w-full justify-start"
+                  className="w-full justify-start text-foreground"
                   onClick={() => handleStudentClick(student.id)}
                 >
                   <UserRound className="h-4 w-4 mr-2 opacity-70" />
