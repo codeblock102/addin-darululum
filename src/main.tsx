@@ -1,3 +1,15 @@
+/**
+ * @file src/main.tsx
+ * @summary This is the main entry point for the React application.
+ * 
+ * It sets up the root of the React application by:
+ * 1. Importing the main `App` component.
+ * 2. Importing global styles from `index.css`.
+ * 3. Importing and wrapping the `App` component with necessary context providers:
+ *    - `QueryClientProvider`: For `react-query`, enabling server state management (caching, refetching, etc.).
+ *    - `AuthProvider`: For managing authentication state and user information across the application.
+ * 4. Rendering the root component into the DOM element with the ID "root" (typically in `index.html`).
+ */
 
 import { createRoot } from 'react-dom/client'
 import App from './App.tsx'

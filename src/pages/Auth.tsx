@@ -1,3 +1,22 @@
+/**
+ * @file src/pages/Auth.tsx
+ * @summary This file defines the authentication page component for user login.
+ * 
+ * It provides a form for users to sign in using their email and password.
+ * The component handles the sign-in process using Supabase authentication, displays error messages,
+ * and redirects users based on their role (admin or teacher) or to a role setup page if no role is defined.
+ * 
+ * Key Features:
+ * - Email and password input fields.
+ * - Show/hide password functionality.
+ * - Loading state indication during sign-in.
+ * - Error message display for failed login attempts.
+ * - Role-based redirection after successful login:
+ *   - Admins are redirected to `/dashboard`.
+ *   - Teachers are redirected to `/dashboard`.
+ *   - Users without a defined role (or not found as a teacher) are redirected to `/role-setup`.
+ * - Uses `useAuth` context for session refresh and `useToast` for notifications.
+ */
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -10,6 +29,28 @@ import { Eye, EyeOff, LockKeyhole, Mail, AlertTriangle, Loader2 } from "lucide-r
 import { useAuth } from "@/contexts/AuthContext";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
+/**
+ * @component Auth
+ * @description Renders the user authentication (login) page.
+ * 
+ * This component provides a user interface for email/password login.
+ * It interacts with Supabase for authentication, handles user feedback (loading states, errors, success toasts),
+ * and navigates the user to the appropriate part of the application upon successful authentication.
+ * 
+ * State Management:
+ *  - `email`: Stores the content of the email input field.
+ *  - `password`: Stores the content of the password input field.
+ *  - `isLoading`: Boolean to indicate if the sign-in process is active.
+ *  - `showPassword`: Boolean to toggle password visibility.
+ *  - `errorMessage`: Stores error messages to be displayed to the user.
+ *
+ * Hooks:
+ *  - `useNavigate`: For programmatic navigation after login.
+ *  - `useToast`: For displaying toast notifications.
+ *  - `useAuth`: For accessing `refreshSession` to update auth state post-login.
+ *
+ * @returns {JSX.Element} The rendered authentication page with a login form.
+ */
 const Auth = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -20,6 +61,21 @@ const Auth = () => {
   const { toast } = useToast();
   const { refreshSession } = useAuth();
 
+  /**
+   * @function handleSignIn
+   * @description Handles the user sign-in process when the login form is submitted.
+   * It prevents the default form submission, sets loading states, and calls Supabase `signInWithPassword`.
+   * After a successful sign-in, it refreshes the session, checks the user's role (admin or teacher),
+   * and navigates them accordingly. Displays errors using state and toasts.
+   * 
+   * Input:
+   *  - `e`: React.FormEvent, the form submission event.
+   * 
+   * Output:
+   *  - Navigates the user to `/dashboard` or `/role-setup` on success.
+   *  - Sets `errorMessage` and shows a toast on failure.
+   * @async
+   */
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
@@ -63,7 +119,7 @@ const Auth = () => {
           title: "Login Successful",
           description: "Welcome back, Admin! Redirecting...",
         });
-        navigate("/admin");
+        navigate("/dashboard");
         return;
       }
 
@@ -83,7 +139,7 @@ const Auth = () => {
             title: "Login Successful",
             description: "Welcome back, Teacher! Redirecting...",
           });
-          navigate("/teacher-portal");
+          navigate("/dashboard");
           return;
         }
       }

@@ -1,3 +1,15 @@
+/**
+ * @file src/App.css
+ * @summary This CSS file contains styles that were likely part of the initial Vite + React template.
+ * 
+ * It includes styles for a root container (`#root`), logo elements (`.logo`, `.logo.react`),
+ * a logo spinning animation (`@keyframes logo-spin`), and some basic card and text styling
+ * (`.card`, `.read-the-docs`).
+ * 
+ * Much of this might be default boilerplate from project creation and may or may not be actively used
+ * or could be superseded by more specific styles in the `src/styles` directory or component-level styles.
+ */
+
 #root {
   max-width: 1280px;
   margin: 0 auto;
