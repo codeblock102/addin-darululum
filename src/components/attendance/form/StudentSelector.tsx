@@ -1,4 +1,3 @@
-
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Loader2 } from "lucide-react";
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
@@ -80,7 +79,7 @@ export function StudentSelector({
               </SelectTrigger>
               <SelectContent>
                 {students?.length ? (
-                  students.map((student) => (
+                  students.filter(student => student.id !== "").map((student) => (
                     <SelectItem key={student.id} value={student.id}>
                       {student.name}
                     </SelectItem>

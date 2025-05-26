@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -140,12 +139,21 @@ export const TeacherAttendance = ({ teacherId }: TeacherAttendanceProps) => {
           <CardContent>
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-2 sm:space-y-0 mb-4">
               <div className="flex items-center space-x-2">
-                <Select value={selectedStatus} onValueChange={setSelectedStatus}>
+                <Select 
+                  value={selectedStatus || "all"}
+                  onValueChange={(value) => {
+                    if (value === "all") {
+                      setSelectedStatus(undefined);
+                    } else {
+                      setSelectedStatus(value);
+                    }
+                  }}
+                >
                   <SelectTrigger className="w-[180px]">
                     <SelectValue placeholder="Filter by status" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All Statuses</SelectItem>
+                    <SelectItem value="all">All Statuses</SelectItem>
                     <SelectItem value="present">Present</SelectItem>
                     <SelectItem value="absent">Absent</SelectItem>
                     <SelectItem value="late">Late</SelectItem>
