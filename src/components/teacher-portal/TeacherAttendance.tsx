@@ -7,7 +7,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { useQuery } from '@tanstack/react-query';
+import { Checkbox } from '@/components/ui/checkbox';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { format } from 'date-fns';
 import { CalendarIcon, MoreHorizontal, Search, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
@@ -37,6 +38,10 @@ export const TeacherAttendance = (/* { teacherId }: TeacherAttendanceProps */) =
   const [date, setDate] = useState<Date | undefined>(new Date());
   const [selectedStatus, setSelectedStatus] = useState<string | undefined>();
   const [searchQuery, setSearchQuery] = useState('');
+  const [editingStudentId, setEditingStudentId] = useState<string | null>(null); // State for inline editing
+  const [selectedStudentIds, setSelectedStudentIds] = useState<Set<string>>(new Set()); // For bulk actions
+  const [bulkActionStatus, setBulkActionStatus] = useState<string>(''); // Status for bulk update
+  const queryClient = useQueryClient(); // For invalidating queries
 
   // 1. Fetch ALL students from the 'students' table.
   const { data: allStudents, isLoading: studentsLoading, error: studentsError } = useQuery<StudentData[], Error>({
@@ -108,6 +113,32 @@ export const TeacherAttendance = (/* { teacherId }: TeacherAttendanceProps */) =
   });
   console.log("Attendance Records Hook Result:", { attendanceRecords, attendanceLoading, attendanceError });
 
+  const handleStatusUpdate = async (studentId: string, newStatus: string, currentDate: Date | undefined) => {
+    if (!currentDate) return;
+    const formattedDate = format(currentDate, 'yyyy-MM-dd');
+
+    console.log(`[handleStatusUpdate] Upserting for studentId: ${studentId}, date: ${formattedDate}, status: ${newStatus}`);
+
+    // Assuming a unique constraint on (student_id, date) in your attendance table
+    const { error } = await supabase
+      .from('attendance')
+      .upsert(
+        { student_id: studentId, date: formattedDate, status: newStatus },
+        { onConflict: 'student_id, date' } 
+      );
+
+    if (error) {
+      console.error('[handleStatusUpdate] Error upserting attendance:', error);
+      // Optionally, show an error message to the user
+    } else {
+      console.log('[handleStatusUpdate] Upsert successful');
+      await queryClient.invalidateQueries({ 
+        queryKey: ['student-attendance-records', currentDate, allStudents?.map(s => s.id)] 
+      });
+      setEditingStudentId(null); // Exit editing mode
+    }
+  };
+
   // Create a map of attendance records by student_id for quick lookup
   const attendanceMap = new Map(attendanceRecords?.map(record => [record.student_id, record]));
 
@@ -131,6 +162,60 @@ export const TeacherAttendance = (/* { teacherId }: TeacherAttendanceProps */) =
   });
   console.log("Filtered Students Result:", filteredStudents, "Selected Status:", selectedStatus, "Search Query:", searchQuery);
 
+  const handleRowCheckboxChange = (studentId: string, checked: boolean | 'indeterminate') => {
+    setSelectedStudentIds(prev => {
+      const newSet = new Set(prev);
+      if (checked === true) {
+        newSet.add(studentId);
+      } else {
+        newSet.delete(studentId);
+      }
+      return newSet;
+    });
+  };
+
+  const handleSelectAllChange = (checked: boolean | 'indeterminate') => {
+    if (checked === true) {
+      const allVisibleIds = new Set(filteredStudents?.map(s => s.id) || []);
+      setSelectedStudentIds(allVisibleIds);
+    } else {
+      setSelectedStudentIds(new Set());
+    }
+  };
+  
+  const handleBulkStatusUpdate = async () => {
+    if (!date || selectedStudentIds.size === 0 || !bulkActionStatus) {
+      console.warn("[handleBulkStatusUpdate] Missing date, selected students, or bulk action status.");
+      return;
+    }
+
+    const formattedDate = format(date, 'yyyy-MM-dd');
+    const recordsToUpsert = Array.from(selectedStudentIds).map(studentId => ({
+      student_id: studentId,
+      date: formattedDate,
+      status: bulkActionStatus,
+    }));
+
+    console.log(`[handleBulkStatusUpdate] Upserting ${recordsToUpsert.length} records with status: ${bulkActionStatus}`);
+
+    const { error } = await supabase
+      .from('attendance')
+      .upsert(recordsToUpsert, { onConflict: 'student_id, date' });
+
+    if (error) {
+      console.error('[handleBulkStatusUpdate] Error upserting bulk attendance:', error);
+      // TODO: Show error to user, e.g., using a toast notification
+    } else {
+      console.log('[handleBulkStatusUpdate] Bulk upsert successful');
+      await queryClient.invalidateQueries({
+        queryKey: ['student-attendance-records', date, allStudents?.map(s => s.id)]
+      });
+      setSelectedStudentIds(new Set()); // Clear selection
+      setBulkActionStatus(''); // Reset bulk status dropdown
+      setEditingStudentId(null); // Ensure individual edit mode is also exited
+    }
+  };
+
   const getStatusBadge = (status: string | undefined) => {
     if (!status) return <Badge variant="outline">Not Marked</Badge>;
     switch (status) {
@@ -151,6 +236,12 @@ export const TeacherAttendance = (/* { teacherId }: TeacherAttendanceProps */) =
   // if (!teacherId) return <Card><CardContent className="pt-6"><p>Teacher ID not provided. Unable to load student attendance data.</p></CardContent></Card>; // Removed teacherId check
   if (studentsLoading) return <Card><CardContent className="pt-6 flex items-center justify-center"><Loader2 className="h-6 w-6 animate-spin mr-2" />Loading student data...</CardContent></Card>; // Updated message
   if (studentsError) return <Card><CardContent className="pt-6 text-red-600">Error loading student data: {studentsError.message}</CardContent></Card>; // Updated message
+
+  const isAllFilteredSelected = filteredStudents && filteredStudents.length > 0 &&
+    selectedStudentIds.size === filteredStudents.length &&
+    filteredStudents.every(s => selectedStudentIds.has(s.id));
+
+  const isSomeFilteredSelected = selectedStudentIds.size > 0 && !isAllFilteredSelected;
 
   return (
     <div className="space-y-4">
@@ -198,6 +289,44 @@ export const TeacherAttendance = (/* { teacherId }: TeacherAttendanceProps */) =
             </CardDescription>
           </CardHeader>
           <CardContent>
+            {selectedStudentIds.size > 0 && (
+              <div className="flex items-center gap-4 p-3 mb-4 border rounded-lg bg-muted/30">
+                <p className="text-sm text-muted-foreground whitespace-nowrap">
+                  {selectedStudentIds.size} student(s) selected
+                </p>
+                <Select
+                  value={bulkActionStatus}
+                  onValueChange={setBulkActionStatus}
+                >
+                  <SelectTrigger className="w-[200px] h-9">
+                    <SelectValue placeholder="Set status for selected" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="present">Present</SelectItem>
+                    <SelectItem value="absent">Absent</SelectItem>
+                    <SelectItem value="late">Late</SelectItem>
+                    <SelectItem value="excused">Excused</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Button
+                  size="sm"
+                  onClick={handleBulkStatusUpdate}
+                  disabled={!bulkActionStatus || attendanceLoading}
+                  className="h-9"
+                >
+                  Apply to Selected
+                </Button>
+                <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setSelectedStudentIds(new Set())}
+                    className="h-9"
+                >
+                    Clear Selection
+                </Button>
+              </div>
+            )}
+
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-2 sm:space-y-0 mb-4">
               <div className="flex items-center space-x-2">
                 <Select 
@@ -246,6 +375,20 @@ export const TeacherAttendance = (/* { teacherId }: TeacherAttendanceProps */) =
                 <Table>
                   <TableHeader>
                     <TableRow>
+                      <TableHead className="w-[40px] px-2">
+                        <Checkbox
+                          checked={
+                            isAllFilteredSelected
+                              ? true
+                              : isSomeFilteredSelected
+                              ? 'indeterminate'
+                              : false
+                          }
+                          onCheckedChange={handleSelectAllChange}
+                          aria-label="Select all rows on this page"
+                          disabled={!filteredStudents || filteredStudents.length === 0 || attendanceLoading}
+                        />
+                      </TableHead>
                       <TableHead>Student</TableHead>
                       <TableHead>Status</TableHead>
                       <TableHead>Note</TableHead>
@@ -254,9 +397,40 @@ export const TeacherAttendance = (/* { teacherId }: TeacherAttendanceProps */) =
                   </TableHeader>
                   <TableBody>
                     {filteredStudents?.map((student) => (
-                      <TableRow key={student.id}>
+                      <TableRow key={student.id} data-state={selectedStudentIds.has(student.id) ? "selected" : ""}>
+                        <TableCell className="px-2">
+                          <Checkbox
+                            checked={selectedStudentIds.has(student.id)}
+                            onCheckedChange={(checked) => handleRowCheckboxChange(student.id, checked)}
+                            aria-label={`Select row for ${student.name}`}
+                            disabled={attendanceLoading}
+                          />
+                        </TableCell>
                         <TableCell className="font-medium">{student.name}</TableCell>
-                        <TableCell>{getStatusBadge(student.status)}</TableCell>
+                        <TableCell>
+                          {editingStudentId === student.id ? (
+                            <Select
+                              value={student.status || ''}
+                              onValueChange={(newStatus) => {
+                                handleStatusUpdate(student.id, newStatus, date);
+                              }}
+                            >
+                              <SelectTrigger className="h-8 w-auto min-w-[100px]">
+                                <SelectValue placeholder="Set status" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="present">Present</SelectItem>
+                                <SelectItem value="absent">Absent</SelectItem>
+                                <SelectItem value="late">Late</SelectItem>
+                                <SelectItem value="excused">Excused</SelectItem>
+                                {/* Option to clear status / mark as 'Not Marked' could be added here if needed */}
+                                {/* e.g. <SelectItem value="">Not Marked</SelectItem> or a separate action */}
+                              </SelectContent>
+                            </Select>
+                          ) : (
+                            getStatusBadge(student.status)
+                          )}
+                        </TableCell>
                         <TableCell>{student.notes || '-'}</TableCell>
                         <TableCell className="text-right">
                           <DropdownMenu>
@@ -267,7 +441,9 @@ export const TeacherAttendance = (/* { teacherId }: TeacherAttendanceProps */) =
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
-                              <DropdownMenuItem disabled>Edit Status</DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => setEditingStudentId(student.id)}>
+                                Edit Status
+                              </DropdownMenuItem>
                               <DropdownMenuItem disabled>Add Note</DropdownMenuItem>
                               <DropdownMenuItem disabled>View History</DropdownMenuItem>
                             </DropdownMenuContent>
@@ -277,7 +453,7 @@ export const TeacherAttendance = (/* { teacherId }: TeacherAttendanceProps */) =
                     ))}
                     {(!filteredStudents || filteredStudents.length === 0) && allStudents && allStudents.length > 0 && (
                       <TableRow>
-                        <TableCell colSpan={4} className="h-24 text-center">
+                        <TableCell colSpan={5} className="h-24 text-center"> {/* Adjusted colSpan */}
                           No students match the current filters.
                         </TableCell>
                       </TableRow>
