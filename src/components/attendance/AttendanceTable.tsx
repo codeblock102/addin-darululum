@@ -103,6 +103,6 @@ export function AttendanceTable({ teacherId }: AttendanceTableProps) {
           attendanceRecords={filteredRecords}
         />
       )}
-    </div>
+          </div>
   );
 }
