@@ -248,9 +248,8 @@ export const TeacherAttendance = (/* { teacherId }: TeacherAttendanceProps */) =
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h2 className="text-2xl font-bold tracking-tight">Student Attendance</h2>
-          <p className="text-muted-foreground">Record and monitor attendance for all students.</p> {/* Updated text */}
+          <p className="text-muted-foreground">Record and monitor attendance for all students.</p>
         </div>
-        <Button disabled>Mark Today's Attendance</Button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
@@ -261,15 +260,8 @@ export const TeacherAttendance = (/* { teacherId }: TeacherAttendanceProps */) =
             <CardDescription>Choose a date to view or record attendance</CardDescription>
           </CardHeader>
           <CardContent>
-            <Calendar
-              mode="single"
-              selected={date}
-              onSelect={setDate}
-              className="rounded-md border"
-              disabled={attendanceLoading}
-            />
             {date && (
-              <div className="mt-4">
+              <div className="mb-4">
                 <p className="text-sm font-medium">Selected Date</p>
                 <div className="flex items-center mt-1 gap-2">
                   <CalendarIcon className="h-4 w-4 text-muted-foreground" />
@@ -277,6 +269,13 @@ export const TeacherAttendance = (/* { teacherId }: TeacherAttendanceProps */) =
                 </div>
               </div>
             )}
+            <Calendar
+              mode="single"
+              selected={date}
+              onSelect={setDate}
+              className="rounded-md border"
+              disabled={attendanceLoading}
+            />
           </CardContent>
         </Card>
 
