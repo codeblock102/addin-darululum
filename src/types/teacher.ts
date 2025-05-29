@@ -53,27 +53,3 @@ export interface SummaryData {
   pendingRevisions: number;
   scheduledRevisions?: number;
 }
-
-// Updated Schedule type to match the database schema
-export interface Schedule {
-  id: string;
-  name: string;         // This field stores the class name
-  class_name?: string;  // For compatibility with existing components
-  days_of_week: string[];
-  time_slots: TimeSlot[];
-  room?: string;
-  capacity?: number;
-  current_students?: number;
-  teacher_id?: string;
-  
-  // Deprecated fields - kept for compatibility with existing components
-  day_of_week?: string;
-  time_slot?: string;
-}
-
-// Updated TimeSlot interface to ensure all fields are required
-export interface TimeSlot {
-  days: string[];
-  start_time: string;
-  end_time: string;
-}
