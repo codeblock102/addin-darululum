@@ -23,7 +23,6 @@ import Dashboard from "@/pages/Dashboard";
 import Classes from "@/pages/Classes";
 import Progress from "@/pages/Progress";
 import ProgressBook from "@/pages/ProgressBook";
-import Schedule from "@/pages/Schedule";
 import Attendance from "@/pages/Attendance";
 import StudentProgress from "@/pages/StudentProgress";
 import TeacherAccounts from "@/pages/TeacherAccounts";
@@ -135,14 +134,6 @@ function App() {
             element={
               <ProtectedRoute>
                 <ProgressBook />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/schedule"
-            element={
-              <ProtectedRoute>
-                <Schedule />
               </ProtectedRoute>
             }
           />

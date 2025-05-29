@@ -37,7 +37,6 @@ export const teacherNavItems: NavItem[] = [
   { href: "/dashboard", label: "Dashboard", icon: Home, description: "Teacher dashboard", exact: true },
   { href: "/dashboard?tab=students", label: "My Students", icon: Users, description: "Manage your students" },
   { href: "/dashboard?tab=progress-book", label: "Progress Book", icon: Book, description: "Record student progress" },
-  { href: "/dashboard?tab=schedule", label: "Schedule", icon: CalendarDays, description: "Manage revision schedules" },
   { href: "/dashboard?tab=attendance", label: "Attendance", icon: Clock, description: "Track student attendance" },
   { href: "/preferences", label: "Preferences", icon: Settings, description: "Account preferences" }
 ];
