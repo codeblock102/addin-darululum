@@ -1,7 +1,6 @@
 import { MyStudents } from "../MyStudents";
 import { TeacherDhorBook } from "../TeacherDhorBook";
 import { TeacherAttendance } from "../TeacherAttendance";
-import { TeacherSchedule } from "../TeacherSchedule";
 import { TeacherPerformance } from "./TeacherPerformance";
 import { TeacherMessagesEnhanced } from "../messaging/TeacherMessagesEnhanced";
 import { DashboardOverview } from "./DashboardOverview";
@@ -19,9 +18,7 @@ export const DashboardContent = ({ activeTab, teacherId, teacherName }: Dashboar
     case "progress-book":
       return <TeacherDhorBook teacherId={teacherId} />;
     case "attendance":
-      return <TeacherAttendance teacherId={teacherId} />;
-    case "schedule":
-      return <TeacherSchedule teacherId={teacherId} />;
+      return <TeacherAttendance />;
     case "performance":
       return <TeacherPerformance teacherId={teacherId} />;
     case "messages":

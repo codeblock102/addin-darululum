@@ -19,9 +19,9 @@ import { Clock, User, Calendar, BookOpen, Activity } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2 } from "lucide-react";
-import { TeacherScheduleTab } from "./TeacherScheduleTab";
 import { TeacherActivityTab } from "./TeacherActivityTab";
 import { TeacherStudentsTab } from "./TeacherStudentsTab";
+import { TeacherForm } from "./TeacherForm";
 
 interface TeacherDetailDialogProps {
   teacher: TeacherAccount | null;
@@ -78,9 +78,9 @@ export function TeacherDetailDialog({
           <Tabs value={activeTab} onValueChange={setActiveTab}>
             <TabsList className="mb-4">
               <TabsTrigger value="overview">Overview</TabsTrigger>
-              <TabsTrigger value="schedule">Schedule</TabsTrigger>
+              <TabsTrigger value="activity">Activity</TabsTrigger>
+              {/* <TabsTrigger value="schedule">Schedule</TabsTrigger> */}
               <TabsTrigger value="students">Students</TabsTrigger>
-              <TabsTrigger value="activity">Activity Log</TabsTrigger>
             </TabsList>
             
             {/* Overview Tab */}
@@ -166,19 +166,16 @@ export function TeacherDetailDialog({
               </div>
             </TabsContent>
             
-            {/* Schedule Tab */}
-            <TabsContent value="schedule">
-              <TeacherScheduleTab teacherId={teacher.id} />
-            </TabsContent>
-            
-            {/* Students Tab */}
-            <TabsContent value="students">
-              <TeacherStudentsTab teacherId={teacher.id} />
-            </TabsContent>
-            
             {/* Activity Log Tab */}
             <TabsContent value="activity">
               <TeacherActivityTab teacherId={teacher.id} />
+            </TabsContent>
+            {/* <TabsContent value="schedule">
+              // TeacherScheduleTab was here but has been removed
+            </TabsContent> */}
+            {/* Students Tab */}
+            <TabsContent value="students">
+              <TeacherStudentsTab teacherId={teacher.id} />
             </TabsContent>
           </Tabs>
         )}

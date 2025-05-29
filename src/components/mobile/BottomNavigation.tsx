@@ -23,7 +23,6 @@ export const BottomNavigation = () => {
     { icon: Home, label: "Dashboard", href: "/teacher-portal" },
     { icon: Users, label: "Students", href: "/teacher-portal?tab=students" },
     { icon: Book, label: "Progress", href: "/teacher-portal?tab=dhor-book" },
-    { icon: CalendarDays, label: "Schedule", href: "/teacher-portal?tab=schedule" },
     { icon: LogOut, label: "Logout", action: signOut }
   ];
 
