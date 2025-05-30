@@ -21,7 +21,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { Loader2 } from "lucide-react";
 import { TeacherActivityTab } from "./TeacherActivityTab";
 import { TeacherStudentsTab } from "./TeacherStudentsTab";
-import { TeacherForm } from "./TeacherForm";
 
 interface TeacherDetailDialogProps {
   teacher: TeacherAccount | null;

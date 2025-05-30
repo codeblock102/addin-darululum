@@ -27,8 +27,6 @@ export const DashboardTabContent = ({ activeTab, teacherId, teacherName }: Dashb
       return <TeacherDhorBook teacherId={teacherId} />;
     case "attendance":
       return <TeacherAttendance teacherId={teacherId} />; 
-    case "schedule":
-      return <TeacherSchedule teacherId={teacherId} />;
     case "performance":
       return <TeacherPerformance teacherId={teacherId} />;
     case "messages":
