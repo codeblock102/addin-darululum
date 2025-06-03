@@ -12,17 +12,17 @@ export const BottomNavigation = () => {
 
   // Different navigation items for admin and teacher roles
   const adminNavItems = [
-    { icon: Home, label: "Dashboard", href: "/admin" }, // Updated to correct admin dashboard path
+    { icon: Home, label: "Dashboard", href: "/dashboard" }, // Corrected admin dashboard path
     { icon: Users, label: "Teachers", href: "/teachers" },
     { icon: Users, label: "Students", href: "/students" },
-    { icon: Book, label: "Progress", href: "/dhor-book" },
+    { icon: Book, label: "Progress", href: "/progress-book" }, // Corrected progress path
     { icon: LogOut, label: "Logout", action: signOut }
   ];
 
   const teacherNavItems = [
-    { icon: Home, label: "Dashboard", href: "/teacher-portal" },
-    { icon: Users, label: "Students", href: "/teacher-portal?tab=students" },
-    { icon: Book, label: "Progress", href: "/teacher-portal?tab=dhor-book" },
+    { icon: Home, label: "Dashboard", href: "/dashboard" }, // Corrected teacher dashboard path
+    { icon: Users, label: "Students", href: "/students" }, // Corrected students path
+    { icon: Book, label: "Progress", href: "/progress-book" }, // Corrected progress path
     { icon: LogOut, label: "Logout", action: signOut }
   ];
 
@@ -30,18 +30,8 @@ export const BottomNavigation = () => {
 
   const isActive = (item: { href?: string; label?: string }) => {
     if (!item.href) return false;
-
-    // Specifically handle Dashboard for teachers to be exact
-    if (item.label === "Dashboard" && (item.href === "/teacher-portal" || item.href === "/admin")) {
-      return location.pathname === item.href && location.search === "";
-    }
-    
-    if (item.href.includes('?tab=')) {
-      const [path, search] = item.href.split('?');
-      return location.pathname === path && location.search.includes(search);
-    }
-    
-    return location.pathname === item.href && location.search === ""; // Make default check exact as well
+    // Exact match for all paths now, as query params are removed
+    return location.pathname === item.href;
   };
 
   const handleNavigation = (item: { href?: string; action?: () => Promise<void> }) => {

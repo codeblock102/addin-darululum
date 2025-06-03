@@ -10,7 +10,6 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { DashboardLayout } from "@/components/layouts/DashboardLayout";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -116,7 +115,7 @@ const StudentDetail = () => {
    */
   if (studentLoading) {
     return (
-      <DashboardLayout>
+      
         <div className="space-y-6">
           <div className="flex items-center gap-4">
             <Button variant="outline" size="icon" onClick={() => navigate("/students")}>
@@ -130,7 +129,7 @@ const StudentDetail = () => {
           </div>
           <Skeleton className="h-96 w-full" />
         </div>
-      </DashboardLayout>
+      
     );
   }
 
@@ -140,7 +139,7 @@ const StudentDetail = () => {
    */
   if (!student) {
     return (
-      <DashboardLayout>
+      
         <div className="flex flex-col items-center justify-center h-[60vh]">
           <h2 className="text-2xl font-bold mb-4">Student Not Found</h2>
           <p className="text-gray-500 mb-8">The student you're looking for doesn't exist or has been removed.</p>
@@ -148,7 +147,7 @@ const StudentDetail = () => {
             <ArrowLeft className="mr-2 h-4 w-4" /> Back to Students
           </Button>
         </div>
-      </DashboardLayout>
+      
     );
   }
 
@@ -158,7 +157,7 @@ const StudentDetail = () => {
    * progress overview, and Dhor book, once the student data is loaded.
    */
   return (
-    <DashboardLayout>
+    
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
@@ -268,7 +267,7 @@ const StudentDetail = () => {
           </TabsContent>
         </Tabs>
       </div>
-    </DashboardLayout>
+   
   );
 };
 

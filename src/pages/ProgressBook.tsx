@@ -20,7 +20,6 @@
  * - Utilizes realtime updates via `useRealtimeLeaderboard` (though its direct impact here might be for other parts of the system).
  */
 import { useState, useEffect } from "react";
-import { DashboardLayout } from "@/components/layouts/DashboardLayout";
 import { Card, CardContent } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
@@ -125,7 +124,6 @@ const ProgressBookPage = () => {
   );
 
   return (
-    <DashboardLayout>
       <div className="space-y-4 sm:space-y-6 pb-16">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
           <div>
@@ -312,7 +310,6 @@ const ProgressBookPage = () => {
           </CardContent>
         </Card>
       </div>
-    </DashboardLayout>
   );
 };
 

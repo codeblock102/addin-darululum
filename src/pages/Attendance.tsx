@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { DashboardLayout } from "@/components/layouts/DashboardLayout";
 import { AttendanceForm } from "@/components/attendance/AttendanceForm";
 import { AttendanceTable } from "@/components/attendance/AttendanceTable";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -12,7 +11,6 @@ const Attendance = () => {
   const [selectedTab, setSelectedTab] = useState("take-attendance");
   
   return (
-    <DashboardLayout>
       <div className="space-y-6 animate-fadeIn">
         <div className="flex items-center justify-between mb-4">
           <div>
@@ -110,7 +108,6 @@ const Attendance = () => {
           </CardContent>
         </Card>
       </div>
-    </DashboardLayout>
   );
 };
 

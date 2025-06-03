@@ -11,7 +11,7 @@
  * 
  * It also includes the `<Toaster>` component, which is used to display toast notifications globally throughout the application.
  */
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Outlet } from "react-router-dom";
 import { Toaster } from "@/components/ui/toaster";
 import { ThemeProvider } from "@/components/theme-provider";
 import Index from "@/pages/Index";
@@ -23,11 +23,12 @@ import Dashboard from "@/pages/Dashboard";
 import Classes from "@/pages/Classes";
 import Progress from "@/pages/Progress";
 import ProgressBook from "@/pages/ProgressBook";
-import Attendance from "@/pages/Attendance";
+import { TeacherAttendance } from "@/components/teacher-portal/TeacherAttendance";
 import StudentProgress from "@/pages/StudentProgress";
 import TeacherAccounts from "@/pages/TeacherAccounts";
 import Auth from "@/pages/Auth";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
+import { DashboardLayout } from "@/components/layouts/DashboardLayout";
 import Settings from "@/pages/Settings";
 import Preferences from "@/pages/Preferences";
 import CreateDemoAccount from "@/pages/CreateDemoAccount";
@@ -63,128 +64,36 @@ function App() {
     <ThemeProvider defaultTheme="light" storageKey="vite-ui-theme">
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<Index />} />
           <Route path="/auth" element={<Auth />} />
           <Route path="/create-demo-account" element={<CreateDemoAccount />} />
           <Route path="/create-teacher-profile" element={<CreateTeacherProfileForTestAccount />} />
           <Route path="/admin/setup" element={<SetupAdmin />} />
           <Route path="/role-setup" element={<ManualRoleSetup />} />
-          
-          <Route
-            path="/students"
-            element={
-              <ProtectedRoute>
-                <Students />
-              </ProtectedRoute>
-            }
-          />
-          
-          <Route
-            path="/students/:id"
-            element={
-              <ProtectedRoute>
-                <StudentDetail />
-              </ProtectedRoute>
-            }
-          />
-          
           <Route path="*" element={<NotFound />} />
-          <Route
-            path="/teachers"
-            element={
-              <ProtectedRoute requireAdmin>
-                <Teachers />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/teachers/:id"
-            element={
-              <ProtectedRoute requireAdmin>
-                <StudentDetail />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/dashboard"
-            element={
+
+          <Route 
+            element={ (
               <ProtectedRoute>
-                <Dashboard />
+                <DashboardLayout />
               </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/classes"
-            element={
-              <ProtectedRoute>
-                <Classes />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/progress"
-            element={
-              <ProtectedRoute>
-                <Progress />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/progress-book"
-            element={
-              <ProtectedRoute>
-                <ProgressBook />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/attendance"
-            element={
-              <ProtectedRoute>
-                <Attendance />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/student-progress"
-            element={
-              <ProtectedRoute>
-                <StudentProgress />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/teacher-accounts"
-            element={
-              <ProtectedRoute requireAdmin>
-                <TeacherAccounts />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/settings"
-            element={
-              <ProtectedRoute>
-                <Settings />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/preferences"
-            element={
-              <ProtectedRoute>
-                <Preferences />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/admin/database-seeder"
-            element={
-              <ProtectedRoute requireAdmin>
-                <DatabaseSeeder />
-              </ProtectedRoute>
-            }
-          />
+            )}
+          >
+            <Route path="/" element={<Index />} />
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/students" element={<Students />} />
+            <Route path="/students/:id" element={<StudentDetail />} />
+            <Route path="/teachers" element={<ProtectedRoute requireAdmin><Teachers /></ProtectedRoute>} />
+            <Route path="/teachers/:id" element={<ProtectedRoute requireAdmin><StudentDetail /></ProtectedRoute>} />
+            <Route path="/classes" element={<Classes />} />
+            <Route path="/progress" element={<Progress />} />
+            <Route path="/progress-book" element={<ProgressBook />} />
+            <Route path="/attendance" element={<TeacherAttendance />} />
+            <Route path="/student-progress" element={<StudentProgress />} />
+            <Route path="/teacher-accounts" element={<ProtectedRoute requireAdmin><TeacherAccounts /></ProtectedRoute>} />
+            <Route path="/settings" element={<Settings />} />
+            <Route path="/preferences" element={<Preferences />} />
+            <Route path="/admin/database-seeder" element={<ProtectedRoute requireAdmin><DatabaseSeeder /></ProtectedRoute>} />
+          </Route>
         </Routes>
       </BrowserRouter>
       <Toaster />

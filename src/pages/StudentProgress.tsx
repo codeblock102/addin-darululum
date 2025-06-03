@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { DashboardLayout } from "@/components/layouts/DashboardLayout";
 import { Card } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { StudentSearch } from "@/components/student-progress/StudentSearch";
@@ -177,7 +176,6 @@ const StudentProgressPage = () => {
   };
 
   return (
-    <DashboardLayout>
       <div className="space-y-6">
         <div className="flex justify-between items-center">
           <div>
@@ -238,7 +236,6 @@ const StudentProgressPage = () => {
           </Card>
         )}
       </div>
-    </DashboardLayout>
   );
 };
 

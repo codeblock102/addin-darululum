@@ -9,7 +9,6 @@
  * Loading states are managed to provide feedback to the user while data is being fetched.
  */
 import { useState } from "react";
-import { DashboardLayout } from "@/components/layouts/DashboardLayout";
 import { AdminHeader } from "@/components/admin/AdminHeader";
 import { TeacherAccountsTable } from "@/components/admin/teacher-accounts/TeacherAccountsTable";
 import { TeacherAccountsLoading } from "@/components/admin/teacher-accounts/TeacherAccountsLoading";
@@ -59,7 +58,6 @@ export default function TeacherAccounts() {
    * If the user is an admin and data is loaded, it displays the teacher account management interface.
    */
   return (
-    <DashboardLayout>
       <div className="space-y-6">
         <AdminHeader 
           title="Teacher Account Control Center" 
@@ -88,6 +86,5 @@ export default function TeacherAccounts() {
           </>
         )}
       </div>
-    </DashboardLayout>
   );
 }

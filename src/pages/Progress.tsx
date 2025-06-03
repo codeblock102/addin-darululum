@@ -1,7 +1,6 @@
 
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
-import { DashboardLayout } from "@/components/layouts/DashboardLayout";
 import { Loader2, BookOpen } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { ProgressStats } from "@/components/progress/ProgressStats";
@@ -95,7 +94,6 @@ const ProgressPage = () => {
   };
 
   return (
-    <DashboardLayout>
       <div className="space-y-6">
         <div className="flex justify-between items-center">
           <div>
@@ -130,7 +128,6 @@ const ProgressPage = () => {
           </div>
         )}
       </div>
-    </DashboardLayout>
   );
 };
 

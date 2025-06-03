@@ -1,6 +1,5 @@
 
-import { useState } from "react";
-import { DashboardLayout } from "@/components/layouts/DashboardLayout";
+import { Fragment, useState } from "react";
 import { ClassDialog } from "@/components/classes/ClassDialog";
 import { ClassList } from "@/components/classes/ClassList";
 import { Button } from "@/components/ui/button";
@@ -25,7 +24,7 @@ export default function Classes() {
   };
 
   return (
-    <DashboardLayout>
+    <Fragment>
       <div className="space-y-6">
         <AdminHeader
           title="Class Management"
@@ -63,6 +62,6 @@ export default function Classes() {
           />
         </div>
       </div>
-    </DashboardLayout>
+    </Fragment>
   );
 }

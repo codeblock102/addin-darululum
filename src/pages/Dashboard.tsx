@@ -19,7 +19,6 @@ import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { DashboardLayout } from "@/components/layouts/DashboardLayout";
 import { TeacherDashboard } from "@/components/teacher-portal/TeacherDashboard";
 import { useToast } from "@/components/ui/use-toast";
 import { LoadingState } from "@/components/teacher-portal/LoadingState";
@@ -194,9 +193,7 @@ const Dashboard = () => { // Renamed from TeacherPortal to Dashboard
   // Show loading state while checking roles or fetching teacher data
   if ((isLoading || isCheckingRole || isRoleLoading) && !isAdmin) {
     return (
-      <DashboardLayout>
-        <LoadingState />
-      </DashboardLayout>
+      <LoadingState />
     );
   }
 
@@ -212,54 +209,38 @@ const Dashboard = () => { // Renamed from TeacherPortal to Dashboard
     };
     
     return (
-      <DashboardLayout>
-        {/* Render TeacherDashboard directly */}
-        <TeacherDashboard teacher={adminViewProfile} />
-      </DashboardLayout>
+      <TeacherDashboard teacher={adminViewProfile} />
     );
   }
 
   // Show profile not found if teacher data is missing (for non-admin users)
   if (!teacherData && !isLoading && !isCheckingRole) { // Added checks to prevent showing ProfileNotFound during initial load
     return (
-      <DashboardLayout>
-        <div className="space-y-4">
-          <ProfileNotFound 
-            email={session?.user?.email} 
-            onRefresh={handleRefresh}
-            isAdmin={isAdmin} // This prop might be removable if AccessDenied is used for non-teacher, non-admin
-          />
-        </div>
-      </DashboardLayout>
+      <div className="space-y-4">
+        <ProfileNotFound 
+          email={session?.user?.email} 
+          onRefresh={handleRefresh}
+          isAdmin={isAdmin}
+        />
+      </div>
     );
   }
   
-  // This case might be for users who are not admin and not yet identified as teachers, or have no teacher profile
-  // Consider if AccessDenied or a different component is more appropriate here.
   if (!isTeacher && !isAdmin && !isRoleLoading && !isCheckingRole) {
       return (
-        <DashboardLayout>
-            <AccessDenied />
-        </DashboardLayout>
+        <AccessDenied />
       )
   }
 
-  // Show teacher dashboard if we have teacher data (and user is a teacher)
-  if (teacherData && isTeacher) { // Added isTeacher check for clarity
+  if (teacherData && isTeacher) {
     return (
-      <DashboardLayout>
-        <TeacherDashboard teacher={teacherData} />
-      </DashboardLayout>
+      <TeacherDashboard teacher={teacherData} />
     );
   }
   
-  // Fallback loading or empty state if none of the above conditions are met
-  // This might indicate an edge case or a state not fully handled.
   return (
-    <DashboardLayout>
-      <LoadingState />
-    </DashboardLayout>
+    <LoadingState />
   );
 };
 
-export default Dashboard; // Renamed export 
+export default Dashboard; 
