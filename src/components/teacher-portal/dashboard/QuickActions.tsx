@@ -38,7 +38,7 @@ export const QuickActions = ({ teacherId }: QuickActionsProps) => {
           <Button 
             variant="outline" 
             className="w-full justify-start text-left text-foreground"
-            onClick={() => navigate('/teacher-portal?tab=students')}
+            onClick={() => navigate('/students')}
           >
             <Users className="mr-2 h-4 w-4" />
             View My Students

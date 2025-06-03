@@ -167,7 +167,7 @@ const StudentDetail = () => {
             </Button>
             <div>
               <h1 className="text-3xl font-bold">{student.name}</h1>
-              <p className="text-gray-500">Student Details and Progress</p>
+              <p className="text-muted-foreground">Student Details and Progress</p>
             </div>
           </div>
           <NewProgressEntry 
@@ -187,34 +187,34 @@ const StudentDetail = () => {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <dl className="divide-y divide-gray-100">
+              <dl className="divide-y divide-border">
                 <div className="px-4 py-3 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
-                  <dt className="text-sm font-medium leading-6 text-gray-900">Date of Birth</dt>
-                  <dd className="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
+                  <dt className="text-sm font-medium leading-6 text-foreground">Date of Birth</dt>
+                  <dd className="mt-1 text-sm leading-6 text-foreground sm:col-span-2 sm:mt-0">
                     {student.date_of_birth ? new Date(student.date_of_birth).toLocaleDateString() : 'Not provided'}
                   </dd>
                 </div>
                 <div className="px-4 py-3 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
-                  <dt className="text-sm font-medium leading-6 text-gray-900">Enrollment Date</dt>
-                  <dd className="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
+                  <dt className="text-sm font-medium leading-6 text-foreground">Enrollment Date</dt>
+                  <dd className="mt-1 text-sm leading-6 text-foreground sm:col-span-2 sm:mt-0">
                     {student.enrollment_date ? new Date(student.enrollment_date).toLocaleDateString() : 'Not provided'}
                   </dd>
                 </div>
                 <div className="px-4 py-3 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
-                  <dt className="text-sm font-medium leading-6 text-gray-900">Guardian</dt>
-                  <dd className="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
+                  <dt className="text-sm font-medium leading-6 text-foreground">Guardian</dt>
+                  <dd className="mt-1 text-sm leading-6 text-foreground sm:col-span-2 sm:mt-0">
                     {student.guardian_name || 'Not provided'}
                   </dd>
                 </div>
                 <div className="px-4 py-3 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
-                  <dt className="text-sm font-medium leading-6 text-gray-900">Guardian Contact</dt>
-                  <dd className="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
+                  <dt className="text-sm font-medium leading-6 text-foreground">Guardian Contact</dt>
+                  <dd className="mt-1 text-sm leading-6 text-foreground sm:col-span-2 sm:mt-0">
                     {student.guardian_contact || 'Not provided'}
                   </dd>
                 </div>
                 <div className="px-4 py-3 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
-                  <dt className="text-sm font-medium leading-6 text-gray-900">Status</dt>
-                  <dd className="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
+                  <dt className="text-sm font-medium leading-6 text-foreground">Status</dt>
+                  <dd className="mt-1 text-sm leading-6 text-foreground sm:col-span-2 sm:mt-0">
                     <span className={`px-2 py-1 rounded-full text-xs ${
                       student.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
                     }`}>

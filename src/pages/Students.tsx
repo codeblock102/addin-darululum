@@ -7,6 +7,8 @@
  * State management for search queries, selected student for editing, and dialog visibility is handled within this component.
  */
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import { DashboardLayout } from "@/components/layouts/DashboardLayout";
 import { StudentDialog } from "@/components/students/StudentDialog";
 import { StudentList } from "@/components/students/StudentList";
@@ -15,6 +17,7 @@ import { Button } from "@/components/ui/button";
 import { Search, UserPlus, Users } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface Student {
   id: string;
@@ -38,11 +41,29 @@ const Students = () => {
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-  // Example stats - in a real app these would come from your data source
+  const { data: students, isLoading: isLoadingStudents } = useQuery<Student[]>({
+    queryKey: ['students'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('students')
+        .select('id, name, date_of_birth, enrollment_date, guardian_name, guardian_contact, status');
+
+      if (error) {
+        console.error("Error fetching students for stats:", error);
+        throw error;
+      }
+      return data || [];
+    },
+  });
+
+  const totalStudents = students?.length || 0;
+  const activeStudents = students?.filter(s => s.status === 'active').length || 0;
+  const avgAttendance = 0;
+
   const stats = {
-    totalStudents: 150,
-    activeStudents: 142,
-    avgAttendance: 95
+    totalStudents,
+    activeStudents,
+    avgAttendance
   };
 
   /**
@@ -104,20 +125,37 @@ const Students = () => {
                 <Users className="h-4 w-4 text-purple-600 dark:text-purple-400" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{stats.totalStudents}</div>
-                <p className="text-xs text-muted-foreground">
-                  {stats.activeStudents} active students
-                </p>
-                <Progress value={stats.avgAttendance} className="mt-3" />
-                <p className="mt-2 text-xs text-muted-foreground">
-                  {stats.avgAttendance}% average attendance
-                </p>
+                {isLoadingStudents ? (
+                  <Skeleton className="h-8 w-1/2 mt-1" />
+                ) : (
+                  <div className="text-2xl font-bold">{stats.totalStudents}</div>
+                )}
+                {isLoadingStudents ? (
+                  <Skeleton className="h-4 w-3/4 mt-1" />
+                ) : (
+                  <p className="text-xs text-muted-foreground">
+                    {stats.activeStudents} active students
+                  </p>
+                )}
+                {isLoadingStudents ? (
+                  <>
+                    <Skeleton className="h-4 w-full mt-3" /> 
+                    <Skeleton className="h-3 w-1/2 mt-2" />
+                  </>
+                ) : (
+                  <>
+                    <Progress value={stats.avgAttendance} className="mt-3" /> 
+                    <p className="mt-2 text-xs text-muted-foreground">
+                      {stats.avgAttendance}% average attendance
+                    </p>
+                  </>
+                )}
               </CardContent>
             </Card>
           </div>
         </div>
 
-        <div className="bg-white dark:bg-card shadow-sm rounded-lg border">
+        <div className="bg-muted/20 dark:bg-muted/10 shadow-sm rounded-lg">
           <div className="p-4 border-b">
             <div className="relative flex max-w-sm items-center">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />

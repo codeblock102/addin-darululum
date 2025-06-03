@@ -32,6 +32,7 @@ export interface TeacherAccount extends Teacher {
   classesCount: number;
   studentsCount: number;
   created_at?: string;
+  experience?: number;
 }
 
 export interface TeacherDashboardProps {

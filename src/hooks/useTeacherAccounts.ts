@@ -1,4 +1,3 @@
-
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { TeacherAccount } from "@/types/teacher";
@@ -7,7 +6,7 @@ import { useToast } from "@/components/ui/use-toast";
 export function useTeacherAccounts() {
   const { toast } = useToast();
 
-  const { data: teachers, isLoading: isLoadingTeachers } = useQuery({
+  const { data: teachers, isLoading: isLoadingTeachers } = useQuery<TeacherAccount[]>({
     queryKey: ['teacher-accounts'],
     queryFn: async () => {
       const { data: teachersData, error } = await supabase
@@ -17,36 +16,30 @@ export function useTeacherAccounts() {
           name, 
           email, 
           subject,
-          experience,
           bio,
-          phone,
-          created_at
+          phone
         `);
         
       if (error) {
-        console.error("Error fetching teacher accounts:", error);
+        console.error("Error fetching teacher accounts (initial query):", error);
         toast({
           title: "Error loading teachers",
-          description: "Failed to load teacher accounts data",
+          description: "Failed to load teacher accounts data during initial fetch.",
           variant: "destructive"
         });
         throw error;
       }
       
-      // For each teacher, fetch their user account data
       const teacherAccounts: TeacherAccount[] = [];
       
       if (teachersData) {
         for (const teacher of teachersData) {
-          // Mock user data since we can't directly access auth.users
           let userData = null;
-          
-          // If email exists, check profiles table
           if (teacher.email) {
             try {
               const { data: profileData } = await supabase
                 .from('profiles')
-                .select('*')
+                .select('id, created_at')
                 .eq('username', teacher.email)
                 .maybeSingle();
                 
@@ -54,30 +47,29 @@ export function useTeacherAccounts() {
                 userData = profileData;
               }
             } catch (err) {
-              console.error("Error fetching profile data:", err);
+              console.warn("Warning: Error fetching profile data for teacher:", teacher.email, err);
             }
           }
             
-          // Get classes assigned to this teacher
           const { data: classesData } = await supabase
             .from('classes')
-            .select('id')
+            .select('id', { count: 'exact' })
             .eq('teacher_id', teacher.id);
             
-          // Get student assignments for this teacher
           const { data: studentsData } = await supabase
             .from('students_teachers')
-            .select('id')
+            .select('id', { count: 'exact' })
             .eq('teacher_id', teacher.id)
             .eq('active', true);
             
           teacherAccounts.push({
             ...teacher,
             userId: userData?.id || null,
-            status: "active", // Default to active since we can't determine from userRole
-            lastLogin: userData?.created_at || teacher.created_at || null,
+            status: "active",
+            lastLogin: userData?.created_at || null,
             classesCount: classesData?.length || 0,
             studentsCount: studentsData?.length || 0,
+            experience: (teacher as any).experience ?? undefined,
           });
         }
       }

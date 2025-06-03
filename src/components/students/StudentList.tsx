@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -138,14 +137,14 @@ export const StudentList = ({ searchQuery, onEdit }: StudentListProps) => {
       <Table>
         <TableHeader>
           <TableRow className="hover:bg-transparent">
-            <TableHead>Name</TableHead>
-            <TableHead>Guardian</TableHead>
-            <TableHead>Contact</TableHead>
-            <TableHead>Enrollment Date</TableHead>
-            <TableHead>Current Juz</TableHead>
-            <TableHead>Completed Juz</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead className="text-right">Actions</TableHead>
+            <TableHead className="text-foreground">Name</TableHead>
+            <TableHead className="text-foreground">Guardian</TableHead>
+            <TableHead className="text-foreground">Contact</TableHead>
+            <TableHead className="text-foreground">Enrollment Date</TableHead>
+            <TableHead className="text-foreground">Current Juz</TableHead>
+            <TableHead className="text-foreground">Completed Juz</TableHead>
+            <TableHead className="text-foreground">Status</TableHead>
+            <TableHead className="text-right text-foreground">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -157,7 +156,7 @@ export const StudentList = ({ searchQuery, onEdit }: StudentListProps) => {
               onMouseLeave={() => setHoveredId(null)}
               onClick={() => navigate(`/students/${student.id}`)}
             >
-              <TableCell>
+              <TableCell className="text-foreground">
                 <div className="font-medium flex items-center gap-2">
                   <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
                     <span className="text-xs text-primary font-semibold">
@@ -167,13 +166,13 @@ export const StudentList = ({ searchQuery, onEdit }: StudentListProps) => {
                   {student.name}
                 </div>
               </TableCell>
-              <TableCell>{student.guardian_name || '—'}</TableCell>
-              <TableCell>{student.guardian_contact || '—'}</TableCell>
-              <TableCell>
+              <TableCell className="text-foreground">{student.guardian_name || '—'}</TableCell>
+              <TableCell className="text-foreground">{student.guardian_contact || '—'}</TableCell>
+              <TableCell className="text-foreground">
                 {student.enrollment_date ? new Date(student.enrollment_date).toLocaleDateString() : '—'}
               </TableCell>
-              <TableCell>{student.current_juz ?? 'None'}</TableCell>
-              <TableCell>
+              <TableCell className="text-foreground">{student.current_juz ?? 'None'}</TableCell>
+              <TableCell className="text-foreground">
                 {student.completed_juz && student.completed_juz.length > 0 
                   ? student.completed_juz.join(', ') 
                   : 'None'}
@@ -188,7 +187,7 @@ export const StudentList = ({ searchQuery, onEdit }: StudentListProps) => {
                 </span>
               </TableCell>
               <TableCell className="text-right">
-                <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                <div className="flex justify-end gap-2 transition-opacity">
                   <Button 
                     variant="ghost" 
                     size="icon"
