@@ -27,15 +27,6 @@ import { AccessDenied } from "@/components/teacher-portal/AccessDenied";
 import { ProfileNotFound } from "@/components/teacher-portal/ProfileNotFound";
 import { Teacher } from "@/types/teacher";
 import { useRBAC } from "@/hooks/useRBAC";
-import { Shield } from "lucide-react";
-
-// Imports for Admin sections (from admin/Dashboard.tsx)
-import { AdminHeader } from "@/components/admin/AdminHeader";
-import { DashboardStats } from "@/components/dashboard/DashboardStats";
-import { DashboardTabs as AdminDashboardTabs } from "@/components/dashboard/DashboardTabs"; // Renamed to avoid conflict if TeacherDashboard has own tabs
-import { WelcomeHeader } from "@/components/dashboard/WelcomeHeader";
-import { AdminMessaging } from "@/components/admin/messaging/AdminMessaging";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 /**
  * @component Dashboard
@@ -48,7 +39,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
  * State Management:
  *  - `isCheckingRole`: Boolean to track if the initial role and profile check is in progress.
  *  - `refreshKey`: A number used to trigger re-fetching of teacher profile data.
- *  - `adminActiveTab`: String to manage the active tab in the admin's dashboard view.
  *
  * Hooks:
  *  - `useAuth`: To get the current session and refreshSession function.
@@ -78,7 +68,6 @@ const Dashboard = () => { // Renamed from TeacherPortal to Dashboard
   const { isTeacher, isAdmin, isLoading: isRoleLoading } = useRBAC();
   const [isCheckingRole, setIsCheckingRole] = useState(true);
   const [refreshKey, setRefreshKey] = useState(0); // Add a key to force refresh
-  const [adminActiveTab, setAdminActiveTab] = useState("overview"); // For admin tabs
 
   // Moved useQuery for teacherData BEFORE the useEffect that uses its refetch method
   const { 
@@ -224,48 +213,8 @@ const Dashboard = () => { // Renamed from TeacherPortal to Dashboard
     
     return (
       <DashboardLayout>
-        {/* Admin Header */}
-        <AdminHeader title="Combined Dashboard" description="Admin features integrated with teacher view" />
-        <WelcomeHeader /> {/* Assuming this is desired for admins */}
-
-        <div className="mt-6"> {/* Added margin for spacing */}
-          <Tabs value={adminActiveTab} onValueChange={setAdminActiveTab}>
-            <TabsList className="grid w-full max-w-md grid-cols-3">
-              <TabsTrigger value="overview">Overview</TabsTrigger>
-              <TabsTrigger value="analytics">Analytics</TabsTrigger>
-              <TabsTrigger value="messages">Messages</TabsTrigger>
-            </TabsList>
-            
-            <TabsContent value="overview" className="space-y-6 mt-4">
-              {/* Admin-specific overview components */}
-              <DashboardStats />
-              <AdminDashboardTabs />
-              
-              {/* Teacher Dashboard content for admin's overview */}
-              <div className="mt-6">
-                <h2 className="text-xl font-semibold mb-3">Teacher Portal View (Admin Mode)</h2>
-                <div className="p-4 mb-6 bg-blue-50 border border-blue-200 rounded-md flex items-center">
-                  <Shield className="text-blue-600 mr-3 h-5 w-5 flex-shrink-0" />
-                  <p className="text-sm">
-                    You are viewing the teacher portal interface with administrator privileges.
-                  </p>
-                </div>
-                <TeacherDashboard teacher={adminViewProfile} />
-              </div>
-            </TabsContent>
-            
-            <TabsContent value="analytics" className="mt-4">
-              <div className="p-6 rounded-lg border shadow-sm bg-background"> {/* Using bg-background from theme */}
-                <h2 className="text-2xl font-semibold mb-4">Analytics</h2>
-                <p>Advanced analytics features coming soon...</p>
-              </div>
-            </TabsContent>
-            
-            <TabsContent value="messages" className="mt-4">
-              <AdminMessaging />
-            </TabsContent>
-          </Tabs>
-        </div>
+        {/* Render TeacherDashboard directly */}
+        <TeacherDashboard teacher={adminViewProfile} />
       </DashboardLayout>
     );
   }
