@@ -1,6 +1,5 @@
-import { useEffect, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { DashboardLayout } from "@/components/layouts/DashboardLayout";
 import TeacherDialog from "@/components/teachers/TeacherDialog";
 import { AdminHeader } from "@/components/admin/AdminHeader";
 import { Button } from "@/components/ui/button";
@@ -158,16 +157,14 @@ const Teachers = () => {
    */
   if (isLoading) {
     return (
-      <DashboardLayout>
         <div className="flex items-center justify-center min-h-[60vh]">
           <Loader2 className="w-8 h-8 animate-spin text-amber-500" />
         </div>
-      </DashboardLayout>
     );
   }
 
   return (
-    <DashboardLayout>
+    <div>
       <div className="space-y-6">
         <AdminHeader 
           title="Teacher Management Center" 
@@ -221,7 +218,7 @@ const Teachers = () => {
           onOpenChange={setDialogOpen}
         />
       )}
-    </DashboardLayout>
+    </div>
   );
 };
 

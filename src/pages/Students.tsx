@@ -9,7 +9,6 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { DashboardLayout } from "@/components/layouts/DashboardLayout";
 import { StudentDialog } from "@/components/students/StudentDialog";
 import { StudentList } from "@/components/students/StudentList";
 import { Input } from "@/components/ui/input";
@@ -104,71 +103,69 @@ const Students = () => {
   };
 
   return (
-    <DashboardLayout>
-      <div className="space-y-6">
-        <div className="flex flex-col gap-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold">Students</h1>
-              <p className="text-muted-foreground">Manage and monitor student progress</p>
-            </div>
-            <Button onClick={handleAddStudent} className="gap-2">
-              <UserPlus className="h-5 w-5" />
-              Add Student
-            </Button>
+    <div className="space-y-6">
+      <div className="flex flex-col gap-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold">Students</h1>
+            <p className="text-muted-foreground">Manage and monitor student progress</p>
           </div>
+          <Button onClick={handleAddStudent} className="gap-2">
+            <UserPlus className="h-5 w-5" />
+            Add Student
+          </Button>
+        </div>
 
-          <div className="grid gap-4 md:grid-cols-3">
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 dark:bg-purple-900/20">
-                <CardTitle className="text-sm font-medium text-purple-700 dark:text-purple-300">Total Students</CardTitle>
-                <Users className="h-4 w-4 text-purple-600 dark:text-purple-400" />
-              </CardHeader>
-              <CardContent>
-                {isLoadingStudents ? (
-                  <Skeleton className="h-8 w-1/2 mt-1" />
-                ) : (
-                  <div className="text-2xl font-bold">{stats.totalStudents}</div>
-                )}
-                {isLoadingStudents ? (
-                  <Skeleton className="h-4 w-3/4 mt-1" />
-                ) : (
-                  <p className="text-xs text-muted-foreground">
-                    {stats.activeStudents} active students
+        <div className="grid gap-4 md:grid-cols-3">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 dark:bg-purple-900/20">
+              <CardTitle className="text-sm font-medium text-purple-700 dark:text-purple-300">Total Students</CardTitle>
+              <Users className="h-4 w-4 text-purple-600 dark:text-purple-400" />
+            </CardHeader>
+            <CardContent>
+              {isLoadingStudents ? (
+                <Skeleton className="h-8 w-1/2 mt-1" />
+              ) : (
+                <div className="text-2xl font-bold">{stats.totalStudents}</div>
+              )}
+              {isLoadingStudents ? (
+                <Skeleton className="h-4 w-3/4 mt-1" />
+              ) : (
+                <p className="text-xs text-muted-foreground">
+                  {stats.activeStudents} active students
+                </p>
+              )}
+              {isLoadingStudents ? (
+                <>
+                  <Skeleton className="h-4 w-full mt-3" /> 
+                  <Skeleton className="h-3 w-1/2 mt-2" />
+                </>
+              ) : (
+                <>
+                  <Progress value={stats.avgAttendance} className="mt-3" /> 
+                  <p className="mt-2 text-xs text-muted-foreground">
+                    {stats.avgAttendance}% average attendance
                   </p>
-                )}
-                {isLoadingStudents ? (
-                  <>
-                    <Skeleton className="h-4 w-full mt-3" /> 
-                    <Skeleton className="h-3 w-1/2 mt-2" />
-                  </>
-                ) : (
-                  <>
-                    <Progress value={stats.avgAttendance} className="mt-3" /> 
-                    <p className="mt-2 text-xs text-muted-foreground">
-                      {stats.avgAttendance}% average attendance
-                    </p>
-                  </>
-                )}
-              </CardContent>
-            </Card>
-          </div>
+                </>
+              )}
+            </CardContent>
+          </Card>
         </div>
+      </div>
 
-        <div className="bg-muted/20 dark:bg-muted/10 shadow-sm rounded-lg">
-          <div className="p-4 border-b">
-            <div className="relative flex max-w-sm items-center">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input 
-                placeholder="Search students by name or guardian..." 
-                value={searchQuery} 
-                onChange={e => setSearchQuery(e.target.value)} 
-                className="pl-9"
-              />
-            </div>
+      <div className="bg-muted/20 dark:bg-muted/10 shadow-sm rounded-lg">
+        <div className="p-4 border-b">
+          <div className="relative flex max-w-sm items-center">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input 
+              placeholder="Search students by name or guardian..." 
+              value={searchQuery} 
+              onChange={e => setSearchQuery(e.target.value)} 
+              className="pl-9"
+            />
           </div>
-          <StudentList searchQuery={searchQuery} onEdit={handleEditStudent} />
         </div>
+        <StudentList searchQuery={searchQuery} onEdit={handleEditStudent} />
       </div>
 
       <StudentDialog 
@@ -177,7 +174,7 @@ const Students = () => {
         selectedStudent={selectedStudent} 
         onClose={handleCloseDialog} 
       />
-    </DashboardLayout>
+    </div>
   );
 };
 
