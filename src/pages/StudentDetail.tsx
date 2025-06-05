@@ -7,21 +7,21 @@
  * The component handles loading and error states, displaying appropriate messages to the user.
  */
 
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { supabase } from "@/integrations/supabase/client.ts";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card.tsx";
+import { Button } from "@/components/ui/button.tsx";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs.tsx";
 import { ArrowLeft, BookOpen, UserRound, BookMarked, RefreshCw } from "lucide-react";
-import { StudentProgressChart } from "@/components/students/StudentProgressChart";
-import { StudentProgressList } from "@/components/students/StudentProgressList";
-import { Skeleton } from "@/components/ui/skeleton";
-import { NewProgressEntry } from "@/components/students/NewProgressEntry";
-import { useToast } from "@/hooks/use-toast";
-import { DhorBook } from "@/components/dhor-book/DhorBook";
-import { useAuth } from "@/contexts/AuthContext";
+import { StudentProgressChart } from "@/components/students/StudentProgressChart.tsx";
+import { StudentProgressList } from "@/components/students/StudentProgressList.tsx";
+import { Skeleton } from "@/components/ui/skeleton.tsx";
+import { NewProgressEntry } from "@/components/students/NewProgressEntry.tsx";
+import { useToast } from "@/hooks/use-toast.ts";
+import { DhorBook } from "@/components/dhor-book/DhorBook.tsx";
+import { useAuth } from "@/contexts/AuthContext.tsx";
 
 interface Student {
   id: string;
