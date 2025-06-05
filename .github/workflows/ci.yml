@@ -1,134 +1,109 @@
-name: CI
+name: CI Pipeline
 
 on:
   push:
-    branches: [ "main", "dev" ]
+    branches: [main, dev]
   pull_request:
-    branches: [ "main", "dev" ]
+    branches: [main, dev]
 
 jobs:
   build_and_test:
+    name: Build and Test
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-    - name: Set up Deno
-      uses: denoland/setup-deno@v1
-      with:
-        deno-version: v1.x # Specify your desired Deno version, or remove for latest
+      - name: Set up Deno
+        uses: denoland/setup-deno@v1
+        with:
+          deno-version: v1.x
 
-    # Deno projects typically declare dependencies as import URLs in .ts/.js files.
-    # Caching these helps speed up subsequent runs.
-    # Adjust the glob pattern if your main modules/dependencies are in specific files/dirs.
-    # For example, if you have a deps.ts: deno cache deps.ts
-    - name: Cache Deno dependencies
-      run: |
-        deno cache src/**/*.ts public/**/*.ts main.tsx App.tsx || echo "No Deno modules found to cache in specified paths or caching failed."
-        # If you have a specific dependency entrypoint file (e.g., deps.ts or mod.ts), use that:
-        # deno cache deps.ts
-        # deno cache src/mod.ts
-      # Consider using actions/cache for more robust Deno dependency caching if needed:
-      # - name: Cache Deno modules
-      #   uses: actions/cache@v3
-      #   with:
-      #     path: ${{ env.DENO_DIR }}
-      #     key: ${{ runner.os }}-deno-${{ hashFiles('**/deps.ts') }}-${{ hashFiles('**/*.lock') }} # Adjust key as needed
-      #     restore-keys: |
-      #       ${{ runner.os }}-deno-
+      - name: Cache Deno dependencies
+        run: deno cache src/**/*.{ts,tsx} || echo "No Deno modules to cache"
 
-    - name: Format Check (Deno Fmt)
-      # Use `deno fmt --check` to ensure code is formatted according to Deno's standards.
-      # This step will fail if any files need formatting.
-      run: deno fmt --check
+      - name: Format Check
+        run: deno fmt --check
 
-    - name: Lint (Deno Lint)
-      # Use `deno lint` to analyze code for potential errors and style issues.
-      run: deno lint
+      - name: Lint with Deno
+        run: deno lint
 
-    - name: Run tests
-      # Replace with your actual test command. `-A` grants all permissions, common for tests.
-      # You might have specific test files or configurations.
-      run: deno test -A --doc --coverage=cov_profile # Add --doc to test doc examples, --coverage for reports
+      - name: Run Tests
+        run: deno test -A --doc --coverage=cov_profile
 
-    - name: Build project
-      # Replace 'main.ts' with your project's main entry point or build script.
-      # The `-A` flag grants all permissions, adjust if more restrictive permissions are needed.
-      # Vite projects with Deno might use a command like `deno run -A https://deno.land/x/vite/mod.ts build`
-      # or a local script: `deno run -A scripts/build.ts`
-      run: deno run -A npm:vite build # Assumes Vite is used via npm: specifier with Deno
+      - name: Upload Coverage
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-coverage
+          path: cov_profile
+
+      - name: Build Frontend with Vite (via Deno)
+        run: deno run -A npm:vite build
 
   lint_codebase:
     name: Lint Code Base
     runs-on: ubuntu-latest
+
     permissions:
-      contents: read      # For clone repository
-      packages: read     # For download Super-Linter container image
-      statuses: write    # For commit status update
+      contents: read
+      packages: read
+      statuses: write
+
     steps:
-      - name: Checkout Code
+      - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          # Full git history is needed to get a proper list of changed files within `super-linter`
           fetch-depth: 0
 
       - name: Super-Linter
-        uses: super-linter/super-linter@v6 # Always use the latest major version tag
+        uses: super-linter/super-linter@v6
         env:
-          DEFAULT_BRANCH: main # Or your repository's default branch name
+          DEFAULT_BRANCH: main
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          # To lint all files and not just changed ones, set VALIDATE_ALL_CODEBASE to true
           VALIDATE_ALL_CODEBASE: true
-          # You can also filter by directory or file type if needed
-          # FILTER_REGEX_INCLUDE: (src/.*\\.ts|public/.*\\.html)
-          # FILTER_REGEX_EXCLUDE: (.*\\.test\\.ts)
-          # You can disable specific linters if needed
-          # VALIDATE_JAVASCRIPT_ES: false
-          # VALIDATE_TYPESCRIPT_ES: false # Since Deno has its own linter, you might consider this
+          VALIDATE_TYPESCRIPT_ES: false
+          VALIDATE_JAVASCRIPT_ES: false
 
-# Optional: Add a deployment job here if needed, for example to GitHub Pages
-#  deploy:
-#    needs: build_and_test
-#    runs-on: ubuntu-latest
-#    if: github.ref == '''refs/heads/main''' && github.event_name == '''push''' # Only deploy on push to main
+# Optional Deployment (uncomment and configure if needed)
+# deploy:
+#   name: Deploy to GitHub Pages
+#   needs: build_and_test
+#   if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+#   runs-on: ubuntu-latest
 #
-#    permissions:
-#      contents: read
-#      pages: write
-#      id-token: write
+#   permissions:
+#     contents: read
+#     pages: write
+#     id-token: write
 #
-#    environment:
-#      name: github-pages
-#      url: ${{ steps.deployment.outputs.page_url }}
+#   environment:
+#     name: github-pages
+#     url: ${{ steps.deployment.outputs.page_url }}
 #
-#    steps:
-#      - name: Checkout repository
-#        uses: actions/checkout@v4
+#   steps:
+#     - name: Checkout repository
+#       uses: actions/checkout@v4
 #
-#      - name: Set up Deno
-#        uses: denoland/setup-deno@v1
-#        with:
-#          deno-version: v1.x # Specify your desired Deno version
+#     - name: Set up Deno
+#       uses: denoland/setup-deno@v1
+#       with:
+#         deno-version: v1.x
 #
-#      - name: Cache Deno dependencies for deployment (optional, if build artifacts don't include them)
-#        run: deno cache src/**/*.ts public/**/*.ts main.tsx App.tsx # Or your specific dependency files
+#     - name: Cache Deno dependencies
+#       run: deno cache src/**/*.ts public/**/*.ts main.tsx App.tsx
 #
-#      - name: Build project (if not using artifacts from a previous job)
-#        run: echo "Configure your Deno build command for deployment" # Example: deno run -A src/main.tsx --config tsconfig.json
-#        # env:
-#        #   # If deploying to a subpath like username.github.io/repo-name/
-#        #   # you might need to set an environment variable that your Deno build script uses for base path.
-#        #   BASE_URL: /${{ github.event.repository.name }}/
+#     - name: Build Project for Deployment
+#       run: deno run -A npm:vite build
 #
-#      - name: Setup Pages
-#        uses: actions/configure-pages@v4
+#     - name: Setup Pages
+#       uses: actions/configure-pages@v4
 #
-#      - name: Upload artifact
-#        uses: actions/upload-pages-artifact@v3
-#        with:
-#          path: './dist' # Or your Deno build output directory
+#     - name: Upload Build Artifacts
+#       uses: actions/upload-pages-artifact@v3
+#       with:
+#         path: ./dist
 #
-#      - name: Deploy to GitHub Pages
-#        id: deployment
-#        uses: actions/deploy-pages@v4 
+#     - name: Deploy
+#       id: deployment
+#       uses: actions/deploy-pages@v4
