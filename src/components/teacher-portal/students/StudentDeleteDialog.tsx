@@ -1,7 +1,7 @@
 
 import { useQueryClient, useMutation } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/components/ui/use-toast";
+import { supabase } from "@/integrations/supabase/client.ts";
+import { useToast } from "@/hooks/use-toast.ts";
 import { 
   AlertDialog, 
   AlertDialogAction, 
@@ -11,7 +11,7 @@ import {
   AlertDialogFooter, 
   AlertDialogHeader, 
   AlertDialogTitle 
-} from "@/components/ui/alert-dialog";
+} from "@/components/ui/alert-dialog.tsx";
 
 interface StudentDeleteDialogProps {
   isOpen: boolean;

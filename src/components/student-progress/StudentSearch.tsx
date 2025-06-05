@@ -1,10 +1,10 @@
-
+import React from 'react';
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
+import { supabase } from "@/integrations/supabase/client.ts";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card.tsx";
+import { Input } from "@/components/ui/input.tsx";
+import { Button } from "@/components/ui/button.tsx";
 import { Loader2, Search, AlertCircle } from "lucide-react";
 
 interface StudentSearchProps {

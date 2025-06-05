@@ -1,11 +1,11 @@
-
+import React from 'react';
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/components/ui/use-toast";
-import { Button } from "@/components/ui/button";
+import { supabase } from "@/integrations/supabase/client.ts";
+import { useToast } from "@/components/ui/use-toast.ts";
+import { Button } from "@/components/ui/button.tsx";
 import { Loader2, Send } from "lucide-react";
-import { MessageCategory, MessageType } from "@/types/progress";
+import { MessageCategory, MessageType } from "@/types/progress.ts";
 
 interface AdminMessageFormProps {
   selectedTeacher: string;

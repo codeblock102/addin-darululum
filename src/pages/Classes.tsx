@@ -1,12 +1,12 @@
-
+import React from 'react';
 import { Fragment, useState } from "react";
-import { ClassDialog } from "@/components/classes/ClassDialog";
-import { ClassList } from "@/components/classes/ClassList";
-import { Button } from "@/components/ui/button";
-import { Dialog, DialogTrigger } from "@/components/ui/dialog";
-import { SearchInput } from "@/components/table/SearchInput";
+import { ClassDialog } from "@/components/classes/ClassDialog.tsx";
+import { ClassList } from "@/components/classes/ClassList.tsx";
+import { Button } from "@/components/ui/button.tsx";
+import { Dialog, DialogTrigger } from "@/components/ui/dialog.tsx";
+import { SearchInput } from "@/components/table/SearchInput.tsx";
 import { Plus } from "lucide-react";
-import { AdminHeader } from "@/components/admin/AdminHeader";
+import { AdminHeader } from "@/components/admin/AdminHeader.tsx";
 
 export default function Classes() {
   const [searchQuery, setSearchQuery] = useState("");

@@ -8,11 +8,12 @@
  * The component manages loading states during the seeding operation and provides user feedback via toast notifications for success or failure of each step.
  * It is intended for setup or testing purposes to quickly get a populated database.
  */
+import React from 'react';
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { seedStudentsTable, assignStudentsToTeacher } from "@/utils/seedDatabase";
-import { useToast } from "@/hooks/use-toast";
+import { Button } from "@/components/ui/button.tsx";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card.tsx";
+import { seedStudentsTable, assignStudentsToTeacher } from "@/utils/seedDatabase.ts";
+import { useToast } from "@/hooks/use-toast.ts";
 import { Loader2 } from "lucide-react";
 
 /**

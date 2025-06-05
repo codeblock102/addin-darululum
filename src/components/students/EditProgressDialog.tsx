@@ -1,14 +1,13 @@
-
 import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/integrations/supabase/client.ts";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
+} from "@/components/ui/dialog.tsx";
 import {
   Form,
   FormControl,
@@ -16,20 +15,22 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
+} from "@/components/ui/form.tsx";
+import { Input } from "@/components/ui/input.tsx";
 import { 
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue 
-} from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
-import { Button } from "@/components/ui/button";
-import { useToast } from "@/hooks/use-toast";
+} from "@/components/ui/select.tsx";
+import { Textarea } from "@/components/ui/textarea.tsx";
+import { Button } from "@/components/ui/button.tsx";
+import { useToast } from "@/hooks/use-toast.ts";
 import { useForm } from "react-hook-form";
 import { Loader2 } from "lucide-react";
+import { DailyActivityEntry } from "@/types/dhor-book.ts";
+import React from "react";
 
 interface Progress {
   id: string;
@@ -50,7 +51,7 @@ interface Progress {
 interface EditProgressDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  progressEntry: Progress | null;
+  progressEntry: DailyActivityEntry | null;
 }
 
 export const EditProgressDialog = ({ 
@@ -62,46 +63,78 @@ export const EditProgressDialog = ({
   const queryClient = useQueryClient();
   const [isProcessing, setIsProcessing] = useState(false);
 
-  const form = useForm({
+  const form = useForm<ProgressFormData>({
     defaultValues: {
       current_surah: progressEntry?.current_surah || 1,
       current_juz: progressEntry?.current_juz || 1,
       start_ayat: progressEntry?.start_ayat || 1,
       end_ayat: progressEntry?.end_ayat || 1,
-      verses_memorized: progressEntry?.verses_memorized || 0,
+      verses_memorized: (progressEntry?.end_ayat != null && progressEntry?.start_ayat != null)
+        ? (progressEntry.end_ayat - progressEntry.start_ayat + 1)
+        : 0,
       memorization_quality: progressEntry?.memorization_quality || 'average',
-      notes: progressEntry?.notes || '',
-      teacher_notes: progressEntry?.teacher_notes || '',
+      notes: progressEntry?.comments || '',
+      teacher_notes: ''
     },
   });
 
   // Update form when progressEntry changes
-  useState(() => {
+  React.useEffect(() => {
     if (progressEntry) {
       form.reset({
         current_surah: progressEntry.current_surah || 1,
         current_juz: progressEntry.current_juz || 1,
         start_ayat: progressEntry.start_ayat || 1,
         end_ayat: progressEntry.end_ayat || 1,
-        verses_memorized: progressEntry.verses_memorized || 0,
+        verses_memorized: (progressEntry.end_ayat != null && progressEntry.start_ayat != null)
+          ? (progressEntry.end_ayat - progressEntry.start_ayat + 1)
+          : 0,
         memorization_quality: progressEntry.memorization_quality || 'average',
-        notes: progressEntry.notes || '',
-        teacher_notes: progressEntry.teacher_notes || '',
+        notes: progressEntry.comments || '',
+        teacher_notes: ''
       });
     }
-  });
+  }, [progressEntry, form.reset]);
 
-  const onSubmit = async (data: any) => {
+  // Define a type for the form data based on its fields
+  type ProgressFormData = {
+    current_surah: number;
+    current_juz: number;
+    start_ayat: number;
+    end_ayat: number;
+    verses_memorized: number;
+    memorization_quality: string;
+    notes: string;
+    teacher_notes: string;
+  };
+
+  const onSubmit = async (data: ProgressFormData) => {
     if (!progressEntry?.id) return;
     
     setIsProcessing(true);
     try {
+      // Prepare only the fields that exist in the 'progress' table for update
+      // Exclude verses_memorized if it's calculated and not a direct table column
+      // Map form's 'notes' back to 'comments' if that's the table column name
+      const updateData: Partial<DailyActivityEntry> & { teacher_notes?: string } = {
+        current_surah: data.current_surah,
+        current_juz: data.current_juz,
+        start_ayat: data.start_ayat,
+        end_ayat: data.end_ayat,
+        memorization_quality: data.memorization_quality,
+        comments: data.notes, // Map form 'notes' back to 'comments' for the DB
+        // 'verses_memorized' is typically not stored if it's derived, but if it is, add it here.
+      };
+      // Only add teacher_notes if your 'progress' table has such a column
+      if (data.teacher_notes) {
+        // If your 'progress' table does not have 'teacher_notes', remove this line
+        // or map it to an appropriate field like 'comments' or a specific notes field.
+        updateData.teacher_notes = data.teacher_notes; 
+      }
+
       const { error } = await supabase
         .from('progress')
-        .update({
-          ...data,
-          // Don't update contributor information to preserve original submission metadata
-        })
+        .update(updateData)
         .eq('id', progressEntry.id);
 
       if (error) throw error;

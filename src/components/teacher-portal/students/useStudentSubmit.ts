@@ -1,7 +1,7 @@
 
 import { useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import { StudentFormData } from "./studentTypes";
+import { supabase } from "@/integrations/supabase/client.ts";
+import { StudentFormData } from "./studentTypes.ts";
 
 interface UseStudentSubmitProps {
   teacherId: string;

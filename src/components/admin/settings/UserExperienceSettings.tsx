@@ -1,10 +1,10 @@
-
-import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { UserExperienceSettings } from "@/types/settings";
+import React from 'react';
+import { Label } from "@/components/ui/label.tsx";
+import { Switch } from "@/components/ui/switch.tsx";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select.tsx";
+import { UserExperienceSettings } from "@/types/settings.ts";
+import { SettingsCard } from "./SettingsCard.tsx";
 import { UserCheck } from "lucide-react";
-import { SettingsCard } from "./SettingsCard";
 
 interface UserExperienceSettingsSectionProps {
   settings: UserExperienceSettings;

@@ -1,12 +1,13 @@
+import React from 'react';
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { Card } from "@/components/ui/card";
+import { supabase } from "@/integrations/supabase/client.ts";
+import { Card } from "@/components/ui/card.tsx";
 import { addWeeks, subWeeks, format, startOfWeek, endOfWeek } from "date-fns";
 import { ChevronLeft, ChevronRight, Calendar, Loader2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { DhorBookGrid } from "./DhorBookGrid";
-import { DailyActivityEntry } from "@/types/dhor-book";
+import { Button } from "@/components/ui/button.tsx";
+import { DhorBookGrid } from "./DhorBookGrid.tsx";
+import { DailyActivityEntry } from "@/types/dhor-book.ts";
 
 interface DhorBookProps {
   studentId: string;
@@ -231,7 +232,7 @@ export const DhorBook = ({ studentId, teacherId }: DhorBookProps) => {
       <DhorBookGrid 
         entries={entries} 
         studentId={studentId} 
-        teacherId={teacherId} // Pass teacher ID for creating new entries
+        teacherId={teacherId ?? "system-unknown"} // Ensure teacherId is always a string
         currentWeek={currentWeek} 
         onRefresh={handleRefresh}
       />

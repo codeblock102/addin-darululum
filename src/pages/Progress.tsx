@@ -1,16 +1,16 @@
-
+import React from 'react';
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { Loader2, BookOpen } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
-import { ProgressStats } from "@/components/progress/ProgressStats";
-import { ProgressTable } from "@/components/progress/ProgressTable";
-import { NewProgressDialog } from "@/components/progress/NewProgressDialog";
-import { RecentRevisions } from "@/components/progress/RecentRevisions";
-import { CompleteRevisions } from "@/components/progress/CompleteRevisions";
-import { useToast } from "@/hooks/use-toast";
-import { Button } from "@/components/ui/button";
-import { Progress } from "@/types/progress";
+import { supabase } from "@/integrations/supabase/client.ts";
+import { ProgressStats } from "@/components/progress/ProgressStats.tsx";
+import { ProgressTable } from "@/components/progress/ProgressTable.tsx";
+import { NewProgressDialog } from "@/components/progress/NewProgressDialog.tsx";
+import { RecentRevisions } from "@/components/progress/RecentRevisions.tsx";
+import { CompleteRevisions } from "@/components/progress/CompleteRevisions.tsx";
+import { useToast } from "@/hooks/use-toast.ts";
+import { Button } from "@/components/ui/button.tsx";
+import { Progress } from "@/types/progress.ts";
 
 const ProgressPage = () => {
   const queryClient = useQueryClient();

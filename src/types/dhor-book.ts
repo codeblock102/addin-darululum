@@ -1,4 +1,3 @@
-
 export interface ParentComment {
   id: string;
   student_id: string;
@@ -82,4 +81,44 @@ export interface DailyActivityEntry {
   comments?: string;
   day_of_week?: string;
   points?: number;
+}
+
+export interface JuzRevisionEntry {
+  id: string;
+  student_id?: string; // Assuming it might be part of the direct table schema
+  teacher_id?: string; // Assuming it might be part of the direct table schema
+  dhor_slot?: number;    // From DailyActivityEntry context
+  juz_number?: number;
+  juz_revised?: number; // This was in DailyActivityEntry, might be juz_number from table
+  revision_date?: string; // Assuming it might be part of the direct table schema
+  quarter_start?: number;
+  quarters_covered?: number;
+  memorization_quality?: string;
+  notes?: string; // Common to have notes
+  // Include other fields that come directly from the 'juz_revisions' table
+  students?: { name: string }; // As seen in RecentRevisions.tsx query
+}
+
+export interface DifficultAyahEntry {
+  id: string;
+  student_id: string;
+  surah_number: number;
+  ayah_number: number;
+  notes?: string;
+  date_added: string;
+  status: 'active' | 'resolved';
+  last_revised: string | null;
+  revision_count: number;
+}
+
+export interface RevisionFormValues {
+  date: Date;
+  memorization_quality: 'excellent' | 'good' | 'average' | 'needsWork' | 'horrible';
+  time_spent: number; // in minutes
+  notes?: string;
+  juz_number: number;
+  surah_number?: number;
+  quarters_revised: "1st_quarter" | "2_quarters" | "3_quarters" | "4_quarters";
+  teacher_notes?: string;
+  status: "completed" | "pending" | "needs_improvement";
 }

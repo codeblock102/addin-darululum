@@ -1,8 +1,8 @@
 
 import { useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/components/ui/use-toast";
+import { supabase } from "@/integrations/supabase/client.ts";
+import { useToast } from "@/components/ui/use-toast.ts";
 
 export const useRealtimeAnalytics = (teacherId: string) => {
   const queryClient = useQueryClient();

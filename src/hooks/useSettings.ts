@@ -1,9 +1,9 @@
 
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/components/ui/use-toast';
-import { SystemSettings as TypedSystemSettings } from '@/types/settings';
+import { supabase } from '@/integrations/supabase/client.ts';
+import { useToast } from '@/components/ui/use-toast.ts';
+import { SystemSettings as TypedSystemSettings } from '@/types/settings.ts';
 
 // Define the settings interface to match src/types/settings.ts SystemSettings
 export interface SystemSettings extends TypedSystemSettings {

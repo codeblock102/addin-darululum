@@ -1,17 +1,17 @@
 import React, { Fragment, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import TeacherDialog from "@/components/teachers/TeacherDialog";
-import { AdminHeader } from "@/components/admin/AdminHeader";
-import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import TeacherDialog from "@/components/teachers/TeacherDialog.tsx";
+import { AdminHeader } from "@/components/admin/AdminHeader.tsx";
+import { Button } from "@/components/ui/button.tsx";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs.tsx";
 import { Loader2, UserPlus } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/components/ui/use-toast";
+import { supabase } from "@/integrations/supabase/client.ts";
+import { useToast } from "@/components/ui/use-toast.ts";
 import { useQuery } from "@tanstack/react-query";
-import { Teacher } from "@/types/teacher";
-import { TeacherProfilesTab } from "@/components/teachers/TeacherProfilesTab";
-import { TeacherAccountsTab } from "@/components/teachers/TeacherAccountsTab";
-import { TeacherStatsSection } from "@/components/teachers/TeacherStatsSection";
+import { Teacher } from "@/types/teacher.ts";
+import { TeacherProfilesTab } from "@/components/teachers/TeacherProfilesTab.tsx";
+import { TeacherAccountsTab } from "@/components/teachers/TeacherAccountsTab.tsx";
+import { TeacherStatsSection } from "@/components/teachers/TeacherStatsSection.tsx";
 
 /**
  * @file Teachers.tsx

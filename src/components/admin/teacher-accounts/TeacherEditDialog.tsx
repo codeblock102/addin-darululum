@@ -6,14 +6,14 @@ import {
   DialogHeader,
   DialogTitle,
   DialogFooter
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
-import { TeacherAccount } from "@/types/teacher";
-import { Textarea } from "@/components/ui/textarea";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/components/ui/use-toast";
+} from "@/components/ui/dialog.tsx";
+import { Input } from "@/components/ui/input.tsx";
+import { Label } from "@/components/ui/label.tsx";
+import { Button } from "@/components/ui/button.tsx";
+import { TeacherAccount } from "@/types/teacher.ts";
+import { Textarea } from "@/components/ui/textarea.tsx";
+import { supabase } from "@/integrations/supabase/client.ts";
+import { useToast } from "@/hooks/use-toast.ts";
 import { useQueryClient } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 

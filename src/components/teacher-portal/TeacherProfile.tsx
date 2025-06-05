@@ -1,16 +1,16 @@
 import { useState } from "react";
 import { useQueryClient, useMutation } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/components/ui/use-toast";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Label } from "@/components/ui/label";
+import { supabase } from "@/integrations/supabase/client.ts";
+import { useToast } from "@/hooks/use-toast.ts";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card.tsx";
+import { Button } from "@/components/ui/button.tsx";
+import { Input } from "@/components/ui/input.tsx";
+import { Textarea } from "@/components/ui/textarea.tsx";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar.tsx";
+import { Label } from "@/components/ui/label.tsx";
 import { Loader2, Save, User } from "lucide-react";
 import { Link } from "react-router-dom";
-import { Teacher } from "@/types/teacher";
+import { Teacher } from "@/types/teacher.ts";
 
 export function TeacherProfile({ teacher }: { teacher: Teacher }) {
   const { toast } = useToast();

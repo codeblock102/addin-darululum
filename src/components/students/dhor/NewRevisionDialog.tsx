@@ -1,13 +1,13 @@
-import { useState } from "react";
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/components/ui/use-toast";
-import { RevisionFormData } from "../progress/types";
+import React, { useState } from "react";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog.tsx";
+import { Button } from "@/components/ui/button.tsx";
+import { Label } from "@/components/ui/label.tsx";
+import { Input } from "@/components/ui/input.tsx";
+import { Textarea } from "@/components/ui/textarea.tsx";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select.tsx";
+import { supabase } from "@/integrations/supabase/client.ts";
+import { useToast } from "@/hooks/use-toast.ts";
+import { RevisionFormValues } from "@/types/dhor-book.ts";
 
 interface NewRevisionDialogProps {
   open: boolean;
@@ -106,8 +106,10 @@ export const NewRevisionDialog = ({
 
       if (juzRevisionError) throw juzRevisionError;
 
-      // Create a fully valid RevisionFormData object to satisfy TypeScript
-      const formData: RevisionFormData = {
+      // Create a fully valid RevisionFormValues object to satisfy TypeScript
+      const formData: RevisionFormValues = {
+        date: new Date(),
+        time_spent: 0, // Default value as it's not in the form
         juz_number: juzNumber!,
         surah_number: surahNumber,
         quarters_revised: quartersRevised!,
@@ -143,7 +145,7 @@ export const NewRevisionDialog = ({
   const updateRevisionSchedule = async (
     studentId: string,
     juzNumber: number,
-    formData: RevisionFormData
+    formData: RevisionFormValues
   ) => {
     // Find any scheduled revisions for this juz and update them
     const { data: scheduledRevisions, error: fetchError } = await supabase

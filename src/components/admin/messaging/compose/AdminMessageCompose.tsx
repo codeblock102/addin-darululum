@@ -1,10 +1,10 @@
-
+import React from 'react';
 import { useState } from "react";
-import { Card, CardHeader, CardContent, CardFooter, CardTitle } from "@/components/ui/card";
-import { MessageCategory, MessageType } from "@/types/progress";
-import { TeacherSelector } from "./TeacherSelector";
-import { MessageOptions } from "./MessageOptions";
-import { AdminMessageForm } from "./AdminMessageForm";
+import { Card, CardHeader, CardContent, CardFooter, CardTitle } from "@/components/ui/card.tsx";
+import { MessageCategory, MessageType } from "@/types/progress.ts";
+import { TeacherSelector } from "./TeacherSelector.tsx";
+import { MessageOptions } from "./MessageOptions.tsx";
+import { AdminMessageForm } from "./AdminMessageForm.tsx";
 
 export const AdminMessageCompose = () => {
   const [selectedTeacher, setSelectedTeacher] = useState("");

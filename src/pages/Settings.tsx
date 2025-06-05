@@ -1,10 +1,11 @@
+import React from 'react';
 import { useState } from "react";
-import { SettingsHeader } from "@/components/admin/settings/SettingsHeader";
-import { SettingsContent } from "@/components/admin/settings/SettingsContent";
-import { SettingsTabs } from "@/components/admin/settings/SettingsTabs";
-import { useSettings } from "@/hooks/useSettings";
-import { LoadingState } from "@/components/teacher-portal/LoadingState";
-import { Tabs } from "@/components/ui/tabs";
+import { SettingsHeader } from "@/components/admin/settings/SettingsHeader.tsx";
+import { SettingsContent } from "@/components/admin/settings/SettingsContent.tsx";
+import { SettingsTabs } from "@/components/admin/settings/SettingsTabs.tsx";
+import { useSettings } from "@/hooks/useSettings.ts";
+import { LoadingState } from "@/components/teacher-portal/LoadingState.tsx";
+import { Tabs } from "@/components/ui/tabs.tsx";
 
 const Settings = () => {
   const [activeTab, setActiveTab] = useState("appearance");

@@ -1,6 +1,6 @@
-
-import { UserFormData } from "@/types/adminUser";
-import { supabase } from "@/integrations/supabase/client";
+import React from 'react';
+import { UserFormData } from "@/types/adminUser.ts";
+import { supabase } from "@/integrations/supabase/client.ts";
 
 export const handleUserSubmit = async (
   formData: UserFormData,

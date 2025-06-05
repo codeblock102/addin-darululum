@@ -1,9 +1,9 @@
 
 import { useState } from "react";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { ScrollArea } from "@/components/ui/scroll-area.tsx";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar.tsx";
+import { Button } from "@/components/ui/button.tsx";
+import { Badge } from "@/components/ui/badge.tsx";
 import { 
   User, 
   Mail, 
@@ -12,8 +12,8 @@ import {
   ClipboardCheck 
 } from "lucide-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { Message, MessageType } from "@/types/progress";
+import { supabase } from "@/integrations/supabase/client.ts";
+import { Message, MessageType } from "@/types/progress.ts";
 
 interface MessageListProps {
   messages: Message[] | undefined;

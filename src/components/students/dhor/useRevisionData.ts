@@ -1,8 +1,7 @@
-
-import { useToast } from "@/components/ui/use-toast";
-import { useState } from "react";
-import { RevisionFormValues } from "./RevisionForm";
-import { supabase } from "@/integrations/supabase/client";
+import { useState, useEffect } from "react";
+import { useToast } from "@/hooks/use-toast.ts";
+import { RevisionFormValues, JuzRevisionEntry } from "@/types/dhor-book.ts";
+import { supabase } from "@/integrations/supabase/client.ts";
 
 export function useRevisionData(revisionId: string, studentId: string, onSuccess: () => void) {
   const { toast } = useToast();
@@ -24,16 +23,16 @@ export function useRevisionData(revisionId: string, studentId: string, onSuccess
   };
 
   // State to hold the revision data
-  const [revision, setRevision] = useState<any>(null);
+  const [revision, setRevision] = useState<JuzRevisionEntry | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   // Fetch the revision on component mount
-  useState(() => {
+  useEffect(() => {
     fetchRevision().then(data => {
       setRevision(data);
       setIsLoading(false);
     });
-  });
+  }, [revisionId]); // Refetch if revisionId changes
 
   const handleSave = async (values: RevisionFormValues) => {
     try {

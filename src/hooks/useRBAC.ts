@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/contexts/AuthContext";
-import { RolePermission } from "@/utils/roleUtils";
+import { supabase } from "@/integrations/supabase/client.ts";
+import { useAuth } from "@/contexts/AuthContext.tsx";
+import { RolePermission } from "@/utils/roleUtils.ts";
 
 export type UserRole = 'admin' | 'teacher' | 'student';
 

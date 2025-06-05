@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { TeacherAccount } from "@/types/teacher";
-import { useToast } from "@/components/ui/use-toast";
+import { supabase } from "@/integrations/supabase/client.ts";
+import { TeacherAccount } from "@/types/teacher.ts";
+import { useToast } from "@/components/ui/use-toast.ts";
 
 export function useTeacherAccounts() {
   const { toast } = useToast();

@@ -1,11 +1,11 @@
-
+import React from 'react';
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { format } from "date-fns";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
-import { AttendanceStatus } from "@/types/attendance";
+import { supabase } from "@/integrations/supabase/client.ts";
+import { useToast } from "@/hooks/use-toast.ts";
+import { AttendanceStatus } from "@/types/attendance.ts";
 
 export function useAttendanceSubmit() {
   const [selectedClass, setSelectedClass] = useState<string>("");

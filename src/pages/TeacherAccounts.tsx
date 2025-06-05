@@ -1,3 +1,4 @@
+import React from 'react';
 /**
  * @file TeacherAccounts.tsx
  * @description This file defines the `TeacherAccounts` page component, which is an administrative interface for managing teacher accounts.
@@ -9,15 +10,15 @@
  * Loading states are managed to provide feedback to the user while data is being fetched.
  */
 import { useState } from "react";
-import { AdminHeader } from "@/components/admin/AdminHeader";
-import { TeacherAccountsTable } from "@/components/admin/teacher-accounts/TeacherAccountsTable";
-import { TeacherAccountsLoading } from "@/components/admin/teacher-accounts/TeacherAccountsLoading";
-import { TeacherStatsCards } from "@/components/admin/teacher-accounts/TeacherStatsCards";
-import { TeacherSearchAndFilters } from "@/components/admin/teacher-accounts/TeacherSearchAndFilters";
-import { useTeacherAccounts } from "@/hooks/useTeacherAccounts";
-import { useUserRole } from "@/hooks/useUserRole";
+import { AdminHeader } from "@/components/admin/AdminHeader.tsx";
+import { TeacherAccountsTable } from "@/components/admin/teacher-accounts/TeacherAccountsTable.tsx";
+import { TeacherAccountsLoading } from "@/components/admin/teacher-accounts/TeacherAccountsLoading.tsx";
+import { TeacherStatsCards } from "@/components/admin/teacher-accounts/TeacherStatsCards.tsx";
+import { TeacherSearchAndFilters } from "@/components/admin/teacher-accounts/TeacherSearchAndFilters.tsx";
+import { useTeacherAccounts } from "@/hooks/useTeacherAccounts.ts";
+import { useUserRole } from "@/hooks/useUserRole.ts";
 import { useNavigate } from "react-router-dom";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/components/ui/use-toast.ts";
 
 /**
  * @function TeacherAccounts

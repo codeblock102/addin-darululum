@@ -1,8 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { Card, CardContent } from "@/components/ui/card";
+import { supabase } from "@/integrations/supabase/client.ts";
+import { Card, CardContent } from "@/components/ui/card.tsx";
 import { Loader2 } from "lucide-react";
-import type { Tables } from "@/integrations/supabase/types";
+import type { Tables } from "@/integrations/supabase/types.ts";
 
 interface StudentPerformanceMetricsProps {
   studentId: string;

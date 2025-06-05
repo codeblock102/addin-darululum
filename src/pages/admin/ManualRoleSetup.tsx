@@ -13,16 +13,17 @@
  * 5. Displays a success toast and redirects the user to the appropriate dashboard (`/admin` or `/teacher-portal`) after a short delay.
  * Error handling is included to display toast notifications for failures during the process.
  */
+import React from 'react';
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { useToast } from "@/components/ui/use-toast";
+import { Button } from "@/components/ui/button.tsx";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card.tsx";
+import { useToast } from "@/components/ui/use-toast.ts";
 import { Loader2 } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/contexts/AuthContext";
-import { Label } from "@/components/ui/label";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { supabase } from "@/integrations/supabase/client.ts";
+import { useAuth } from "@/contexts/AuthContext.tsx";
+import { Label } from "@/components/ui/label.tsx";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group.tsx";
 
 /**
  * @function ManualRoleSetup

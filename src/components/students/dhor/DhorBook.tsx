@@ -1,12 +1,12 @@
-
+import React from 'react';
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Badge } from "@/components/ui/badge";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { RevisionTabs } from "./RevisionTabs";
-import { NewRevisionDialog } from "./NewRevisionDialog";
+import { supabase } from "@/integrations/supabase/client.ts";
+import { Skeleton } from "@/components/ui/skeleton.tsx";
+import { Badge } from "@/components/ui/badge.tsx";
+import { ScrollArea } from "@/components/ui/scroll-area.tsx";
+import { RevisionTabs } from "@/components/students/dhor/RevisionTabs.tsx";
+import { NewRevisionDialog } from "@/components/students/dhor/NewRevisionDialog.tsx";
 import { AlertCircle } from "lucide-react";
 
 interface DhorBookProps {

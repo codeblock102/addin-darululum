@@ -1,12 +1,15 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import React from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card.tsx";
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/integrations/supabase/client.ts";
 import { Loader2 } from "lucide-react";
+import { JuzRevisionEntry } from "@/types/dhor-book.ts";
+
 export const RecentRevisions = () => {
   const {
     data: revisions,
     isLoading
-  } = useQuery({
+  } = useQuery<JuzRevisionEntry[], Error>({
     queryKey: ['recent-revisions'],
     queryFn: async () => {
       const {
@@ -19,7 +22,7 @@ export const RecentRevisions = () => {
         ascending: false
       }).limit(5);
       if (error) throw error;
-      return data;
+      return data as JuzRevisionEntry[];
     }
   });
   return <Card className="bg-slate-900">
@@ -38,7 +41,9 @@ export const RecentRevisions = () => {
                   </p>
                 </div>
                 <div className="text-right">
-                  <p className="text-sm">{new Date(revision.revision_date).toLocaleDateString()}</p>
+                  <p className="text-sm">
+                    {revision.revision_date ? new Date(revision.revision_date).toLocaleDateString() : "N/A"}
+                  </p>
                   <span className={`text-xs px-2 py-1 rounded-full ${revision.memorization_quality === 'excellent' ? 'bg-green-100 text-green-800' : revision.memorization_quality === 'good' ? 'bg-blue-100 text-blue-800' : 'bg-yellow-100 text-yellow-800'}`}>
                     {revision.memorization_quality}
                   </span>

@@ -1,14 +1,15 @@
-import { Tabs, TabsContent } from "@/components/ui/tabs";
-import { SystemSettings } from "@/types/settings";
-import { AppearanceSettingsSection } from "./AppearanceSettings";
-import { NotificationSettingsSection } from "./NotificationSettings";
-import { SecuritySettingsSection } from "./SecuritySettings";
-import { AcademicSettingsSection } from "./AcademicSettings";
-import { LocalizationSettingsSection } from "./LocalizationSettings";
-import { IntegrationSettingsSection } from "./IntegrationSettings";
-import { DataManagementSettingsSection } from "./DataManagementSettings";
-import { UserExperienceSettingsSection } from "./UserExperienceSettings";
-import { AdvancedSettingsSection } from "./AdvancedSettings";
+import React from 'react';
+import { Tabs, TabsContent } from "@/components/ui/tabs.tsx";
+import { SystemSettings } from "@/types/settings.ts";
+import { AppearanceSettingsSection } from "./AppearanceSettings.tsx";
+import { NotificationSettingsSection } from "./NotificationSettings.tsx";
+import { SecuritySettingsSection } from "./SecuritySettings.tsx";
+import { AcademicSettingsSection } from "./AcademicSettings.tsx";
+import { LocalizationSettingsSection } from "./LocalizationSettings.tsx";
+import { IntegrationSettingsSection } from "./IntegrationSettings.tsx";
+import { DataManagementSettingsSection } from "./DataManagementSettings.tsx";
+import { UserExperienceSettingsSection } from "./UserExperienceSettings.tsx";
+import { AdvancedSettingsSection } from "./AdvancedSettings.tsx";
 
 interface SettingsContentProps {
   settings: SystemSettings;

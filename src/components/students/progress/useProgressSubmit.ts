@@ -1,10 +1,10 @@
-
+import React from "react";
 import { useState, useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
-import { useAuth } from "@/contexts/AuthContext";
-import { ProgressFormData } from "./types";
+import { supabase } from "@/integrations/supabase/client.ts";
+import { useToast } from "@/hooks/use-toast.ts";
+import { useAuth } from "@/contexts/AuthContext.tsx";
+import { ProgressFormData } from "@/types/progress.ts";
 
 export const useProgressSubmit = (studentId: string) => {
   const { toast } = useToast();

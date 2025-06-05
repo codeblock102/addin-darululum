@@ -1,3 +1,4 @@
+import React from 'react';
 /**
  * @file Students.tsx
  * @description This file defines the `Students` page component, which is responsible for displaying and managing a list of students.
@@ -8,15 +9,15 @@
  */
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { StudentDialog } from "@/components/students/StudentDialog";
-import { StudentList } from "@/components/students/StudentList";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
+import { supabase } from "@/integrations/supabase/client.ts";
+import { StudentDialog } from "@/components/students/StudentDialog.tsx";
+import { StudentList } from "@/components/students/StudentList.tsx";
+import { Input } from "@/components/ui/input.tsx";
+import { Button } from "@/components/ui/button.tsx";
 import { Search, UserPlus, Users } from "lucide-react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card.tsx";
+import { Progress } from "@/components/ui/progress.tsx";
+import { Skeleton } from "@/components/ui/skeleton.tsx";
 
 interface Student {
   id: string;
@@ -160,7 +161,7 @@ const Students = () => {
             <Input 
               placeholder="Search students by name or guardian..." 
               value={searchQuery} 
-              onChange={e => setSearchQuery(e.target.value)} 
+              onChange={e => setSearchQuery((e.target as HTMLInputElement).value)} 
               className="pl-9"
             />
           </div>

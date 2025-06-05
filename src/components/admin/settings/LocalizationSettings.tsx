@@ -1,11 +1,11 @@
-
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Input } from "@/components/ui/input";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { LocalizationSettings } from "@/types/settings";
+import React from 'react';
+import { Label } from "@/components/ui/label.tsx";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select.tsx";
+import { Input } from "@/components/ui/input.tsx";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group.tsx";
+import { LocalizationSettings } from "@/types/settings.ts";
 import { Globe } from "lucide-react";
-import { SettingsCard } from "./SettingsCard";
+import { SettingsCard } from "./SettingsCard.tsx";
 
 interface LocalizationSettingsSectionProps {
   settings: LocalizationSettings;

@@ -1,4 +1,4 @@
-
+import React from 'react';
 import { useState } from "react";
 import {
   AlertDialog,
@@ -9,10 +9,10 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import { TeacherAccount } from "@/types/teacher";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/components/ui/use-toast";
+} from "@/components/ui/alert-dialog.tsx";
+import { TeacherAccount } from "@/types/teacher.ts";
+import { supabase } from "@/integrations/supabase/client.ts";
+import { useToast } from "@/hooks/use-toast.ts";
 import { useQueryClient } from "@tanstack/react-query";
 import { Loader2, Shield, Trash } from "lucide-react";
 

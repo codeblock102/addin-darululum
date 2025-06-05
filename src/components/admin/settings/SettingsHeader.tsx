@@ -1,10 +1,10 @@
-
+import React from 'react';
 interface SettingsHeaderProps {
   isSaving: boolean;
   onSave: () => void;
 }
 
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/button.tsx";
 import { Loader2 } from "lucide-react";
 
 export function SettingsHeader({ isSaving, onSave }: SettingsHeaderProps) {

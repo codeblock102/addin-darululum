@@ -1,20 +1,20 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/integrations/supabase/client.ts";
 import { 
   Card, 
   CardContent, 
   CardDescription, 
   CardHeader, 
   CardTitle 
-} from "@/components/ui/card";
-import { LoadingSpinner } from "./students/LoadingSpinner";
-import { StudentSearchBar } from "./students/StudentSearchBar";
-import { StudentTable } from "./students/StudentTable";
-import { StudentMobileList } from "./students/StudentMobileList";
-import { StudentDeleteDialog } from "./students/StudentDeleteDialog";
-import { AddStudentDialog } from "./students/AddStudentDialog";
-import { useIsMobile } from "@/hooks/use-mobile";
+} from "@/components/ui/card.tsx";
+import { LoadingSpinner } from "./students/LoadingSpinner.tsx";
+import { StudentSearchBar } from "./students/StudentSearchBar.tsx";
+import { StudentTable } from "./students/StudentTable.tsx";
+import { StudentMobileList } from "./students/StudentMobileList.tsx";
+import { StudentDeleteDialog } from "./students/StudentDeleteDialog.tsx";
+import { AddStudentDialog } from "./students/AddStudentDialog.tsx";
+import { useIsMobile } from "@/hooks/use-mobile.tsx";
 
 interface MyStudentsProps {
   teacherId: string;

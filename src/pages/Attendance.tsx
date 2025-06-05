@@ -1,11 +1,12 @@
+import React from 'react';
 import { useState } from "react";
-import { AttendanceForm } from "@/components/attendance/AttendanceForm";
-import { AttendanceTable } from "@/components/attendance/AttendanceTable";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { AttendanceForm } from "@/components/attendance/AttendanceForm.tsx";
+import { AttendanceTable } from "@/components/attendance/AttendanceTable.tsx";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs.tsx";
 import { CalendarCheck, Users, Info, Clock } from "lucide-react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card.tsx";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip.tsx";
+import { Badge } from "@/components/ui/badge.tsx";
 
 const Attendance = () => {
   const [selectedTab, setSelectedTab] = useState("take-attendance");

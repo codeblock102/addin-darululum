@@ -17,17 +17,18 @@
  *   - Users without a defined role (or not found as a teacher) are redirected to `/role-setup`.
  * - Uses `useAuth` context for session refresh and `useToast` for notifications.
  */
+import React from 'react';
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { useToast } from "@/components/ui/use-toast";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
+import { supabase } from "@/integrations/supabase/client.ts";
+import { Button } from "@/components/ui/button.tsx";
+import { Input } from "@/components/ui/input.tsx";
+import { useToast } from "@/components/ui/use-toast.ts";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card.tsx";
+import { Label } from "@/components/ui/label.tsx";
 import { Eye, EyeOff, LockKeyhole, Mail, AlertTriangle, Loader2 } from "lucide-react";
-import { useAuth } from "@/contexts/AuthContext";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { useAuth } from "@/contexts/AuthContext.tsx";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert.tsx";
 
 /**
  * @component Auth
