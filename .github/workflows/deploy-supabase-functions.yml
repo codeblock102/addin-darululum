@@ -1,0 +1,38 @@
+name: Deploy Supabase Edge Functions
+
+on:
+  push:
+    branches:
+      - main # Adjust if your default branch is different (e.g., master)
+    paths:
+      - 'supabase/functions/**' # Only run if function code changes
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      # The Project ID is usually picked up from supabase/config.toml
+      # If not, you might need to set it explicitly as a secret:
+      # PROJECT_ID: ${{ secrets.SUPABASE_PROJECT_ID }} 
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18' # Use a current LTS version
+
+      - name: Install Supabase CLI
+        run: npm install -g supabase@latest
+
+      - name: Deploy 'send-progress-report' Function
+        # This deploys only the 'send-progress-report' function.
+        # To deploy all functions in supabase/functions, use: supabase functions deploy
+        # The CLI should pick up the project_id from supabase/config.toml
+        run: supabase functions deploy send-progress-report
+        # If you prefer to be explicit or if the above fails to find the project:
+        # run: supabase functions deploy send-progress-report --project-ref YOUR_PROJECT_ID_HERE 
+        # (Replace YOUR_PROJECT_ID_HERE with depsfpodwaprzxffdcks or use secrets.SUPABASE_PROJECT_ID if set) 

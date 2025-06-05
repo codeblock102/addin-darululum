@@ -36,6 +36,7 @@ import CreateTeacherProfileForTestAccount from "@/pages/CreateTeacherProfileForT
 import DatabaseSeeder from "@/pages/admin/DatabaseSeeder";
 import SetupAdmin from "@/pages/admin/SetupAdmin";
 import ManualRoleSetup from "@/pages/admin/ManualRoleSetup";
+import ProgressReportSender from "@/pages/ProgressReportSender";
 
 /**
  * @component App
@@ -93,6 +94,7 @@ function App() {
             <Route path="/settings" element={<Settings />} />
             <Route path="/preferences" element={<Preferences />} />
             <Route path="/admin/database-seeder" element={<ProtectedRoute requireAdmin><DatabaseSeeder /></ProtectedRoute>} />
+            <Route path="/progress-reports" element={<ProgressReportSender />} />
           </Route>
         </Routes>
       </BrowserRouter>

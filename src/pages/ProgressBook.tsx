@@ -34,6 +34,7 @@ import { Book, Search, Users, AlertCircle, Loader2, FileText, CalendarDays } fro
 import { useTeacherStatus } from "@/hooks/useTeacherStatus";
 import { useRealtimeLeaderboard } from "@/hooks/useRealtimeLeaderboard";
 import { useToast } from "@/hooks/use-toast";
+import { useNavigate } from "react-router-dom";
 
 /**
  * @component ProgressBookPage
@@ -69,6 +70,7 @@ import { useToast } from "@/hooks/use-toast";
  */
 const ProgressBookPage = () => {
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState("all"); // "all", "recent", "reports"
@@ -132,9 +134,13 @@ const ProgressBookPage = () => {
               Track student progress with Progress Book entries.
             </p>
           </div>
-          <Button size="sm" className="flex items-center gap-2 text-xs sm:text-sm whitespace-nowrap">
-            <Book className="h-3 w-3 sm:h-4 sm:w-4" />
-            <span>Export Records</span>
+          <Button 
+            size="sm" 
+            className="flex items-center gap-2 text-xs sm:text-sm whitespace-nowrap"
+            onClick={() => navigate("/progress-reports")}
+          >
+            <FileText className="h-3 w-3 sm:h-4 sm:w-4" />
+            <span>Daily Reports</span>
           </Button>
         </div>
 
