@@ -1,10 +1,9 @@
-
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { StatsCard } from './StatsCard';
+import { StatsCard } from './StatsCard.tsx';
 import { Users, Clock, GraduationCap, BookOpen } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
-import { useUserRole } from '@/hooks/useUserRole';
+import { supabase } from '@/integrations/supabase/client.ts';
+import { useUserRole } from '@/hooks/useUserRole.ts';
 
 export const DashboardStats = () => {
   const { isAdmin } = useUserRole();

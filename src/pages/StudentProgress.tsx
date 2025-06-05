@@ -1,16 +1,17 @@
+import React from 'react';
 import { useState } from "react";
-import { Card } from "@/components/ui/card";
-import { useToast } from "@/hooks/use-toast";
-import { StudentSearch } from "@/components/student-progress/StudentSearch";
-import { ProgressOverview } from "@/components/student-progress/ProgressOverview";
-import { ProgressCharts } from "@/components/student-progress/ProgressCharts";
-import { AttendanceStats } from "@/components/student-progress/AttendanceStats";
-import { ExportOptions } from "@/components/student-progress/ExportOptions";
+import { Card } from "@/components/ui/card.tsx";
+import { useToast } from "@/hooks/use-toast.ts";
+import { StudentSearch } from "@/components/student-progress/StudentSearch.tsx";
+import { ProgressOverview } from "@/components/student-progress/ProgressOverview.tsx";
+import { ProgressCharts } from "@/components/student-progress/ProgressCharts.tsx";
+import { AttendanceStats } from "@/components/student-progress/AttendanceStats.tsx";
+import { ExportOptions } from "@/components/student-progress/ExportOptions.tsx";
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/integrations/supabase/client.ts";
 import { Loader2, School2 } from "lucide-react";
-import type { Tables } from "@/integrations/supabase/types";
-import { Progress } from "@/types/progress";
+import type { Tables } from "@/integrations/supabase/types.ts";
+import { Progress } from "@/types/progress.ts";
 
 /**
  * @file StudentProgressPage.tsx

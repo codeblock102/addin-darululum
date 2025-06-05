@@ -1,12 +1,12 @@
-
-import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Input } from "@/components/ui/input";
-import { Checkbox } from "@/components/ui/checkbox";
-import { DataManagementSettings } from "@/types/settings";
+import React from 'react';
+import { Label } from "@/components/ui/label.tsx";
+import { Switch } from "@/components/ui/switch.tsx";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select.tsx";
+import { Input } from "@/components/ui/input.tsx";
+import { Checkbox } from "@/components/ui/checkbox.tsx";
+import { DataManagementSettings } from "@/types/settings.ts";
 import { Database } from "lucide-react";
-import { SettingsCard } from "./SettingsCard";
+import { SettingsCard } from "./SettingsCard.tsx";
 
 interface DataManagementSettingsSectionProps {
   settings: DataManagementSettings;

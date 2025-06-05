@@ -1,8 +1,9 @@
+import React from 'react';
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client.ts";
+import { useToast } from "@/hooks/use-toast.ts";
 import { format, startOfWeek, endOfWeek } from "date-fns";
-import type { Database } from "@/types/supabase";
+import type { Database } from "@/types/supabase.ts";
 
 interface UseDhorEntryMutationProps {
   studentId: string;

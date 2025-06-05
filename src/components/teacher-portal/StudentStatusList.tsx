@@ -1,14 +1,14 @@
 
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
+import { supabase } from "@/integrations/supabase/client.ts";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card.tsx";
+import { Button } from "@/components/ui/button.tsx";
+import { Badge } from "@/components/ui/badge.tsx";
+import { Skeleton } from "@/components/ui/skeleton.tsx";
 import { RefreshCcw, User, UserCheck, UserX } from "lucide-react";
-import { StudentAssignment } from "@/types/user";
-import { useToast } from "@/components/ui/use-toast";
+import { StudentAssignment } from "@/types/user.ts";
+import { useToast } from "@/hooks/use-toast.ts";
 
 interface StudentStatusListProps {
   teacherId: string;

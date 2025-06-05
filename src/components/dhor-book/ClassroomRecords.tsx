@@ -1,13 +1,14 @@
+import React from 'react';
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Input } from "@/components/ui/input";
+import { supabase } from "@/integrations/supabase/client.ts";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card.tsx";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs.tsx";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table.tsx";
+import { Button } from "@/components/ui/button.tsx";
+import { Badge } from "@/components/ui/badge.tsx";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select.tsx";
+import { Input } from "@/components/ui/input.tsx";
 import { Loader2, Search, Calendar, Check, X, AlertCircle, Trophy, Medal, Award } from "lucide-react";
 import { format } from "date-fns";
 import { useNavigate } from 'react-router-dom';
@@ -213,9 +214,9 @@ export function ClassroomRecords({ teacherId }: ClassroomRecordsProps) {
       });
 
       // Sort by completion score for leaderboard
-      return studentSummaries.sort((a, b) => (b.completionScore || 0) - (a.completionScore || 0));
+      return studentSummaries.sort((a, b) => (b.completionScore ?? 0) - (a.completionScore ?? 0));
     },
-    enabled: !!(teacherStudents?.length > 0 || allStudents?.length > 0),
+    enabled: !!(((teacherStudents?.length ?? 0) > 0) || ((allStudents?.length ?? 0) > 0)),
   });
 
   // Filter records based on search and record type

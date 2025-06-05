@@ -1,17 +1,24 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card.tsx";
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { Badge } from "@/components/ui/badge";
+import { supabase } from "@/integrations/supabase/client.ts";
+import { Badge } from "@/components/ui/badge.tsx";
 import { CalendarClock } from "lucide-react";
 
 interface TodayStudentsProps {
   teacherId?: string;
 }
 
+interface StudentSchedule {
+  name: string;
+  class: string;
+  time: string;
+  status: "present" | "absent" | "late" | "pending";
+}
+
 export const TodayStudents = ({ teacherId }: TodayStudentsProps) => {
   const today = new Date().toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
   
-  const { data: todayStudents, isLoading } = useQuery({
+  const { data: todayStudents, isLoading } = useQuery<StudentSchedule[]>({
     queryKey: ["today-students", teacherId, today],
     queryFn: async () => {
       // TODO: Implement actual data fetching for students scheduled today

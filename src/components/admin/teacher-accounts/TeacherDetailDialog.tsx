@@ -6,21 +6,21 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle
-} from "@/components/ui/dialog";
+} from "@/components/ui/dialog.tsx";
 import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger
-} from "@/components/ui/tabs";
-import { TeacherAccount } from "@/types/teacher";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+} from "@/components/ui/tabs.tsx";
+import { TeacherAccount } from "@/types/teacher.ts";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card.tsx";
 import { Clock, User, Calendar, BookOpen, Activity } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/integrations/supabase/client.ts";
 import { Loader2 } from "lucide-react";
-import { TeacherActivityTab } from "./TeacherActivityTab";
-import { TeacherStudentsTab } from "./TeacherStudentsTab";
+import { TeacherActivityTab } from "./TeacherActivityTab.tsx";
+import { TeacherStudentsTab } from "./TeacherStudentsTab.tsx";
 
 interface TeacherDetailDialogProps {
   teacher: TeacherAccount | null;

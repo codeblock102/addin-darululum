@@ -1,6 +1,6 @@
 
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/integrations/supabase/client.ts";
 import {
   Table,
   TableBody,
@@ -8,9 +8,9 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+} from "@/components/ui/table.tsx";
+import { Card } from "@/components/ui/card.tsx";
+import { Button } from "@/components/ui/button.tsx";
 import { Loader2, UserPlus, Users } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 

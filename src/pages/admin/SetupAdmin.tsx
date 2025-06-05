@@ -1,10 +1,11 @@
+import React from 'react';
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { useToast } from "@/components/ui/use-toast";
+import { Button } from "@/components/ui/button.tsx";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card.tsx";
+import { useToast } from "@/components/ui/use-toast.ts";
 import { Loader2 } from "lucide-react";
-import { setUserAsAdmin } from "@/utils/adminUtils";
+import { setUserAsAdmin } from "@/utils/adminUtils.ts";
 
 export default function SetupAdmin() {
   const [isLoading, setIsLoading] = useState(false);

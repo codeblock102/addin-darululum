@@ -1,14 +1,14 @@
-
+import React from 'react';
 import { FileDown, FileSpreadsheet } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Progress } from "@/types/progress";
-import { Tables } from "@/integrations/supabase/types";
+import { Button } from "@/components/ui/button.tsx";
+import { Card, CardContent } from "@/components/ui/card.tsx";
+import { DailyActivityEntry } from "@/types/dhor-book.ts";
+import { Tables } from "@/integrations/supabase/types.ts";
 
 export interface ExportOptionsProps {
   studentId: string;
   studentName: string;
-  progressData: Progress[];
+  progressData: DailyActivityEntry[];
   attendanceData: Tables<"attendance">[];
   sabaqParaData: Tables<"sabaq_para">[];
   juzRevisionsData: Tables<"juz_revisions">[];

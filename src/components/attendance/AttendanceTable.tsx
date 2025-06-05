@@ -1,10 +1,11 @@
+import React from 'react';
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { AttendanceDataTable } from "./table/AttendanceDataTable";
-import { AttendanceEmptyState } from "./table/AttendanceEmptyState";
-import { AttendanceTableHeader } from "./table/AttendanceTableHeader";
-import { SearchInput } from "../table/SearchInput";
+import { supabase } from "@/integrations/supabase/client.ts";
+import { AttendanceDataTable } from "./table/AttendanceDataTable.tsx";
+import { AttendanceEmptyState } from "./table/AttendanceEmptyState.tsx";
+import { AttendanceTableHeader } from "./table/AttendanceTableHeader.tsx";
+import { SearchInput } from "../table/SearchInput.tsx";
 
 interface AttendanceTableProps {
   teacherId?: string;

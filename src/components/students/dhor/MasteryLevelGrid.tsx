@@ -1,8 +1,7 @@
-
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
-import { JuzMastery } from '@/types/dhor-book';
+import { supabase } from '@/integrations/supabase/client.ts';
+import { JuzMastery } from '@/types/dhor-book.ts';
 
 interface MasteryLevelGridProps {
   studentId: string;

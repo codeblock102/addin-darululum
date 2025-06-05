@@ -15,17 +15,18 @@
  * - Admin view includes an `AdminHeader`, `DashboardStats`, `AdminDashboardTabs`, and `AdminMessaging` components.
  * - Uses `DashboardLayout` for the overall page structure.
  */
+import React from 'react';
 import { useState, useEffect } from "react";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/contexts/AuthContext.tsx";
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { TeacherDashboard } from "@/components/teacher-portal/TeacherDashboard";
-import { useToast } from "@/components/ui/use-toast";
-import { LoadingState } from "@/components/teacher-portal/LoadingState";
-import { AccessDenied } from "@/components/teacher-portal/AccessDenied";
-import { ProfileNotFound } from "@/components/teacher-portal/ProfileNotFound";
-import { Teacher } from "@/types/teacher";
-import { useRBAC } from "@/hooks/useRBAC";
+import { supabase } from "@/integrations/supabase/client.ts";
+import { TeacherDashboard } from "@/components/teacher-portal/TeacherDashboard.tsx";
+import { useToast } from "@/components/ui/use-toast.ts";
+import { LoadingState } from "@/components/teacher-portal/LoadingState.tsx";
+import { AccessDenied } from "@/components/teacher-portal/AccessDenied.tsx";
+import { ProfileNotFound } from "@/components/teacher-portal/ProfileNotFound.tsx";
+import { Teacher } from "@/types/teacher.ts";
+import { useRBAC } from "@/hooks/useRBAC.ts";
 
 /**
  * @component Dashboard

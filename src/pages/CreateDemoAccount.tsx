@@ -1,12 +1,12 @@
-
+import React from 'react';
 import { useState } from "react";
-import { createMuftiAmmarAccount, createNormalizedUsername } from "@/utils/createTeacherAccount";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
-import { useToast } from "@/components/ui/use-toast";
+import { createMuftiAmmarAccount, createNormalizedUsername } from "@/utils/createTeacherAccount.ts";
+import { Button } from "@/components/ui/button.tsx";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card.tsx";
+import { useToast } from "@/components/ui/use-toast.ts";
 import { useNavigate } from "react-router-dom";
 import { Loader2, AlertTriangle, CheckCircle } from "lucide-react";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert.tsx";
 
 const CreateDemoAccount = () => {
   const [isLoading, setIsLoading] = useState(false);

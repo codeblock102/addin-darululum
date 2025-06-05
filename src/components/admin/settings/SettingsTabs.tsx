@@ -1,6 +1,6 @@
-
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { 
+import React from 'react';
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs.tsx";
+import {  
   LayoutDashboard, Bell, Shield, BookOpen, Globe, 
   Network, Database, UserCheck, Bug 
 } from "lucide-react";

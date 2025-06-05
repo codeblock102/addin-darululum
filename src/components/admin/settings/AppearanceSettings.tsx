@@ -1,10 +1,10 @@
-
-import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { AppearanceSettings } from "@/types/settings";
+import React from 'react';
+import { Label } from "@/components/ui/label.tsx";
+import { Switch } from "@/components/ui/switch.tsx";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group.tsx";
+import { AppearanceSettings } from "@/types/settings.ts";
 import { Palette, PanelRightClose, ScanLine, Sparkles } from "lucide-react";
-import { SettingsCard } from "./SettingsCard";
+import { SettingsCard } from "./SettingsCard.tsx";
 
 interface AppearanceSettingsSectionProps {
   settings: AppearanceSettings;

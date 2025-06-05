@@ -1,18 +1,18 @@
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useLocation } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Button } from "@/components/ui/button";
-import { DhorBook } from "@/components/dhor-book/DhorBook";
-import { ClassroomRecords } from "@/components/dhor-book/ClassroomRecords";
+import { supabase } from "@/integrations/supabase/client.ts";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card.tsx";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs.tsx";
+import { Button } from "@/components/ui/button.tsx";
+import { DhorBook } from "@/components/dhor-book/DhorBook.tsx";
+import { ClassroomRecords } from "@/components/dhor-book/ClassroomRecords.tsx";
 import { Loader2, Plus, Calendar, Search, BookOpen, Users, AlertCircle } from "lucide-react";
-import { StudentSearch } from "@/components/student-progress/StudentSearch";
-import { AttendanceStats } from "@/components/student-progress/AttendanceStats";
-import { StudentPerformanceMetrics } from "@/components/student-progress/StudentPerformanceMetrics";
-import { useRealtimeLeaderboard } from "@/hooks/useRealtimeLeaderboard";
-import { useIsMobile } from "@/hooks/use-mobile";
+import { StudentSearch } from "@/components/student-progress/StudentSearch.tsx";
+import { AttendanceStats } from "@/components/student-progress/AttendanceStats.tsx";
+import { StudentPerformanceMetrics } from "@/components/student-progress/StudentPerformanceMetrics.tsx";
+import { useRealtimeLeaderboard } from "@/hooks/useRealtimeLeaderboard.ts";
+import { useIsMobile } from "@/hooks/use-mobile.tsx";
 
 interface TeacherDhorBookProps {
   teacherId: string;

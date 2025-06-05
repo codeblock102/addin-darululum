@@ -1,9 +1,9 @@
-
-import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
-import { NotificationSettings } from "@/types/settings";
+import React from 'react';
+import { Label } from "@/components/ui/label.tsx";
+import { Switch } from "@/components/ui/switch.tsx";
+import { NotificationSettings } from "@/types/settings.ts";
 import { Bell } from "lucide-react";
-import { SettingsCard } from "./SettingsCard";
+import { SettingsCard } from "./SettingsCard.tsx";
 
 interface NotificationSettingsSectionProps {
   settings: NotificationSettings;

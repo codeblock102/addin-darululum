@@ -1,15 +1,15 @@
-
+import React from 'react';
 import { useState } from "react";
-import { DailyActivityEntry } from "@/types/dhor-book"; 
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
-import { NewEntryDialog } from "./NewEntryDialog";
+import { DailyActivityEntry, JuzRevisionEntry } from "@/types/dhor-book.ts";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table.tsx";
+import { Button } from "@/components/ui/button.tsx";
+import { NewEntryDialog } from "./NewEntryDialog.tsx";
 import { format } from "date-fns";
 
 interface DhorBookGridProps {
   entries: DailyActivityEntry[]; 
   studentId: string;
-  teacherId: string;
+  teacherId: string | undefined;
   currentWeek: Date;
   onRefresh: () => void;
 }
@@ -56,8 +56,8 @@ export function DhorBookGrid({ entries, studentId, teacherId, currentWeek, onRef
               const dateString = format(date, 'yyyy-MM-dd');
               const entry = entries.find(e => e.entry_date === dateString);
               
-              const dhor1Entry = entry?.juz_revisions_data?.find(jr => jr.dhor_slot === 1);
-              const dhor2Entry = entry?.juz_revisions_data?.find(jr => jr.dhor_slot === 2);
+              const dhor1Entry = entry?.juz_revisions_data?.find((jr: JuzRevisionEntry) => jr.dhor_slot === 1);
+              const dhor2Entry = entry?.juz_revisions_data?.find((jr: JuzRevisionEntry) => jr.dhor_slot === 2);
               
               return (
                 <TableRow key={date.toISOString()}>
@@ -109,7 +109,7 @@ export function DhorBookGrid({ entries, studentId, teacherId, currentWeek, onRef
         open={isNewEntryOpen}
         onOpenChange={setIsNewEntryOpen}
         studentId={studentId}
-        teacherId={teacherId}
+        teacherId={teacherId ?? "system-unknown"}
         onSuccess={handleEntrySuccess}
       />
     </div>

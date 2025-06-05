@@ -1,11 +1,11 @@
-
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import React from 'react';
+import { Button } from "@/components/ui/button.tsx";
+import { Card } from "@/components/ui/card.tsx";
 import { useQuery } from "@tanstack/react-query";
 import { Download } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
-import { exportDataAsCSV } from "@/utils/exportUtils";
-import { useToast } from "@/components/ui/use-toast";
+import { supabase } from "@/integrations/supabase/client.ts";
+import { exportDataAsCSV } from "@/utils/exportUtils.ts";
+import { useToast } from "@/components/ui/use-toast.ts";
 
 export const ProgressReportGenerator = () => {
   const { toast } = useToast();

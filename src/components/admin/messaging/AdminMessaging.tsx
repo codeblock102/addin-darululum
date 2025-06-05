@@ -1,15 +1,16 @@
+import React from 'react';
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/components/ui/use-toast";
-import { Card, CardHeader, CardContent, CardTitle, CardDescription } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Button } from "@/components/ui/button";
+import { supabase } from "@/integrations/supabase/client.ts";
+import { useToast } from "@/components/ui/use-toast.ts";
+import { Card, CardHeader, CardContent, CardTitle, CardDescription } from "@/components/ui/card.tsx";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs.tsx";
+import { Button } from "@/components/ui/button.tsx";
 import { RefreshCcw } from "lucide-react";
-import { AdminMessageList } from "./AdminMessageList";
-import { AdminMessageCompose } from "./compose/AdminMessageCompose";
-import { useRealtimeAdminMessages } from "@/hooks/useRealtimeAdminMessages";
-import { Message, MessageType, MessageCategory } from "@/types/progress";
+import { AdminMessageList } from "./AdminMessageList.tsx";
+import { AdminMessageCompose } from "./compose/AdminMessageCompose.tsx";
+import { useRealtimeAdminMessages } from "@/hooks/useRealtimeAdminMessages.ts";
+import { Message, MessageType, MessageCategory } from "@/types/progress.ts";
 export const AdminMessaging = () => {
   const {
     toast

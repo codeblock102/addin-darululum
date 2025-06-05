@@ -1,10 +1,11 @@
+import React from 'react';
 import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { useToast } from "@/components/ui/use-toast";
+import { supabase } from "@/integrations/supabase/client.ts";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card.tsx";
+import { Button } from "@/components/ui/button.tsx";
+import { useToast } from "@/components/ui/use-toast.ts";
 import { Loader2, Check, AlertTriangle } from "lucide-react";
-import { DashboardLayout } from "@/components/layouts/DashboardLayout";
+import { DashboardLayout } from "@/components/layouts/DashboardLayout.tsx";
 import { Link } from "react-router-dom";
 
 const CreateTeacherProfileForTestAccount = () => {

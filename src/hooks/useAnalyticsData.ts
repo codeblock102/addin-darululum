@@ -1,6 +1,6 @@
 
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/integrations/supabase/client.ts";
 
 export const useAnalyticsData = (teacherId: string) => {
   return useQuery({
@@ -48,7 +48,7 @@ const getQualityDistribution = async () => {
     }
     
     // Create a distribution map with counts
-    const distributionMap = data.reduce((acc, item) => {
+    const distributionMap = data.reduce((acc: Record<string, number>, item: { memorization_quality: string | null; count: number }) => {
       const quality = item.memorization_quality || 'Not rated';
       if (!acc[quality]) {
         acc[quality] = 0;
@@ -82,7 +82,7 @@ const getTimeProgress = async () => {
     }
     
     // Group entries by date
-    const dateMap = {};
+    const dateMap: Record<string, number> = {};
     data.forEach(item => {
       if (item.date) {
         const date = new Date(item.date).toISOString().split('T')[0];

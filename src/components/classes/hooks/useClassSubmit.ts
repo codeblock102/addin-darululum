@@ -1,9 +1,9 @@
-
+import React from 'react';
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
-import { hasPermission } from "@/utils/roleUtils";
-import { ClassFormData } from "../validation/classFormSchema";
+import { supabase } from "@/integrations/supabase/client.ts";
+import { useToast } from "@/hooks/use-toast.ts";
+import { hasPermission } from "@/utils/roleUtils.ts";
+import { ClassFormData } from "../validation/classFormSchema.ts";
 
 interface UseClassSubmitProps {
   selectedClass: any;

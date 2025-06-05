@@ -1,5 +1,5 @@
-
-import { supabase } from "@/integrations/supabase/client";
+import React from 'react';
+import { supabase } from "@/integrations/supabase/client.ts";
 
 // Function to seed the students table with actual student data
 export const seedStudentsTable = async () => {

@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
-import { StudentLeaderboardData, LeaderboardFilters } from '@/types/leaderboard';
+import { supabase } from '@/integrations/supabase/client.ts';
+import { StudentLeaderboardData, LeaderboardFilters } from '@/types/leaderboard.ts';
 
 export function useLeaderboardData(teacherId?: string, filters: LeaderboardFilters = { 
   timeRange: 'week', 

@@ -1,7 +1,7 @@
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { supabase } from '@/integrations/supabase/client';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card.tsx';
+import { supabase } from '@/integrations/supabase/client.ts';
 
 // Define a simplified interface for the activity data
 interface ActivityItem {

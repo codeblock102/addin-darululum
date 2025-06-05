@@ -1,4 +1,3 @@
-
 export interface Progress {
   id: string;
   student_id?: string;
@@ -72,6 +71,15 @@ export interface Message {
   category?: MessageCategory;
   updated_at?: string;
   parent_message_id?: string; // Added this field to fix TypeScript error
+}
+
+export interface ProgressFormData {
+  start_ayat: number;
+  end_ayat: number;
+  verses_memorized?: number;
+  current_surah?: number;
+  current_juz?: number;
+  memorization_quality?: 'excellent' | 'good' | 'average' | 'needsWork' | 'horrible';
 }
 
 export type MessageType = 'direct' | 'announcement' | 'feedback';

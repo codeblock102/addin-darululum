@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { SummaryData } from "@/types/teacher";
+import { supabase } from "@/integrations/supabase/client.ts";
+import { SummaryData } from "@/types/teacher.ts";
 
 export const useTeacherSummary = (teacherId: string) => {
   return useQuery({

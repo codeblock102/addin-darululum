@@ -1,11 +1,11 @@
-
-import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
-import { Slider } from "@/components/ui/slider";
-import { SecuritySettings } from "@/types/settings";
+import React from 'react';
+import { Label } from "@/components/ui/label.tsx";
+import { Switch } from "@/components/ui/switch.tsx";
+import { Slider } from "@/components/ui/slider.tsx";
+import { SecuritySettings } from "@/types/settings.ts";
 import { Shield } from "lucide-react";
-import { SettingsCard } from "./SettingsCard";
-import { Input } from "@/components/ui/input";
+import { SettingsCard } from "./SettingsCard.tsx";
+import { Input } from "@/components/ui/input.tsx";
 
 interface SecuritySettingsSectionProps {
   settings: SecuritySettings;

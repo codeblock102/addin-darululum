@@ -19,21 +19,22 @@
  * - Includes a `TeacherStatsSection` for displaying aggregate statistics (currently basic).
  * - Utilizes realtime updates via `useRealtimeLeaderboard` (though its direct impact here might be for other parts of the system).
  */
+import React from 'react';
 import { useState, useEffect } from "react";
-import { Card, CardContent } from "@/components/ui/card";
-import { supabase } from "@/integrations/supabase/client";
+import { Card, CardContent } from "@/components/ui/card.tsx";
+import { supabase } from "@/integrations/supabase/client.ts";
 import { useQuery } from "@tanstack/react-query";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { DhorBook as DhorBookComponent } from "@/components/dhor-book/DhorBook";
-import { ClassroomRecords } from "@/components/dhor-book/ClassroomRecords";
-import { TeacherStatsSection } from "@/components/teachers/TeacherStatsSection";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs.tsx";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select.tsx";
+import { Button } from "@/components/ui/button.tsx";
+import { Input } from "@/components/ui/input.tsx";
+import { DhorBook as DhorBookComponent } from "@/components/dhor-book/DhorBook.tsx";
+import { ClassroomRecords } from "@/components/dhor-book/ClassroomRecords.tsx";
+import { TeacherStatsSection } from "@/components/teachers/TeacherStatsSection.tsx";
 import { Book, Search, Users, AlertCircle, Loader2, FileText, CalendarDays } from "lucide-react";
-import { useTeacherStatus } from "@/hooks/useTeacherStatus";
-import { useRealtimeLeaderboard } from "@/hooks/useRealtimeLeaderboard";
-import { useToast } from "@/hooks/use-toast";
+import { useTeacherStatus } from "@/hooks/useTeacherStatus.ts";
+import { useRealtimeLeaderboard } from "@/hooks/useRealtimeLeaderboard.ts";
+import { useToast } from "@/hooks/use-toast.ts";
 
 /**
  * @component ProgressBookPage

@@ -1,12 +1,12 @@
-
+import React from 'react';
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/components/ui/use-toast";
-import { Button } from "@/components/ui/button";
+import { supabase } from "@/integrations/supabase/client.ts";
+import { useToast } from "@/components/ui/use-toast.ts";
+import { Button } from "@/components/ui/button.tsx";
 import { Loader2, Send, X } from "lucide-react";
-import { Message } from "@/types/progress";
-import { Card, CardHeader, CardContent, CardFooter, CardTitle } from "@/components/ui/card";
+import { Message } from "@/types/progress.ts";
+import { Card, CardHeader, CardContent, CardFooter, CardTitle } from "@/components/ui/card.tsx";
 
 interface AdminMessageReplyProps {
   message: Message | null;

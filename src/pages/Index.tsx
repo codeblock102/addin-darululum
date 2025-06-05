@@ -1,10 +1,9 @@
-
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Loader2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { toast } from "@/components/ui/use-toast";
-import { useAuth } from "@/contexts/AuthContext";
+import { Button } from "@/components/ui/button.tsx";
+import { toast } from "@/components/ui/use-toast.ts";
+import { useAuth } from "@/contexts/AuthContext.tsx";
 
 export default function Index() {
   const navigate = useNavigate();
@@ -79,7 +78,7 @@ export default function Index() {
     }
 
     try {
-      const { supabase } = await import("@/integrations/supabase/client");
+      const { supabase } = await import("@/integrations/supabase/client.ts");
       const { data } = await supabase
         .from('teachers')
         .select('id')

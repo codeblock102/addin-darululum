@@ -1,10 +1,9 @@
-
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
-import { DifficultAyahsList } from './DifficultAyahsList';
+import { supabase } from '@/integrations/supabase/client.ts';
+import { DifficultAyahsList } from '@/components/students/dhor/DifficultAyahsList.tsx';
 import { Loader2 } from 'lucide-react';
-import { DifficultAyah } from '@/types/progress';
+import { DifficultAyahEntry } from '@/types/dhor-book.ts';
 
 interface DifficultAyahListProps {
   studentId: string;
@@ -24,7 +23,7 @@ export function DifficultAyahList({ studentId }: DifficultAyahListProps) {
         throw error;
       }
       
-      return data as unknown as DifficultAyah[];
+      return data as DifficultAyahEntry[];
     }
   });
 
