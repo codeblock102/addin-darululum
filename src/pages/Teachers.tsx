@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useState } from "react";
+import React, { Fragment, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import TeacherDialog from "@/components/teachers/TeacherDialog";
 import { AdminHeader } from "@/components/admin/AdminHeader";
