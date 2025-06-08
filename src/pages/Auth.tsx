@@ -1,3 +1,4 @@
+
 /**
  * @file src/pages/Auth.tsx
  * @summary This file defines the authentication page component for user login.
@@ -22,7 +23,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client.ts";
 import { Button } from "@/components/ui/button.tsx";
 import { Input } from "@/components/ui/input.tsx";
-import { useToast } from "@/components/ui/use-toast.ts";
+import { useToast } from "@/hooks/use-toast.ts";
 import {
   Card,
   CardContent,
@@ -191,18 +192,16 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 to-slate-800 p-4">
-      <Card className="w-full max-w-md shadow-2xl bg-slate-800 border-slate-700 text-white">
+    <div className="min-h-screen flex items-center justify-center bg-background p-4">
+      <Card className="w-full max-w-md shadow-2xl bg-card border-border text-foreground">
         <CardHeader className="text-center">
-          <img
-            src="/logo.png"
-            alt="Darul Uloom Logo"
-            className="w-20 h-20 mx-auto mb-4 rounded-full"
-          />
-          <CardTitle className="text-3xl font-bold text-sky-400">
+          <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-primary/10 flex items-center justify-center">
+            <span className="text-2xl font-bold text-primary">DU</span>
+          </div>
+          <CardTitle className="text-3xl font-bold text-primary">
             Darul Uloom Login
           </CardTitle>
-          <CardDescription className="text-slate-400">
+          <CardDescription className="text-muted-foreground">
             Access your dashboard
           </CardDescription>
         </CardHeader>
@@ -210,43 +209,43 @@ const Auth = () => {
           {errorMessage && (
             <Alert
               variant="destructive"
-              className="mb-4 bg-red-500/10 border-red-500/50 text-red-300"
+              className="mb-4"
             >
-              <AlertTriangle className="h-4 w-4 !text-red-400" />
+              <AlertTriangle className="h-4 w-4" />
               <AlertTitle>Login Failed</AlertTitle>
               <AlertDescription>{errorMessage}</AlertDescription>
             </Alert>
           )}
           <form onSubmit={handleSignIn} className="space-y-6">
             <div className="space-y-2">
-              <Label htmlFor="email" className="text-slate-300">Email</Label>
+              <Label htmlFor="email">Email</Label>
               <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-500" />
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                 <Input
                   id="email"
                   type="email"
                   placeholder="you@example.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="pl-10 bg-slate-700 border-slate-600 text-white placeholder-slate-500 focus:ring-sky-500 focus:border-sky-500"
+                  className="pl-10 bg-background border-input text-foreground placeholder:text-muted-foreground focus:ring-ring focus:border-ring"
                   required
                   autoComplete="email"
                 />
               </div>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password" className="text-slate-300">
+              <Label htmlFor="password">
                 Password
               </Label>
               <div className="relative">
-                <LockKeyhole className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-500" />
+                <LockKeyhole className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                 <Input
                   id="password"
                   type={showPassword ? "text" : "password"}
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="pl-10 pr-10 bg-slate-700 border-slate-600 text-white placeholder-slate-500 focus:ring-sky-500 focus:border-sky-500"
+                  className="pl-10 pr-10 bg-background border-input text-foreground placeholder:text-muted-foreground focus:ring-ring focus:border-ring"
                   required
                   autoComplete="current-password"
                 />
@@ -254,7 +253,7 @@ const Auth = () => {
                   type="button"
                   variant="ghost"
                   size="sm"
-                  className="absolute right-1 top-1/2 -translate-y-1/2 h-7 px-3 text-slate-500 hover:text-sky-400"
+                  className="absolute right-1 top-1/2 -translate-y-1/2 h-7 px-3 text-muted-foreground hover:text-foreground"
                   onClick={() => setShowPassword(!showPassword)}
                   aria-label={showPassword ? "Hide password" : "Show password"}
                 >
@@ -266,7 +265,7 @@ const Auth = () => {
             </div>
             <Button
               type="submit"
-              className="w-full bg-sky-500 hover:bg-sky-600 text-white font-semibold py-3 transition-colors duration-150 ease-in-out"
+              className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold py-3 transition-colors duration-150 ease-in-out"
               disabled={isLoading}
             >
               {isLoading
@@ -283,14 +282,14 @@ const Auth = () => {
           </form>
         </CardContent>
         <CardFooter className="flex flex-col items-center space-y-2 pt-6">
-          <p className="text-xs text-slate-500">
+          <p className="text-xs text-muted-foreground">
             &copy; {new Date().getFullYear()} Darul Uloom. All rights reserved.
           </p>
-          <p className="text-xs text-slate-500">
+          <p className="text-xs text-muted-foreground">
             Need help?{" "}
             <a
               href="mailto:support@example.com"
-              className="text-sky-500 hover:underline"
+              className="text-primary hover:underline"
             >
               Contact Support
             </a>
