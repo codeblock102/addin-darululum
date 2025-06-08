@@ -19,7 +19,6 @@
  * - Includes a `TeacherStatsSection` for displaying aggregate statistics (currently basic).
  * - Utilizes realtime updates via `useRealtimeLeaderboard` (though its direct impact here might be for other parts of the system).
  */
-import React from 'react';
 import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card.tsx";
 import { supabase } from "@/integrations/supabase/client.ts";
@@ -31,7 +30,7 @@ import { Input } from "@/components/ui/input.tsx";
 import { DhorBook as DhorBookComponent } from "@/components/dhor-book/DhorBook.tsx";
 import { ClassroomRecords } from "@/components/dhor-book/ClassroomRecords.tsx";
 import { TeacherStatsSection } from "@/components/teachers/TeacherStatsSection.tsx";
-import { Book, Search, Users, AlertCircle, Loader2, FileText, CalendarDays } from "lucide-react";
+import { Book, Search, Users, AlertCircle, Loader2, CalendarDays, FileText } from "lucide-react";
 import { useTeacherStatus } from "@/hooks/useTeacherStatus.ts";
 import { useRealtimeLeaderboard } from "@/hooks/useRealtimeLeaderboard.ts";
 import { useToast } from "@/hooks/use-toast.ts";
@@ -78,7 +77,7 @@ const ProgressBookPage = () => {
   const { isAdmin, isTeacher, teacherId } = useTeacherStatus();
 
   useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
+    const urlParams = new URLSearchParams(globalThis.location.search);
     const studentIdParam = urlParams.get('studentId');
     if (studentIdParam) {
       setSelectedStudentId(studentIdParam);

@@ -1,6 +1,5 @@
-import React from 'react';
 import { useState } from "react";
-import { Card, CardHeader, CardContent, CardFooter, CardTitle } from "@/components/ui/card.tsx";
+import { Card, CardHeader, CardContent, CardTitle } from "@/components/ui/card.tsx";
 import { MessageCategory, MessageType } from "@/types/progress.ts";
 import { TeacherSelector } from "./TeacherSelector.tsx";
 import { MessageOptions } from "./MessageOptions.tsx";

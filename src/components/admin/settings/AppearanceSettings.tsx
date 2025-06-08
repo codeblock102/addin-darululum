@@ -1,4 +1,3 @@
-import React from 'react';
 import { Label } from "@/components/ui/label.tsx";
 import { Switch } from "@/components/ui/switch.tsx";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group.tsx";
@@ -12,7 +11,7 @@ interface AppearanceSettingsSectionProps {
 }
 
 export function AppearanceSettingsSection({ settings, onUpdate }: AppearanceSettingsSectionProps) {
-  const handleChange = (key: keyof AppearanceSettings, value: any) => {
+  const handleChange = <K extends keyof AppearanceSettings>(key: K, value: AppearanceSettings[K]) => {
     onUpdate({ ...settings, [key]: value });
   };
 
@@ -27,7 +26,7 @@ export function AppearanceSettingsSection({ settings, onUpdate }: AppearanceSett
           <Label className="font-medium">Theme</Label>
           <RadioGroup
             value={settings.theme}
-            onValueChange={(value) => handleChange('theme', value)}
+            onValueChange={(value) => handleChange('theme', value as AppearanceSettings['theme'])}
             className="flex flex-col space-y-1"
           >
             <div className="flex items-center space-x-2">

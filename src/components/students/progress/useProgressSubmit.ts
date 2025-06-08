@@ -1,9 +1,8 @@
-import React from "react";
 import { useState, useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client.ts";
 import { useToast } from "@/hooks/use-toast.ts";
-import { useAuth } from "@/contexts/AuthContext.tsx";
+import { useAuth } from "@/hooks/use-auth.ts";
 import { ProgressFormData } from "@/types/progress.ts";
 
 export const useProgressSubmit = (studentId: string) => {
@@ -107,10 +106,11 @@ export const useProgressSubmit = (studentId: string) => {
       queryClient.invalidateQueries({ queryKey: ['progress'] });
       
       if (onSuccess) onSuccess();
-    } catch (error: any) {
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Failed to save progress entry";
       toast({
         title: "Error",
-        description: error.message || "Failed to save progress entry",
+        description: message,
         variant: "destructive",
       });
     } finally {

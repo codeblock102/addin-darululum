@@ -1,3 +1,5 @@
+import { StatusType } from "@/components/ui/status-badge.tsx";
+import { Tables } from "@/types/supabase.ts";
 
 export type AttendanceStatus = "present" | "absent" | "late";
 
@@ -6,11 +8,11 @@ export interface AttendanceRecord {
   student_id?: string;
   class_id?: string;
   date: string;
-  status: AttendanceStatus;
+  status: StatusType;
   notes?: string;
   created_at?: string;
-  student?: any;
-  class?: any;
+  student?: Tables<"students">;
+  class?: Tables<"classes">;
 }
 
 export interface AttendanceFormData {
@@ -19,4 +21,14 @@ export interface AttendanceFormData {
   date: Date;
   status: AttendanceStatus;
   notes?: string;
+}
+
+export interface AttendanceEntry {
+  id?: string;
+  student_id: string;
+  class_id?: string;
+  date: string;
+  status: AttendanceStatus;
+  notes?: string;
+  created_at?: string;
 }

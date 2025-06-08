@@ -1,8 +1,8 @@
-import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { RecentActivity } from './RecentActivity';
-import { WeeklySchedule } from './WeeklySchedule';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card.tsx';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs.tsx';
+import { RecentActivity } from './RecentActivity.tsx';
+import { WeeklySchedule } from './WeeklySchedule.tsx';
+
 export const DashboardTabs = () => {
   return <Tabs defaultValue="overview" className="w-full">
       <TabsList className="grid grid-cols-3 mb-6 bg-gray-800">

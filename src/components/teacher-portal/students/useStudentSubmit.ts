@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client.ts";
 import { StudentFormData } from "./studentTypes.ts";
@@ -31,8 +30,6 @@ export const useStudentSubmit = ({
         .eq('name', formData.studentName)
         .maybeSingle();
         
-      let studentId;
-      
       if (lookupError) throw lookupError;
       
       // Map the completed Juz to numbers
@@ -41,7 +38,7 @@ export const useStudentSubmit = ({
       // If student doesn't exist, create them
       if (!existingStudent) {
         // Create the student with all the form data
-        const { data: newStudent, error: createError } = await supabase
+        const { error: createError } = await supabase
           .from('students')
           .insert({ 
             name: formData.studentName,
@@ -52,12 +49,9 @@ export const useStudentSubmit = ({
             status: formData.status,
             current_juz: formData.currentJuz === "_none_" ? null : Number(formData.currentJuz),
             completed_juz: completedJuz
-          })
-          .select('id')
-          .single();
+          });
           
         if (createError) throw createError;
-        studentId = newStudent.id;
       } else {
         // Update existing student with new information
         const { error: updateError } = await supabase
@@ -73,7 +67,6 @@ export const useStudentSubmit = ({
           .eq('id', existingStudent.id);
           
         if (updateError) throw updateError;
-        studentId = existingStudent.id;
       }
       
       // Now assign student to teacher
@@ -88,9 +81,9 @@ export const useStudentSubmit = ({
       if (assignmentError) throw assignmentError;
       
       onSuccess?.();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Failed to add student:", error);
-      onError?.(error);
+      onError?.(error instanceof Error ? error : new Error(String(error)));
     } finally {
       setIsProcessing(false);
     }

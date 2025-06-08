@@ -93,9 +93,9 @@ export const getUserPermissions = async (userId?: string): Promise<RolePermissio
     const permissions: RolePermission[] = [];
     data.forEach(role => {
       if (role.role_permissions && Array.isArray(role.role_permissions)) {
-        role.role_permissions.forEach((rp: any) => {
+        role.role_permissions.forEach((rp: { permission: RolePermission | null }) => {
           if (rp.permission) {
-            permissions.push(rp.permission as RolePermission);
+            permissions.push(rp.permission);
           }
         });
       }

@@ -1,5 +1,5 @@
 
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/button.tsx";
 import { CalendarCheck } from "lucide-react";
 
 interface AttendanceEmptyStateProps {

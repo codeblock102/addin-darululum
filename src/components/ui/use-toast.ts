@@ -1,9 +1,6 @@
+import * as React from "react";
 // Import directly from the shadcn toast component
 import { type ToastActionElement, type ToastProps } from "@/components/ui/toast";
-import * as React from "react";
-
-const TOAST_LIMIT = 100;
-const TOAST_REMOVE_DELAY = 1000000;
 
 type ToasterToast = ToastProps & {
   id: string;

@@ -1,4 +1,4 @@
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select.tsx";
 interface TeacherAccountFiltersProps {
   statusFilter: "all" | "active" | "suspended";
   activityFilter: "all" | "7days" | "30days" | "inactive";

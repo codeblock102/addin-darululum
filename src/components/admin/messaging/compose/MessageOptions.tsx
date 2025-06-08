@@ -1,4 +1,3 @@
-import React from 'react';
 import { Label } from "@/components/ui/label.tsx";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select.tsx";
 import { MessageCategory, MessageType } from "@/types/progress.ts";

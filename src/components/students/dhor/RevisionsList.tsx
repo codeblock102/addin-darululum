@@ -1,10 +1,8 @@
-
-import React from 'react';
 import { Button } from '@/components/ui/button';
 import { RevisionsListProps, JuzRevision } from '@/types/progress';
 import { CalendarDays, Plus } from 'lucide-react';
 
-export function RevisionsList({ revisions = [], studentId, studentName = '', onAddRevision }: RevisionsListProps) {
+export function RevisionsList({ revisions = [], studentName = '', onAddRevision }: RevisionsListProps) {
   if (!revisions || revisions.length === 0) {
     return (
       <div className="text-center py-12">

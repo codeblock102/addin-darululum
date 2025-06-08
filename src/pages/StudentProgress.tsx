@@ -1,4 +1,3 @@
-import React from 'react';
 import { useState } from "react";
 import { Card } from "@/components/ui/card.tsx";
 import { useToast } from "@/hooks/use-toast.ts";
@@ -12,6 +11,8 @@ import { supabase } from "@/integrations/supabase/client.ts";
 import { Loader2, School2 } from "lucide-react";
 import type { Tables } from "@/integrations/supabase/types.ts";
 import { Progress } from "@/types/progress.ts";
+import { DailyActivityEntry } from "@/types/dhor-book.ts";
+import { AttendanceRecord as Attendance } from "@/types/attendance.ts";
 
 /**
  * @file StudentProgressPage.tsx
@@ -34,7 +35,7 @@ const StudentProgressPage = () => {
   const [selectedStudentName, setSelectedStudentName] = useState<string>("");
   const { toast } = useToast();
 
-  const { data: studentData, isLoading: studentLoading } = useQuery({
+  const { isLoading: studentLoading } = useQuery({
     queryKey: ["student-details", selectedStudentId],
     /**
      * @function queryFn (for student details)
@@ -78,7 +79,7 @@ const StudentProgressPage = () => {
           students(name)
         `)
         .eq('student_id', selectedStudentId)
-        .order('date', { ascending: true });
+        .order('entry_date', { ascending: true });
       
       if (error) throw error;
       return data as unknown as Progress[] || [];
@@ -196,7 +197,7 @@ const StudentProgressPage = () => {
             <div className="space-y-6 animate-fade-in">
               <ProgressOverview 
                 studentName={selectedStudentName} 
-                progressData={progressData || []}
+                progressData={progressData as DailyActivityEntry[] || []}
                 sabaqParaData={sabaqParaData || []}
                 juzRevisionsData={juzRevisionsData || []}
               />
@@ -204,21 +205,21 @@ const StudentProgressPage = () => {
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div className="lg:col-span-2">
                   <ProgressCharts 
-                    progressData={progressData || []} 
+                    progressData={progressData as DailyActivityEntry[] || []} 
                     sabaqParaData={sabaqParaData || []}
                     juzRevisionsData={juzRevisionsData || []}
                   />
                 </div>
                 <div>
-                  <AttendanceStats attendanceData={attendanceData || []} />
+                  <AttendanceStats attendanceData={attendanceData as Attendance[] || []} />
                 </div>
               </div>
               
               <ExportOptions 
                 studentId={selectedStudentId} 
                 studentName={selectedStudentName}
-                progressData={progressData || []}
-                attendanceData={attendanceData || []}
+                progressData={progressData as DailyActivityEntry[] || []}
+                attendanceData={attendanceData as Attendance[] || []}
                 sabaqParaData={sabaqParaData || []}
                 juzRevisionsData={juzRevisionsData || []}
                 toast={toast}

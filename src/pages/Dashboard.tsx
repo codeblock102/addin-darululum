@@ -15,9 +15,8 @@
  * - Admin view includes an `AdminHeader`, `DashboardStats`, `AdminDashboardTabs`, and `AdminMessaging` components.
  * - Uses `DashboardLayout` for the overall page structure.
  */
-import React from 'react';
 import { useState, useEffect } from "react";
-import { useAuth } from "@/contexts/AuthContext.tsx";
+import { useAuth } from "@/hooks/use-auth.ts";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client.ts";
 import { TeacherDashboard } from "@/components/teacher-portal/TeacherDashboard.tsx";

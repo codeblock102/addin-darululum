@@ -14,10 +14,9 @@ import {
   TabsTrigger
 } from "@/components/ui/tabs.tsx";
 import { TeacherAccount } from "@/types/teacher.ts";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card.tsx";
-import { Clock, User, Calendar, BookOpen, Activity } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card.tsx";
+import { Clock, User} from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client.ts";
 import { Loader2 } from "lucide-react";
 import { TeacherActivityTab } from "./TeacherActivityTab.tsx";
 import { TeacherStudentsTab } from "./TeacherStudentsTab.tsx";
@@ -38,7 +37,7 @@ export function TeacherDetailDialog({
   // Fetch additional teacher data
   const { data: teacherDetail, isLoading } = useQuery({
     queryKey: ['teacher-detail', teacher?.id],
-    queryFn: async () => {
+    queryFn: () => {
       if (!teacher?.id) return null;
       
       // This is a placeholder for actual API calls to fetch additional data

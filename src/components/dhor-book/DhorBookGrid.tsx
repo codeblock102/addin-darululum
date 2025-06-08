@@ -1,4 +1,3 @@
-import React from 'react';
 import { useState } from "react";
 import { DailyActivityEntry, JuzRevisionEntry } from "@/types/dhor-book.ts";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table.tsx";

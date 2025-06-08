@@ -1,5 +1,4 @@
-
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card.tsx";
 import { 
   PieChart, 
   Pie, 
@@ -13,10 +12,10 @@ const COLORS = ['#10B981', '#EF4444', '#F59E0B'];
 
 interface Attendance {
   id: string;
-  student_id: string;
+  student_id?: string | null;
   date: string;
   status: string;
-  notes?: string;
+  notes?: string | null;
 }
 
 interface AttendanceStatsProps {
@@ -69,7 +68,7 @@ export function AttendanceStats({ attendanceData }: AttendanceStatsProps) {
                   label={({ name, value }) => `${name}: ${value}`}
                   labelLine={false}
                 >
-                  {pieChartData.map((entry, index) => (
+                  {pieChartData.map((_, index) => (
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Pie>

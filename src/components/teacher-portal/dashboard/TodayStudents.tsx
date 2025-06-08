@@ -1,6 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card.tsx";
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client.ts";
 import { Badge } from "@/components/ui/badge.tsx";
 import { CalendarClock } from "lucide-react";
 
@@ -20,7 +19,7 @@ export const TodayStudents = ({ teacherId }: TodayStudentsProps) => {
   
   const { data: todayStudents, isLoading } = useQuery<StudentSchedule[]>({
     queryKey: ["today-students", teacherId, today],
-    queryFn: async () => {
+    queryFn: () => {
       // TODO: Implement actual data fetching for students scheduled today
       // This should involve fetching classes for the teacher scheduled for the current day,
       // then fetching students enrolled in those classes, and their attendance status.

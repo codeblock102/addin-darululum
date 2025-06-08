@@ -1,5 +1,4 @@
 
-import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client.ts";
 import { useToast } from "@/hooks/use-toast.ts";
@@ -12,7 +11,6 @@ import {
 } from "@/components/ui/card.tsx";
 import { Button } from "@/components/ui/button.tsx";
 import { Input } from "@/components/ui/input.tsx";
-import { Textarea } from "@/components/ui/textarea.tsx";
 import {
   Select,
   SelectContent,
@@ -21,7 +19,6 @@ import {
   SelectValue,
 } from "@/components/ui/select.tsx";
 import { 
-  Form,
   FormControl,
   FormDescription,
   FormField,
@@ -32,7 +29,7 @@ import {
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, FormProvider } from "react-hook-form";
 import * as z from "zod";
-import { Loader2, Save, BookOpen } from "lucide-react";
+import { Loader2, BookOpen } from "lucide-react";
 
 interface SabaqAssignmentProps {
   teacherId: string;
@@ -154,7 +151,6 @@ export const SabaqAssignment = ({ teacherId }: SabaqAssignmentProps) => {
   const selectedStudent = form.watch('student_id');
   const selectedStudentData = students?.find(s => s.id === selectedStudent);
   const studentType = selectedStudentData?.learning_type || 'hifz';
-  const assignmentType = form.watch('assignment_type');
 
   const isQaidaStudent = studentType === 'qaida';
   const isNazirahStudent = studentType === 'nazirah';

@@ -1,4 +1,3 @@
-import React from 'react';
 import { useState } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area.tsx";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar.tsx";

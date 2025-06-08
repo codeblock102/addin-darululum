@@ -1,4 +1,3 @@
-import React from 'react';
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client.ts";
@@ -132,7 +131,7 @@ export const DhorBook = ({ studentId, teacherId }: DhorBookProps) => {
       
       // Convert map to array
       // Filter out days that have no actual data beyond the generated shell
-      let finalCombinedEntries: DailyActivityEntry[] = Object.values(combinedEntriesMap)
+      const finalCombinedEntries: DailyActivityEntry[] = Object.values(combinedEntriesMap)
         .filter(entry => 
           entry.current_juz !== undefined || // Check for actual progress data field
           entry.sabaq_para_data || 

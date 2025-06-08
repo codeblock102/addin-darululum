@@ -1,11 +1,10 @@
-
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { format } from "date-fns";
 import { CalendarIcon } from "lucide-react";
-import * as z from "zod";
+import { revisionSchema, RevisionFormValues } from "@/types/revision.ts";
 
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/button.tsx";
 import {
   Form,
   FormControl,
@@ -13,33 +12,24 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
-import { Calendar } from "@/components/ui/calendar";
+} from "@/components/ui/form.tsx";
+import { Calendar } from "@/components/ui/calendar.tsx";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/components/ui/popover";
+} from "@/components/ui/popover.tsx";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Slider } from "@/components/ui/slider";
-import { Textarea } from "@/components/ui/textarea";
-import { cn } from "@/lib/utils";
-import { LoadingSpinner } from "@/components/teacher-portal/students/LoadingSpinner";
-
-export const revisionSchema = z.object({
-  date: z.date(),
-  memorization_quality: z.enum(["excellent", "good", "average", "needsWork", "horrible"]),
-  time_spent: z.number().min(0).max(60),
-  notes: z.string().optional(),
-});
-
-export type RevisionFormValues = z.infer<typeof revisionSchema>;
+} from "@/components/ui/select.tsx";
+import { Slider } from "@/components/ui/slider.tsx";
+import { Textarea } from "@/components/ui/textarea.tsx";
+import { cn } from "@/lib/utils.ts";
+import { LoadingSpinner } from "@/components/teacher-portal/students/LoadingSpinner.tsx";
 
 interface RevisionFormProps {
   defaultValues: RevisionFormValues;
@@ -71,7 +61,7 @@ export function RevisionForm({ defaultValues, onSubmit, isLoading }: RevisionFor
                 <PopoverTrigger asChild>
                   <FormControl>
                     <Button
-                      variant={"outline"}
+                      variant="outline"
                       className={cn(
                         "w-[240px] pl-3 text-left font-normal",
                         !field.value && "text-muted-foreground"

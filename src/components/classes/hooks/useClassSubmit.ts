@@ -1,12 +1,10 @@
-import React from 'react';
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client.ts";
 import { useToast } from "@/hooks/use-toast.ts";
-import { hasPermission } from "@/utils/roleUtils.ts";
 import { ClassFormData } from "../validation/classFormSchema.ts";
 
 interface UseClassSubmitProps {
-  selectedClass: any;
+  selectedClass: (Partial<ClassFormData> & { id: string }) | null;
   onSuccess: () => void;
 }
 
@@ -66,7 +64,7 @@ export const useClassSubmit = ({ selectedClass, onSuccess }: UseClassSubmitProps
             throw new Error(error.message || "Failed to create class");
           }
         }
-      } catch (error: any) {
+      } catch (error) {
         console.error("Class submission error:", error);
         throw error;
       }

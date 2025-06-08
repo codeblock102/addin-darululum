@@ -17,7 +17,6 @@
  *   - Users without a defined role (or not found as a teacher) are redirected to `/role-setup`.
  * - Uses `useAuth` context for session refresh and `useToast` for notifications.
  */
-import React from 'react';
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client.ts";
@@ -27,7 +26,7 @@ import { useToast } from "@/components/ui/use-toast.ts";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card.tsx";
 import { Label } from "@/components/ui/label.tsx";
 import { Eye, EyeOff, LockKeyhole, Mail, AlertTriangle, Loader2 } from "lucide-react";
-import { useAuth } from "@/contexts/AuthContext.tsx";
+import { useAuth } from "@/hooks/use-auth.ts";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert.tsx";
 
 /**
@@ -152,11 +151,12 @@ const Auth = () => {
       });
       navigate("/role-setup");
 
-    } catch (error: any) {
-      console.error("Authentication error:", error.message);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "An unexpected error occurred during login. Please try again.";
+      console.error("Authentication error:", message);
       toast({
         title: "Login Error",
-        description: errorMessage || "An unexpected error occurred during login. Please try again.",
+        description: errorMessage || message,
         variant: "destructive",
       });
     } finally {

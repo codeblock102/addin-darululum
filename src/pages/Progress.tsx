@@ -1,11 +1,9 @@
-import React from 'react';
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { Loader2, BookOpen } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client.ts";
 import { ProgressStats } from "@/components/progress/ProgressStats.tsx";
 import { ProgressTable } from "@/components/progress/ProgressTable.tsx";
-import { NewProgressDialog } from "@/components/progress/NewProgressDialog.tsx";
 import { RecentRevisions } from "@/components/progress/RecentRevisions.tsx";
 import { CompleteRevisions } from "@/components/progress/CompleteRevisions.tsx";
 import { useToast } from "@/hooks/use-toast.ts";

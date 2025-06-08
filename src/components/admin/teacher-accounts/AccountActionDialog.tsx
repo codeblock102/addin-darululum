@@ -1,4 +1,3 @@
-import React from 'react';
 import { useState } from "react";
 import {
   AlertDialog,
@@ -41,7 +40,7 @@ export function AccountActionDialog({
     setLoading(true);
     try {
       switch (actionType) {
-        case "suspend":
+        case "suspend": {
           // In a real app, this would update the user's status in the auth system
           // For this demo, we'll just simulate it
           toast({
@@ -50,8 +49,9 @@ export function AccountActionDialog({
             variant: "default"
           });
           break;
+        }
           
-        case "reactivate":
+        case "reactivate": {
           // In a real app, this would reactivate the user in the auth system
           toast({
             title: "Account reactivated",
@@ -59,8 +59,9 @@ export function AccountActionDialog({
             variant: "default"
           });
           break;
+        }
           
-        case "delete":
+        case "delete": {
           // Delete the teacher record
           const { error } = await supabase
             .from('teachers')
@@ -75,6 +76,7 @@ export function AccountActionDialog({
             variant: "default"
           });
           break;
+        }
       }
       
       // Invalidate and refetch queries

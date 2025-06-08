@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client.ts";
 
 export const createNormalizedUsername = (name: string): string => {
@@ -52,7 +51,7 @@ export const createTeacherWithAccount = async (name: string, email: string, pass
     }
 
     // Check if a user with this email exists first
-    const { data: { user: existingUser }, error: signInError } = await supabase.auth.signInWithPassword({
+    const { data: { user: existingUser }, error: _signInError } = await supabase.auth.signInWithPassword({
       email: email,
       password: password
     });
@@ -113,7 +112,7 @@ export const createTeacherWithAccount = async (name: string, email: string, pass
             teacher_id: teacherId,
             role: 'teacher'
           },
-          emailRedirectTo: `${window.location.origin}/auth`
+          emailRedirectTo: `${globalThis.location.origin}/auth`
         }
       });
       
@@ -131,11 +130,12 @@ export const createTeacherWithAccount = async (name: string, email: string, pass
         message: `Teacher account created. Please check email for confirmation or contact an administrator to confirm your email.`
       };
     }
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Teacher account creation error:", error);
+    const errorMessage = error instanceof Error ? error.message : "Failed to create teacher account";
     return {
       success: false,
-      error: error.message || "Failed to create teacher account"
+      error: errorMessage,
     };
   }
 };

@@ -1,10 +1,9 @@
-
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/button.tsx";
 import { Loader2 } from "lucide-react";
 
 interface SubmitButtonProps {
   isPending: boolean;
-  isUpdate: boolean;
+  isUpdate: boolean;  
 }
 
 export function SubmitButton({ isPending, isUpdate }: SubmitButtonProps) {

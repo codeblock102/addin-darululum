@@ -1,4 +1,3 @@
-import React from 'react';
 import { Label } from "@/components/ui/label.tsx";
 import { Input } from "@/components/ui/input.tsx";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select.tsx";
@@ -12,7 +11,7 @@ interface AcademicSettingsSectionProps {
 }
 
 export function AcademicSettingsSection({ settings, onUpdate }: AcademicSettingsSectionProps) {
-  const handleChange = (key: keyof AcademicSettings, value: any) => {
+  const handleChange = <K extends keyof AcademicSettings>(key: K, value: AcademicSettings[K]) => {
     onUpdate({ ...settings, [key]: value });
   };
 

@@ -13,7 +13,6 @@
  * 5. Displays a success toast and redirects the user to the appropriate dashboard (`/admin` or `/teacher-portal`) after a short delay.
  * Error handling is included to display toast notifications for failures during the process.
  */
-import React from 'react';
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button.tsx";
@@ -21,9 +20,14 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { useToast } from "@/components/ui/use-toast.ts";
 import { Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client.ts";
-import { useAuth } from "@/contexts/AuthContext.tsx";
+import { useAuth } from "@/hooks/use-auth.ts";
 import { Label } from "@/components/ui/label.tsx";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group.tsx";
+
+interface UserInfo {
+  email: string;
+  metadata: Record<string, unknown>;
+}
 
 /**
  * @function ManualRoleSetup
@@ -39,7 +43,7 @@ export default function ManualRoleSetup() {
   const { refreshSession } = useAuth();
 
   // Get current user info for display
-  const [userInfo, setUserInfo] = useState<{email: string, metadata: any} | null>(null);
+  const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
   
   useEffect(() => {
     /**
@@ -122,39 +126,35 @@ export default function ManualRoleSetup() {
             console.error("Error creating teacher record:", insertError.message);
             toast({
               title: "Teacher Record Creation Failed",
-              description: `Could not create a teacher database entry: ${insertError.message}. Please complete your profile later.`,
-              variant: "destructive",
+              description: `Could not create a teacher record for ${userEmail}. Please do this manually.`,
             });
-            // Decide if this should prevent login or just warn
-          } else {
-            console.log(`Successfully created teacher record for ${userEmail}`);
           }
-        } else {
-          console.log(`Teacher record already exists for ${userEmail}`);
         }
       }
-      
-      // Also set in localStorage for immediate use
-      localStorage.setItem('userRole', selectedRole);
-      
-      // Force a session refresh to ensure the auth context has the latest data
+
+      // Store in localStorage for immediate client-side use
+      globalThis.localStorage.setItem('user_role', selectedRole);
+
+      // Refresh session to get updated claims
       await refreshSession();
-      
+
       toast({
-        title: "Role Setup Complete",
-        description: `Your account has been set up as a ${selectedRole}. You will be redirected to the ${selectedRole} dashboard.`,
+        title: "Role Set Successfully",
+        description: `Your role has been set to ${selectedRole}. Redirecting...`,
       });
-      
-      // Wait a moment before redirecting
+
+      // Redirect after a short delay
       setTimeout(() => {
-        navigate(selectedRole === 'admin' ? "/admin" : "/teacher-portal");
-      }, 2000);
-    } catch (error: any) {
-      console.error("Error setting up role:", error);
+        navigate(selectedRole === 'admin' ? '/admin' : '/teacher-portal');
+      }, 1500);
+
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "An unknown error occurred.";
+      console.error("Role setup failed:", errorMessage);
       toast({
-        title: "Setup Failed",
-        description: error.message || "An unexpected error occurred while setting up your role.",
         variant: "destructive",
+        title: "Role Setup Failed",
+        description: `An error occurred: ${errorMessage}. Please try again.`,
       });
     } finally {
       setIsLoading(false);
@@ -162,61 +162,42 @@ export default function ManualRoleSetup() {
   };
 
   return (
-    <div className="container mx-auto py-8">
-      <Card>
+    <div className="flex items-center justify-center min-h-screen bg-gray-100 dark:bg-gray-900">
+      <Card className="w-[380px]">
         <CardHeader>
           <CardTitle>Manual Role Setup</CardTitle>
           <CardDescription>
-            Set your account role manually
+            Choose a role for the current user. This is for setup purposes.
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="space-y-4">
           {userInfo && (
-            <div className="mb-6 text-sm">
-              <p><strong>Current User:</strong> {userInfo.email}</p>
-              <p><strong>Current Metadata:</strong> {JSON.stringify(userInfo.metadata)}</p>
+            <div className="text-sm p-3 bg-muted rounded-md">
+              <p><strong>Email:</strong> {userInfo.email}</p>
+              <p><strong>Current Metadata:</strong></p>
+              <pre className="text-xs bg-background p-2 rounded-md mt-1 whitespace-pre-wrap">
+                {JSON.stringify(userInfo.metadata, null, 2)}
+              </pre>
             </div>
           )}
-        
-          <div className="space-y-4">
-            <div>
-              <h3 className="text-lg font-medium">Select Your Role</h3>
-              <p className="text-sm text-gray-500">Choose the role you want to assign to your account</p>
+          <RadioGroup value={selectedRole} onValueChange={(value: 'admin' | 'teacher') => setSelectedRole(value)}>
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="admin" id="admin" />
+              <Label htmlFor="admin">Admin</Label>
             </div>
-            
-            <RadioGroup 
-              value={selectedRole} 
-              onValueChange={(value) => setSelectedRole(value as 'admin' | 'teacher')}
-              className="space-y-3"
-            >
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="admin" id="admin" />
-                <Label htmlFor="admin" className="font-medium">Administrator</Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="teacher" id="teacher" />
-                <Label htmlFor="teacher" className="font-medium">Teacher</Label>
-              </div>
-            </RadioGroup>
-          </div>
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="teacher" id="teacher" />
+              <Label htmlFor="teacher">Teacher</Label>
+            </div>
+          </RadioGroup>
         </CardContent>
         <CardFooter>
-          <Button 
-            onClick={handleRoleSetup} 
-            disabled={isLoading}
-            className="w-full"
-          >
-            {isLoading ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Setting up role...
-              </>
-            ) : (
-              "Set Up Role"
-            )}
+          <Button onClick={handleRoleSetup} disabled={isLoading} className="w-full">
+            {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            Set Role and Proceed
           </Button>
         </CardFooter>
       </Card>
     </div>
   );
-} 
+}

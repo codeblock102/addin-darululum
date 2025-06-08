@@ -1,20 +1,19 @@
-
 import { useState, useEffect } from "react";
-import { useToast } from "@/components/ui/use-toast";
-import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast.ts";
+import { Button } from "@/components/ui/button.tsx";
 import {
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogDescription,
   DialogFooter,
-} from "@/components/ui/dialog";
+} from "@/components/ui/dialog.tsx";
 import { Loader2, AlertCircle } from "lucide-react";
-import { UserFormData, UserDialogProps, FormErrors, UserRole } from "@/types/adminUser";
-import { UserFormFields } from "./user/UserFormFields";
-import { validateUserForm } from "./user/UserFormValidation";
-import { handleUserSubmit } from "./user/UserFormSubmitHandler";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import { UserFormData, UserDialogProps, FormErrors, UserRole } from "@/types/adminUser.ts";
+import { UserFormFields } from "./user/UserFormFields.tsx";
+import { validateUserForm } from "./user/UserFormValidation.ts";
+import { handleUserSubmit } from "./user/UserFormSubmitHandler.ts";
+import { Alert, AlertDescription } from "@/components/ui/alert.tsx";
 
 export const UserDialog = ({ selectedUser, teachers, onSuccess }: UserDialogProps) => {
   const { toast } = useToast();
@@ -93,7 +92,7 @@ export const UserDialog = ({ selectedUser, teachers, onSuccess }: UserDialogProp
         formData, 
         selectedUser?.id, 
         onSuccess,
-        (errorMsg) => {
+        (errorMsg: string) => {
           toast({
             title: selectedUser ? "Error updating user" : "Error creating user",
             description: errorMsg,
@@ -106,7 +105,7 @@ export const UserDialog = ({ selectedUser, teachers, onSuccess }: UserDialogProp
         title: "Success",
         description: message,
       });
-    } catch (error) {
+    } catch (_error) {
       // Error is handled in handleUserSubmit
     } finally {
       setIsProcessing(false);

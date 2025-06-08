@@ -1,14 +1,12 @@
-
-import { Card, CardContent } from "@/components/ui/card";
-import { Form } from "@/components/ui/form";
-import { AttendanceFormHeader } from "./form/AttendanceFormHeader";
-import { ClassSelector } from "./form/ClassSelector";
-import { StudentSelector } from "./form/StudentSelector";
-import { AttendanceStatusRadioGroup } from "./form/AttendanceStatusRadioGroup";
-import { NotesField } from "./form/NotesField";
-import { SubmitButton } from "./form/SubmitButton";
-import { useAttendanceSubmit } from "./form/useAttendanceSubmit";
-
+import { Card, CardContent } from "@/components/ui/card.tsx";
+import { Form } from "@/components/ui/form.tsx";
+import { AttendanceFormHeader } from "./form/AttendanceFormHeader.tsx";
+import { ClassSelector } from "./form/ClassSelector.tsx";
+import { StudentSelector } from "./form/StudentSelector.tsx";
+import { AttendanceStatusRadioGroup } from "./form/AttendanceStatusRadioGroup.tsx";
+import { NotesField } from "./form/NotesField.tsx";
+import { SubmitButton } from "./form/SubmitButton.tsx";
+import { useAttendanceSubmit } from "./form/useAttendanceSubmit.ts";
 export function AttendanceForm() {
   const {
     form,

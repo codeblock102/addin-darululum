@@ -26,7 +26,6 @@ import { Button } from "@/components/ui/button.tsx";
 import { Checkbox } from "@/components/ui/checkbox.tsx";
 import { Loader2 } from "lucide-react";
 import { Teacher } from "@/types/teacher.ts";
-import { hasPermission } from "@/utils/roleUtils.ts";
 
 const teacherSchema = z.object({
   name: z.string().min(2, {

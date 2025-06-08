@@ -1,16 +1,16 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { format } from "date-fns";
-import { Calendar } from "@/components/ui/calendar";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar.tsx";
+import { Input } from "@/components/ui/input.tsx";
+import { Button } from "@/components/ui/button.tsx";
 import { CalendarIcon } from "lucide-react";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Textarea } from "@/components/ui/textarea";
-import { cn } from "@/lib/utils";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover.tsx";
+import { Textarea } from "@/components/ui/textarea.tsx";
+import { cn } from "@/lib/utils.ts";
+import { Checkbox } from "@/components/ui/checkbox.tsx";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select.tsx";
 import {
   Form,
   FormControl,
@@ -18,15 +18,15 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
-import { DialogFooter } from "@/components/ui/dialog";
-import { DailyActivityFormSchema, DailyActivityFormValues } from "./dhorBookValidation";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useQuranData } from "./useQuranData";
-import { toast } from "@/components/ui/use-toast";
-import { getAyahRangeForSurahInJuz } from "@/utils/juzAyahMapping";
-import { calculatePages } from "@/utils/quranPageCalculation";
-import type { DhorBookCombinedFormData } from "./useDhorEntryMutation";
+} from "@/components/ui/form.tsx";
+import { DialogFooter } from "@/components/ui/dialog.tsx";
+import { DailyActivityFormSchema, DailyActivityFormValues } from "./dhorBookValidation.ts";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs.tsx";
+import { useQuranData } from "./useQuranData.ts";
+import { toast } from "@/components/ui/use-toast.ts";
+import { getAyahRangeForSurahInJuz } from "@/utils/juzAyahMapping.ts";
+import { calculatePages } from "@/utils/quranPageCalculation.ts";
+import type { DhorBookCombinedFormData } from "./useDhorEntryMutation.ts";
 
 interface DhorBookEntryFormProps {
   onSubmit: (data: DhorBookCombinedFormData) => void;
@@ -107,19 +107,19 @@ export function DhorBookEntryForm({ onSubmit, isPending, onCancel }: DhorBookEnt
     }
   }, [selectedJuz, selectedSurah, form]);
 
+  const startAyah = form.watch('start_ayat');
+  const endAyah = form.watch('end_ayat');
+  const quranFormat = form.watch('quran_format');
+
   // Calculate pages based on ayat range
   useEffect(() => {
-    const startAyah = form.watch('start_ayat');
-    const endAyah = form.watch('end_ayat');
-    const quranFormat = form.watch('quran_format') as "13" | "15";
-
     if (startAyah && endAyah && quranFormat) {
-      const pages = calculatePages(quranFormat, startAyah, endAyah);
+      const pages = calculatePages(quranFormat as "13" | "15", startAyah, endAyah);
       setCalculatedPages(pages);
     } else {
       setCalculatedPages(0);
     }
-  }, [form.watch('start_ayat'), form.watch('end_ayat'), form.watch('quran_format')]);
+  }, [startAyah, endAyah, quranFormat]);
 
   function handleSubmit(data: DailyActivityFormValues) {
     console.log("Form data from RHF (DailyActivityFormValues):", data);
@@ -141,13 +141,13 @@ export function DhorBookEntryForm({ onSubmit, isPending, onCancel }: DhorBookEnt
         <FormField
           control={form.control}
           name="entry_date"
-          render={({ field }) => (
+          render={() => (
             <FormItem className="flex flex-col">
               <FormLabel>Entry Date</FormLabel>
               <Popover>
                 <PopoverTrigger asChild>
                   <Button
-                    variant={"outline"}
+                    variant="outline"
                     className={cn(
                       "w-full pl-3 text-left font-normal",
                       !date && "text-muted-foreground"

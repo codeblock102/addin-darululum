@@ -1,15 +1,23 @@
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select.tsx";
 import { Loader2 } from "lucide-react";
-import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form.tsx";
 import { UseFormReturn } from "react-hook-form";
+import { AttendanceStatus } from "@/types/attendance.ts";
+
+type AttendanceFormValues = {
+  class_id: string;
+  student_id: string;
+  status: AttendanceStatus;
+  notes: string;
+};
 
 interface ClassSelectorProps {
   classes?: { id: string; name: string }[];
   isLoading: boolean;
-  form: UseFormReturn<any>;
+  form: UseFormReturn<AttendanceFormValues>;
   selectedClass?: string;
   setSelectedClass?: (value: string) => void;
-  classesData?: any[];
+  classesData?: { id: string; name: string }[];
   label?: string;
 }
 
@@ -39,7 +47,7 @@ export function ClassSelector({
           <FormLabel className="text-gray-700 dark:text-gray-300">{label}</FormLabel>
           <FormControl>
             <Select 
-              onValueChange={(value) => {
+              onValueChange={(value: string) => {
                 field.onChange(value);
                 handleChange(value);
               }} 

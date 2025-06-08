@@ -1,4 +1,3 @@
-import React from 'react';
 import { useState } from "react";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog.tsx";
 import { Button } from "@/components/ui/button.tsx";
@@ -14,7 +13,6 @@ interface EditDifficultAyahDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   difficultAyah: DifficultAyahEntry | null;
-  studentId: string;
   onSuccess: () => void;
 }
 
@@ -22,7 +20,6 @@ export const EditDifficultAyahDialog = ({
   open,
   onOpenChange,
   difficultAyah,
-  studentId,
   onSuccess,
 }: EditDifficultAyahDialogProps) => {
   const [notes, setNotes] = useState(difficultAyah?.notes || "");

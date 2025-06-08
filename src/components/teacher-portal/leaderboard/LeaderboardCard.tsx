@@ -1,15 +1,14 @@
 import { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Badge } from '@/components/ui/badge';
-import { Checkbox } from '@/components/ui/checkbox';
-import { useLeaderboardData } from '@/hooks/useLeaderboardData';
-import { useRealtimeLeaderboard } from '@/hooks/useRealtimeLeaderboard';
-import { StudentRankItem } from './StudentRankItem';
-import { ConfettiEffect } from './ConfettiEffect';
-import { LeaderboardFilters } from '@/types/leaderboard';
-import { Award, Trophy, Filter, RefreshCw, CheckSquare, ListMinus } from 'lucide-react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card.tsx';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs.tsx';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select.tsx';
+import { Badge } from '@/components/ui/badge.tsx';
+import { useLeaderboardData } from '@/hooks/useLeaderboardData.ts';
+import { useRealtimeLeaderboard } from '@/hooks/useRealtimeLeaderboard.ts';
+import { StudentRankItem } from './StudentRankItem.tsx';
+import { ConfettiEffect } from './ConfettiEffect.tsx';
+import { LeaderboardFilters } from '@/types/leaderboard.ts';
+import { Trophy, Filter, RefreshCw, CheckSquare } from 'lucide-react';
 
 interface LeaderboardCardProps {
   teacherId?: string;
@@ -121,7 +120,8 @@ export const LeaderboardCard = ({ teacherId, className = '' }: LeaderboardCardPr
           </div>
           
           <div className="flex gap-2">
-            <button 
+            <button
+              type="button"
               onClick={handleRefresh} 
               className="p-2 rounded-full hover:bg-secondary transition-colors"
               title="Refresh data"
@@ -129,7 +129,8 @@ export const LeaderboardCard = ({ teacherId, className = '' }: LeaderboardCardPr
               <RefreshCw className="h-4 w-4" />
             </button>
             
-            <button 
+            <button
+              type="button"
               onClick={() => setShowFilters(!showFilters)} 
               className={`p-2 rounded-full transition-colors ${showFilters ? 'bg-primary text-primary-foreground' : 'hover:bg-secondary'}`}
               title="Show filters"
@@ -226,7 +227,7 @@ export const LeaderboardCard = ({ teacherId, className = '' }: LeaderboardCardPr
               </div>
             ) : (
               <div className="flex flex-col items-center justify-center py-10 text-center">
-                <ListMinus className="h-12 w-12 text-muted-foreground mb-2" />
+                <CheckSquare className="h-12 w-12 text-muted-foreground mb-2" />
                 <p className="text-lg font-medium">No Students Found</p>
                 <p className="text-sm text-muted-foreground">
                   Try adjusting your filters to see more results
@@ -264,7 +265,7 @@ export const LeaderboardCard = ({ teacherId, className = '' }: LeaderboardCardPr
                 <CheckSquare className="h-12 w-12 text-muted-foreground mb-2" />
                 <p className="text-lg font-medium">No Sabaq Activity</p>
                 <p className="text-sm text-muted-foreground">
-                  No students have completed Sabaq activities in this time period
+                  No students have recorded sabaq in this period.
                 </p>
               </div>
             )}
@@ -299,7 +300,7 @@ export const LeaderboardCard = ({ teacherId, className = '' }: LeaderboardCardPr
                 <CheckSquare className="h-12 w-12 text-muted-foreground mb-2" />
                 <p className="text-lg font-medium">No Sabaq Para Activity</p>
                 <p className="text-sm text-muted-foreground">
-                  No students have completed Sabaq Para activities in this time period
+                  No students have recorded sabaq para in this period.
                 </p>
               </div>
             )}

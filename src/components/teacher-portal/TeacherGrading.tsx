@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label.tsx";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select.tsx";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table.tsx";
 import { Progress } from "@/components/ui/progress.tsx";
-import { GraduationCap, Award, Loader2, Save, FileCheck } from "lucide-react";
+import { GraduationCap, Loader2, Save, FileCheck } from "lucide-react";
 
 interface GradingProps {
   teacherId: string;
@@ -34,9 +34,21 @@ interface ProgressData {
   tajweed_level?: string;
 }
 
-// Helper function to check if a value is an error object
-function isQueryError(obj: any): obj is { error: any } {
-  return obj && typeof obj === 'object' && 'error' in obj;
+interface GradeData {
+  memorization_quality: string;
+  tajweed_grade: string;
+  attendance_grade: string;
+  participation_grade: string;
+  notes: string;
+}
+
+interface StudentGrade {
+  created_at: string;
+  memorization_quality: string | null;
+  tajweed_level: string | null;
+  current_surah: number | null;
+  current_juz: number | null;
+  contributor_name: string | null;
 }
 
 export const TeacherGrading = ({ teacherId }: GradingProps) => {
@@ -115,7 +127,7 @@ export const TeacherGrading = ({ teacherId }: GradingProps) => {
     }
   });
   
-  const { data: studentGrades, isLoading: gradesLoading } = useQuery({
+  const { data: studentGrades, isLoading: _gradesLoading } = useQuery({
     queryKey: ['student-grades', selectedStudent],
     queryFn: async () => {
       if (!selectedStudent) return [];
@@ -126,7 +138,7 @@ export const TeacherGrading = ({ teacherId }: GradingProps) => {
       
       const { data, error } = await supabase
         .from('progress')
-        .select('current_surah, current_juz, memorization_quality, tajweed_level, created_at')
+        .select('current_surah, current_juz, memorization_quality, tajweed_level, created_at, contributor_name')
         .eq('student_id', student.id)
         .order('created_at', { ascending: false })
         .limit(10);
@@ -160,7 +172,7 @@ export const TeacherGrading = ({ teacherId }: GradingProps) => {
   });
   
   const submitGradeMutation = useMutation({
-    mutationFn: async (data: any) => {
+    mutationFn: async (data: GradeData) => {
       const student = students?.find(s => s.name === selectedStudent);
       
       if (!student) {
@@ -235,7 +247,7 @@ export const TeacherGrading = ({ teacherId }: GradingProps) => {
     submitGradeMutation.mutate(gradeData);
   };
   
-  const getQualityColor = (quality: string) => {
+  const getQualityColor = (quality: string | null | undefined) => {
     switch (quality) {
       case 'excellent': return 'text-green-600';
       case 'good': return 'text-blue-600';
@@ -246,7 +258,7 @@ export const TeacherGrading = ({ teacherId }: GradingProps) => {
     }
   };
   
-  const getQualityPercentage = (quality: string) => {
+  const getQualityPercentage = (quality: string | null | undefined) => {
     switch (quality) {
       case 'excellent': return 100;
       case 'good': return 80;
@@ -482,7 +494,7 @@ export const TeacherGrading = ({ teacherId }: GradingProps) => {
                           </TableRow>
                         </TableHeader>
                         <TableBody>
-                          {studentGrades.map((grade: any) => (
+                          {studentGrades.map((grade: StudentGrade) => (
                             <TableRow key={grade.created_at}>
                               <TableCell>{new Date(grade.created_at).toLocaleDateString()}</TableCell>
                               <TableCell className={getQualityColor(grade.memorization_quality)}>

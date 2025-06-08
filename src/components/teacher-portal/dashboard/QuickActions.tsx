@@ -1,13 +1,13 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { CalendarCheck, BookOpen, Users, CalendarPlus } from "lucide-react";
+import { CalendarCheck, BookOpen, Users } from "lucide-react";
 
 interface QuickActionsProps {
   teacherId?: string;
 }
 
-export const QuickActions = ({ teacherId }: QuickActionsProps) => {
+export const QuickActions = () => {
   const navigate = useNavigate();
   
   return (

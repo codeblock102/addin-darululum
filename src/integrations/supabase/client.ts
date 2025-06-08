@@ -1,4 +1,3 @@
-import React from 'react';
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types.ts';
 import { typedClient } from './client-typed.ts';

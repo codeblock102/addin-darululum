@@ -1,8 +1,7 @@
-
 import React from 'react';
-import { Card } from '@/components/ui/card';
+import { Card } from '@/components/ui/card.tsx';
 import { ArrowUp, ArrowDown } from 'lucide-react';
-import { useUserRole } from '@/hooks/useUserRole';
+import { useUserRole } from '@/hooks/useUserRole.ts';
 
 interface TrendProps {
   value: number;

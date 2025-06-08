@@ -1,6 +1,5 @@
-
-import { FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Checkbox } from "@/components/ui/checkbox";
+import { FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form.tsx";
+import { Checkbox } from "@/components/ui/checkbox.tsx";
 import { useFormContext } from "react-hook-form";
 
 const DAYS_OF_WEEK = [
@@ -29,12 +28,12 @@ export const DaysOfWeekField = () => {
               <div key={day} className="flex items-center space-x-2">
                 <Checkbox
                   checked={selectedDays.includes(day)}
-                  onCheckedChange={(checked) => {
+                  onCheckedChange={(checked: boolean) => {
                     setValue(
                       "days_of_week",
                       checked
                         ? [...selectedDays, day]
-                        : selectedDays.filter((d) => d !== day)
+                        : selectedDays.filter((d: string) => d !== day)
                     );
                   }}
                 />

@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { useQueryClient, useMutation } from "@tanstack/react-query";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -57,8 +56,12 @@ export const NewDifficultAyahDialog = ({
   });
   
   // Mutation for adding a difficult ayah
-  const addDifficultAyah = useMutation({
-    mutationFn: async (data: z.infer<typeof formSchema>) => {
+  const addDifficultAyah = useMutation<
+    boolean,
+    Error,
+    z.infer<typeof formSchema>
+  >({
+    mutationFn: async (data) => {
       const { error } = await supabase
         .from('difficult_ayahs')
         .insert([{
@@ -91,7 +94,7 @@ export const NewDifficultAyahDialog = ({
       form.reset();
       onOpenChange(false);
     },
-    onError: (error: any) => {
+    onError: (error) => {
       toast({
         title: "Error",
         description: error.message || "Failed to add difficult ayah",

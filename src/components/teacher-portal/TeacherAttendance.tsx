@@ -29,9 +29,6 @@ type StudentAttendanceRecord = Omit<Database["public"]["Tables"]["attendance"]["
   // Include other fields from attendance.Row if necessary, e.g., notes, class_id
 };
 
-interface TeacherAttendanceProps {
-  // teacherId: string | null; // Removed teacherId
-}
 
 export const TeacherAttendance = (/* { teacherId }: TeacherAttendanceProps */) => {
   // console.log("TeacherAttendance mounted with teacherId:", teacherId); // Removed teacherId related log
@@ -96,7 +93,6 @@ export const TeacherAttendance = (/* { teacherId }: TeacherAttendanceProps */) =
 
       // Ensure record.students is properly handled if it might be null/undefined from the query result
       const mappedData = data?.map(record => ({
-        ...(record as any), // Cast to any to bypass strict spread type if needed, then define explicitly
         id: record.id,
         date: record.date,
         status: record.status,

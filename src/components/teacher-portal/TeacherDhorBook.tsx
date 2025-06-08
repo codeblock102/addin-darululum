@@ -21,13 +21,13 @@ interface TeacherDhorBookProps {
 export const TeacherDhorBook = ({ teacherId }: TeacherDhorBookProps) => {
   const location = useLocation();
   const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
-  const [selectedStudentName, setSelectedStudentName] = useState<string>("");
+  const [_selectedStudentName, setSelectedStudentName] = useState<string>("");
   const [activeTab, setActiveTab] = useState("entries");
   const [viewMode, setViewMode] = useState<"daily" | "classroom">("daily");
   const isMobile = useIsMobile();
 
   // Set up realtime updates for the records
-  const { isSubscribed } = useRealtimeLeaderboard(teacherId, () => {
+  useRealtimeLeaderboard(teacherId, () => {
     console.log("Realtime update detected, refreshing classroom/student records");
   });
 
@@ -134,7 +134,7 @@ export const TeacherDhorBook = ({ teacherId }: TeacherDhorBookProps) => {
                   selectedStudentId={selectedStudentId}
                   teacherId={teacherId}
                   showHeader={false}
-                  showAllStudents={true} // Add this prop to show all students
+                  showAllStudents
                 />
 
                 {studentVerifyLoading && selectedStudentId && (

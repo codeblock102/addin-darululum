@@ -1,6 +1,5 @@
-
-import { TeacherAccountSearch } from "./TeacherAccountSearch";
-import { TeacherAccountFilters } from "./TeacherAccountFilters";
+import { TeacherAccountSearch } from "./TeacherAccountSearch.tsx";
+import { TeacherAccountFilters } from "./TeacherAccountFilters.tsx";
 
 interface TeacherSearchAndFiltersProps {
   searchQuery: string;

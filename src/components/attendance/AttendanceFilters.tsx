@@ -1,13 +1,11 @@
-
-import { useState } from "react";
 import { format } from "date-fns";
-import { CalendarIcon, Filter } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Calendar } from "@/components/ui/calendar";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { CalendarIcon } from "lucide-react";
+import { cn } from "@/lib/utils.ts";
+import { Button } from "@/components/ui/button.tsx";
+import { Input } from "@/components/ui/input.tsx";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover.tsx";
+import { Calendar } from "@/components/ui/calendar.tsx";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select.tsx";
 
 interface AttendanceFiltersProps {
   searchQuery: string;
@@ -53,8 +51,8 @@ export function AttendanceFilters({
           <PopoverContent className="w-auto p-0" align="end">
             <Calendar
               mode="single"
-              selected={dateFilter}
-              onSelect={setDateFilter}
+              selected={dateFilter ?? undefined}
+              onSelect={(date) => setDateFilter(date ?? null)}
               initialFocus
               className="bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-200"
             />

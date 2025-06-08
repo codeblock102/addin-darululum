@@ -1,9 +1,7 @@
-
-import { UserFormData, FormErrors } from "@/types/adminUser";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-
+import { UserFormData, FormErrors } from "@/types/adminUser.ts";
+import { Input } from "@/components/ui/input.tsx";
+import { Label } from "@/components/ui/label.tsx";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select.tsx";
 interface UserFormFieldsProps {
   formData: UserFormData;
   errors: FormErrors;

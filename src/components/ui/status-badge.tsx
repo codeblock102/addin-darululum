@@ -1,8 +1,6 @@
-
-import React from "react";
-import { Badge } from "@/components/ui/badge";
+import { Badge } from "@/components/ui/badge.tsx";
 import { Check, X, Clock, CalendarCheck, CalendarX, Info, AlertCircle } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/utils.ts";
 
 export type StatusType = 
   // Attendance statuses

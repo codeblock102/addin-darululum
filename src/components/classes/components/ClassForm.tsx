@@ -1,18 +1,18 @@
-
 import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Form } from "@/components/ui/form";
-import { Button } from "@/components/ui/button";
+import { Form } from "@/components/ui/form.tsx";
+import { Button } from "@/components/ui/button.tsx";
 import { Loader2 } from "lucide-react";
-import { classSchema, ClassFormData } from "../validation/classFormSchema";
-import { ClassFormFields } from "./ClassFormFields";
+import { classSchema, ClassFormData } from "../validation/classFormSchema.ts";
+import { ClassFormFields } from "./ClassFormFields.tsx";
+import { Teacher } from "@/types/teacher.ts";
 
 interface ClassFormProps {
-  selectedClass: any;
+  selectedClass: Partial<ClassFormData> | null;
   onSubmit: (data: ClassFormData) => void;
   onCancel: () => void;
   isSubmitting: boolean;
-  teachers?: any[];
+  teachers?: Teacher[];
 }
 
 export const ClassForm = ({ 

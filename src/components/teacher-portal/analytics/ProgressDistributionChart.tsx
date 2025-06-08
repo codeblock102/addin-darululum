@@ -1,5 +1,4 @@
-
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card.tsx";
 import { ResponsiveContainer, PieChart, Pie, Cell, Legend, Tooltip } from "recharts";
 
 interface ProgressDistributionChartProps {
@@ -32,7 +31,7 @@ export const ProgressDistributionChart = ({ data }: ProgressDistributionChartPro
                   dataKey="value"
                   label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
                 >
-                  {data.map((entry, index) => (
+                  {data.map((_entry, index) => (
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Pie>

@@ -1,4 +1,3 @@
-import React from 'react';
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client.ts";
@@ -10,7 +9,13 @@ import { RefreshCcw } from "lucide-react";
 import { AdminMessageList } from "./AdminMessageList.tsx";
 import { AdminMessageCompose } from "./compose/AdminMessageCompose.tsx";
 import { useRealtimeAdminMessages } from "@/hooks/useRealtimeAdminMessages.ts";
-import { Message, MessageType, MessageCategory } from "@/types/progress.ts";
+import { Message } from "@/types/progress.ts";
+import type { Database } from "@/integrations/supabase/types.ts";
+
+type RawMessage = Database['public']['Tables']['communications']['Row'] & {
+  teachers: { name: string } | null;
+};
+
 export const AdminMessaging = () => {
   const {
     toast
@@ -42,7 +47,7 @@ export const AdminMessaging = () => {
       if (error) throw error;
 
       // Format the received messages with sender names
-      const formattedMessages = data.map((msg: any) => ({
+      const formattedMessages = data.map((msg: RawMessage) => ({
         ...msg,
         sender_name: msg.teachers?.name || "Unknown Sender"
       })) as Message[];
@@ -71,7 +76,7 @@ export const AdminMessaging = () => {
       if (error) throw error;
 
       // Format the sent messages with recipient names
-      const formattedMessages = data.map((msg: any) => ({
+      const formattedMessages = data.map((msg: RawMessage) => ({
         ...msg,
         recipient_name: msg.teachers?.name || "Unknown Recipient"
       }));
@@ -153,7 +158,7 @@ export const AdminMessaging = () => {
                 </TabsContent>
                 
                 <TabsContent value="sent">
-                  <AdminMessageList messages={sentMessages} isLoading={sentLoading} emptyMessage="No sent messages" showRecipient={true} />
+                  <AdminMessageList messages={sentMessages} isLoading={sentLoading} emptyMessage="No sent messages" showRecipient />
                 </TabsContent>
               </Tabs>
             </TabsContent>

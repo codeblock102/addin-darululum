@@ -1,15 +1,14 @@
-
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { DhorBookEntryForm } from "./DhorBookEntryForm";
-import { useDhorEntryMutation } from "./useDhorEntryMutation";
-import { useToast } from "@/hooks/use-toast";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog.tsx";
+import { DhorBookEntryForm } from "./DhorBookEntryForm.tsx";
+import { useDhorEntryMutation } from "./useDhorEntryMutation.ts";
+import { useToast } from "@/hooks/use-toast.ts";
 
 export interface NewEntryDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   studentId: string;
   teacherId: string;
-  onSuccess?: (data?: any) => void;
+  onSuccess?: (data?: unknown) => void;
 }
 
 export function NewEntryDialog({

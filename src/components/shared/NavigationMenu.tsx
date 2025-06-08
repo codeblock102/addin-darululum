@@ -1,9 +1,8 @@
-
 import { useLocation } from "react-router-dom";
-import { SidebarMenu, SidebarMenuItem, SidebarMenuButton } from "@/components/ui/sidebar";
-import { NavItem } from "@/types/navigation";
+import { SidebarMenu, SidebarMenuItem, SidebarButton } from "@/components/ui/sidebar.tsx";
+import { NavItem } from "@/types/navigation.ts";
 import { useNavigate } from "react-router-dom";
-import { useIsMobile } from "@/hooks/use-mobile";
+import { useIsMobile } from "@/hooks/use-mobile.tsx";
 
 interface NavigationMenuProps {
   items: NavItem[];
@@ -32,7 +31,7 @@ export const NavigationMenu = ({ items }: NavigationMenuProps) => {
     // On mobile, dispatch event to close the sidebar after navigation
     if (isMobile) {
       const event = new CustomEvent('navigate-mobile');
-      window.dispatchEvent(event);
+      globalThis.dispatchEvent(event);
     }
   };
 
@@ -43,7 +42,7 @@ export const NavigationMenu = ({ items }: NavigationMenuProps) => {
           
         return (
           <SidebarMenuItem key={index}>
-            <SidebarMenuButton 
+            <SidebarButton 
               isActive={isActive}
               onClick={() => handleNavigation(item.href)}
               tooltip={!isMobile ? item.description : undefined}
@@ -52,7 +51,7 @@ export const NavigationMenu = ({ items }: NavigationMenuProps) => {
             >
               <item.icon className="h-4 w-4 sm:h-5 sm:w-5 min-w-5" />
               <span className="text-xs sm:text-sm font-medium truncate">{item.label}</span>
-            </SidebarMenuButton>
+            </SidebarButton>
           </SidebarMenuItem>
         );
       })}

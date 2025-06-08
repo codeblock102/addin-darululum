@@ -1,9 +1,8 @@
-
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { StudentProgressChart } from "./StudentProgressChart";
-import { ProgressDistributionChart } from "./ProgressDistributionChart";
-import { TimeProgressChart } from "./TimeProgressChart";
-import { ContributorActivityChart } from "./ContributorActivityChart";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card.tsx";
+import { StudentProgressChart } from "./StudentProgressChart.tsx";
+import { ProgressDistributionChart } from "./ProgressDistributionChart.tsx";
+import { TimeProgressChart } from "./TimeProgressChart.tsx";
+import { ContributorActivityChart } from "./ContributorActivityChart.tsx";
 
 interface AnalyticsChartsProps {
   studentProgress: { name: string; verses: number }[];

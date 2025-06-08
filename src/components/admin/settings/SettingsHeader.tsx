@@ -1,4 +1,3 @@
-import React from 'react';
 interface SettingsHeaderProps {
   isSaving: boolean;
   onSave: () => void;

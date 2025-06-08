@@ -79,7 +79,6 @@ export const StudentPerformanceMetrics = ({ studentId }: StudentPerformanceMetri
   
   const latestProgress = progressEntries?.length ? progressEntries[0] : null;
   const currentJuz = latestProgress?.current_juz || 0;
-  const completedJuz = latestProgress?.completed_juz || 0;
 
   // Calculate total memorized juz from the student's record
   const totalMemorizedJuzCount = Array.isArray(studentData?.completed_juz) 

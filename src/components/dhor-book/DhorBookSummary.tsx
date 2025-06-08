@@ -1,6 +1,5 @@
-
-import { StudentDhorSummary } from "@/types/dhor-book";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { StudentDhorSummary } from "@/types/dhor-book.ts";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card.tsx";
 import { format } from "date-fns";
 
 interface DhorBookSummaryProps {

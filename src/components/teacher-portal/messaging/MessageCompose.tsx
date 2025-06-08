@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client.ts";
@@ -11,14 +10,12 @@ import { MessageCategory, MessageRecipient, MessageType } from "@/types/progress
 
 interface MessageComposeProps {
   teacherId: string;
-  teacherName: string;
   recipients: MessageRecipient[];
   recipientsLoading: boolean;
 }
 
 export const MessageCompose = ({
   teacherId,
-  teacherName,
   recipients,
   recipientsLoading
 }: MessageComposeProps) => {

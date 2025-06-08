@@ -1,5 +1,4 @@
-import React from 'react';
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs.tsx";
+import { TabsList, TabsTrigger } from "@/components/ui/tabs.tsx";
 import {  
   LayoutDashboard, Bell, Shield, BookOpen, Globe, 
   Network, Database, UserCheck, Bug 

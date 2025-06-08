@@ -1,4 +1,3 @@
-import React from 'react';
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client.ts";
 import { useToast } from "@/hooks/use-toast.ts";
@@ -50,7 +49,7 @@ export function useUpdateStudentCompletedJuz() {
       // 2. Update the most recent progress entry with the new array
       const { error: updateError } = await supabase
         .from('progress')
-        .update({ completed_juz: updatedCompletedJuz as any })
+        .update({ completed_juz: updatedCompletedJuz })
         .eq('id', latestProgressEntry.id);
 
       if (updateError) {

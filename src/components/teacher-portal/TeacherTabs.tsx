@@ -1,7 +1,4 @@
-
-import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
-import { Teacher } from "@/types/teacher"; 
 import { 
   Users, 
   BookOpen, 
@@ -10,15 +7,14 @@ import {
   LineChart, 
   MessageSquare
 } from "lucide-react";
-import { useIsMobile } from "@/hooks/use-mobile";
+import { useIsMobile } from "@/hooks/use-mobile.tsx";
 
 interface TeacherTabsProps {
-  teacher: Teacher;
   activeTab: string;
   onTabChange: (tab: string) => void;
 }
 
-export const TeacherTabs = ({ teacher, activeTab, onTabChange }: TeacherTabsProps) => {
+export const TeacherTabs = ({ activeTab, onTabChange }: TeacherTabsProps) => {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   
@@ -75,6 +71,7 @@ export const TeacherTabs = ({ teacher, activeTab, onTabChange }: TeacherTabsProp
           {tabs.map((tab) => (
             <button
               key={tab.id}
+              type="button"
               onClick={() => handleTabClick(tab.id)}
               className={`
                 flex items-center py-3 px-1 md:px-3 text-sm font-medium text-center border-b-2 whitespace-nowrap

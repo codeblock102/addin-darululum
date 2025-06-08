@@ -1,11 +1,11 @@
 export interface Progress {
   id: string;
-  student_id?: string;
+  student_id: string;
   current_surah?: number;
   start_ayat?: number;
   end_ayat?: number;
   verses_memorized?: number;
-  date?: string;
+  entry_date?: string;
   current_juz?: number;
   completed_juz?: number[]; // Changed from number to number[] to match database schema
   memorization_quality?: 'excellent' | 'good' | 'average' | 'needsWork' | 'horrible';
@@ -80,6 +80,7 @@ export interface ProgressFormData {
   current_surah?: number;
   current_juz?: number;
   memorization_quality?: 'excellent' | 'good' | 'average' | 'needsWork' | 'horrible';
+  notes?: string;
 }
 
 export type MessageType = 'direct' | 'announcement' | 'feedback';

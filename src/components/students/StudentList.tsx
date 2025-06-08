@@ -1,4 +1,3 @@
-import React from 'react';
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -13,7 +12,7 @@ import {
 } from "@/components/ui/table.tsx";
 import { Button } from "@/components/ui/button.tsx";
 import { Skeleton } from "@/components/ui/skeleton.tsx";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog.tsx";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog.tsx";
 import { Edit, Eye, Trash2, Users } from "lucide-react";
 import { useToast } from "@/hooks/use-toast.ts";
 
@@ -36,7 +35,6 @@ interface StudentListProps {
 
 export const StudentList = ({ searchQuery, onEdit }: StudentListProps) => {
   const navigate = useNavigate();
-  const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [studentToDelete, setStudentToDelete] = useState<Student | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const { toast } = useToast();
@@ -153,8 +151,6 @@ export const StudentList = ({ searchQuery, onEdit }: StudentListProps) => {
             <TableRow 
               key={student.id}
               className="transition-colors hover:bg-muted/50 cursor-pointer group"
-              onMouseEnter={() => setHoveredId(student.id)}
-              onMouseLeave={() => setHoveredId(null)}
               onClick={() => navigate(`/students/${student.id}`)}
             >
               <TableCell className="text-foreground">

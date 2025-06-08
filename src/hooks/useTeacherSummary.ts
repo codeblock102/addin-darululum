@@ -32,7 +32,6 @@ export const useTeacherSummary = (teacherId: string) => {
         if (studentError) throw studentError;
         
         // Get classes scheduled for today
-        const today = new Date().toISOString().split('T')[0];
         const { data: classes, error: classError } = await supabase
           .from('classes')
           .select('id')

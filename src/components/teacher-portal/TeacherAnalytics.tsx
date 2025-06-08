@@ -1,18 +1,16 @@
-
 import { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useAnalyticsData } from "@/hooks/useAnalyticsData";
-import { Loader2 } from "lucide-react";
-import { ProgressDistributionChart } from './analytics/ProgressDistributionChart';
-import { StudentProgressChart } from './analytics/StudentProgressChart';
-import { TimeProgressChart } from './analytics/TimeProgressChart';
-import { ContributorActivityChart } from './analytics/ContributorActivityChart';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card.tsx";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs.tsx";
+import { useAnalyticsData } from "@/hooks/useAnalyticsData.ts";
+import { ProgressDistributionChart } from './analytics/ProgressDistributionChart.tsx';
+import { StudentProgressChart } from './analytics/StudentProgressChart.tsx';
+import { TimeProgressChart } from './analytics/TimeProgressChart.tsx';
+import { ContributorActivityChart } from './analytics/ContributorActivityChart.tsx';
 
 interface AnalyticsHeaderProps {
   stats: {
     title: string;
-    value: any;
+    value: string | number;
     description: string;
     trend: string;
   }[];
@@ -50,7 +48,6 @@ interface TeacherAnalyticsProps {
 export const TeacherAnalytics = ({ teacherId }: TeacherAnalyticsProps) => {
   const { data, isLoading, error } = useAnalyticsData(teacherId);
   const [currentView, setCurrentView] = useState('week');
-  const [progressData, setProgressData] = useState<{ date: string; count: number }[]>([]);
   
   // Transform the data for the charts if available
   const timeProgress = data?.timeProgress?.map(item => ({
@@ -67,7 +64,7 @@ export const TeacherAnalytics = ({ teacherId }: TeacherAnalyticsProps) => {
     },
     {
       title: "Avg. Quality",
-      value: data?.qualityDistribution?.length > 0 ? "Good" : "N/A",
+      value: (data?.qualityDistribution?.length ?? 0) > 0 ? "Good" : "N/A",
       description: "Average memorization quality",
       trend: "+0.3"
     },
@@ -145,6 +142,7 @@ export const TeacherAnalytics = ({ teacherId }: TeacherAnalyticsProps) => {
                     <span>Measured in completed ayahs</span>
                     <div className="flex items-center gap-2 ml-auto">
                       <button 
+                        type="button"
                         onClick={() => setCurrentView('week')}
                         className={`text-xs px-2 py-0.5 rounded ${
                           currentView === 'week' ? 'bg-emerald-100 text-emerald-800' : 'text-muted-foreground'
@@ -153,6 +151,7 @@ export const TeacherAnalytics = ({ teacherId }: TeacherAnalyticsProps) => {
                         Week
                       </button>
                       <button 
+                        type="button"
                         onClick={() => setCurrentView('month')}
                         className={`text-xs px-2 py-0.5 rounded ${
                           currentView === 'month' ? 'bg-emerald-100 text-emerald-800' : 'text-muted-foreground'
@@ -161,6 +160,7 @@ export const TeacherAnalytics = ({ teacherId }: TeacherAnalyticsProps) => {
                         Month
                       </button>
                       <button 
+                        type="button"
                         onClick={() => setCurrentView('year')}
                         className={`text-xs px-2 py-0.5 rounded ${
                           currentView === 'year' ? 'bg-emerald-100 text-emerald-800' : 'text-muted-foreground'

@@ -1,4 +1,3 @@
-
 import { useQueryClient, useMutation } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client.ts";
 import { useToast } from "@/hooks/use-toast.ts";
@@ -18,15 +17,13 @@ interface StudentDeleteDialogProps {
   setIsOpen: (isOpen: boolean) => void;
   studentToDelete: { id: string, name: string, studentId: string } | null;
   isDeleteType: 'remove' | 'delete';
-  teacherId: string;
 }
 
 export const StudentDeleteDialog = ({
   isOpen,
   setIsOpen,
   studentToDelete,
-  isDeleteType,
-  teacherId
+  isDeleteType
 }: StudentDeleteDialogProps) => {
   const { toast } = useToast();
   const queryClient = useQueryClient();

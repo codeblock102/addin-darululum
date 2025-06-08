@@ -33,7 +33,7 @@ export function useTeacherAccounts() {
       const teacherAccounts: TeacherAccount[] = [];
       
       if (teachersData) {
-        for (const teacher of teachersData) {
+        for (const teacher of teachersData as Teacher[]) {
           let userData = null;
           if (teacher.email) {
             try {
@@ -69,7 +69,7 @@ export function useTeacherAccounts() {
             lastLogin: userData?.created_at || null,
             classesCount: classesData?.length || 0,
             studentsCount: studentsData?.length || 0,
-            experience: (teacher as any).experience ?? undefined,
+            experience: teacher.experience,
           });
         }
       }

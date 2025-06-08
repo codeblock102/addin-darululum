@@ -1,5 +1,4 @@
-
-import { StatusBadge, StatusType } from "@/components/ui/status-badge";
+import { StatusBadge, StatusType } from "@/components/ui/status-badge.tsx";
 
 interface TeacherStatusBadgeProps {
   status: "active" | "suspended";

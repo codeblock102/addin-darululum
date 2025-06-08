@@ -1,15 +1,18 @@
-
 import { CalendarCheck, CalendarX, Clock } from "lucide-react";
-import { AttendanceStatus } from "@/types/attendance";
-import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { AttendanceStatus } from "@/types/attendance.ts";
+import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form.tsx";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group.tsx";
 import { UseFormReturn } from "react-hook-form";
 
+type AttendanceFormValues = {
+  class_id: string;
+  student_id: string;
+  status: AttendanceStatus;
+  notes: string;
+};
+
 interface AttendanceStatusRadioGroupProps {
-  form: UseFormReturn<{
-    status: AttendanceStatus;
-    notes: string;
-  }>;
+  form: UseFormReturn<AttendanceFormValues>;
 }
 
 export function AttendanceStatusRadioGroup({ form }: AttendanceStatusRadioGroupProps) {

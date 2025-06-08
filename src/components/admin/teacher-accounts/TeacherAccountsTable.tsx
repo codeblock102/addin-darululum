@@ -7,14 +7,14 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import { TeacherAccount } from "@/types/teacher";
+} from "@/components/ui/table.tsx";
+import { TeacherAccount } from "@/types/teacher.ts";
 import { formatDistanceToNow } from "date-fns";
-import { TeacherDetailDialog } from "./TeacherDetailDialog";
-import { TeacherEditDialog } from "./TeacherEditDialog";
-import { AccountActionDialog } from "./AccountActionDialog";
-import { TeacherStatusBadge } from "./TeacherStatusBadge";
-import { TeacherAccountActions } from "./TeacherAccountActions";
+import { TeacherDetailDialog } from "./TeacherDetailDialog.tsx";
+import { TeacherEditDialog } from "./TeacherEditDialog.tsx";
+import { AccountActionDialog } from "./AccountActionDialog.tsx";
+import { TeacherStatusBadge } from "./TeacherStatusBadge.tsx";
+import { TeacherAccountActions } from "./TeacherAccountActions.tsx";
 
 interface TeacherAccountsTableProps {
   teachers: TeacherAccount[];

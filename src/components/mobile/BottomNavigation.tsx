@@ -1,13 +1,13 @@
 import { useNavigate, useLocation } from "react-router-dom";
-import { Home, Users, Book, CalendarDays, LogOut } from "lucide-react";
-import { useTeacherStatus } from "@/hooks/useTeacherStatus";
-import { cn } from "@/lib/utils";
-import { useAuth } from "@/contexts/AuthContext";
+import { Home, Users, Book, LogOut } from "lucide-react";
+import { useRBAC } from "@/hooks/useRBAC.ts";
+import { cn } from "@/lib/utils.ts";
+import { useAuth } from "@/hooks/use-auth.ts";
 
 export const BottomNavigation = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { isTeacher, isAdmin } = useTeacherStatus();
+  const { isAdmin } = useRBAC();
   const { signOut } = useAuth();
 
   // Different navigation items for admin and teacher roles

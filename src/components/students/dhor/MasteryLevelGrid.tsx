@@ -1,4 +1,3 @@
-import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client.ts';
 import { JuzMastery } from '@/types/dhor-book.ts';
@@ -9,9 +8,7 @@ interface MasteryLevelGridProps {
 }
 
 export function MasteryLevelGrid({ studentId, onJuzSelect }: MasteryLevelGridProps) {
-  const [selectedJuz, setSelectedJuz] = useState<string | null>(null);
-
-  const { data: masteryData, isLoading, error } = useQuery({
+  const { data: masteryData } = useQuery({
     queryKey: ['juz-mastery', studentId],
     queryFn: async () => {
       // Use the juz_revisions table instead of a non-existent juz_mastery table

@@ -1,4 +1,3 @@
-import React from 'react';
 import { useState } from "react";
 import { SettingsHeader } from "@/components/admin/settings/SettingsHeader.tsx";
 import { SettingsContent } from "@/components/admin/settings/SettingsContent.tsx";

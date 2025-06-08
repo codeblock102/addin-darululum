@@ -1,12 +1,11 @@
-
-import React, { useState } from 'react';
-import { Button } from '@/components/ui/button';
+import { useState } from 'react';
+import { Button } from '@/components/ui/button.tsx';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger
-} from '@/components/ui/dropdown-menu';
+} from '@/components/ui/dropdown-menu.tsx';
 import {
   Table,
   TableBody,
@@ -14,11 +13,11 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
+} from '@/components/ui/table.tsx';
 import { AlertTriangle, Clock, MoreVertical, Plus, RefreshCw } from 'lucide-react';
-import { NewDifficultAyahDialog } from './NewDifficultAyahDialog';
-import { DifficultAyah } from '@/types/progress';
-import { EditDifficultAyahDialog } from './EditDifficultAyahDialog';
+import { NewDifficultAyahDialog } from './NewDifficultAyahDialog.tsx';
+import { DifficultAyah } from '@/types/progress.ts';
+import { EditDifficultAyahDialog } from './EditDifficultAyahDialog.tsx';
 import { useQueryClient } from "@tanstack/react-query";
 
 interface DifficultAyahsListProps {
@@ -37,7 +36,7 @@ export const DifficultAyahsList: React.FC<DifficultAyahsListProps> = ({ ayahs, s
     setEditDialogOpen(true);
   };
 
-  const formatDate = (dateStr: string | undefined) => {
+  const formatDate = (dateStr: string | null | undefined) => {
     if (!dateStr) return 'Not revised';
     const date = new Date(dateStr);
     return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
@@ -137,7 +136,6 @@ export const DifficultAyahsList: React.FC<DifficultAyahsListProps> = ({ ayahs, s
           open={editDialogOpen}
           onOpenChange={setEditDialogOpen}
           difficultAyah={selectedAyah}
-          studentId={studentId}
           onSuccess={handleSuccessUpdate}
         />
       )}

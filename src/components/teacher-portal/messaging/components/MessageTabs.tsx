@@ -1,9 +1,8 @@
-
 import { useState } from "react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { MessageList } from "../MessageList";
-import { MessageCompose } from "../MessageCompose";
-import { Message, MessageRecipient } from "@/types/progress";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs.tsx";
+import { MessageList } from "../MessageList.tsx";
+import { MessageCompose } from "../MessageCompose.tsx";
+import { Message, MessageRecipient } from "@/types/progress.ts";
 
 interface MessageTabsProps {
   inboxMessages: Message[] | undefined;
@@ -25,7 +24,6 @@ export const MessageTabs = ({
   recipients,
   recipientsLoading,
   teacherId,
-  teacherName,
   unreadCount
 }: MessageTabsProps) => {
   const [messageTab, setMessageTab] = useState("inbox");
@@ -65,7 +63,7 @@ export const MessageTabs = ({
               messages={sentMessages} 
               isLoading={sentLoading}
               emptyMessage="No sent messages"
-              showRecipient={true}
+              showRecipient
             />
           </TabsContent>
         </Tabs>
@@ -74,7 +72,6 @@ export const MessageTabs = ({
       <TabsContent value="compose">
         <MessageCompose 
           teacherId={teacherId}
-          teacherName={teacherName}
           recipients={recipients || []}
           recipientsLoading={recipientsLoading}
         />

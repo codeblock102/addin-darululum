@@ -1,4 +1,3 @@
-import React from 'react';
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client.ts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card.tsx";
@@ -48,7 +47,7 @@ const CreateTeacherProfileForTestAccount = () => {
     setError(null);
     
     try {
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from("teachers")
         .insert([
           {
@@ -67,9 +66,10 @@ const CreateTeacherProfileForTestAccount = () => {
         title: "Success",
         description: "Teacher profile created successfully for the test account.",
       });
-    } catch (error: any) {
-      console.error("Error creating teacher profile:", error);
-      setError(error.message || "Failed to create teacher profile");
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Failed to create teacher profile";
+      console.error("Error creating teacher profile:", message);
+      setError(message);
       toast({
         title: "Error",
         description: "Failed to create teacher profile. Please try again.",

@@ -1,4 +1,3 @@
-import React from 'react';
 import { Button } from "@/components/ui/button.tsx";
 import {
   Dialog,
@@ -73,6 +72,7 @@ export const NewProgressDialog = () => {
       setOpen(false);
       form.reset();
     } catch (error) {
+      console.error("Failed to save progress entry:", error);
       toast({
         title: "Error",
         description: "Failed to save progress entry",

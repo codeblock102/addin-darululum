@@ -1,11 +1,20 @@
-
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog.tsx";
+import { Button } from "@/components/ui/button.tsx";
 import { useNavigate } from "react-router-dom";
 import { UserRound, CalendarDays, Phone, Book } from "lucide-react";
 
+interface Student {
+  id: string;
+  name: string;
+  date_of_birth: string | null;
+  enrollment_date: string | null;
+  guardian_name: string | null;
+  guardian_contact: string | null;
+  status: 'active' | 'inactive';
+}
+
 interface StudentQuickProfileModalProps {
-  student: any;
+  student: Student;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }

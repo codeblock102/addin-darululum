@@ -3,8 +3,8 @@ import {
   CardHeader,
   CardTitle,
   CardDescription
-} from "@/components/ui/card";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+} from "@/components/ui/card.tsx";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip.tsx";
 
 export function AttendanceTableHeader() {
   return (

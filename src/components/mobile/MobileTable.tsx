@@ -1,28 +1,27 @@
-
 import React from "react";
-import { cn } from "@/lib/utils";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils.ts";
+import { Badge } from "@/components/ui/badge.tsx";
+import { Button } from "@/components/ui/button.tsx";
 
-interface MobileTableProps {
-  data: any[];
+interface MobileTableProps<T> {
+  data: T[];
   columns: {
     title: string;
-    key: string;
-    render?: (value: any, record: any) => React.ReactNode;
+    key: keyof T | string;
+    render?: (value: T[keyof T], record: T) => React.ReactNode;
     primary?: boolean;
     status?: boolean;
   }[];
-  onRowClick?: (record: any) => void;
+  onRowClick?: (record: T) => void;
   actions?: {
     icon: React.ElementType;
     label: string;
-    onClick: (record: any) => void;
+    onClick: (record: T) => void;
     variant?: "default" | "outline" | "ghost" | "link" | "destructive" | "secondary";
   }[];
 }
 
-export const MobileTable = ({ data, columns, onRowClick, actions = [] }: MobileTableProps) => {
+export const MobileTable = <T extends Record<string, unknown>>({ data, columns, onRowClick, actions = [] }: MobileTableProps<T>) => {
   // Find primary column to use as card title
   const primaryColumn = columns.find((col) => col.primary) || columns[0];
   
@@ -35,7 +34,7 @@ export const MobileTable = ({ data, columns, onRowClick, actions = [] }: MobileT
   );
 
   // Convert status to badge variant that's compatible with our Badge component
-  const getStatusVariant = (value: any): "default" | "secondary" | "destructive" | "outline" | "success" => {
+  const getStatusVariant = (value: unknown): "default" | "secondary" | "destructive" | "outline" | "success" => {
     if (typeof value === "string") {
       switch (value.toLowerCase()) {
         case "active":
@@ -59,12 +58,12 @@ export const MobileTable = ({ data, columns, onRowClick, actions = [] }: MobileT
     return "default";
   };
 
-  const renderValue = (column: any, record: any) => {
-    const value = record[column.key];
+  const renderValue = (column: (typeof columns)[number], record: T) => {
+    const value = record[column.key as keyof T];
     if (column.render) {
       return column.render(value, record);
     }
-    return value;
+    return value as React.ReactNode;
   };
 
   if (data.length === 0) {
@@ -81,7 +80,7 @@ export const MobileTable = ({ data, columns, onRowClick, actions = [] }: MobileT
         // Get status info if applicable
         const status = statusColumn ? {
           label: renderValue(statusColumn, record),
-          variant: getStatusVariant(record[statusColumn.key])
+          variant: getStatusVariant(record[statusColumn.key as keyof T])
         } : undefined;
 
         return (
@@ -114,7 +113,7 @@ export const MobileTable = ({ data, columns, onRowClick, actions = [] }: MobileT
               {detailColumns.length > 0 && (
                 <div className="mt-3 space-y-2">
                   {detailColumns.map((column) => (
-                    <div key={column.key} className="flex justify-between text-sm">
+                    <div key={String(column.key)} className="flex justify-between text-sm">
                       <span className="text-muted-foreground text-xs">{column.title}</span>
                       <span className="font-medium text-xs">{renderValue(column, record)}</span>
                     </div>

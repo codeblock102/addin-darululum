@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client.ts";
-import { useAuth } from "@/contexts/AuthContext.tsx";
+import { useAuth } from "@/hooks/use-auth.ts";
 import { RolePermission } from "@/utils/roleUtils.ts";
 
 export type UserRole = 'admin' | 'teacher' | 'student';
@@ -18,26 +18,6 @@ export const useRBAC = () => {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // Create an abort controller for timeout handling
-    const abortController = new AbortController();
-    
-    // Set a timeout to prevent infinite loading
-    const timeoutId = setTimeout(() => {
-      if (isLoading) {
-        console.log("Role check timed out after 2 seconds");
-        setIsLoading(false);
-        setError("Role check timed out");
-        abortController.abort();
-        
-        // If we have a cached role, use that
-        const cachedRole = localStorage.getItem('userRole') as UserRole | null;
-        if (cachedRole && !role) {
-          console.log("Using cached role from localStorage:", cachedRole);
-          setRole(cachedRole);
-        }
-      }
-    }, 2000);
-
     const fetchRoleAndPermissions = async () => {
       if (!session) {
         setRole(null);
@@ -64,7 +44,7 @@ export const useRBAC = () => {
         }
         
         // If not admin, check for teacher profile
-        if (session.user.email && !abortController.signal.aborted) {
+        if (session.user.email) {
           console.log("Checking for teacher profile with email:", session.user.email);
           try {
             const { data: teacherData, error } = await supabase
@@ -97,21 +77,13 @@ export const useRBAC = () => {
         // On error, clear any cached role
         localStorage.removeItem('userRole');
       } finally {
-        // Only set loading to false if we haven't aborted
-        if (!abortController.signal.aborted) {
-          setIsLoading(false);
-        }
+        setIsLoading(false);
       }
     };
 
     fetchRoleAndPermissions();
 
-    // Clean up function
-    return () => {
-      clearTimeout(timeoutId);
-      abortController.abort();
-    };
-  }, [session]); // Remove role from dependencies to prevent loops
+  }, [session, role]); // Remove role from dependencies to prevent loops
 
   const hasPermission = (requiredPermission: RolePermission): boolean => {
     // Give all permissions to admins

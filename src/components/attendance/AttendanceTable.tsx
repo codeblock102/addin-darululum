@@ -37,7 +37,7 @@ export function AttendanceTable({ teacherId }: AttendanceTableProps) {
       const { data, error } = await supabase
         .from('attendance')
         .select(`
-          id, date, status, notes, student_id, class_id,
+          id, date, status, notes,
           students (id, name), 
           classes (id, name)
         `)
@@ -49,14 +49,10 @@ export function AttendanceTable({ teacherId }: AttendanceTableProps) {
       }
       
       if (!data) {
-        return [] as AttendanceRecord[];
+        return [];
       }
       
-      return data.map(record => ({
-        ...record,
-        students: record.students, 
-        classes: record.classes,
-      })) as AttendanceRecord[];
+      return data;
     }
   });
   
