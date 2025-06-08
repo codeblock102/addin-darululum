@@ -8,7 +8,12 @@ export interface Progress {
   entry_date?: string;
   current_juz?: number;
   completed_juz?: number[]; // Changed from number to number[] to match database schema
-  memorization_quality?: 'excellent' | 'good' | 'average' | 'needsWork' | 'horrible';
+  memorization_quality?:
+    | "excellent"
+    | "good"
+    | "average"
+    | "needsWork"
+    | "horrible";
   last_revision_date?: string;
   created_at: string;
   notes?: string;
@@ -29,7 +34,12 @@ export interface JuzRevision {
   student_id: string;
   juz_revised: number;
   revision_date: string;
-  memorization_quality: 'excellent' | 'good' | 'average' | 'needsWork' | 'horrible';
+  memorization_quality:
+    | "excellent"
+    | "good"
+    | "average"
+    | "needsWork"
+    | "horrible";
   created_at: string;
   teacher_notes?: string;
 }
@@ -51,7 +61,7 @@ export interface DifficultAyah {
   notes: string;
   revision_count: number;
   last_revised: string | null;
-  status: 'active' | 'resolved';
+  status: "active" | "resolved";
   created_at?: string;
 }
 
@@ -79,12 +89,17 @@ export interface ProgressFormData {
   verses_memorized?: number;
   current_surah?: number;
   current_juz?: number;
-  memorization_quality?: 'excellent' | 'good' | 'average' | 'needsWork' | 'horrible';
+  memorization_quality?:
+    | "excellent"
+    | "good"
+    | "average"
+    | "needsWork"
+    | "horrible";
   notes?: string;
 }
 
-export type MessageType = 'direct' | 'announcement' | 'feedback';
-export type MessageCategory = 'academic' | 'administrative' | 'general';
+export type MessageType = "direct" | "announcement" | "feedback";
+export type MessageCategory = "academic" | "administrative" | "general";
 
 export interface MessageRecipient {
   id: string;

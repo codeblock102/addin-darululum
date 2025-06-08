@@ -20,35 +20,37 @@ interface EditRevisionDialogProps {
   refetch: () => void;
 }
 
-export function EditRevisionDialog({ 
-  open, 
-  setOpen, 
-  revisionId, 
-  refetch 
+export function EditRevisionDialog({
+  open,
+  setOpen,
+  revisionId,
+  refetch,
 }: EditRevisionDialogProps) {
   const {
     revision,
     isLoading,
     handleSave,
     handleDelete,
-    isDeleteDialogOpen, 
-    setIsDeleteDialogOpen 
+    isDeleteDialogOpen,
+    setIsDeleteDialogOpen,
   } = useRevisionData(revisionId, () => {
     refetch();
     setOpen(false);
   });
 
   const {
-    juz_revised, 
-    memorization_quality, 
-    notes, 
-    revision_date, 
+    juz_revised,
+    memorization_quality,
+    notes,
+    revision_date,
     time_spent,
   } = revision || {};
 
   const defaultValues = {
     date: revision_date ? new Date(revision_date) : new Date(),
-    memorization_quality: (memorization_quality as RevisionFormValues['memorization_quality']) || "average",
+    memorization_quality:
+      (memorization_quality as RevisionFormValues["memorization_quality"]) ||
+      "average",
     time_spent: time_spent || 30,
     notes: notes || "",
     juz_number: juz_revised || 0,
@@ -65,17 +67,17 @@ export function EditRevisionDialog({
             Make changes to the revision. Click save when you're done.
           </AlertDialogDescription>
         </AlertDialogHeader>
-        
-        <RevisionForm 
-          defaultValues={defaultValues} 
-          onSubmit={handleSave} 
-          isLoading={isLoading} 
+
+        <RevisionForm
+          defaultValues={defaultValues}
+          onSubmit={handleSave}
+          isLoading={isLoading}
         />
-        
+
         <AlertDialogFooter>
-          <Button 
-            type="button" 
-            variant="outline" 
+          <Button
+            type="button"
+            variant="outline"
             onClick={() => setIsDeleteDialogOpen(true)}
           >
             Delete
@@ -83,7 +85,7 @@ export function EditRevisionDialog({
           <div className="flex gap-2">
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <Button form="revision-form" type="submit" disabled={isLoading}>
-              {isLoading ? 'Saving...' : 'Save Changes'}
+              {isLoading ? "Saving..." : "Save Changes"}
             </Button>
           </div>
         </AlertDialogFooter>

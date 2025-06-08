@@ -17,24 +17,36 @@ interface MobileTableProps<T> {
     icon: React.ElementType;
     label: string;
     onClick: (record: T) => void;
-    variant?: "default" | "outline" | "ghost" | "link" | "destructive" | "secondary";
+    variant?:
+      | "default"
+      | "outline"
+      | "ghost"
+      | "link"
+      | "destructive"
+      | "secondary";
   }[];
 }
 
-export const MobileTable = <T extends Record<string, unknown>>({ data, columns, onRowClick, actions = [] }: MobileTableProps<T>) => {
+export const MobileTable = <T extends Record<string, unknown>>(
+  { data, columns, onRowClick, actions = [] }: MobileTableProps<T>,
+) => {
   // Find primary column to use as card title
   const primaryColumn = columns.find((col) => col.primary) || columns[0];
-  
+
   // Find status column if any
   const statusColumn = columns.find((col) => col.status);
-  
+
   // Get non-primary and non-status columns for the details
   const detailColumns = columns.filter(
-    (col) => col.key !== primaryColumn.key && (!statusColumn || col.key !== statusColumn.key)
+    (col) =>
+      col.key !== primaryColumn.key &&
+      (!statusColumn || col.key !== statusColumn.key),
   );
 
   // Convert status to badge variant that's compatible with our Badge component
-  const getStatusVariant = (value: unknown): "default" | "secondary" | "destructive" | "outline" | "success" => {
+  const getStatusVariant = (
+    value: unknown,
+  ): "default" | "secondary" | "destructive" | "outline" | "success" => {
     if (typeof value === "string") {
       switch (value.toLowerCase()) {
         case "active":
@@ -78,17 +90,19 @@ export const MobileTable = <T extends Record<string, unknown>>({ data, columns, 
     <div className="space-y-3">
       {data.map((record, index) => {
         // Get status info if applicable
-        const status = statusColumn ? {
-          label: renderValue(statusColumn, record),
-          variant: getStatusVariant(record[statusColumn.key as keyof T])
-        } : undefined;
+        const status = statusColumn
+          ? {
+            label: renderValue(statusColumn, record),
+            variant: getStatusVariant(record[statusColumn.key as keyof T]),
+          }
+          : undefined;
 
         return (
           <div
             key={index}
             className={cn(
               "border rounded-lg overflow-hidden shadow-sm bg-card text-card-foreground",
-              onRowClick ? "cursor-pointer active:bg-muted/50" : ""
+              onRowClick ? "cursor-pointer active:bg-muted/50" : "",
             )}
             onClick={onRowClick ? () => onRowClick(record) : undefined}
           >
@@ -99,7 +113,7 @@ export const MobileTable = <T extends Record<string, unknown>>({ data, columns, 
                     {renderValue(primaryColumn, record)}
                   </h3>
                 </div>
-                
+
                 {status && (
                   <Badge
                     variant={status.variant}
@@ -109,18 +123,25 @@ export const MobileTable = <T extends Record<string, unknown>>({ data, columns, 
                   </Badge>
                 )}
               </div>
-              
+
               {detailColumns.length > 0 && (
                 <div className="mt-3 space-y-2">
                   {detailColumns.map((column) => (
-                    <div key={String(column.key)} className="flex justify-between text-sm">
-                      <span className="text-muted-foreground text-xs">{column.title}</span>
-                      <span className="font-medium text-xs">{renderValue(column, record)}</span>
+                    <div
+                      key={String(column.key)}
+                      className="flex justify-between text-sm"
+                    >
+                      <span className="text-muted-foreground text-xs">
+                        {column.title}
+                      </span>
+                      <span className="font-medium text-xs">
+                        {renderValue(column, record)}
+                      </span>
                     </div>
                   ))}
                 </div>
               )}
-              
+
               {actions.length > 0 && (
                 <div className="mt-4 flex flex-wrap gap-2">
                   {actions.map((action, actionIndex) => (
@@ -148,4 +169,4 @@ export const MobileTable = <T extends Record<string, unknown>>({ data, columns, 
       })}
     </div>
   );
-}
+};

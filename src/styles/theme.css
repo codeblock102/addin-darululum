@@ -1,7 +1,8 @@
-
 /* Base theme variables */
 :root {
-  --font-sans: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-sans:
+    ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    Roboto, sans-serif;
   --radius: 0.5rem;
 
   /* Common light mode variables */
@@ -11,7 +12,7 @@
   --card-foreground: 222.2 47.4% 11.2%;
   --popover: 0 0% 100%;
   --popover-foreground: 222.2 47.4% 11.2%;
-  --primary: 221.2 83.2% 53.3%; 
+  --primary: 221.2 83.2% 53.3%;
   --primary-foreground: 210 40% 98%;
   --secondary: 210 40% 96.1%;
   --secondary-foreground: 222.2 47.4% 11.2%;
@@ -64,11 +65,16 @@
   --accent-foreground: 0 0% 95%;
   --border: 217 33% 15%;
   --ring: 224 76% 50%;
-  
+
   /* Admin specific visual style */
   --admin-sidebar-bg: hsl(222 47% 9%);
-  --admin-card-gradient: linear-gradient(135deg, rgba(30, 41, 59, 0.95), rgba(15, 23, 42, 0.97));
-  --admin-card-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2), 0 4px 6px -2px rgba(0, 0, 0, 0.1);
+  --admin-card-gradient: linear-gradient(
+    135deg,
+    rgba(30, 41, 59, 0.95),
+    rgba(15, 23, 42, 0.97)
+  );
+  --admin-card-shadow:
+    0 10px 15px -3px rgba(0, 0, 0, 0.2), 0 4px 6px -2px rgba(0, 0, 0, 0.1);
   --admin-primary: 217 91% 60%; /* Amber-ish primary */
 }
 
@@ -87,10 +93,15 @@
   --accent-foreground: 222.2 47.4% 11.2%;
   --border: 214.3 31.8% 91.4%;
   --ring: 221.2 83.2% 53.3%;
-  
+
   /* Teacher specific visual style */
   --teacher-sidebar-bg: hsl(0 0% 100%);
-  --teacher-card-gradient: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(240, 245, 255, 0.97));
-  --teacher-card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --teacher-card-gradient: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.95),
+    rgba(240, 245, 255, 0.97)
+  );
+  --teacher-card-shadow:
+    0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
   --teacher-primary: 221.2 83.2% 53.3%; /* Blue-ish primary */
 }

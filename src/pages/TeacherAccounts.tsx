@@ -31,9 +31,13 @@ export default function TeacherAccounts() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState<"all" | "active" | "suspended">("all");
-  const [activityFilter, setActivityFilter] = useState<"all" | "7days" | "30days" | "inactive">("all");
-  
+  const [statusFilter, setStatusFilter] = useState<
+    "all" | "active" | "suspended"
+  >("all");
+  const [activityFilter, setActivityFilter] = useState<
+    "all" | "7days" | "30days" | "inactive"
+  >("all");
+
   const { isAdmin, isLoading } = useUserRole();
   const { teachers, isLoadingTeachers, filterTeachers } = useTeacherAccounts();
 
@@ -42,14 +46,19 @@ export default function TeacherAccounts() {
     toast({
       title: "Access Denied",
       description: "Only administrators can access this page",
-      variant: "destructive"
+      variant: "destructive",
     });
     navigate("/");
     return null;
   }
 
   // Apply filters to teachers data
-  const filteredTeachers = filterTeachers(teachers, searchQuery, statusFilter, activityFilter);
+  const filteredTeachers = filterTeachers(
+    teachers,
+    searchQuery,
+    statusFilter,
+    activityFilter,
+  );
 
   /**
    * @section Render Logic
@@ -58,33 +67,31 @@ export default function TeacherAccounts() {
    * If the user is an admin and data is loaded, it displays the teacher account management interface.
    */
   return (
-      <div className="space-y-6">
-        <AdminHeader 
-          title="Teacher Account Control Center" 
-          description="Manage and monitor all teacher accounts in the system" 
-        />
-        
-        {(isLoading || isLoadingTeachers) ? (
-          <TeacherAccountsLoading />
-        ) : (
-          <>
-            {/* Stats Cards */}
-            <TeacherStatsCards teachers={teachers} />
-            
-            {/* Search and Filter Controls */}
-            <TeacherSearchAndFilters
-              searchQuery={searchQuery}
-              statusFilter={statusFilter}
-              activityFilter={activityFilter}
-              onSearchChange={setSearchQuery}
-              onStatusFilterChange={setStatusFilter}
-              onActivityFilterChange={setActivityFilter}
-            />
-            
-            {/* Teacher Accounts Table */}
-            <TeacherAccountsTable teachers={filteredTeachers} />
-          </>
-        )}
-      </div>
+    <div className="space-y-6">
+      <AdminHeader
+        title="Teacher Account Control Center"
+        description="Manage and monitor all teacher accounts in the system"
+      />
+
+      {(isLoading || isLoadingTeachers) ? <TeacherAccountsLoading /> : (
+        <>
+          {/* Stats Cards */}
+          <TeacherStatsCards teachers={teachers} />
+
+          {/* Search and Filter Controls */}
+          <TeacherSearchAndFilters
+            searchQuery={searchQuery}
+            statusFilter={statusFilter}
+            activityFilter={activityFilter}
+            onSearchChange={setSearchQuery}
+            onStatusFilterChange={setStatusFilter}
+            onActivityFilterChange={setActivityFilter}
+          />
+
+          {/* Teacher Accounts Table */}
+          <TeacherAccountsTable teachers={filteredTeachers} />
+        </>
+      )}
+    </div>
   );
 }

@@ -1,14 +1,14 @@
 import { useNavigate } from "react-router-dom";
-import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { User, UserCheck, Trash2 } from "lucide-react";
+import { Trash2, User, UserCheck } from "lucide-react";
 import { Student, StudentAssignment } from "../MyStudents";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { MobileTable } from "@/components/mobile/MobileTable";
@@ -16,17 +16,19 @@ import { MobileTable } from "@/components/mobile/MobileTable";
 interface StudentTableProps {
   students: Student[];
   assignedStudents: StudentAssignment[] | undefined;
-  setStudentToDelete: (student: { id: string, name: string, studentId: string } | null) => void;
+  setStudentToDelete: (
+    student: { id: string; name: string; studentId: string } | null,
+  ) => void;
   setIsDeleteDialogOpen: (isOpen: boolean) => void;
-  setIsDeleteType: (type: 'remove' | 'delete') => void;
+  setIsDeleteType: (type: "remove" | "delete") => void;
 }
 
-export const StudentTable = ({ 
-  students, 
+export const StudentTable = ({
+  students,
   assignedStudents,
   setStudentToDelete,
   setIsDeleteDialogOpen,
-  setIsDeleteType
+  setIsDeleteType,
 }: StudentTableProps) => {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
@@ -35,12 +37,21 @@ export const StudentTable = ({
   const handleViewProgress = (studentId: string) => {
     navigate(`/teacher-portal?tab=dhor-book&studentId=${studentId}`);
   };
-  
+
   // Handle click on delete button
-  const handleDeleteClick = (student: Student, deleteType: 'remove' | 'delete') => {
-    const assignment = assignedStudents?.find(a => a.student_name === student.name);
+  const handleDeleteClick = (
+    student: Student,
+    deleteType: "remove" | "delete",
+  ) => {
+    const assignment = assignedStudents?.find((a) =>
+      a.student_name === student.name
+    );
     if (assignment) {
-      setStudentToDelete({ id: assignment.id, name: student.name, studentId: student.id });
+      setStudentToDelete({
+        id: assignment.id,
+        name: student.name,
+        studentId: student.id,
+      });
       setIsDeleteType(deleteType);
       setIsDeleteDialogOpen(true);
     }
@@ -48,7 +59,7 @@ export const StudentTable = ({
 
   if (isMobile) {
     const columns = [
-      { 
+      {
         key: "name",
         title: "Name",
         primary: true,
@@ -57,18 +68,19 @@ export const StudentTable = ({
             <User className="h-4 w-4 mr-2 text-muted-foreground" />
             <span>{value}</span>
           </div>
-        )
+        ),
       },
-      { 
+      {
         key: "enrollment_date",
         title: "Enrollment Date",
-        render: (value: string) => value ? new Date(value).toLocaleDateString() : 'N/A'
+        render: (value: string) =>
+          value ? new Date(value).toLocaleDateString() : "N/A",
       },
-      { 
+      {
         key: "status",
         title: "Status",
-        status: true
-      }
+        status: true,
+      },
     ];
 
     // Fix the type issue with actions - create an array of action objects with the correct type
@@ -77,20 +89,20 @@ export const StudentTable = ({
         label: "View Progress",
         onClick: (student: Student) => handleViewProgress(student.id),
         icon: UserCheck as React.ElementType,
-        variant: "outline" as const
+        variant: "outline" as const,
       },
       {
         label: "Remove",
-        onClick: (student: Student) => handleDeleteClick(student, 'remove'),
+        onClick: (student: Student) => handleDeleteClick(student, "remove"),
         icon: User as React.ElementType,
-        variant: "outline" as const
+        variant: "outline" as const,
       },
       {
         label: "Delete",
-        onClick: (student: Student) => handleDeleteClick(student, 'delete'),
+        onClick: (student: Student) => handleDeleteClick(student, "delete"),
         icon: Trash2 as React.ElementType,
-        variant: "outline" as const
-      }
+        variant: "outline" as const,
+      },
     ];
 
     return (
@@ -123,19 +135,25 @@ export const StudentTable = ({
                 </div>
               </TableCell>
               <TableCell>
-                {student.enrollment_date ? new Date(student.enrollment_date).toLocaleDateString() : 'N/A'}
+                {student.enrollment_date
+                  ? new Date(student.enrollment_date).toLocaleDateString()
+                  : "N/A"}
               </TableCell>
               <TableCell>
-                <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                  student.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                }`}>
-                  {student.status || 'N/A'}
+                <span
+                  className={`px-2 py-1 rounded-full text-xs font-medium ${
+                    student.status === "active"
+                      ? "bg-green-100 text-green-800"
+                      : "bg-red-100 text-red-800"
+                  }`}
+                >
+                  {student.status || "N/A"}
                 </span>
               </TableCell>
               <TableCell className="text-right">
                 <div className="flex justify-end gap-2">
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     size="sm"
                     onClick={() => handleViewProgress(student.id)}
                   >
@@ -146,7 +164,7 @@ export const StudentTable = ({
                     variant="outline"
                     size="sm"
                     className="text-amber-500 hover:text-amber-600 hover:bg-amber-50 border-amber-200"
-                    onClick={() => handleDeleteClick(student, 'remove')}
+                    onClick={() => handleDeleteClick(student, "remove")}
                     title="Remove from your students"
                   >
                     <User className="h-4 w-4" />
@@ -155,7 +173,7 @@ export const StudentTable = ({
                     variant="outline"
                     size="sm"
                     className="text-red-500 hover:text-red-600 hover:bg-red-50 border-red-200"
-                    onClick={() => handleDeleteClick(student, 'delete')}
+                    onClick={() => handleDeleteClick(student, "delete")}
                     title="Delete student from database"
                   >
                     <Trash2 className="h-4 w-4" />

@@ -4,9 +4,19 @@ import { supabase } from "@/integrations/supabase/client.ts";
 import { useToast } from "@/hooks/use-toast.ts";
 import { Button } from "@/components/ui/button.tsx";
 import { Loader2, Send } from "lucide-react";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select.tsx";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select.tsx";
 import { Label } from "@/components/ui/label.tsx";
-import { MessageCategory, MessageRecipient, MessageType } from "@/types/progress.ts";
+import {
+  MessageCategory,
+  MessageRecipient,
+  MessageType,
+} from "@/types/progress.ts";
 
 interface MessageComposeProps {
   teacherId: string;
@@ -17,14 +27,16 @@ interface MessageComposeProps {
 export const MessageCompose = ({
   teacherId,
   recipients,
-  recipientsLoading
+  recipientsLoading,
 }: MessageComposeProps) => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [newMessage, setNewMessage] = useState("");
   const [selectedRecipient, setSelectedRecipient] = useState("");
   const [messageType, setMessageType] = useState<MessageType>("direct");
-  const [messageCategory, setMessageCategory] = useState<MessageCategory>("academic");
+  const [messageCategory, setMessageCategory] = useState<MessageCategory>(
+    "academic",
+  );
 
   const sendMessageMutation = useMutation({
     mutationFn: async (messageData: {
@@ -34,15 +46,17 @@ export const MessageCompose = ({
       category: MessageCategory;
     }) => {
       // Find if this is a special recipient (like admin) that doesn't use UUID
-      const recipient = recipients.find(r => r.id === messageData.recipient_id);
+      const recipient = recipients.find((r) =>
+        r.id === messageData.recipient_id
+      );
       const isSpecialRecipient = recipient?.isSpecial || false;
-      
+
       // For special recipients like "admin-1", we'll store the message differently
       if (isSpecialRecipient) {
         // For admin messages, we'll create a special format to route it properly
         // Store in the same table but with a special flag or format
         const { data, error } = await supabase
-          .from('communications')
+          .from("communications")
           .insert([
             {
               sender_id: teacherId,
@@ -51,19 +65,19 @@ export const MessageCompose = ({
               read: false,
               message_type: messageData.message_type,
               category: messageData.category,
-              message_status: 'sent',
+              message_status: "sent",
               // Additional fields to identify admin messages
-              parent_message_id: messageData.recipient_id // Store the admin ID here as a string
-            }
+              parent_message_id: messageData.recipient_id, // Store the admin ID here as a string
+            },
           ])
           .select();
-        
+
         if (error) throw error;
         return data;
       } else {
         // Regular user message with valid UUID
         const { data, error } = await supabase
-          .from('communications')
+          .from("communications")
           .insert([
             {
               sender_id: teacherId,
@@ -72,17 +86,17 @@ export const MessageCompose = ({
               read: false,
               message_type: messageData.message_type,
               category: messageData.category,
-              message_status: 'sent'
-            }
+              message_status: "sent",
+            },
           ])
           .select();
-        
+
         if (error) throw error;
         return data;
       }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['teacher-sent', teacherId] });
+      queryClient.invalidateQueries({ queryKey: ["teacher-sent", teacherId] });
       toast({
         title: "Message Sent",
         description: "Your message has been sent successfully.",
@@ -95,12 +109,12 @@ export const MessageCompose = ({
         description: `Failed to send message: ${error.message}`,
         variant: "destructive",
       });
-    }
+    },
   });
-  
+
   const handleSendMessage = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!selectedRecipient) {
       toast({
         title: "Error",
@@ -109,7 +123,7 @@ export const MessageCompose = ({
       });
       return;
     }
-    
+
     if (!newMessage.trim()) {
       toast({
         title: "Error",
@@ -118,12 +132,12 @@ export const MessageCompose = ({
       });
       return;
     }
-    
+
     sendMessageMutation.mutate({
       recipient_id: selectedRecipient,
       message: newMessage,
       message_type: messageType,
-      category: messageCategory
+      category: messageCategory,
     });
   };
 
@@ -136,27 +150,36 @@ export const MessageCompose = ({
             <SelectValue placeholder="Select recipient" />
           </SelectTrigger>
           <SelectContent>
-            {recipientsLoading ? (
-              <div className="flex justify-center p-2">
-                <Loader2 className="h-4 w-4 animate-spin" />
-              </div>
-            ) : recipients && recipients.length > 0 ? (
-              recipients.map((recipient) => (
-                <SelectItem key={recipient.id} value={recipient.id}>
-                  {recipient.name} ({recipient.type})
+            {recipientsLoading
+              ? (
+                <div className="flex justify-center p-2">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                </div>
+              )
+              : recipients && recipients.length > 0
+              ? (
+                recipients.map((recipient) => (
+                  <SelectItem key={recipient.id} value={recipient.id}>
+                    {recipient.name} ({recipient.type})
+                  </SelectItem>
+                ))
+              )
+              : (
+                <SelectItem value="no-recipients" disabled>
+                  No recipients available
                 </SelectItem>
-              ))
-            ) : (
-              <SelectItem value="no-recipients" disabled>No recipients available</SelectItem>
-            )}
+              )}
           </SelectContent>
         </Select>
       </div>
-      
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label>Message Type</Label>
-          <Select value={messageType} onValueChange={(value) => setMessageType(value as MessageType)}>
+          <Select
+            value={messageType}
+            onValueChange={(value) => setMessageType(value as MessageType)}
+          >
             <SelectTrigger>
               <SelectValue placeholder="Message type" />
             </SelectTrigger>
@@ -167,10 +190,14 @@ export const MessageCompose = ({
             </SelectContent>
           </Select>
         </div>
-        
+
         <div className="space-y-2">
           <Label>Category</Label>
-          <Select value={messageCategory} onValueChange={(value) => setMessageCategory(value as MessageCategory)}>
+          <Select
+            value={messageCategory}
+            onValueChange={(value) =>
+              setMessageCategory(value as MessageCategory)}
+          >
             <SelectTrigger>
               <SelectValue placeholder="Message category" />
             </SelectTrigger>
@@ -182,7 +209,7 @@ export const MessageCompose = ({
           </Select>
         </div>
       </div>
-      
+
       <div className="space-y-2">
         <Label>Message</Label>
         <div className="relative">
@@ -194,23 +221,26 @@ export const MessageCompose = ({
           />
         </div>
       </div>
-      
+
       <div className="flex justify-end">
-        <Button 
-          type="submit" 
-          disabled={sendMessageMutation.isPending || !selectedRecipient || !newMessage.trim()}
+        <Button
+          type="submit"
+          disabled={sendMessageMutation.isPending || !selectedRecipient ||
+            !newMessage.trim()}
         >
-          {sendMessageMutation.isPending ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Sending...
-            </>
-          ) : (
-            <>
-              <Send className="mr-2 h-4 w-4" />
-              Send Message
-            </>
-          )}
+          {sendMessageMutation.isPending
+            ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Sending...
+              </>
+            )
+            : (
+              <>
+                <Send className="mr-2 h-4 w-4" />
+                Send Message
+              </>
+            )}
         </Button>
       </div>
     </form>

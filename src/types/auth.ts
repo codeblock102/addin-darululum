@@ -21,7 +21,13 @@ export interface AuthContextType {
 export const AuthContext = createContext<AuthContextType>({
   session: null,
   isLoading: true,
-  signOut: () => { console.warn("signOut called outside of AuthProvider"); return Promise.resolve(); },
-  refreshSession: () => { console.warn("refreshSession called outside of AuthProvider"); return Promise.resolve(); },
-  error: null
-}); 
+  signOut: () => {
+    console.warn("signOut called outside of AuthProvider");
+    return Promise.resolve();
+  },
+  refreshSession: () => {
+    console.warn("refreshSession called outside of AuthProvider");
+    return Promise.resolve();
+  },
+  error: null,
+});

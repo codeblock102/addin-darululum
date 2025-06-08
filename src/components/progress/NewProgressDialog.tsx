@@ -30,7 +30,12 @@ interface ProgressFormData {
   start_ayat: number;
   end_ayat: number;
   verses_memorized: number;
-  memorization_quality: 'excellent' | 'good' | 'average' | 'needsWork' | 'horrible';
+  memorization_quality:
+    | "excellent"
+    | "good"
+    | "average"
+    | "needsWork"
+    | "horrible";
   notes: string;
 }
 
@@ -38,7 +43,7 @@ export const NewProgressDialog = () => {
   const [open, setOpen] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  
+
   const form = useForm<ProgressFormData>({
     defaultValues: {
       current_surah: 1,
@@ -46,15 +51,15 @@ export const NewProgressDialog = () => {
       start_ayat: 1,
       end_ayat: 1,
       verses_memorized: 0,
-      memorization_quality: 'average',
-      notes: '',
+      memorization_quality: "average",
+      notes: "",
     },
   });
 
   const onSubmit = async (data: ProgressFormData) => {
     try {
       const { error } = await supabase
-        .from('progress')
+        .from("progress")
         .insert([{
           ...data,
           date: new Date().toISOString(),
@@ -67,8 +72,8 @@ export const NewProgressDialog = () => {
         title: "Success",
         description: "Progress entry has been saved",
       });
-      
-      queryClient.invalidateQueries({ queryKey: ['progress'] });
+
+      queryClient.invalidateQueries({ queryKey: ["progress"] });
       setOpen(false);
       form.reset();
     } catch (error) {

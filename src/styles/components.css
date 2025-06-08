@@ -1,4 +1,3 @@
-
 /* Card hover effects */
 .card-hover {
   @apply transition-all duration-300 hover:shadow-md hover:-translate-y-1;
@@ -6,7 +5,8 @@
 
 /* Student card styles */
 .student-card {
-  @apply rounded-lg overflow-hidden border border-border/40 shadow-sm hover:shadow-md transition-all duration-300;
+  @apply rounded-lg overflow-hidden border border-border/40 shadow-sm
+    hover:shadow-md transition-all duration-300;
 }
 
 .student-card-header {

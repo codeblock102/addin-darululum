@@ -1,6 +1,6 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useToast } from "@/hooks/use-toast.ts";
-import { RevisionFormValues, JuzRevisionEntry } from "@/types/dhor-book.ts";
+import { JuzRevisionEntry, RevisionFormValues } from "@/types/dhor-book.ts";
 import { supabase } from "@/integrations/supabase/client.ts";
 
 export function useRevisionData(revisionId: string, onSuccess: () => void) {
@@ -15,11 +15,11 @@ export function useRevisionData(revisionId: string, onSuccess: () => void) {
   useEffect(() => {
     const fetchRevision = async () => {
       const { data, error } = await supabase
-        .from('juz_revisions')
-        .select('*')
-        .eq('id', revisionId)
+        .from("juz_revisions")
+        .select("*")
+        .eq("id", revisionId)
         .single();
-  
+
       if (error) {
         console.error("Error fetching revision:", error);
         return null;
@@ -27,7 +27,7 @@ export function useRevisionData(revisionId: string, onSuccess: () => void) {
       return data;
     };
 
-    fetchRevision().then(data => {
+    fetchRevision().then((data) => {
       setRevision(data);
       setIsLoading(false);
     });
@@ -37,14 +37,14 @@ export function useRevisionData(revisionId: string, onSuccess: () => void) {
     try {
       setIsLoading(true);
       const { error } = await supabase
-        .from('juz_revisions')
+        .from("juz_revisions")
         .update({
           revision_date: values.date?.toISOString(),
           memorization_quality: values.memorization_quality,
           time_spent: values.time_spent,
           notes: values.notes,
         })
-        .eq('id', revisionId);
+        .eq("id", revisionId);
 
       if (error) throw error;
 
@@ -54,7 +54,9 @@ export function useRevisionData(revisionId: string, onSuccess: () => void) {
       });
       onSuccess();
     } catch (error) {
-      const message = error instanceof Error ? error.message : "An unknown error occurred";
+      const message = error instanceof Error
+        ? error.message
+        : "An unknown error occurred";
       toast({
         title: "Error",
         description: message,
@@ -69,9 +71,9 @@ export function useRevisionData(revisionId: string, onSuccess: () => void) {
     try {
       setIsLoading(true);
       const { error } = await supabase
-        .from('juz_revisions')
+        .from("juz_revisions")
         .delete()
-        .eq('id', revisionId);
+        .eq("id", revisionId);
 
       if (error) throw error;
 
@@ -81,7 +83,9 @@ export function useRevisionData(revisionId: string, onSuccess: () => void) {
       });
       onSuccess();
     } catch (error) {
-      const message = error instanceof Error ? error.message : "An unknown error occurred";
+      const message = error instanceof Error
+        ? error.message
+        : "An unknown error occurred";
       toast({
         title: "Error",
         description: message,

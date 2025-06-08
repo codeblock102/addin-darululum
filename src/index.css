@@ -7,10 +7,9 @@
  * animations, component-specific styles, and role-specific themes (admin, teacher).
  */
 
-@import './styles/base.css';
-@import './styles/theme.css';
-@import './styles/animations.css';
-@import './styles/components.css';
-@import './styles/admin-theme.css';
-@import './styles/teacher-theme.css';
-
+@import "./styles/base.css";
+@import "./styles/theme.css";
+@import "./styles/animations.css";
+@import "./styles/components.css";
+@import "./styles/admin-theme.css";
+@import "./styles/teacher-theme.css";

@@ -1,7 +1,12 @@
 import { Skeleton } from "@/components/ui/skeleton.tsx";
 import { StatusType } from "@/components/ui/status-badge.tsx";
 import { format } from "date-fns";
-import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table.tsx";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableRow,
+} from "@/components/ui/table.tsx";
 
 export type AttendanceRecord = {
   id: string;
@@ -22,7 +27,9 @@ interface AttendanceRecordsTableProps {
   records: AttendanceRecord[] | undefined;
 }
 
-const AttendanceRecordsTable: React.FC<AttendanceRecordsTableProps> = ({ records }) => {
+const AttendanceRecordsTable: React.FC<AttendanceRecordsTableProps> = (
+  { records },
+) => {
   if (!records) {
     return (
       <div className="flex items-center justify-center h-[300px]">
@@ -43,7 +50,9 @@ const AttendanceRecordsTable: React.FC<AttendanceRecordsTableProps> = ({ records
               {record.classes?.name || "Unknown"}
             </TableCell>
             <TableCell>
-              {record.date ? format(new Date(record.date), "MMM dd, yyyy") : "N/A"}
+              {record.date
+                ? format(new Date(record.date), "MMM dd, yyyy")
+                : "N/A"}
             </TableCell>
           </TableRow>
         ))}
@@ -52,4 +61,4 @@ const AttendanceRecordsTable: React.FC<AttendanceRecordsTableProps> = ({ records
   );
 };
 
-export default AttendanceRecordsTable; 
+export default AttendanceRecordsTable;

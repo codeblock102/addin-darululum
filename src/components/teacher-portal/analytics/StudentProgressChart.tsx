@@ -1,4 +1,3 @@
-
 import {
   Bar,
   BarChart,
@@ -7,7 +6,7 @@ import {
   ResponsiveContainer,
   Tooltip,
   XAxis,
-  YAxis
+  YAxis,
 } from "recharts";
 
 interface StudentProgressChartProps {
@@ -38,19 +37,19 @@ export const StudentProgressChart = ({ data }: StudentProgressChartProps) => {
         }}
       >
         <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
-        <XAxis 
-          dataKey="name" 
+        <XAxis
+          dataKey="name"
           tick={{ fontSize: 12 }}
           tickLine={false}
           axisLine={false}
         />
-        <YAxis 
+        <YAxis
           tickLine={false}
           axisLine={false}
           tick={{ fontSize: 12 }}
         />
-        <Tooltip 
-          cursor={{ fill: 'rgba(0, 0, 0, 0.05)' }} 
+        <Tooltip
+          cursor={{ fill: "rgba(0, 0, 0, 0.05)" }}
           content={({ active, payload }) => {
             if (active && payload && payload.length) {
               return (

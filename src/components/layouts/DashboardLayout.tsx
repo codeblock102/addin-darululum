@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Sidebar } from "./Sidebar.tsx";
 import { useRBAC } from "@/hooks/useRBAC.ts";
 import { LoadingSpinner } from "./dashboard/LoadingSpinner.tsx";
@@ -13,14 +13,14 @@ export const DashboardLayout = () => {
   const { isAdmin, isTeacher, isLoading } = useRBAC();
   const isMobile = useIsMobile();
   const [sidebarOpen, setSidebarOpen] = useState(!isMobile);
-  
+
   useEffect(() => {
     if (isMobile) {
       setSidebarOpen(false);
     }
   }, [isMobile]);
 
-  const toggleSidebar = () => setSidebarOpen(prev => !prev);
+  const toggleSidebar = () => setSidebarOpen((prev) => !prev);
 
   if (isLoading) {
     return (
@@ -34,17 +34,18 @@ export const DashboardLayout = () => {
   const collapsedSidebarWidthClass = "md:w-16";
 
   return (
-    <div className={`flex min-h-screen w-full overflow-hidden ${isAdmin ? "admin-theme" : "teacher-theme"}`}>
+    <div
+      className={`flex min-h-screen w-full overflow-hidden ${
+        isAdmin ? "admin-theme" : "teacher-theme"
+      }`}
+    >
       <div
         className={cn(
           "fixed inset-y-0 left-0 z-40 bg-background border-r",
-          isMobile ? 
-            `${sidebarWidthClass} -translate-x-full`
-            : 
-            [
-              (sidebarOpen ? sidebarWidthClass : collapsedSidebarWidthClass),
-              "transition-all duration-300 ease-in-out"
-            ]
+          isMobile ? `${sidebarWidthClass} -translate-x-full` : [
+            sidebarOpen ? sidebarWidthClass : collapsedSidebarWidthClass,
+            "transition-all duration-300 ease-in-out",
+          ],
         )}
       >
         <Sidebar
@@ -58,13 +59,15 @@ export const DashboardLayout = () => {
         className={cn(
           "flex-1 overflow-x-hidden overflow-y-auto transition-all duration-300",
           isMobile ? "pb-16" : "",
-          !isMobile && (sidebarOpen ? `md:ml-64` : `md:ml-16`)
+          !isMobile && (sidebarOpen ? `md:ml-64` : `md:ml-16`),
         )}
       >
         <BackgroundPattern isAdmin={isAdmin}>
           <div className="p-3 sm:p-4 md:p-6">
             <div className="max-w-7xl mx-auto">
-              {!isMobile && <RoleBadge isAdmin={isAdmin} isLoading={isLoading} />}
+              {!isMobile && (
+                <RoleBadge isAdmin={isAdmin} isLoading={isLoading} />
+              )}
               <div className="animate-fadeIn mt-4 md:mt-0">
                 <Outlet />
               </div>
@@ -73,9 +76,7 @@ export const DashboardLayout = () => {
         </BackgroundPattern>
       </div>
 
-      {isMobile && !isLoading && (isTeacher || isAdmin) && (
-        <BottomNavigation />
-      )}
+      {isMobile && !isLoading && (isTeacher || isAdmin) && <BottomNavigation />}
     </div>
   );
 };

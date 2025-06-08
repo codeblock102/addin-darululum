@@ -16,20 +16,22 @@ export function SettingsHeader({ isSaving, onSave }: SettingsHeaderProps) {
             Configure application settings and preferences
           </p>
         </div>
-        <Button 
-          onClick={onSave} 
+        <Button
+          onClick={onSave}
           disabled={isSaving}
           size="lg"
           className="min-w-[150px]"
         >
-          {isSaving ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Saving...
-            </>
-          ) : (
-            "Save Changes"
-          )}
+          {isSaving
+            ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Saving...
+              </>
+            )
+            : (
+              "Save Changes"
+            )}
         </Button>
       </div>
     </div>

@@ -1,5 +1,11 @@
 import { Label } from "@/components/ui/label.tsx";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select.tsx";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select.tsx";
 import { MessageCategory, MessageType } from "@/types/progress.ts";
 
 interface MessageOptionsProps {
@@ -9,17 +15,20 @@ interface MessageOptionsProps {
   setMessageCategory: (value: MessageCategory) => void;
 }
 
-export const MessageOptions = ({ 
-  messageType, 
+export const MessageOptions = ({
+  messageType,
   setMessageType,
   messageCategory,
-  setMessageCategory
+  setMessageCategory,
 }: MessageOptionsProps) => {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
       <div className="space-y-2">
         <Label>Message Type</Label>
-        <Select value={messageType} onValueChange={(value) => setMessageType(value as MessageType)}>
+        <Select
+          value={messageType}
+          onValueChange={(value) => setMessageType(value as MessageType)}
+        >
           <SelectTrigger>
             <SelectValue placeholder="Message type" />
           </SelectTrigger>
@@ -30,10 +39,14 @@ export const MessageOptions = ({
           </SelectContent>
         </Select>
       </div>
-      
+
       <div className="space-y-2">
         <Label>Category</Label>
-        <Select value={messageCategory} onValueChange={(value) => setMessageCategory(value as MessageCategory)}>
+        <Select
+          value={messageCategory}
+          onValueChange={(value) =>
+            setMessageCategory(value as MessageCategory)}
+        >
           <SelectTrigger>
             <SelectValue placeholder="Message category" />
           </SelectTrigger>

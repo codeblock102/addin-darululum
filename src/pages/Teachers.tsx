@@ -3,7 +3,12 @@ import { useNavigate } from "react-router-dom";
 import TeacherDialog from "@/components/teachers/TeacherDialog.tsx";
 import { AdminHeader } from "@/components/admin/AdminHeader.tsx";
 import { Button } from "@/components/ui/button.tsx";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs.tsx";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@/components/ui/tabs.tsx";
 import { Loader2, UserPlus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client.ts";
 import { useToast } from "@/components/ui/use-toast.ts";
@@ -41,7 +46,7 @@ const Teachers = () => {
 
   // Get teacher stats
   const { data: stats } = useQuery({
-    queryKey: ['teacher-stats'],
+    queryKey: ["teacher-stats"],
     /**
      * @function queryFn (for teacher stats)
      * @description Fetches statistics related to teachers and students from Supabase.
@@ -55,19 +60,19 @@ const Teachers = () => {
      * @property {number} totalClasses - Placeholder for total classes (currently 0).
      */
     queryFn: async () => {
-      const { data: teachers } = await supabase.from('teachers').select('*');
-      const { data: students } = await supabase.from('students').select('*');
-      
+      const { data: teachers } = await supabase.from("teachers").select("*");
+      const { data: students } = await supabase.from("students").select("*");
+
       return {
         totalTeachers: teachers?.length || 0,
         totalStudents: students?.length || 0,
-        activeTeachers: teachers?.filter(t => t.email).length || 0,
-        subjectCount: teachers 
-          ? new Set(teachers.map(t => t.subject)).size
+        activeTeachers: teachers?.filter((t) => t.email).length || 0,
+        subjectCount: teachers
+          ? new Set(teachers.map((t) => t.subject)).size
           : 0,
         totalClasses: 0, // Will be populated later
       };
-    }
+    },
   });
 
   // Check authentication
@@ -93,21 +98,24 @@ const Teachers = () => {
         toast({
           variant: "destructive",
           title: "Authentication Error",
-          description: "Unable to verify your session. Please try logging in again.",
+          description:
+            "Unable to verify your session. Please try logging in again.",
         });
         navigate("/auth");
       } finally {
         setIsLoading(false);
       }
     };
-    
+
     checkAuth();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (!session) {
-        navigate("/auth");
-      }
-    });
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (_event, session) => {
+        if (!session) {
+          navigate("/auth");
+        }
+      },
+    );
 
     return () => subscription.unsubscribe();
   }, [navigate, toast]);
@@ -157,26 +165,26 @@ const Teachers = () => {
    */
   if (isLoading) {
     return (
-        <div className="flex items-center justify-center min-h-[60vh]">
-          <Loader2 className="w-8 h-8 animate-spin text-amber-500" />
-        </div>
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <Loader2 className="w-8 h-8 animate-spin text-amber-500" />
+      </div>
     );
   }
 
   return (
     <div>
       <div className="space-y-6">
-        <AdminHeader 
-          title="Teacher Management Center" 
-          description="Comprehensive teacher profile and account management" 
+        <AdminHeader
+          title="Teacher Management Center"
+          description="Comprehensive teacher profile and account management"
         />
-        
+
         {/* Stats Cards */}
         <TeacherStatsSection stats={stats} />
-        
+
         {/* Action Button */}
         <div className="flex justify-end">
-          <Button 
+          <Button
             className="bg-amber-500 hover:bg-amber-600 text-black"
             onClick={handleCreateTeacher}
           >
@@ -186,9 +194,9 @@ const Teachers = () => {
         </div>
 
         {/* Tabs Navigation */}
-        <Tabs 
-          defaultValue="profiles" 
-          value={activeTab} 
+        <Tabs
+          defaultValue="profiles"
+          value={activeTab}
           onValueChange={setActiveTab}
           className="w-full"
         >
@@ -211,8 +219,8 @@ const Teachers = () => {
 
       {/* Teacher Dialog Modal */}
       {dialogOpen && (
-        <TeacherDialog 
-          selectedTeacher={selectedTeacher} 
+        <TeacherDialog
+          selectedTeacher={selectedTeacher}
           onClose={handleCloseDialog}
           open={dialogOpen}
           onOpenChange={setDialogOpen}

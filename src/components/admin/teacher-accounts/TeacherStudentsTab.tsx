@@ -1,4 +1,3 @@
-
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client.ts";
 import {
@@ -31,32 +30,32 @@ interface TeacherStudentsTabProps {
 export function TeacherStudentsTab({ teacherId }: TeacherStudentsTabProps) {
   // Fetch students for this teacher
   const { data: students, isLoading } = useQuery({
-    queryKey: ['teacher-students', teacherId],
+    queryKey: ["teacher-students", teacherId],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('students_teachers')
+        .from("students_teachers")
         .select(`
           id,
           student_name,
           active,
           assigned_date
         `)
-        .eq('teacher_id', teacherId)
-        .order('assigned_date', { ascending: false });
-        
+        .eq("teacher_id", teacherId)
+        .order("assigned_date", { ascending: false });
+
       if (error) throw error;
-      
+
       // Format the data for display
-      return data.map(item => ({
+      return data.map((item) => ({
         id: item.id,
-        name: item.student_name || 'Unknown',
+        name: item.student_name || "Unknown",
         active: item.active,
         assignedDate: item.assigned_date,
         // These fields would come from a proper join in a real implementation
         guardianName: "—",
         guardianContact: "—",
       })) as StudentAssignment[];
-    }
+    },
   });
 
   if (isLoading) {
@@ -92,7 +91,7 @@ export function TeacherStudentsTab({ teacherId }: TeacherStudentsTabProps) {
           Assign Student
         </Button>
       </div>
-      
+
       <Card className="overflow-hidden border rounded-md">
         <Table>
           <TableHeader>
@@ -109,23 +108,26 @@ export function TeacherStudentsTab({ teacherId }: TeacherStudentsTabProps) {
               <TableRow key={student.id}>
                 <TableCell className="font-medium">{student.name}</TableCell>
                 <TableCell>
-                  {student.active ? (
-                    <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
-                      Active
-                    </span>
-                  ) : (
-                    <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800">
-                      Inactive
-                    </span>
-                  )}
+                  {student.active
+                    ? (
+                      <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
+                        Active
+                      </span>
+                    )
+                    : (
+                      <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800">
+                        Inactive
+                      </span>
+                    )}
                 </TableCell>
                 <TableCell>{student.guardianName || "—"}</TableCell>
                 <TableCell>{student.guardianContact || "—"}</TableCell>
                 <TableCell>
-                  {student.assignedDate ? 
-                    formatDistanceToNow(new Date(student.assignedDate), { addSuffix: true }) :
-                    "—"
-                  }
+                  {student.assignedDate
+                    ? formatDistanceToNow(new Date(student.assignedDate), {
+                      addSuffix: true,
+                    })
+                    : "—"}
                 </TableCell>
               </TableRow>
             ))}

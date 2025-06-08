@@ -1,12 +1,12 @@
 import { Button } from "@/components/ui/button.tsx";
 import {
   DropdownMenu,
-  DropdownMenuTrigger,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
+  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu.tsx";
-import { MoreHorizontal, Eye, Edit, UserMinus, Trash2 } from "lucide-react";
+import { Edit, Eye, MoreHorizontal, Trash2, UserMinus } from "lucide-react";
 import { TeacherAccount } from "@/types/teacher.ts";
 
 interface TeacherAccountActionsProps {
@@ -44,12 +44,19 @@ export function TeacherAccountActions({
         <DropdownMenuSeparator />
         <DropdownMenuItem
           onClick={() => onSuspend(teacher)}
-          className={teacher.status === "active" ? "text-amber-600" : "text-green-600"}
+          className={teacher.status === "active"
+            ? "text-amber-600"
+            : "text-green-600"}
         >
           <UserMinus className="mr-2 h-4 w-4" />
-          {teacher.status === "active" ? "Suspend Account" : "Reactivate Account"}
+          {teacher.status === "active"
+            ? "Suspend Account"
+            : "Reactivate Account"}
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => onDelete(teacher)} className="text-red-600">
+        <DropdownMenuItem
+          onClick={() => onDelete(teacher)}
+          className="text-red-600"
+        >
           <Trash2 className="mr-2 h-4 w-4" />
           Delete Account
         </DropdownMenuItem>

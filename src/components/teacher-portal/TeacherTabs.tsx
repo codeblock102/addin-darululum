@@ -1,11 +1,11 @@
 import { useNavigate } from "react-router-dom";
-import { 
-  Users, 
-  BookOpen, 
-  ClipboardList, 
-  CalendarDays, 
-  LineChart, 
-  MessageSquare
+import {
+  BookOpen,
+  CalendarDays,
+  ClipboardList,
+  LineChart,
+  MessageSquare,
+  Users,
 } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile.tsx";
 
@@ -17,53 +17,53 @@ interface TeacherTabsProps {
 export const TeacherTabs = ({ activeTab, onTabChange }: TeacherTabsProps) => {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
-  
+
   // If on mobile, don't render the tabs as they're redundant with the bottom navigation
   if (isMobile) return null;
-  
+
   const tabs = [
-    { 
-      id: "overview", 
-      label: "Overview", 
-      icon: <BookOpen className="h-4 w-4" /> 
+    {
+      id: "overview",
+      label: "Overview",
+      icon: <BookOpen className="h-4 w-4" />,
     },
-    { 
-      id: "students", 
-      label: "My Students", 
-      icon: <Users className="h-4 w-4" /> 
+    {
+      id: "students",
+      label: "My Students",
+      icon: <Users className="h-4 w-4" />,
     },
-    { 
-      id: "dhor-book", 
-      label: "Progress Book", 
-      icon: <BookOpen className="h-4 w-4" /> 
+    {
+      id: "dhor-book",
+      label: "Progress Book",
+      icon: <BookOpen className="h-4 w-4" />,
     },
-    { 
-      id: "attendance", 
-      label: "Attendance", 
-      icon: <ClipboardList className="h-4 w-4" /> 
+    {
+      id: "attendance",
+      label: "Attendance",
+      icon: <ClipboardList className="h-4 w-4" />,
     },
-    { 
-      id: "schedule", 
-      label: "Schedule", 
-      icon: <CalendarDays className="h-4 w-4" /> 
+    {
+      id: "schedule",
+      label: "Schedule",
+      icon: <CalendarDays className="h-4 w-4" />,
     },
-    { 
-      id: "performance", 
-      label: "Performance", 
-      icon: <LineChart className="h-4 w-4" /> 
+    {
+      id: "performance",
+      label: "Performance",
+      icon: <LineChart className="h-4 w-4" />,
     },
-    { 
-      id: "messages", 
-      label: "Messages", 
-      icon: <MessageSquare className="h-4 w-4" /> 
-    }
+    {
+      id: "messages",
+      label: "Messages",
+      icon: <MessageSquare className="h-4 w-4" />,
+    },
   ];
-  
+
   const handleTabClick = (tabId: string) => {
     navigate(`/teacher-portal?tab=${tabId}`);
     onTabChange(tabId);
   };
-  
+
   return (
     <div className="mb-8">
       <div className="border-b">
@@ -75,9 +75,11 @@ export const TeacherTabs = ({ activeTab, onTabChange }: TeacherTabsProps) => {
               onClick={() => handleTabClick(tab.id)}
               className={`
                 flex items-center py-3 px-1 md:px-3 text-sm font-medium text-center border-b-2 whitespace-nowrap
-                ${activeTab === tab.id 
-                  ? "border-primary text-primary" 
-                  : "border-transparent text-muted-foreground hover:text-foreground hover:border-muted-foreground"}
+                ${
+                activeTab === tab.id
+                  ? "border-primary text-primary"
+                  : "border-transparent text-muted-foreground hover:text-foreground hover:border-muted-foreground"
+              }
               `}
             >
               {tab.icon}

@@ -19,7 +19,7 @@ export const badgeVariants = cva(
     defaultVariants: {
       variant: "default",
     },
-  }
+  },
 );
 
 export const buttonVariants = cva(
@@ -32,8 +32,7 @@ export const buttonVariants = cva(
           "bg-destructive/90 text-destructive-foreground hover:bg-destructive",
         outline:
           "border border-[#ffffff15] bg-[#ffffff08] hover:bg-white/10 text-gray-200",
-        secondary:
-          "bg-[#ffffff08] text-gray-200 hover:bg-white/10",
+        secondary: "bg-[#ffffff08] text-gray-200 hover:bg-white/10",
         ghost: "hover:bg-white/10 text-gray-200",
         link: "text-primary/90 underline-offset-4 hover:underline",
       },
@@ -48,11 +47,11 @@ export const buttonVariants = cva(
       variant: "default",
       size: "default",
     },
-  }
+  },
 );
 
 export const navigationMenuTriggerStyle = cva(
-  "group inline-flex h-10 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50 data-[active]:bg-accent/50 data-[state=open]:bg-accent/50"
+  "group inline-flex h-10 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50 data-[active]:bg-accent/50 data-[state=open]:bg-accent/50",
 );
 
 export const sidebarButtonVariants = cva(
@@ -74,7 +73,7 @@ export const sidebarButtonVariants = cva(
       variant: "default",
       size: "default",
     },
-  }
+  },
 );
 
 export const toggleVariants = cva(
@@ -96,5 +95,5 @@ export const toggleVariants = cva(
       variant: "default",
       size: "default",
     },
-  }
-); 
+  },
+);

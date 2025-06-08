@@ -1,10 +1,22 @@
 import { useState } from "react";
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog.tsx";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog.tsx";
 import { Button } from "@/components/ui/button.tsx";
 import { Label } from "@/components/ui/label.tsx";
 import { Input } from "@/components/ui/input.tsx";
 import { Textarea } from "@/components/ui/textarea.tsx";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select.tsx";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select.tsx";
 import { supabase } from "@/integrations/supabase/client.ts";
 import { useToast } from "@/hooks/use-toast.ts";
 
@@ -103,7 +115,8 @@ export const NewRevisionDialog = ({
 
       toast({
         title: "Revision recorded successfully",
-        description: `Revision for Juz ${juzNumber} has been recorded for ${studentName}.`,
+        description:
+          `Revision for Juz ${juzNumber} has been recorded for ${studentName}.`,
       });
 
       resetForm();
@@ -114,7 +127,8 @@ export const NewRevisionDialog = ({
       toast({
         variant: "destructive",
         title: "Failed to record revision",
-        description: "There was an error recording the revision. Please try again.",
+        description:
+          "There was an error recording the revision. Please try again.",
       });
     } finally {
       setIsLoading(false);
@@ -137,7 +151,8 @@ export const NewRevisionDialog = ({
                 min={1}
                 max={30}
                 value={juzNumber || ""}
-                onChange={(e) => setJuzNumber(parseInt(e.target.value) || undefined)}
+                onChange={(e) =>
+                  setJuzNumber(parseInt(e.target.value) || undefined)}
               />
             </div>
             <div>
@@ -158,9 +173,12 @@ export const NewRevisionDialog = ({
               value={quartersRevised}
               onValueChange={(value) =>
                 setQuartersRevised(
-                  value as "1st_quarter" | "2_quarters" | "3_quarters" | "4_quarters"
-                )
-              }
+                  value as
+                    | "1st_quarter"
+                    | "2_quarters"
+                    | "3_quarters"
+                    | "4_quarters",
+                )}
             >
               <SelectTrigger id="quarters_revised">
                 <SelectValue placeholder="Select portion revised" />
@@ -179,9 +197,13 @@ export const NewRevisionDialog = ({
               value={memorizationQuality}
               onValueChange={(value) =>
                 setMemorizationQuality(
-                  value as "excellent" | "good" | "average" | "needsWork" | "horrible"
-                )
-              }
+                  value as
+                    | "excellent"
+                    | "good"
+                    | "average"
+                    | "needsWork"
+                    | "horrible",
+                )}
             >
               <SelectTrigger id="memorization_quality">
                 <SelectValue placeholder="Select quality" />
@@ -191,7 +213,9 @@ export const NewRevisionDialog = ({
                 <SelectItem value="good">Good</SelectItem>
                 <SelectItem value="average">Average</SelectItem>
                 <SelectItem value="needsWork">Needs Work</SelectItem>
-                <SelectItem value="horrible">Needs Significant Improvement</SelectItem>
+                <SelectItem value="horrible">
+                  Needs Significant Improvement
+                </SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -207,7 +231,11 @@ export const NewRevisionDialog = ({
           </div>
         </div>
         <DialogFooter>
-          <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => onOpenChange(false)}
+          >
             Cancel
           </Button>
           <Button type="submit" onClick={handleSubmit} disabled={isLoading}>

@@ -1,5 +1,12 @@
 import { format } from "date-fns";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table.tsx";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table.tsx";
 import { Button } from "@/components/ui/button.tsx";
 import { Skeleton } from "@/components/ui/skeleton.tsx";
 import { StatusBadge, StatusType } from "@/components/ui/status-badge.tsx";
@@ -36,7 +43,7 @@ export function AttendanceRecordsTable({
   searchQuery,
   statusFilter,
   dateFilter,
-  resetFilters
+  resetFilters,
 }: AttendanceRecordsTableProps) {
   if (isLoading) {
     return (
@@ -55,8 +62,8 @@ export function AttendanceRecordsTable({
       <div className="flex flex-col items-center justify-center py-12 text-center">
         <p className="text-muted-foreground">No attendance records found.</p>
         {(searchQuery || statusFilter || dateFilter) && (
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             className="mt-4"
             onClick={resetFilters}
           >
@@ -86,13 +93,14 @@ export function AttendanceRecordsTable({
                 {record.student?.name || "Unknown"}
               </TableCell>
               <TableCell>
-                {record.class_schedule ? 
-                  `${record.class_schedule.class_name} (${record.class_schedule.day_of_week}, ${record.class_schedule.time_slot})` : 
-                  "Unknown"
-                }
+                {record.class_schedule
+                  ? `${record.class_schedule.class_name} (${record.class_schedule.day_of_week}, ${record.class_schedule.time_slot})`
+                  : "Unknown"}
               </TableCell>
               <TableCell>
-                {record.date ? format(new Date(record.date), "MMM dd, yyyy") : "N/A"}
+                {record.date
+                  ? format(new Date(record.date), "MMM dd, yyyy")
+                  : "N/A"}
               </TableCell>
               <TableCell>
                 <StatusBadge status={record.status} />

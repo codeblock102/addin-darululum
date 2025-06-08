@@ -1,4 +1,9 @@
-import { FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form.tsx";
+import {
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form.tsx";
 import { Checkbox } from "@/components/ui/checkbox.tsx";
 import { useFormContext } from "react-hook-form";
 
@@ -33,7 +38,9 @@ export const DaysOfWeekField = () => {
                       "days_of_week",
                       checked
                         ? [...selectedDays, day]
-                        : selectedDays.filter((d: string) => d !== day)
+                        : selectedDays.filter((d: string) =>
+                          d !== day
+                        ),
                     );
                   }}
                 />

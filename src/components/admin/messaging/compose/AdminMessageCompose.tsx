@@ -1,5 +1,10 @@
 import { useState } from "react";
-import { Card, CardHeader, CardContent, CardTitle } from "@/components/ui/card.tsx";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card.tsx";
 import { MessageCategory, MessageType } from "@/types/progress.ts";
 import { TeacherSelector } from "./TeacherSelector.tsx";
 import { MessageOptions } from "./MessageOptions.tsx";
@@ -8,7 +13,9 @@ import { AdminMessageForm } from "./AdminMessageForm.tsx";
 export const AdminMessageCompose = () => {
   const [selectedTeacher, setSelectedTeacher] = useState("");
   const [messageType, setMessageType] = useState<MessageType>("direct");
-  const [messageCategory, setMessageCategory] = useState<MessageCategory>("administrative");
+  const [messageCategory, setMessageCategory] = useState<MessageCategory>(
+    "administrative",
+  );
 
   return (
     <Card className="w-full">
@@ -17,18 +24,18 @@ export const AdminMessageCompose = () => {
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          <TeacherSelector 
-            selectedTeacher={selectedTeacher} 
+          <TeacherSelector
+            selectedTeacher={selectedTeacher}
             setSelectedTeacher={setSelectedTeacher}
           />
-          
-          <MessageOptions 
+
+          <MessageOptions
             messageType={messageType}
             setMessageType={setMessageType}
             messageCategory={messageCategory}
             setMessageCategory={setMessageCategory}
           />
-          
+
           <AdminMessageForm
             selectedTeacher={selectedTeacher}
             messageType={messageType}

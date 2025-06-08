@@ -1,5 +1,11 @@
 import { useState } from "react";
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog.tsx";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog.tsx";
 import { Button } from "@/components/ui/button.tsx";
 import { Input } from "@/components/ui/input.tsx";
 import { Label } from "@/components/ui/label.tsx";
@@ -23,7 +29,9 @@ export const EditDifficultAyahDialog = ({
   onSuccess,
 }: EditDifficultAyahDialogProps) => {
   const [notes, setNotes] = useState(difficultAyah?.notes || "");
-  const [isResolved, setIsResolved] = useState(difficultAyah?.status === "resolved");
+  const [isResolved, setIsResolved] = useState(
+    difficultAyah?.status === "resolved",
+  );
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
@@ -46,8 +54,12 @@ export const EditDifficultAyahDialog = ({
         .update({
           notes,
           status: isResolved ? "resolved" : "active",
-          last_revised: isResolved ? new Date().toISOString().split("T")[0] : difficultAyah.last_revised,
-          revision_count: isResolved ? (difficultAyah.revision_count || 0) + 1 : difficultAyah.revision_count,
+          last_revised: isResolved
+            ? new Date().toISOString().split("T")[0]
+            : difficultAyah.last_revised,
+          revision_count: isResolved
+            ? (difficultAyah.revision_count || 0) + 1
+            : difficultAyah.revision_count,
         })
         .eq("id", difficultAyah.id);
 

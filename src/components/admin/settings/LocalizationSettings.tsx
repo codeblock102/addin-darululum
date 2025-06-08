@@ -1,5 +1,11 @@
 import { Label } from "@/components/ui/label.tsx";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select.tsx";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select.tsx";
 import { Input } from "@/components/ui/input.tsx";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group.tsx";
 import { LocalizationSettings } from "@/types/settings.ts";
@@ -11,8 +17,13 @@ interface LocalizationSettingsSectionProps {
   onUpdate: (settings: LocalizationSettings) => void;
 }
 
-export function LocalizationSettingsSection({ settings, onUpdate }: LocalizationSettingsSectionProps) {
-  const handleChange = <K extends keyof LocalizationSettings>(key: K, value: LocalizationSettings[K]) => {
+export function LocalizationSettingsSection(
+  { settings, onUpdate }: LocalizationSettingsSectionProps,
+) {
+  const handleChange = <K extends keyof LocalizationSettings>(
+    key: K,
+    value: LocalizationSettings[K],
+  ) => {
     onUpdate({ ...settings, [key]: value });
   };
 
@@ -25,9 +36,10 @@ export function LocalizationSettingsSection({ settings, onUpdate }: Localization
       <div className="space-y-6">
         <div className="space-y-2">
           <Label className="font-medium">Language</Label>
-          <Select 
+          <Select
             value={settings.language}
-            onValueChange={(value: LocalizationSettings['language']) => handleChange('language', value)}
+            onValueChange={(value: LocalizationSettings["language"]) =>
+              handleChange("language", value)}
           >
             <SelectTrigger>
               <SelectValue placeholder="Select language" />
@@ -40,14 +52,17 @@ export function LocalizationSettingsSection({ settings, onUpdate }: Localization
               <SelectItem value="spanish">Spanish</SelectItem>
             </SelectContent>
           </Select>
-          <p className="text-xs text-muted-foreground">Interface language for the application</p>
+          <p className="text-xs text-muted-foreground">
+            Interface language for the application
+          </p>
         </div>
-        
+
         <div className="space-y-2">
           <Label className="font-medium">Time Format</Label>
           <RadioGroup
             value={settings.timeFormat}
-            onValueChange={(value: LocalizationSettings['timeFormat']) => handleChange('timeFormat', value)}
+            onValueChange={(value: LocalizationSettings["timeFormat"]) =>
+              handleChange("timeFormat", value)}
             className="flex space-x-4"
           >
             <div className="flex items-center space-x-2">
@@ -60,12 +75,13 @@ export function LocalizationSettingsSection({ settings, onUpdate }: Localization
             </div>
           </RadioGroup>
         </div>
-        
+
         <div className="space-y-2">
           <Label className="font-medium">Date Format</Label>
           <RadioGroup
             value={settings.dateFormat}
-            onValueChange={(value: LocalizationSettings['dateFormat']) => handleChange('dateFormat', value)}
+            onValueChange={(value: LocalizationSettings["dateFormat"]) =>
+              handleChange("dateFormat", value)}
             className="flex flex-col space-y-2"
           >
             <div className="flex items-center space-x-2">
@@ -82,12 +98,13 @@ export function LocalizationSettingsSection({ settings, onUpdate }: Localization
             </div>
           </RadioGroup>
         </div>
-        
+
         <div className="space-y-2">
           <Label className="font-medium">First Day of Week</Label>
-          <Select 
+          <Select
             value={settings.firstDayOfWeek}
-            onValueChange={(value: LocalizationSettings['firstDayOfWeek']) => handleChange('firstDayOfWeek', value)}
+            onValueChange={(value: LocalizationSettings["firstDayOfWeek"]) =>
+              handleChange("firstDayOfWeek", value)}
           >
             <SelectTrigger>
               <SelectValue placeholder="Select first day" />
@@ -99,18 +116,20 @@ export function LocalizationSettingsSection({ settings, onUpdate }: Localization
             </SelectContent>
           </Select>
         </div>
-        
+
         <div className="space-y-2">
           <Label htmlFor="region" className="font-medium">Region Code</Label>
           <Input
             id="region"
             value={settings.region}
-            onChange={(e) => handleChange('region', e.target.value)}
+            onChange={(e) => handleChange("region", e.target.value)}
             placeholder="US, UK, AE, etc."
             maxLength={2}
             className="w-24 uppercase"
           />
-          <p className="text-xs text-muted-foreground">ISO country code for regional settings</p>
+          <p className="text-xs text-muted-foreground">
+            ISO country code for regional settings
+          </p>
         </div>
       </div>
     </SettingsCard>

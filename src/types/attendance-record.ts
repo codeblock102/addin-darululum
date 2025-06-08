@@ -12,4 +12,4 @@ export type AttendanceRecord = {
   classes: {
     name?: string;
   } | null;
-}; 
+};

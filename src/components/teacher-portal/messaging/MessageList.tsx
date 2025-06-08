@@ -1,15 +1,14 @@
-
 import { useState } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area.tsx";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar.tsx";
 import { Button } from "@/components/ui/button.tsx";
 import { Badge } from "@/components/ui/badge.tsx";
-import { 
-  User, 
-  Mail, 
-  AlertCircle, 
-  MessageSquare, 
-  ClipboardCheck 
+import {
+  AlertCircle,
+  ClipboardCheck,
+  Mail,
+  MessageSquare,
+  User,
 } from "lucide-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client.ts";
@@ -28,35 +27,37 @@ export const MessageList = ({
   isLoading,
   emptyMessage,
   onMessageClick,
-  showRecipient = false
+  showRecipient = false,
 }: MessageListProps) => {
   const queryClient = useQueryClient();
-  const [expandedMessageId, setExpandedMessageId] = useState<string | null>(null);
+  const [expandedMessageId, setExpandedMessageId] = useState<string | null>(
+    null,
+  );
 
   const markAsReadMutation = useMutation({
     mutationFn: async (messageId: string) => {
       const now = new Date().toISOString();
       const { data, error } = await supabase
-        .from('communications')
-        .update({ 
+        .from("communications")
+        .update({
           read: true,
-          updated_at: now
+          updated_at: now,
         })
-        .eq('id', messageId)
+        .eq("id", messageId)
         .select();
-      
+
       if (error) throw error;
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['teacher-inbox'] });
-      queryClient.invalidateQueries({ queryKey: ['teacher-sent'] });
-    }
+      queryClient.invalidateQueries({ queryKey: ["teacher-inbox"] });
+      queryClient.invalidateQueries({ queryKey: ["teacher-sent"] });
+    },
   });
 
   const handleMessageClick = (message: Message) => {
     setExpandedMessageId(expandedMessageId === message.id ? null : message.id);
-    
+
     if (onMessageClick) {
       onMessageClick(message);
     }
@@ -73,11 +74,11 @@ export const MessageList = ({
 
   const getMessageTypeIcon = (type: MessageType | undefined) => {
     switch (type) {
-      case 'announcement':
+      case "announcement":
         return <AlertCircle className="h-4 w-4 text-red-500" />;
-      case 'feedback':
+      case "feedback":
         return <ClipboardCheck className="h-4 w-4 text-green-500" />;
-      case 'direct':
+      case "direct":
       default:
         return <MessageSquare className="h-4 w-4 text-blue-500" />;
     }
@@ -108,23 +109,25 @@ export const MessageList = ({
     <ScrollArea className="h-[400px]">
       <div className="space-y-4">
         {messages?.map((message) => (
-          <div 
+          <div
             key={message.id}
             className={`p-4 rounded-lg border transition-all duration-200 cursor-pointer ${
-              message.read ? 'bg-background' : 'bg-muted/30 border-primary/20'
-            } ${expandedMessageId === message.id ? 'shadow-md' : ''}`}
+              message.read ? "bg-background" : "bg-muted/30 border-primary/20"
+            } ${expandedMessageId === message.id ? "shadow-md" : ""}`}
             onClick={() => handleMessageClick(message)}
           >
             <div className="flex items-start space-x-3">
               <Avatar>
-                <AvatarFallback><User className="h-5 w-5" /></AvatarFallback>
+                <AvatarFallback>
+                  <User className="h-5 w-5" />
+                </AvatarFallback>
               </Avatar>
               <div className="flex-1">
                 <div className="flex justify-between items-center">
                   <div className="flex items-center space-x-2">
                     <p className="font-medium">
-                      {showRecipient 
-                        ? `To: ${message.recipient_name}` 
+                      {showRecipient
+                        ? `To: ${message.recipient_name}`
                         : `From: ${message.sender_name}`}
                     </p>
                     {message.message_type && (
@@ -142,21 +145,29 @@ export const MessageList = ({
                     {formatMessageDate(message.created_at)}
                   </span>
                 </div>
-                
-                <div className={`mt-2 ${expandedMessageId === message.id ? '' : 'line-clamp-2'}`}>
+
+                <div
+                  className={`mt-2 ${
+                    expandedMessageId === message.id ? "" : "line-clamp-2"
+                  }`}
+                >
                   <p>{message.message}</p>
                 </div>
-                
+
                 {expandedMessageId === message.id && (
                   <div className="mt-4 flex justify-between items-center">
                     <div className="text-xs text-muted-foreground">
-                      {message.updated_at && message.read && 
+                      {message.updated_at && message.read &&
                         `Read: ${formatMessageDate(message.updated_at)}`}
                     </div>
-                    <Button variant="ghost" size="sm" onClick={(e) => {
-                      e.stopPropagation();
-                      setExpandedMessageId(null);
-                    }}>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setExpandedMessageId(null);
+                      }}
+                    >
                       Collapse
                     </Button>
                   </div>

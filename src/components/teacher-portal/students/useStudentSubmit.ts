@@ -8,78 +8,82 @@ interface UseStudentSubmitProps {
   onError?: (error: Error) => void;
 }
 
-export const useStudentSubmit = ({ 
-  teacherId, 
-  onSuccess, 
-  onError 
+export const useStudentSubmit = ({
+  teacherId,
+  onSuccess,
+  onError,
 }: UseStudentSubmitProps) => {
   const [isProcessing, setIsProcessing] = useState(false);
-  
+
   const handleSubmit = async (formData: StudentFormData) => {
     setIsProcessing(true);
-    
+
     try {
       if (!formData.studentName.trim()) {
         throw new Error("Student name is required");
       }
-      
+
       // First, check if the student exists in students table
       const { data: existingStudent, error: lookupError } = await supabase
-        .from('students')
-        .select('id, name')
-        .eq('name', formData.studentName)
+        .from("students")
+        .select("id, name")
+        .eq("name", formData.studentName)
         .maybeSingle();
-        
+
       if (lookupError) throw lookupError;
-      
+
       // Map the completed Juz to numbers
-      const completedJuz = formData.completedJuz.map(juz => Number(juz));
-      
+      const completedJuz = formData.completedJuz.map((juz) => Number(juz));
+
       // If student doesn't exist, create them
       if (!existingStudent) {
         // Create the student with all the form data
         const { error: createError } = await supabase
-          .from('students')
-          .insert({ 
+          .from("students")
+          .insert({
             name: formData.studentName,
             enrollment_date: formData.enrollmentDate,
             date_of_birth: formData.dateOfBirth || null,
             guardian_name: formData.guardianName || null,
             guardian_contact: formData.guardianContact || null,
             status: formData.status,
-            current_juz: formData.currentJuz === "_none_" ? null : Number(formData.currentJuz),
-            completed_juz: completedJuz
+            current_juz: formData.currentJuz === "_none_"
+              ? null
+              : Number(formData.currentJuz),
+            completed_juz: completedJuz,
           });
-          
+
         if (createError) throw createError;
       } else {
         // Update existing student with new information
         const { error: updateError } = await supabase
-          .from('students')
+          .from("students")
           .update({
             date_of_birth: formData.dateOfBirth || null,
             guardian_name: formData.guardianName || null,
             guardian_contact: formData.guardianContact || null,
             status: formData.status,
-            current_juz: formData.currentJuz === "_none_" ? null : Number(formData.currentJuz),
-            completed_juz: completedJuz
+            current_juz: formData.currentJuz === "_none_"
+              ? null
+              : Number(formData.currentJuz),
+            completed_juz: completedJuz,
           })
-          .eq('id', existingStudent.id);
-          
+          .eq("id", existingStudent.id);
+
         if (updateError) throw updateError;
       }
-      
+
       // Now assign student to teacher
       const { error: assignmentError } = await supabase
-        .from('students_teachers')
+        .from("students_teachers")
         .insert({
           teacher_id: teacherId,
           student_name: formData.studentName,
-          active: true
+          active: true,
         });
-        
+
       if (assignmentError) throw assignmentError;
-      
+
       onSuccess?.();
     } catch (error: unknown) {
       console.error("Failed to add student:", error);
@@ -91,6 +95,6 @@ export const useStudentSubmit = ({
 
   return {
     handleSubmit,
-    isProcessing
+    isProcessing,
   };
 };

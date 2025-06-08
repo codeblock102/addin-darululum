@@ -1,5 +1,9 @@
 import { useEffect, useState } from "react";
-import { ThemeProviderContext, ThemeProviderProps, Theme } from "@/types/theme.ts";
+import {
+  Theme,
+  ThemeProviderContext,
+  ThemeProviderProps,
+} from "@/types/theme.ts";
 
 export function ThemeProvider({
   children,
@@ -8,24 +12,24 @@ export function ThemeProvider({
   ...props
 }: ThemeProviderProps) {
   const [theme, setTheme] = useState<Theme>(
-    () => (localStorage.getItem(storageKey) as Theme) || defaultTheme
+    () => (localStorage.getItem(storageKey) as Theme) || defaultTheme,
   );
 
   useEffect(() => {
     const root = globalThis.document.documentElement;
-    
+
     root.classList.remove("light", "dark");
-    
+
     if (theme === "system") {
       const systemTheme = globalThis.matchMedia("(prefers-color-scheme: dark)")
-        .matches
+          .matches
         ? "dark"
         : "light";
-      
+
       root.classList.add(systemTheme);
       return;
     }
-    
+
     root.classList.add(theme);
   }, [theme]);
 

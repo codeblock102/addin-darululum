@@ -1,5 +1,11 @@
 import { useToast } from "@/hooks/use-toast";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { RefreshCcw } from "lucide-react";
 import { MessageTabs } from "./components/MessageTabs";
@@ -11,15 +17,15 @@ interface TeacherMessagesEnhancedProps {
   teacherName: string;
 }
 
-export const TeacherMessagesEnhanced = ({ 
-  teacherId, 
-  teacherName 
+export const TeacherMessagesEnhanced = ({
+  teacherId,
+  teacherName,
 }: TeacherMessagesEnhancedProps) => {
   const { toast } = useToast();
-  
+
   // Initialize real-time messages updates
   useRealtimeMessages(teacherId);
-  
+
   // Use the custom hook to fetch all message data
   const {
     inboxMessages,
@@ -29,13 +35,13 @@ export const TeacherMessagesEnhanced = ({
     sentLoading,
     recipientsLoading,
     refetchMessages,
-    unreadCount
+    unreadCount,
   } = useTeacherMessages(teacherId);
-  
+
   const handleRefresh = () => {
     toast({
       title: "Refreshing messages",
-      description: "Getting your latest messages..."
+      description: "Getting your latest messages...",
     });
     refetchMessages();
   };
@@ -58,7 +64,7 @@ export const TeacherMessagesEnhanced = ({
           </div>
         </CardHeader>
         <CardContent>
-          <MessageTabs 
+          <MessageTabs
             inboxMessages={inboxMessages}
             sentMessages={sentMessages}
             inboxLoading={inboxLoading}

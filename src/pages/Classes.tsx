@@ -10,10 +10,14 @@ import { ClassFormData } from "@/components/classes/validation/classFormSchema.t
 
 export default function Classes() {
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedClass, setSelectedClass] = useState<(Partial<ClassFormData> & { id: string }) | null>(null);
+  const [selectedClass, setSelectedClass] = useState<
+    (Partial<ClassFormData> & { id: string }) | null
+  >(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-  const handleOpenDialog = (classItem?: (Partial<ClassFormData> & { id: string })) => {
+  const handleOpenDialog = (
+    classItem?: Partial<ClassFormData> & { id: string },
+  ) => {
     setSelectedClass(classItem || null);
     setIsDialogOpen(true);
   };
@@ -30,11 +34,11 @@ export default function Classes() {
           title="Class Management"
           description="Create and manage class schedules and assignments"
         />
-        
+
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <div className="flex justify-end mb-4">
             <DialogTrigger asChild>
-              <Button 
+              <Button
                 className="bg-amber-500 hover:bg-amber-600 text-black"
                 onClick={() => handleOpenDialog()}
               >
@@ -43,7 +47,7 @@ export default function Classes() {
               </Button>
             </DialogTrigger>
           </div>
-          <ClassDialog 
+          <ClassDialog
             selectedClass={selectedClass}
             onClose={handleCloseDialog}
           />
@@ -56,7 +60,7 @@ export default function Classes() {
             onChange={setSearchQuery}
             className="border-gray-700/30 bg-white/5"
           />
-          <ClassList 
+          <ClassList
             searchQuery={searchQuery}
             onEdit={handleOpenDialog}
           />

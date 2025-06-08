@@ -6,11 +6,13 @@ import { useToast } from "@/components/ui/use-toast.ts";
 export function useTeacherAccounts() {
   const { toast } = useToast();
 
-  const { data: teachers, isLoading: isLoadingTeachers } = useQuery<TeacherAccount[]>({
-    queryKey: ['teacher-accounts'],
+  const { data: teachers, isLoading: isLoadingTeachers } = useQuery<
+    TeacherAccount[]
+  >({
+    queryKey: ["teacher-accounts"],
     queryFn: async () => {
       const { data: teachersData, error } = await supabase
-        .from('teachers')
+        .from("teachers")
         .select(`
           id, 
           name, 
@@ -19,49 +21,57 @@ export function useTeacherAccounts() {
           bio,
           phone
         `);
-        
+
       if (error) {
-        console.error("Error fetching teacher accounts (initial query):", error);
+        console.error(
+          "Error fetching teacher accounts (initial query):",
+          error,
+        );
         toast({
           title: "Error loading teachers",
-          description: "Failed to load teacher accounts data during initial fetch.",
-          variant: "destructive"
+          description:
+            "Failed to load teacher accounts data during initial fetch.",
+          variant: "destructive",
         });
         throw error;
       }
-      
+
       const teacherAccounts: TeacherAccount[] = [];
-      
+
       if (teachersData) {
         for (const teacher of teachersData as Teacher[]) {
           let userData = null;
           if (teacher.email) {
             try {
               const { data: profileData } = await supabase
-                .from('profiles')
-                .select('id, created_at')
-                .eq('username', teacher.email)
+                .from("profiles")
+                .select("id, created_at")
+                .eq("username", teacher.email)
                 .maybeSingle();
-                
+
               if (profileData) {
                 userData = profileData;
               }
             } catch (err) {
-              console.warn("Warning: Error fetching profile data for teacher:", teacher.email, err);
+              console.warn(
+                "Warning: Error fetching profile data for teacher:",
+                teacher.email,
+                err,
+              );
             }
           }
-            
+
           const { data: classesData } = await supabase
-            .from('classes')
-            .select('id', { count: 'exact' })
-            .eq('teacher_id', teacher.id);
-            
+            .from("classes")
+            .select("id", { count: "exact" })
+            .eq("teacher_id", teacher.id);
+
           const { data: studentsData } = await supabase
-            .from('students_teachers')
-            .select('id', { count: 'exact' })
-            .eq('teacher_id', teacher.id)
-            .eq('active', true);
-            
+            .from("students_teachers")
+            .select("id", { count: "exact" })
+            .eq("teacher_id", teacher.id)
+            .eq("active", true);
+
           teacherAccounts.push({
             ...teacher,
             userId: userData?.id || null,
@@ -73,7 +83,7 @@ export function useTeacherAccounts() {
           });
         }
       }
-      
+
       return teacherAccounts;
     },
   });
@@ -82,19 +92,19 @@ export function useTeacherAccounts() {
     teachers: TeacherAccount[] | undefined,
     searchQuery: string,
     statusFilter: "all" | "active" | "suspended",
-    activityFilter: "all" | "7days" | "30days" | "inactive"
+    activityFilter: "all" | "7days" | "30days" | "inactive",
   ) => {
-    return teachers?.filter(teacher => {
+    return teachers?.filter((teacher) => {
       // Apply search query filter
-      const matchesSearch = searchQuery === "" || 
-        teacher.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+      const matchesSearch = searchQuery === "" ||
+        teacher.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         teacher.email?.toLowerCase().includes(searchQuery.toLowerCase());
-      
+
       // Apply status filter
-      const matchesStatus = statusFilter === "all" || 
+      const matchesStatus = statusFilter === "all" ||
         (statusFilter === "active" && teacher.status === "active") ||
         (statusFilter === "suspended" && teacher.status === "suspended");
-      
+
       // Apply activity filter (mock implementation since we don't have real login history)
       let matchesActivity = true;
       if (activityFilter === "7days") {
@@ -107,7 +117,7 @@ export function useTeacherAccounts() {
         // Mock implementation: teachers with no classes considered inactive
         matchesActivity = teacher.classesCount === 0;
       }
-      
+
       return matchesSearch && matchesStatus && matchesActivity;
     }) || [];
   };
@@ -115,6 +125,6 @@ export function useTeacherAccounts() {
   return {
     teachers,
     isLoadingTeachers,
-    filterTeachers
+    filterTeachers,
   };
 }

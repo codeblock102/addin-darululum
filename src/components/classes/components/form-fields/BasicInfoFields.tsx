@@ -1,6 +1,18 @@
-import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form.tsx";
+import {
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form.tsx";
 import { Input } from "@/components/ui/input.tsx";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select.tsx";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select.tsx";
 import { Teacher } from "@/types/teacher.ts";
 import { useFormContext } from "react-hook-form";
 

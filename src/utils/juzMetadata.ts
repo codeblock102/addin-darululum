@@ -1,5 +1,5 @@
 /**
- * Rough estimates of total ayats per Juz. 
+ * Rough estimates of total ayats per Juz.
  * Note: These are approximations and might vary slightly depending on Quran edition/counting.
  * A more accurate approach would involve precise mapping or fetching from a detailed Quran API/database.
  */
@@ -16,24 +16,24 @@ const ayatsPerJuz: { [key: number]: number } = {
   10: 129, // Tawbah 92. Needs check
   11: 123, // Hud 5. Needs check
   12: 111, // Yusuf 52. Needs check
-  13: 96,  // Ra'd end + Ibrahim end + Hijr 1. Needs check
+  13: 96, // Ra'd end + Ibrahim end + Hijr 1. Needs check
   14: 128, // Nahl end
   15: 111, // Isra end
   16: 135, // Kahf 74
   17: 112, // Anbiya end
-  18: 78,  // Hajj end
+  18: 78, // Hajj end
   19: 118, // Mu'minun end
-  20: 78,  // Furqan 20
+  20: 78, // Furqan 20
   21: 112, // Ankabut 45
-  22: 90,  // Ahzab 30
+  22: 90, // Ahzab 30
   23: 106, // Saba 23
-  24: 77,  // Zumar 31
-  25: 80,  // Fussilat 46
-  26: 70,  // Shura 26
-  27: 90,  // Qamar 55
-  28: 69,  // Mujadila end
-  29: 82,  // Mulk end
-  30: 565  // Naba to Nas
+  24: 77, // Zumar 31
+  25: 80, // Fussilat 46
+  26: 70, // Shura 26
+  27: 90, // Qamar 55
+  28: 69, // Mujadila end
+  29: 82, // Mulk end
+  30: 565, // Naba to Nas
 };
 
 /**
@@ -49,18 +49,23 @@ export function getTotalAyatsInJuz(juzNumber: number): number {
  * Calculates the set of unique ayats covered by progress entries within a specific Juz.
  * This assumes ayats are identified by their number within the Surah.
  * A more robust solution would use a global Ayat index.
- * 
+ *
  * @param progressEntries - Array of progress entries for the student.
  * @param targetJuz - The Juz number to filter by.
  * @returns A Set containing unique ayat identifiers (e.g., "surah:ayah").
  */
 export function getUniqueAyatsCoveredInJuz(
-  progressEntries: { current_juz?: number | null; current_surah?: number | null; start_ayat?: number | null; end_ayat?: number | null }[],
-  targetJuz: number
+  progressEntries: {
+    current_juz?: number | null;
+    current_surah?: number | null;
+    start_ayat?: number | null;
+    end_ayat?: number | null;
+  }[],
+  targetJuz: number,
 ): Set<string> {
   const uniqueAyats = new Set<string>();
 
-  progressEntries.forEach(entry => {
+  progressEntries.forEach((entry) => {
     if (
       entry.current_juz === targetJuz &&
       entry.current_surah != null &&
@@ -75,4 +80,4 @@ export function getUniqueAyatsCoveredInJuz(
   });
 
   return uniqueAyats;
-} 
+}

@@ -17,19 +17,19 @@ import {
   FormMessage,
 } from "@/components/ui/form.tsx";
 import { Input } from "@/components/ui/input.tsx";
-import { 
+import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue 
+  SelectValue,
 } from "@/components/ui/select.tsx";
 import { Textarea } from "@/components/ui/textarea.tsx";
 import { Button } from "@/components/ui/button.tsx";
 import { useToast } from "@/hooks/use-toast.ts";
 import { useForm } from "react-hook-form";
 import { Loader2 } from "lucide-react";
-import { ProgressFormData, Progress } from "@/types/progress.ts";
+import { Progress, ProgressFormData } from "@/types/progress.ts";
 import React from "react";
 
 interface EditProgressDialogProps {
@@ -38,10 +38,10 @@ interface EditProgressDialogProps {
   progressEntry: Progress | null;
 }
 
-export const EditProgressDialog = ({ 
-  open, 
-  onOpenChange, 
-  progressEntry 
+export const EditProgressDialog = ({
+  open,
+  onOpenChange,
+  progressEntry,
 }: EditProgressDialogProps) => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -54,8 +54,8 @@ export const EditProgressDialog = ({
       start_ayat: progressEntry?.start_ayat || 1,
       end_ayat: progressEntry?.end_ayat || 1,
       verses_memorized: progressEntry?.verses_memorized || 0,
-      memorization_quality: progressEntry?.memorization_quality || 'average',
-      notes: progressEntry?.notes || '',
+      memorization_quality: progressEntry?.memorization_quality || "average",
+      notes: progressEntry?.notes || "",
     },
   });
 
@@ -68,15 +68,15 @@ export const EditProgressDialog = ({
         start_ayat: progressEntry.start_ayat || 1,
         end_ayat: progressEntry.end_ayat || 1,
         verses_memorized: progressEntry.verses_memorized || 0,
-        memorization_quality: progressEntry.memorization_quality || 'average',
-        notes: progressEntry.notes || '',
+        memorization_quality: progressEntry.memorization_quality || "average",
+        notes: progressEntry.notes || "",
       });
     }
   }, [progressEntry, form]);
 
   const onSubmit = async (data: ProgressFormData) => {
     if (!progressEntry?.id) return;
-    
+
     setIsProcessing(true);
     try {
       const updateData: Partial<Progress> = {
@@ -90,9 +90,9 @@ export const EditProgressDialog = ({
       };
 
       const { error } = await supabase
-        .from('progress')
+        .from("progress")
         .update(updateData)
-        .eq('id', progressEntry.id);
+        .eq("id", progressEntry.id);
 
       if (error) throw error;
 
@@ -100,13 +100,17 @@ export const EditProgressDialog = ({
         title: "Success",
         description: "Progress entry has been updated",
       });
-      
-      queryClient.invalidateQueries({ queryKey: ['student-progress', progressEntry.student_id] });
-      queryClient.invalidateQueries({ queryKey: ['progress'] });
-      
+
+      queryClient.invalidateQueries({
+        queryKey: ["student-progress", progressEntry.student_id],
+      });
+      queryClient.invalidateQueries({ queryKey: ["progress"] });
+
       onOpenChange(false);
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Failed to update progress entry";
+      const message = error instanceof Error
+        ? error.message
+        : "Failed to update progress entry";
       toast({
         title: "Error",
         description: message,
@@ -136,7 +140,12 @@ export const EditProgressDialog = ({
                   <FormItem>
                     <FormLabel>Current Surah</FormLabel>
                     <FormControl>
-                      <Input type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value))} />
+                      <Input
+                        type="number"
+                        {...field}
+                        onChange={(e) =>
+                          field.onChange(parseInt(e.target.value))}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -149,7 +158,12 @@ export const EditProgressDialog = ({
                   <FormItem>
                     <FormLabel>Current Juz</FormLabel>
                     <FormControl>
-                      <Input type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value))} />
+                      <Input
+                        type="number"
+                        {...field}
+                        onChange={(e) =>
+                          field.onChange(parseInt(e.target.value))}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -164,7 +178,12 @@ export const EditProgressDialog = ({
                   <FormItem>
                     <FormLabel>Start Verse</FormLabel>
                     <FormControl>
-                      <Input type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value))} />
+                      <Input
+                        type="number"
+                        {...field}
+                        onChange={(e) =>
+                          field.onChange(parseInt(e.target.value))}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -177,7 +196,12 @@ export const EditProgressDialog = ({
                   <FormItem>
                     <FormLabel>End Verse</FormLabel>
                     <FormControl>
-                      <Input type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value))} />
+                      <Input
+                        type="number"
+                        {...field}
+                        onChange={(e) =>
+                          field.onChange(parseInt(e.target.value))}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -191,7 +215,11 @@ export const EditProgressDialog = ({
                 <FormItem>
                   <FormLabel>Verses Memorized</FormLabel>
                   <FormControl>
-                    <Input type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value))} />
+                    <Input
+                      type="number"
+                      {...field}
+                      onChange={(e) => field.onChange(parseInt(e.target.value))}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -203,8 +231,8 @@ export const EditProgressDialog = ({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Memorization Quality</FormLabel>
-                  <Select 
-                    onValueChange={field.onChange} 
+                  <Select
+                    onValueChange={field.onChange}
                     defaultValue={field.value}
                     value={field.value}
                   >
@@ -218,7 +246,9 @@ export const EditProgressDialog = ({
                       <SelectItem value="good">Good</SelectItem>
                       <SelectItem value="average">Average</SelectItem>
                       <SelectItem value="needsWork">Needs Work</SelectItem>
-                      <SelectItem value="horrible">Needs Significant Improvement</SelectItem>
+                      <SelectItem value="horrible">
+                        Needs Significant Improvement
+                      </SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />
@@ -232,10 +262,10 @@ export const EditProgressDialog = ({
                 <FormItem>
                   <FormLabel>Notes</FormLabel>
                   <FormControl>
-                    <Textarea 
-                      placeholder="Add any additional notes or observations" 
-                      className="resize-none" 
-                      {...field} 
+                    <Textarea
+                      placeholder="Add any additional notes or observations"
+                      className="resize-none"
+                      {...field}
                     />
                   </FormControl>
                   <FormMessage />
@@ -243,22 +273,24 @@ export const EditProgressDialog = ({
               )}
             />
             <div className="flex justify-end space-x-2">
-              <Button 
-                type="button" 
-                variant="outline" 
+              <Button
+                type="button"
+                variant="outline"
                 onClick={() => onOpenChange(false)}
               >
                 Cancel
               </Button>
               <Button type="submit" disabled={isProcessing}>
-                {isProcessing ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Updating...
-                  </>
-                ) : (
-                  "Update Progress"
-                )}
+                {isProcessing
+                  ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Updating...
+                    </>
+                  )
+                  : (
+                    "Update Progress"
+                  )}
               </Button>
             </div>
           </form>

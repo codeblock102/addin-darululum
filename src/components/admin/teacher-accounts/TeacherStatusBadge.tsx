@@ -5,7 +5,7 @@ interface TeacherStatusBadgeProps {
 }
 
 export function TeacherStatusBadge({
-  status
+  status,
 }: TeacherStatusBadgeProps) {
   return <StatusBadge status={status as StatusType} />;
 }

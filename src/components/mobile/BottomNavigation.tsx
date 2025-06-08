@@ -1,5 +1,5 @@
-import { useNavigate, useLocation } from "react-router-dom";
-import { Home, Users, Book, LogOut } from "lucide-react";
+import { useLocation, useNavigate } from "react-router-dom";
+import { Book, Home, LogOut, Users } from "lucide-react";
 import { useRBAC } from "@/hooks/useRBAC.ts";
 import { cn } from "@/lib/utils.ts";
 import { useAuth } from "@/hooks/use-auth.ts";
@@ -16,14 +16,14 @@ export const BottomNavigation = () => {
     { icon: Users, label: "Teachers", href: "/teachers" },
     { icon: Users, label: "Students", href: "/students" },
     { icon: Book, label: "Progress", href: "/progress-book" }, // Corrected progress path
-    { icon: LogOut, label: "Logout", action: signOut }
+    { icon: LogOut, label: "Logout", action: signOut },
   ];
 
   const teacherNavItems = [
     { icon: Home, label: "Dashboard", href: "/dashboard" }, // Corrected teacher dashboard path
     { icon: Users, label: "Students", href: "/students" }, // Corrected students path
     { icon: Book, label: "Progress", href: "/progress-book" }, // Corrected progress path
-    { icon: LogOut, label: "Logout", action: signOut }
+    { icon: LogOut, label: "Logout", action: signOut },
   ];
 
   const navItems = isAdmin ? adminNavItems : teacherNavItems;
@@ -34,7 +34,9 @@ export const BottomNavigation = () => {
     return location.pathname === item.href;
   };
 
-  const handleNavigation = (item: { href?: string; action?: () => Promise<void> }) => {
+  const handleNavigation = (
+    item: { href?: string; action?: () => Promise<void> },
+  ) => {
     if (item.action) {
       item.action();
     } else if (item.href) {
@@ -52,20 +54,18 @@ export const BottomNavigation = () => {
             type="button"
             className={cn(
               "inline-flex flex-col items-center justify-center px-1 hover:bg-gray-50 dark:hover:bg-gray-800 group",
-              isActive(item) && (isAdmin 
-                ? "text-amber-500 bg-black/5 dark:bg-white/10" 
-                : "text-primary bg-primary/5")
+              isActive(item) && (isAdmin
+                ? "text-amber-500 bg-black/5 dark:bg-white/10"
+                : "text-primary bg-primary/5"),
             )}
           >
-            <item.icon 
+            <item.icon
               className={cn(
-                "w-5 h-5 mb-1 group-hover:text-primary", 
+                "w-5 h-5 mb-1 group-hover:text-primary",
                 isActive(item)
-                  ? isAdmin 
-                    ? "text-amber-500" 
-                    : "text-primary"
-                  : "text-gray-500 dark:text-gray-400"
-              )} 
+                  ? isAdmin ? "text-amber-500" : "text-primary"
+                  : "text-gray-500 dark:text-gray-400",
+              )}
             />
             <span className="text-xs whitespace-nowrap truncate max-w-[4rem]">
               {item.label}

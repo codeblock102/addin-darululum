@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client.ts";
 import {
   Table,
@@ -12,7 +12,16 @@ import {
 } from "@/components/ui/table.tsx";
 import { Button } from "@/components/ui/button.tsx";
 import { Skeleton } from "@/components/ui/skeleton.tsx";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog.tsx";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog.tsx";
 import { Edit, Eye, Trash2, Users } from "lucide-react";
 import { useToast } from "@/hooks/use-toast.ts";
 
@@ -23,7 +32,7 @@ interface Student {
   enrollment_date: string | null;
   guardian_name: string | null;
   guardian_contact: string | null;
-  status: 'active' | 'inactive';
+  status: "active" | "inactive";
   completed_juz?: number[];
   current_juz?: number | null;
 }
@@ -41,12 +50,12 @@ export const StudentList = ({ searchQuery, onEdit }: StudentListProps) => {
   const queryClient = useQueryClient();
 
   const { data: students, isLoading } = useQuery({
-    queryKey: ['students'],
+    queryKey: ["students"],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('students')
-        .select('*')
-        .order('name', { ascending: true });
+        .from("students")
+        .select("*")
+        .order("name", { ascending: true });
 
       if (error) throw error;
       console.log("Raw student data from Supabase:", data);
@@ -60,18 +69,18 @@ export const StudentList = ({ searchQuery, onEdit }: StudentListProps) => {
     mutationFn: async (studentId: string) => {
       // First, remove any student-teacher relationships
       const { error: relationshipError } = await supabase
-        .from('students_teachers')
+        .from("students_teachers")
         .delete()
-        .eq('student_name', studentToDelete?.name || '');
-      
+        .eq("student_name", studentToDelete?.name || "");
+
       if (relationshipError) throw relationshipError;
-      
+
       // Then delete the student
       const { error } = await supabase
-        .from('students')
+        .from("students")
         .delete()
-        .eq('id', studentId);
-      
+        .eq("id", studentId);
+
       if (error) throw error;
       return studentId;
     },
@@ -80,7 +89,7 @@ export const StudentList = ({ searchQuery, onEdit }: StudentListProps) => {
         title: "Student deleted",
         description: `${studentToDelete?.name} has been removed successfully.`,
       });
-      queryClient.invalidateQueries({ queryKey: ['students'] });
+      queryClient.invalidateQueries({ queryKey: ["students"] });
       setIsDeleteDialogOpen(false);
       setStudentToDelete(null);
     },
@@ -88,7 +97,7 @@ export const StudentList = ({ searchQuery, onEdit }: StudentListProps) => {
       toast({
         title: "Error",
         description: `Failed to delete student: ${error.message}`,
-        variant: "destructive"
+        variant: "destructive",
       });
     },
   });
@@ -108,16 +117,16 @@ export const StudentList = ({ searchQuery, onEdit }: StudentListProps) => {
   const filteredStudents = students?.filter(
     (student) =>
       student.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (student.guardian_name && 
-       student.guardian_name.toLowerCase().includes(searchQuery.toLowerCase()))
+      (student.guardian_name &&
+        student.guardian_name.toLowerCase().includes(
+          searchQuery.toLowerCase(),
+        )),
   );
 
   if (isLoading) {
     return (
       <div className="p-4 space-y-4">
-        {[...Array(5)].map((_, i) => (
-          <Skeleton key={i} className="h-12" />
-        ))}
+        {[...Array(5)].map((_, i) => <Skeleton key={i} className="h-12" />)}
       </div>
     );
   }
@@ -126,7 +135,9 @@ export const StudentList = ({ searchQuery, onEdit }: StudentListProps) => {
     return (
       <div className="flex flex-col items-center justify-center p-8 text-center">
         <Users className="h-8 w-8 text-muted-foreground mb-4" />
-        <p className="text-muted-foreground">No students found with the search criteria.</p>
+        <p className="text-muted-foreground">
+          No students found with the search criteria.
+        </p>
       </div>
     );
   }
@@ -143,12 +154,14 @@ export const StudentList = ({ searchQuery, onEdit }: StudentListProps) => {
             <TableHead className="text-foreground">Current Juz</TableHead>
             <TableHead className="text-foreground">Completed Juz</TableHead>
             <TableHead className="text-foreground">Status</TableHead>
-            <TableHead className="text-right text-foreground">Actions</TableHead>
+            <TableHead className="text-right text-foreground">
+              Actions
+            </TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {filteredStudents?.map((student) => (
-            <TableRow 
+            <TableRow
               key={student.id}
               className="transition-colors hover:bg-muted/50 cursor-pointer group"
               onClick={() => navigate(`/students/${student.id}`)}
@@ -163,30 +176,40 @@ export const StudentList = ({ searchQuery, onEdit }: StudentListProps) => {
                   {student.name}
                 </div>
               </TableCell>
-              <TableCell className="text-foreground">{student.guardian_name || '—'}</TableCell>
-              <TableCell className="text-foreground">{student.guardian_contact || '—'}</TableCell>
               <TableCell className="text-foreground">
-                {student.enrollment_date ? new Date(student.enrollment_date).toLocaleDateString() : '—'}
+                {student.guardian_name || "—"}
               </TableCell>
-              <TableCell className="text-foreground">{student.current_juz ?? 'None'}</TableCell>
               <TableCell className="text-foreground">
-                {student.completed_juz && student.completed_juz.length > 0 
-                  ? student.completed_juz.join(', ') 
-                  : 'None'}
+                {student.guardian_contact || "—"}
+              </TableCell>
+              <TableCell className="text-foreground">
+                {student.enrollment_date
+                  ? new Date(student.enrollment_date).toLocaleDateString()
+                  : "—"}
+              </TableCell>
+              <TableCell className="text-foreground">
+                {student.current_juz ?? "None"}
+              </TableCell>
+              <TableCell className="text-foreground">
+                {student.completed_juz && student.completed_juz.length > 0
+                  ? student.completed_juz.join(", ")
+                  : "None"}
               </TableCell>
               <TableCell>
-                <span className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ring-1 ring-inset ${
-                  student.status === 'active' 
-                    ? 'bg-green-50 text-green-700 ring-green-600/20' 
-                    : 'bg-red-50 text-red-700 ring-red-600/20'
-                }`}>
+                <span
+                  className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ring-1 ring-inset ${
+                    student.status === "active"
+                      ? "bg-green-50 text-green-700 ring-green-600/20"
+                      : "bg-red-50 text-red-700 ring-red-600/20"
+                  }`}
+                >
                   {student.status}
                 </span>
               </TableCell>
               <TableCell className="text-right">
                 <div className="flex justify-end gap-2 transition-opacity">
-                  <Button 
-                    variant="ghost" 
+                  <Button
+                    variant="ghost"
                     size="icon"
                     onClick={(e) => {
                       e.stopPropagation();
@@ -195,8 +218,8 @@ export const StudentList = ({ searchQuery, onEdit }: StudentListProps) => {
                   >
                     <Eye className="h-4 w-4" />
                   </Button>
-                  <Button 
-                    variant="ghost" 
+                  <Button
+                    variant="ghost"
                     size="icon"
                     onClick={(e) => {
                       e.stopPropagation();
@@ -205,8 +228,8 @@ export const StudentList = ({ searchQuery, onEdit }: StudentListProps) => {
                   >
                     <Edit className="h-4 w-4" />
                   </Button>
-                  <Button 
-                    variant="ghost" 
+                  <Button
+                    variant="ghost"
                     size="icon"
                     className="text-red-500 hover:text-red-600 hover:bg-red-50"
                     onClick={(e) => handleDeleteClick(e, student)}
@@ -219,18 +242,23 @@ export const StudentList = ({ searchQuery, onEdit }: StudentListProps) => {
           ))}
         </TableBody>
       </Table>
-      
-      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+
+      <AlertDialog
+        open={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Student</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete {studentToDelete?.name}? This action cannot be undone and will remove all associated data.
+              Are you sure you want to delete{" "}
+              {studentToDelete?.name}? This action cannot be undone and will
+              remove all associated data.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction 
+            <AlertDialogAction
               onClick={handleConfirmDelete}
               className="bg-red-600 text-white hover:bg-red-700"
             >

@@ -5,7 +5,9 @@ interface TeacherAccountSearchProps {
   onSearchChange: (value: string) => void;
 }
 
-export function TeacherAccountSearch({ searchQuery, onSearchChange }: TeacherAccountSearchProps) {
+export function TeacherAccountSearch(
+  { searchQuery, onSearchChange }: TeacherAccountSearchProps,
+) {
   return (
     <div className="w-full">
       <SearchInput
