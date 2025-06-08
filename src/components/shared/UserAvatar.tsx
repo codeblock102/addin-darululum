@@ -1,7 +1,16 @@
 import { useAuth } from "@/hooks/use-auth.ts";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar.tsx";
+import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+} from "@/components/ui/avatar.tsx";
 import { Button } from "@/components/ui/button.tsx";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu.tsx";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu.tsx";
 import { ChevronDown, LogOut } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "@/components/ui/use-toast.ts";
@@ -29,7 +38,7 @@ export const UserAvatar = ({ isTeacher }: UserAvatarProps) => {
       await signOut();
       toast({
         title: "Signed out successfully",
-        description: "You have been logged out of your account"
+        description: "You have been logged out of your account",
       });
       navigate("/auth");
     } catch (error) {
@@ -37,7 +46,7 @@ export const UserAvatar = ({ isTeacher }: UserAvatarProps) => {
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Could not sign out. Please try again."
+        description: "Could not sign out. Please try again.",
       });
     }
   };
@@ -74,7 +83,10 @@ export const UserAvatar = ({ isTeacher }: UserAvatarProps) => {
             <DropdownMenuItem onClick={() => navigate("/preferences")}>
               Preferences
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={handleSignOut} className="text-destructive">
+            <DropdownMenuItem
+              onClick={handleSignOut}
+              className="text-destructive"
+            >
               <LogOut className="h-4 w-4 mr-2" />
               <span>Log out</span>
             </DropdownMenuItem>

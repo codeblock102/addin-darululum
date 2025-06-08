@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -8,18 +8,18 @@ import { useQueryClient } from "@tanstack/react-query";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogDescription,
 } from "@/components/ui/dialog.tsx";
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
-  FormDescription,
 } from "@/components/ui/form.tsx";
 import { Input } from "@/components/ui/input.tsx";
 import { Button } from "@/components/ui/button.tsx";
@@ -42,7 +42,7 @@ const teacherSchema = z.object({
   createAccount: z.boolean().default(true),
   generatePassword: z.boolean().default(true),
   password: z.string().optional()
-    .refine(val => {
+    .refine((val) => {
       // Password is required if createAccount is true and generatePassword is false
       if (val === undefined) return true;
       return val.length >= 6 || "Password must be at least 6 characters";
@@ -56,7 +56,9 @@ interface TeacherDialogProps {
   onClose: () => void;
 }
 
-export const TeacherDialog = ({ selectedTeacher, open, onOpenChange, onClose }: TeacherDialogProps) => {
+export const TeacherDialog = (
+  { selectedTeacher, open, onOpenChange, onClose }: TeacherDialogProps,
+) => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -88,7 +90,7 @@ export const TeacherDialog = ({ selectedTeacher, open, onOpenChange, onClose }: 
         subject: selectedTeacher.subject || "",
         bio: selectedTeacher.bio || null,
         createAccount: false, // Don't create account when editing
-        generatePassword: true, 
+        generatePassword: true,
         password: "",
       });
     } else {
@@ -107,7 +109,8 @@ export const TeacherDialog = ({ selectedTeacher, open, onOpenChange, onClose }: 
 
   // Generate a random password
   const generateRandomPassword = () => {
-    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()";
+    const chars =
+      "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()";
     let password = "";
     for (let i = 0; i < 10; i++) {
       password += chars.charAt(Math.floor(Math.random() * chars.length));
@@ -119,8 +122,8 @@ export const TeacherDialog = ({ selectedTeacher, open, onOpenChange, onClose }: 
   const createValidUsername = (name: string) => {
     return name
       .toLowerCase()
-      .replace(/\s+/g, '.') // Replace spaces with dots
-      .replace(/[^a-z0-9.]/g, '') // Remove any characters that aren't letters, numbers, or dots
+      .replace(/\s+/g, ".") // Replace spaces with dots
+      .replace(/[^a-z0-9.]/g, "") // Remove any characters that aren't letters, numbers, or dots
       .trim(); // Remove any leading/trailing spaces
   };
 
@@ -137,7 +140,7 @@ export const TeacherDialog = ({ selectedTeacher, open, onOpenChange, onClose }: 
             email: values.email || null,
             phone: values.phone || null,
             subject: values.subject || "",
-            bio: values.bio || null
+            bio: values.bio || null,
           })
           .eq("id", selectedTeacher.id);
 
@@ -145,7 +148,8 @@ export const TeacherDialog = ({ selectedTeacher, open, onOpenChange, onClose }: 
           console.error("Error updating teacher:", error);
           toast({
             title: "Error",
-            description: error.message || "Failed to update teacher. Please try again.",
+            description: error.message ||
+              "Failed to update teacher. Please try again.",
             variant: "destructive",
           });
           return;
@@ -164,7 +168,7 @@ export const TeacherDialog = ({ selectedTeacher, open, onOpenChange, onClose }: 
             email: values.email || null,
             phone: values.phone || null,
             subject: values.subject || "",
-            bio: values.bio || null
+            bio: values.bio || null,
           }])
           .select();
 
@@ -172,7 +176,8 @@ export const TeacherDialog = ({ selectedTeacher, open, onOpenChange, onClose }: 
           console.error("Error creating teacher:", teacherError);
           toast({
             title: "Error",
-            description: teacherError.message || "Failed to create teacher. Please try again.",
+            description: teacherError.message ||
+              "Failed to create teacher. Please try again.",
             variant: "destructive",
           });
           return;
@@ -181,56 +186,59 @@ export const TeacherDialog = ({ selectedTeacher, open, onOpenChange, onClose }: 
         // If create account is enabled, create a user account
         if (values.createAccount && values.email) {
           // Generate or use provided password
-          const password = values.generatePassword 
+          const password = values.generatePassword
             ? generateRandomPassword()
             : values.password;
 
           if (!password) {
             toast({
               title: "Error",
-              description: "Password is required when creating an account with manual password.",
+              description:
+                "Password is required when creating an account with manual password.",
               variant: "destructive",
             });
             return;
           }
 
           const newTeacher = teacherData?.[0];
-          
+
           // Create a valid username from the teacher's name
           const username = createValidUsername(values.name);
-          
+
           // Create the user account
           console.log("Creating user account with:", {
             email: values.email,
             password: password.length,
             teacher_id: newTeacher?.id,
-            username
+            username,
           });
-          
-          const { data: userData, error: userError } = await supabase.auth.signUp({
-            email: values.email,
-            password: password,
-            options: {
-              data: {
-                username: username,
-                teacher_id: newTeacher?.id,
-                role: 'teacher'
-              }
-            }
-          });
+
+          const { data: userData, error: userError } = await supabase.auth
+            .signUp({
+              email: values.email,
+              password: password,
+              options: {
+                data: {
+                  username: username,
+                  teacher_id: newTeacher?.id,
+                  role: "teacher",
+                },
+              },
+            });
 
           if (userError) {
             console.error("Error creating user account:", userError);
             toast({
               title: "Warning",
-              description: `Teacher profile created but failed to create user account: ${userError.message}`,
+              description:
+                `Teacher profile created but failed to create user account: ${userError.message}`,
               variant: "destructive",
             });
           } else {
             console.log("User account created successfully:", userData);
             toast({
               title: "Success",
-              description: values.generatePassword 
+              description: values.generatePassword
                 ? `Teacher and user account created! Username: ${username} | Temporary password: ${password}`
                 : `Teacher and user account created! Username: ${username}`,
             });
@@ -244,16 +252,17 @@ export const TeacherDialog = ({ selectedTeacher, open, onOpenChange, onClose }: 
       }
 
       // Invalidate teacher queries to refresh the data
-      queryClient.invalidateQueries({ queryKey: ['teachers'] });
-      queryClient.invalidateQueries({ queryKey: ['teacher-accounts'] });
-      queryClient.invalidateQueries({ queryKey: ['teachers-dropdown'] });
-      
+      queryClient.invalidateQueries({ queryKey: ["teachers"] });
+      queryClient.invalidateQueries({ queryKey: ["teacher-accounts"] });
+      queryClient.invalidateQueries({ queryKey: ["teachers-dropdown"] });
+
       onClose();
     } catch (error) {
       console.error("Unexpected error:", error);
       toast({
         title: "Error",
-        description: "An unexpected error occurred. Please check the console for details.",
+        description:
+          "An unexpected error occurred. Please check the console for details.",
         variant: "destructive",
       });
     } finally {
@@ -275,7 +284,10 @@ export const TeacherDialog = ({ selectedTeacher, open, onOpenChange, onClose }: 
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+          <form
+            onSubmit={form.handleSubmit(handleSubmit)}
+            className="space-y-4"
+          >
             <FormField
               control={form.control}
               name="name"
@@ -296,7 +308,11 @@ export const TeacherDialog = ({ selectedTeacher, open, onOpenChange, onClose }: 
                 <FormItem>
                   <FormLabel>Email</FormLabel>
                   <FormControl>
-                    <Input placeholder="Teacher's Email" {...field} value={field.value || ""} />
+                    <Input
+                      placeholder="Teacher's Email"
+                      {...field}
+                      value={field.value || ""}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -309,7 +325,11 @@ export const TeacherDialog = ({ selectedTeacher, open, onOpenChange, onClose }: 
                 <FormItem>
                   <FormLabel>Phone</FormLabel>
                   <FormControl>
-                    <Input placeholder="Teacher's Phone" {...field} value={field.value || ""} />
+                    <Input
+                      placeholder="Teacher's Phone"
+                      {...field}
+                      value={field.value || ""}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -335,7 +355,11 @@ export const TeacherDialog = ({ selectedTeacher, open, onOpenChange, onClose }: 
                 <FormItem>
                   <FormLabel>Bio</FormLabel>
                   <FormControl>
-                    <Input placeholder="Teacher's Bio" {...field} value={field.value || ""} />
+                    <Input
+                      placeholder="Teacher's Bio"
+                      {...field}
+                      value={field.value || ""}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -396,7 +420,11 @@ export const TeacherDialog = ({ selectedTeacher, open, onOpenChange, onClose }: 
                           <FormItem>
                             <FormLabel>Password</FormLabel>
                             <FormControl>
-                              <Input type="password" placeholder="Minimum 6 characters" {...field} />
+                              <Input
+                                type="password"
+                                placeholder="Minimum 6 characters"
+                                {...field}
+                              />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -409,14 +437,16 @@ export const TeacherDialog = ({ selectedTeacher, open, onOpenChange, onClose }: 
             )}
 
             <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Please wait
-                </>
-              ) : (
-                "Submit"
-              )}
+              {isSubmitting
+                ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Please wait
+                  </>
+                )
+                : (
+                  "Submit"
+                )}
             </Button>
           </form>
         </Form>

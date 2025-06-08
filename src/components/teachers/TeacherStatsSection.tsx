@@ -1,5 +1,10 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card.tsx";
-import { Users, School, BookOpen, Calendar } from "lucide-react";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card.tsx";
+import { BookOpen, Calendar, School, Users } from "lucide-react";
 
 interface TeacherStatsProps {
   stats: {
@@ -31,32 +36,32 @@ export function TeacherStatsSection({ stats }: TeacherStatsProps) {
       title: "Total Teachers",
       value: stats.totalTeachers || 0,
       icon: <School className="h-4 w-4 text-amber-400" />,
-      description: "Registered teaching staff"
+      description: "Registered teaching staff",
     },
     {
       title: "Active Accounts",
       value: stats.activeTeachers || 0,
       icon: <Users className="h-4 w-4 text-green-500" />,
-      description: "Teachers with active accounts"
+      description: "Teachers with active accounts",
     },
     {
       title: "Total Students",
       value: stats.totalStudents || 0,
       icon: <Users className="h-4 w-4 text-blue-500" />,
-      description: "Enrolled students"
+      description: "Enrolled students",
     },
     {
       title: "Subject Types",
       value: stats.subjectCount || 0,
       icon: <BookOpen className="h-4 w-4 text-purple-500" />,
-      description: "Unique subject areas"
+      description: "Unique subject areas",
     },
     {
       title: "Teaching Classes",
       value: stats.totalClasses || 0,
       icon: <Calendar className="h-4 w-4 text-orange-500" />,
-      description: "Active teaching classes"
-    }
+      description: "Active teaching classes",
+    },
   ];
 
   return (

@@ -29,7 +29,7 @@ export interface Teacher {
 
 export interface TeacherAccount extends Teacher {
   userId: string | null;
-  status: 'active' | 'suspended';
+  status: "active" | "suspended";
   lastLogin: string | null;
   classesCount: number;
   studentsCount: number;
@@ -46,7 +46,7 @@ export interface SummaryData {
   activeClasses: number;
   upcomingRevisions: number;
   completionRate: number;
-  
+
   // Add missing fields referenced in components
   studentsCount: number;
   recentProgressEntries: number;

@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client.ts";
@@ -6,7 +6,13 @@ import { useToast } from "@/components/ui/use-toast.ts";
 import { Button } from "@/components/ui/button.tsx";
 import { Loader2, Send, X } from "lucide-react";
 import { Message } from "@/types/progress.ts";
-import { Card, CardHeader, CardContent, CardFooter, CardTitle } from "@/components/ui/card.tsx";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card.tsx";
 
 interface AdminMessageReplyProps {
   message: Message | null;
@@ -15,7 +21,7 @@ interface AdminMessageReplyProps {
 
 export const AdminMessageReply = ({
   message,
-  onClose
+  onClose,
 }: AdminMessageReplyProps) => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -24,9 +30,9 @@ export const AdminMessageReply = ({
   const sendReplyMutation = useMutation({
     mutationFn: async (reply: string) => {
       if (!message) throw new Error("No message to reply to");
-      
+
       const { data, error } = await supabase
-        .from('communications')
+        .from("communications")
         .insert([
           {
             sender_id: null, // Admin doesn't have a UUID in the teachers table
@@ -34,19 +40,19 @@ export const AdminMessageReply = ({
             parent_message_id: message.parent_message_id || message.id, // Keep the thread connected
             message: reply,
             read: false,
-            message_type: 'direct',
-            category: message.category || 'administrative',
-            message_status: 'sent'
-          }
+            message_type: "direct",
+            category: message.category || "administrative",
+            message_status: "sent",
+          },
         ])
         .select();
-      
+
       if (error) throw error;
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin-messages'] });
-      queryClient.invalidateQueries({ queryKey: ['admin-responses'] });
+      queryClient.invalidateQueries({ queryKey: ["admin-messages"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-responses"] });
       toast({
         title: "Reply Sent",
         description: "Your reply has been sent successfully.",
@@ -60,12 +66,12 @@ export const AdminMessageReply = ({
         description: `Failed to send reply: ${error.message}`,
         variant: "destructive",
       });
-    }
+    },
   });
-  
+
   const handleSendReply = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!replyText.trim()) {
       toast({
         title: "Error",
@@ -74,7 +80,7 @@ export const AdminMessageReply = ({
       });
       return;
     }
-    
+
     sendReplyMutation.mutate(replyText);
   };
 
@@ -83,7 +89,9 @@ export const AdminMessageReply = ({
   return (
     <Card className="w-full">
       <CardHeader className="flex flex-row items-center justify-between pb-2">
-        <CardTitle className="text-md font-medium">Reply to {message.sender_name || "Teacher"}</CardTitle>
+        <CardTitle className="text-md font-medium">
+          Reply to {message.sender_name || "Teacher"}
+        </CardTitle>
         <Button variant="ghost" size="icon" onClick={onClose}>
           <X className="h-4 w-4" />
         </Button>
@@ -105,22 +113,24 @@ export const AdminMessageReply = ({
         </form>
       </CardContent>
       <CardFooter className="flex justify-end">
-        <Button 
-          type="submit" 
+        <Button
+          type="submit"
           onClick={handleSendReply}
           disabled={sendReplyMutation.isPending || !replyText.trim()}
         >
-          {sendReplyMutation.isPending ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Sending...
-            </>
-          ) : (
-            <>
-              <Send className="mr-2 h-4 w-4" />
-              Send Reply
-            </>
-          )}
+          {sendReplyMutation.isPending
+            ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Sending...
+              </>
+            )
+            : (
+              <>
+                <Send className="mr-2 h-4 w-4" />
+                Send Reply
+              </>
+            )}
         </Button>
       </CardFooter>
     </Card>

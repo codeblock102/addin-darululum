@@ -1,4 +1,3 @@
-
 import {
   AlertDialog,
   AlertDialogAction,
@@ -19,7 +18,7 @@ interface DeleteRevisionDialogProps {
 export function DeleteRevisionDialog({
   isOpen,
   onClose,
-  onConfirmDelete
+  onConfirmDelete,
 }: DeleteRevisionDialogProps) {
   return (
     <AlertDialog open={isOpen} onOpenChange={onClose}>
@@ -27,12 +26,15 @@ export function DeleteRevisionDialog({
         <AlertDialogHeader>
           <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
           <AlertDialogDescription>
-            This action cannot be undone. This will permanently delete the revision from our servers.
+            This action cannot be undone. This will permanently delete the
+            revision from our servers.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction onClick={onConfirmDelete}>Delete</AlertDialogAction>
+          <AlertDialogAction onClick={onConfirmDelete}>
+            Delete
+          </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

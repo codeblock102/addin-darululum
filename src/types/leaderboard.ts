@@ -14,10 +14,10 @@ export interface StudentCompletionStatus {
 }
 
 export interface LeaderboardFilters {
-  timeRange: 'today' | 'week' | 'month' | 'all';
-  metricPriority: 'total' | 'sabaq' | 'sabaqPara';
-  participationFilter?: 'all' | 'active' | 'inactive';
-  completionStatus?: 'all' | 'complete' | 'incomplete';
+  timeRange: "today" | "week" | "month" | "all";
+  metricPriority: "total" | "sabaq" | "sabaqPara";
+  participationFilter?: "all" | "active" | "inactive";
+  completionStatus?: "all" | "complete" | "incomplete";
 }
 
-export type LeaderboardSortOrder = 'asc' | 'desc';
+export type LeaderboardSortOrder = "asc" | "desc";

@@ -29,17 +29,17 @@ export function ClassList({ searchQuery, onEdit }: ClassListProps) {
   const [hoveredId, setHoveredId] = useState<string | null>(null);
 
   const { data: classes, isLoading } = useQuery({
-    queryKey: ['classes'],
+    queryKey: ["classes"],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('classes')
+        .from("classes")
         .select(`
           *,
           teachers (
             name
           )
         `)
-        .order('name');
+        .order("name");
 
       if (error) throw error;
       return data;
@@ -49,10 +49,10 @@ export function ClassList({ searchQuery, onEdit }: ClassListProps) {
   const filteredClasses = classes?.filter(
     (cls) =>
       cls.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (cls.teachers?.name && 
-       cls.teachers.name.toLowerCase().includes(searchQuery.toLowerCase())) ||
-      (cls.room && 
-       cls.room.toLowerCase().includes(searchQuery.toLowerCase()))
+      (cls.teachers?.name &&
+        cls.teachers.name.toLowerCase().includes(searchQuery.toLowerCase())) ||
+      (cls.room &&
+        cls.room.toLowerCase().includes(searchQuery.toLowerCase())),
   );
 
   if (isLoading) {
@@ -95,7 +95,7 @@ export function ClassList({ searchQuery, onEdit }: ClassListProps) {
       </TableHeader>
       <TableBody>
         {filteredClasses?.map((cls) => (
-          <TableRow 
+          <TableRow
             key={cls.id}
             className="transition-colors hover:bg-muted/50"
             onMouseEnter={() => setHoveredId(cls.id)}
@@ -116,19 +116,23 @@ export function ClassList({ searchQuery, onEdit }: ClassListProps) {
                 </div>
               </div>
             </TableCell>
-            <TableCell>{cls.teachers?.name || '—'}</TableCell>
+            <TableCell>{cls.teachers?.name || "—"}</TableCell>
             <TableCell>{cls.room}</TableCell>
             <TableCell>
               <div className="flex items-center">
                 <Users className="h-4 w-4 mr-2 text-muted-foreground" />
-                <span className={cls.current_students >= cls.capacity ? "text-red-500" : ""}>
+                <span
+                  className={cls.current_students >= cls.capacity
+                    ? "text-red-500"
+                    : ""}
+                >
                   {cls.current_students} / {cls.capacity}
                 </span>
               </div>
             </TableCell>
             <TableCell className="text-right">
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 size="icon"
                 onClick={() => {
                   const { time_slots, ...rest } = cls;
@@ -139,7 +143,7 @@ export function ClassList({ searchQuery, onEdit }: ClassListProps) {
                   });
                 }}
                 className={`transition-opacity duration-200 ${
-                  hoveredId === cls.id ? 'opacity-100' : 'opacity-0'
+                  hoveredId === cls.id ? "opacity-100" : "opacity-0"
                 }`}
               >
                 <Edit className="h-4 w-4" />

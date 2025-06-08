@@ -1,4 +1,3 @@
-
 export const getInitials = (name: string | undefined): string => {
   if (!name) return "U";
   const parts = name.split("@")[0].split(".");

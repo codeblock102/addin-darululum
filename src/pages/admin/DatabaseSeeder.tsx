@@ -10,8 +10,18 @@
  */
 import { useState } from "react";
 import { Button } from "@/components/ui/button.tsx";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card.tsx";
-import { seedStudentsTable, assignStudentsToTeacher } from "@/utils/seedDatabase.ts";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card.tsx";
+import {
+  assignStudentsToTeacher,
+  seedStudentsTable,
+} from "@/utils/seedDatabase.ts";
 import { useToast } from "@/hooks/use-toast.ts";
 import { Loader2 } from "lucide-react";
 
@@ -40,25 +50,27 @@ export default function DatabaseSeeder() {
    */
   const handleSeedDatabase = async () => {
     setIsLoading(true);
-    
+
     try {
       // Seed the students table
       const studentsSeeded = await seedStudentsTable();
-      
+
       if (studentsSeeded) {
         toast({
           title: "Students Added",
-          description: "Student data has been successfully added to the database.",
+          description:
+            "Student data has been successfully added to the database.",
         });
-        
+
         // If we have a teacher ID, assign students to that teacher
         if (teacherId) {
           const studentsAssigned = await assignStudentsToTeacher(teacherId);
-          
+
           if (studentsAssigned) {
             toast({
               title: "Students Assigned",
-              description: "Students have been successfully assigned to the teacher.",
+              description:
+                "Students have been successfully assigned to the teacher.",
             });
           } else {
             toast({
@@ -98,28 +110,34 @@ export default function DatabaseSeeder() {
         </CardHeader>
         <CardContent>
           <p className="mb-4">
-            This will add 10 students to the database with their current Juz and completed Juz information.
+            This will add 10 students to the database with their current Juz and
+            completed Juz information.
           </p>
-          {teacherId ? (
-            <p className="text-green-600">Teacher ID set: {teacherId}</p>
-          ) : (
-            <p className="text-amber-600">No teacher ID set. Students will be added but not assigned to a teacher.</p>
-          )}
+          {teacherId
+            ? <p className="text-green-600">Teacher ID set: {teacherId}</p>
+            : (
+              <p className="text-amber-600">
+                No teacher ID set. Students will be added but not assigned to a
+                teacher.
+              </p>
+            )}
         </CardContent>
         <CardFooter>
-          <Button 
-            onClick={handleSeedDatabase} 
+          <Button
+            onClick={handleSeedDatabase}
             disabled={isLoading}
             className="w-full"
           >
-            {isLoading ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Adding Students...
-              </>
-            ) : (
-              "Add Students to Database"
-            )}
+            {isLoading
+              ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Adding Students...
+                </>
+              )
+              : (
+                "Add Students to Database"
+              )}
           </Button>
         </CardFooter>
       </Card>

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client.ts";
 import { Button } from "@/components/ui/button.tsx";
@@ -10,16 +10,21 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog.tsx";
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select.tsx";
 import { useToast } from "@/hooks/use-toast.ts";
 import { Checkbox } from "@/components/ui/checkbox.tsx";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs.tsx";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@/components/ui/tabs.tsx";
 
 interface Student {
   id: string;
@@ -28,7 +33,7 @@ interface Student {
   enrollment_date: string | null;
   guardian_name: string | null;
   guardian_contact: string | null;
-  status: 'active' | 'inactive';
+  status: "active" | "inactive";
   completed_juz?: number[];
   current_juz?: number | null;
 }
@@ -40,14 +45,17 @@ interface StudentDialogProps {
   onClose: () => void;
 }
 
-export const StudentDialog = ({ open, onOpenChange, selectedStudent, onClose }: StudentDialogProps) => {
+export const StudentDialog = (
+  { open, onOpenChange, selectedStudent, onClose }: StudentDialogProps,
+) => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [isProcessing, setIsProcessing] = useState(false);
   const [formData, setFormData] = useState({
     name: selectedStudent?.name || "",
     date_of_birth: selectedStudent?.date_of_birth || "",
-    enrollment_date: selectedStudent?.enrollment_date || new Date().toISOString().split('T')[0],
+    enrollment_date: selectedStudent?.enrollment_date ||
+      new Date().toISOString().split("T")[0],
     guardian_name: selectedStudent?.guardian_name || "",
     guardian_contact: selectedStudent?.guardian_contact || "",
     status: selectedStudent?.status || "active",
@@ -61,7 +69,8 @@ export const StudentDialog = ({ open, onOpenChange, selectedStudent, onClose }: 
       setFormData({
         name: selectedStudent.name || "",
         date_of_birth: selectedStudent.date_of_birth || "",
-        enrollment_date: selectedStudent.enrollment_date || new Date().toISOString().split('T')[0],
+        enrollment_date: selectedStudent.enrollment_date ||
+          new Date().toISOString().split("T")[0],
         guardian_name: selectedStudent.guardian_name || "",
         guardian_contact: selectedStudent.guardian_contact || "",
         status: selectedStudent.status || "active",
@@ -73,7 +82,7 @@ export const StudentDialog = ({ open, onOpenChange, selectedStudent, onClose }: 
       setFormData({
         name: "",
         date_of_birth: "",
-        enrollment_date: new Date().toISOString().split('T')[0],
+        enrollment_date: new Date().toISOString().split("T")[0],
         guardian_name: "",
         guardian_contact: "",
         status: "active",
@@ -90,16 +99,18 @@ export const StudentDialog = ({ open, onOpenChange, selectedStudent, onClose }: 
     try {
       const submissionData = {
         ...formData,
-        current_juz: formData.current_juz === "_none_" ? null : Number(formData.current_juz),
-        completed_juz: formData.completed_juz.map(juz => Number(juz)),
+        current_juz: formData.current_juz === "_none_"
+          ? null
+          : Number(formData.current_juz),
+        completed_juz: formData.completed_juz.map((juz) => Number(juz)),
       };
 
       if (selectedStudent) {
         const { error } = await supabase
-          .from('students')
+          .from("students")
           .update(submissionData)
-          .eq('id', selectedStudent.id)
-          .select('id');
+          .eq("id", selectedStudent.id)
+          .select("id");
 
         if (error) throw error;
 
@@ -109,9 +120,9 @@ export const StudentDialog = ({ open, onOpenChange, selectedStudent, onClose }: 
         });
       } else {
         const { error } = await supabase
-          .from('students')
+          .from("students")
           .insert([submissionData])
-          .select('id');
+          .select("id");
 
         if (error) throw error;
 
@@ -121,11 +132,12 @@ export const StudentDialog = ({ open, onOpenChange, selectedStudent, onClose }: 
         });
       }
 
-      queryClient.invalidateQueries({ queryKey: ['students'] });
+      queryClient.invalidateQueries({ queryKey: ["students"] });
       onClose();
-      
     } catch (error) {
-      const message = error instanceof Error ? error.message : "An unknown error occurred";
+      const message = error instanceof Error
+        ? error.message
+        : "An unknown error occurred";
       toast({
         title: "Error",
         description: message,
@@ -159,7 +171,8 @@ export const StudentDialog = ({ open, onOpenChange, selectedStudent, onClose }: 
                   id="name"
                   placeholder="Enter student's full name"
                   value={formData.name}
-                  onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                  onChange={(e) =>
+                    setFormData((prev) => ({ ...prev, name: e.target.value }))}
                   required
                 />
               </div>
@@ -170,7 +183,11 @@ export const StudentDialog = ({ open, onOpenChange, selectedStudent, onClose }: 
                     id="date_of_birth"
                     type="date"
                     value={formData.date_of_birth || ""}
-                    onChange={(e) => setFormData(prev => ({ ...prev, date_of_birth: e.target.value }))}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        date_of_birth: e.target.value,
+                      }))}
                   />
                 </div>
                 <div className="space-y-2">
@@ -179,16 +196,21 @@ export const StudentDialog = ({ open, onOpenChange, selectedStudent, onClose }: 
                     id="enrollment_date"
                     type="date"
                     value={formData.enrollment_date || ""}
-                    onChange={(e) => setFormData(prev => ({ ...prev, enrollment_date: e.target.value }))}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        enrollment_date: e.target.value,
+                      }))}
                     required
                   />
                 </div>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="status">Status</Label>
-                <Select 
-                  value={formData.status} 
-                  onValueChange={(value: 'active' | 'inactive') => setFormData(prev => ({ ...prev, status: value }))}
+                <Select
+                  value={formData.status}
+                  onValueChange={(value: "active" | "inactive") =>
+                    setFormData((prev) => ({ ...prev, status: value }))}
                 >
                   <SelectTrigger id="status">
                     <SelectValue placeholder="Select status" />
@@ -208,7 +230,11 @@ export const StudentDialog = ({ open, onOpenChange, selectedStudent, onClose }: 
                   id="guardian_name"
                   placeholder="Enter guardian's name"
                   value={formData.guardian_name || ""}
-                  onChange={(e) => setFormData(prev => ({ ...prev, guardian_name: e.target.value }))}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      guardian_name: e.target.value,
+                    }))}
                 />
               </div>
               <div className="space-y-2">
@@ -217,7 +243,11 @@ export const StudentDialog = ({ open, onOpenChange, selectedStudent, onClose }: 
                   id="guardian_contact"
                   placeholder="Enter guardian's contact number"
                   value={formData.guardian_contact || ""}
-                  onChange={(e) => setFormData(prev => ({ ...prev, guardian_contact: e.target.value }))}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      guardian_contact: e.target.value,
+                    }))}
                 />
               </div>
             </TabsContent>
@@ -225,17 +255,20 @@ export const StudentDialog = ({ open, onOpenChange, selectedStudent, onClose }: 
             <TabsContent value="quran" className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="current_juz">Current Juz</Label>
-                <Select 
+                <Select
                   value={formData.current_juz}
-                  onValueChange={(value) => setFormData(prev => ({ ...prev, current_juz: value }))}
+                  onValueChange={(value) =>
+                    setFormData((prev) => ({ ...prev, current_juz: value }))}
                 >
                   <SelectTrigger id="current_juz">
                     <SelectValue placeholder="Select current Juz" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="_none_">None</SelectItem>
-                    {Array.from({ length: 30 }, (_, i) => i + 1).map(juz => (
-                      <SelectItem key={juz} value={juz.toString()}>Juz {juz}</SelectItem>
+                    {Array.from({ length: 30 }, (_, i) => i + 1).map((juz) => (
+                      <SelectItem key={juz} value={juz.toString()}>
+                        Juz {juz}
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -243,25 +276,34 @@ export const StudentDialog = ({ open, onOpenChange, selectedStudent, onClose }: 
               <div className="space-y-2">
                 <Label>Completed Ajza</Label>
                 <div className="grid grid-cols-6 gap-x-4 gap-y-2 rounded-md border p-4">
-                  {Array.from({ length: 30 }, (_, i) => i + 1).map(juz => {
-                    const isCurrentJuz = formData.current_juz !== "_none_" && parseInt(formData.current_juz) === juz;
+                  {Array.from({ length: 30 }, (_, i) => i + 1).map((juz) => {
+                    const isCurrentJuz = formData.current_juz !== "_none_" &&
+                      parseInt(formData.current_juz) === juz;
                     return (
-                      <div key={juz} className={`flex items-center space-x-2 ${isCurrentJuz ? 'opacity-50' : ''}`}>
+                      <div
+                        key={juz}
+                        className={`flex items-center space-x-2 ${
+                          isCurrentJuz ? "opacity-50" : ""
+                        }`}
+                      >
                         <Checkbox
                           id={`juz-${juz}`}
                           checked={formData.completed_juz.includes(juz)}
                           onCheckedChange={(checked) => {
-                            setFormData(prev => {
+                            setFormData((prev) => {
                               const current = prev.completed_juz;
                               const updated = checked
-                                ? [...current, juz].sort((a,b) => a-b)
-                                : current.filter(j => j !== juz);
+                                ? [...current, juz].sort((a, b) => a - b)
+                                : current.filter((j) => j !== juz);
                               return { ...prev, completed_juz: updated };
                             });
                           }}
                           disabled={isCurrentJuz}
                         />
-                        <Label htmlFor={`juz-${juz}`} className="text-sm font-medium leading-none cursor-pointer">
+                        <Label
+                          htmlFor={`juz-${juz}`}
+                          className="text-sm font-medium leading-none cursor-pointer"
+                        >
                           Juz {juz}
                         </Label>
                       </div>
@@ -271,11 +313,11 @@ export const StudentDialog = ({ open, onOpenChange, selectedStudent, onClose }: 
               </div>
             </TabsContent>
           </Tabs>
-          
+
           <div className="flex justify-end space-x-2 pt-4">
             <Button
-              type="button" 
-              variant="outline" 
+              type="button"
+              variant="outline"
               onClick={onClose}
             >
               Cancel
@@ -284,7 +326,11 @@ export const StudentDialog = ({ open, onOpenChange, selectedStudent, onClose }: 
               type="submit"
               disabled={isProcessing}
             >
-              {isProcessing ? "Processing..." : selectedStudent ? "Update Student" : "Add Student"}
+              {isProcessing
+                ? "Processing..."
+                : selectedStudent
+                ? "Update Student"
+                : "Add Student"}
             </Button>
           </div>
         </form>

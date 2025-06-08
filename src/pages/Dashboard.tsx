@@ -1,7 +1,7 @@
 /**
  * @file src/pages/Dashboard.tsx
  * @summary This file defines the main Dashboard page, which serves as a unified landing page for both Admins and Teachers.
- * 
+ *
  * The component dynamically renders content based on the user's role (Admin or Teacher).
  * - For Admins: It displays a tabbed interface with "Overview", "Analytics", and "Messages" sections.
  *   The "Overview" tab includes general admin statistics and a view of the Teacher Dashboard (in admin mode).
@@ -15,7 +15,7 @@
  * - Admin view includes an `AdminHeader`, `DashboardStats`, `AdminDashboardTabs`, and `AdminMessaging` components.
  * - Uses `DashboardLayout` for the overall page structure.
  */
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "@/hooks/use-auth.ts";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client.ts";
@@ -30,11 +30,11 @@ import { useRBAC } from "@/hooks/useRBAC.ts";
 /**
  * @component Dashboard
  * @description The main dashboard page component.
- * 
+ *
  * This component acts as a router for displaying different dashboard views based on user role.
  * For admins, it provides a tabbed interface with admin-specific sections and an embedded view of the teacher portal.
  * For teachers, it displays their specific dashboard.
- * 
+ *
  * State Management:
  *  - `isCheckingRole`: Boolean to track if the initial role and profile check is in progress.
  *  - `refreshKey`: A number used to trigger re-fetching of teacher profile data.
@@ -58,7 +58,7 @@ import { useRBAC } from "@/hooks/useRBAC.ts";
  *  - If a user is neither an admin nor a teacher (after checks complete):
  *    - Renders an `AccessDenied` component.
  *  - A fallback `LoadingState` is shown if none of the above conditions are met, covering edge cases.
- * 
+ *
  * @returns {JSX.Element} The rendered dashboard page, tailored to the user's role and data.
  */
 const Dashboard = () => { // Renamed from TeacherPortal to Dashboard
@@ -69,13 +69,13 @@ const Dashboard = () => { // Renamed from TeacherPortal to Dashboard
   const [refreshKey, setRefreshKey] = useState(0); // Add a key to force refresh
 
   // Moved useQuery for teacherData BEFORE the useEffect that uses its refetch method
-  const { 
-    data: teacherData, 
-    isLoading, 
+  const {
+    data: teacherData,
+    isLoading,
     error,
-    refetch 
+    refetch,
   } = useQuery({
-    queryKey: ['teacher-profile', session?.user?.email, refreshKey],
+    queryKey: ["teacher-profile", session?.user?.email, refreshKey],
     /**
      * @function queryFn (for useQuery)
      * @description Fetches the teacher profile from the 'teachers' table based on the session user's email.
@@ -86,33 +86,33 @@ const Dashboard = () => { // Renamed from TeacherPortal to Dashboard
      */
     queryFn: async () => {
       if (!session?.user?.email) return null;
-      
+
       // Skip the query for admin users
       if (isAdmin) {
         console.log("Admin user, skipping teacher profile query");
         return null;
       }
-      
+
       console.log("Fetching teacher profile for email:", session.user.email);
-      
+
       const { data, error } = await supabase
-        .from('teachers')
-        .select('id, name, subject, email, bio, phone')
-        .eq('email', session.user.email)
+        .from("teachers")
+        .select("id, name, subject, email, bio, phone")
+        .eq("email", session.user.email)
         .maybeSingle();
-      
+
       if (error) {
-        console.error('Error fetching teacher profile:', error);
+        console.error("Error fetching teacher profile:", error);
         throw error;
       }
-      
+
       console.log("Teacher profile fetch result:", data);
       return data as Teacher | null;
     },
     enabled: !!session?.user?.email && !isAdmin, // Only enabled for non-admin users
     retry: 1,
     staleTime: 5 * 60 * 1000, // 5 minutes
-    refetchOnWindowFocus: false // Disable automatic refetch on window focus
+    refetchOnWindowFocus: false, // Disable automatic refetch on window focus
   });
 
   // useEffect for checkTeacherProfile now comes AFTER useQuery for teacherData
@@ -130,29 +130,32 @@ const Dashboard = () => { // Renamed from TeacherPortal to Dashboard
         setIsCheckingRole(false);
         return;
       }
-      
+
       try {
         setIsCheckingRole(true);
         console.log("Checking teacher status for email:", session.user.email);
-        
+
         // Skip this check for admin users
         if (isAdmin) {
           console.log("User is admin, skipping teacher profile check");
           setIsCheckingRole(false);
           return;
         }
-        
+
         // Explicitly check if a teacher profile exists in the database
         const { data: teacherExistsData, error: checkError } = await supabase
-          .from('teachers')
-          .select('id')
-          .eq('email', session.user.email)
+          .from("teachers")
+          .select("id")
+          .eq("email", session.user.email)
           .maybeSingle();
-          
+
         if (checkError) throw checkError;
-        
-        console.log("Teacher profile check result:", teacherExistsData ? "Found" : "Not found");
-        
+
+        console.log(
+          "Teacher profile check result:",
+          teacherExistsData ? "Found" : "Not found",
+        );
+
         // Force refetch of the query
         if (teacherExistsData) {
           refetch();
@@ -163,7 +166,7 @@ const Dashboard = () => { // Renamed from TeacherPortal to Dashboard
         setIsCheckingRole(false);
       }
     };
-    
+
     checkTeacherProfile();
   }, [session, refreshKey, isAdmin, refetch]); // Added refetch to dependency array
 
@@ -176,7 +179,7 @@ const Dashboard = () => { // Renamed from TeacherPortal to Dashboard
   const handleRefresh = async () => {
     console.log("Refreshing teacher data...");
     await refreshSession();
-    setRefreshKey(prev => prev + 1); // Force a refresh of the query
+    setRefreshKey((prev) => prev + 1); // Force a refresh of the query
     refetch();
   };
 
@@ -184,63 +187,54 @@ const Dashboard = () => { // Renamed from TeacherPortal to Dashboard
     console.error("Error loading teacher profile:", error);
     toast({
       title: "Error loading profile",
-      description: "Could not load your teacher profile. Please try again later.",
-      variant: "destructive"
+      description:
+        "Could not load your teacher profile. Please try again later.",
+      variant: "destructive",
     });
     // Optionally, return an error component here if needed
   }
 
   // Show loading state while checking roles or fetching teacher data
   if ((isLoading || isCheckingRole || isRoleLoading) && !isAdmin) {
-    return (
-      <LoadingState />
-    );
+    return <LoadingState />;
   }
 
   // If user is admin, they should be able to view the teacher portal with a generic profile
   if (isAdmin) {
     const adminViewProfile: Teacher = {
-      id: 'admin-view',
-      name: 'Admin View',
-      subject: 'Administration',
-      email: session?.user?.email || 'admin@example.com',
-      bio: 'Viewing the teacher portal as an administrator',
-      phone: ''
+      id: "admin-view",
+      name: "Admin View",
+      subject: "Administration",
+      email: session?.user?.email || "admin@example.com",
+      bio: "Viewing the teacher portal as an administrator",
+      phone: "",
     };
-    
-    return (
-      <TeacherDashboard teacher={adminViewProfile} />
-    );
+
+    return <TeacherDashboard teacher={adminViewProfile} />;
   }
 
   // Show profile not found if teacher data is missing (for non-admin users)
   if (!teacherData && !isLoading && !isCheckingRole) { // Added checks to prevent showing ProfileNotFound during initial load
     return (
       <div className="space-y-4">
-        <ProfileNotFound 
-          email={session?.user?.email} 
+        <ProfileNotFound
+          email={session?.user?.email}
           onRefresh={handleRefresh}
           isAdmin={isAdmin}
         />
       </div>
     );
   }
-  
+
   if (!isTeacher && !isAdmin && !isRoleLoading && !isCheckingRole) {
-      return (
-        <AccessDenied />
-      )
+    return <AccessDenied />;
   }
 
   if (teacherData && isTeacher) {
-    return (
-      <TeacherDashboard teacher={teacherData} />
-    );
+    return <TeacherDashboard teacher={teacherData} />;
   }
-  
-  return (
-    <LoadingState />
-  );
+
+  return <LoadingState />;
 };
 
-export default Dashboard; 
+export default Dashboard;

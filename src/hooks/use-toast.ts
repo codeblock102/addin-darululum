@@ -1,4 +1,3 @@
-
 // Re-export the toast components from the UI library
 import { type ToastActionElement, ToastProps } from "@/components/ui/toast";
 import { useToast as useToastOriginal } from "@/components/ui/use-toast";

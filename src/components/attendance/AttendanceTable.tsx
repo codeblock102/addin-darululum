@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client.ts";
@@ -30,37 +30,42 @@ interface AttendanceRecord {
 
 export function AttendanceTable({ teacherId }: AttendanceTableProps) {
   const [searchQuery, setSearchQuery] = useState("");
-  
-  const { data: attendanceRecords, isLoading } = useQuery<AttendanceRecord[], Error>({
-    queryKey: ['attendance-records', teacherId],
+
+  const { data: attendanceRecords, isLoading } = useQuery<
+    AttendanceRecord[],
+    Error
+  >({
+    queryKey: ["attendance-records", teacherId],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('attendance')
+        .from("attendance")
         .select(`
           id, date, status, notes,
           students (id, name), 
           classes (id, name)
         `)
-        .order('date', { ascending: false });
-        
+        .order("date", { ascending: false });
+
       if (error) {
         console.error("Error fetching attendance records:", error);
         throw error;
       }
-      
+
       if (!data) {
         return [];
       }
-      
+
       return data;
-    }
+    },
   });
-  
+
   // Filter records by search query
-  const filteredRecords = attendanceRecords?.filter(record =>
+  const filteredRecords = attendanceRecords?.filter((record) =>
     record.students?.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     record.status.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    (record.classes?.name?.toLowerCase() || "").includes(searchQuery.toLowerCase())
+    (record.classes?.name?.toLowerCase() || "").includes(
+      searchQuery.toLowerCase(),
+    )
   );
 
   // Function to handle search input changes
@@ -74,32 +79,37 @@ export function AttendanceTable({ teacherId }: AttendanceTableProps) {
   };
 
   const hasFilters = searchQuery.length > 0;
-  
+
   return (
     <div className="space-y-4">
       <AttendanceTableHeader />
-      
-      <SearchInput 
+
+      <SearchInput
         value={searchQuery}
         onChange={handleSearchChange}
         placeholder="Search students, status..."
       />
-      
-      {isLoading ? (
-        <div className="flex justify-center py-8">
-          <div className="animate-spin rounded-full h-8 w-8 border-2 border-primary border-t-transparent"></div>
-        </div>
-      ) : !filteredRecords?.length ? (
-        <AttendanceEmptyState 
-          hasFilters={hasFilters} 
-          resetFilters={resetFilters} 
-        />
-      ) : (
-        <AttendanceDataTable 
-          isLoading={isLoading}
-          attendanceRecords={filteredRecords}
-        />
-      )}
+
+      {isLoading
+        ? (
+          <div className="flex justify-center py-8">
+            <div className="animate-spin rounded-full h-8 w-8 border-2 border-primary border-t-transparent">
+            </div>
           </div>
+        )
+        : !filteredRecords?.length
+        ? (
+          <AttendanceEmptyState
+            hasFilters={hasFilters}
+            resetFilters={resetFilters}
+          />
+        )
+        : (
+          <AttendanceDataTable
+            isLoading={isLoading}
+            attendanceRecords={filteredRecords}
+          />
+        )}
+    </div>
   );
 }

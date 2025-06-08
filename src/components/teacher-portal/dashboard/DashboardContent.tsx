@@ -11,7 +11,9 @@ interface DashboardContentProps {
   teacherName?: string;
 }
 
-export const DashboardContent = ({ activeTab, teacherId, teacherName }: DashboardContentProps) => {
+export const DashboardContent = (
+  { activeTab, teacherId, teacherName }: DashboardContentProps,
+) => {
   switch (activeTab) {
     case "students":
       return <MyStudents teacherId={teacherId} />;
@@ -22,7 +24,12 @@ export const DashboardContent = ({ activeTab, teacherId, teacherName }: Dashboar
     case "performance":
       return <TeacherPerformance teacherId={teacherId} />;
     case "messages":
-      return <TeacherMessagesEnhanced teacherId={teacherId} teacherName={teacherName || ''} />;
+      return (
+        <TeacherMessagesEnhanced
+          teacherId={teacherId}
+          teacherName={teacherName || ""}
+        />
+      );
     default:
       return <DashboardOverview teacherId={teacherId} />;
   }

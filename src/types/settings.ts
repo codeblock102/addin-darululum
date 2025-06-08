@@ -1,4 +1,3 @@
-
 export interface SystemSettings {
   appearance: AppearanceSettings;
   notifications: NotificationSettings;
@@ -12,13 +11,13 @@ export interface SystemSettings {
 }
 
 export interface AppearanceSettings {
-  theme: 'light' | 'dark' | 'system';
+  theme: "light" | "dark" | "system";
   sidebarCompact: boolean;
   highContrastMode: boolean;
   animationsEnabled: boolean;
-  fontSize: 'small' | 'medium' | 'large';
-  colorTheme: 'default' | 'blue' | 'green' | 'purple';
-  layoutDensity: 'compact' | 'comfortable';
+  fontSize: "small" | "medium" | "large";
+  colorTheme: "default" | "blue" | "green" | "purple";
+  layoutDensity: "compact" | "comfortable";
 }
 
 export interface NotificationSettings {
@@ -27,7 +26,7 @@ export interface NotificationSettings {
   attendanceReminders: boolean;
   systemAnnouncements: boolean;
   pushNotifications: boolean;
-  notificationPriority: 'all' | 'important' | 'critical';
+  notificationPriority: "all" | "important" | "critical";
   quietHours: {
     enabled: boolean;
     start: string;
@@ -61,31 +60,31 @@ export interface SecuritySettings {
 export interface AcademicSettings {
   defaultJuzPerWeek: number;
   attendanceThreshold: number; // percentage
-  progressReportFrequency: 'daily' | 'weekly' | 'monthly';
+  progressReportFrequency: "daily" | "weekly" | "monthly";
   academicYearStart: string;
   academicYearEnd: string;
-  gradingScale: 'percentage' | 'letter' | 'points';
+  gradingScale: "percentage" | "letter" | "points";
   customAssessments: boolean;
   curriculumCustomization: boolean;
   milestoneTracking: boolean;
 }
 
 export interface LocalizationSettings {
-  language: 'english' | 'arabic' | 'urdu' | 'french' | 'spanish';
-  timeFormat: '12h' | '24h';
-  dateFormat: 'MM/DD/YYYY' | 'DD/MM/YYYY' | 'YYYY-MM-DD';
-  firstDayOfWeek: 'sunday' | 'monday' | 'saturday';
+  language: "english" | "arabic" | "urdu" | "french" | "spanish";
+  timeFormat: "12h" | "24h";
+  dateFormat: "MM/DD/YYYY" | "DD/MM/YYYY" | "YYYY-MM-DD";
+  firstDayOfWeek: "sunday" | "monday" | "saturday";
   region: string;
 }
 
 export interface IntegrationSettings {
   calendarSync: {
     enabled: boolean;
-    provider: 'google' | 'outlook' | 'apple' | 'none';
+    provider: "google" | "outlook" | "apple" | "none";
   };
   communicationTools: {
     enabled: boolean;
-    preferredPlatform: 'email' | 'slack' | 'teams' | 'discord' | 'none';
+    preferredPlatform: "email" | "slack" | "teams" | "discord" | "none";
   };
   externalApis: boolean;
   automations: boolean;
@@ -94,7 +93,7 @@ export interface IntegrationSettings {
 export interface DataManagementSettings {
   autoBackup: {
     enabled: boolean;
-    frequency: 'daily' | 'weekly' | 'monthly';
+    frequency: "daily" | "weekly" | "monthly";
     retention: number; // days
   };
   dataExport: {
@@ -112,7 +111,7 @@ export interface DataManagementSettings {
 export interface UserExperienceSettings {
   guidedTours: boolean;
   keyboardShortcuts: boolean;
-  defaultLandingPage: 'dashboard' | 'students' | 'schedule' | 'progress';
+  defaultLandingPage: "dashboard" | "students" | "schedule" | "progress";
   widgetCustomization: boolean;
 }
 
@@ -123,5 +122,5 @@ export interface AdvancedSettings {
     betaFeatures: boolean;
     experimentalUi: boolean;
   };
-  performanceMode: 'balanced' | 'performance' | 'quality';
+  performanceMode: "balanced" | "performance" | "quality";
 }

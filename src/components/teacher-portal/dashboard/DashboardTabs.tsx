@@ -15,16 +15,23 @@ interface DashboardTabsProps {
   teacherName?: string;
 }
 
-export const DashboardTabContent = ({ activeTab, teacherId, teacherName }: DashboardTabsProps) => {
+export const DashboardTabContent = (
+  { activeTab, teacherId, teacherName }: DashboardTabsProps,
+) => {
   switch (activeTab) {
     case "students":
       return <MyStudents teacherId={teacherId} />;
     case "attendance":
-      return <TeacherAttendance teacherId={teacherId} />; 
+      return <TeacherAttendance teacherId={teacherId} />;
     case "performance":
       return <TeacherPerformance teacherId={teacherId} />;
     case "messages":
-      return <TeacherMessagesEnhanced teacherId={teacherId} teacherName={teacherName || ''} />;
+      return (
+        <TeacherMessagesEnhanced
+          teacherId={teacherId}
+          teacherName={teacherName || ""}
+        />
+      );
     default:
       return <DashboardOverview teacherId={teacherId} />;
   }

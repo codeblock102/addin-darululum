@@ -12,10 +12,10 @@ interface AdminMessageFormProps {
   messageCategory: MessageCategory;
 }
 
-export const AdminMessageForm = ({ 
-  selectedTeacher, 
-  messageType, 
-  messageCategory 
+export const AdminMessageForm = ({
+  selectedTeacher,
+  messageType,
+  messageCategory,
 }: AdminMessageFormProps) => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -26,11 +26,11 @@ export const AdminMessageForm = ({
       if (!selectedTeacher || !messageText.trim()) {
         throw new Error("Missing required fields");
       }
-      
+
       try {
         // Create message from admin to teacher
         const { data, error } = await supabase
-          .from('communications')
+          .from("communications")
           .insert([
             {
               sender_id: null, // Admin doesn't have a UUID in the teachers table
@@ -39,11 +39,11 @@ export const AdminMessageForm = ({
               read: false,
               message_type: messageType,
               category: messageCategory,
-              message_status: 'sent'
-            }
+              message_status: "sent",
+            },
           ])
           .select();
-        
+
         if (error) throw error;
         return data;
       } catch (error) {
@@ -52,7 +52,7 @@ export const AdminMessageForm = ({
       }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin-sent-messages'] });
+      queryClient.invalidateQueries({ queryKey: ["admin-sent-messages"] });
       toast({
         title: "Message Sent",
         description: "Your message has been sent successfully.",
@@ -65,12 +65,12 @@ export const AdminMessageForm = ({
         description: `Failed to send message: ${error.message}`,
         variant: "destructive",
       });
-    }
+    },
   });
-  
+
   const handleSendMessage = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!selectedTeacher) {
       toast({
         title: "Error",
@@ -79,7 +79,7 @@ export const AdminMessageForm = ({
       });
       return;
     }
-    
+
     if (!newMessage.trim()) {
       toast({
         title: "Error",
@@ -88,7 +88,7 @@ export const AdminMessageForm = ({
       });
       return;
     }
-    
+
     sendMessageMutation.mutate(newMessage);
   };
 
@@ -104,23 +104,26 @@ export const AdminMessageForm = ({
           />
         </div>
       </div>
-      
+
       <div className="flex justify-end">
         <Button
           type="submit"
-          disabled={sendMessageMutation.isPending || !selectedTeacher || !newMessage.trim()}
+          disabled={sendMessageMutation.isPending || !selectedTeacher ||
+            !newMessage.trim()}
         >
-          {sendMessageMutation.isPending ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Sending...
-            </>
-          ) : (
-            <>
-              <Send className="mr-2 h-4 w-4" />
-              Send Message
-            </>
-          )}
+          {sendMessageMutation.isPending
+            ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Sending...
+              </>
+            )
+            : (
+              <>
+                <Send className="mr-2 h-4 w-4" />
+                Send Message
+              </>
+            )}
         </Button>
       </div>
     </form>

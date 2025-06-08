@@ -1,4 +1,3 @@
-
 import { ReactNode } from "react";
 
 interface AdminHeaderProps {
@@ -7,7 +6,9 @@ interface AdminHeaderProps {
   children?: ReactNode;
 }
 
-export const AdminHeader = ({ title, description, children }: AdminHeaderProps) => {
+export const AdminHeader = (
+  { title, description, children }: AdminHeaderProps,
+) => {
   return (
     <div className="flex justify-between items-center">
       <div>

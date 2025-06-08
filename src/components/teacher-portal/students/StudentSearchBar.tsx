@@ -1,4 +1,3 @@
-
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
 
@@ -7,7 +6,9 @@ interface StudentSearchBarProps {
   setSearchQuery: (query: string) => void;
 }
 
-export const StudentSearchBar = ({ searchQuery, setSearchQuery }: StudentSearchBarProps) => {
+export const StudentSearchBar = (
+  { searchQuery, setSearchQuery }: StudentSearchBarProps,
+) => {
   return (
     <div className="flex items-center space-x-2 mt-2">
       <div className="relative flex-1">

@@ -1,10 +1,17 @@
 import { useState } from "react";
 import { createMuftiAmmarAccount } from "@/utils/createTeacherAccount.ts";
 import { Button } from "@/components/ui/button.tsx";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card.tsx";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card.tsx";
 import { useToast } from "@/components/ui/use-toast.ts";
 import { useNavigate } from "react-router-dom";
-import { Loader2, AlertTriangle, CheckCircle } from "lucide-react";
+import { AlertTriangle, CheckCircle, Loader2 } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert.tsx";
 
 interface CreateAccountResult {
@@ -18,20 +25,21 @@ const CreateDemoAccount = () => {
   const [result, setResult] = useState<CreateAccountResult | null>(null);
   const { toast } = useToast();
   const navigate = useNavigate();
-  
+
   // Pre-calculate the username that will be generated
   const demoName = "Mufti Ammar Mulla";
-  
+
   const handleCreateAccount = async () => {
     setIsLoading(true);
     try {
       const result = await createMuftiAmmarAccount();
       setResult(result);
-      
+
       if (result.success) {
         toast({
           title: "Success!",
-          description: `Teacher account created for Mufti Ammar. Try logging in now.`,
+          description:
+            `Teacher account created for Mufti Ammar. Try logging in now.`,
         });
       } else {
         toast({
@@ -41,7 +49,9 @@ const CreateDemoAccount = () => {
         });
       }
     } catch (error) {
-      const message = error instanceof Error ? error.message : "An unexpected error occurred";
+      const message = error instanceof Error
+        ? error.message
+        : "An unexpected error occurred";
       toast({
         title: "Error",
         description: message,
@@ -51,26 +61,34 @@ const CreateDemoAccount = () => {
       setIsLoading(false);
     }
   };
-  
+
   const goToLogin = () => {
     navigate("/auth");
   };
-  
+
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 p-4">
       <Card className="w-full max-w-md shadow-lg">
         <CardHeader>
           <CardTitle>Create Demo Account</CardTitle>
-          <CardDescription>Create a demo teacher account for Mufti Ammar Mulla</CardDescription>
+          <CardDescription>
+            Create a demo teacher account for Mufti Ammar Mulla
+          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <p><strong>Name:</strong> {demoName}</p>
-            <p><strong>Email:</strong> Ammarmulla21@gmail.com</p>
-            <p><strong>Password:</strong> Ammarmulla2021</p>
-            
-            <Alert 
-              variant="default" 
+            <p>
+              <strong>Name:</strong> {demoName}
+            </p>
+            <p>
+              <strong>Email:</strong> Ammarmulla21@gmail.com
+            </p>
+            <p>
+              <strong>Password:</strong> Ammarmulla2021
+            </p>
+
+            <Alert
+              variant="default"
               className="bg-amber-50 text-amber-800 border-amber-200 mt-3"
             >
               <AlertTriangle className="h-4 w-4" />
@@ -78,31 +96,44 @@ const CreateDemoAccount = () => {
               <AlertDescription className="text-sm mt-1">
                 <p>After creating the account, you can log in using:</p>
                 <ul className="list-disc pl-5 mt-1">
-                  <li>Email: <span className="font-mono">Ammarmulla21@gmail.com</span></li>
-                  <li>Password: <span className="font-mono">Ammarmulla2021</span></li>
+                  <li>
+                    Email:{" "}
+                    <span className="font-mono">Ammarmulla21@gmail.com</span>
+                  </li>
+                  <li>
+                    Password: <span className="font-mono">Ammarmulla2021</span>
+                  </li>
                 </ul>
                 <p className="mt-2">
-                  <strong>Note:</strong> If login fails, the email may need confirmation in the Supabase dashboard.
+                  <strong>Note:</strong>{" "}
+                  If login fails, the email may need confirmation in the
+                  Supabase dashboard.
                 </p>
               </AlertDescription>
             </Alert>
           </div>
-          
+
           {result && (
-            <Alert 
+            <Alert
               variant={result.success ? "default" : "destructive"}
-              className={`p-4 rounded-md text-sm mt-4 ${result.success ? 'bg-green-50 text-green-800 border-green-200' : 'bg-red-50 text-red-800 border-red-200'}`}
+              className={`p-4 rounded-md text-sm mt-4 ${
+                result.success
+                  ? "bg-green-50 text-green-800 border-green-200"
+                  : "bg-red-50 text-red-800 border-red-200"
+              }`}
             >
-              {result.success ? <CheckCircle className="h-4 w-4" /> : <AlertTriangle className="h-4 w-4" />}
-              <AlertTitle>{result.success ? 'Success!' : 'Error'}</AlertTitle>
+              {result.success
+                ? <CheckCircle className="h-4 w-4" />
+                : <AlertTriangle className="h-4 w-4" />}
+              <AlertTitle>{result.success ? "Success!" : "Error"}</AlertTitle>
               <AlertDescription>
-                {result.message || result.error || (result.success 
+                {result.message || result.error || (result.success
                   ? `Teacher account created. Try logging in now.`
                   : "Failed to create teacher account")}
               </AlertDescription>
             </Alert>
           )}
-          
+
           <div className="flex flex-col space-y-2">
             <Button
               onClick={handleCreateAccount}
@@ -112,7 +143,7 @@ const CreateDemoAccount = () => {
               {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               {isLoading ? "Creating Account..." : "Create Account"}
             </Button>
-            
+
             <Button
               onClick={goToLogin}
               variant="outline"

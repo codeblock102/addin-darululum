@@ -28,7 +28,7 @@ export function AttendanceForm() {
       <AttendanceFormHeader />
       <CardContent className="p-6">
         <div className="space-y-4">
-          <ClassSelector 
+          <ClassSelector
             form={form}
             selectedClass={selectedClass}
             setSelectedClass={setSelectedClass}
@@ -36,7 +36,7 @@ export function AttendanceForm() {
             classesData={classesData}
           />
 
-          <StudentSelector 
+          <StudentSelector
             form={form}
             selectedStudent={selectedStudent}
             setSelectedStudent={setSelectedStudent}
@@ -47,11 +47,14 @@ export function AttendanceForm() {
 
           {selectedStudent && (
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              <form
+                onSubmit={form.handleSubmit(onSubmit)}
+                className="space-y-4"
+              >
                 <AttendanceStatusRadioGroup form={form} />
                 <NotesField form={form} />
-                <SubmitButton 
-                  isPending={saveAttendance.isPending} 
+                <SubmitButton
+                  isPending={saveAttendance.isPending}
                   isUpdate={!!existingAttendance}
                 />
               </form>

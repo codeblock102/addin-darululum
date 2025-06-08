@@ -1,4 +1,9 @@
-import { DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog.tsx";
+import {
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog.tsx";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client.ts";
 import { ClassForm } from "./components/ClassForm.tsx";
@@ -13,13 +18,13 @@ interface ClassDialogProps {
 export function ClassDialog({ selectedClass, onClose }: ClassDialogProps) {
   // Fetch teachers for dropdown
   const { data: teachers } = useQuery({
-    queryKey: ['teachers-dropdown'],
+    queryKey: ["teachers-dropdown"],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('teachers')
-        .select('id, name')
-        .order('name');
-      
+        .from("teachers")
+        .select("id, name")
+        .order("name");
+
       if (error) throw error;
       return data;
     },

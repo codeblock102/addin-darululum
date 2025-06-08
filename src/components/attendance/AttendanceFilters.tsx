@@ -3,9 +3,19 @@ import { CalendarIcon } from "lucide-react";
 import { cn } from "@/lib/utils.ts";
 import { Button } from "@/components/ui/button.tsx";
 import { Input } from "@/components/ui/input.tsx";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover.tsx";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover.tsx";
 import { Calendar } from "@/components/ui/calendar.tsx";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select.tsx";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select.tsx";
 
 interface AttendanceFiltersProps {
   searchQuery: string;
@@ -22,7 +32,7 @@ export function AttendanceFilters({
   statusFilter,
   setStatusFilter,
   dateFilter,
-  setDateFilter
+  setDateFilter,
 }: AttendanceFiltersProps) {
   return (
     <div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0 mb-4 bg-gray-50 dark:bg-gray-800 p-4 rounded-lg shadow-sm">
@@ -41,7 +51,7 @@ export function AttendanceFilters({
               variant="outline"
               className={cn(
                 "justify-start text-left sm:w-[180px] bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200 border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-600",
-                !dateFilter && "text-muted-foreground"
+                !dateFilter && "text-muted-foreground",
               )}
             >
               <CalendarIcon className="mr-2 h-4 w-4" />
@@ -72,20 +82,37 @@ export function AttendanceFilters({
 
         <Select
           value={statusFilter || "all"}
-          onValueChange={(value) => setStatusFilter(value === "all" ? null : value)}
+          onValueChange={(value) =>
+            setStatusFilter(value === "all" ? null : value)}
         >
-          <SelectTrigger 
-            className="sm:w-[180px] bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200 border-gray-300 dark:border-gray-600"
-          >
+          <SelectTrigger className="sm:w-[180px] bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200 border-gray-300 dark:border-gray-600">
             <SelectValue placeholder="Filter by status" />
           </SelectTrigger>
-          <SelectContent 
-            className="bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-200"
-          >
-            <SelectItem value="all" className="hover:bg-gray-100 dark:hover:bg-gray-700">All Statuses</SelectItem>
-            <SelectItem value="present" className="hover:bg-gray-100 dark:hover:bg-gray-700">Present</SelectItem>
-            <SelectItem value="absent" className="hover:bg-gray-100 dark:hover:bg-gray-700">Absent</SelectItem>
-            <SelectItem value="late" className="hover:bg-gray-100 dark:hover:bg-gray-700">Late</SelectItem>
+          <SelectContent className="bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-200">
+            <SelectItem
+              value="all"
+              className="hover:bg-gray-100 dark:hover:bg-gray-700"
+            >
+              All Statuses
+            </SelectItem>
+            <SelectItem
+              value="present"
+              className="hover:bg-gray-100 dark:hover:bg-gray-700"
+            >
+              Present
+            </SelectItem>
+            <SelectItem
+              value="absent"
+              className="hover:bg-gray-100 dark:hover:bg-gray-700"
+            >
+              Absent
+            </SelectItem>
+            <SelectItem
+              value="late"
+              className="hover:bg-gray-100 dark:hover:bg-gray-700"
+            >
+              Late
+            </SelectItem>
           </SelectContent>
         </Select>
       </div>

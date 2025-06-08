@@ -1,5 +1,10 @@
 import { StudentDhorSummary } from "@/types/dhor-book.ts";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card.tsx";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card.tsx";
 import { format } from "date-fns";
 
 interface DhorBookSummaryProps {
@@ -11,7 +16,7 @@ export function DhorBookSummary({ summary }: DhorBookSummaryProps) {
   return (
     <div className="mt-6 space-y-4">
       <h3 className="text-lg font-medium">Summary</h3>
-      
+
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card>
           <CardHeader className="pb-2">
@@ -37,7 +42,9 @@ export function DhorBookSummary({ summary }: DhorBookSummaryProps) {
           </CardHeader>
           <CardContent>
             <p className="text-sm text-muted-foreground">
-              {summary.last_entry_date ? format(new Date(summary.last_entry_date), 'MMM d, yyyy') : 'No entries yet'}
+              {summary.last_entry_date
+                ? format(new Date(summary.last_entry_date), "MMM d, yyyy")
+                : "No entries yet"}
             </p>
             {summary.last_updated_by && (
               <p className="text-sm text-muted-foreground mt-1">

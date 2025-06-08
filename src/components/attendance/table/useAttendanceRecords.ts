@@ -18,23 +18,29 @@ export function useAttendanceRecords() {
         .select("id, name")
         .eq("status", "active")
         .order("name", { ascending: true });
-      
+
       if (error) {
         console.error("Error fetching students:", error);
         throw error;
       }
-      
+
       console.log(`Found ${data?.length || 0} students for attendance records`);
       return data || [];
     },
   });
 
   // Query to get attendance records
-  const { 
-    data: attendanceRecords, 
-    isLoading: isLoadingAttendance 
+  const {
+    data: attendanceRecords,
+    isLoading: isLoadingAttendance,
   } = useQuery({
-    queryKey: ["attendance", selectedStudent, statusFilter, searchQuery, dateFilter],
+    queryKey: [
+      "attendance",
+      selectedStudent,
+      statusFilter,
+      searchQuery,
+      dateFilter,
+    ],
     queryFn: async () => {
       let query = supabase
         .from("attendance")
@@ -47,32 +53,32 @@ export function useAttendanceRecords() {
           class_schedule:class_id(class_name)
         `)
         .order("date", { ascending: false });
-      
+
       if (selectedStudent) {
         query = query.eq("student_id", selectedStudent);
       }
-      
+
       if (statusFilter) {
         query = query.eq("status", statusFilter);
       }
 
       if (searchQuery) {
         query = query.or(
-          `student.name.ilike.%${searchQuery}%,class_schedule.class_name.ilike.%${searchQuery}%`
+          `student.name.ilike.%${searchQuery}%,class_schedule.class_name.ilike.%${searchQuery}%`,
         );
       }
 
       if (dateFilter) {
         query = query.eq("date", format(dateFilter, "yyyy-MM-dd"));
       }
-      
+
       const { data, error } = await query;
-      
+
       if (error) {
         console.error("Error fetching attendance records:", error);
         throw error;
       }
-      
+
       console.log(`Found ${data?.length || 0} attendance records`);
       return data || [];
     },
@@ -99,6 +105,6 @@ export function useAttendanceRecords() {
     setSearchQuery,
     dateFilter,
     setDateFilter,
-    resetFilters
+    resetFilters,
   };
 }

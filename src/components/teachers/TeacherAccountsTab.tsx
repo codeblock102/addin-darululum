@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { TeacherAccountsTable } from "@/components/admin/teacher-accounts/TeacherAccountsTable";
 import { TeacherAccountsLoading } from "@/components/admin/teacher-accounts/TeacherAccountsLoading";
@@ -9,13 +8,22 @@ import { TeacherAccountFilters } from "@/components/admin/teacher-accounts/Teach
 
 export function TeacherAccountsTab() {
   const [searchQuery, setSearchQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState<"all" | "active" | "suspended">("all");
-  const [activityFilter, setActivityFilter] = useState<"all" | "7days" | "30days" | "inactive">("all");
-  
+  const [statusFilter, setStatusFilter] = useState<
+    "all" | "active" | "suspended"
+  >("all");
+  const [activityFilter, setActivityFilter] = useState<
+    "all" | "7days" | "30days" | "inactive"
+  >("all");
+
   const { teachers, isLoadingTeachers, filterTeachers } = useTeacherAccounts();
 
   // Apply filters to teachers data
-  const filteredTeachers = filterTeachers(teachers, searchQuery, statusFilter, activityFilter);
+  const filteredTeachers = filterTeachers(
+    teachers,
+    searchQuery,
+    statusFilter,
+    activityFilter,
+  );
 
   if (isLoadingTeachers) {
     return <TeacherAccountsLoading />;
@@ -27,9 +35,9 @@ export function TeacherAccountsTab() {
         {/* Search and Filter Controls */}
         <div className="flex flex-col md:flex-row gap-4">
           <div className="w-full md:w-2/3">
-            <TeacherAccountSearch 
-              searchQuery={searchQuery} 
-              onSearchChange={setSearchQuery} 
+            <TeacherAccountSearch
+              searchQuery={searchQuery}
+              onSearchChange={setSearchQuery}
             />
           </div>
           <div className="w-full md:w-1/3">
@@ -41,7 +49,7 @@ export function TeacherAccountsTab() {
             />
           </div>
         </div>
-        
+
         {/* Teacher Accounts Table */}
         <TeacherAccountsTable teachers={filteredTeachers} />
       </div>

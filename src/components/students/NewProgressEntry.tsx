@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -14,14 +13,16 @@ import { ProgressForm } from "./progress/ProgressForm";
 import { useProgressSubmit } from "./progress/useProgressSubmit";
 import { NewProgressEntryProps } from "./progress/types";
 
-export const NewProgressEntry = ({ 
-  studentId, 
-  studentName, 
-  open, 
-  onOpenChange 
+export const NewProgressEntry = ({
+  studentId,
+  studentName,
+  open,
+  onOpenChange,
 }: NewProgressEntryProps) => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const { submitProgress, isProcessing, contributorName } = useProgressSubmit(studentId);
+  const { submitProgress, isProcessing, contributorName } = useProgressSubmit(
+    studentId,
+  );
 
   const handleOpenChange = (newOpen: boolean) => {
     setIsDialogOpen(newOpen);
@@ -31,7 +32,10 @@ export const NewProgressEntry = ({
   };
 
   return (
-    <Dialog open={open !== undefined ? open : isDialogOpen} onOpenChange={handleOpenChange}>
+    <Dialog
+      open={open !== undefined ? open : isDialogOpen}
+      onOpenChange={handleOpenChange}
+    >
       <DialogTrigger asChild>
         <Button>
           <BookOpen className="mr-2" />
@@ -45,7 +49,7 @@ export const NewProgressEntry = ({
             Record progress for {studentName}
           </DialogDescription>
         </DialogHeader>
-        <ProgressForm 
+        <ProgressForm
           onSubmit={(data) => {
             submitProgress(data, () => {
               handleOpenChange(false);

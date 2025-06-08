@@ -18,7 +18,9 @@ interface UserListProps {
   refetchUsers: () => void;
 }
 
-export const UserList = ({ users, searchQuery, teachers, refetchUsers }: UserListProps) => {
+export const UserList = (
+  { users, searchQuery, teachers, refetchUsers }: UserListProps,
+) => {
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [userDialogOpen, setUserDialogOpen] = useState(false);
 
@@ -34,10 +36,10 @@ export const UserList = ({ users, searchQuery, teachers, refetchUsers }: UserLis
   };
 
   const filteredUsers = searchQuery
-    ? users.filter(user => 
-        user.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        user.username.toLowerCase().includes(searchQuery.toLowerCase())
-      )
+    ? users.filter((user) =>
+      user.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      user.username.toLowerCase().includes(searchQuery.toLowerCase())
+    )
     : users;
 
   return (
@@ -49,41 +51,48 @@ export const UserList = ({ users, searchQuery, teachers, refetchUsers }: UserLis
             <span className="mr-2">＋</span>
             Add User
           </Button>
-          <UserDialog 
-            selectedUser={selectedUser} 
-            teachers={teachers} 
+          <UserDialog
+            selectedUser={selectedUser}
+            teachers={teachers}
             onSuccess={handleUserDialogSuccess}
           />
         </Dialog>
       </div>
-      
+
       <div className="bg-white rounded-lg border border-gray-200 shadow-sm divide-y divide-gray-200">
-        {filteredUsers.length === 0 ? (
-          <div className="p-8 text-center text-gray-500">
-            No users found matching your search criteria.
-          </div>
-        ) : (
-          filteredUsers.map(user => (
-            <div key={user.id} className="p-4 hover:bg-gray-50 flex justify-between items-center">
-              <div>
-                <h3 className="font-medium">{user.username || 'No username'}</h3>
-                <p className="text-sm text-gray-500">{user.email}</p>
-                {user.teacherId && (
-                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 mt-1">
-                    Teacher Account
-                  </span>
-                )}
-              </div>
-              <Button 
-                variant="outline" 
-                size="sm"
-                onClick={() => openUserDialog(user)}
-              >
-                Edit
-              </Button>
+        {filteredUsers.length === 0
+          ? (
+            <div className="p-8 text-center text-gray-500">
+              No users found matching your search criteria.
             </div>
-          ))
-        )}
+          )
+          : (
+            filteredUsers.map((user) => (
+              <div
+                key={user.id}
+                className="p-4 hover:bg-gray-50 flex justify-between items-center"
+              >
+                <div>
+                  <h3 className="font-medium">
+                    {user.username || "No username"}
+                  </h3>
+                  <p className="text-sm text-gray-500">{user.email}</p>
+                  {user.teacherId && (
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 mt-1">
+                      Teacher Account
+                    </span>
+                  )}
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => openUserDialog(user)}
+                >
+                  Edit
+                </Button>
+              </div>
+            ))
+          )}
       </div>
     </>
   );

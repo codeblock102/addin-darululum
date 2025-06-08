@@ -1,4 +1,10 @@
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog.tsx";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog.tsx";
 import { DhorBookEntryForm } from "./DhorBookEntryForm.tsx";
 import { useDhorEntryMutation } from "./useDhorEntryMutation.ts";
 import { useToast } from "@/hooks/use-toast.ts";
@@ -16,7 +22,7 @@ export function NewEntryDialog({
   onOpenChange,
   studentId,
   teacherId,
-  onSuccess
+  onSuccess,
 }: NewEntryDialogProps) {
   const { toast } = useToast();
   const { mutate, isPending } = useDhorEntryMutation({
@@ -30,22 +36,23 @@ export function NewEntryDialog({
       });
       onSuccess?.(data);
       onOpenChange(false);
-    }
+    },
   });
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent 
-        className="sm:max-w-[425px] max-h-[90vh] overflow-y-auto" 
+      <DialogContent
+        className="sm:max-w-[425px] max-h-[90vh] overflow-y-auto"
         onPointerDownOutside={(e) => e.preventDefault()}
       >
         <DialogHeader>
           <DialogTitle>New Dhor Book Entry</DialogTitle>
           <DialogDescription>
-            Fill in the details for the student's dhor (progress) for the selected date.
+            Fill in the details for the student's dhor (progress) for the
+            selected date.
           </DialogDescription>
         </DialogHeader>
-        <DhorBookEntryForm 
+        <DhorBookEntryForm
           onSubmit={mutate}
           isPending={isPending}
           onCancel={() => onOpenChange(false)}

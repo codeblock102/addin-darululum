@@ -5,7 +5,13 @@ interface DataCardAction {
   label: string;
   onClick: () => void;
   icon?: React.ElementType;
-  variant?: "default" | "outline" | "ghost" | "link" | "destructive" | "secondary";
+  variant?:
+    | "default"
+    | "outline"
+    | "ghost"
+    | "link"
+    | "destructive"
+    | "secondary";
 }
 
 interface DataCardProps {
@@ -29,9 +35,11 @@ export const DataCard = ({
   className,
 }: DataCardProps) => {
   // Map status variant to appropriate Tailwind classes
-  const getStatusClasses = (variant: "default" | "success" | "warning" | "danger" | "info") => {
+  const getStatusClasses = (
+    variant: "default" | "success" | "warning" | "danger" | "info",
+  ) => {
     const baseClasses = "text-xs font-medium px-2 py-0.5 rounded-full";
-    
+
     switch (variant) {
       case "success":
         return cn(baseClasses, "bg-green-100 text-green-800");
@@ -47,10 +55,12 @@ export const DataCard = ({
   };
 
   return (
-    <div className={cn(
-      "border rounded-lg overflow-hidden shadow-sm mb-3",
-      className
-    )}>
+    <div
+      className={cn(
+        "border rounded-lg overflow-hidden shadow-sm mb-3",
+        className,
+      )}
+    >
       <div className="p-4">
         <div className="flex justify-between items-start mb-2">
           <div>
@@ -60,21 +70,25 @@ export const DataCard = ({
             )}
           </div>
           {status && (
-            <Badge className={getStatusClasses(status.variant)}>{status.label}</Badge>
+            <Badge className={getStatusClasses(status.variant)}>
+              {status.label}
+            </Badge>
           )}
         </div>
-        
+
         {details.length > 0 && (
           <div className="mt-3 space-y-2">
             {details.map((detail, index) => (
               <div key={index} className="flex justify-between">
-                <span className="text-xs text-muted-foreground">{detail.label}</span>
+                <span className="text-xs text-muted-foreground">
+                  {detail.label}
+                </span>
                 <span className="text-xs font-medium">{detail.value}</span>
               </div>
             ))}
           </div>
         )}
-        
+
         {actions.length > 0 && (
           <div className="mt-4 flex flex-wrap gap-2">
             {actions.map((action, index) => (
@@ -85,9 +99,7 @@ export const DataCard = ({
                 onClick={action.onClick}
                 className="text-xs"
               >
-                {action.icon && (
-                  <action.icon className="h-3.5 w-3.5 mr-1" />
-                )}
+                {action.icon && <action.icon className="h-3.5 w-3.5 mr-1" />}
                 {action.label}
               </Button>
             ))}

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client.ts";
 import { useAuth } from "@/hooks/use-auth.ts";
 
@@ -19,21 +19,23 @@ export const useUserRole = () => {
 
       try {
         // Check if user is an admin from metadata
-        const isUserAdmin = session.user.user_metadata?.role === 'admin';
+        const isUserAdmin = session.user.user_metadata?.role === "admin";
         setIsAdmin(isUserAdmin);
-        
+
         // Check for teacher profile data
         const { data: teacherData } = await supabase
-          .from('teachers')
-          .select('id')
-          .eq('email', session.user.email)
+          .from("teachers")
+          .select("id")
+          .eq("email", session.user.email)
           .maybeSingle();
-        
+
         // Set teacher status based on database result
         const isUserTeacher = !!teacherData || isUserAdmin; // Admins have teacher access
         setIsTeacher(isUserTeacher);
-        
-        console.log(`Role check in useUserRole: isAdmin=${isUserAdmin}, isTeacher=${isUserTeacher}`);
+
+        console.log(
+          `Role check in useUserRole: isAdmin=${isUserAdmin}, isTeacher=${isUserTeacher}`,
+        );
       } catch (error) {
         console.error("Error checking user role:", error);
         setIsAdmin(false);

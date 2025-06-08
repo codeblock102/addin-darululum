@@ -1,11 +1,11 @@
-import { useState } from 'react';
-import { Button } from '@/components/ui/button.tsx';
+import { useState } from "react";
+import { Button } from "@/components/ui/button.tsx";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuTrigger
-} from '@/components/ui/dropdown-menu.tsx';
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu.tsx";
 import {
   Table,
   TableBody,
@@ -13,11 +13,17 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table.tsx';
-import { AlertTriangle, Clock, MoreVertical, Plus, RefreshCw } from 'lucide-react';
-import { NewDifficultAyahDialog } from './NewDifficultAyahDialog.tsx';
-import { DifficultAyah } from '@/types/progress.ts';
-import { EditDifficultAyahDialog } from './EditDifficultAyahDialog.tsx';
+} from "@/components/ui/table.tsx";
+import {
+  AlertTriangle,
+  Clock,
+  MoreVertical,
+  Plus,
+  RefreshCw,
+} from "lucide-react";
+import { NewDifficultAyahDialog } from "./NewDifficultAyahDialog.tsx";
+import { DifficultAyah } from "@/types/progress.ts";
+import { EditDifficultAyahDialog } from "./EditDifficultAyahDialog.tsx";
 import { useQueryClient } from "@tanstack/react-query";
 
 interface DifficultAyahsListProps {
@@ -25,7 +31,9 @@ interface DifficultAyahsListProps {
   studentId: string;
 }
 
-export const DifficultAyahsList: React.FC<DifficultAyahsListProps> = ({ ayahs, studentId }) => {
+export const DifficultAyahsList: React.FC<DifficultAyahsListProps> = (
+  { ayahs, studentId },
+) => {
   const [newDialogOpen, setNewDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [selectedAyah, setSelectedAyah] = useState<DifficultAyah | null>(null);
@@ -37,18 +45,22 @@ export const DifficultAyahsList: React.FC<DifficultAyahsListProps> = ({ ayahs, s
   };
 
   const formatDate = (dateStr: string | null | undefined) => {
-    if (!dateStr) return 'Not revised';
+    if (!dateStr) return "Not revised";
     const date = new Date(dateStr);
-    return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+    return date.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
   };
 
   const getStatusIcon = (status: string) => {
     switch (status.toLowerCase()) {
-      case 'active':
+      case "active":
         return <AlertTriangle className="h-4 w-4 text-amber-500" />;
-      case 'pending': 
+      case "pending":
         return <Clock className="h-4 w-4 text-blue-500" />;
-      case 'resolved':
+      case "resolved":
         return <RefreshCw className="h-4 w-4 text-green-500" />;
       default:
         return <AlertTriangle className="h-4 w-4 text-amber-500" />;
@@ -57,7 +69,7 @@ export const DifficultAyahsList: React.FC<DifficultAyahsListProps> = ({ ayahs, s
 
   const handleSuccessUpdate = async () => {
     await queryClient.invalidateQueries({
-      queryKey: ['student-difficult-ayahs', studentId]
+      queryKey: ["student-difficult-ayahs", studentId],
     });
   };
 
@@ -71,59 +83,67 @@ export const DifficultAyahsList: React.FC<DifficultAyahsListProps> = ({ ayahs, s
         </Button>
       </div>
 
-      {ayahs.length === 0 ? (
-        <div className="text-center py-8 text-muted-foreground">
-          No difficult ayahs recorded yet.
-        </div>
-      ) : (
-        <div className="rounded-md border overflow-hidden">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Surah:Ayah</TableHead>
-                <TableHead>Juz</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Last Revised</TableHead>
-                <TableHead>Revision Count</TableHead>
-                <TableHead className="w-[80px]">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {ayahs.map((ayah) => (
-                <TableRow key={ayah.id}>
-                  <TableCell className="font-medium">
-                    {ayah.surah_number}:{ayah.ayah_number}
-                  </TableCell>
-                  <TableCell>{ayah.juz_number}</TableCell>
-                  <TableCell>
-                    <div className="flex items-center">
-                      {getStatusIcon(ayah.status)}
-                      <span className="ml-2 capitalize">{ayah.status}</span>
-                    </div>
-                  </TableCell>
-                  <TableCell>{formatDate(ayah.last_revised)}</TableCell>
-                  <TableCell>{ayah.revision_count}</TableCell>
-                  <TableCell>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon" className="h-8 w-8">
-                          <MoreVertical className="h-4 w-4" />
-                          <span className="sr-only">Open menu</span>
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => handleEditAyah(ayah)}>
-                          Edit
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </TableCell>
+      {ayahs.length === 0
+        ? (
+          <div className="text-center py-8 text-muted-foreground">
+            No difficult ayahs recorded yet.
+          </div>
+        )
+        : (
+          <div className="rounded-md border overflow-hidden">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Surah:Ayah</TableHead>
+                  <TableHead>Juz</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Last Revised</TableHead>
+                  <TableHead>Revision Count</TableHead>
+                  <TableHead className="w-[80px]">Actions</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
-      )}
+              </TableHeader>
+              <TableBody>
+                {ayahs.map((ayah) => (
+                  <TableRow key={ayah.id}>
+                    <TableCell className="font-medium">
+                      {ayah.surah_number}:{ayah.ayah_number}
+                    </TableCell>
+                    <TableCell>{ayah.juz_number}</TableCell>
+                    <TableCell>
+                      <div className="flex items-center">
+                        {getStatusIcon(ayah.status)}
+                        <span className="ml-2 capitalize">{ayah.status}</span>
+                      </div>
+                    </TableCell>
+                    <TableCell>{formatDate(ayah.last_revised)}</TableCell>
+                    <TableCell>{ayah.revision_count}</TableCell>
+                    <TableCell>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8"
+                          >
+                            <MoreVertical className="h-4 w-4" />
+                            <span className="sr-only">Open menu</span>
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem
+                            onClick={() => handleEditAyah(ayah)}
+                          >
+                            Edit
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        )}
 
       <NewDifficultAyahDialog
         open={newDialogOpen}

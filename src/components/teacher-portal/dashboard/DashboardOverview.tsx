@@ -1,4 +1,3 @@
-
 import { StudentSearch } from "./StudentSearch";
 import { QuickActions } from "./QuickActions";
 import { TodayStudents } from "./TodayStudents";

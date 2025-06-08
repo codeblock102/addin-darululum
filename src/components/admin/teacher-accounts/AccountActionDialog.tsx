@@ -26,7 +26,7 @@ export function AccountActionDialog({
   teacher,
   open,
   onOpenChange,
-  actionType
+  actionType,
 }: AccountActionDialogProps) {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
@@ -36,7 +36,7 @@ export function AccountActionDialog({
 
   const handleAction = async () => {
     if (!teacher) return;
-    
+
     setLoading(true);
     try {
       switch (actionType) {
@@ -46,42 +46,43 @@ export function AccountActionDialog({
           toast({
             title: "Account suspended",
             description: `${teacher.name}'s account has been suspended.`,
-            variant: "default"
+            variant: "default",
           });
           break;
         }
-          
+
         case "reactivate": {
           // In a real app, this would reactivate the user in the auth system
           toast({
             title: "Account reactivated",
             description: `${teacher.name}'s account has been reactivated.`,
-            variant: "default"
+            variant: "default",
           });
           break;
         }
-          
+
         case "delete": {
           // Delete the teacher record
           const { error } = await supabase
-            .from('teachers')
+            .from("teachers")
             .delete()
-            .eq('id', teacher.id);
-            
+            .eq("id", teacher.id);
+
           if (error) throw error;
-          
+
           toast({
             title: "Account deleted",
-            description: `${teacher.name}'s account has been permanently deleted.`,
-            variant: "default"
+            description:
+              `${teacher.name}'s account has been permanently deleted.`,
+            variant: "default",
           });
           break;
         }
       }
-      
+
       // Invalidate and refetch queries
-      queryClient.invalidateQueries({ queryKey: ['teacher-accounts'] });
-      
+      queryClient.invalidateQueries({ queryKey: ["teacher-accounts"] });
+
       // Close dialog
       onOpenChange(false);
     } catch (error) {
@@ -89,7 +90,7 @@ export function AccountActionDialog({
       toast({
         title: "Operation failed",
         description: `Failed to ${actionType} the account. Please try again.`,
-        variant: "destructive"
+        variant: "destructive",
       });
     } finally {
       setLoading(false);
@@ -100,25 +101,28 @@ export function AccountActionDialog({
   const dialogContent = {
     suspend: {
       title: "Suspend Teacher Account",
-      description: `Are you sure you want to suspend ${teacher?.name}'s account? They will be unable to log in until the account is reactivated.`,
+      description:
+        `Are you sure you want to suspend ${teacher?.name}'s account? They will be unable to log in until the account is reactivated.`,
       icon: <Shield className="h-6 w-6 text-amber-500" />,
       confirmText: "Suspend Account",
-      confirmVariant: "default" as const
+      confirmVariant: "default" as const,
     },
     reactivate: {
       title: "Reactivate Teacher Account",
-      description: `Are you sure you want to reactivate ${teacher?.name}'s account? They will regain access to the system.`,
+      description:
+        `Are you sure you want to reactivate ${teacher?.name}'s account? They will regain access to the system.`,
       icon: <Shield className="h-6 w-6 text-green-500" />,
       confirmText: "Reactivate Account",
-      confirmVariant: "default" as const
+      confirmVariant: "default" as const,
     },
     delete: {
       title: "Delete Teacher Account",
-      description: `Are you sure you want to delete ${teacher?.name}'s account? This action cannot be undone, and all associated data will be permanently removed.`,
+      description:
+        `Are you sure you want to delete ${teacher?.name}'s account? This action cannot be undone, and all associated data will be permanently removed.`,
       icon: <Trash className="h-6 w-6 text-red-500" />,
       confirmText: "Delete Account",
-      confirmVariant: "destructive" as const
-    }
+      confirmVariant: "destructive" as const,
+    },
   };
 
   const content = dialogContent[actionType];
@@ -137,10 +141,12 @@ export function AccountActionDialog({
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction 
+          <AlertDialogAction
             onClick={handleAction}
             disabled={loading}
-            className={actionType === 'delete' ? 'bg-red-600 hover:bg-red-700' : ''}
+            className={actionType === "delete"
+              ? "bg-red-600 hover:bg-red-700"
+              : ""}
           >
             {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             {content.confirmText}

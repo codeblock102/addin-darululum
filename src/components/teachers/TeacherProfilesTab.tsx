@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { TeacherList } from "@/components/teachers/TeacherList";
 import { SearchInput } from "@/components/table/SearchInput";
@@ -21,9 +20,9 @@ export function TeacherProfilesTab({ onEditTeacher }: TeacherProfilesTabProps) {
           onChange={setSearchQuery}
         />
       </div>
-      
+
       <div className="border-t">
-        <TeacherList 
+        <TeacherList
           searchQuery={searchQuery}
           onEdit={onEditTeacher}
         />

@@ -7,19 +7,21 @@ import { useActiveTab } from "./dashboard/DashboardNav";
 export const TeacherDashboard = ({ teacher }: TeacherDashboardProps) => {
   const { activeTab } = useActiveTab();
   useTeacherSummary(teacher.id);
-  
+
   return (
     <div className="space-y-6 animate-fadeIn">
       <DashboardHeader teacher={teacher} />
-      
-      {/* <TeacherTabs 
-        teacher={teacher} 
-        activeTab={activeTab} 
-        onTabChange={setActiveTab} 
-      /> */}
-      
-      <DashboardContent 
-        activeTab={activeTab} 
+
+      {
+        /* <TeacherTabs
+        teacher={teacher}
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
+      /> */
+      }
+
+      <DashboardContent
+        activeTab={activeTab}
         teacherId={teacher.id}
         teacherName={teacher.name}
       />

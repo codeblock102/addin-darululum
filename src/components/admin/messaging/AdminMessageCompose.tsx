@@ -1,14 +1,26 @@
-import React from 'react';
+import React from "react";
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client.ts";
 import { useToast } from "@/hooks/use-toast.ts";
 import { Button } from "@/components/ui/button.tsx";
 import { Loader2, Send } from "lucide-react";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select.tsx";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select.tsx";
 import { Label } from "@/components/ui/label.tsx";
 import { MessageCategory, MessageType } from "@/types/progress.ts";
-import { Card, CardHeader, CardContent, CardFooter, CardTitle } from "@/components/ui/card.tsx";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card.tsx";
 
 export const AdminMessageCompose = () => {
   const { toast } = useToast();
@@ -16,24 +28,26 @@ export const AdminMessageCompose = () => {
   const [newMessage, setNewMessage] = useState("");
   const [selectedTeacher, setSelectedTeacher] = useState("");
   const [messageType, setMessageType] = useState<MessageType>("direct");
-  const [messageCategory, setMessageCategory] = useState<MessageCategory>("administrative");
+  const [messageCategory, setMessageCategory] = useState<MessageCategory>(
+    "administrative",
+  );
 
   // Fetch teachers to populate recipient dropdown
   const { data: teachers, isLoading: teachersLoading } = useQuery({
-    queryKey: ['admin-message-teachers'],
+    queryKey: ["admin-message-teachers"],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('teachers')
-        .select('id, name')
-        .order('name', { ascending: true });
-        
+        .from("teachers")
+        .select("id, name")
+        .order("name", { ascending: true });
+
       if (error) throw error;
-      return data.map(teacher => ({
+      return data.map((teacher) => ({
         id: teacher.id,
         name: teacher.name,
-        type: "teacher" as const
+        type: "teacher" as const,
       }));
-    }
+    },
   });
 
   const sendMessageMutation = useMutation({
@@ -45,7 +59,7 @@ export const AdminMessageCompose = () => {
     }) => {
       // Create message from admin to teacher
       const { data, error } = await supabase
-        .from('communications')
+        .from("communications")
         .insert([
           {
             sender_id: null, // Admin doesn't have a UUID in the teachers table
@@ -54,17 +68,17 @@ export const AdminMessageCompose = () => {
             read: false,
             message_type: messageData.message_type,
             category: messageData.category,
-            message_status: 'sent'
+            message_status: "sent",
             // No longer using parent_message_id field
-          }
+          },
         ])
         .select();
-      
+
       if (error) throw error;
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin-sent-messages'] });
+      queryClient.invalidateQueries({ queryKey: ["admin-sent-messages"] });
       toast({
         title: "Message Sent",
         description: "Your message has been sent successfully.",
@@ -78,12 +92,12 @@ export const AdminMessageCompose = () => {
         description: `Failed to send message: ${error.message}`,
         variant: "destructive",
       });
-    }
+    },
   });
-  
+
   const handleSendMessage = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!selectedTeacher) {
       toast({
         title: "Error",
@@ -92,7 +106,7 @@ export const AdminMessageCompose = () => {
       });
       return;
     }
-    
+
     if (!newMessage.trim()) {
       toast({
         title: "Error",
@@ -101,12 +115,12 @@ export const AdminMessageCompose = () => {
       });
       return;
     }
-    
+
     sendMessageMutation.mutate({
       recipient_id: selectedTeacher,
       message: newMessage,
       message_type: messageType,
-      category: messageCategory
+      category: messageCategory,
     });
   };
 
@@ -124,27 +138,36 @@ export const AdminMessageCompose = () => {
                 <SelectValue placeholder="Select teacher" />
               </SelectTrigger>
               <SelectContent>
-                {teachersLoading ? (
-                  <div className="flex justify-center p-2">
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  </div>
-                ) : teachers && teachers.length > 0 ? (
-                  teachers.map((teacher) => (
-                    <SelectItem key={teacher.id} value={teacher.id}>
-                      {teacher.name} (Teacher)
+                {teachersLoading
+                  ? (
+                    <div className="flex justify-center p-2">
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    </div>
+                  )
+                  : teachers && teachers.length > 0
+                  ? (
+                    teachers.map((teacher) => (
+                      <SelectItem key={teacher.id} value={teacher.id}>
+                        {teacher.name} (Teacher)
+                      </SelectItem>
+                    ))
+                  )
+                  : (
+                    <SelectItem value="no-teachers" disabled>
+                      No teachers available
                     </SelectItem>
-                  ))
-                ) : (
-                  <SelectItem value="no-teachers" disabled>No teachers available</SelectItem>
-                )}
+                  )}
               </SelectContent>
             </Select>
           </div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label>Message Type</Label>
-              <Select value={messageType} onValueChange={(value) => setMessageType(value as MessageType)}>
+              <Select
+                value={messageType}
+                onValueChange={(value) => setMessageType(value as MessageType)}
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="Message type" />
                 </SelectTrigger>
@@ -155,10 +178,14 @@ export const AdminMessageCompose = () => {
                 </SelectContent>
               </Select>
             </div>
-            
+
             <div className="space-y-2">
               <Label>Category</Label>
-              <Select value={messageCategory} onValueChange={(value) => setMessageCategory(value as MessageCategory)}>
+              <Select
+                value={messageCategory}
+                onValueChange={(value) =>
+                  setMessageCategory(value as MessageCategory)}
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="Message category" />
                 </SelectTrigger>
@@ -170,7 +197,7 @@ export const AdminMessageCompose = () => {
               </Select>
             </div>
           </div>
-          
+
           <div className="space-y-2">
             <Label>Message</Label>
             <div className="relative">
@@ -187,19 +214,22 @@ export const AdminMessageCompose = () => {
       <CardFooter className="flex justify-end">
         <Button
           onClick={handleSendMessage}
-          disabled={sendMessageMutation.isPending || !selectedTeacher || !newMessage.trim()}
+          disabled={sendMessageMutation.isPending || !selectedTeacher ||
+            !newMessage.trim()}
         >
-          {sendMessageMutation.isPending ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Sending...
-            </>
-          ) : (
-            <>
-              <Send className="mr-2 h-4 w-4" />
-              Send Message
-            </>
-          )}
+          {sendMessageMutation.isPending
+            ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Sending...
+              </>
+            )
+            : (
+              <>
+                <Send className="mr-2 h-4 w-4" />
+                Send Message
+              </>
+            )}
         </Button>
       </CardFooter>
     </Card>

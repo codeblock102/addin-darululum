@@ -1,4 +1,3 @@
-
 interface SurahData {
   surah: number;
   ayahs: number;
@@ -119,7 +118,7 @@ const surahData: SurahData[] = [
   { surah: 111, ayahs: 5 },
   { surah: 112, ayahs: 4 },
   { surah: 113, ayahs: 5 },
-  { surah: 114, ayahs: 6 }
+  { surah: 114, ayahs: 6 },
 ];
 
 /**
@@ -137,7 +136,7 @@ export const isValidSurah = (surah: number): boolean => {
  * @returns Number of ayahs or 0 if invalid surah
  */
 export const getTotalAyahsInSurah = (surah: number): number => {
-  const surahInfo = surahData.find(s => s.surah === surah);
+  const surahInfo = surahData.find((s) => s.surah === surah);
   return surahInfo ? surahInfo.ayahs : 0;
 };
 
@@ -162,12 +161,12 @@ export const isValidAyah = (surah: number, ayah: number): boolean => {
 export const validateAyahRange = (
   surah: number,
   startAyah: number,
-  endAyah: number
+  endAyah: number,
 ): { isValid: boolean; errorMessage?: string } => {
   if (!isValidSurah(surah)) {
     return {
       isValid: false,
-      errorMessage: `Invalid Surah number. Must be between 1 and 114.`
+      errorMessage: `Invalid Surah number. Must be between 1 and 114.`,
     };
   }
 
@@ -176,21 +175,23 @@ export const validateAyahRange = (
   if (!isValidAyah(surah, startAyah)) {
     return {
       isValid: false,
-      errorMessage: `Invalid starting Ayah. Surah ${surah} has ${totalAyahs} ayahs.`
+      errorMessage:
+        `Invalid starting Ayah. Surah ${surah} has ${totalAyahs} ayahs.`,
     };
   }
 
   if (!isValidAyah(surah, endAyah)) {
     return {
       isValid: false,
-      errorMessage: `Invalid ending Ayah. Surah ${surah} has ${totalAyahs} ayahs.`
+      errorMessage:
+        `Invalid ending Ayah. Surah ${surah} has ${totalAyahs} ayahs.`,
     };
   }
 
   if (startAyah > endAyah) {
     return {
       isValid: false,
-      errorMessage: `Starting Ayah cannot be greater than ending Ayah.`
+      errorMessage: `Starting Ayah cannot be greater than ending Ayah.`,
     };
   }
 
@@ -203,5 +204,5 @@ export const validateAyahRange = (
  * @returns Object with surah number and total ayahs
  */
 export const getSurahData = (surahNumber: number): SurahData | undefined => {
-  return surahData.find(surah => surah.surah === surahNumber);
+  return surahData.find((surah) => surah.surah === surahNumber);
 };

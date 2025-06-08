@@ -1,7 +1,14 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button.tsx";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card.tsx";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card.tsx";
 import { useToast } from "@/components/ui/use-toast.ts";
 import { Loader2 } from "lucide-react";
 import { setUserAsAdmin } from "@/utils/adminUtils.ts";
@@ -13,16 +20,17 @@ export default function SetupAdmin() {
 
   const handleSetupAdmin = async () => {
     setIsLoading(true);
-    
+
     try {
       const success = await setUserAsAdmin("");
-      
+
       if (success) {
         toast({
           title: "Admin Setup Complete",
-          description: "Your account has been set up as an admin. You will be redirected to the admin dashboard.",
+          description:
+            "Your account has been set up as an admin. You will be redirected to the admin dashboard.",
         });
-        
+
         // Wait a moment before redirecting
         setTimeout(() => {
           navigate("/admin");
@@ -38,7 +46,8 @@ export default function SetupAdmin() {
       console.error("Error setting up admin:", error);
       toast({
         title: "Error",
-        description: "An unexpected error occurred while setting up admin account.",
+        description:
+          "An unexpected error occurred while setting up admin account.",
         variant: "destructive",
       });
     } finally {
@@ -57,26 +66,29 @@ export default function SetupAdmin() {
         </CardHeader>
         <CardContent>
           <p className="mb-4">
-            This will set your current account as an administrator. You will have access to all admin features after this setup.
+            This will set your current account as an administrator. You will
+            have access to all admin features after this setup.
           </p>
         </CardContent>
         <CardFooter>
-          <Button 
-            onClick={handleSetupAdmin} 
+          <Button
+            onClick={handleSetupAdmin}
             disabled={isLoading}
             className="w-full"
           >
-            {isLoading ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Setting up Admin...
-              </>
-            ) : (
-              "Set Up Admin Account"
-            )}
+            {isLoading
+              ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Setting up Admin...
+                </>
+              )
+              : (
+                "Set Up Admin Account"
+              )}
           </Button>
         </CardFooter>
       </Card>
     </div>
   );
-} 
+}

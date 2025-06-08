@@ -3,9 +3,26 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client.ts";
 import { useToast } from "@/hooks/use-toast.ts";
 import { Button } from "@/components/ui/button.tsx";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table.tsx";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog.tsx";
-import { Pencil, Trash2, Users, UserCheck, Loader2 } from "lucide-react";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table.tsx";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog.tsx";
+import { Loader2, Pencil, Trash2, UserCheck, Users } from "lucide-react";
 import { Badge } from "@/components/ui/badge.tsx";
 import { Card, CardContent } from "@/components/ui/card.tsx";
 
@@ -24,10 +41,10 @@ interface TeacherListProps {
 }
 export const TeacherList = ({
   searchQuery,
-  onEdit
+  onEdit,
 }: TeacherListProps) => {
   const {
-    toast
+    toast,
   } = useToast();
   const queryClient = useQueryClient();
   const [isProcessing, setIsProcessing] = useState(false);
@@ -35,73 +52,90 @@ export const TeacherList = ({
   const {
     data: teachers,
     isLoading,
-    error
+    error,
   } = useQuery({
-    queryKey: ['teachers'],
+    queryKey: ["teachers"],
     queryFn: async () => {
       const {
         data,
-        error
-      } = await supabase.from('teachers').select('id, name, subject, email, phone, bio');
+        error,
+      } = await supabase.from("teachers").select(
+        "id, name, subject, email, phone, bio",
+      );
       if (error) {
         toast({
           title: "Error fetching teachers",
           description: error.message,
-          variant: "destructive"
+          variant: "destructive",
         });
         throw error;
       }
       const {
         data: studentData,
-        error: studentError
-      } = await supabase.from('students_teachers').select('id, teacher_id');
+        error: studentError,
+      } = await supabase.from("students_teachers").select("id, teacher_id");
       if (studentError) {
         console.error("Error fetching student assignments:", studentError);
       }
-      return data.map(teacher => {
-        const studentCount = studentData ? studentData.filter(s => s.teacher_id === teacher.id).length : 0;
+      return data.map((teacher) => {
+        const studentCount = studentData
+          ? studentData.filter((s) => s.teacher_id === teacher.id).length
+          : 0;
         return {
           ...teacher,
-          students: studentCount
+          students: studentCount,
         } as Teacher;
       });
-    }
+    },
   });
   const handleDelete = async (teacherId: string) => {
     setIsProcessing(true);
     try {
       const {
-        error
-      } = await supabase.from('teachers').delete().eq('id', teacherId);
+        error,
+      } = await supabase.from("teachers").delete().eq("id", teacherId);
       if (error) throw error;
       toast({
         title: "Success",
-        description: "Teacher deleted successfully"
+        description: "Teacher deleted successfully",
       });
       queryClient.invalidateQueries({
-        queryKey: ['teachers']
+        queryKey: ["teachers"],
       });
     } catch (error: unknown) {
       toast({
         title: "Error deleting teacher",
-        description: error instanceof Error ? error.message : "An unknown error occurred",
-        variant: "destructive"
+        description: error instanceof Error
+          ? error.message
+          : "An unknown error occurred",
+        variant: "destructive",
       });
     } finally {
       setIsProcessing(false);
       setTeacherToDelete(null);
     }
   };
-  const filteredTeachers = teachers?.filter(teacher => teacher.name.toLowerCase().includes(searchQuery.toLowerCase()) || teacher.subject.toLowerCase().includes(searchQuery.toLowerCase()));
+  const filteredTeachers = teachers?.filter((teacher) =>
+    teacher.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    teacher.subject.toLowerCase().includes(searchQuery.toLowerCase())
+  );
   if (error) {
-    return <Card className="border-red-200 bg-red-50">
+    return (
+      <Card className="border-red-200 bg-red-50">
         <CardContent className="p-6 text-center">
-          <h3 className="text-lg font-medium text-red-800 mb-2">Error Loading Teachers</h3>
-          <p className="text-red-600">There was a problem fetching the teachers data. Please try again later.</p>
+          <h3 className="text-lg font-medium text-red-800 mb-2">
+            Error Loading Teachers
+          </h3>
+          <p className="text-red-600">
+            There was a problem fetching the teachers data. Please try again
+            later.
+          </p>
         </CardContent>
-      </Card>;
+      </Card>
+    );
   }
-  return <>
+  return (
+    <>
       <Table>
         <TableHeader>
           <TableRow>
@@ -113,18 +147,29 @@ export const TeacherList = ({
           </TableRow>
         </TableHeader>
         <TableBody>
-          {isLoading ? <TableRow>
-              <TableCell colSpan={6} className="text-center py-10">
-                <div className="flex justify-center items-center">
-                  <Loader2 className="h-6 w-6 animate-spin mr-2" />
-                  <span>Loading teachers...</span>
-                </div>
-              </TableCell>
-            </TableRow> : filteredTeachers?.length === 0 ? <TableRow>
-              <TableCell colSpan={6} className="text-center py-10">
-                {searchQuery ? "No teachers found matching your search." : "No teachers found. Add your first teacher!"}
-              </TableCell>
-            </TableRow> : filteredTeachers?.map(teacher => <TableRow key={teacher.id}>
+          {isLoading
+            ? (
+              <TableRow>
+                <TableCell colSpan={6} className="text-center py-10">
+                  <div className="flex justify-center items-center">
+                    <Loader2 className="h-6 w-6 animate-spin mr-2" />
+                    <span>Loading teachers...</span>
+                  </div>
+                </TableCell>
+              </TableRow>
+            )
+            : filteredTeachers?.length === 0
+            ? (
+              <TableRow>
+                <TableCell colSpan={6} className="text-center py-10">
+                  {searchQuery
+                    ? "No teachers found matching your search."
+                    : "No teachers found. Add your first teacher!"}
+                </TableCell>
+              </TableRow>
+            )
+            : filteredTeachers?.map((teacher) => (
+              <TableRow key={teacher.id}>
                 <TableCell className="font-medium">{teacher.name}</TableCell>
                 <TableCell>
                   <Badge variant="outline" className="bg-green-900">
@@ -137,17 +182,43 @@ export const TeacherList = ({
                     <span>{teacher.students}</span>
                   </div>
                 </TableCell>
-                <TableCell>{teacher.email ? <a href={`mailto:${teacher.email}`} className="text-blue-600 hover:underline">{teacher.email}</a> : "N/A"}</TableCell>
+                <TableCell>
+                  {teacher.email
+                    ? (
+                      <a
+                        href={`mailto:${teacher.email}`}
+                        className="text-blue-600 hover:underline"
+                      >
+                        {teacher.email}
+                      </a>
+                    )
+                    : "N/A"}
+                </TableCell>
                 <TableCell>{teacher.phone || "N/A"}</TableCell>
                 <TableCell className="text-right space-x-2">
-                  <Button variant="outline" size="sm" onClick={() => onEdit(teacher)} title="Edit teacher" className="bg-slate-950 hover:bg-slate-800">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => onEdit(teacher)}
+                    title="Edit teacher"
+                    className="bg-slate-950 hover:bg-slate-800"
+                  >
                     <Pencil className="h-4 w-4" />
                   </Button>
-                  <AlertDialog open={teacherToDelete === teacher.id} onOpenChange={open => {
-              if (!open) setTeacherToDelete(null);
-            }}>
+                  <AlertDialog
+                    open={teacherToDelete === teacher.id}
+                    onOpenChange={(open) => {
+                      if (!open) setTeacherToDelete(null);
+                    }}
+                  >
                     <AlertDialogTrigger asChild>
-                      <Button variant="outline" size="sm" className="text-red-600 hover:text-red-700" onClick={() => setTeacherToDelete(teacher.id)} title="Delete teacher">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="text-red-600 hover:text-red-700"
+                        onClick={() => setTeacherToDelete(teacher.id)}
+                        title="Delete teacher"
+                      >
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </AlertDialogTrigger>
@@ -155,33 +226,48 @@ export const TeacherList = ({
                       <AlertDialogHeader>
                         <AlertDialogTitle>Delete Teacher</AlertDialogTitle>
                         <AlertDialogDescription>
-                          Are you sure you want to delete {teacher.name}? This action cannot be undone.
-                          {teacher.students > 0 && <div className="mt-2 bg-amber-50 p-2 border border-amber-200 rounded-md text-amber-800">
+                          Are you sure you want to delete{" "}
+                          {teacher.name}? This action cannot be undone.
+                          {teacher.students > 0 && (
+                            <div className="mt-2 bg-amber-50 p-2 border border-amber-200 rounded-md text-amber-800">
                               <div className="flex items-center">
                                 <UserCheck className="h-4 w-4 mr-2" />
                                 <span className="font-medium">Warning:</span>
                               </div>
                               <p className="mt-1">
-                                This teacher has {teacher.students} student{teacher.students !== 1 ? 's' : ''} assigned. 
-                                Deleting this teacher will remove these assignments.
+                                This teacher has {teacher.students}{" "}
+                                student{teacher.students !== 1 ? "s" : ""}{" "}
+                                assigned. Deleting this teacher will remove
+                                these assignments.
                               </p>
-                            </div>}
+                            </div>
+                          )}
                         </AlertDialogDescription>
                       </AlertDialogHeader>
                       <AlertDialogFooter>
                         <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction onClick={() => handleDelete(teacher.id)} className="bg-red-600 hover:bg-red-700" disabled={isProcessing}>
-                          {isProcessing ? <>
-                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                              Deleting...
-                            </> : "Delete"}
+                        <AlertDialogAction
+                          onClick={() => handleDelete(teacher.id)}
+                          className="bg-red-600 hover:bg-red-700"
+                          disabled={isProcessing}
+                        >
+                          {isProcessing
+                            ? (
+                              <>
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                Deleting...
+                              </>
+                            )
+                            : "Delete"}
                         </AlertDialogAction>
                       </AlertDialogFooter>
                     </AlertDialogContent>
                   </AlertDialog>
                 </TableCell>
-              </TableRow>)}
+              </TableRow>
+            ))}
         </TableBody>
       </Table>
-    </>;
+    </>
+  );
 };

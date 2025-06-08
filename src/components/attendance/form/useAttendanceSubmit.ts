@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { format } from "date-fns";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -30,7 +30,7 @@ export function useAttendanceSubmit() {
         .from("classes")
         .select("id, name, days_of_week, time_slots")
         .order("name", { ascending: true });
-      
+
       if (error) throw error;
       return data;
     },
@@ -40,13 +40,13 @@ export function useAttendanceSubmit() {
     queryKey: ["students-by-class", selectedClass],
     queryFn: async () => {
       if (!selectedClass) return [];
-      
+
       const { data, error } = await supabase
         .from("students")
         .select("id, name")
         .eq("status", "active")
         .order("name");
-      
+
       if (error) throw error;
       return data;
     },
@@ -57,7 +57,7 @@ export function useAttendanceSubmit() {
     queryKey: ["attendance", selectedStudent, selectedClass, formattedDate],
     queryFn: async () => {
       if (!selectedStudent || !selectedClass) return null;
-      
+
       const { data, error } = await supabase
         .from("attendance")
         .select("*")
@@ -65,7 +65,7 @@ export function useAttendanceSubmit() {
         .eq("class_id", selectedClass)
         .eq("date", formattedDate)
         .maybeSingle();
-      
+
       if (error) throw error;
       return data;
     },

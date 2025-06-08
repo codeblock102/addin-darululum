@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { CalendarCheck, BookOpen, Users } from "lucide-react";
+import { BookOpen, CalendarCheck, Users } from "lucide-react";
 
 interface QuickActionsProps {
   teacherId?: string;
@@ -9,7 +9,7 @@ interface QuickActionsProps {
 
 export const QuickActions = () => {
   const navigate = useNavigate();
-  
+
   return (
     <Card className="h-auto">
       <CardHeader>
@@ -17,34 +17,32 @@ export const QuickActions = () => {
       </CardHeader>
       <CardContent>
         <div className="space-y-3">
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             className="w-full justify-start text-left text-foreground"
-            onClick={() => navigate('/attendance')}
+            onClick={() => navigate("/attendance")}
           >
             <CalendarCheck className="mr-2 h-4 w-4" />
             Take Attendance
           </Button>
-          
-          <Button 
-            variant="outline" 
+
+          <Button
+            variant="outline"
             className="w-full justify-start text-left text-foreground"
-            onClick={() => navigate('/student-progress')}
+            onClick={() => navigate("/student-progress")}
           >
             <BookOpen className="mr-2 h-4 w-4" />
             Record Progress
           </Button>
-          
-          <Button 
-            variant="outline" 
+
+          <Button
+            variant="outline"
             className="w-full justify-start text-left text-foreground"
-            onClick={() => navigate('/students')}
+            onClick={() => navigate("/students")}
           >
             <Users className="mr-2 h-4 w-4" />
             View My Students
           </Button>
-          
-         
         </div>
       </CardContent>
     </Card>

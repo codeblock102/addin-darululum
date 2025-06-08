@@ -1,7 +1,19 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card.tsx";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card.tsx";
 import { DailyActivityEntry } from "@/types/dhor-book.ts";
 import { Tables } from "@/integrations/supabase/types.ts";
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
+import {
+  Bar,
+  BarChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
 
 export interface ProgressChartsProps {
   progressData: DailyActivityEntry[];
@@ -9,19 +21,19 @@ export interface ProgressChartsProps {
   juzRevisionsData: Tables<"juz_revisions">[];
 }
 
-export const ProgressCharts = ({ 
+export const ProgressCharts = ({
   progressData,
 }: ProgressChartsProps) => {
   // Transform data for chart visualization
-  const chartData = progressData.map(entry => {
-    const versesMemorized = (entry.end_ayat && entry.start_ayat) 
-      ? (entry.end_ayat - entry.start_ayat + 1) 
+  const chartData = progressData.map((entry) => {
+    const versesMemorized = (entry.end_ayat && entry.start_ayat)
+      ? (entry.end_ayat - entry.start_ayat + 1)
       : 0;
     return {
       date: entry.entry_date,
       verses: versesMemorized,
       juz: entry.current_juz || 0,
-      surah: entry.current_surah || 0
+      surah: entry.current_surah || 0,
     };
   });
 

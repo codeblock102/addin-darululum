@@ -1,14 +1,26 @@
+import {
+  addDays,
+  addWeeks,
+  endOfWeek,
+  format,
+  isValid,
+  parseISO,
+  startOfWeek,
+  subDays,
+  subWeeks,
+} from "date-fns";
 
-import { format, addDays, subDays, addWeeks, subWeeks, parseISO, isValid, startOfWeek, endOfWeek } from 'date-fns';
+export function formatDate(
+  date: Date | string,
+  formatStr: string = "yyyy-MM-dd",
+): string {
+  const parsedDate = typeof date === "string" ? parseISO(date) : date;
 
-export function formatDate(date: Date | string, formatStr: string = 'yyyy-MM-dd'): string {
-  const parsedDate = typeof date === 'string' ? parseISO(date) : date;
-  
   if (!isValid(parsedDate)) {
-    console.error('Invalid date provided to formatDate:', date);
-    return '';
+    console.error("Invalid date provided to formatDate:", date);
+    return "";
   }
-  
+
   return format(parsedDate, formatStr);
 }
 
@@ -28,7 +40,7 @@ export function getEndOfWeekISO(date: Date): string {
   return formatDate(getEndOfWeek(date));
 }
 
-export { addDays, subDays, addWeeks, subWeeks };
+export { addDays, addWeeks, subDays, subWeeks };
 
 export function getDatesBetween(startDate: Date, endDate: Date): Date[] {
   const dates: Date[] = [];
@@ -44,8 +56,8 @@ export function getDatesBetween(startDate: Date, endDate: Date): Date[] {
 
 export function isToday(date: Date | string): boolean {
   const today = new Date();
-  const compareDate = typeof date === 'string' ? parseISO(date) : date;
-  
+  const compareDate = typeof date === "string" ? parseISO(date) : date;
+
   return (
     compareDate.getDate() === today.getDate() &&
     compareDate.getMonth() === today.getMonth() &&
@@ -59,15 +71,21 @@ export function getWeekDates(date: Date): Date[] {
 }
 
 export function getWeekDatesISO(date: Date): string[] {
-  return getWeekDates(date).map(d => formatDate(d));
+  return getWeekDates(date).map((d) => formatDate(d));
 }
 
-export function getDayName(date: Date | string, abbreviated: boolean = false): string {
-  const parsedDate = typeof date === 'string' ? parseISO(date) : date;
-  return format(parsedDate, abbreviated ? 'EEE' : 'EEEE');
+export function getDayName(
+  date: Date | string,
+  abbreviated: boolean = false,
+): string {
+  const parsedDate = typeof date === "string" ? parseISO(date) : date;
+  return format(parsedDate, abbreviated ? "EEE" : "EEEE");
 }
 
-export function getMonthName(date: Date | string, abbreviated: boolean = false): string {
-  const parsedDate = typeof date === 'string' ? parseISO(date) : date;
-  return format(parsedDate, abbreviated ? 'MMM' : 'MMMM');
+export function getMonthName(
+  date: Date | string,
+  abbreviated: boolean = false,
+): string {
+  const parsedDate = typeof date === "string" ? parseISO(date) : date;
+  return format(parsedDate, abbreviated ? "MMM" : "MMMM");
 }

@@ -1,13 +1,32 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client.ts";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card.tsx";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs.tsx";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card.tsx";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@/components/ui/tabs.tsx";
 import { Button } from "@/components/ui/button.tsx";
 import { DhorBook } from "@/components/dhor-book/DhorBook.tsx";
 import { ClassroomRecords } from "@/components/dhor-book/ClassroomRecords.tsx";
-import { Loader2, Plus, Calendar, Search, BookOpen, Users, AlertCircle } from "lucide-react";
+import {
+  AlertCircle,
+  BookOpen,
+  Calendar,
+  Loader2,
+  Plus,
+  Search,
+  Users,
+} from "lucide-react";
 import { StudentSearch } from "@/components/student-progress/StudentSearch.tsx";
 import { AttendanceStats } from "@/components/student-progress/AttendanceStats.tsx";
 import { StudentPerformanceMetrics } from "@/components/student-progress/StudentPerformanceMetrics.tsx";
@@ -20,7 +39,9 @@ interface TeacherDhorBookProps {
 
 export const TeacherDhorBook = ({ teacherId }: TeacherDhorBookProps) => {
   const location = useLocation();
-  const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
+  const [selectedStudentId, setSelectedStudentId] = useState<string | null>(
+    null,
+  );
   const [_selectedStudentName, setSelectedStudentName] = useState<string>("");
   const [activeTab, setActiveTab] = useState("entries");
   const [viewMode, setViewMode] = useState<"daily" | "classroom">("daily");
@@ -28,23 +49,25 @@ export const TeacherDhorBook = ({ teacherId }: TeacherDhorBookProps) => {
 
   // Set up realtime updates for the records
   useRealtimeLeaderboard(teacherId, () => {
-    console.log("Realtime update detected, refreshing classroom/student records");
+    console.log(
+      "Realtime update detected, refreshing classroom/student records",
+    );
   });
 
   // Check URL for studentId parameter
   useEffect(() => {
     const searchParams = new URLSearchParams(location.search);
-    const studentId = searchParams.get('studentId');
+    const studentId = searchParams.get("studentId");
     if (studentId) {
       setSelectedStudentId(studentId);
       // Get student name from database
       const fetchStudentName = async () => {
         const { data } = await supabase
-          .from('students')
-          .select('name')
-          .eq('id', studentId)
+          .from("students")
+          .select("name")
+          .eq("id", studentId)
           .single();
-          
+
         if (data) {
           setSelectedStudentName(data.name);
         } else {
@@ -56,39 +79,40 @@ export const TeacherDhorBook = ({ teacherId }: TeacherDhorBookProps) => {
   }, [location.search]);
 
   // Verify student exists
-  const { data: studentVerification, isLoading: studentVerifyLoading } = useQuery({
-    queryKey: ['verify-student', selectedStudentId],
-    queryFn: async () => {
-      if (!selectedStudentId) return null;
-      
-      const { data, error } = await supabase
-        .from('students')
-        .select('id, name')
-        .eq('id', selectedStudentId)
-        .single();
-      
-      if (error) {
-        console.error("Error verifying student:", error);
-        return null;
-      }
-      
-      return data;
-    },
-    enabled: !!selectedStudentId
-  });
+  const { data: studentVerification, isLoading: studentVerifyLoading } =
+    useQuery({
+      queryKey: ["verify-student", selectedStudentId],
+      queryFn: async () => {
+        if (!selectedStudentId) return null;
+
+        const { data, error } = await supabase
+          .from("students")
+          .select("id, name")
+          .eq("id", selectedStudentId)
+          .single();
+
+        if (error) {
+          console.error("Error verifying student:", error);
+          return null;
+        }
+
+        return data;
+      },
+      enabled: !!selectedStudentId,
+    });
 
   // Fetch attendance records for the selected student
   const { data: attendanceData, isLoading: attendanceLoading } = useQuery({
-    queryKey: ['student-attendance', selectedStudentId],
+    queryKey: ["student-attendance", selectedStudentId],
     queryFn: async () => {
       if (!selectedStudentId || !studentVerification) return [];
-      
+
       const { data, error } = await supabase
-        .from('attendance')
-        .select('*')
-        .eq('student_id', selectedStudentId)
-        .order('date', { ascending: false });
-      
+        .from("attendance")
+        .select("*")
+        .eq("student_id", selectedStudentId)
+        .order("date", { ascending: false });
+
       if (error) throw error;
       return data || [];
     },
@@ -106,20 +130,34 @@ export const TeacherDhorBook = ({ teacherId }: TeacherDhorBookProps) => {
   return (
     <div className="space-y-4 md:space-y-6 pb-16 px-1 sm:px-0">
       <div className="text-center sm:text-left">
-        <h2 className="text-lg sm:text-xl md:text-2xl font-bold tracking-tight">Dhor Book</h2>
-        <p className="text-xs sm:text-sm text-muted-foreground">Record and track student progress</p>
+        <h2 className="text-lg sm:text-xl md:text-2xl font-bold tracking-tight">
+          Dhor Book
+        </h2>
+        <p className="text-xs sm:text-sm text-muted-foreground">
+          Record and track student progress
+        </p>
       </div>
 
       {/* View mode tabs - more prominent */}
       <Card className="overflow-hidden">
-        <Tabs value={viewMode} onValueChange={(value) => setViewMode(value as "daily" | "classroom")} className="w-full">
+        <Tabs
+          value={viewMode}
+          onValueChange={(value) => setViewMode(value as "daily" | "classroom")}
+          className="w-full"
+        >
           <div className="bg-muted/40 px-2 py-2 sm:px-4">
             <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="daily" className="flex items-center gap-1 sm:gap-2 text-xs py-1.5">
+              <TabsTrigger
+                value="daily"
+                className="flex items-center gap-1 sm:gap-2 text-xs py-1.5"
+              >
                 <BookOpen className="h-3 w-3 sm:h-4 sm:w-4" />
                 <span>Daily Records</span>
               </TabsTrigger>
-              <TabsTrigger value="classroom" className="flex items-center gap-1 sm:gap-2 text-xs py-1.5">
+              <TabsTrigger
+                value="classroom"
+                className="flex items-center gap-1 sm:gap-2 text-xs py-1.5"
+              >
                 <Users className="h-3 w-3 sm:h-4 sm:w-4" />
                 <span>Classroom</span>
               </TabsTrigger>
@@ -144,12 +182,14 @@ export const TeacherDhorBook = ({ teacherId }: TeacherDhorBookProps) => {
                   </div>
                 )}
 
-                {selectedStudentId && !studentVerifyLoading && !studentVerification && (
+                {selectedStudentId && !studentVerifyLoading &&
+                  !studentVerification && (
                   <div className="flex flex-col items-center justify-center p-6 text-center space-y-3 mt-4 border rounded-lg bg-muted/20">
                     <AlertCircle className="h-8 w-8 text-yellow-500" />
                     <h3 className="text-base font-medium">Student Not Found</h3>
                     <p className="text-sm text-muted-foreground max-w-md">
-                      The student with ID {selectedStudentId} could not be found. Please select a different student.
+                      The student with ID {selectedStudentId}{" "}
+                      could not be found. Please select a different student.
                     </p>
                   </div>
                 )}
@@ -171,67 +211,112 @@ export const TeacherDhorBook = ({ teacherId }: TeacherDhorBookProps) => {
                         </Button>
                       </div>
                     </div>
-                    
+
                     {/* Performance metrics at the top */}
                     <StudentPerformanceMetrics studentId={selectedStudentId} />
-                    
+
                     <Tabs value={activeTab} onValueChange={setActiveTab}>
                       <div className="overflow-x-auto -mx-2 px-2">
                         <TabsList className="w-full flex-nowrap min-w-max">
-                          <TabsTrigger value="entries" className="text-xs">Dhor Book</TabsTrigger>
-                          <TabsTrigger value="attendance" className="text-xs">Attendance</TabsTrigger>
-                          <TabsTrigger value="summary" className="text-xs">Summary</TabsTrigger>
-                          <TabsTrigger value="analytics" className="text-xs">Analytics</TabsTrigger>
+                          <TabsTrigger value="entries" className="text-xs">
+                            Dhor Book
+                          </TabsTrigger>
+                          <TabsTrigger value="attendance" className="text-xs">
+                            Attendance
+                          </TabsTrigger>
+                          <TabsTrigger value="summary" className="text-xs">
+                            Summary
+                          </TabsTrigger>
+                          <TabsTrigger value="analytics" className="text-xs">
+                            Analytics
+                          </TabsTrigger>
                         </TabsList>
                       </div>
-                      
+
                       <TabsContent value="entries" className="mt-3 sm:mt-4">
-                        <DhorBook studentId={selectedStudentId} teacherId={teacherId} />
+                        <DhorBook
+                          studentId={selectedStudentId}
+                          teacherId={teacherId}
+                        />
                       </TabsContent>
-                      
+
                       <TabsContent value="attendance" className="mt-3 sm:mt-4">
                         <Card>
                           <CardHeader className="p-3 sm:p-4 md:p-6">
-                            <CardTitle className="text-sm sm:text-base">Attendance Records</CardTitle>
-                            <CardDescription className="text-xs">View and track attendance for {studentVerification.name}</CardDescription>
+                            <CardTitle className="text-sm sm:text-base">
+                              Attendance Records
+                            </CardTitle>
+                            <CardDescription className="text-xs">
+                              View and track attendance for{" "}
+                              {studentVerification.name}
+                            </CardDescription>
                           </CardHeader>
                           <CardContent className="p-3 sm:p-4 md:p-6 pt-0">
-                            {attendanceLoading ? (
-                              <div className="flex justify-center py-6 sm:py-8">
-                                <Loader2 className="h-6 w-6 animate-spin text-primary" />
-                              </div>
-                            ) : attendanceData && attendanceData.length > 0 ? (
-                              <AttendanceStats attendanceData={attendanceData} />
-                            ) : (
-                              <div className="text-center py-6 sm:py-8">
-                                <p className="text-xs sm:text-sm text-muted-foreground">No attendance records found for this student.</p>
-                                <Button className="mt-3 sm:mt-4" variant="outline" size="sm">Record Attendance</Button>
-                              </div>
-                            )}
+                            {attendanceLoading
+                              ? (
+                                <div className="flex justify-center py-6 sm:py-8">
+                                  <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                                </div>
+                              )
+                              : attendanceData && attendanceData.length > 0
+                              ? (
+                                <AttendanceStats
+                                  attendanceData={attendanceData}
+                                />
+                              )
+                              : (
+                                <div className="text-center py-6 sm:py-8">
+                                  <p className="text-xs sm:text-sm text-muted-foreground">
+                                    No attendance records found for this
+                                    student.
+                                  </p>
+                                  <Button
+                                    className="mt-3 sm:mt-4"
+                                    variant="outline"
+                                    size="sm"
+                                  >
+                                    Record Attendance
+                                  </Button>
+                                </div>
+                              )}
                           </CardContent>
                         </Card>
                       </TabsContent>
-                      
+
                       <TabsContent value="summary" className="mt-3 sm:mt-4">
                         <Card>
                           <CardHeader className="p-3 sm:p-4 md:p-6">
-                            <CardTitle className="text-sm sm:text-base">Progress Summary</CardTitle>
-                            <CardDescription className="text-xs">Overview of student's progress</CardDescription>
+                            <CardTitle className="text-sm sm:text-base">
+                              Progress Summary
+                            </CardTitle>
+                            <CardDescription className="text-xs">
+                              Overview of student's progress
+                            </CardDescription>
                           </CardHeader>
                           <CardContent className="p-3 sm:p-4 md:p-6 pt-0">
-                            <p className="text-xs sm:text-sm text-muted-foreground">Progress summary will be shown here based on Dhor Book entries.</p>
+                            <p className="text-xs sm:text-sm text-muted-foreground">
+                              Progress summary will be shown here based on Dhor
+                              Book entries.
+                            </p>
                           </CardContent>
                         </Card>
                       </TabsContent>
-                      
+
                       <TabsContent value="analytics" className="mt-3 sm:mt-4">
                         <Card>
                           <CardHeader className="p-3 sm:p-4 md:p-6">
-                            <CardTitle className="text-sm sm:text-base">Progress Analytics</CardTitle>
-                            <CardDescription className="text-xs">Detailed analysis of student's performance</CardDescription>
+                            <CardTitle className="text-sm sm:text-base">
+                              Progress Analytics
+                            </CardTitle>
+                            <CardDescription className="text-xs">
+                              Detailed analysis of student's performance
+                            </CardDescription>
                           </CardHeader>
                           <CardContent className="p-3 sm:p-4 md:p-6 pt-0">
-                            <p className="text-xs sm:text-sm text-muted-foreground">Progress analytics will be shown here based on Dhor Book entries.</p>
+                            <p className="text-xs sm:text-sm text-muted-foreground">
+                              Progress analytics will be shown here based on
+                              Dhor Book entries.
+                            </p>
                           </CardContent>
                         </Card>
                       </TabsContent>
@@ -245,16 +330,20 @@ export const TeacherDhorBook = ({ teacherId }: TeacherDhorBookProps) => {
                       <div className="h-12 w-12 sm:h-16 sm:w-16 rounded-full bg-muted/60 flex items-center justify-center">
                         <Search className="h-6 w-6 sm:h-8 sm:w-8 text-muted-foreground/60" />
                       </div>
-                      <h3 className="text-base sm:text-lg font-medium">Select a Student</h3>
+                      <h3 className="text-base sm:text-lg font-medium">
+                        Select a Student
+                      </h3>
                       <p className="text-xs sm:text-sm text-muted-foreground max-w-md">
-                        Please search and select a student above to view their Dhor Book entries, attendance records, and progress analytics.
+                        Please search and select a student above to view their
+                        Dhor Book entries, attendance records, and progress
+                        analytics.
                       </p>
                     </div>
                   </Card>
                 )}
               </>
             )}
-            
+
             {viewMode === "classroom" && (
               <ClassroomRecords teacherId={teacherId} />
             )}

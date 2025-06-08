@@ -1,5 +1,5 @@
 import { Card, CardContent } from "@/components/ui/card.tsx";
-import { School, User, Clock, Activity } from "lucide-react";
+import { Activity, Clock, School, User } from "lucide-react";
 import { TeacherAccount } from "@/types/teacher.ts";
 
 interface TeacherStatsCardsProps {
@@ -20,21 +20,21 @@ export function TeacherStatsCards({ teachers = [] }: TeacherStatsCardsProps) {
           </div>
         </CardContent>
       </Card>
-      
+
       <Card className="stats-card">
         <CardContent className="p-6">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-muted-foreground">Active Teachers</p>
               <p className="text-2xl font-bold">
-                {teachers?.filter(t => t.status === 'active').length || 0}
+                {teachers?.filter((t) => t.status === "active").length || 0}
               </p>
             </div>
             <School className="h-8 w-8 text-green-500/50" />
           </div>
         </CardContent>
       </Card>
-      
+
       <Card className="stats-card">
         <CardContent className="p-6">
           <div className="flex items-center justify-between">
@@ -48,7 +48,7 @@ export function TeacherStatsCards({ teachers = [] }: TeacherStatsCardsProps) {
           </div>
         </CardContent>
       </Card>
-      
+
       <Card className="stats-card">
         <CardContent className="p-6">
           <div className="flex items-center justify-between">

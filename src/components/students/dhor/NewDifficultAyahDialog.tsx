@@ -1,4 +1,4 @@
-import { useQueryClient, useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
@@ -27,7 +27,7 @@ const formSchema = z.object({
   surah_number: z.coerce.number().min(1).max(114),
   ayah_number: z.coerce.number().min(1),
   juz_number: z.coerce.number().min(1).max(30),
-  notes: z.string().optional()
+  notes: z.string().optional(),
 });
 
 interface NewDifficultAyahDialogProps {
@@ -39,11 +39,11 @@ interface NewDifficultAyahDialogProps {
 export const NewDifficultAyahDialog = ({
   open,
   onOpenChange,
-  studentId
+  studentId,
 }: NewDifficultAyahDialogProps) => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  
+
   // Setup form
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -51,10 +51,10 @@ export const NewDifficultAyahDialog = ({
       surah_number: 1,
       ayah_number: 1,
       juz_number: 1,
-      notes: ''
-    }
+      notes: "",
+    },
   });
-  
+
   // Mutation for adding a difficult ayah
   const addDifficultAyah = useMutation<
     boolean,
@@ -63,33 +63,33 @@ export const NewDifficultAyahDialog = ({
   >({
     mutationFn: async (data) => {
       const { error } = await supabase
-        .from('difficult_ayahs')
+        .from("difficult_ayahs")
         .insert([{
           student_id: studentId,
           surah_number: data.surah_number,
           ayah_number: data.ayah_number,
           juz_number: data.juz_number,
-          notes: data.notes || '',
-          date_added: new Date().toISOString().split('T')[0],
+          notes: data.notes || "",
+          date_added: new Date().toISOString().split("T")[0],
           revision_count: 0,
           last_revised: null,
-          status: 'active'
+          status: "active",
         }]);
-      
+
       if (error) throw error;
       return true;
     },
     onSuccess: () => {
       toast({
         title: "Success",
-        description: "Difficult ayah added successfully"
+        description: "Difficult ayah added successfully",
       });
-      
+
       // Invalidate query to refresh data
       queryClient.invalidateQueries({
-        queryKey: ['student-difficult-ayahs', studentId]
+        queryKey: ["student-difficult-ayahs", studentId],
       });
-      
+
       // Reset form and close dialog
       form.reset();
       onOpenChange(false);
@@ -98,23 +98,23 @@ export const NewDifficultAyahDialog = ({
       toast({
         title: "Error",
         description: error.message || "Failed to add difficult ayah",
-        variant: "destructive"
+        variant: "destructive",
       });
-    }
+    },
   });
-  
+
   // Form submission handler
   function onSubmit(values: z.infer<typeof formSchema>) {
     addDifficultAyah.mutate(values);
   }
-  
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle>Add Difficult Ayah</DialogTitle>
         </DialogHeader>
-        
+
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <div className="grid grid-cols-2 gap-4">
@@ -131,7 +131,7 @@ export const NewDifficultAyahDialog = ({
                   </FormItem>
                 )}
               />
-              
+
               <FormField
                 control={form.control}
                 name="ayah_number"
@@ -146,7 +146,7 @@ export const NewDifficultAyahDialog = ({
                 )}
               />
             </div>
-            
+
             <FormField
               control={form.control}
               name="juz_number"
@@ -160,7 +160,7 @@ export const NewDifficultAyahDialog = ({
                 </FormItem>
               )}
             />
-            
+
             <FormField
               control={form.control}
               name="notes"
@@ -168,7 +168,7 @@ export const NewDifficultAyahDialog = ({
                 <FormItem>
                   <FormLabel>Notes</FormLabel>
                   <FormControl>
-                    <Textarea 
+                    <Textarea
                       placeholder="Add notes about why this ayah is difficult"
                       {...field}
                     />
@@ -177,16 +177,22 @@ export const NewDifficultAyahDialog = ({
                 </FormItem>
               )}
             />
-            
-            <Button type="submit" disabled={addDifficultAyah.isPending} className="w-full">
-              {addDifficultAyah.isPending ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Saving...
-                </>
-              ) : (
-                "Add Difficult Ayah"
-              )}
+
+            <Button
+              type="submit"
+              disabled={addDifficultAyah.isPending}
+              className="w-full"
+            >
+              {addDifficultAyah.isPending
+                ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Saving...
+                  </>
+                )
+                : (
+                  "Add Difficult Ayah"
+                )}
             </Button>
           </form>
         </Form>
