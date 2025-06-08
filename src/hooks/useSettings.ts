@@ -1,7 +1,5 @@
-
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client.ts';
 import { useToast } from '@/components/ui/use-toast.ts';
 import { SystemSettings as TypedSystemSettings } from '@/types/settings.ts';
 
@@ -14,7 +12,6 @@ export interface SystemSettings extends TypedSystemSettings {
   notifications_enabled: boolean;
   created_at: string;
   updated_at: string;
-  settings?: Record<string, any>;
 }
 
 export const useSettings = () => {
@@ -23,9 +20,9 @@ export const useSettings = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   // Fetch user settings
-  const { data: settings, isError, error } = useQuery({
+  const { data: settings } = useQuery({
     queryKey: ['user-settings'],
-    queryFn: async () => {
+    queryFn: () => {
       // Return a placeholder since system_settings table doesn't exist yet
       return {
         id: 'placeholder',
@@ -35,7 +32,6 @@ export const useSettings = () => {
         notifications_enabled: true,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
-        settings: {},
         
         // Required properties for SystemSettings interface
         appearance: {
@@ -150,11 +146,11 @@ export const useSettings = () => {
 
   // Update settings mutation
   const updateSettingsMutation = useMutation({
-    mutationFn: async (newSettings: Partial<SystemSettings>) => {
+    mutationFn: (newSettings: Partial<SystemSettings>) => {
       setIsLoading(true);
       // This is a placeholder since system_settings table doesn't exist yet
       console.log("Would update settings:", newSettings);
-      return newSettings;
+      return Promise.resolve(newSettings);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['user-settings'] });
@@ -176,16 +172,16 @@ export const useSettings = () => {
 
   // Create settings mutation
   const createSettingsMutation = useMutation({
-    mutationFn: async (newSettings: Omit<SystemSettings, 'id' | 'created_at' | 'updated_at'>) => {
+    mutationFn: (newSettings: Omit<SystemSettings, 'id' | 'created_at' | 'updated_at'>) => {
       setIsLoading(true);
       // This is a placeholder since system_settings table doesn't exist yet
       console.log("Would create settings:", newSettings);
-      return {
+      return Promise.resolve({
         ...newSettings,
         id: 'new-id',
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
-      };
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['user-settings'] });
@@ -226,8 +222,6 @@ export const useSettings = () => {
   return {
     settings,
     isLoading: isLoading || updateSettingsMutation.isPending || createSettingsMutation.isPending,
-    isError,
-    error,
     saveSettings,
     updateSettings
   };

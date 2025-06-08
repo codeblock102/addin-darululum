@@ -1,8 +1,6 @@
-
-import { cn } from "@/lib/utils";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-
+import { cn } from "@/lib/utils.ts";
+import { Badge } from "@/components/ui/badge.tsx";
+import { Button } from "@/components/ui/button.tsx";
 interface DataCardAction {
   label: string;
   onClick: () => void;

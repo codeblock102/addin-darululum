@@ -1,9 +1,7 @@
-import React from 'react';
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client.ts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card.tsx";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs.tsx";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table.tsx";
 import { Button } from "@/components/ui/button.tsx";
 import { Badge } from "@/components/ui/badge.tsx";
@@ -239,10 +237,12 @@ export function ClassroomRecords({ teacherId }: ClassroomRecordsProps) {
   // Get top 3 students for the leaderboard
   const topStudents = recordsData?.slice(0, 3) || [];
 
+  type BadgeVariant = "default" | "secondary" | "destructive" | "outline";
+
   const getQualityBadge = (quality?: string) => {
     if (!quality) return null;
     
-    let variant = "outline";
+    let variant: BadgeVariant = "outline";
     switch(quality) {
       case "excellent":
         variant = "default";
@@ -261,7 +261,7 @@ export function ClassroomRecords({ teacherId }: ClassroomRecordsProps) {
         break;
     }
     
-    return <Badge variant={variant as any}>{quality}</Badge>;
+    return <Badge variant={variant}>{quality}</Badge>;
   };
 
   const getCompletionStats = () => {

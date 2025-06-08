@@ -1,14 +1,13 @@
-
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/button.tsx";
 import {
   DropdownMenu,
   DropdownMenuTrigger,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
-} from "@/components/ui/dropdown-menu";
+} from "@/components/ui/dropdown-menu.tsx";
 import { MoreHorizontal, Eye, Edit, UserMinus, Trash2 } from "lucide-react";
-import { TeacherAccount } from "@/types/teacher";
+import { TeacherAccount } from "@/types/teacher.ts";
 
 interface TeacherAccountActionsProps {
   teacher: TeacherAccount;

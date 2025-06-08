@@ -9,8 +9,8 @@
  * 
  * Icons are imported from the `lucide-react` library.
  */
-import { Home, Users, School, Settings, Book, FileText, Clock, CalendarDays } from "lucide-react"; // Simplified imports based on usage
-import { NavItem } from "@/types/navigation";
+import { Home, Users, School, Settings, Book, FileText, Clock } from "lucide-react"; // Simplified imports based on usage
+import { NavItem } from "@/types/navigation.ts";
 
 /**
  * @const adminNavItems

@@ -1,18 +1,19 @@
-import React from 'react';
 import { FileDown, FileSpreadsheet } from "lucide-react";
 import { Button } from "@/components/ui/button.tsx";
 import { Card, CardContent } from "@/components/ui/card.tsx";
 import { DailyActivityEntry } from "@/types/dhor-book.ts";
 import { Tables } from "@/integrations/supabase/types.ts";
+import { useToast } from "@/hooks/use-toast.ts";
+import { AttendanceRecord } from "@/types/attendance.ts";
 
 export interface ExportOptionsProps {
   studentId: string;
   studentName: string;
   progressData: DailyActivityEntry[];
-  attendanceData: Tables<"attendance">[];
+  attendanceData: AttendanceRecord[];
   sabaqParaData: Tables<"sabaq_para">[];
   juzRevisionsData: Tables<"juz_revisions">[];
-  toast: any;
+  toast: ReturnType<typeof useToast>['toast'];
   onExportPDF?: () => void;
   onExportCSV?: () => void;
 }
@@ -22,10 +23,6 @@ export const ExportOptions = ({
   onExportCSV, 
   studentId,
   studentName,
-  progressData,
-  attendanceData,
-  sabaqParaData,
-  juzRevisionsData,
   toast
 }: ExportOptionsProps) => {
   

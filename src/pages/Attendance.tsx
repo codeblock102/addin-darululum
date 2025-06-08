@@ -1,4 +1,3 @@
-import React from 'react';
 import { useState } from "react";
 import { AttendanceForm } from "@/components/attendance/AttendanceForm.tsx";
 import { AttendanceTable } from "@/components/attendance/AttendanceTable.tsx";

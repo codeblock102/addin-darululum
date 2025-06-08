@@ -1,9 +1,8 @@
-
-import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form.tsx";
+import { Input } from "@/components/ui/input.tsx";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select.tsx";
+import { Teacher } from "@/types/teacher.ts";
 import { useFormContext } from "react-hook-form";
-import { Teacher } from "@/types/teacher";
 
 interface BasicInfoFieldsProps {
   teachers?: Teacher[];

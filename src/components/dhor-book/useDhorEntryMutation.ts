@@ -1,4 +1,3 @@
-import React from 'react';
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client.ts";
 import { useToast } from "@/hooks/use-toast.ts";
@@ -8,7 +7,7 @@ import type { Database } from "@/types/supabase.ts";
 interface UseDhorEntryMutationProps {
   studentId: string;
   teacherId: string; 
-  onSuccess?: (data?: any) => void;
+  onSuccess?: (data?: unknown) => void;
 }
 
 // Define more specific types for form data parts to help with type safety

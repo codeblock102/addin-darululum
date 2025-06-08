@@ -7,8 +7,8 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import { Card, CardContent } from "@/components/ui/card";
+} from "@/components/ui/table.tsx";
+import { Card, CardContent } from "@/components/ui/card.tsx";
 import { Loader2, BookOpen, Clock, Calendar } from "lucide-react";
 import { format, parseISO, subDays } from "date-fns";
 import {
@@ -17,7 +17,7 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from "@/components/ui/select.tsx";
 
 interface ActivityRecord {
   id: string;
@@ -38,7 +38,7 @@ export function TeacherActivityTab({ teacherId }: TeacherActivityTabProps) {
   // Here we're generating mock data
   const { data: activities, isLoading } = useQuery({
     queryKey: ['teacher-activity', teacherId, period],
-    queryFn: async () => {
+    queryFn: () => {
       // Mock data generator for demo purpose
       const now = new Date();
       const cutoffDate = period === '7days' ? subDays(now, 7) : 
@@ -109,7 +109,7 @@ export function TeacherActivityTab({ teacherId }: TeacherActivityTabProps) {
       <div className="flex justify-between items-center">
         <h3 className="text-lg font-medium">Activity Log</h3>
         <div className="w-[180px]">
-          <Select value={period} onValueChange={(value: any) => setPeriod(value)}>
+          <Select value={period} onValueChange={(value) => setPeriod(value as typeof period)}>
             <SelectTrigger>
               <SelectValue placeholder="Filter by period" />
             </SelectTrigger>

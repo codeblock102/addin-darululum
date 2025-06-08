@@ -10,36 +10,11 @@
  * 
  * The `useAuth` hook is a convenience hook for consuming the `AuthContext`.
  */
-import React from 'react';
-import { createContext, useContext, useEffect, useState, ReactNode } from "react";
+import { useEffect, useState, ReactNode } from "react";
 import { Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client.ts";
 import { useToast } from "@/components/ui/use-toast.ts";
-
-/**
- * @interface AuthContextType
- * @description Defines the shape of the authentication context data.
- * @property {Session | null} session - The current Supabase session object, or null if not authenticated.
- * @property {boolean} isLoading - True if the authentication state is currently being determined or an operation is in progress, false otherwise.
- * @property {() => Promise<void>} signOut - Function to sign the current user out.
- * @property {() => Promise<void>} refreshSession - Function to attempt to refresh the current session.
- * @property {string | null} error - Stores any error message related to authentication operations.
- */
-interface AuthContextType {
-  session: Session | null;
-  isLoading: boolean;
-  signOut: () => Promise<void>;
-  refreshSession: () => Promise<void>;
-  error: string | null;
-}
-
-const AuthContext = createContext<AuthContextType>({ 
-  session: null, 
-  isLoading: true,
-  signOut: async () => { console.warn("signOut called outside of AuthProvider"); },
-  refreshSession: async () => { console.warn("refreshSession called outside of AuthProvider"); },
-  error: null
-});
+import { AuthContext } from "@/types/auth.ts";
 
 /**
  * @component AuthProvider
@@ -178,20 +153,4 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       {children}
     </AuthContext.Provider>
   );
-};
-
-/**
- * @hook useAuth
- * @description Custom hook to easily consume the authentication context.
- * 
- * Ensures that the hook is used within an `AuthProvider` to prevent runtime errors.
- * @throws {Error} If used outside of an `AuthProvider`.
- * @returns {AuthContextType} The authentication context values (session, isLoading, signOut, etc.).
- */
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error("useAuth must be used within an AuthProvider");
-  }
-  return context;
 };

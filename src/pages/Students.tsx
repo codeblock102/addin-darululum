@@ -1,4 +1,3 @@
-import React from 'react';
 /**
  * @file Students.tsx
  * @description This file defines the `Students` page component, which is responsible for displaying and managing a list of students.
@@ -15,7 +14,7 @@ import { StudentList } from "@/components/students/StudentList.tsx";
 import { Input } from "@/components/ui/input.tsx";
 import { Button } from "@/components/ui/button.tsx";
 import { Search, UserPlus, Users } from "lucide-react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card.tsx";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card.tsx";
 import { Progress } from "@/components/ui/progress.tsx";
 import { Skeleton } from "@/components/ui/skeleton.tsx";
 

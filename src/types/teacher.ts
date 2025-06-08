@@ -1,10 +1,12 @@
+import { Json } from "@/types/supabase";
+
 export interface TeacherFormValues {
   name: string;
   bio?: string;
   email?: string;
   phone?: string;
   subject?: string;
-  preferences?: Record<string, any>;
+  preferences?: Json;
   createAccount?: boolean;
   generatePassword?: boolean;
   password?: string;
@@ -12,7 +14,7 @@ export interface TeacherFormValues {
 
 export interface TeacherPreferencesType {
   id: string;
-  preferences?: Record<string, any>;
+  preferences?: Json;
 }
 
 export interface Teacher {
@@ -22,7 +24,7 @@ export interface Teacher {
   email?: string;
   bio?: string;
   phone?: string;
-  preferences?: Record<string, any>;
+  preferences?: Json;
 }
 
 export interface TeacherAccount extends Teacher {

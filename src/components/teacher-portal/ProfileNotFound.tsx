@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button.tsx";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card.tsx";
 import { RefreshCcw, UserPlus, ArrowLeft } from "lucide-react";
 import { useState } from "react";
@@ -51,7 +51,7 @@ export const ProfileNotFound = ({ email, onRefresh, isAdmin = false }: ProfileNo
         if (onRefresh) {
           onRefresh();
         } else {
-          window.location.reload();
+          globalThis.location.reload();
         }
       } else {
         // Profile doesn't exist, show message

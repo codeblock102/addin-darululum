@@ -1,4 +1,3 @@
-import React from 'react';
 import { UserFormData } from "@/types/adminUser.ts";
 import { supabase } from "@/integrations/supabase/client.ts";
 
@@ -34,7 +33,7 @@ export const handleUserSubmit = async (
             role: userRole,
             username: formData.username
           },
-          emailRedirectTo: window.location.origin + '/auth'
+          emailRedirectTo: globalThis.location.origin + '/auth'
         }
       });
       
@@ -81,9 +80,9 @@ export const handleUserSubmit = async (
       onSuccess();
       return `User account created successfully with role: ${userRole}. They can now log in using their email.`;
     }
-  } catch (error: any) {
+  } catch (error) {
     console.error("User creation error details:", error);
-    onError(error.message);
+    onError((error as Error).message);
     throw error;
   }
 };

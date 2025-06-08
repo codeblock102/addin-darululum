@@ -1,6 +1,5 @@
 import { Teacher } from "@/types/teacher";
-import { BookOpen, Bell, Search } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { BookOpen } from "lucide-react";
 
 interface DashboardHeaderProps {
   teacher: Teacher;

@@ -8,7 +8,6 @@
  * The component manages loading states during the seeding operation and provides user feedback via toast notifications for success or failure of each step.
  * It is intended for setup or testing purposes to quickly get a populated database.
  */
-import React from 'react';
 import { useState } from "react";
 import { Button } from "@/components/ui/button.tsx";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card.tsx";
@@ -24,7 +23,7 @@ import { Loader2 } from "lucide-react";
  */
 export default function DatabaseSeeder() {
   const [isLoading, setIsLoading] = useState(false);
-  const [teacherId, setTeacherId] = useState(""); // Replace with actual teacher ID when available
+  const [teacherId] = useState(""); // Replace with actual teacher ID when available
   const { toast } = useToast();
 
   /**

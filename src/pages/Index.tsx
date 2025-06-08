@@ -1,15 +1,44 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button.tsx";
-import { toast } from "@/components/ui/use-toast.ts";
-import { useAuth } from "@/contexts/AuthContext.tsx";
+import { useAuth } from "@/hooks/use-auth.ts";
 
 export default function Index() {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(true);
   const [errorOccurred, setErrorOccurred] = useState(false);
   const { session } = useAuth();
+
+  // Function to check if the user's email is associated with a teacher profile
+  const checkTeacherProfile = useCallback(async (email: string | undefined) => {
+    if (!email) {
+      setIsLoading(false);
+      return;
+    }
+
+    try {
+      const { supabase } = await import("@/integrations/supabase/client.ts");
+      const { data } = await supabase
+        .from('teachers')
+        .select('id')
+        .eq('email', email)
+        .maybeSingle();
+        
+      if (data) {
+        console.log("Found teacher profile, redirecting");
+        localStorage.setItem('userRole', 'teacher');
+        navigate('/teacher-portal');
+      } else {
+        // No specific role found, show the dashboard navigation options
+        setIsLoading(false);
+      }
+    } catch (error) {
+      console.error("Error checking teacher profile:", error);
+      setIsLoading(false);
+      setErrorOccurred(true);
+    }
+  }, [navigate]);
 
   useEffect(() => {
     // Set a maximum timeout for the loading state (even shorter timeout)
@@ -20,7 +49,7 @@ export default function Index() {
     }, 1000); // 1 second timeout for better UX
     
     // Direct access to auth page - should always be immediately available
-    const authPath = window.location.pathname;
+    const authPath = globalThis.location.pathname;
     if (authPath === '/auth') {
       console.log("On auth page, clearing timeout");
       setIsLoading(false);
@@ -68,37 +97,7 @@ export default function Index() {
 
     // Clean up timeout on component unmount
     return () => clearTimeout(timeoutId);
-  }, [navigate, session]);
-
-  // Function to check if the user's email is associated with a teacher profile
-  const checkTeacherProfile = async (email: string | undefined) => {
-    if (!email) {
-      setIsLoading(false);
-      return;
-    }
-
-    try {
-      const { supabase } = await import("@/integrations/supabase/client.ts");
-      const { data } = await supabase
-        .from('teachers')
-        .select('id')
-        .eq('email', email)
-        .maybeSingle();
-        
-      if (data) {
-        console.log("Found teacher profile, redirecting");
-        localStorage.setItem('userRole', 'teacher');
-        navigate('/teacher-portal');
-      } else {
-        // No specific role found, show the dashboard navigation options
-        setIsLoading(false);
-      }
-    } catch (error) {
-      console.error("Error checking teacher profile:", error);
-      setIsLoading(false);
-      setErrorOccurred(true);
-    }
-  };
+  }, [navigate, session, checkTeacherProfile]);
 
   const handleGoToAuth = () => {
     navigate('/auth');
@@ -115,7 +114,7 @@ export default function Index() {
   };
   
   const handleRefresh = () => {
-    window.location.reload();
+    globalThis.location.reload();
   };
 
   return (

@@ -8,16 +8,16 @@ export function useIsMobile() {
 
   React.useEffect(() => {
     const handleChange = () => {
-      setIsMobile(window.innerWidth < MOBILE_BREAKPOINT)
+      setIsMobile(globalThis.innerWidth < MOBILE_BREAKPOINT)
     }
     
     // Add event listener
-    window.addEventListener("resize", handleChange)
+    globalThis.addEventListener("resize", handleChange)
     
     // Set initial value
     handleChange()
     
-    return () => window.removeEventListener("resize", handleChange)
+    return () => globalThis.removeEventListener("resize", handleChange)
   }, [])
 
   return !!isMobile
@@ -28,7 +28,7 @@ export const useMediaQuery = (query: string) => {
   const [matches, setMatches] = React.useState(false)
   
   React.useEffect(() => {
-    const mediaQuery = window.matchMedia(query)
+    const mediaQuery = globalThis.matchMedia(query)
     
     const handleChange = () => {
       setMatches(mediaQuery.matches)

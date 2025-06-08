@@ -1,5 +1,4 @@
-import React from 'react';
-import { Tabs, TabsContent } from "@/components/ui/tabs.tsx";
+import { TabsContent } from "@/components/ui/tabs.tsx";
 import { SystemSettings } from "@/types/settings.ts";
 import { AppearanceSettingsSection } from "./AppearanceSettings.tsx";
 import { NotificationSettingsSection } from "./NotificationSettings.tsx";

@@ -1,6 +1,5 @@
-
-import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
+import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form.tsx";
+import { Input } from "@/components/ui/input.tsx";
 import { useFormContext } from "react-hook-form";
 
 export const TimeFields = () => {

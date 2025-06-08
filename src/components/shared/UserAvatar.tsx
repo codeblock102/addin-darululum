@@ -1,17 +1,16 @@
-import { useAuth } from "@/contexts/AuthContext";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { useAuth } from "@/hooks/use-auth.ts";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar.tsx";
+import { Button } from "@/components/ui/button.tsx";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu.tsx";
 import { ChevronDown, LogOut } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { toast } from "@/components/ui/use-toast";
+import { toast } from "@/components/ui/use-toast.ts";
 
 interface UserAvatarProps {
   isTeacher: boolean;
-  large?: boolean;
 }
 
-export const UserAvatar = ({ isTeacher, large }: UserAvatarProps) => {
+export const UserAvatar = ({ isTeacher }: UserAvatarProps) => {
   const navigate = useNavigate();
   const { session, signOut } = useAuth();
   const user = session?.user;

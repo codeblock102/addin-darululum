@@ -1,8 +1,5 @@
-
 import { MyStudents } from "../MyStudents";
-import { TeacherDhorBook } from "../TeacherDhorBook";
 import { TeacherAttendance } from "../TeacherAttendance";
-import { TeacherSchedule } from "../TeacherSchedule";
 import { TeacherPerformance } from "./TeacherPerformance";
 import { TeacherMessagesEnhanced } from "../messaging/TeacherMessagesEnhanced";
 import { DashboardOverview } from "./DashboardOverview";
@@ -10,8 +7,7 @@ import { DashboardOverview } from "./DashboardOverview";
 // This file is kept for backward compatibility
 // The functionality has been moved to DashboardContent.tsx and DashboardNav.tsx
 
-export { DashboardOverview } from "./DashboardOverview";
-export { useActiveTab } from "./DashboardNav";
+export { DashboardOverview } from "./DashboardOverview.tsx";
 
 interface DashboardTabsProps {
   activeTab: string;
@@ -23,8 +19,6 @@ export const DashboardTabContent = ({ activeTab, teacherId, teacherName }: Dashb
   switch (activeTab) {
     case "students":
       return <MyStudents teacherId={teacherId} />;
-    case "dhor-book":
-      return <TeacherDhorBook teacherId={teacherId} />;
     case "attendance":
       return <TeacherAttendance teacherId={teacherId} />; 
     case "performance":

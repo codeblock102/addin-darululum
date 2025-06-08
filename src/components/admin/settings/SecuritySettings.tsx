@@ -1,4 +1,3 @@
-import React from 'react';
 import { Label } from "@/components/ui/label.tsx";
 import { Switch } from "@/components/ui/switch.tsx";
 import { Slider } from "@/components/ui/slider.tsx";
@@ -13,7 +12,7 @@ interface SecuritySettingsSectionProps {
 }
 
 export function SecuritySettingsSection({ settings, onUpdate }: SecuritySettingsSectionProps) {
-  const handleChange = (key: keyof SecuritySettings, value: any) => {
+  const handleChange = <K extends keyof SecuritySettings>(key: K, value: SecuritySettings[K]) => {
     onUpdate({ ...settings, [key]: value });
   };
 

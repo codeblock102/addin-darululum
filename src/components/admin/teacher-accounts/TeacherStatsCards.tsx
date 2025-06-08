@@ -1,7 +1,6 @@
-
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card.tsx";
 import { School, User, Clock, Activity } from "lucide-react";
-import { TeacherAccount } from "@/types/teacher";
+import { TeacherAccount } from "@/types/teacher.ts";
 
 interface TeacherStatsCardsProps {
   teachers: TeacherAccount[] | undefined;

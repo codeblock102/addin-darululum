@@ -17,14 +17,15 @@
  */
 import { Link } from "react-router-dom";
 import { useEffect } from "react";
-import { useIsMobile } from "@/hooks/use-mobile";
-import { Button } from "@/components/ui/button";
+import { useIsMobile } from "@/hooks/use-mobile.tsx";
+import { Button } from "@/components/ui/button.tsx";
 import { ShieldCheck, BookOpen, ChevronLeft, X, Menu } from "lucide-react";
-import { adminNavItems, teacherNavItems } from "@/config/navigation";
-import { useRBAC } from "@/hooks/useRBAC";
-import { SidebarNav } from "./sidebar/SidebarNav";
-import { SidebarUser } from "./sidebar/SidebarUser";
-import { cn } from "@/lib/utils";
+import { adminNavItems, teacherNavItems } from "@/config/navigation.ts";
+import { type NavItem } from "@/types/navigation.ts";
+import { useRBAC } from "@/hooks/useRBAC.ts";
+import { SidebarNav } from "./sidebar/SidebarNav.tsx";
+import { SidebarUser } from "./sidebar/SidebarUser.tsx";
+import { cn } from "@/lib/utils.ts";
 
 interface SidebarProps {
   /** Optional callback function to be invoked when the sidebar should be closed, typically on mobile. */
@@ -68,7 +69,7 @@ export const Sidebar = ({ onCloseSidebar, toggleSidebar, isOpen }: SidebarProps)
   const isMobile = useIsMobile();
   const { isTeacher, isAdmin, isLoading: isRoleLoading } = useRBAC();
   
-  let navItems;
+  let navItems: NavItem[];
   if (isAdmin) {
     navItems = adminNavItems;
   } else if (isTeacher) {
@@ -85,10 +86,10 @@ export const Sidebar = ({ onCloseSidebar, toggleSidebar, isOpen }: SidebarProps)
       }
     };
 
-    window.addEventListener('navigate-mobile', handleNavigation);
+    globalThis.addEventListener('navigate-mobile', handleNavigation);
     
     return () => {
-      window.removeEventListener('navigate-mobile', handleNavigation);
+      globalThis.removeEventListener('navigate-mobile', handleNavigation);
     };
   }, [onCloseSidebar, isMobile]);
 

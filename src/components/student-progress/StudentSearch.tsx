@@ -1,5 +1,5 @@
 import React from 'react';
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client.ts";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card.tsx";

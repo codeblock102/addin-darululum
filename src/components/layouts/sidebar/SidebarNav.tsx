@@ -1,7 +1,7 @@
 import { Link, useLocation } from "react-router-dom";
-import { cn } from "@/lib/utils";
-import { NavItem } from "@/types/navigation";
-import { useIsMobile } from "@/hooks/use-mobile";
+import { cn } from "@/lib/utils.ts";
+import { NavItem } from "@/types/navigation.ts";
+import { useIsMobile } from "@/hooks/use-mobile.tsx";
 
 interface SidebarNavProps {
   items: NavItem[];
@@ -26,11 +26,10 @@ export const SidebarNav = ({ items, isAdmin, isOpen }: SidebarNavProps) => {
     return location.pathname === item.href;
   };
 
-  const handleNavigation = (event: React.MouseEvent<HTMLAnchorElement>) => {
-    if (isMobile) {
-      // Only dispatch on mobile to close sidebar
+  const handleNavigation = (_event: React.MouseEvent<HTMLAnchorElement>) => {
+    if (isMobile && !isOpen) {
       const navEvent = new CustomEvent('navigate-mobile');
-      window.dispatchEvent(navEvent);
+      globalThis.dispatchEvent(navEvent);
     }
   };
 

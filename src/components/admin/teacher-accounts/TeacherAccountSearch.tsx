@@ -1,5 +1,4 @@
-
-import { SearchInput } from "@/components/table/SearchInput";
+import { SearchInput } from "@/components/table/SearchInput.tsx";
 
 interface TeacherAccountSearchProps {
   searchQuery: string;

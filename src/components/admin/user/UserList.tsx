@@ -1,9 +1,7 @@
-
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Dialog } from "@/components/ui/dialog";
-import { UserDialog } from "@/components/admin/UserDialog";
-import { Loader2 } from "lucide-react";
+import { Button } from "@/components/ui/button.tsx";
+import { Dialog } from "@/components/ui/dialog.tsx";
+import { UserDialog } from "@/components/admin/UserDialog.tsx";
 
 interface User {
   id: string;

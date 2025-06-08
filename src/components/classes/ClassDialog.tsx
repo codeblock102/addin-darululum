@@ -1,4 +1,3 @@
-import React from 'react';
 import { DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog.tsx";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client.ts";
@@ -7,7 +6,7 @@ import { useClassSubmit } from "./hooks/useClassSubmit.ts";
 import { ClassFormData } from "./validation/classFormSchema.ts";
 
 interface ClassDialogProps {
-  selectedClass: any;
+  selectedClass: (Partial<ClassFormData> & { id: string }) | null;
   onClose: () => void;
 }
 

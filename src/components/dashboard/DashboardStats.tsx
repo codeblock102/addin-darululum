@@ -1,4 +1,3 @@
-import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { StatsCard } from './StatsCard.tsx';
 import { Users, Clock, GraduationCap, BookOpen } from 'lucide-react';
@@ -39,14 +38,14 @@ export const DashboardStats = () => {
 
   const { data: attendanceRate } = useQuery({
     queryKey: ['attendanceRate'],
-    queryFn: async () => {
+    queryFn: () => {
       return 92;
     }
   });
 
   const { data: activeClasses } = useQuery({
     queryKey: ['activeClasses'],
-    queryFn: async () => {
+    queryFn: () => {
       return 8;
     }
   });

@@ -10,11 +10,10 @@
  *    - `AuthProvider`: For managing authentication state and user information across the application.
  * 4. Rendering the root component into the DOM element with the ID "root" (typically in `index.html`).
  */
-
 import { createRoot } from 'react-dom/client'
 import App from './App.tsx'
 import './index.css'
-import { AuthProvider } from "@/contexts/AuthContext"
+import { AuthProvider } from "@/contexts/AuthContext.tsx"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 
 const queryClient = new QueryClient();

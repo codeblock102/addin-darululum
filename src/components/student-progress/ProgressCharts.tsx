@@ -1,4 +1,3 @@
-import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card.tsx";
 import { DailyActivityEntry } from "@/types/dhor-book.ts";
 import { Tables } from "@/integrations/supabase/types.ts";
@@ -11,9 +10,7 @@ export interface ProgressChartsProps {
 }
 
 export const ProgressCharts = ({ 
-  progressData, 
-  sabaqParaData, 
-  juzRevisionsData 
+  progressData,
 }: ProgressChartsProps) => {
   // Transform data for chart visualization
   const chartData = progressData.map(entry => {

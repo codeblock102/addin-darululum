@@ -1,4 +1,3 @@
-import React from 'react';
 import { Label } from "@/components/ui/label.tsx";
 import { Switch } from "@/components/ui/switch.tsx";
 import { NotificationSettings } from "@/types/settings.ts";

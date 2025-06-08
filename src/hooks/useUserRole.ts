@@ -1,7 +1,6 @@
-
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client.ts";
-import { useAuth } from "@/contexts/AuthContext.tsx";
+import { useAuth } from "@/hooks/use-auth.ts";
 
 export const useUserRole = () => {
   const { session } = useAuth();

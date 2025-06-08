@@ -1,4 +1,3 @@
-import React from 'react';
 import { Card, CardContent } from "@/components/ui/card.tsx";
 import { DailyActivityEntry } from "@/types/dhor-book.ts";
 import { Tables } from "@/integrations/supabase/types.ts";

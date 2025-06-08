@@ -1,15 +1,22 @@
-import React from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select.tsx";
 import { Loader2 } from "lucide-react";
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form.tsx";
 import { UseFormReturn } from "react-hook-form";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client.ts";
+import { AttendanceStatus } from "@/types/attendance.ts";
+
+type AttendanceFormValues = {
+  class_id: string;
+  student_id: string;
+  status: AttendanceStatus;
+  notes: string;
+};
 
 interface StudentSelectorProps {
   students?: { id: string; name: string }[];
   isLoading: boolean;
-  form: UseFormReturn<any>;
+  form: UseFormReturn<AttendanceFormValues>;
   disabled?: boolean;
   selectedStudent?: string;
   setSelectedStudent?: (value: string) => void;

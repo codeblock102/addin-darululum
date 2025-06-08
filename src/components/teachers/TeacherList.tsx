@@ -5,10 +5,10 @@ import { useToast } from "@/hooks/use-toast.ts";
 import { Button } from "@/components/ui/button.tsx";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table.tsx";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog.tsx";
-import { Pencil, Trash2, Users, UserCheck, Mail, Phone, Loader2 } from "lucide-react";
+import { Pencil, Trash2, Users, UserCheck, Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge.tsx";
 import { Card, CardContent } from "@/components/ui/card.tsx";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip.tsx";
+
 interface Teacher {
   id: string;
   name: string;
@@ -81,10 +81,10 @@ export const TeacherList = ({
       queryClient.invalidateQueries({
         queryKey: ['teachers']
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast({
         title: "Error deleting teacher",
-        description: error.message,
+        description: error instanceof Error ? error.message : "An unknown error occurred",
         variant: "destructive"
       });
     } finally {

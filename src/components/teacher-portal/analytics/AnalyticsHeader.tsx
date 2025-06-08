@@ -1,7 +1,6 @@
-
-import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Button } from "@/components/ui/button";
+import { CardDescription, CardHeader, CardTitle } from "@/components/ui/card.tsx";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select.tsx";
+import { Button } from "@/components/ui/button.tsx";
 import { Download } from "lucide-react";
 
 interface AnalyticsHeaderProps {

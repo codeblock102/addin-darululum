@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client.ts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card.tsx";
 import { Input } from "@/components/ui/input.tsx";
 import { Button } from "@/components/ui/button.tsx";
-import { Loader2, Search, UserPlus, UserRound } from "lucide-react";
+import { Loader2, Search, UserRound } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { AddStudentDialog } from "../students/AddStudentDialog.tsx";
 

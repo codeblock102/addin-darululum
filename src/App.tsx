@@ -1,4 +1,3 @@
-import React from 'react';
 /**
  * @file src/App.tsx
  * @summary This is the main application component that sets up the overall structure, routing, and global providers.
@@ -12,7 +11,7 @@ import React from 'react';
  * 
  * It also includes the `<Toaster>` component, which is used to display toast notifications globally throughout the application.
  */
-import { BrowserRouter, Routes, Route, Outlet } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Toaster } from "@/components/ui/toaster.tsx";
 import { ThemeProvider } from "@/components/theme-provider.tsx";
 import Index from "@/pages/Index.tsx";
@@ -22,10 +21,7 @@ import Teachers from "@/pages/Teachers.tsx";
 import StudentDetail from "@/pages/StudentDetail.tsx";
 import Dashboard from "@/pages/Dashboard.tsx";
 import Classes from "@/pages/Classes.tsx";
-import Progress from "@/pages/Progress.tsx";
 import ProgressBook from "@/pages/ProgressBook.tsx";
-import { TeacherAttendance } from "@/components/teacher-portal/TeacherAttendance.tsx";
-import StudentProgress from "@/pages/StudentProgress.tsx";
 import TeacherAccounts from "@/pages/TeacherAccounts.tsx";
 import Auth from "@/pages/Auth.tsx";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute.tsx";
@@ -86,10 +82,7 @@ function App() {
             <Route path="/teachers" element={<ProtectedRoute requireAdmin><Teachers /></ProtectedRoute>} />
             <Route path="/teachers/:id" element={<ProtectedRoute requireAdmin><StudentDetail /></ProtectedRoute>} />
             <Route path="/classes" element={<Classes />} />
-            <Route path="/progress" element={<Progress />} />
             <Route path="/progress-book" element={<ProgressBook />} />
-            <Route path="/attendance" element={<TeacherAttendance />} />
-            <Route path="/student-progress" element={<StudentProgress />} />
             <Route path="/teacher-accounts" element={<ProtectedRoute requireAdmin><TeacherAccounts /></ProtectedRoute>} />
             <Route path="/settings" element={<Settings />} />
             <Route path="/preferences" element={<Preferences />} />

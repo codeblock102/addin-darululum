@@ -1,9 +1,18 @@
-
-import { DailyActivityEntry } from "@/types/dhor-book";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Label } from "@/components/ui/label";
+import { DailyActivityEntry } from "@/types/dhor-book.ts";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card.tsx";
+import { Checkbox } from "@/components/ui/checkbox.tsx";
+import { Label } from "@/components/ui/label.tsx";
 import { format } from "date-fns";
+
+interface JuzRevision {
+  id: string;
+  dhor_slot: number;
+  juz_number?: number;
+  juz_revised?: number;
+  quarter_start?: number;
+  quarters_covered?: number;
+  memorization_quality?: string;
+}
 
 interface StudentDailyChecklistProps {
   studentId: string;
@@ -11,7 +20,7 @@ interface StudentDailyChecklistProps {
   entries?: DailyActivityEntry[];
 }
 
-export function StudentDailyChecklist({ studentId, date, entries = [] }: StudentDailyChecklistProps) {
+export function StudentDailyChecklist({ studentId: _studentId, date, entries = [] }: StudentDailyChecklistProps) {
   const dateStr = format(date, 'yyyy-MM-dd');
   const todayEntries = entries.filter(entry => entry.entry_date === dateStr);
   
@@ -28,12 +37,12 @@ export function StudentDailyChecklist({ studentId, date, entries = [] }: Student
   
   const hasDhor1Entry = todayEntries.some(entry => 
     entry.juz_revisions_data && 
-    entry.juz_revisions_data.some(jr => jr.dhor_slot === 1)
+    entry.juz_revisions_data.some((jr: JuzRevision) => jr.dhor_slot === 1)
   );
   
   const hasDhor2Entry = todayEntries.some(entry => 
     entry.juz_revisions_data && 
-    entry.juz_revisions_data.some(jr => jr.dhor_slot === 2)
+    entry.juz_revisions_data.some((jr: JuzRevision) => jr.dhor_slot === 2)
   );
   
   return (

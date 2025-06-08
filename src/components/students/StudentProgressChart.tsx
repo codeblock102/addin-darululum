@@ -1,6 +1,6 @@
 
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card.tsx";
 
 interface Progress {
   id: string;
@@ -70,7 +70,7 @@ export const StudentProgressChart = ({ progress }: StudentProgressChartProps) =>
               />
               <YAxis fontSize={12} />
               <Tooltip 
-                formatter={(value, name) => [value, 'Verses Memorized']}
+                formatter={(value, _name) => [value, 'Verses Memorized']}
                 labelFormatter={(label) => `Date: ${label}`}
               />
               <Bar 

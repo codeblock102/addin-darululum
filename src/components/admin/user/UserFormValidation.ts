@@ -1,5 +1,4 @@
-
-import { UserFormData } from "@/types/adminUser";
+import { UserFormData } from "@/types/adminUser.ts";
 
 export const validateUserForm = (formData: UserFormData, isEdit: boolean): Record<string, string> => {
   const errors: Record<string, string> = {};

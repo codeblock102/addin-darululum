@@ -9,14 +9,14 @@ interface StudentRankItemProps {
   student: StudentLeaderboardData;
   isTopRank: boolean;
   completionStatus?: StudentCompletionStatus;
-  highlightSubject?: 'sabaq' | 'sabaqPara' | 'dhor';
+  highlightSubject?: 'sabaq' | 'sabaqPara' | null;
 }
 
 export const StudentRankItem = ({
   student,
   isTopRank,
   completionStatus = { sabaq: false, sabaqPara: false },
-  highlightSubject
+  highlightSubject = null,
 }: StudentRankItemProps) => {
   const navigate = useNavigate();
 

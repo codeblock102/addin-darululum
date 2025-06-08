@@ -1,4 +1,3 @@
-import React from 'react';
 import { Fragment, useState } from "react";
 import { ClassDialog } from "@/components/classes/ClassDialog.tsx";
 import { ClassList } from "@/components/classes/ClassList.tsx";
@@ -7,13 +6,14 @@ import { Dialog, DialogTrigger } from "@/components/ui/dialog.tsx";
 import { SearchInput } from "@/components/table/SearchInput.tsx";
 import { Plus } from "lucide-react";
 import { AdminHeader } from "@/components/admin/AdminHeader.tsx";
+import { ClassFormData } from "@/components/classes/validation/classFormSchema.ts";
 
 export default function Classes() {
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedClass, setSelectedClass] = useState<any>(null);
+  const [selectedClass, setSelectedClass] = useState<(Partial<ClassFormData> & { id: string }) | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-  const handleOpenDialog = (classItem?: any) => {
+  const handleOpenDialog = (classItem?: (Partial<ClassFormData> & { id: string })) => {
     setSelectedClass(classItem || null);
     setIsDialogOpen(true);
   };

@@ -1,4 +1,3 @@
-import React from 'react';
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client.ts";
@@ -45,7 +44,7 @@ export const DhorBook = ({ studentId, studentName }: DhorBookProps) => {
   });
 
   // Only fetch other data if student exists
-  const { data: difficultAyahs, isLoading, refetch } = useQuery({
+  const { isLoading } = useQuery({
     queryKey: ['difficult-ayahs', studentId],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -64,7 +63,7 @@ export const DhorBook = ({ studentId, studentName }: DhorBookProps) => {
     enabled: !!studentData, // Only run this query if student exists
   });
 
-  const { data: juzRevisions, isLoading: isRevisionsLoading } = useQuery({
+  const { data: juzRevisions, isLoading: isRevisionsLoading, refetch: refetchRevisions } = useQuery({
     queryKey: ['juz-revisions', studentId],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -83,7 +82,7 @@ export const DhorBook = ({ studentId, studentName }: DhorBookProps) => {
   });
 
   const onRevisionSuccess = () => {
-    refetch();
+    refetchRevisions();
   };
 
   if (isStudentLoading) {

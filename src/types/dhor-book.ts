@@ -68,19 +68,21 @@ export interface DailyActivityEntry {
     quarters_revised?: string;
     quality_rating?: string;
   };
-  juz_revisions_data?: {
-    id: string;
-    dhor_slot: number;
-    juz_number?: number;
-    juz_revised?: number;
-    quarter_start?: number;
-    quarters_covered?: number;
-    memorization_quality?: string;
-  }[];
+  juz_revisions_data?: JuzRevision[];
   memorization_quality?: string;
   comments?: string;
   day_of_week?: string;
   points?: number;
+}
+
+export interface JuzRevision {
+  id: string;
+  dhor_slot: number;
+  juz_number?: number;
+  juz_revised?: number;
+  quarter_start?: number;
+  quarters_covered?: number;
+  memorization_quality?: string;
 }
 
 export interface JuzRevisionEntry {
@@ -95,6 +97,7 @@ export interface JuzRevisionEntry {
   quarters_covered?: number;
   memorization_quality?: string;
   notes?: string; // Common to have notes
+  time_spent?: number; // Add time_spent property
   // Include other fields that come directly from the 'juz_revisions' table
   students?: { name: string }; // As seen in RecentRevisions.tsx query
 }

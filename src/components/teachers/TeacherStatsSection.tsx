@@ -1,5 +1,5 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Users, School, Database, BookOpen, Calendar } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card.tsx";
+import { Users, School, BookOpen, Calendar } from "lucide-react";
 
 interface TeacherStatsProps {
   stats: {

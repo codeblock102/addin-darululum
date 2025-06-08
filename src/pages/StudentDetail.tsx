@@ -7,21 +7,19 @@
  * The component handles loading and error states, displaying appropriate messages to the user.
  */
 
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client.ts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card.tsx";
 import { Button } from "@/components/ui/button.tsx";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs.tsx";
-import { ArrowLeft, BookOpen, UserRound, BookMarked, RefreshCw } from "lucide-react";
+import { ArrowLeft, BookOpen, UserRound, RefreshCw } from "lucide-react";
 import { StudentProgressChart } from "@/components/students/StudentProgressChart.tsx";
-import { StudentProgressList } from "@/components/students/StudentProgressList.tsx";
 import { Skeleton } from "@/components/ui/skeleton.tsx";
 import { NewProgressEntry } from "@/components/students/NewProgressEntry.tsx";
 import { useToast } from "@/hooks/use-toast.ts";
 import { DhorBook } from "@/components/dhor-book/DhorBook.tsx";
-import { useAuth } from "@/contexts/AuthContext.tsx";
 
 interface Student {
   id: string;
@@ -47,7 +45,6 @@ const StudentDetail = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const { session } = useAuth();
 
   const { data: student, isLoading: studentLoading, error: studentError } = useQuery({
     queryKey: ['student', id],

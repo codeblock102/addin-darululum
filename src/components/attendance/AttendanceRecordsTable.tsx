@@ -1,14 +1,13 @@
-
 import { format } from "date-fns";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
-import { StatusBadge } from "@/components/ui/status-badge";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table.tsx";
+import { Button } from "@/components/ui/button.tsx";
+import { Skeleton } from "@/components/ui/skeleton.tsx";
+import { StatusBadge, StatusType } from "@/components/ui/status-badge.tsx";
 
 type AttendanceRecord = {
   id: string;
   date: string;
-  status: string;
+  status: StatusType;
   notes: string | null;
   student: {
     id: string;
@@ -96,7 +95,7 @@ export function AttendanceRecordsTable({
                 {record.date ? format(new Date(record.date), "MMM dd, yyyy") : "N/A"}
               </TableCell>
               <TableCell>
-                <StatusBadge status={record.status as any} />
+                <StatusBadge status={record.status} />
               </TableCell>
               <TableCell className="max-w-[200px] truncate">
                 {record.notes || "—"}

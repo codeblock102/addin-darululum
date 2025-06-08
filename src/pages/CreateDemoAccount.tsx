@@ -1,6 +1,5 @@
-import React from 'react';
 import { useState } from "react";
-import { createMuftiAmmarAccount, createNormalizedUsername } from "@/utils/createTeacherAccount.ts";
+import { createMuftiAmmarAccount } from "@/utils/createTeacherAccount.ts";
 import { Button } from "@/components/ui/button.tsx";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card.tsx";
 import { useToast } from "@/components/ui/use-toast.ts";
@@ -8,15 +7,20 @@ import { useNavigate } from "react-router-dom";
 import { Loader2, AlertTriangle, CheckCircle } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert.tsx";
 
+interface CreateAccountResult {
+  success: boolean;
+  message?: string;
+  error?: string;
+}
+
 const CreateDemoAccount = () => {
   const [isLoading, setIsLoading] = useState(false);
-  const [result, setResult] = useState<any>(null);
+  const [result, setResult] = useState<CreateAccountResult | null>(null);
   const { toast } = useToast();
   const navigate = useNavigate();
   
   // Pre-calculate the username that will be generated
   const demoName = "Mufti Ammar Mulla";
-  const demoUsername = createNormalizedUsername(demoName);
   
   const handleCreateAccount = async () => {
     setIsLoading(true);
@@ -36,10 +40,11 @@ const CreateDemoAccount = () => {
           variant: "destructive",
         });
       }
-    } catch (error: any) {
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "An unexpected error occurred";
       toast({
         title: "Error",
-        description: error.message || "An unexpected error occurred",
+        description: message,
         variant: "destructive",
       });
     } finally {

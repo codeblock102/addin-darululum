@@ -1,4 +1,3 @@
-import React from 'react';
 import { useState, useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client.ts";
@@ -125,10 +124,11 @@ export const StudentDialog = ({ open, onOpenChange, selectedStudent, onClose }: 
       queryClient.invalidateQueries({ queryKey: ['students'] });
       onClose();
       
-    } catch (error: any) {
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "An unknown error occurred";
       toast({
         title: "Error",
-        description: error.message,
+        description: message,
         variant: "destructive",
       });
     } finally {

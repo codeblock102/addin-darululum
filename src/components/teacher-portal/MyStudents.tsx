@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client.ts";
 import { 
@@ -135,7 +135,6 @@ export const MyStudents = ({ teacherId }: MyStudentsProps) => {
         setIsOpen={setIsDeleteDialogOpen}
         studentToDelete={studentToDelete}
         isDeleteType={isDeleteType}
-        teacherId={teacherId}
       />
     </Card>
   );

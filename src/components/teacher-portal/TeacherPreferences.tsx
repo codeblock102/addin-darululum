@@ -1,13 +1,17 @@
-
 import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client.ts';
-import { useAuth } from '@/contexts/AuthContext.tsx';
+import { useAuth } from '@/hooks/use-auth.ts';
 import { useToast } from '@/hooks/use-toast.ts';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card.tsx';
 import { Button } from '@/components/ui/button.tsx';
 import { Checkbox } from '@/components/ui/checkbox.tsx';
 import { Label } from '@/components/ui/label.tsx';
+
+interface TeacherPreferencesData {
+  enableReminders: boolean;
+  reportFrequency: 'daily' | 'weekly' | 'monthly';
+}
 
 export const TeacherPreferences = () => {
   const { session } = useAuth();
@@ -50,7 +54,7 @@ export const TeacherPreferences = () => {
   }, [teacherData]);
 
   const updatePreferencesMutation = useMutation({
-    mutationFn: async (preferences: Record<string, any>) => {
+    mutationFn: async (preferences: TeacherPreferencesData) => {
       if (!teacherData?.id) throw new Error("Teacher ID not found");
       
       // Just update the timestamp since we don't have a preferences column
@@ -90,7 +94,7 @@ export const TeacherPreferences = () => {
     e.preventDefault();
     updatePreferencesMutation.mutate({
       enableReminders: reminders,
-      reportFrequency
+      reportFrequency: reportFrequency as 'daily' | 'weekly' | 'monthly'
     });
   };
 

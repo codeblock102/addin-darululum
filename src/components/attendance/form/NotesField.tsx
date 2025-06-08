@@ -1,14 +1,16 @@
-
-import { Textarea } from "@/components/ui/textarea";
-import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
+import { Textarea } from "@/components/ui/textarea.tsx";
+import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form.tsx";
 import { UseFormReturn } from "react-hook-form";
-import { AttendanceStatus } from "@/types/attendance";
+import { AttendanceStatus } from "@/types/attendance.ts";
 
+type AttendanceFormValues = {
+  class_id: string;
+  student_id: string;
+  status: AttendanceStatus;
+  notes: string;
+};
 interface NotesFieldProps {
-  form: UseFormReturn<{
-    status: AttendanceStatus;
-    notes: string;
-  }>;
+  form: UseFormReturn<AttendanceFormValues>;
 }
 
 export function NotesField({ form }: NotesFieldProps) {

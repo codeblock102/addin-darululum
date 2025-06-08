@@ -1,4 +1,3 @@
-import React from 'react';
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { format } from "date-fns";
@@ -17,6 +16,8 @@ export function useAttendanceSubmit() {
 
   const form = useForm({
     defaultValues: {
+      class_id: "",
+      student_id: "",
       status: "present" as AttendanceStatus,
       notes: "",
     },
@@ -82,7 +83,12 @@ export function useAttendanceSubmit() {
   }, [existingAttendance, form]);
 
   const saveAttendance = useMutation({
-    mutationFn: async (values: { status: AttendanceStatus; notes: string }) => {
+    mutationFn: async (values: {
+      class_id: string;
+      student_id: string;
+      status: AttendanceStatus;
+      notes: string;
+    }) => {
       if (!selectedStudent || !selectedClass) {
         throw new Error("Please select a class and student");
       }
@@ -129,7 +135,12 @@ export function useAttendanceSubmit() {
     },
   });
 
-  const onSubmit = (values: { status: AttendanceStatus; notes: string }) => {
+  const onSubmit = (values: {
+    class_id: string;
+    student_id: string;
+    status: AttendanceStatus;
+    notes: string;
+  }) => {
     saveAttendance.mutate(values);
   };
 

@@ -1,6 +1,6 @@
 import { supabase } from "@/integrations/supabase/client.ts";
 
-export const setUserAsAdmin = async (email: string) => {
+export const setUserAsAdmin = async (_email: string) => {
   try {
     console.log("setUserAsAdmin: Attempting to get current user.");
     const { data: { user }, error: userError } = await supabase.auth.getUser();

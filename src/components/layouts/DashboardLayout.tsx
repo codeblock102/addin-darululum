@@ -1,25 +1,18 @@
 import { useState, useEffect } from "react";
-import { Sidebar } from "./Sidebar";
-import { useRBAC } from "@/hooks/useRBAC";
-import { LoadingSpinner } from "./dashboard/LoadingSpinner";
-import { BackgroundPattern } from "./dashboard/BackgroundPattern";
-import { RoleBadge } from "./dashboard/RoleBadge";
-import { useIsMobile } from "@/hooks/use-mobile";
-import { Menu } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { BottomNavigation } from "@/components/mobile/BottomNavigation";
-import { useLocation, Outlet } from "react-router-dom";
-import { cn } from "@/lib/utils";
+import { Sidebar } from "./Sidebar.tsx";
+import { useRBAC } from "@/hooks/useRBAC.ts";
+import { LoadingSpinner } from "./dashboard/LoadingSpinner.tsx";
+import { BackgroundPattern } from "./dashboard/BackgroundPattern.tsx";
+import { RoleBadge } from "./dashboard/RoleBadge.tsx";
+import { useIsMobile } from "@/hooks/use-mobile.tsx";
+import { BottomNavigation } from "@/components/mobile/BottomNavigation.tsx";
+import { Outlet } from "react-router-dom";
+import { cn } from "@/lib/utils.ts";
 
-interface DashboardLayoutProps {
-  children?: React.ReactNode;
-}
-
-export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
+export const DashboardLayout = () => {
   const { isAdmin, isTeacher, isLoading } = useRBAC();
   const isMobile = useIsMobile();
   const [sidebarOpen, setSidebarOpen] = useState(!isMobile);
-  const location = useLocation();
   
   useEffect(() => {
     if (isMobile) {

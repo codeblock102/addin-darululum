@@ -1,4 +1,3 @@
-import React from 'react';
 import { useState, useEffect, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client.ts";
@@ -24,8 +23,6 @@ interface JuzSurahList {
 export const useQuranData = () => {
   const [selectedJuz, setSelectedJuz] = useState<number | null>(null);
   const [selectedSurah, setSelectedSurah] = useState<number | null>(null);
-  const [surahsInJuz, setSurahsInJuz] = useState<SurahData[]>([]);
-  const [isLoadingSurahs, setIsLoadingSurahs] = useState(false);
   const [surahListForSelectedJuz, setSurahListForSelectedJuz] = useState<string | null>(null);
   const [isLoadingSurahList, setIsLoadingSurahList] = useState<boolean>(false);
   const [errorFetchingSurahList, setErrorFetchingSurahList] = useState<string | null>(null);

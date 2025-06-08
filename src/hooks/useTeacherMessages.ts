@@ -1,11 +1,16 @@
-
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client.ts";
 import { Message, MessageRecipient } from "@/types/progress.ts";
 
-export const useTeacherMessages = (teacherId: string) => {
-  const queryClient = useQueryClient();
+interface MessageWithSender extends Message {
+  teachers: { name: string } | null;
+}
 
+interface MessageWithRecipient extends Message {
+  teachers: { name: string } | null;
+}
+
+export const useTeacherMessages = (teacherId: string) => {
   // Get regular direct messages to this teacher
   const { 
     data: inboxMessages, 
@@ -37,13 +42,13 @@ export const useTeacherMessages = (teacherId: string) => {
       if (adminError) throw adminError;
       
       // Format regular messages
-      const formattedMessages = data.map((msg: any) => ({
+      const formattedMessages = data.map((msg: MessageWithSender) => ({
         ...msg,
         sender_name: msg.teachers?.name || "Unknown Sender"
       }));
       
       // Format admin messages
-      const formattedAdminMessages = (adminMessages || []).map((msg: any) => ({
+      const formattedAdminMessages = (adminMessages || []).map((msg: Message) => ({
         ...msg,
         sender_name: "Administrator",
         sender_id: null, // Admin sender
@@ -89,13 +94,13 @@ export const useTeacherMessages = (teacherId: string) => {
       if (adminError) throw adminError;
 
       // Format regular messages
-      const formattedMessages = data.map((msg: any) => ({
+      const formattedMessages = data.map((msg: MessageWithRecipient) => ({
         ...msg,
         recipient_name: msg.teachers?.name || "Unknown Recipient"
       }));
       
       // Format admin messages
-      const formattedAdminMessages = (adminMessages || []).map((msg: any) => ({
+      const formattedAdminMessages = (adminMessages || []).map((msg: Message) => ({
         ...msg,
         recipient_name: "Administrator",
         recipient_id: msg.parent_message_id // Set the display recipient ID to the admin ID

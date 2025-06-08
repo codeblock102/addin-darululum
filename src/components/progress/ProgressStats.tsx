@@ -1,6 +1,6 @@
 
-import { Card } from "@/components/ui/card";
-import { useUserRole } from "@/hooks/useUserRole";
+import { Card } from "@/components/ui/card.tsx";
+import { useUserRole } from "@/hooks/useUserRole.ts";
 import { ChartBarIcon } from "lucide-react";
 
 interface ProgressStatsProps {

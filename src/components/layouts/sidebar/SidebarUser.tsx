@@ -1,11 +1,11 @@
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/hooks/use-auth.ts";
 import { useNavigate } from "react-router-dom";
 import { LogOut } from "lucide-react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
-import { toast } from "@/components/ui/use-toast";
-import { getInitials } from "@/utils/stringUtils";
-import { cn } from "@/lib/utils";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar.tsx";
+import { Button } from "@/components/ui/button.tsx";
+import { toast } from "@/components/ui/use-toast.ts";
+import { getInitials } from "@/utils/stringUtils.ts";
+import { cn } from "@/lib/utils.ts";
 
 interface SidebarUserProps {
   isAdmin: boolean;

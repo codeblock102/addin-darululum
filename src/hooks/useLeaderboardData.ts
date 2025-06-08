@@ -16,19 +16,22 @@ export function useLeaderboardData(teacherId?: string, filters: LeaderboardFilte
     const now = new Date();
     
     switch(filters.timeRange) {
-      case 'today':
+      case 'today': {
         setTimeRangeDate(now);
         break;
-      case 'week':
+      }
+      case 'week': {
         const lastWeek = new Date();
         lastWeek.setDate(now.getDate() - 7);
         setTimeRangeDate(lastWeek);
         break;
-      case 'month':
+      }
+      case 'month': {
         const lastMonth = new Date();
         lastMonth.setMonth(now.getMonth() - 1);
         setTimeRangeDate(lastMonth);
         break;
+      }
       case 'all':
       default:
         setTimeRangeDate(null);

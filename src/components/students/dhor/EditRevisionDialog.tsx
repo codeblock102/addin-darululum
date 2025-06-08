@@ -1,24 +1,22 @@
-
 import {
   AlertDialog,
-  AlertDialogAction,
   AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import { Button } from "@/components/ui/button";
-import { RevisionForm, revisionSchema } from "./RevisionForm";
-import { DeleteRevisionDialog } from "./DeleteRevisionDialog";
-import { useRevisionData } from "./useRevisionData";
+} from "@/components/ui/alert-dialog.tsx";
+import { useRevisionData } from "./useRevisionData.ts";
+import { RevisionForm } from "./RevisionForm.tsx";
+import { Button } from "@/components/ui/button.tsx";
+import { RevisionFormValues } from "@/types/dhor-book.ts";
+import { DeleteRevisionDialog } from "./DeleteRevisionDialog.tsx";
 
 interface EditRevisionDialogProps {
   open: boolean;
   setOpen: (open: boolean) => void;
   revisionId: string;
-  studentId: string;
   refetch: () => void;
 }
 
@@ -26,30 +24,36 @@ export function EditRevisionDialog({
   open, 
   setOpen, 
   revisionId, 
-  studentId, 
   refetch 
 }: EditRevisionDialogProps) {
-  const { 
-    revision, 
-    isLoading, 
-    handleSave, 
-    handleDelete, 
+  const {
+    revision,
+    isLoading,
+    handleSave,
+    handleDelete,
     isDeleteDialogOpen, 
     setIsDeleteDialogOpen 
-  } = useRevisionData(revisionId, studentId, () => {
+  } = useRevisionData(revisionId, () => {
     refetch();
     setOpen(false);
   });
 
-  const handleClose = () => {
-    setOpen(false);
-  };
+  const {
+    juz_revised, 
+    memorization_quality, 
+    notes, 
+    revision_date, 
+    time_spent,
+  } = revision || {};
 
   const defaultValues = {
-    date: revision?.date ? new Date(revision.date) : new Date(),
-    memorization_quality: revision?.memorization_quality || "average",
-    time_spent: revision?.time_spent || 30,
-    notes: revision?.notes || "",
+    date: revision_date ? new Date(revision_date) : new Date(),
+    memorization_quality: (memorization_quality as RevisionFormValues['memorization_quality']) || "average",
+    time_spent: time_spent || 30,
+    notes: notes || "",
+    juz_number: juz_revised || 0,
+    quarters_revised: "1st_quarter",
+    status: "completed",
   };
 
   return (
@@ -78,15 +82,19 @@ export function EditRevisionDialog({
           </Button>
           <div className="flex gap-2">
             <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <Button form="revision-form" type="submit" disabled={isLoading}>
+              {isLoading ? 'Saving...' : 'Save Changes'}
+            </Button>
           </div>
         </AlertDialogFooter>
       </AlertDialogContent>
-      
-      <DeleteRevisionDialog
-        isOpen={isDeleteDialogOpen}
-        onClose={() => setIsDeleteDialogOpen(false)}
-        onConfirmDelete={handleDelete}
-      />
+      {isDeleteDialogOpen && (
+        <DeleteRevisionDialog
+          isOpen={isDeleteDialogOpen}
+          onClose={() => setIsDeleteDialogOpen(false)}
+          onConfirmDelete={handleDelete}
+        />
+      )}
     </AlertDialog>
   );
 }

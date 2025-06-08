@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/hooks/use-auth.ts";
 import { Loader2 } from "lucide-react";
-import { useRBAC } from "@/hooks/useRBAC";
-import { useToast } from "@/components/ui/use-toast";
-import { RolePermission } from "@/utils/roleUtils";
-import { Button } from "@/components/ui/button";
+import { useRBAC } from "@/hooks/useRBAC.ts";
+import { useToast } from "@/hooks/use-toast.ts";
+import { RolePermission } from "@/utils/roleUtils.ts";
+import { Button } from "@/components/ui/button.tsx";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -25,8 +25,7 @@ export const ProtectedRoute = ({
     isAdmin, 
     isTeacher,
     isLoading: rbacLoading, 
-    hasPermission,
-    error
+    hasPermission
   } = useRBAC();
   const navigate = useNavigate();
   const { toast } = useToast();

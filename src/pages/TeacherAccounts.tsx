@@ -1,4 +1,3 @@
-import React from 'react';
 /**
  * @file TeacherAccounts.tsx
  * @description This file defines the `TeacherAccounts` page component, which is an administrative interface for managing teacher accounts.

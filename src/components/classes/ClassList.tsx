@@ -1,4 +1,3 @@
-import React from 'react';
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client.ts";
@@ -14,10 +13,16 @@ import { Button } from "@/components/ui/button.tsx";
 import { Skeleton } from "@/components/ui/skeleton.tsx";
 import { Badge } from "@/components/ui/badge.tsx";
 import { Edit, Users } from "lucide-react";
+import { ClassFormData } from "./validation/classFormSchema.ts";
+
+interface TimeSlot {
+  start_time: string;
+  end_time: string;
+}
 
 interface ClassListProps {
   searchQuery: string;
-  onEdit: (classItem: any) => void;
+  onEdit: (classItem: Partial<ClassFormData> & { id: string }) => void;
 }
 
 export function ClassList({ searchQuery, onEdit }: ClassListProps) {
@@ -68,17 +73,12 @@ export function ClassList({ searchQuery, onEdit }: ClassListProps) {
     );
   }
 
-  const formatTime = (timeSlot: any) => {
-    if (!timeSlot) return 'N/A';
-    
-    // Handle the new time_slots array format
-    if (Array.isArray(timeSlot) && timeSlot.length > 0) {
+  const formatTime = (timeSlot: TimeSlot[] | null) => {
+    if (timeSlot && timeSlot.length > 0) {
       const firstSlot = timeSlot[0];
       return `${firstSlot.start_time} - ${firstSlot.end_time}`;
     }
-    
-    // Return as is if it's already formatted
-    return timeSlot;
+    return "N/A";
   };
 
   return (
@@ -130,7 +130,14 @@ export function ClassList({ searchQuery, onEdit }: ClassListProps) {
               <Button 
                 variant="outline" 
                 size="icon"
-                onClick={() => onEdit(cls)}
+                onClick={() => {
+                  const { time_slots, ...rest } = cls;
+                  onEdit({
+                    ...rest,
+                    time_start: time_slots?.[0]?.start_time,
+                    time_end: time_slots?.[0]?.end_time,
+                  });
+                }}
                 className={`transition-opacity duration-200 ${
                   hoveredId === cls.id ? 'opacity-100' : 'opacity-0'
                 }`}
