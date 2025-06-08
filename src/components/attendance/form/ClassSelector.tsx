@@ -49,8 +49,18 @@ export function ClassSelector({
     }
   };
 
+  const triggerContent = isLoading
+    ? (
+      <div className="flex items-center">
+        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+        Loading...
+      </div>
+    )
+    : <SelectValue placeholder={`Select a ${label.toLowerCase()}`} />;
+
   // Use the component with either direct props or within a form context
   return (
+    <>
     <FormField
       control={form.control}
       name="class_id"
@@ -71,27 +81,16 @@ export function ClassSelector({
                 disabled={isLoading}
                 className="w-full border-gray-300 dark:border-gray-700 focus:ring-purple-500 focus:border-purple-500"
               >
-                {isLoading
-                  ? (
-                    <div className="flex items-center">
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      Loading...
-                    </div>
-                  )
-                  : (
-                    <SelectValue
-                      placeholder={`Select a ${label.toLowerCase()}`}
-                    />
-                  )}
+                {triggerContent}
               </SelectTrigger>
               <SelectContent>
-                {(classesData || classes)?.filter((cls) => cls.id !== "").map((
-                  cls,
-                ) => (
-                  <SelectItem key={cls.id} value={cls.id}>
-                    {cls.name}
-                  </SelectItem>
-                ))}
+                {(classesData || classes)
+                  ?.filter((cls) => cls.id !== "")
+                  .map((cls) => (
+                    <SelectItem key={cls.id} value={cls.id}>
+                      {cls.name}
+                    </SelectItem>
+                  ))}
               </SelectContent>
             </Select>
           </FormControl>
@@ -99,5 +98,7 @@ export function ClassSelector({
         </FormItem>
       )}
     />
+    </>
   );
+  
 }

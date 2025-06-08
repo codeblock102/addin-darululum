@@ -61,8 +61,8 @@ jobs:
         env:
           DEFAULT_BRANCH: main
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          VALIDATE_ALL_CODEBASE: true
-          VALIDATE_TYPESCRIPT_ES: false
+          VALIDATE_ALL_CODEBASE: false
+          VALIDATE_TYPESCRIPT_ES: true
           VALIDATE_JAVASCRIPT_ES: false
 
 # Optional Deployment (uncomment and configure if needed)
