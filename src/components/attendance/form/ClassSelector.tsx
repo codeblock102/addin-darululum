@@ -61,44 +61,43 @@ export function ClassSelector({
   // Use the component with either direct props or within a form context
   return (
     <>
-    <FormField
-      control={form.control}
-      name="class_id"
-      render={({ field }) => (
-        <FormItem>
-          <FormLabel className="text-gray-700 dark:text-gray-300">
-            {label}
-          </FormLabel>
-          <FormControl>
-            <Select
-              onValueChange={(value: string) => {
-                field.onChange(value);
-                handleChange(value);
-              }}
-              value={selectedClass || field.value}
-            >
-              <SelectTrigger
-                disabled={isLoading}
-                className="w-full border-gray-300 dark:border-gray-700 focus:ring-purple-500 focus:border-purple-500"
+      <FormField
+        control={form.control}
+        name="class_id"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel className="text-gray-700 dark:text-gray-300">
+              {label}
+            </FormLabel>
+            <FormControl>
+              <Select
+                onValueChange={(value: string) => {
+                  field.onChange(value);
+                  handleChange(value);
+                }}
+                value={selectedClass || field.value}
               >
-                {triggerContent}
-              </SelectTrigger>
-              <SelectContent>
-                {(classesData || classes)
-                  ?.filter((cls) => cls.id !== "")
-                  .map((cls) => (
-                    <SelectItem key={cls.id} value={cls.id}>
-                      {cls.name}
-                    </SelectItem>
-                  ))}
-              </SelectContent>
-            </Select>
-          </FormControl>
-          <FormMessage />
-        </FormItem>
-      )}
-    />
+                <SelectTrigger
+                  disabled={isLoading}
+                  className="w-full border-gray-300 dark:border-gray-700 focus:ring-purple-500 focus:border-purple-500"
+                >
+                  {triggerContent}
+                </SelectTrigger>
+                <SelectContent>
+                  {(classesData || classes)
+                    ?.filter((cls) => cls.id !== "")
+                    .map((cls) => (
+                      <SelectItem key={cls.id} value={cls.id}>
+                        {cls.name}
+                      </SelectItem>
+                    ))}
+                </SelectContent>
+              </Select>
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
     </>
   );
-  
 }
