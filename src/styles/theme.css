@@ -1,3 +1,4 @@
+
 /* Base theme variables */
 :root {
   --font-sans:
@@ -53,8 +54,8 @@
 /* Admin theme variables - these apply when admin-theme class is present */
 .admin-theme {
   /* Admin specific colors - deep blue/dark theme */
-  --primary: 217 91% 60%;
-  --primary-foreground: 210 40% 98%;
+  --primary: 45 93% 55%; /* Amber primary */
+  --primary-foreground: 222.2 47.4% 1.2%;
   --background: 222 47% 7%;
   --foreground: 0 0% 95%;
   --card: 222 47% 10%;
@@ -64,7 +65,8 @@
   --accent: 217 33% 20%;
   --accent-foreground: 0 0% 95%;
   --border: 217 33% 15%;
-  --ring: 224 76% 50%;
+  --input: 217 33% 15%;
+  --ring: 45 93% 55%;
 
   /* Admin specific visual style */
   --admin-sidebar-bg: hsl(222 47% 9%);
@@ -75,13 +77,12 @@
   );
   --admin-card-shadow:
     0 10px 15px -3px rgba(0, 0, 0, 0.2), 0 4px 6px -2px rgba(0, 0, 0, 0.1);
-  --admin-primary: 217 91% 60%; /* Amber-ish primary */
 }
 
 /* Teacher theme variables - these apply when teacher-theme class is present */
 .teacher-theme {
   /* Teacher specific colors - light/friendly theme */
-  --primary: 221.2 83.2% 53.3%;
+  --primary: 221.2 83.2% 53.3%; /* Blue primary */
   --primary-foreground: 210 40% 98%;
   --background: 0 0% 100%;
   --foreground: 222.2 47.4% 11.2%;
@@ -92,6 +93,7 @@
   --accent: 210 40% 98%;
   --accent-foreground: 222.2 47.4% 11.2%;
   --border: 214.3 31.8% 91.4%;
+  --input: 214.3 31.8% 91.4%;
   --ring: 221.2 83.2% 53.3%;
 
   /* Teacher specific visual style */
@@ -103,5 +105,27 @@
   );
   --teacher-card-shadow:
     0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  --teacher-primary: 221.2 83.2% 53.3%; /* Blue-ish primary */
+}
+
+/* Apply theme classes to body for global theme switching */
+body.admin-theme {
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+}
+
+body.teacher-theme {
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+}
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+  .auth-card {
+    margin: 1rem;
+    width: calc(100% - 2rem);
+  }
+  
+  .auth-form-grid {
+    gap: 1rem;
+  }
 }
