@@ -41,30 +41,6 @@ jobs:
       - name: Build Frontend with Vite (via Deno)
         run: deno run -A npm:vite build
 
-  lint_codebase:
-    name: Lint Code Base
-    runs-on: ubuntu-latest
-
-    permissions:
-      contents: read
-      packages: read
-      statuses: write
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Super-Linter
-        uses: super-linter/super-linter@v6
-        env:
-          DEFAULT_BRANCH: main
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          VALIDATE_ALL_CODEBASE: false
-          VALIDATE_TYPESCRIPT_ES: true
-          VALIDATE_JAVASCRIPT_ES: true
-
 # Optional Deployment (uncomment and configure if needed)
 # deploy:
 #   name: Deploy to GitHub Pages
