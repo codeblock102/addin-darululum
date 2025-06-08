@@ -41,7 +41,7 @@ jobs:
       - name: Build Frontend with Vite (via Deno)
         run: deno run -A npm:vite build
 
-  lint_codebase:
+    lint_codebase:
     name: Lint Code Base
     runs-on: ubuntu-latest
 
@@ -56,14 +56,29 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Super-Linter
+      - name: Run Super-Linter for JS/TS only
         uses: super-linter/super-linter@v6
         env:
-          DEFAULT_BRANCH: main
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DEFAULT_BRANCH: main
           VALIDATE_ALL_CODEBASE: false
+
+          # ✅ Enable JS/TS only
           VALIDATE_TYPESCRIPT_ES: true
-          VALIDATE_JAVASCRIPT_ES: false
+          VALIDATE_JAVASCRIPT_ES: true
+
+          # ❌ Disable all other linters
+          VALIDATE_HTML: true
+          VALIDATE_CSS: true
+          VALIDATE_JSON: false
+          VALIDATE_YAML: false
+          VALIDATE_MARKDOWN: false
+          VALIDATE_PYTHON: false
+          VALIDATE_BASH: true
+          VALIDATE_DOCKERFILE: false
+          VALIDATE_GITHUB_ACTIONS: true
+          VALIDATE_XML: false
+
 
 # Optional Deployment (uncomment and configure if needed)
 # deploy:
