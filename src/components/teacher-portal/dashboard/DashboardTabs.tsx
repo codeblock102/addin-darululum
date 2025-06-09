@@ -1,3 +1,4 @@
+
 import { MyStudents } from "../MyStudents";
 import { TeacherAttendance } from "../TeacherAttendance";
 import { TeacherPerformance } from "./TeacherPerformance";
@@ -7,13 +8,21 @@ import { DashboardOverview } from "./DashboardOverview";
 // This file is kept for backward compatibility
 // The functionality has been moved to DashboardContent.tsx and DashboardNav.tsx
 
-export { DashboardOverview } from "./DashboardOverview.tsx";
+export { DashboardOverview } from "./DashboardOverview";
 
 interface DashboardTabsProps {
   activeTab: string;
   teacherId: string;
   teacherName?: string;
 }
+
+interface DashboardOverviewProps {
+  teacherId: string;
+}
+
+const DashboardOverviewWithProps = ({ teacherId }: DashboardOverviewProps) => {
+  return <DashboardOverview />;
+};
 
 export const DashboardTabContent = (
   { activeTab, teacherId, teacherName }: DashboardTabsProps,
@@ -33,6 +42,6 @@ export const DashboardTabContent = (
         />
       );
     default:
-      return <DashboardOverview teacherId={teacherId} />;
+      return <DashboardOverviewWithProps teacherId={teacherId} />;
   }
 };

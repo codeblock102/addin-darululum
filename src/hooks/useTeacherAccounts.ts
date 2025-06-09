@@ -90,7 +90,7 @@ export function useTeacherAccounts() {
             lastLogin: userData?.created_at || null,
             classesCount: classesData?.length || 0,
             studentsCount: studentsData?.length || 0,
-            experience: teacher.experience,
+            experience: teacher.experience || "0",
           });
         }
       }
