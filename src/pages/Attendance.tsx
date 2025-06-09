@@ -148,7 +148,7 @@ const Attendance = () => {
                   Attendance Dashboard
                 </CardTitle>
                 <CardDescription className="text-slate-600 dark:text-slate-300 mt-2 text-base">
-                  Record attendance and view comprehensive attendance records
+                  Select students directly and record attendance with flexible timing and reasons
                 </CardDescription>
               </div>
             </div>
@@ -204,7 +204,7 @@ const Attendance = () => {
                         Record Student Attendance
                       </h3>
                       <p className="text-slate-600 dark:text-slate-400">
-                        Select a class and student to mark their attendance for today
+                        Select students directly and set attendance with custom timing and reasons
                       </p>
                     </div>
                     <AttendanceForm />
@@ -221,7 +221,7 @@ const Attendance = () => {
                         Attendance History
                       </h3>
                       <p className="text-slate-600 dark:text-slate-400">
-                        View and manage all attendance records across all classes
+                        View and manage all attendance records across all students
                       </p>
                     </div>
                     <AttendanceTable />
