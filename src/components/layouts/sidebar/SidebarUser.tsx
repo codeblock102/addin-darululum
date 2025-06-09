@@ -1,3 +1,4 @@
+
 import { useAuth } from "@/hooks/use-auth.ts";
 import { useNavigate } from "react-router-dom";
 import { LogOut } from "lucide-react";
@@ -7,7 +8,7 @@ import {
   AvatarImage,
 } from "@/components/ui/avatar.tsx";
 import { Button } from "@/components/ui/button.tsx";
-import { toast } from "@/components/ui/use-toast.ts";
+import { useToast } from "@/hooks/use-toast.ts";
 import { getInitials } from "@/utils/stringUtils.ts";
 import { cn } from "@/lib/utils.ts";
 
@@ -19,6 +20,7 @@ interface SidebarUserProps {
 export const SidebarUser = ({ isAdmin, isOpen }: SidebarUserProps) => {
   const navigate = useNavigate();
   const { session, signOut } = useAuth();
+  const { toast } = useToast();
   const user = session?.user;
 
   const handleSignOut = async () => {
