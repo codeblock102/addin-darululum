@@ -19,13 +19,13 @@ interface SidebarUserProps {
 }
 
 export const SidebarUser = ({ isAdmin, isOpen }: SidebarUserProps) => {
-  const { currentUser, signOut } = useAuth();
+  const { session, signOut } = useAuth();
   const isMobile = useIsMobile();
 
-  if (!currentUser) return null;
+  if (!session?.user) return null;
 
-  const userEmail = currentUser.email || "user@example.com";
-  const userName = currentUser.user_metadata?.full_name || userEmail.split("@")[0];
+  const userEmail = session.user.email || "user@example.com";
+  const userName = session.user.user_metadata?.full_name || userEmail.split("@")[0];
   const userInitials = userName
     .split(" ")
     .map((n: string) => n[0])
