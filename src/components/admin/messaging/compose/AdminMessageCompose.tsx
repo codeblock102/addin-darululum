@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import {
   Card,
@@ -6,16 +7,19 @@ import {
   CardTitle,
 } from "@/components/ui/card.tsx";
 import { MessageCategory, MessageType } from "@/types/progress.ts";
-import { TeacherSelector } from "./TeacherSelector.tsx";
-import { MessageOptions } from "./MessageOptions.tsx";
 import { AdminMessageForm } from "./AdminMessageForm.tsx";
+import { Alert, AlertDescription } from "@/components/ui/alert.tsx";
 
 export const AdminMessageCompose = () => {
-  const [selectedTeacher, setSelectedTeacher] = useState("");
+  const [selectedTeachers, setSelectedTeachers] = useState<string[]>([]);
   const [messageType, setMessageType] = useState<MessageType>("direct");
   const [messageCategory, setMessageCategory] = useState<MessageCategory>(
     "administrative",
   );
+
+  const handleSendSuccess = () => {
+    setSelectedTeachers([]);
+  };
 
   return (
     <Card className="w-full">
@@ -23,23 +27,18 @@ export const AdminMessageCompose = () => {
         <CardTitle className="text-lg">New Message</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="space-y-4">
-          <TeacherSelector
-            selectedTeacher={selectedTeacher}
-            setSelectedTeacher={setSelectedTeacher}
-          />
-
-          <MessageOptions
-            messageType={messageType}
-            setMessageType={setMessageType}
-            messageCategory={messageCategory}
-            setMessageCategory={setMessageCategory}
-          />
-
+        <Alert>
+          <AlertDescription>
+            Messaging functionality is currently disabled. Please contact the system administrator to enable this feature.
+          </AlertDescription>
+        </Alert>
+        
+        <div className="mt-4">
           <AdminMessageForm
-            selectedTeacher={selectedTeacher}
+            selectedTeachers={selectedTeachers}
             messageType={messageType}
-            messageCategory={messageCategory}
+            category={messageCategory}
+            onSendSuccess={handleSendSuccess}
           />
         </div>
       </CardContent>

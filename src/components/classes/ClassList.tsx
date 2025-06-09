@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client.ts";
@@ -11,7 +12,7 @@ import {
 import { Button } from "@/components/ui/button.tsx";
 import { Plus, Loader2, Users, MapPin, Calendar, Clock, MoreHorizontal } from "lucide-react";
 import { ClassDialog } from "./ClassDialog.tsx";
-import { useToast } from "@/components/ui/use-toast.tsx";
+import { useToast } from "@/hooks/use-toast.ts";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -45,16 +46,20 @@ export const ClassList = () => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
-  const { data: classes, isLoading } = useQuery<Class[]>({
+  const { data: classes, isLoading } = useQuery({
     queryKey: ["classes"],
-    queryFn: async () => {
+    queryFn: async (): Promise<Class[]> => {
       const { data, error } = await supabase
         .from("classes")
         .select("*")
         .order("created_at", { ascending: false });
 
       if (error) throw error;
-      return data || [];
+      
+      return (data || []).map(item => ({
+        ...item,
+        status: (item.status === "active" || item.status === "inactive") ? item.status : "active" as "active" | "inactive"
+      }));
     },
   });
 
