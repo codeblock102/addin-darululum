@@ -23,7 +23,7 @@ export const DashboardTabContent = (
     case "students":
       return <MyStudents teacherId={teacherId} />;
     case "attendance":
-      return <TeacherAttendance teacherId={teacherId} />;
+      return <TeacherAttendance />;
     case "performance":
       return <TeacherPerformance teacherId={teacherId} />;
     case "messages":
