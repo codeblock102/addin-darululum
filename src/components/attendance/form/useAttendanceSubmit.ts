@@ -14,6 +14,7 @@ type AttendanceFormValues = {
   date: Date;
   time: string;
   late_reason?: string;
+  class_id: string;
 };
 
 type AttendanceRecord = {
@@ -43,6 +44,7 @@ export function useAttendanceSubmit() {
       date: today,
       time: format(new Date(), "HH:mm"),
       late_reason: "",
+      class_id: "",
     },
   });
 
@@ -78,11 +80,15 @@ export function useAttendanceSubmit() {
         form.setValue("late_reason", existingAttendance.late_reason);
         setSelectedReason(existingAttendance.late_reason);
       }
+      if (existingAttendance.class_id) {
+        form.setValue("class_id", existingAttendance.class_id);
+      }
     } else {
       form.setValue("status", "present");
       form.setValue("notes", "");
       form.setValue("time", format(new Date(), "HH:mm"));
       form.setValue("late_reason", "");
+      form.setValue("class_id", "");
       setSelectedReason("");
     }
   }, [existingAttendance, form]);
@@ -100,6 +106,7 @@ export function useAttendanceSubmit() {
         notes: values.notes,
         time: values.time,
         late_reason: values.status === "late" ? values.late_reason : null,
+        class_id: values.class_id || null,
       };
 
       if (existingAttendance) {
