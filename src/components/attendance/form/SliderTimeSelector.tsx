@@ -11,6 +11,7 @@ type AttendanceFormValues = {
   date: Date;
   time: string;
   late_reason?: string;
+  class_id: string;
 };
 
 interface SliderTimeSelectorProps {
