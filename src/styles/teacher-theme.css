@@ -30,6 +30,43 @@
   @apply text-gray-600;
 }
 
+/* Icon contrast improvements */
+.teacher-theme svg,
+.teacher-theme .lucide {
+  @apply text-gray-700;
+}
+
+.teacher-theme button svg,
+.teacher-theme a svg {
+  @apply text-gray-800;
+}
+
+.teacher-theme .sidebar svg {
+  @apply text-gray-700;
+}
+
+/* Active navigation icons */
+.teacher-theme nav button.active svg,
+.teacher-theme nav a.active svg {
+  @apply text-blue-600;
+}
+
+/* Hover state for icons */
+.teacher-theme button:hover svg,
+.teacher-theme a:hover svg {
+  @apply text-blue-600;
+}
+
+/* Card icons */
+.teacher-theme .card svg {
+  @apply text-gray-700;
+}
+
+/* Status and action icons */
+.teacher-theme .status-icon svg {
+  @apply text-gray-800;
+}
+
 /* Table text improvements */
 .teacher-theme .table th {
   @apply bg-gray-50 text-gray-900 font-medium border-b border-gray-100 px-4
@@ -173,11 +210,32 @@
   @apply text-gray-800 hover:text-blue-600;
 }
 
+/* Navigation icons specifically */
+.teacher-theme nav a svg,
+.teacher-theme nav button svg {
+  @apply text-gray-700;
+}
+
+.teacher-theme nav a:hover svg,
+.teacher-theme nav button:hover svg {
+  @apply text-blue-600;
+}
+
 /* Welcome header improvements */
 .teacher-theme .welcome-header h1 {
   @apply text-gray-900;
 }
 
 .teacher-theme .welcome-header p {
+  @apply text-gray-700;
+}
+
+/* Quick actions icons */
+.teacher-theme .quick-actions svg {
+  @apply text-gray-700;
+}
+
+/* Dashboard icons */
+.teacher-theme .dashboard-overview svg {
   @apply text-gray-700;
 }

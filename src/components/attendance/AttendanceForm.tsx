@@ -18,7 +18,7 @@ import { AttendanceFormValues } from "@/types/attendance-form";
 const attendanceSchema = z.object({
   class_id: z.string().min(1, "Please select a class"),
   student_id: z.string().min(1, "Please select a student"),
-  date: z.string().min(1, "Date is required"),
+  date: z.date(),
   time: z.string().min(1, "Time is required"),
   status: z.enum(["present", "absent", "late", "excused"]),
   late_reason: z.string().optional(),
@@ -34,7 +34,7 @@ export const AttendanceForm = () => {
     defaultValues: {
       class_id: "",
       student_id: "",
-      date: new Date().toISOString().split("T")[0],
+      date: new Date(),
       time: "09:00",
       status: "present",
       late_reason: "",
@@ -48,7 +48,15 @@ export const AttendanceForm = () => {
         title: "Success",
         description: "Attendance record saved successfully",
       });
-      form.reset();
+      form.reset({
+        class_id: "",
+        student_id: "",
+        date: new Date(),
+        time: "09:00",
+        status: "present",
+        late_reason: "",
+        notes: "",
+      });
       setSelectedClassId("");
     },
     onError: (error) => {
@@ -86,7 +94,7 @@ export const AttendanceForm = () => {
 
             <NotesField form={form} />
 
-            <SubmitButton isProcessing={isProcessing} />
+            <SubmitButton isPending={isProcessing} isUpdate={false} />
           </form>
         </CardContent>
       </Card>
