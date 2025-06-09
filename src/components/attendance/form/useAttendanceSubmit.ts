@@ -1,11 +1,23 @@
 
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { format } from "date-fns";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client.ts";
 import { useToast } from "@/hooks/use-toast.ts";
 import { AttendanceFormValues } from "@/types/attendance-form.ts";
+
+const attendanceSchema = z.object({
+  class_id: z.string().min(1, "Please select a class"),
+  student_id: z.string().min(1, "Please select a student"),
+  date: z.date(),
+  time: z.string().min(1, "Time is required"),
+  status: z.enum(["present", "absent", "late", "excused"]),
+  late_reason: z.string().optional(),
+  notes: z.string().optional(),
+});
 
 type AttendanceRecord = {
   id: string;
@@ -19,7 +31,12 @@ type AttendanceRecord = {
   late_reason: string | null;
 };
 
-export function useAttendanceSubmit() {
+interface UseAttendanceSubmitProps {
+  onSuccess?: () => void;
+  onError?: (error: Error) => void;
+}
+
+export function useAttendanceSubmit({ onSuccess, onError }: UseAttendanceSubmitProps = {}) {
   const [selectedStudent, setSelectedStudent] = useState<string>("");
   const [selectedReason, setSelectedReason] = useState<string>("");
   const { toast } = useToast();
@@ -27,14 +44,15 @@ export function useAttendanceSubmit() {
   const today = new Date();
 
   const form = useForm<AttendanceFormValues>({
+    resolver: zodResolver(attendanceSchema),
     defaultValues: {
+      class_id: "",
       student_id: "",
-      status: "present",
-      notes: "",
       date: today,
       time: format(new Date(), "HH:mm"),
+      status: "present",
       late_reason: "",
-      class_id: "",
+      notes: "",
     },
   });
 
@@ -123,6 +141,7 @@ export function useAttendanceSubmit() {
       });
       refetchAttendance();
       queryClient.invalidateQueries({ queryKey: ["attendance"] });
+      onSuccess?.();
     },
     onError: (error) => {
       toast({
@@ -130,16 +149,20 @@ export function useAttendanceSubmit() {
         description: error.message,
         variant: "destructive",
       });
+      onError?.(error);
     },
   });
 
-  const onSubmit = (values: AttendanceFormValues) => {
+  const handleSubmit = (values: AttendanceFormValues) => {
     saveAttendance.mutate(values);
   };
 
+  const isProcessing = saveAttendance.isPending;
+
   return {
     form,
-    onSubmit,
+    handleSubmit,
+    isProcessing,
     selectedStudent,
     setSelectedStudent,
     selectedReason,
