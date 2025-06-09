@@ -1,3 +1,4 @@
+
 import { useNavigate } from "react-router-dom";
 import {
   BookOpen,
@@ -33,7 +34,7 @@ export const TeacherTabs = ({ activeTab, onTabChange }: TeacherTabsProps) => {
       icon: <Users className="h-4 w-4" />,
     },
     {
-      id: "dhor-book",
+      id: "progress-book",
       label: "Progress Book",
       icon: <BookOpen className="h-4 w-4" />,
     },
@@ -41,6 +42,7 @@ export const TeacherTabs = ({ activeTab, onTabChange }: TeacherTabsProps) => {
       id: "attendance",
       label: "Attendance",
       icon: <ClipboardList className="h-4 w-4" />,
+      isExternalRoute: true, // Flag for routes that go to separate pages
     },
     {
       id: "schedule",
@@ -59,9 +61,17 @@ export const TeacherTabs = ({ activeTab, onTabChange }: TeacherTabsProps) => {
     },
   ];
 
-  const handleTabClick = (tabId: string) => {
-    navigate(`/teacher-portal?tab=${tabId}`);
-    onTabChange(tabId);
+  const handleTabClick = (tab: any) => {
+    if (tab.isExternalRoute) {
+      // Navigate to external route (separate page)
+      if (tab.id === "attendance") {
+        navigate("/attendance");
+      }
+    } else {
+      // Navigate within dashboard tabs
+      navigate(`/dashboard?tab=${tab.id}`);
+      onTabChange(tab.id);
+    }
   };
 
   return (
@@ -72,7 +82,7 @@ export const TeacherTabs = ({ activeTab, onTabChange }: TeacherTabsProps) => {
             <button
               key={tab.id}
               type="button"
-              onClick={() => handleTabClick(tab.id)}
+              onClick={() => handleTabClick(tab)}
               className={`
                 flex items-center py-3 px-1 md:px-3 text-sm font-medium text-center border-b-2 whitespace-nowrap
                 ${
