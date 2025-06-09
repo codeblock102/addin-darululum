@@ -107,16 +107,22 @@ export const StudentProgressList = ({ progress }: StudentProgressListProps) => {
 
   // Mobile view with enhanced cards
   if (isMobile) {
+    // Convert Progress items to Record<string, unknown> for MobileTable compatibility
+    const mobileData = progress.map(entry => ({
+      ...entry,
+      // Ensure all properties are string-indexed
+    } as Record<string, unknown>));
+
     const mobileColumns = [
       {
         title: "Date",
         key: "date",
         primary: true,
-        render: (value: string) => (
+        render: (value: unknown) => (
           <div className="flex items-center space-x-2">
             <Calendar className="h-4 w-4 text-blue-600" />
             <span className="font-medium">
-              {value ? new Date(value).toLocaleDateString() : "N/A"}
+              {value && typeof value === 'string' ? new Date(value).toLocaleDateString() : "N/A"}
             </span>
           </div>
         ),
@@ -124,67 +130,73 @@ export const StudentProgressList = ({ progress }: StudentProgressListProps) => {
       {
         title: "Position",
         key: "position",
-        render: (_: any, record: Progress) => (
-          <div className="space-y-1">
-            <div className="flex items-center space-x-1 text-sm font-medium">
-              <BookOpen className="h-3 w-3 text-indigo-600" />
-              <span>Surah {record.current_surah || "—"}</span>
+        render: (_: unknown, record: Record<string, unknown>) => {
+          const progressRecord = record as Progress;
+          return (
+            <div className="space-y-1">
+              <div className="flex items-center space-x-1 text-sm font-medium">
+                <BookOpen className="h-3 w-3 text-indigo-600" />
+                <span>Surah {progressRecord.current_surah || "—"}</span>
+              </div>
+              <div className="text-xs text-gray-500">
+                Juz {progressRecord.current_juz || "—"} • Ayat {progressRecord.start_ayat || "—"}-{progressRecord.end_ayat || "—"}
+              </div>
             </div>
-            <div className="text-xs text-gray-500">
-              Juz {record.current_juz || "—"} • Ayat {record.start_ayat || "—"}-{record.end_ayat || "—"}
-            </div>
-          </div>
-        ),
+          );
+        },
       },
       {
         title: "Quality",
         key: "memorization_quality",
         status: true,
-        render: (value: string) => (
-          <span className={`px-2 py-1 rounded-full text-xs font-medium border ${getQualityColor(value)}`}>
-            {formatQualityText(value)}
+        render: (value: unknown) => (
+          <span className={`px-2 py-1 rounded-full text-xs font-medium border ${getQualityColor(value as string)}`}>
+            {formatQualityText(value as string)}
           </span>
         ),
       },
       {
         title: "Verses",
         key: "verses_memorized",
-        render: (value: number) => (
+        render: (value: unknown) => (
           <div className="flex items-center space-x-1">
             <Star className="h-3 w-3 text-yellow-500" />
-            <span className="font-medium">{value || 0}</span>
+            <span className="font-medium">{(value as number) || 0}</span>
           </div>
         ),
       },
       {
         title: "Notes",
         key: "notes",
-        render: (_: any, record: Progress) => (
-          <div className="space-y-1">
-            {record.notes ? (
-              <div className="flex items-start space-x-1">
-                <MessageSquare className="h-3 w-3 text-gray-500 mt-0.5 flex-shrink-0" />
-                <span className="text-xs text-gray-600 line-clamp-2">{record.notes}</span>
-              </div>
-            ) : (
-              <span className="text-xs text-gray-400">No notes</span>
-            )}
-            {record.teacher_notes && (
-              <div className="flex items-start space-x-1 mt-1">
-                <User className="h-3 w-3 text-blue-500 mt-0.5 flex-shrink-0" />
-                <span className="text-xs text-blue-600 line-clamp-2">{record.teacher_notes}</span>
-              </div>
-            )}
-          </div>
-        ),
+        render: (_: unknown, record: Record<string, unknown>) => {
+          const progressRecord = record as Progress;
+          return (
+            <div className="space-y-1">
+              {progressRecord.notes ? (
+                <div className="flex items-start space-x-1">
+                  <MessageSquare className="h-3 w-3 text-gray-500 mt-0.5 flex-shrink-0" />
+                  <span className="text-xs text-gray-600 line-clamp-2">{progressRecord.notes}</span>
+                </div>
+              ) : (
+                <span className="text-xs text-gray-400">No notes</span>
+              )}
+              {progressRecord.teacher_notes && (
+                <div className="flex items-start space-x-1 mt-1">
+                  <User className="h-3 w-3 text-blue-500 mt-0.5 flex-shrink-0" />
+                  <span className="text-xs text-blue-600 line-clamp-2">{progressRecord.teacher_notes}</span>
+                </div>
+              )}
+            </div>
+          );
+        },
       },
       {
         title: "Contributor",
         key: "contributor_name",
-        render: (value: string) => (
+        render: (value: unknown) => (
           <div className="flex items-center space-x-1">
             <User className="h-3 w-3 text-gray-500" />
-            <span className="text-xs text-gray-600">{value || "Unknown"}</span>
+            <span className="text-xs text-gray-600">{(value as string) || "Unknown"}</span>
           </div>
         ),
       },
@@ -194,7 +206,7 @@ export const StudentProgressList = ({ progress }: StudentProgressListProps) => {
       {
         icon: Edit2,
         label: "Edit",
-        onClick: handleEditClick,
+        onClick: (record: Record<string, unknown>) => handleEditClick(record as Progress),
         variant: "ghost" as const,
       },
     ];
@@ -203,7 +215,7 @@ export const StudentProgressList = ({ progress }: StudentProgressListProps) => {
       <>
         <div className="space-y-3">
           <MobileTable
-            data={progress}
+            data={mobileData}
             columns={mobileColumns}
             actions={mobileActions}
           />
