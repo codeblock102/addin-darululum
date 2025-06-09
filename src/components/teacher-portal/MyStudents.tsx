@@ -43,22 +43,47 @@ export const MyStudents = ({ teacherId }: MyStudentsProps) => {
   );
   const isMobile = useIsMobile();
 
+  const { data: teacherData, isLoading: isLoadingTeacher } = useQuery({
+    queryKey: ["teacherData", teacherId],
+    queryFn: async () => {
+      if (!teacherId) return null;
+      const { data, error } = await supabase
+        .from("teachers")
+        .select("madrassah_id, section")
+        .eq("id", teacherId)
+        .single();
+      if (error) {
+        console.error("Error fetching teacher data:", error);
+        throw error;
+      }
+      return data;
+    },
+    enabled: !!teacherId,
+  });
+
   // Fetch all students instead of just assigned ones
   const { data: students, isLoading } = useQuery({
-    queryKey: ["all-students-list"],
+    queryKey: ["students-for-teacher", teacherData],
     queryFn: async () => {
+      if (!teacherData?.madrassah_id || !teacherData?.section) {
+        return [];
+      }
+
       const { data, error } = await supabase
         .from("students")
         .select("id, name, enrollment_date, status")
-        .eq("status", "active");
+        .eq("status", "active")
+        .eq("madrassah_id", teacherData.madrassah_id)
+        .eq("section", teacherData.section);
 
       if (error) {
         console.error("Error fetching students:", error);
         return [];
       }
 
-      return data as Student[] || [];
+      return (data as Student[]) || [];
     },
+    enabled: !isLoadingTeacher && !!teacherData,
   });
 
   // Keep track of assigned students for UI differentiation

@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/card.tsx";
 import { Progress } from "@/components/ui/progress.tsx";
 import { Skeleton } from "@/components/ui/skeleton.tsx";
+import { useAuth } from "@/contexts/AuthContext.tsx";
 
 interface Student {
   id: string;
@@ -31,6 +32,8 @@ interface Student {
   guardian_name: string | null;
   guardian_contact: string | null;
   status: "active" | "inactive";
+  madrassah_id?: string;
+  section?: string;
 }
 
 /**
@@ -45,21 +48,53 @@ const Students = () => {
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-  const { data: students, isLoading: isLoadingStudents } = useQuery<Student[]>({
-    queryKey: ["students"],
+  const { session } = useAuth();
+  const userRole = session?.user?.user_metadata?.role;
+  const teacherId = session?.user?.user_metadata?.teacher_id;
+
+  const { data: teacherData, isLoading: isLoadingTeacher } = useQuery({
+    queryKey: ["teacherData", teacherId],
     queryFn: async () => {
+      if (!teacherId) return null;
       const { data, error } = await supabase
-        .from("students")
-        .select(
-          "id, name, date_of_birth, enrollment_date, guardian_name, guardian_contact, status",
-        );
+        .from("teachers")
+        .select("madrassah_id, section")
+        .eq("id", teacherId)
+        .single();
+      if (error) {
+        console.error("Error fetching teacher data:", error);
+        throw error;
+      }
+      return data;
+    },
+    enabled: userRole === "teacher" && !!teacherId,
+  });
+
+  const { data: students, isLoading: isLoadingStudents } = useQuery<Student[]>({
+    queryKey: ["students", { role: userRole, teacherData }],
+    queryFn: async () => {
+      let query = supabase.from("students").select("*");
+
+      if (userRole === "teacher") {
+        if (teacherData?.madrassah_id && teacherData?.section) {
+          query = query
+            .eq("madrassah_id", teacherData.madrassah_id)
+            .eq("section", teacherData.section);
+        } else {
+          return [];
+        }
+      }
+      
+
+      const { data, error } = await query;
 
       if (error) {
-        console.error("Error fetching students for stats:", error);
+        console.error("Error fetching students:", error);
         throw error;
       }
       return data || [];
     },
+    enabled: userRole !== "teacher" || !isLoadingTeacher,
   });
 
   const totalStudents = students?.length || 0;
@@ -72,6 +107,15 @@ const Students = () => {
     activeStudents,
     avgAttendance,
   };
+
+  const filteredStudents = students?.filter(
+    (student) =>
+      student.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (student.guardian_name &&
+        student.guardian_name.toLowerCase().includes(
+          searchQuery.toLowerCase(),
+        )),
+  );
 
   /**
    * @function handleEditStudent
@@ -182,7 +226,11 @@ const Students = () => {
             />
           </div>
         </div>
-        <StudentList searchQuery={searchQuery} onEdit={handleEditStudent} />
+        <StudentList
+          students={filteredStudents}
+          isLoading={isLoadingStudents}
+          onEdit={handleEditStudent}
+        />
       </div>
 
       <StudentDialog

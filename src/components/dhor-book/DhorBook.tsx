@@ -11,9 +11,16 @@ import { DailyActivityEntry } from "@/types/dhor-book.ts";
 interface DhorBookProps {
   studentId: string;
   teacherId?: string;
+  teacherData?: { madrassah_id: string; section: string } | null;
+  isAdmin: boolean;
 }
 
-export const DhorBook = ({ studentId, teacherId }: DhorBookProps) => {
+export const DhorBook = ({
+  studentId,
+  teacherId,
+  teacherData,
+  isAdmin,
+}: DhorBookProps) => {
   const [currentWeek, setCurrentWeek] = useState(new Date());
   const [entries, setEntries] = useState<DailyActivityEntry[]>([]);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -25,6 +32,61 @@ export const DhorBook = ({ studentId, teacherId }: DhorBookProps) => {
     format(weekEnd, "MMM d, yyyy")
   }`;
 
+  const {
+    data: students,
+    isLoading: studentsLoading,
+    error: studentsError,
+  } = useQuery({
+    queryKey: ["classroom-students-dhorbook", teacherId, isAdmin, teacherData],
+    queryFn: async () => {
+      if (!isAdmin && !teacherData) {
+        // For teachers, if teacherData is not ready, don't fetch.
+        return [];
+      }
+
+      // If admin, we only need to check if the specific student exists
+      if (isAdmin) {
+        const { data, error } = await supabase
+          .from("students")
+          .select("id")
+          .eq("id", studentId)
+          .limit(1);
+          
+        if (error) {
+          console.error("Error fetching student:", error);
+          throw error;
+        }
+        return data || [];
+      } 
+      // For teachers, check if the student is in their section and madrassah
+      else if (teacherData?.madrassah_id && teacherData?.section) {
+        const { data, error } = await supabase
+          .from("students")
+          .select("id")
+          .eq("id", studentId)
+          .eq("madrassah_id", teacherData.madrassah_id)
+          .eq("section", teacherData.section)
+          .limit(1);
+          
+        if (error) {
+          console.error("Error fetching student:", error);
+          throw error;
+        }
+        return data || [];
+      }
+      
+      // If teacher has no section, they can't see any students
+      return [];
+    },
+    enabled: !!studentId && (isAdmin || !!teacherData),
+  });
+
+  // Authorization is confirmed if user is admin OR if the studentId is in the fetched list
+  const isAuthorized =
+    isAdmin || (students?.some((s) => s.id === studentId) ?? false);
+
+  const showUnauthorized = !isAdmin && !studentsLoading && !isAuthorized;
+
   // Previous and next week handlers
   const goToPreviousWeek = () => setCurrentWeek((prev) => subWeeks(prev, 1));
   const goToNextWeek = () => setCurrentWeek((prev) => addWeeks(prev, 1));
@@ -33,7 +95,7 @@ export const DhorBook = ({ studentId, teacherId }: DhorBookProps) => {
   // Fetch main entries for the student
   const {
     data: entriesData,
-    isLoading,
+    isLoading: entriesLoading,
     refetch,
   } = useQuery({
     queryKey: [
@@ -169,7 +231,7 @@ export const DhorBook = ({ studentId, teacherId }: DhorBookProps) => {
       );
       return finalCombinedEntries;
     },
-    enabled: !!studentId,
+    enabled: !!studentId && isAuthorized,
   });
 
   // Update entries when data changes
@@ -197,14 +259,38 @@ export const DhorBook = ({ studentId, teacherId }: DhorBookProps) => {
     );
   }
 
-  if (isLoading) {
+  // Show loading spinner while we're confirming the student list
+  if (studentsLoading && !isAdmin) {
     return (
       <Card className="p-6">
         <div className="flex justify-center items-center py-8">
           <Loader2 className="h-8 w-8 animate-spin text-primary mr-2" />
-          <span>Loading Dhor Book entries...</span>
+          <span>Verifying student access...</span>
         </div>
       </Card>
+    );
+  }
+
+  // Show unauthorized message only after checks are complete
+  if (showUnauthorized) {
+    return (
+      <Card className="p-6 text-center text-red-500">
+        <p>You are not authorized to view this student's records.</p>
+      </Card>
+    );
+  }
+
+  // Don't render the grid if not authorized or still loading entries
+  if (!isAuthorized || entriesLoading) {
+    return (
+      <div className="flex justify-center items-center py-8">
+        {entriesLoading && (
+          <>
+            <Loader2 className="h-8 w-8 animate-spin text-primary mr-2" />
+            <span>Loading Dhor Book entries...</span>
+          </>
+        )}
+      </div>
     );
   }
 
