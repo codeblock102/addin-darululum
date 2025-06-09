@@ -1,3 +1,4 @@
+
 /**
  * @file src/components/layouts/Sidebar.tsx
  * @summary This file defines the main Sidebar component for the application's dashboard layout.
@@ -19,7 +20,7 @@ import { Link } from "react-router-dom";
 import { useEffect } from "react";
 import { useIsMobile } from "@/hooks/use-mobile.tsx";
 import { Button } from "@/components/ui/button.tsx";
-import { BookOpen, ChevronLeft, Menu, ShieldCheck, X } from "lucide-react";
+import { BookOpen, ChevronLeft, ChevronRight, Menu, ShieldCheck, X } from "lucide-react";
 import { adminNavItems, teacherNavItems } from "@/config/navigation.ts";
 import { type NavItem } from "@/types/navigation.ts";
 import { useRBAC } from "@/hooks/useRBAC.ts";
@@ -122,32 +123,33 @@ export const Sidebar = (
 
       <div
         className={cn(
-          "flex h-full w-full flex-col",
+          "flex h-full w-full flex-col transition-all duration-300 ease-in-out",
           isAdmin ? "bg-[#131724] text-white" : "bg-white text-gray-800",
+          !isMobile && isOpen === false && "shadow-lg border-r-2",
         )}
       >
         <div
           className={cn(
-            "flex h-14 sm:h-16 items-center px-4 sm:px-5",
+            "flex h-14 sm:h-16 items-center transition-all duration-300 ease-in-out",
             isAdmin ? "border-b border-white/10" : "border-b border-gray-100",
             (!isMobile && isOpen === false)
-              ? "justify-center"
-              : "justify-between",
+              ? "justify-center px-2"
+              : "justify-between px-4 sm:px-5",
           )}
         >
           {(isOpen !== false || isMobile) && (
             <Link
               to="/dashboard"
-              className="flex items-center gap-2 font-semibold"
+              className="flex items-center gap-2 font-semibold hover:opacity-80 transition-opacity"
             >
               {isAdmin
                 ? (
-                  <ShieldCheck className="h-5 w-5 sm:h-6 sm:w-6 text-amber-400" />
+                  <ShieldCheck className="h-5 w-5 sm:h-6 sm:w-6 text-amber-400 drop-shadow-sm" />
                 )
-                : <BookOpen className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />}
+                : <BookOpen className="h-5 w-5 sm:h-6 sm:w-6 text-primary drop-shadow-sm" />}
               <span
                 className={cn(
-                  "text-sm sm:text-base transition-opacity duration-300 whitespace-nowrap",
+                  "text-sm sm:text-base transition-all duration-300 whitespace-nowrap font-medium",
                   isAdmin ? "text-white" : "text-gray-800",
                 )}
               >
@@ -156,7 +158,22 @@ export const Sidebar = (
             </Link>
           )}
 
-          {!isMobile && toggleSidebar && (
+          {/* Collapsed state logo */}
+          {!isMobile && isOpen === false && (
+            <Link
+              to="/dashboard"
+              className="flex items-center justify-center w-full hover:bg-white/5 rounded-lg p-2 transition-all duration-200"
+              title={isAdmin ? "Admin Portal" : "Teacher Portal"}
+            >
+              {isAdmin
+                ? (
+                  <ShieldCheck className="h-6 w-6 text-amber-400 drop-shadow-sm" />
+                )
+                : <BookOpen className="h-6 w-6 text-primary drop-shadow-sm" />}
+            </Link>
+          )}
+
+          {!isMobile && toggleSidebar && isOpen !== false && (
             <Button
               variant="ghost"
               size="icon"
@@ -164,22 +181,43 @@ export const Sidebar = (
                 isAdmin
                   ? "text-white hover:bg-white/10"
                   : "text-slate-700 hover:bg-slate-100",
-                "transition-all duration-300",
+                "transition-all duration-300 hover:scale-105",
               )}
               onClick={toggleSidebar}
-              title={isOpen ? "Collapse sidebar" : "Expand sidebar"}
+              title="Collapse sidebar"
             >
-              {isOpen
-                ? <ChevronLeft className="h-5 w-5" />
-                : <Menu className="h-5 w-5" />}
-              <span className="sr-only">
-                {isOpen ? "Collapse sidebar" : "Expand sidebar"}
-              </span>
+              <ChevronLeft className="h-5 w-5" />
+              <span className="sr-only">Collapse sidebar</span>
+            </Button>
+          )}
+
+          {/* Expand button for collapsed state */}
+          {!isMobile && toggleSidebar && isOpen === false && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className={cn(
+                "absolute -right-3 top-1/2 -translate-y-1/2 z-10 rounded-full shadow-lg border-2",
+                isAdmin
+                  ? "bg-[#131724] border-amber-400/20 text-amber-400 hover:bg-amber-400/10 hover:border-amber-400/40"
+                  : "bg-white border-primary/20 text-primary hover:bg-primary/5 hover:border-primary/40",
+                "transition-all duration-300 hover:scale-110",
+              )}
+              onClick={toggleSidebar}
+              title="Expand sidebar"
+            >
+              <ChevronRight className="h-4 w-4" />
+              <span className="sr-only">Expand sidebar</span>
             </Button>
           )}
         </div>
 
-        <div className="flex-1 overflow-auto py-2 sm:py-4">
+        <div 
+          className={cn(
+            "flex-1 overflow-auto transition-all duration-300",
+            (!isMobile && isOpen === false) ? "py-2" : "py-2 sm:py-4"
+          )}
+        >
           {/* DEBUG: Log navItems for admin */}
           {isAdmin && (() => {
             console.log("Admin NavItems being passed to SidebarNav:", navItems);
