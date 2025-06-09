@@ -7,22 +7,14 @@ import { Loader2 } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area.tsx";
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form.tsx";
 import { UseFormReturn } from "react-hook-form";
-import { AttendanceStatus } from "@/types/attendance.ts";
 import { getInitials } from "@/utils/stringUtils.ts";
-
-type AttendanceFormValues = {
-  student_id: string;
-  status: AttendanceStatus;
-  notes: string;
-  date: Date;
-  time: string;
-  late_reason?: string;
-};
+import { AttendanceFormValues } from "@/types/attendance-form.ts";
 
 interface StudentGridProps {
   form: UseFormReturn<AttendanceFormValues>;
   selectedStudent?: string;
   onStudentSelect?: (studentId: string) => void;
+  selectedClassId?: string;
 }
 
 export function StudentGrid({ form, selectedStudent, onStudentSelect }: StudentGridProps) {

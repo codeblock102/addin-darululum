@@ -1,6 +1,7 @@
 
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Form } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
 import { AttendanceFormHeader } from "./form/AttendanceFormHeader";
 import { ClassSelector } from "./form/ClassSelector";
@@ -49,21 +50,23 @@ export const AttendanceForm = () => {
           <CardTitle>Record Attendance</CardTitle>
         </CardHeader>
         <CardContent>
-          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
-            <ClassSelector
-              form={form}
-              selectedClassId={selectedClassId}
-              onClassChange={setSelectedClassId}
-            />
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+              <ClassSelector
+                form={form}
+                selectedClassId={selectedClassId}
+                onClassChange={setSelectedClassId}
+              />
 
-            <StudentGrid form={form} selectedClassId={selectedClassId} />
+              <StudentGrid form={form} selectedClassId={selectedClassId} />
 
-            <SliderTimeSelector form={form} />
+              <SliderTimeSelector form={form} />
 
-            <NotesField form={form} />
+              <NotesField form={form} />
 
-            <SubmitButton isPending={isProcessing} isUpdate={false} />
-          </form>
+              <SubmitButton isPending={isProcessing} isUpdate={false} />
+            </form>
+          </Form>
         </CardContent>
       </Card>
     </div>
