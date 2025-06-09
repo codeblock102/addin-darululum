@@ -46,19 +46,23 @@ export function TimeSelector({ form, selectedTime, onTimeSelect }: TimeSelectorP
       name="time"
       render={({ field }) => (
         <FormItem>
-          <FormLabel className="text-gray-700 dark:text-gray-300">
+          <FormLabel className="text-gray-900 dark:text-gray-100 font-medium">
             Attendance Time
           </FormLabel>
           <FormControl>
-            <ScrollArea className="w-full whitespace-nowrap rounded-md border">
-              <div className="flex w-max space-x-2 p-4">
+            <ScrollArea className="w-full whitespace-nowrap rounded-lg border-2 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm">
+              <div className="flex w-max space-x-3 p-4">
                 {timeSlots.map((slot) => (
                   <Button
                     key={slot.value}
                     type="button"
                     variant={selectedTime === slot.value || field.value === slot.value ? "default" : "outline"}
                     size="sm"
-                    className="flex-shrink-0"
+                    className={`flex-shrink-0 font-medium transition-all ${
+                      selectedTime === slot.value || field.value === slot.value
+                        ? "bg-blue-600 text-white shadow-md border-blue-600 hover:bg-blue-700"
+                        : "bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 border-gray-300 dark:border-gray-600 hover:bg-blue-50 dark:hover:bg-gray-600 hover:border-blue-300"
+                    }`}
                     onClick={() => {
                       field.onChange(slot.value);
                       onTimeSelect?.(slot.value);
@@ -68,7 +72,7 @@ export function TimeSelector({ form, selectedTime, onTimeSelect }: TimeSelectorP
                   </Button>
                 ))}
               </div>
-              <ScrollBar orientation="horizontal" />
+              <ScrollBar orientation="horizontal" className="h-3" />
             </ScrollArea>
           </FormControl>
           <FormMessage />
