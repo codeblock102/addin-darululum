@@ -1,3 +1,4 @@
+
 /**
  * @file src/config/navigation.ts
  * @summary This file defines the navigation structures for different user roles in the application.
@@ -69,8 +70,7 @@ export const adminNavItems: NavItem[] = [
  * @const teacherNavItems
  * @description Navigation items for the teacher sidebar.
  * Defines the primary navigation links available to teachers.
- * Note: Many teacher links point to the same `/dashboard` route but use different query parameters (`?tab=...`)
- * to show specific content within the teacher dashboard.
+ * Updated to use consistent routes and provide direct access to attendance.
  */
 export const teacherNavItems: NavItem[] = [
   {
