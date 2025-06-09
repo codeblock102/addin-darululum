@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client.ts";
 import { StudentFormData } from "./studentTypes.ts";
@@ -23,6 +24,26 @@ export const useStudentSubmit = ({
         throw new Error("Student name is required");
       }
 
+      if (!formData.guardianName.trim()) {
+        throw new Error("Guardian name is required");
+      }
+
+      if (!formData.guardianContact.trim()) {
+        throw new Error("Guardian contact is required");
+      }
+
+      if (!formData.guardianEmail.trim()) {
+        throw new Error("Guardian email is required");
+      }
+
+      if (!formData.emergencyContactName.trim()) {
+        throw new Error("Emergency contact name is required");
+      }
+
+      if (!formData.emergencyContactPhone.trim()) {
+        throw new Error("Emergency contact phone is required");
+      }
+
       // First, check if the student exists in students table
       const { data: existingStudent, error: lookupError } = await supabase
         .from("students")
@@ -46,6 +67,7 @@ export const useStudentSubmit = ({
             date_of_birth: formData.dateOfBirth || null,
             guardian_name: formData.guardianName || null,
             guardian_contact: formData.guardianContact || null,
+            guardian_email: formData.guardianEmail || null,
             status: formData.status,
             current_juz: formData.currentJuz === "_none_"
               ? null
@@ -62,6 +84,7 @@ export const useStudentSubmit = ({
             date_of_birth: formData.dateOfBirth || null,
             guardian_name: formData.guardianName || null,
             guardian_contact: formData.guardianContact || null,
+            guardian_email: formData.guardianEmail || null,
             status: formData.status,
             current_juz: formData.currentJuz === "_none_"
               ? null
