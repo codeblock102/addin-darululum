@@ -64,21 +64,75 @@ export const StudentDeleteDialog = ({
 
   const deleteStudentMutation = useMutation({
     mutationFn: async ({ studentId, studentName }: { studentId: string; studentName: string }) => {
-      // First, delete all teacher-student relationships
+      console.log(`Starting deletion process for student: ${studentName} (ID: ${studentId})`);
+      
+      // First, delete all attendance records for this student
+      const { error: attendanceError } = await supabase
+        .from("attendance")
+        .delete()
+        .eq("student_id", studentId);
+
+      if (attendanceError) {
+        console.error("Error deleting attendance records:", attendanceError);
+        throw new Error(`Failed to delete attendance records: ${attendanceError.message}`);
+      }
+
+      // Then, delete all progress records for this student
+      const { error: progressError } = await supabase
+        .from("progress")
+        .delete()
+        .eq("student_id", studentId);
+
+      if (progressError) {
+        console.error("Error deleting progress records:", progressError);
+        throw new Error(`Failed to delete progress records: ${progressError.message}`);
+      }
+
+      // Delete juz_revisions records
+      const { error: juzRevisionsError } = await supabase
+        .from("juz_revisions")
+        .delete()
+        .eq("student_id", studentId);
+
+      if (juzRevisionsError) {
+        console.error("Error deleting juz_revisions records:", juzRevisionsError);
+        throw new Error(`Failed to delete juz_revisions records: ${juzRevisionsError.message}`);
+      }
+
+      // Delete sabaq_para records
+      const { error: sabaqParaError } = await supabase
+        .from("sabaq_para")
+        .delete()
+        .eq("student_id", studentId);
+
+      if (sabaqParaError) {
+        console.error("Error deleting sabaq_para records:", sabaqParaError);
+        throw new Error(`Failed to delete sabaq_para records: ${sabaqParaError.message}`);
+      }
+
+      // Delete all teacher-student relationships
       const { error: relationshipError } = await supabase
         .from("students_teachers")
         .delete()
         .eq("student_name", studentName);
 
-      if (relationshipError) throw relationshipError;
+      if (relationshipError) {
+        console.error("Error deleting teacher-student relationships:", relationshipError);
+        throw new Error(`Failed to delete teacher-student relationships: ${relationshipError.message}`);
+      }
 
-      // Then delete the student record
-      const { error } = await supabase
+      // Finally, delete the student record
+      const { error: studentError } = await supabase
         .from("students")
         .delete()
         .eq("id", studentId);
 
-      if (error) throw error;
+      if (studentError) {
+        console.error("Error deleting student record:", studentError);
+        throw new Error(`Failed to delete student record: ${studentError.message}`);
+      }
+
+      console.log(`Successfully deleted student: ${studentName}`);
       return studentId;
     },
     onSuccess: () => {
@@ -93,9 +147,11 @@ export const StudentDeleteDialog = ({
       queryClient.invalidateQueries({ queryKey: ["teacher-students-details"] });
       queryClient.invalidateQueries({ queryKey: ["all-students-list"] });
       queryClient.invalidateQueries({ queryKey: ["students"] });
+      queryClient.invalidateQueries({ queryKey: ["all-students"] });
       setIsOpen(false);
     },
     onError: (error) => {
+      console.error("Delete student mutation error:", error);
       toast({
         title: "Error",
         description: `Failed to delete student: ${error.message}`,
@@ -129,7 +185,7 @@ export const StudentDeleteDialog = ({
           <AlertDialogDescription>
             {isDeleteType === "remove" 
               ? `Are you sure you want to remove ${studentToDelete?.name} from your students? This will only remove the assignment, not delete the student from the system.`
-              : `Are you sure you want to permanently delete ${studentToDelete?.name} from the system? This action cannot be undone and will remove all associated data.`
+              : `Are you sure you want to permanently delete ${studentToDelete?.name} from the system? This action cannot be undone and will remove all associated data including attendance records, progress, and revisions.`
             }
           </AlertDialogDescription>
         </AlertDialogHeader>
