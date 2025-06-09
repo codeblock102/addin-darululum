@@ -2,17 +2,7 @@
 import { Slider } from "@/components/ui/slider.tsx";
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form.tsx";
 import { UseFormReturn } from "react-hook-form";
-import { AttendanceStatus } from "@/types/attendance.ts";
-
-type AttendanceFormValues = {
-  student_id: string;
-  status: AttendanceStatus;
-  notes: string;
-  date: Date;
-  time: string;
-  late_reason?: string;
-  class_id: string;
-};
+import { AttendanceFormValues } from "@/types/attendance-form.ts";
 
 interface SliderTimeSelectorProps {
   form: UseFormReturn<AttendanceFormValues>;
@@ -20,9 +10,9 @@ interface SliderTimeSelectorProps {
 
 export function SliderTimeSelector({ form }: SliderTimeSelectorProps) {
   const timeValue = form.watch("time");
-  
+
   // Parse current time value or default to 8:00
-  const [currentHour, currentMinute] = timeValue ? 
+  const [currentHour, currentMinute] = timeValue ?
     timeValue.split(':').map(Number) : [8, 0];
 
   const handleTimeChange = (hour: number, minute: number) => {
