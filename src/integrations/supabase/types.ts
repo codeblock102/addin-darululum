@@ -104,6 +104,73 @@ export type Database = {
           },
         ]
       }
+      communications: {
+        Row: {
+          category: string
+          created_at: string
+          id: string
+          message: string
+          message_status: string
+          message_type: string
+          parent_message_id: string | null
+          read: boolean
+          read_at: string | null
+          recipient_id: string | null
+          sender_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          id?: string
+          message: string
+          message_status?: string
+          message_type?: string
+          parent_message_id?: string | null
+          read?: boolean
+          read_at?: string | null
+          recipient_id?: string | null
+          sender_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          id?: string
+          message?: string
+          message_status?: string
+          message_type?: string
+          parent_message_id?: string | null
+          read?: boolean
+          read_at?: string | null
+          recipient_id?: string | null
+          sender_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "communications_parent_message_id_fkey"
+            columns: ["parent_message_id"]
+            isOneToOne: false
+            referencedRelation: "communications"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "communications_recipient_id_fkey"
+            columns: ["recipient_id"]
+            isOneToOne: false
+            referencedRelation: "teachers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "communications_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "teachers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       juz: {
         Row: {
           id: number
