@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
@@ -30,6 +31,10 @@ export const AddStudentDialog = ({ teacherId }: AddStudentDialogProps) => {
     enrollmentDate: new Date().toISOString().split("T")[0],
     guardianName: "",
     guardianContact: "",
+    guardianEmail: "",
+    emergencyContactName: "",
+    emergencyContactPhone: "",
+    medicalConditions: "",
     status: "active",
     completedJuz: [],
     currentJuz: "_none_",

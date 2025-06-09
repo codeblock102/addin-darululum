@@ -184,6 +184,33 @@ export type Database = {
           },
         ]
       }
+      madrassahs: {
+        Row: {
+          admin_id: string | null
+          created_at: string | null
+          id: string
+          location: string | null
+          name: string
+          section: string | null
+        }
+        Insert: {
+          admin_id?: string | null
+          created_at?: string | null
+          id?: string
+          location?: string | null
+          name: string
+          section?: string | null
+        }
+        Update: {
+          admin_id?: string | null
+          created_at?: string | null
+          id?: string
+          location?: string | null
+          name?: string
+          section?: string | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -393,7 +420,9 @@ export type Database = {
           guardian_email: string | null
           guardian_name: string | null
           id: string
+          madrassah_id: string | null
           name: string
+          section: string | null
           status: Database["public"]["Enums"]["student_status"] | null
         }
         Insert: {
@@ -406,7 +435,9 @@ export type Database = {
           guardian_email?: string | null
           guardian_name?: string | null
           id?: string
+          madrassah_id?: string | null
           name: string
+          section?: string | null
           status?: Database["public"]["Enums"]["student_status"] | null
         }
         Update: {
@@ -419,10 +450,20 @@ export type Database = {
           guardian_email?: string | null
           guardian_name?: string | null
           id?: string
+          madrassah_id?: string | null
           name?: string
+          section?: string | null
           status?: Database["public"]["Enums"]["student_status"] | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "students_madrassah_id_fkey"
+            columns: ["madrassah_id"]
+            isOneToOne: false
+            referencedRelation: "madrassahs"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       students_teachers: {
         Row: {
@@ -486,8 +527,10 @@ export type Database = {
           created_at: string
           email: string | null
           id: string
+          madrassah_id: string | null
           name: string
           phone: string | null
+          section: string | null
           subject: string
         }
         Insert: {
@@ -495,8 +538,10 @@ export type Database = {
           created_at?: string
           email?: string | null
           id?: string
+          madrassah_id?: string | null
           name: string
           phone?: string | null
+          section?: string | null
           subject: string
         }
         Update: {
@@ -504,11 +549,21 @@ export type Database = {
           created_at?: string
           email?: string | null
           id?: string
+          madrassah_id?: string | null
           name?: string
           phone?: string | null
+          section?: string | null
           subject?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "teachers_madrassah_id_fkey"
+            columns: ["madrassah_id"]
+            isOneToOne: false
+            referencedRelation: "madrassahs"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_roles: {
         Row: {
