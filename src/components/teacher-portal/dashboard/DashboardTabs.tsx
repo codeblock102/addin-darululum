@@ -21,7 +21,7 @@ interface DashboardOverviewProps {
 }
 
 const DashboardOverviewWithProps = ({ teacherId }: DashboardOverviewProps) => {
-  return <DashboardOverview />;
+  return <DashboardOverview teacherId={teacherId} />;
 };
 
 export const DashboardTabContent = (
