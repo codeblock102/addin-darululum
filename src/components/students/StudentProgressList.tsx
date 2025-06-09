@@ -1,3 +1,4 @@
+
 import {
   Table,
   TableBody,
@@ -21,6 +22,7 @@ interface Progress {
   end_ayat: number;
   verses_memorized: number;
   date: string;
+  created_at: string; // Added missing property
   memorization_quality?:
     | "excellent"
     | "good"

@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area.tsx";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar.tsx";
@@ -10,9 +11,8 @@ import {
   MessageSquare,
   User,
 } from "lucide-react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client.ts";
 import { Message, MessageType } from "@/types/progress.ts";
+import { Alert, AlertDescription } from "@/components/ui/alert.tsx";
 
 interface MessageListProps {
   messages: Message[] | undefined;
@@ -29,41 +29,14 @@ export const MessageList = ({
   onMessageClick,
   showRecipient = false,
 }: MessageListProps) => {
-  const queryClient = useQueryClient();
   const [expandedMessageId, setExpandedMessageId] = useState<string | null>(
     null,
   );
 
-  const markAsReadMutation = useMutation({
-    mutationFn: async (messageId: string) => {
-      const now = new Date().toISOString();
-      const { data, error } = await supabase
-        .from("communications")
-        .update({
-          read: true,
-          updated_at: now,
-        })
-        .eq("id", messageId)
-        .select();
-
-      if (error) throw error;
-      return data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["teacher-inbox"] });
-      queryClient.invalidateQueries({ queryKey: ["teacher-sent"] });
-    },
-  });
-
   const handleMessageClick = (message: Message) => {
-    setExpandedMessageId(expandedMessageId === message.id ? null : message.id);
-
+    // Messaging functionality is disabled
     if (onMessageClick) {
       onMessageClick(message);
-    }
-
-    if (!message.read) {
-      markAsReadMutation.mutate(message.id);
     }
   };
 
@@ -96,86 +69,16 @@ export const MessageList = ({
     );
   }
 
-  if (!messages || messages.length === 0) {
-    return (
+  return (
+    <ScrollArea className="h-[400px]">
+      <Alert className="mb-4">
+        <AlertDescription>
+          Messaging functionality is currently disabled. Please contact the system administrator to enable this feature.
+        </AlertDescription>
+      </Alert>
       <div className="text-center p-6 text-muted-foreground">
         <Mail className="h-12 w-12 mx-auto mb-2 opacity-20" />
         <p>{emptyMessage}</p>
-      </div>
-    );
-  }
-
-  return (
-    <ScrollArea className="h-[400px]">
-      <div className="space-y-4">
-        {messages?.map((message) => (
-          <div
-            key={message.id}
-            className={`p-4 rounded-lg border transition-all duration-200 cursor-pointer ${
-              message.read ? "bg-background" : "bg-muted/30 border-primary/20"
-            } ${expandedMessageId === message.id ? "shadow-md" : ""}`}
-            onClick={() => handleMessageClick(message)}
-          >
-            <div className="flex items-start space-x-3">
-              <Avatar>
-                <AvatarFallback>
-                  <User className="h-5 w-5" />
-                </AvatarFallback>
-              </Avatar>
-              <div className="flex-1">
-                <div className="flex justify-between items-center">
-                  <div className="flex items-center space-x-2">
-                    <p className="font-medium">
-                      {showRecipient
-                        ? `To: ${message.recipient_name}`
-                        : `From: ${message.sender_name}`}
-                    </p>
-                    {message.message_type && (
-                      <div className="flex items-center">
-                        {getMessageTypeIcon(message.message_type)}
-                      </div>
-                    )}
-                    {message.category && (
-                      <Badge variant="outline" className="text-xs">
-                        {message.category}
-                      </Badge>
-                    )}
-                  </div>
-                  <span className="text-xs text-muted-foreground">
-                    {formatMessageDate(message.created_at)}
-                  </span>
-                </div>
-
-                <div
-                  className={`mt-2 ${
-                    expandedMessageId === message.id ? "" : "line-clamp-2"
-                  }`}
-                >
-                  <p>{message.message}</p>
-                </div>
-
-                {expandedMessageId === message.id && (
-                  <div className="mt-4 flex justify-between items-center">
-                    <div className="text-xs text-muted-foreground">
-                      {message.updated_at && message.read &&
-                        `Read: ${formatMessageDate(message.updated_at)}`}
-                    </div>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setExpandedMessageId(null);
-                      }}
-                    >
-                      Collapse
-                    </Button>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        ))}
       </div>
     </ScrollArea>
   );
