@@ -1,3 +1,4 @@
+
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client.ts";
 import { useToast } from "@/hooks/use-toast.ts";
@@ -49,6 +50,7 @@ export const StudentDeleteDialog = ({
         queryKey: ["teacher-student-assignments"],
       });
       queryClient.invalidateQueries({ queryKey: ["teacher-students-details"] });
+      queryClient.invalidateQueries({ queryKey: ["all-students-list"] });
       setIsOpen(false);
     },
     onError: (error) => {
@@ -60,53 +62,11 @@ export const StudentDeleteDialog = ({
     },
   });
 
-  const deleteStudentMutation = useMutation({
-    mutationFn: async (studentId: string) => {
-      // First, remove any student-teacher relationships
-      const { error: relationshipError } = await supabase
-        .from("students_teachers")
-        .delete()
-        .eq("student_name", studentToDelete?.name || "");
-
-      if (relationshipError) throw relationshipError;
-
-      // Then delete the student
-      const { error } = await supabase
-        .from("students")
-        .delete()
-        .eq("id", studentId);
-
-      if (error) throw error;
-      return studentId;
-    },
-    onSuccess: () => {
-      toast({
-        title: "Student deleted",
-        description:
-          `${studentToDelete?.name} has been permanently deleted from the database.`,
-      });
-      queryClient.invalidateQueries({
-        queryKey: ["teacher-student-assignments"],
-      });
-      queryClient.invalidateQueries({ queryKey: ["teacher-students-details"] });
-      setIsOpen(false);
-    },
-    onError: (error) => {
-      toast({
-        title: "Error",
-        description: `Failed to delete student: ${error.message}`,
-        variant: "destructive",
-      });
-    },
-  });
-
+  // Teachers should only be able to remove students from their assignments, not delete them entirely
   const handleConfirmDelete = () => {
     if (studentToDelete) {
-      if (isDeleteType === "delete") {
-        deleteStudentMutation.mutate(studentToDelete.studentId);
-      } else {
-        removeStudentMutation.mutate({ assignmentId: studentToDelete.id });
-      }
+      // For teachers, we always remove the assignment, regardless of isDeleteType
+      removeStudentMutation.mutate({ assignmentId: studentToDelete.id });
     }
   };
 
@@ -115,24 +75,11 @@ export const StudentDeleteDialog = ({
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>
-            {isDeleteType === "delete" ? "Delete Student" : "Remove Student"}
+            Remove Student
           </AlertDialogTitle>
           <AlertDialogDescription>
-            {isDeleteType === "delete"
-              ? (
-                <>
-                  Are you sure you want to delete{" "}
-                  {studentToDelete?.name}? This action cannot be undone and will
-                  permanently remove the student from the database.
-                </>
-              )
-              : (
-                <>
-                  Are you sure you want to remove {studentToDelete?.name}{" "}
-                  from your students? This will only remove the assignment, not
-                  delete the student from the system.
-                </>
-              )}
+            Are you sure you want to remove {studentToDelete?.name} from your students? 
+            This will only remove the assignment, not delete the student from the system.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
@@ -141,9 +88,7 @@ export const StudentDeleteDialog = ({
             onClick={handleConfirmDelete}
             className="bg-red-600 text-white hover:bg-red-700"
           >
-            {deleteStudentMutation.isPending || removeStudentMutation.isPending
-              ? (isDeleteType === "delete" ? "Deleting..." : "Removing...")
-              : (isDeleteType === "delete" ? "Delete" : "Remove")}
+            {removeStudentMutation.isPending ? "Removing..." : "Remove"}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

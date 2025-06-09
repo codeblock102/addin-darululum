@@ -1,5 +1,4 @@
 
-import { useNavigate } from "react-router-dom";
 import {
   Table,
   TableBody,
@@ -7,181 +6,163 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
-import { Trash2, User, UserCheck } from "lucide-react";
-import { Student, StudentAssignment } from "../MyStudents";
-import { useIsMobile } from "@/hooks/use-mobile";
+} from "@/components/ui/table.tsx";
+import { Button } from "@/components/ui/button.tsx";
+import { Trash2, UserPlus, UserMinus } from "lucide-react";
+import { Student, StudentAssignment } from "../MyStudents.tsx";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client.ts";
+import { useToast } from "@/hooks/use-toast.ts";
 
 interface StudentTableProps {
   students: Student[];
-  assignedStudents: StudentAssignment[] | undefined;
-  setStudentToDelete: (
-    student: { id: string; name: string; studentId: string } | null,
-  ) => void;
-  setIsDeleteDialogOpen: (isOpen: boolean) => void;
+  assignedStudents?: StudentAssignment[];
+  setStudentToDelete: (student: { id: string; name: string; studentId: string } | null) => void;
+  setIsDeleteDialogOpen: (open: boolean) => void;
   setIsDeleteType: (type: "remove" | "delete") => void;
 }
 
 export const StudentTable = ({
   students,
-  assignedStudents,
+  assignedStudents = [],
   setStudentToDelete,
   setIsDeleteDialogOpen,
   setIsDeleteType,
 }: StudentTableProps) => {
-  const navigate = useNavigate();
-  const isMobile = useIsMobile();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
 
-  // Handle click on "View Progress" button
-  const handleViewProgress = (studentId: string) => {
-    navigate(`/teacher-portal?tab=dhor-book&studentId=${studentId}`);
+  const addStudentMutation = useMutation({
+    mutationFn: async ({ teacherId, studentName }: { teacherId: string; studentName: string }) => {
+      const { error } = await supabase
+        .from("students_teachers")
+        .insert({
+          teacher_id: teacherId,
+          student_name: studentName,
+          active: true,
+        });
+
+      if (error) throw error;
+    },
+    onSuccess: (_, variables) => {
+      toast({
+        title: "Student added",
+        description: `${variables.studentName} has been added to your students.`,
+      });
+      queryClient.invalidateQueries({ queryKey: ["teacher-student-assignments"] });
+      queryClient.invalidateQueries({ queryKey: ["teacher-students-details"] });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: `Failed to add student: ${error.message}`,
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleAddStudent = (studentName: string) => {
+    // Get teacherId from localStorage or context - this is a simplified version
+    const teacherId = "temp-teacher-id"; // This should come from your auth context
+    addStudentMutation.mutate({ teacherId, studentName });
   };
 
-  // Handle click on delete button
-  const handleDeleteClick = (
-    student: Student,
-    deleteType: "remove" | "delete",
-  ) => {
-    const assignment = assignedStudents?.find((a) =>
-      a.student_name === student.name
-    );
+  const handleRemoveStudent = (student: Student) => {
+    const assignment = assignedStudents.find(a => a.student_name === student.name);
     if (assignment) {
       setStudentToDelete({
         id: assignment.id,
         name: student.name,
         studentId: student.id,
       });
-      setIsDeleteType(deleteType);
+      setIsDeleteType("remove");
       setIsDeleteDialogOpen(true);
     }
   };
 
-  if (isMobile) {
-    return (
-      <div className="space-y-3">
-        {students.map((student) => (
-          <div key={student.id} className="border rounded-lg p-4">
-            <div className="flex items-center justify-between mb-2">
-              <div className="flex items-center">
-                <User className="h-4 w-4 mr-2 text-muted-foreground" />
-                <span className="font-medium">{student.name}</span>
-              </div>
-              <span
-                className={`px-2 py-1 rounded-full text-xs font-medium ${
-                  student.status === "active"
-                    ? "bg-green-100 text-green-800"
-                    : "bg-red-100 text-red-800"
-                }`}
-              >
-                {student.status || "N/A"}
-              </span>
-            </div>
-            <div className="text-sm text-muted-foreground mb-3">
-              Enrolled: {student.enrollment_date
-                ? new Date(student.enrollment_date).toLocaleDateString()
-                : "N/A"}
-            </div>
-            <div className="flex gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => handleViewProgress(student.id)}
-              >
-                <UserCheck className="h-4 w-4 mr-1" />
-                Progress
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                className="text-amber-500 hover:text-amber-600"
-                onClick={() => handleDeleteClick(student, "remove")}
-              >
-                <User className="h-4 w-4" />
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                className="text-red-500 hover:text-red-600"
-                onClick={() => handleDeleteClick(student, "delete")}
-              >
-                <Trash2 className="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
-        ))}
-      </div>
-    );
-  }
+  const isStudentAssigned = (studentName: string) => {
+    return assignedStudents.some(assignment => assignment.student_name === studentName);
+  };
 
   return (
-    <div className="overflow-x-auto">
+    <div className="rounded-lg border border-gray-200 overflow-hidden">
       <Table>
         <TableHeader>
-          <TableRow>
-            <TableHead>Student Name</TableHead>
-            <TableHead>Enrollment Date</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead className="text-right">Actions</TableHead>
+          <TableRow className="bg-gray-50">
+            <TableHead className="font-semibold text-gray-700">Student</TableHead>
+            <TableHead className="font-semibold text-gray-700">Enrollment Date</TableHead>
+            <TableHead className="font-semibold text-gray-700">Status</TableHead>
+            <TableHead className="text-right font-semibold text-gray-700">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-          {students.map((student) => (
-            <TableRow key={student.id}>
-              <TableCell className="font-medium">
-                <div className="flex items-center">
-                  <User className="h-4 w-4 mr-2 text-muted-foreground" />
-                  {student.name}
-                </div>
-              </TableCell>
-              <TableCell>
-                {student.enrollment_date
-                  ? new Date(student.enrollment_date).toLocaleDateString()
-                  : "N/A"}
-              </TableCell>
-              <TableCell>
-                <span
-                  className={`px-2 py-1 rounded-full text-xs font-medium ${
-                    student.status === "active"
-                      ? "bg-green-100 text-green-800"
-                      : "bg-red-100 text-red-800"
-                  }`}
-                >
-                  {student.status || "N/A"}
-                </span>
-              </TableCell>
-              <TableCell className="text-right">
-                <div className="flex justify-end gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleViewProgress(student.id)}
+          {students.map((student) => {
+            const isAssigned = isStudentAssigned(student.name);
+            return (
+              <TableRow
+                key={student.id}
+                className={`transition-colors hover:bg-gray-50 ${
+                  isAssigned ? 'bg-blue-50' : ''
+                }`}
+              >
+                <TableCell>
+                  <div className="flex items-center space-x-3">
+                    <div className={`h-10 w-10 rounded-full flex items-center justify-center text-white font-semibold ${
+                      isAssigned ? 'bg-blue-600' : 'bg-gray-400'
+                    }`}>
+                      {student.name.substring(0, 2).toUpperCase()}
+                    </div>
+                    <div>
+                      <div className="font-medium text-gray-900">{student.name}</div>
+                      {isAssigned && (
+                        <div className="text-sm text-blue-600">Assigned to you</div>
+                      )}
+                    </div>
+                  </div>
+                </TableCell>
+                <TableCell className="text-gray-700">
+                  {student.enrollment_date
+                    ? new Date(student.enrollment_date).toLocaleDateString()
+                    : "—"}
+                </TableCell>
+                <TableCell>
+                  <span
+                    className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                      student.status === "active"
+                        ? "bg-green-100 text-green-800"
+                        : "bg-red-100 text-red-800"
+                    }`}
                   >
-                    <UserCheck className="h-4 w-4 mr-2" />
-                    View Progress
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="text-amber-500 hover:text-amber-600 hover:bg-amber-50 border-amber-200"
-                    onClick={() => handleDeleteClick(student, "remove")}
-                    title="Remove from your students"
-                  >
-                    <User className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="text-red-500 hover:text-red-600 hover:bg-red-50 border-red-200"
-                    onClick={() => handleDeleteClick(student, "delete")}
-                    title="Delete student from database"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
-              </TableCell>
-            </TableRow>
-          ))}
+                    {student.status}
+                  </span>
+                </TableCell>
+                <TableCell className="text-right">
+                  {isAssigned ? (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleRemoveStudent(student)}
+                      className="text-red-500 hover:text-red-600 hover:bg-red-50"
+                    >
+                      <UserMinus className="h-4 w-4 mr-1" />
+                      Remove
+                    </Button>
+                  ) : (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleAddStudent(student.name)}
+                      disabled={addStudentMutation.isPending}
+                      className="text-blue-500 hover:text-blue-600 hover:bg-blue-50"
+                    >
+                      <UserPlus className="h-4 w-4 mr-1" />
+                      {addStudentMutation.isPending ? "Adding..." : "Add"}
+                    </Button>
+                  )}
+                </TableCell>
+              </TableRow>
+            );
+          })}
         </TableBody>
       </Table>
     </div>
