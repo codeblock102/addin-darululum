@@ -49,7 +49,7 @@ export const AdminMessaging = () => {
         data,
         error,
       } = await supabase.from("communications").select(`
-          id, message, created_at, sender_id, recipient_id, read, message_type, message_status, 
+          id, message, created_at, sender_id, recipient_id, read, read_at, message_type, message_status, 
           category, updated_at, parent_message_id,
           teachers!communications_sender_id_fkey(name)
         `).eq("recipient_id", "admin-1").order("created_at", {
@@ -78,7 +78,7 @@ export const AdminMessaging = () => {
         data,
         error,
       } = await supabase.from("communications").select(`
-          id, message, created_at, sender_id, recipient_id, read, message_type, message_status, 
+          id, message, created_at, sender_id, recipient_id, read, read_at, message_type, message_status, 
           category, updated_at, parent_message_id,
           teachers!communications_recipient_id_fkey(name)
         `).is("sender_id", null).not("recipient_id", "is", null).order(
@@ -100,6 +100,7 @@ export const AdminMessaging = () => {
       return typedMessages;
     },
   });
+
   const markAsReadMutation = useMutation({
     mutationFn: async (messageId: string) => {
       const {
