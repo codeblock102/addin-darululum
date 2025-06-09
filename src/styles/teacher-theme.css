@@ -1,3 +1,4 @@
+
 /* Teacher theme specific styles */
 .teacher-theme {
   --teacher-bg: 210 40% 98%;
@@ -9,6 +10,34 @@
   /* Apply teacher theme to common elements */
   background-color: hsl(210 40% 98%);
   color: hsl(222.2 47.4% 11.2%);
+}
+
+/* Improved text contrast */
+.teacher-theme h1,
+.teacher-theme h2,
+.teacher-theme h3,
+.teacher-theme h4 {
+  @apply text-gray-900 font-bold;
+}
+
+.teacher-theme p,
+.teacher-theme span,
+.teacher-theme div {
+  @apply text-gray-800;
+}
+
+.teacher-theme .text-muted-foreground {
+  @apply text-gray-600;
+}
+
+/* Table text improvements */
+.teacher-theme .table th {
+  @apply bg-gray-50 text-gray-900 font-medium border-b border-gray-100 px-4
+    py-3;
+}
+
+.teacher-theme .table td {
+  @apply px-4 py-3 border-b border-gray-100 text-gray-800;
 }
 
 /* Card styling */
@@ -32,15 +61,6 @@
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
 }
 
-.teacher-theme .table th {
-  @apply bg-gray-50 text-gray-700 font-medium border-b border-gray-100 px-4
-    py-3;
-}
-
-.teacher-theme .table td {
-  @apply px-4 py-3 border-b border-gray-100 text-gray-700;
-}
-
 .teacher-theme .table tr:hover {
   @apply bg-blue-50/50;
 }
@@ -51,12 +71,17 @@
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
 }
 
-/* Form elements */
+/* Form elements with better contrast */
 .teacher-theme input,
 .teacher-theme select,
 .teacher-theme textarea {
-  @apply bg-white border-gray-200 focus:border-blue-400 text-gray-700
+  @apply bg-white border-gray-200 focus:border-blue-400 text-gray-900
     transition-all duration-200;
+}
+
+.teacher-theme input::placeholder,
+.teacher-theme textarea::placeholder {
+  @apply text-gray-500;
 }
 
 /* Button styling */
@@ -67,26 +92,8 @@
 
 .teacher-theme .button-secondary,
 .teacher-theme button[data-variant="outline"] {
-  @apply bg-white hover:bg-gray-50 text-gray-800 border border-gray-200
+  @apply bg-white hover:bg-gray-50 text-gray-900 border border-gray-200
     hover:border-blue-300;
-}
-
-/* Text styling */
-.teacher-theme h1,
-.teacher-theme h2,
-.teacher-theme h3,
-.teacher-theme h4 {
-  @apply text-gray-800 font-bold;
-}
-
-.teacher-theme p,
-.teacher-theme span,
-.teacher-theme div {
-  @apply text-gray-600;
-}
-
-.teacher-theme .text-muted-foreground {
-  @apply text-gray-500;
 }
 
 /* Sidebar specific */
@@ -109,24 +116,24 @@
   }
 }
 
-/* Status indicators */
+/* Status indicators with better contrast */
 .teacher-theme .status-active {
-  @apply bg-green-100 text-green-700 border border-green-200 px-2 py-0.5
+  @apply bg-green-100 text-green-800 border border-green-200 px-2 py-0.5
     rounded-full text-xs font-medium;
 }
 
 .teacher-theme .status-inactive {
-  @apply bg-gray-100 text-gray-700 border border-gray-200 px-2 py-0.5
+  @apply bg-gray-100 text-gray-800 border border-gray-200 px-2 py-0.5
     rounded-full text-xs font-medium;
 }
 
 .teacher-theme .status-warning {
-  @apply bg-yellow-100 text-yellow-700 border border-yellow-200 px-2 py-0.5
+  @apply bg-yellow-100 text-yellow-800 border border-yellow-200 px-2 py-0.5
     rounded-full text-xs font-medium;
 }
 
 .teacher-theme .status-danger {
-  @apply bg-red-100 text-red-700 border border-red-200 px-2 py-0.5 rounded-full
+  @apply bg-red-100 text-red-800 border border-red-200 px-2 py-0.5 rounded-full
     text-xs font-medium;
 }
 
@@ -136,9 +143,41 @@
 }
 
 .teacher-theme .bottom-navigation button {
-  @apply text-gray-500 hover:bg-gray-50;
+  @apply text-gray-600 hover:bg-gray-50;
 }
 
 .teacher-theme .bottom-navigation button.active {
   @apply text-blue-600 bg-blue-50;
+}
+
+/* Label improvements */
+.teacher-theme label {
+  @apply text-gray-900 font-medium;
+}
+
+/* Search input improvements */
+.teacher-theme input[type="search"] {
+  @apply text-gray-900 placeholder:text-gray-500;
+}
+
+/* Card content text */
+.teacher-theme .card-content p,
+.teacher-theme .card-content span,
+.teacher-theme .card-content div {
+  @apply text-gray-800;
+}
+
+/* Navigation text */
+.teacher-theme nav a,
+.teacher-theme nav button {
+  @apply text-gray-800 hover:text-blue-600;
+}
+
+/* Welcome header improvements */
+.teacher-theme .welcome-header h1 {
+  @apply text-gray-900;
+}
+
+.teacher-theme .welcome-header p {
+  @apply text-gray-700;
 }

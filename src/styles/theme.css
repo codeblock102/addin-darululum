@@ -1,3 +1,4 @@
+
 /* Base theme variables */
 :root {
   --font-sans:
@@ -5,7 +6,7 @@
     Roboto, sans-serif;
   --radius: 0.5rem;
 
-  /* Common light mode variables */
+  /* Common light mode variables with better contrast */
   --background: 0 0% 100%;
   --foreground: 222.2 47.4% 11.2%;
   --card: 0 0% 100%;
@@ -17,7 +18,7 @@
   --secondary: 210 40% 96.1%;
   --secondary-foreground: 222.2 47.4% 11.2%;
   --muted: 210 40% 96.1%;
-  --muted-foreground: 215.4 16.3% 46.9%;
+  --muted-foreground: 215.4 16.3% 35%; /* Darker for better contrast */
   --accent: 210 40% 96.1%;
   --accent-foreground: 222.2 47.4% 11.2%;
   --destructive: 0 100% 50%;
@@ -40,7 +41,7 @@
   --secondary: 222.2 47.4% 11.2%;
   --secondary-foreground: 210 40% 98%;
   --muted: 223 47% 11%;
-  --muted-foreground: 215.4 16.3% 56.9%;
+  --muted-foreground: 215.4 16.3% 65%; /* Improved dark mode contrast */
   --accent: 216 34% 17%;
   --accent-foreground: 210 40% 98%;
   --destructive: 0 63% 31%;
@@ -60,7 +61,7 @@
   --card: 222 47% 10%;
   --card-foreground: 0 0% 95%;
   --muted: 223 47% 15%;
-  --muted-foreground: 215.4 16.3% 70%;
+  --muted-foreground: 215.4 16.3% 75%; /* Better admin contrast */
   --accent: 217 33% 20%;
   --accent-foreground: 0 0% 95%;
   --border: 217 33% 15%;
@@ -80,7 +81,7 @@
 
 /* Teacher theme variables - these apply when teacher-theme class is present */
 .teacher-theme {
-  /* Teacher specific colors - light/friendly theme */
+  /* Teacher specific colors - light/friendly theme with improved contrast */
   --primary: 221.2 83.2% 53.3%;
   --primary-foreground: 210 40% 98%;
   --background: 0 0% 100%;
@@ -88,7 +89,7 @@
   --card: 0 0% 100%;
   --card-foreground: 222.2 47.4% 11.2%;
   --muted: 210 40% 96.1%;
-  --muted-foreground: 215.4 16.3% 46.9%;
+  --muted-foreground: 215.4 16.3% 35%; /* Much darker for better readability */
   --accent: 210 40% 98%;
   --accent-foreground: 222.2 47.4% 11.2%;
   --border: 214.3 31.8% 91.4%;
