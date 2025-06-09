@@ -181,7 +181,7 @@ const ProgressBookPage = () => {
                   </TabsTrigger>
                   <TabsTrigger value="classroom" className="flex items-center gap-2 text-sm sm:text-base py-2 sm:py-3 data-[state=active]:bg-blue-600 data-[state=active]:text-white">
                     <Users className="h-4 w-4" />
-                    <span>Classroom View</span>
+                    <span>Leaderboard View</span>
                   </TabsTrigger>
                 </TabsList>
               </div>
