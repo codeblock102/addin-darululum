@@ -6,32 +6,36 @@ import {
 } from "@/components/ui/dialog.tsx";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client.ts";
-import { ClassForm } from "./components/ClassForm.tsx";
 import { useClassSubmit } from "./hooks/useClassSubmit.ts";
 import { ClassFormData } from "./validation/classFormSchema.ts";
+import { useQueryClient, useToast } from "react-query";
 
 interface ClassDialogProps {
-  selectedClass: (Partial<ClassFormData> & { id: string }) | null;
+  isOpen: boolean;
   onClose: () => void;
+  classToEdit: (Partial<ClassFormData> & { id: string }) | null;
 }
 
-export function ClassDialog({ selectedClass, onClose }: ClassDialogProps) {
-  // Fetch teachers for dropdown
-  const { data: teachers } = useQuery({
-    queryKey: ["teachers-dropdown"],
+export const ClassDialog = ({ isOpen, onClose, classToEdit }: ClassDialogProps) => {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  // Fetch teachers for the dropdown
+  const { data: teachers = [] } = useQuery({
+    queryKey: ["teachers"],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("teachers")
-        .select("id, name")
+        .select("id, name, subject")
         .order("name");
 
       if (error) throw error;
-      return data;
+      return data || [];
     },
   });
 
   const classMutation = useClassSubmit({
-    selectedClass,
+    selectedClass: classToEdit,
     onSuccess: onClose,
   });
 
@@ -43,17 +47,17 @@ export function ClassDialog({ selectedClass, onClose }: ClassDialogProps) {
     <DialogContent>
       <DialogHeader>
         <DialogTitle>
-          {selectedClass ? "Edit Class" : "Create New Class"}
+          {classToEdit ? "Edit Class" : "Create New Class"}
         </DialogTitle>
         <DialogDescription>
-          {selectedClass
+          {classToEdit
             ? "Update the class details and schedule."
             : "Add a new class with its schedule."}
         </DialogDescription>
       </DialogHeader>
 
       <ClassForm
-        selectedClass={selectedClass}
+        selectedClass={classToEdit}
         onSubmit={handleSubmit}
         onCancel={onClose}
         isSubmitting={classMutation.isPending}

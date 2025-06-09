@@ -1,157 +1,201 @@
-import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import React, { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client.ts";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table.tsx";
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card.tsx";
 import { Button } from "@/components/ui/button.tsx";
-import { Skeleton } from "@/components/ui/skeleton.tsx";
+import { Plus, Loader2, Users, MapPin, Calendar, Clock, MoreHorizontal } from "lucide-react";
+import { ClassDialog } from "./ClassDialog.tsx";
+import { useToast } from "@/components/ui/use-toast.tsx";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu.tsx";
 import { Badge } from "@/components/ui/badge.tsx";
-import { Edit, Users } from "lucide-react";
-import { ClassFormData } from "./validation/classFormSchema.ts";
+
+interface Class {
+  id: string;
+  created_at: string;
+  name: string;
+  description: string | null;
+  teacher_id: string | null;
+  capacity: number | null;
+  current_students: number | null;
+  room: string | null;
+  status: "active" | "inactive";
+  days_of_week: string[] | null;
+  time_slots: any[] | null;
+}
 
 interface TimeSlot {
   start_time: string;
   end_time: string;
 }
 
-interface ClassListProps {
-  searchQuery: string;
-  onEdit: (classItem: Partial<ClassFormData> & { id: string }) => void;
-}
+export const ClassList = () => {
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [editingClass, setEditingClass] = useState<Class | null>(null);
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
 
-export function ClassList({ searchQuery, onEdit }: ClassListProps) {
-  const [hoveredId, setHoveredId] = useState<string | null>(null);
-
-  const { data: classes, isLoading } = useQuery({
+  const { data: classes, isLoading } = useQuery<Class[]>({
     queryKey: ["classes"],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("classes")
-        .select(`
-          *,
-          teachers (
-            name
-          )
-        `)
-        .order("name");
+        .select("*")
+        .order("created_at", { ascending: false });
 
       if (error) throw error;
-      return data;
+      return data || [];
     },
   });
 
-  const filteredClasses = classes?.filter(
-    (cls) =>
-      cls.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (cls.teachers?.name &&
-        cls.teachers.name.toLowerCase().includes(searchQuery.toLowerCase())) ||
-      (cls.room &&
-        cls.room.toLowerCase().includes(searchQuery.toLowerCase())),
-  );
+  const deleteClassMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("classes").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["classes"] });
+      toast({
+        title: "Success",
+        description: "Class deleted successfully.",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: `Failed to delete class: ${error.message}`,
+        variant: "destructive",
+      });
+    },
+  });
 
-  if (isLoading) {
-    return (
-      <div className="p-4 space-y-4">
-        {[...Array(5)].map((_, i) => (
-          <Skeleton key={i} className="h-12 w-full" />
-        ))}
-      </div>
-    );
-  }
+  const handleEdit = (cls: Class) => {
+    setEditingClass(cls);
+    setIsDialogOpen(true);
+  };
 
-  if (filteredClasses?.length === 0) {
-    return (
-      <div className="text-center p-8">
-        <p className="text-gray-500">No classes found.</p>
-      </div>
-    );
-  }
+  const handleDelete = (id: string) => {
+    deleteClassMutation.mutate(id);
+  };
 
-  const formatTime = (timeSlot: TimeSlot[] | null) => {
-    if (timeSlot && timeSlot.length > 0) {
-      const firstSlot = timeSlot[0];
-      return `${firstSlot.start_time} - ${firstSlot.end_time}`;
-    }
-    return "N/A";
+  const formatTimeSlots = (timeSlots: any[]): string => {
+    if (!timeSlots || timeSlots.length === 0) return "No time slots";
+    
+    return timeSlots
+      .map((slot: any) => {
+        if (typeof slot === 'object' && slot.start_time && slot.end_time) {
+          return `${slot.start_time} - ${slot.end_time}`;
+        }
+        return '';
+      })
+      .filter(Boolean)
+      .join(', ');
   };
 
   return (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead>Name</TableHead>
-          <TableHead>Schedule</TableHead>
-          <TableHead>Teacher</TableHead>
-          <TableHead>Room</TableHead>
-          <TableHead>Capacity</TableHead>
-          <TableHead className="text-right">Actions</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {filteredClasses?.map((cls) => (
-          <TableRow
-            key={cls.id}
-            className="transition-colors hover:bg-muted/50"
-            onMouseEnter={() => setHoveredId(cls.id)}
-            onMouseLeave={() => setHoveredId(null)}
-          >
-            <TableCell className="font-medium">{cls.name}</TableCell>
-            <TableCell>
-              <div className="space-y-1">
-                <div className="text-sm font-medium">
-                  {formatTime(cls.time_slots)}
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-3xl font-bold">Classes</h1>
+          <p className="text-gray-600 mt-1">Manage class schedules and information</p>
+        </div>
+        <Button onClick={() => setIsDialogOpen(true)}>
+          <Plus className="mr-2 h-4 w-4" />
+          Add Class
+        </Button>
+      </div>
+
+      {isLoading ? (
+        <div className="flex justify-center py-8">
+          <Loader2 className="h-8 w-8 animate-spin" />
+        </div>
+      ) : (
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {classes?.map((cls) => (
+            <Card key={cls.id} className="hover:shadow-lg transition-shadow">
+              <CardHeader>
+                <div className="flex justify-between items-start">
+                  <div>
+                    <CardTitle className="text-xl">{cls.name}</CardTitle>
+                    <CardDescription className="mt-1">
+                      {cls.description || "No description"}
+                    </CardDescription>
+                  </div>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" className="h-8 w-8 p-0">
+                        <MoreHorizontal className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={() => handleEdit(cls)}>
+                        Edit
+                      </DropdownMenuItem>
+                      <DropdownMenuItem 
+                        onClick={() => handleDelete(cls.id)}
+                        className="text-red-600"
+                      >
+                        Delete
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
-                <div className="flex flex-wrap gap-1">
-                  {cls.days_of_week.map((day: string) => (
-                    <Badge key={day} variant="outline" className="text-xs">
-                      {day}
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  <div className="flex items-center text-sm text-gray-600">
+                    <Users className="mr-2 h-4 w-4" />
+                    <span>{cls.current_students || 0}/{cls.capacity} students</span>
+                  </div>
+                  
+                  <div className="flex items-center text-sm text-gray-600">
+                    <MapPin className="mr-2 h-4 w-4" />
+                    <span>{cls.room || "No room assigned"}</span>
+                  </div>
+                  
+                  <div className="flex items-center text-sm text-gray-600">
+                    <Calendar className="mr-2 h-4 w-4" />
+                    <span>{cls.days_of_week?.join(", ") || "No days set"}</span>
+                  </div>
+                  
+                  <div className="flex items-center text-sm text-gray-600">
+                    <Clock className="mr-2 h-4 w-4" />
+                    <span>{formatTimeSlots(cls.time_slots || [])}</span>
+                  </div>
+                  
+                  <div className="pt-2">
+                    <Badge 
+                      variant={cls.status === "active" ? "default" : "secondary"}
+                      className="capitalize"
+                    >
+                      {cls.status}
                     </Badge>
-                  ))}
+                  </div>
                 </div>
-              </div>
-            </TableCell>
-            <TableCell>{cls.teachers?.name || "—"}</TableCell>
-            <TableCell>{cls.room}</TableCell>
-            <TableCell>
-              <div className="flex items-center">
-                <Users className="h-4 w-4 mr-2 text-muted-foreground" />
-                <span
-                  className={cls.current_students >= cls.capacity
-                    ? "text-red-500"
-                    : ""}
-                >
-                  {cls.current_students} / {cls.capacity}
-                </span>
-              </div>
-            </TableCell>
-            <TableCell className="text-right">
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={() => {
-                  const { time_slots, ...rest } = cls;
-                  onEdit({
-                    ...rest,
-                    time_start: time_slots?.[0]?.start_time,
-                    time_end: time_slots?.[0]?.end_time,
-                  });
-                }}
-                className={`transition-opacity duration-200 ${
-                  hoveredId === cls.id ? "opacity-100" : "opacity-0"
-                }`}
-              >
-                <Edit className="h-4 w-4" />
-              </Button>
-            </TableCell>
-          </TableRow>
-        ))}
-      </TableBody>
-    </Table>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
+
+      <ClassDialog 
+        isOpen={isDialogOpen}
+        onClose={() => {
+          setIsDialogOpen(false);
+          setEditingClass(null);
+        }}
+        classToEdit={editingClass}
+      />
+    </div>
   );
-}
+};

@@ -1,4 +1,3 @@
-
 import React from "react";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -20,15 +19,16 @@ interface AttendanceRecord {
   date: string;
   status: string;
   notes?: string;
+  student_id: string;
+  class_id: string;
   students: {
     id: string;
     name: string;
   } | null;
   classes: {
+    id: string;
     name: string;
   } | null;
-  student_id: string | null;
-  class_id: string | null;
 }
 
 export function AttendanceTable({ teacherId }: AttendanceTableProps) {
@@ -44,7 +44,7 @@ export function AttendanceTable({ teacherId }: AttendanceTableProps) {
       const { data, error } = await supabase
         .from("attendance")
         .select(`
-          id, date, status, notes,
+          id, date, status, notes, student_id, class_id,
           students (id, name), 
           classes (id, name)
         `)
@@ -59,7 +59,16 @@ export function AttendanceTable({ teacherId }: AttendanceTableProps) {
         return [];
       }
 
-      return data;
+      return data.map(record => ({
+        id: record.id,
+        date: record.date,
+        status: record.status,
+        notes: record.notes,
+        student_id: record.student_id || '',
+        class_id: record.class_id || '',
+        students: record.students,
+        classes: record.classes
+      }));
     },
   });
 
@@ -70,7 +79,7 @@ export function AttendanceTable({ teacherId }: AttendanceTableProps) {
     (record.classes?.name?.toLowerCase() || "").includes(
       searchQuery.toLowerCase(),
     )
-  );
+  ) || [];
 
   // Function to handle search input changes
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {

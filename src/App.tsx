@@ -1,3 +1,4 @@
+
 /**
  * @file src/App.tsx
  * @summary This is the main application component that sets up the overall structure, routing, and global providers.
@@ -24,6 +25,7 @@ import Classes from "@/pages/Classes.tsx";
 import ProgressBook from "@/pages/ProgressBook.tsx";
 import TeacherAccounts from "@/pages/TeacherAccounts.tsx";
 import Auth from "@/pages/Auth.tsx";
+import Attendance from "@/pages/Attendance.tsx";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute.tsx";
 import { DashboardLayout } from "@/components/layouts/DashboardLayout.tsx";
 import Settings from "@/pages/Settings.tsx";
