@@ -80,6 +80,16 @@ export const StudentTable = ({
     }
   };
 
+  const handleDeleteStudent = (student: Student) => {
+    setStudentToDelete({
+      id: "", // Not needed for complete deletion
+      name: student.name,
+      studentId: student.id,
+    });
+    setIsDeleteType("delete");
+    setIsDeleteDialogOpen(true);
+  };
+
   const isStudentAssigned = (studentName: string) => {
     return assignedStudents.some(assignment => assignment.student_name === studentName);
   };
@@ -137,28 +147,39 @@ export const StudentTable = ({
                   </span>
                 </TableCell>
                 <TableCell className="text-right">
-                  {isAssigned ? (
+                  <div className="flex justify-end gap-2">
+                    {isAssigned ? (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleRemoveStudent(student)}
+                        className="text-red-500 hover:text-red-600 hover:bg-red-50"
+                      >
+                        <UserMinus className="h-4 w-4 mr-1" />
+                        Remove
+                      </Button>
+                    ) : (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleAddStudent(student.name)}
+                        disabled={addStudentMutation.isPending}
+                        className="text-blue-500 hover:text-blue-600 hover:bg-blue-50"
+                      >
+                        <UserPlus className="h-4 w-4 mr-1" />
+                        {addStudentMutation.isPending ? "Adding..." : "Add"}
+                      </Button>
+                    )}
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => handleRemoveStudent(student)}
+                      onClick={() => handleDeleteStudent(student)}
                       className="text-red-500 hover:text-red-600 hover:bg-red-50"
                     >
-                      <UserMinus className="h-4 w-4 mr-1" />
-                      Remove
+                      <Trash2 className="h-4 w-4 mr-1" />
+                      Delete
                     </Button>
-                  ) : (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleAddStudent(student.name)}
-                      disabled={addStudentMutation.isPending}
-                      className="text-blue-500 hover:text-blue-600 hover:bg-blue-50"
-                    >
-                      <UserPlus className="h-4 w-4 mr-1" />
-                      {addStudentMutation.isPending ? "Adding..." : "Add"}
-                    </Button>
-                  )}
+                  </div>
                 </TableCell>
               </TableRow>
             );

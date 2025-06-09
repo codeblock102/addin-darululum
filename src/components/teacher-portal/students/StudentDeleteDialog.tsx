@@ -62,24 +62,75 @@ export const StudentDeleteDialog = ({
     },
   });
 
-  // Teachers should only be able to remove students from their assignments, not delete them entirely
+  const deleteStudentMutation = useMutation({
+    mutationFn: async ({ studentId, studentName }: { studentId: string; studentName: string }) => {
+      // First, delete all teacher-student relationships
+      const { error: relationshipError } = await supabase
+        .from("students_teachers")
+        .delete()
+        .eq("student_name", studentName);
+
+      if (relationshipError) throw relationshipError;
+
+      // Then delete the student record
+      const { error } = await supabase
+        .from("students")
+        .delete()
+        .eq("id", studentId);
+
+      if (error) throw error;
+      return studentId;
+    },
+    onSuccess: () => {
+      toast({
+        title: "Student deleted",
+        description: `${studentToDelete?.name} has been permanently deleted from the system.`,
+      });
+
+      queryClient.invalidateQueries({
+        queryKey: ["teacher-student-assignments"],
+      });
+      queryClient.invalidateQueries({ queryKey: ["teacher-students-details"] });
+      queryClient.invalidateQueries({ queryKey: ["all-students-list"] });
+      queryClient.invalidateQueries({ queryKey: ["students"] });
+      setIsOpen(false);
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: `Failed to delete student: ${error.message}`,
+        variant: "destructive",
+      });
+    },
+  });
+
   const handleConfirmDelete = () => {
     if (studentToDelete) {
-      // For teachers, we always remove the assignment, regardless of isDeleteType
-      removeStudentMutation.mutate({ assignmentId: studentToDelete.id });
+      if (isDeleteType === "remove") {
+        removeStudentMutation.mutate({ assignmentId: studentToDelete.id });
+      } else {
+        deleteStudentMutation.mutate({ 
+          studentId: studentToDelete.studentId, 
+          studentName: studentToDelete.name 
+        });
+      }
     }
   };
+
+  const isLoading = removeStudentMutation.isPending || deleteStudentMutation.isPending;
 
   return (
     <AlertDialog open={isOpen} onOpenChange={setIsOpen}>
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>
-            Remove Student
+            {isDeleteType === "remove" ? "Remove Student" : "Delete Student"}
           </AlertDialogTitle>
           <AlertDialogDescription>
-            Are you sure you want to remove {studentToDelete?.name} from your students? 
-            This will only remove the assignment, not delete the student from the system.
+            {isDeleteType === "remove" 
+              ? `Are you sure you want to remove ${studentToDelete?.name} from your students? This will only remove the assignment, not delete the student from the system.`
+              : `Are you sure you want to permanently delete ${studentToDelete?.name} from the system? This action cannot be undone and will remove all associated data.`
+            }
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
@@ -88,7 +139,7 @@ export const StudentDeleteDialog = ({
             onClick={handleConfirmDelete}
             className="bg-red-600 text-white hover:bg-red-700"
           >
-            {removeStudentMutation.isPending ? "Removing..." : "Remove"}
+            {isLoading ? (isDeleteType === "remove" ? "Removing..." : "Deleting...") : (isDeleteType === "remove" ? "Remove" : "Delete")}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
