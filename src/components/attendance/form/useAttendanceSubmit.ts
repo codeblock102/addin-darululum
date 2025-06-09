@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { format } from "date-fns";
@@ -6,99 +7,90 @@ import { supabase } from "@/integrations/supabase/client.ts";
 import { useToast } from "@/hooks/use-toast.ts";
 import { AttendanceStatus } from "@/types/attendance.ts";
 
+type AttendanceFormValues = {
+  student_id: string;
+  status: AttendanceStatus;
+  notes: string;
+  date: Date;
+  time: string;
+  late_reason?: string;
+};
+
 export function useAttendanceSubmit() {
-  const [selectedClass, setSelectedClass] = useState<string>("");
   const [selectedStudent, setSelectedStudent] = useState<string>("");
+  const [selectedTime, setSelectedTime] = useState<string>("");
+  const [selectedReason, setSelectedReason] = useState<string>("");
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const today = new Date();
-  const formattedDate = format(today, "yyyy-MM-dd");
 
-  const form = useForm({
+  const form = useForm<AttendanceFormValues>({
     defaultValues: {
-      class_id: "",
       student_id: "",
       status: "present" as AttendanceStatus,
       notes: "",
+      date: today,
+      time: format(new Date(), "HH:mm"),
+      late_reason: "",
     },
   });
 
-  const { data: classesData, isLoading: isLoadingClasses } = useQuery({
-    queryKey: ["class-schedules"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("classes")
-        .select("id, name, days_of_week, time_slots")
-        .order("name", { ascending: true });
-
-      if (error) throw error;
-      return data;
-    },
-  });
-
-  const { data: students, isLoading: isLoadingStudents } = useQuery({
-    queryKey: ["students-by-class", selectedClass],
-    queryFn: async () => {
-      if (!selectedClass) return [];
-
-      const { data, error } = await supabase
-        .from("students")
-        .select("id, name")
-        .eq("status", "active")
-        .order("name");
-
-      if (error) throw error;
-      return data;
-    },
-    enabled: !!selectedClass,
-  });
+  const selectedDate = form.watch("date");
+  const formattedDate = selectedDate ? format(selectedDate, "yyyy-MM-dd") : format(today, "yyyy-MM-dd");
 
   const { data: existingAttendance, refetch: refetchAttendance } = useQuery({
-    queryKey: ["attendance", selectedStudent, selectedClass, formattedDate],
+    queryKey: ["attendance", selectedStudent, formattedDate],
     queryFn: async () => {
-      if (!selectedStudent || !selectedClass) return null;
+      if (!selectedStudent) return null;
 
       const { data, error } = await supabase
         .from("attendance")
         .select("*")
         .eq("student_id", selectedStudent)
-        .eq("class_id", selectedClass)
         .eq("date", formattedDate)
         .maybeSingle();
 
       if (error) throw error;
       return data;
     },
-    enabled: !!selectedStudent && !!selectedClass,
+    enabled: !!selectedStudent,
   });
 
   useEffect(() => {
     if (existingAttendance) {
       form.setValue("status", existingAttendance.status as AttendanceStatus);
       form.setValue("notes", existingAttendance.notes || "");
+      if (existingAttendance.time) {
+        form.setValue("time", existingAttendance.time);
+        setSelectedTime(existingAttendance.time);
+      }
+      if (existingAttendance.late_reason) {
+        form.setValue("late_reason", existingAttendance.late_reason);
+        setSelectedReason(existingAttendance.late_reason);
+      }
     } else {
       form.setValue("status", "present");
       form.setValue("notes", "");
+      form.setValue("time", format(new Date(), "HH:mm"));
+      form.setValue("late_reason", "");
+      setSelectedTime(format(new Date(), "HH:mm"));
+      setSelectedReason("");
     }
   }, [existingAttendance, form]);
 
   const saveAttendance = useMutation({
-    mutationFn: async (values: {
-      class_id: string;
-      student_id: string;
-      status: AttendanceStatus;
-      notes: string;
-    }) => {
-      if (!selectedStudent || !selectedClass) {
-        throw new Error("Please select a class and student");
+    mutationFn: async (values: AttendanceFormValues) => {
+      if (!selectedStudent) {
+        throw new Error("Please select a student");
       }
 
       const attendanceData = {
         student_id: selectedStudent,
-        class_id: selectedClass,
         date: formattedDate,
         status: values.status,
         notes: values.notes,
+        time: values.time,
+        late_reason: values.status === "late" ? values.late_reason : null,
       };
 
       if (existingAttendance) {
@@ -135,26 +127,19 @@ export function useAttendanceSubmit() {
     },
   });
 
-  const onSubmit = (values: {
-    class_id: string;
-    student_id: string;
-    status: AttendanceStatus;
-    notes: string;
-  }) => {
+  const onSubmit = (values: AttendanceFormValues) => {
     saveAttendance.mutate(values);
   };
 
   return {
     form,
     onSubmit,
-    selectedClass,
-    setSelectedClass,
     selectedStudent,
     setSelectedStudent,
-    classesData,
-    students,
-    isLoadingClasses,
-    isLoadingStudents,
+    selectedTime,
+    setSelectedTime,
+    selectedReason,
+    setSelectedReason,
     existingAttendance,
     saveAttendance,
   };
