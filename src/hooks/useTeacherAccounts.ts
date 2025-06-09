@@ -11,7 +11,7 @@ interface Teacher {
   subject: string;
   bio: string | null;
   phone: string | null;
-  experience?: string;
+  experience?: number;
 }
 
 export function useTeacherAccounts() {
@@ -90,7 +90,7 @@ export function useTeacherAccounts() {
             lastLogin: userData?.created_at || null,
             classesCount: classesData?.length || 0,
             studentsCount: studentsData?.length || 0,
-            experience: teacher.experience || "0",
+            experience: 0,
           });
         }
       }

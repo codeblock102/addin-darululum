@@ -1,7 +1,9 @@
 
+import { ClassFormData } from "./validation/classFormSchema";
+
 interface ClassListProps {
   searchQuery: string;
-  onEdit: (classItem?: any) => void;
+  onEdit: (classItem?: Partial<ClassFormData> & { id: string }) => void;
 }
 
 export const ClassList = ({ searchQuery, onEdit }: ClassListProps) => {

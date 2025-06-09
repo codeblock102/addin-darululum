@@ -17,7 +17,7 @@ export interface StudentCompletionStatus {
 
 export interface LeaderboardFilters {
   timeRange: "today" | "week" | "month" | "all";
-  metricPriority: "total" | "sabaq" | "sabaqPara";
+  metricPriority: "total" | "sabaqs" | "sabaqPara";
   participationFilter?: "all" | "active" | "inactive";
   completionStatus?: "all" | "complete" | "incomplete";
 }
