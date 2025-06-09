@@ -1,7 +1,7 @@
 
 import { Student, StudentAssignment } from "../MyStudents.tsx";
 import { Button } from "@/components/ui/button.tsx";
-import { UserPlus, UserMinus } from "lucide-react";
+import { UserPlus, UserMinus, Trash2 } from "lucide-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client.ts";
 import { useToast } from "@/hooks/use-toast.ts";
@@ -72,6 +72,16 @@ export const StudentMobileList = ({
     }
   };
 
+  const handleDeleteStudent = (student: Student) => {
+    setStudentToDelete({
+      id: "", // Not needed for complete deletion
+      name: student.name,
+      studentId: student.id,
+    });
+    setIsDeleteType("delete");
+    setIsDeleteDialogOpen(true);
+  };
+
   const isStudentAssigned = (studentName: string) => {
     return assignedStudents.some(assignment => assignment.student_name === studentName);
   };
@@ -115,7 +125,7 @@ export const StudentMobileList = ({
               </span>
             </div>
             
-            <div className="flex justify-end">
+            <div className="flex justify-end gap-2">
               {isAssigned ? (
                 <Button
                   variant="outline"
@@ -138,6 +148,15 @@ export const StudentMobileList = ({
                   {addStudentMutation.isPending ? "Adding..." : "Add"}
                 </Button>
               )}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handleDeleteStudent(student)}
+                className="text-red-500 hover:text-red-600 hover:bg-red-50 border-red-200"
+              >
+                <Trash2 className="h-4 w-4 mr-1" />
+                Delete
+              </Button>
             </div>
           </div>
         );
