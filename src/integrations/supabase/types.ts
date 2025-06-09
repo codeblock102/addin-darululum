@@ -15,27 +15,33 @@ export type Database = {
           created_at: string | null
           date: string
           id: string
+          late_reason: string | null
           notes: string | null
           status: string
           student_id: string | null
+          time: string | null
         }
         Insert: {
           class_id?: string | null
           created_at?: string | null
           date: string
           id?: string
+          late_reason?: string | null
           notes?: string | null
           status: string
           student_id?: string | null
+          time?: string | null
         }
         Update: {
           class_id?: string | null
           created_at?: string | null
           date?: string
           id?: string
+          late_reason?: string | null
           notes?: string | null
           status?: string
           student_id?: string | null
+          time?: string | null
         }
         Relationships: [
           {

@@ -16,6 +16,18 @@ type AttendanceFormValues = {
   late_reason?: string;
 };
 
+type AttendanceRecord = {
+  id: string;
+  class_id: string | null;
+  created_at: string | null;
+  date: string;
+  notes: string | null;
+  status: string;
+  student_id: string | null;
+  time: string | null;
+  late_reason: string | null;
+};
+
 export function useAttendanceSubmit() {
   const [selectedStudent, setSelectedStudent] = useState<string>("");
   const [selectedTime, setSelectedTime] = useState<string>("");
@@ -40,7 +52,7 @@ export function useAttendanceSubmit() {
 
   const { data: existingAttendance, refetch: refetchAttendance } = useQuery({
     queryKey: ["attendance", selectedStudent, formattedDate],
-    queryFn: async () => {
+    queryFn: async (): Promise<AttendanceRecord | null> => {
       if (!selectedStudent) return null;
 
       const { data, error } = await supabase
