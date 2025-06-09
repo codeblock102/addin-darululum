@@ -6,6 +6,7 @@ import { useToast } from "@/hooks/use-toast";
 import { AttendanceFormHeader } from "./form/AttendanceFormHeader";
 import { ClassSelector } from "./form/ClassSelector";
 import { StudentGrid } from "./form/StudentGrid";
+import { DateSelector } from "./form/DateSelector";
 import { SliderTimeSelector } from "./form/SliderTimeSelector";
 import { NotesField } from "./form/NotesField";
 import { SubmitButton } from "./form/SubmitButton";
@@ -52,11 +53,15 @@ export const AttendanceForm = () => {
         <CardContent>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
-              <ClassSelector
-                form={form}
-                selectedClassId={selectedClassId}
-                onClassChange={setSelectedClassId}
-              />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <DateSelector form={form} />
+                
+                <ClassSelector
+                  form={form}
+                  selectedClassId={selectedClassId}
+                  onClassChange={setSelectedClassId}
+                />
+              </div>
 
               <StudentGrid form={form} selectedClassId={selectedClassId} />
 

@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -57,7 +56,15 @@ export function useAttendanceSubmit({ onSuccess, onError }: UseAttendanceSubmitP
   });
 
   const selectedDate = form.watch("date");
+  const watchedStudentId = form.watch("student_id");
   const formattedDate = selectedDate ? format(selectedDate, "yyyy-MM-dd") : format(today, "yyyy-MM-dd");
+
+  // Update selectedStudent when form student_id changes
+  useEffect(() => {
+    if (watchedStudentId && watchedStudentId !== selectedStudent) {
+      setSelectedStudent(watchedStudentId);
+    }
+  }, [watchedStudentId, selectedStudent]);
 
   const { data: existingAttendance, refetch: refetchAttendance } = useQuery({
     queryKey: ["attendance", selectedStudent, formattedDate],
@@ -79,6 +86,7 @@ export function useAttendanceSubmit({ onSuccess, onError }: UseAttendanceSubmitP
 
   useEffect(() => {
     if (existingAttendance) {
+      // Load existing record into form
       form.setValue("status", existingAttendance.status as any);
       form.setValue("notes", existingAttendance.notes || "");
       if (existingAttendance.time) {
@@ -91,15 +99,19 @@ export function useAttendanceSubmit({ onSuccess, onError }: UseAttendanceSubmitP
       if (existingAttendance.class_id) {
         form.setValue("class_id", existingAttendance.class_id);
       }
-    } else {
+      toast({
+        title: "Existing Record Found",
+        description: `Loading attendance record for ${format(selectedDate || today, "MMM dd, yyyy")}`,
+      });
+    } else if (selectedStudent && selectedDate) {
+      // Reset form for new record
       form.setValue("status", "present");
       form.setValue("notes", "");
       form.setValue("time", format(new Date(), "HH:mm"));
       form.setValue("late_reason", "");
-      form.setValue("class_id", "");
       setSelectedReason("");
     }
-  }, [existingAttendance, form]);
+  }, [existingAttendance, form, selectedStudent, selectedDate, toast, today]);
 
   const saveAttendance = useMutation({
     mutationFn: async (values: AttendanceFormValues) => {
