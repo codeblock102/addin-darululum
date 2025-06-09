@@ -8,12 +8,13 @@ export interface StudentLeaderboardData {
   name: string;
   sabaqs: number;
   sabaqPara: number;
+  dhor: number;
   totalPoints: number;
   lastActivity: string;
 }
 
 interface LeaderboardOptions {
-  timeRange: "week" | "month" | "all";
+  timeRange: "today" | "week" | "month" | "all";
   metricPriority: "sabaqs" | "sabaqPara" | "total";
 }
 
@@ -36,16 +37,20 @@ export const useLeaderboardData = (teacherId: string, options: LeaderboardOption
         name: student.name,
         sabaqs: Math.floor(Math.random() * 10),
         sabaqPara: Math.floor(Math.random() * 5),
+        dhor: Math.floor(Math.random() * 8),
         totalPoints: Math.floor(Math.random() * 100),
         lastActivity: new Date().toISOString(),
       }));
     },
   });
 
+  const topStudent = leaderboardData?.[0] || null;
+
   return {
     leaderboardData: leaderboardData || [],
     isLoading,
     refreshData,
+    topStudent,
   };
 };
 

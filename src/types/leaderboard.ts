@@ -1,8 +1,10 @@
+
 export interface StudentLeaderboardData {
   id: string;
   name: string;
   sabaqs: number;
   sabaqPara: number;
+  dhor: number;
   totalPoints: number;
   lastActivity: string;
   rank?: number;
@@ -18,6 +20,11 @@ export interface LeaderboardFilters {
   metricPriority: "total" | "sabaq" | "sabaqPara";
   participationFilter?: "all" | "active" | "inactive";
   completionStatus?: "all" | "complete" | "incomplete";
+}
+
+export interface LeaderboardOptions {
+  timeRange: "today" | "week" | "month" | "all";
+  metricPriority: "sabaqs" | "sabaqPara" | "total";
 }
 
 export type LeaderboardSortOrder = "asc" | "desc";
