@@ -107,12 +107,6 @@ export const StudentProgressList = ({ progress }: StudentProgressListProps) => {
 
   // Mobile view with enhanced cards
   if (isMobile) {
-    // Convert Progress items to Record<string, unknown> for MobileTable compatibility
-    const mobileData = progress.map(entry => ({
-      ...entry,
-      // Ensure all properties are string-indexed
-    } as Record<string, unknown>));
-
     const mobileColumns = [
       {
         title: "Date",
@@ -131,15 +125,15 @@ export const StudentProgressList = ({ progress }: StudentProgressListProps) => {
         title: "Position",
         key: "position",
         render: (_: unknown, record: Record<string, unknown>) => {
-          const progressRecord = record as Progress;
+          const entry = record as unknown as Progress;
           return (
             <div className="space-y-1">
               <div className="flex items-center space-x-1 text-sm font-medium">
                 <BookOpen className="h-3 w-3 text-indigo-600" />
-                <span>Surah {progressRecord.current_surah || "—"}</span>
+                <span>Surah {entry.current_surah || "—"}</span>
               </div>
               <div className="text-xs text-gray-500">
-                Juz {progressRecord.current_juz || "—"} • Ayat {progressRecord.start_ayat || "—"}-{progressRecord.end_ayat || "—"}
+                Juz {entry.current_juz || "—"} • Ayat {entry.start_ayat || "—"}-{entry.end_ayat || "—"}
               </div>
             </div>
           );
@@ -169,21 +163,21 @@ export const StudentProgressList = ({ progress }: StudentProgressListProps) => {
         title: "Notes",
         key: "notes",
         render: (_: unknown, record: Record<string, unknown>) => {
-          const progressRecord = record as Progress;
+          const entry = record as unknown as Progress;
           return (
             <div className="space-y-1">
-              {progressRecord.notes ? (
+              {entry.notes ? (
                 <div className="flex items-start space-x-1">
                   <MessageSquare className="h-3 w-3 text-gray-500 mt-0.5 flex-shrink-0" />
-                  <span className="text-xs text-gray-600 line-clamp-2">{progressRecord.notes}</span>
+                  <span className="text-xs text-gray-600 line-clamp-2">{entry.notes}</span>
                 </div>
               ) : (
                 <span className="text-xs text-gray-400">No notes</span>
               )}
-              {progressRecord.teacher_notes && (
+              {entry.teacher_notes && (
                 <div className="flex items-start space-x-1 mt-1">
                   <User className="h-3 w-3 text-blue-500 mt-0.5 flex-shrink-0" />
-                  <span className="text-xs text-blue-600 line-clamp-2">{progressRecord.teacher_notes}</span>
+                  <span className="text-xs text-blue-600 line-clamp-2">{entry.teacher_notes}</span>
                 </div>
               )}
             </div>
@@ -206,7 +200,10 @@ export const StudentProgressList = ({ progress }: StudentProgressListProps) => {
       {
         icon: Edit2,
         label: "Edit",
-        onClick: (record: Record<string, unknown>) => handleEditClick(record as Progress),
+        onClick: (record: Record<string, unknown>) => {
+          const entry = record as unknown as Progress;
+          handleEditClick(entry);
+        },
         variant: "ghost" as const,
       },
     ];
@@ -215,7 +212,7 @@ export const StudentProgressList = ({ progress }: StudentProgressListProps) => {
       <>
         <div className="space-y-3">
           <MobileTable
-            data={mobileData}
+            data={progress.map(entry => ({ ...entry }))}
             columns={mobileColumns}
             actions={mobileActions}
           />
