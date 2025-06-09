@@ -20,7 +20,7 @@ interface DashboardOverviewProps {
   teacherId: string;
 }
 
-const DashboardOverviewWithProps = ({ teacherId }: DashboardOverviewProps) => {
+const DashboardOverviewWithProps: React.FC<DashboardOverviewProps> = ({ teacherId }) => {
   return <DashboardOverview teacherId={teacherId} />;
 };
 
