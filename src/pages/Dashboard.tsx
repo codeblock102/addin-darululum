@@ -1,3 +1,4 @@
+
 /**
  * @file src/pages/Dashboard.tsx
  * @summary This file defines the main Dashboard page, which serves as a unified landing page for both Admins and Teachers.
@@ -61,12 +62,12 @@ import { useRBAC } from "@/hooks/useRBAC.ts";
  *
  * @returns {JSX.Element} The rendered dashboard page, tailored to the user's role and data.
  */
-const Dashboard = () => { // Renamed from TeacherPortal to Dashboard
+const Dashboard = () => {
   const { session, refreshSession } = useAuth();
   const { toast } = useToast();
   const { isTeacher, isAdmin, isLoading: isRoleLoading } = useRBAC();
   const [isCheckingRole, setIsCheckingRole] = useState(true);
-  const [refreshKey, setRefreshKey] = useState(0); // Add a key to force refresh
+  const [refreshKey, setRefreshKey] = useState(0);
 
   // Moved useQuery for teacherData BEFORE the useEffect that uses its refetch method
   const {
@@ -196,7 +197,13 @@ const Dashboard = () => { // Renamed from TeacherPortal to Dashboard
 
   // Show loading state while checking roles or fetching teacher data
   if ((isLoading || isCheckingRole || isRoleLoading) && !isAdmin) {
-    return <LoadingState />;
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 flex items-center justify-center p-4">
+        <div className="w-full max-w-md">
+          <LoadingState />
+        </div>
+      </div>
+    );
   }
 
   // If user is admin, they should be able to view the teacher portal with a generic profile
@@ -210,31 +217,53 @@ const Dashboard = () => { // Renamed from TeacherPortal to Dashboard
       phone: "",
     };
 
-    return <TeacherDashboard teacher={adminViewProfile} />;
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-red-50">
+        <TeacherDashboard teacher={adminViewProfile} />
+      </div>
+    );
   }
 
   // Show profile not found if teacher data is missing (for non-admin users)
-  if (!teacherData && !isLoading && !isCheckingRole) { // Added checks to prevent showing ProfileNotFound during initial load
+  if (!teacherData && !isLoading && !isCheckingRole) {
     return (
-      <div className="space-y-4">
-        <ProfileNotFound
-          email={session?.user?.email}
-          onRefresh={handleRefresh}
-          isAdmin={isAdmin}
-        />
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 flex items-center justify-center p-4">
+        <div className="w-full max-w-2xl">
+          <ProfileNotFound
+            email={session?.user?.email}
+            onRefresh={handleRefresh}
+            isAdmin={isAdmin}
+          />
+        </div>
       </div>
     );
   }
 
   if (!isTeacher && !isAdmin && !isRoleLoading && !isCheckingRole) {
-    return <AccessDenied />;
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-red-50 via-pink-50 to-rose-50 flex items-center justify-center p-4">
+        <div className="w-full max-w-md">
+          <AccessDenied />
+        </div>
+      </div>
+    );
   }
 
   if (teacherData && isTeacher) {
-    return <TeacherDashboard teacher={teacherData} />;
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+        <TeacherDashboard teacher={teacherData} />
+      </div>
+    );
   }
 
-  return <LoadingState />;
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-indigo-50 flex items-center justify-center p-4">
+      <div className="w-full max-w-md">
+        <LoadingState />
+      </div>
+    </div>
+  );
 };
 
 export default Dashboard;
