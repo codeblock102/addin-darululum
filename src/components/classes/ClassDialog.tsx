@@ -1,3 +1,4 @@
+
 import {
   DialogContent,
   DialogDescription,
@@ -8,7 +9,9 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client.ts";
 import { useClassSubmit } from "./hooks/useClassSubmit.ts";
 import { ClassFormData } from "./validation/classFormSchema.ts";
-import { useQueryClient, useToast } from "react-query";
+import { useQueryClient } from "@tanstack/react-query";
+import { useToast } from "@/hooks/use-toast.ts";
+import { ClassForm } from "./components/ClassForm.tsx";
 
 interface ClassDialogProps {
   isOpen: boolean;
