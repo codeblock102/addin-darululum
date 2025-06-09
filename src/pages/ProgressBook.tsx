@@ -53,6 +53,7 @@ import {
 import { useTeacherStatus } from "@/hooks/useTeacherStatus.ts";
 import { useRealtimeLeaderboard } from "@/hooks/useRealtimeLeaderboard.ts";
 import { useToast } from "@/hooks/use-toast.ts";
+import { useAuth } from "@/contexts/AuthContext.tsx";
 
 /**
  * @component ProgressBookPage
@@ -98,6 +99,8 @@ const ProgressBookPage = () => {
     null,
   );
   const { isAdmin, isTeacher, teacherId } = useTeacherStatus();
+  const { session } = useAuth();
+  const userRole = session?.user?.user_metadata?.role;
 
   useEffect(() => {
     const urlParams = new URLSearchParams(globalThis.location.search);
@@ -126,12 +129,44 @@ const ProgressBookPage = () => {
     },
   });
 
-  const { data: students, isLoading: studentsLoading } = useQuery({
-    queryKey: ["all-students-for-progress-book"], // Renamed queryKey
+  const { data: teacherData, isLoading: isLoadingTeacher } = useQuery({
+    queryKey: ["teacherData", teacherId],
     queryFn: async () => {
-      const { data, error } = await supabase.from("students").select(
-        "id, name, status",
-      ).eq("status", "active").order("name", { ascending: true });
+      if (!teacherId) return null;
+      const { data, error } = await supabase
+        .from("teachers")
+        .select("madrassah_id, section")
+        .eq("id", teacherId)
+        .single();
+      if (error) {
+        console.error("Error fetching teacher data:", error);
+        throw error;
+      }
+      return data;
+    },
+    enabled: userRole === "teacher" && !!teacherId,
+  });
+
+  const { data: students, isLoading: studentsLoading } = useQuery({
+    queryKey: ["students-for-progress-book", { role: userRole, teacherData }], // Renamed queryKey
+    queryFn: async () => {
+      let query = supabase
+        .from("students")
+        .select("id, name, status")
+        .eq("status", "active")
+        .order("name", { ascending: true });
+
+      if (userRole === "teacher") {
+        if (teacherData?.madrassah_id && teacherData?.section) {
+          query = query
+            .eq("madrassah_id", teacherData.madrassah_id)
+            .eq("section", teacherData.section);
+        } else {
+          return [];
+        }
+      }
+
+      const { data, error } = await query;
       if (error) {
         console.error("Error fetching students:", error);
         toast({
@@ -143,11 +178,14 @@ const ProgressBookPage = () => {
       }
       return data || [];
     },
+    enabled: userRole !== "teacher" || !isLoadingTeacher,
     refetchInterval: 30000,
   });
 
-  const currentTeacherId = isTeacher ? teacherId : (selectedTeacherId ||
-    (teachers && teachers.length > 0 ? teachers[0]?.id : undefined));
+  const currentTeacherId = isTeacher
+    ? teacherId
+    : selectedTeacherId ||
+      (teachers && teachers.length > 0 ? teachers[0]?.id : undefined);
 
   useRealtimeLeaderboard(currentTeacherId, () => {
     // Intentionally empty, realtime updates might trigger refetch of other queries if needed
@@ -347,7 +385,10 @@ const ProgressBookPage = () => {
                         ? (
                           <DhorBookComponent
                             studentId={selectedStudentId}
-                            teacherId={currentTeacherId || "default"}
+                            teacherId={currentTeacherId}
+                            teacherData={teacherData}
+                            isAdmin={isAdmin}
+                            isLoadingTeacher={isLoadingTeacher}
                           />
                         )
                         : (
@@ -388,51 +429,9 @@ const ProgressBookPage = () => {
             </TabsContent>
 
             <TabsContent value="classroom">
-              {isAdmin && (
-                <div className="mb-3 sm:mb-4">
-                  <h3 className="mb-1 sm:mb-1.5 text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">
-                    Select Teacher for Classroom View
-                  </h3>
-                  <Select
-                    value={selectedTeacherId || (teachers && teachers.length > 0
-                      ? teachers[0]?.id
-                      : undefined)}
-                    onValueChange={setSelectedTeacherId}
-                  >
-                    <SelectTrigger className="text-xs sm:text-sm h-9">
-                      <SelectValue placeholder="Choose a teacher" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all" className="text-xs sm:text-sm">
-                        All Teachers
-                      </SelectItem>
-                      {teachers?.map((teacher) => (
-                        <SelectItem
-                          key={teacher.id}
-                          value={teacher.id}
-                          className="text-xs sm:text-sm"
-                        >
-                          {teacher.name}
-                        </SelectItem>
-                      ))}
-                      {(!teachers || teachers.length === 0) && (
-                        <SelectItem
-                          value="no-teachers"
-                          disabled
-                          className="text-xs sm:text-sm"
-                        >
-                          No teachers found
-                        </SelectItem>
-                      )}
-                    </SelectContent>
-                  </Select>
-                </div>
-              )}
               <ClassroomRecords
-                teacherId={currentTeacherId ||
-                  (teachers && teachers.length > 0
-                    ? teachers[0]?.id
-                    : "default")}
+                teacherId={currentTeacherId}
+                isAdmin={isAdmin}
               />
             </TabsContent>
           </Tabs>

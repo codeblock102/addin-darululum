@@ -38,9 +38,11 @@ import {
 } from "lucide-react";
 import { format } from "date-fns";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext.tsx";
 
 interface ClassroomRecordsProps {
   teacherId: string;
+  isAdmin: boolean;
 }
 
 interface StudentRecordSummary {
@@ -64,7 +66,7 @@ interface StudentRecordSummary {
   completionScore?: number;
 }
 
-export function ClassroomRecords({ teacherId }: ClassroomRecordsProps) {
+export function ClassroomRecords({ teacherId, isAdmin }: ClassroomRecordsProps) {
   const navigate = useNavigate();
   const [selectedDate, setSelectedDate] = useState<string>(
     format(new Date(), "yyyy-MM-dd"),
@@ -73,96 +75,67 @@ export function ClassroomRecords({ teacherId }: ClassroomRecordsProps) {
   const [recordType, setRecordType] = useState<
     "all" | "incomplete" | "complete"
   >("all");
+  const { session } = useAuth();
+  const userRole = session?.user?.user_metadata?.role;
 
-  console.log(
-    "ClassroomRecords component mounted for teacher:",
-    teacherId,
-    "selected date:",
-    selectedDate,
-  );
-
-  // Fetch ALL students (not just those with a student-teacher relationship)
-  const { data: allStudents, isLoading: allStudentsLoading } = useQuery({
-    queryKey: ["all-students"],
+  const { data: teacherData, isLoading: isLoadingTeacher } = useQuery({
+    queryKey: ["teacherData", teacherId],
     queryFn: async () => {
+      if (!teacherId) return null;
       const { data, error } = await supabase
-        .from("students")
-        .select("id, name, status")
-        .order("name", { ascending: true });
-
+        .from("teachers")
+        .select("madrassah_id, section")
+        .eq("id", teacherId)
+        .single();
       if (error) {
-        console.error("Error fetching all students:", error);
+        console.error("Error fetching teacher data:", error);
         throw error;
       }
-
-      return data || [];
+      return data;
     },
+    enabled: !!teacherId && !isAdmin,
   });
 
-  // Fetch students associated with this teacher
   const {
-    data: teacherStudents,
+    data: students,
     isLoading: studentsLoading,
     error: studentsError,
   } = useQuery({
-    queryKey: ["teacher-students", teacherId],
+    queryKey: ["classroom-students", teacherId, isAdmin, teacherData],
     queryFn: async () => {
-      console.log("Fetching teacher's students for:", teacherId);
+      let query = supabase.from("students").select("id, name, status");
 
-      // First get the student associations
-      const { data: associations, error: associationsError } = await supabase
-        .from("students_teachers")
-        .select("student_name")
-        .eq("teacher_id", teacherId)
-        .eq("active", true);
-
-      if (associationsError) {
-        console.error(
-          "Error fetching teacher's student associations:",
-          associationsError,
-        );
-        throw associationsError;
+      if (isAdmin) {
+        // Admins see all students
+        query = query.order("name", { ascending: true });
+      } else {
+        // If not an admin, must be a teacher. Apply teacher filters.
+        if (teacherData?.madrassah_id && teacherData?.section) {
+          query = query
+            .eq("madrassah_id", teacherData.madrassah_id)
+            .eq("section", teacherData.section)
+            .order("name", { ascending: true });
+        } else {
+          // If teacher has no madrassah_id or section, they see no students.
+          return [];
+        }
       }
 
-      // If we have no students OR if we don't have a teacherId yet, return an empty array
-      if (!associations || associations.length === 0 || !teacherId) {
-        console.log("No student associations found for teacher:", teacherId);
-        return [];
+      const { data, error } = await query;
+      if (error) {
+        console.error("Error fetching students:", error);
+        throw error;
       }
-
-      console.log(
-        "Found student associations for teacher:",
-        associations.length,
-      );
-
-      // Get all student details
-      const studentNames = associations.map((a) => a.student_name);
-
-      const { data: studentsData, error: studentsError } = await supabase
-        .from("students")
-        .select("id, name, status")
-        .in("name", studentNames);
-
-      if (studentsError) {
-        console.error("Error fetching student details:", studentsError);
-        throw studentsError;
-      }
-
-      console.log("Found students for teacher:", studentsData?.length || 0);
-
-      return studentsData || [];
+      return data || [];
     },
-    enabled: !!teacherId,
+    enabled: isAdmin || (!isLoadingTeacher && !!teacherData),
   });
 
   // Fetch records for the given date and all students
   const { data: recordsData, isLoading: recordsLoading, error: recordsError } =
     useQuery({
-      queryKey: ["classroom-records", selectedDate, teacherId],
+      queryKey: ["classroom-records", selectedDate, students],
       queryFn: async () => {
-        // Use either teacherStudents if available or all students as fallback
-        const students = teacherStudents || allStudents;
-
         if (!students || students.length === 0) {
           console.log("No students to fetch records for");
           return [];
@@ -282,8 +255,7 @@ export function ClassroomRecords({ teacherId }: ClassroomRecordsProps) {
           (b.completionScore ?? 0) - (a.completionScore ?? 0)
         );
       },
-      enabled: !!(((teacherStudents?.length ?? 0) > 0) ||
-        ((allStudents?.length ?? 0) > 0)),
+      enabled: isAdmin || (!isLoadingTeacher && !!teacherData),
     });
 
   // Filter records based on search and record type
@@ -355,7 +327,7 @@ export function ClassroomRecords({ teacherId }: ClassroomRecordsProps) {
   };
 
   const stats = getCompletionStats();
-  const isLoading = studentsLoading || recordsLoading || allStudentsLoading;
+  const isLoading = studentsLoading || recordsLoading || isLoadingTeacher;
   const hasError = studentsError || recordsError;
 
   // Award components for top 3 places
@@ -680,8 +652,7 @@ export function ClassroomRecords({ teacherId }: ClassroomRecordsProps) {
                   : (
                     <div className="text-center py-12 border rounded-md bg-muted/20">
                       <AlertCircle className="h-12 w-12 mx-auto mb-3 text-muted-foreground/50" />
-                      {(teacherStudents && teacherStudents.length > 0) ||
-                          (allStudents && allStudents.length > 0)
+                      {(students && students.length > 0)
                         ? (
                           <>
                             <h3 className="text-lg font-medium mb-1">
