@@ -1,3 +1,4 @@
+
 import { createClient } from "@supabase/supabase-js";
 import { Database } from "./types";
 
@@ -12,6 +13,73 @@ const SUPABASE_PUBLISHABLE_KEY =
 interface CustomDatabase extends Database {
   public: {
     Tables: Database["public"]["Tables"] & {
+      communications: {
+        Row: {
+          id: string;
+          sender_id: string | null;
+          recipient_id: string | null;
+          parent_message_id: string | null;
+          message: string;
+          message_type: string;
+          category: string;
+          message_status: string;
+          read: boolean;
+          read_at: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          sender_id?: string | null;
+          recipient_id?: string | null;
+          parent_message_id?: string | null;
+          message: string;
+          message_type?: string;
+          category?: string;
+          message_status?: string;
+          read?: boolean;
+          read_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          sender_id?: string | null;
+          recipient_id?: string | null;
+          parent_message_id?: string | null;
+          message?: string;
+          message_type?: string;
+          category?: string;
+          message_status?: string;
+          read?: boolean;
+          read_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "communications_sender_id_fkey";
+            columns: ["sender_id"];
+            isOneToOne: false;
+            referencedRelation: "teachers";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "communications_recipient_id_fkey";
+            columns: ["recipient_id"];
+            isOneToOne: false;
+            referencedRelation: "teachers";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "communications_parent_message_id_fkey";
+            columns: ["parent_message_id"];
+            isOneToOne: false;
+            referencedRelation: "communications";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       difficult_ayahs: {
         Row: {
           id: string;
