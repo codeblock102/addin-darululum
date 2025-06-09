@@ -1,3 +1,4 @@
+
 import { Card, CardContent } from "@/components/ui/card.tsx";
 import { Form } from "@/components/ui/form.tsx";
 import { AttendanceFormHeader } from "./form/AttendanceFormHeader.tsx";
@@ -7,6 +8,7 @@ import { AttendanceStatusRadioGroup } from "./form/AttendanceStatusRadioGroup.ts
 import { NotesField } from "./form/NotesField.tsx";
 import { SubmitButton } from "./form/SubmitButton.tsx";
 import { useAttendanceSubmit } from "./form/useAttendanceSubmit.ts";
+
 export function AttendanceForm() {
   const {
     form,
@@ -27,40 +29,37 @@ export function AttendanceForm() {
     <Card className="border border-purple-200 dark:border-purple-800/40 shadow-sm overflow-hidden bg-white dark:bg-gray-900">
       <AttendanceFormHeader />
       <CardContent className="p-6">
-        <div className="space-y-4">
-          <ClassSelector
-            form={form}
-            selectedClass={selectedClass}
-            setSelectedClass={setSelectedClass}
-            isLoading={isLoadingClasses}
-            classesData={classesData}
-          />
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <ClassSelector
+              form={form}
+              selectedClass={selectedClass}
+              setSelectedClass={setSelectedClass}
+              isLoading={isLoadingClasses}
+              classesData={classesData}
+            />
 
-          <StudentSelector
-            form={form}
-            selectedStudent={selectedStudent}
-            setSelectedStudent={setSelectedStudent}
-            isLoading={isLoadingStudents}
-            students={students}
-            disabled={!selectedClass}
-          />
+            <StudentSelector
+              form={form}
+              selectedStudent={selectedStudent}
+              setSelectedStudent={setSelectedStudent}
+              isLoading={isLoadingStudents}
+              students={students}
+              disabled={!selectedClass}
+            />
 
-          {selectedStudent && (
-            <Form {...form}>
-              <form
-                onSubmit={form.handleSubmit(onSubmit)}
-                className="space-y-4"
-              >
+            {selectedStudent && (
+              <>
                 <AttendanceStatusRadioGroup form={form} />
                 <NotesField form={form} />
                 <SubmitButton
                   isPending={saveAttendance.isPending}
                   isUpdate={!!existingAttendance}
                 />
-              </form>
-            </Form>
-          )}
-        </div>
+              </>
+            )}
+          </form>
+        </Form>
       </CardContent>
     </Card>
   );
