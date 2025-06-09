@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { Sidebar } from "./Sidebar.tsx";
 import { useRBAC } from "@/hooks/useRBAC.ts";
@@ -9,7 +10,11 @@ import { BottomNavigation } from "@/components/mobile/BottomNavigation.tsx";
 import { Outlet } from "react-router-dom";
 import { cn } from "@/lib/utils.ts";
 
-export const DashboardLayout = () => {
+interface DashboardLayoutProps {
+  children?: React.ReactNode;
+}
+
+export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   const { isAdmin, isTeacher, isLoading } = useRBAC();
   const isMobile = useIsMobile();
   const [sidebarOpen, setSidebarOpen] = useState(!isMobile);
@@ -69,7 +74,7 @@ export const DashboardLayout = () => {
                 <RoleBadge isAdmin={isAdmin} isLoading={isLoading} />
               )}
               <div className="animate-fadeIn mt-4 md:mt-0">
-                <Outlet />
+                {children || <Outlet />}
               </div>
             </div>
           </div>
