@@ -16,14 +16,6 @@ interface DashboardTabsProps {
   teacherName?: string;
 }
 
-interface DashboardOverviewProps {
-  teacherId: string;
-}
-
-const DashboardOverviewWithProps: React.FC<DashboardOverviewProps> = ({ teacherId }) => {
-  return <DashboardOverview teacherId={teacherId} />;
-};
-
 export const DashboardTabContent = (
   { activeTab, teacherId, teacherName }: DashboardTabsProps,
 ) => {
@@ -42,6 +34,6 @@ export const DashboardTabContent = (
         />
       );
     default:
-      return <DashboardOverviewWithProps teacherId={teacherId} />;
+      return <DashboardOverview teacherId={teacherId} />;
   }
 };
