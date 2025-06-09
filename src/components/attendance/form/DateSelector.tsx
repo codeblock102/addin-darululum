@@ -61,6 +61,18 @@ export function DateSelector({ form }: DateSelectorProps) {
                 onSelect={field.onChange}
                 initialFocus
                 className="p-3 pointer-events-auto"
+                classNames={{
+                  caption: "text-slate-900 dark:text-slate-100",
+                  caption_label: "text-slate-900 dark:text-slate-100 font-medium",
+                  nav_button: "text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700",
+                  head_cell: "text-slate-600 dark:text-slate-400 font-normal",
+                  cell: "text-slate-900 dark:text-slate-100",
+                  day: "text-slate-900 dark:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-700",
+                  day_selected: "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground",
+                  day_today: "bg-accent text-accent-foreground font-medium",
+                  day_outside: "text-slate-400 dark:text-slate-500",
+                  day_disabled: "text-slate-300 dark:text-slate-600",
+                }}
               />
             </PopoverContent>
           </Popover>
