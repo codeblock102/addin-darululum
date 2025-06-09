@@ -30,7 +30,6 @@ type AttendanceRecord = {
 
 export function useAttendanceSubmit() {
   const [selectedStudent, setSelectedStudent] = useState<string>("");
-  const [selectedTime, setSelectedTime] = useState<string>("");
   const [selectedReason, setSelectedReason] = useState<string>("");
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -74,7 +73,6 @@ export function useAttendanceSubmit() {
       form.setValue("notes", existingAttendance.notes || "");
       if (existingAttendance.time) {
         form.setValue("time", existingAttendance.time);
-        setSelectedTime(existingAttendance.time);
       }
       if (existingAttendance.late_reason) {
         form.setValue("late_reason", existingAttendance.late_reason);
@@ -85,7 +83,6 @@ export function useAttendanceSubmit() {
       form.setValue("notes", "");
       form.setValue("time", format(new Date(), "HH:mm"));
       form.setValue("late_reason", "");
-      setSelectedTime(format(new Date(), "HH:mm"));
       setSelectedReason("");
     }
   }, [existingAttendance, form]);
@@ -148,8 +145,6 @@ export function useAttendanceSubmit() {
     onSubmit,
     selectedStudent,
     setSelectedStudent,
-    selectedTime,
-    setSelectedTime,
     selectedReason,
     setSelectedReason,
     existingAttendance,

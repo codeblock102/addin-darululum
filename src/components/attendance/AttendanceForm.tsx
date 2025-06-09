@@ -4,7 +4,7 @@ import { Form } from "@/components/ui/form.tsx";
 import { AttendanceFormHeader } from "./form/AttendanceFormHeader.tsx";
 import { StudentGrid } from "./form/StudentGrid.tsx";
 import { AttendanceStatusRadioGroup } from "./form/AttendanceStatusRadioGroup.tsx";
-import { TimeSelector } from "./form/TimeSelector.tsx";
+import { SliderTimeSelector } from "./form/SliderTimeSelector.tsx";
 import { ReasonSelector } from "./form/ReasonSelector.tsx";
 import { NotesField } from "./form/NotesField.tsx";
 import { SubmitButton } from "./form/SubmitButton.tsx";
@@ -23,8 +23,6 @@ export function AttendanceForm() {
     onSubmit,
     selectedStudent,
     setSelectedStudent,
-    selectedTime,
-    setSelectedTime,
     selectedReason,
     setSelectedReason,
     existingAttendance,
@@ -92,12 +90,8 @@ export function AttendanceForm() {
 
             {selectedStudent && (
               <>
-                {/* Time Selector */}
-                <TimeSelector
-                  form={form}
-                  selectedTime={selectedTime}
-                  onTimeSelect={setSelectedTime}
-                />
+                {/* Slider Time Selector */}
+                <SliderTimeSelector form={form} />
 
                 {/* Attendance Status */}
                 <AttendanceStatusRadioGroup form={form} />
