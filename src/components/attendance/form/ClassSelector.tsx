@@ -1,3 +1,4 @@
+
 import {
   Select,
   SelectContent,
@@ -14,38 +15,31 @@ import {
   FormMessage,
 } from "@/components/ui/form.tsx";
 import { UseFormReturn } from "react-hook-form";
-import { AttendanceStatus } from "@/types/attendance.ts";
-
-type AttendanceFormValues = {
-  class_id: string;
-  student_id: string;
-  status: AttendanceStatus;
-  notes: string;
-};
+import { AttendanceFormValues } from "@/types/attendance-form.ts";
 
 interface ClassSelectorProps {
   classes?: { id: string; name: string }[];
-  isLoading: boolean;
+  isLoading?: boolean;
   form: UseFormReturn<AttendanceFormValues>;
-  selectedClass?: string;
-  setSelectedClass?: (value: string) => void;
+  selectedClassId?: string;
+  onClassChange?: (value: string) => void;
   classesData?: { id: string; name: string }[];
   label?: string;
 }
 
 export function ClassSelector({
   classes,
-  isLoading,
+  isLoading = false,
   form,
-  selectedClass,
-  setSelectedClass,
+  selectedClassId,
+  onClassChange,
   classesData,
   label = "Class",
 }: ClassSelectorProps) {
   // If we have direct props for value/onChange, use those (for components not using react-hook-form)
   const handleChange = (value: string) => {
-    if (setSelectedClass) {
-      setSelectedClass(value);
+    if (onClassChange) {
+      onClassChange(value);
     }
   };
 
@@ -75,7 +69,7 @@ export function ClassSelector({
                   field.onChange(value);
                   handleChange(value);
                 }}
-                value={selectedClass || field.value}
+                value={selectedClassId || field.value}
               >
                 <SelectTrigger
                   disabled={isLoading}

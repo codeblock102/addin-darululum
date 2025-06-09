@@ -1,3 +1,4 @@
+
 import {
   Select,
   SelectContent,
@@ -16,18 +17,11 @@ import {
 import { UseFormReturn } from "react-hook-form";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client.ts";
-import { AttendanceStatus } from "@/types/attendance.ts";
-
-type AttendanceFormValues = {
-  class_id: string;
-  student_id: string;
-  status: AttendanceStatus;
-  notes: string;
-};
+import { AttendanceFormValues } from "@/types/attendance-form.ts";
 
 interface StudentSelectorProps {
   students?: { id: string; name: string }[];
-  isLoading: boolean;
+  isLoading?: boolean;
   form: UseFormReturn<AttendanceFormValues>;
   disabled?: boolean;
   selectedStudent?: string;
