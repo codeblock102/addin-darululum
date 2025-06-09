@@ -1,3 +1,4 @@
+
 import { useNavigate } from "react-router-dom";
 import {
   Table,
@@ -11,7 +12,6 @@ import { Button } from "@/components/ui/button";
 import { Trash2, User, UserCheck } from "lucide-react";
 import { Student, StudentAssignment } from "../MyStudents";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { MobileTable } from "@/components/mobile/MobileTable";
 
 interface StudentTableProps {
   students: Student[];
@@ -58,59 +58,59 @@ export const StudentTable = ({
   };
 
   if (isMobile) {
-    const columns = [
-      {
-        key: "name",
-        title: "Name",
-        primary: true,
-        render: (value: string) => (
-          <div className="flex items-center">
-            <User className="h-4 w-4 mr-2 text-muted-foreground" />
-            <span>{value}</span>
-          </div>
-        ),
-      },
-      {
-        key: "enrollment_date",
-        title: "Enrollment Date",
-        render: (value: string) =>
-          value ? new Date(value).toLocaleDateString() : "N/A",
-      },
-      {
-        key: "status",
-        title: "Status",
-        status: true,
-      },
-    ];
-
-    // Fix the type issue with actions - create an array of action objects with the correct type
-    const mobileActions = [
-      {
-        label: "View Progress",
-        onClick: (student: Student) => handleViewProgress(student.id),
-        icon: UserCheck as React.ElementType,
-        variant: "outline" as const,
-      },
-      {
-        label: "Remove",
-        onClick: (student: Student) => handleDeleteClick(student, "remove"),
-        icon: User as React.ElementType,
-        variant: "outline" as const,
-      },
-      {
-        label: "Delete",
-        onClick: (student: Student) => handleDeleteClick(student, "delete"),
-        icon: Trash2 as React.ElementType,
-        variant: "outline" as const,
-      },
-    ];
-
     return (
-      <MobileTable
-        columns={columns}
-        data={students}
-        actions={mobileActions}
-      />
+      <div className="space-y-3">
+        {students.map((student) => (
+          <div key={student.id} className="border rounded-lg p-4">
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center">
+                <User className="h-4 w-4 mr-2 text-muted-foreground" />
+                <span className="font-medium">{student.name}</span>
+              </div>
+              <span
+                className={`px-2 py-1 rounded-full text-xs font-medium ${
+                  student.status === "active"
+                    ? "bg-green-100 text-green-800"
+                    : "bg-red-100 text-red-800"
+                }`}
+              >
+                {student.status || "N/A"}
+              </span>
+            </div>
+            <div className="text-sm text-muted-foreground mb-3">
+              Enrolled: {student.enrollment_date
+                ? new Date(student.enrollment_date).toLocaleDateString()
+                : "N/A"}
+            </div>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handleViewProgress(student.id)}
+              >
+                <UserCheck className="h-4 w-4 mr-1" />
+                Progress
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="text-amber-500 hover:text-amber-600"
+                onClick={() => handleDeleteClick(student, "remove")}
+              >
+                <User className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="text-red-500 hover:text-red-600"
+                onClick={() => handleDeleteClick(student, "delete")}
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        ))}
+      </div>
     );
   }
 
