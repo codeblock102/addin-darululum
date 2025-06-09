@@ -5,17 +5,7 @@ import { format } from "date-fns";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client.ts";
 import { useToast } from "@/hooks/use-toast.ts";
-import { AttendanceStatus } from "@/types/attendance.ts";
-
-type AttendanceFormValues = {
-  student_id: string;
-  status: AttendanceStatus;
-  notes: string;
-  date: Date;
-  time: string;
-  late_reason?: string;
-  class_id: string;
-};
+import { AttendanceFormValues } from "@/types/attendance-form.ts";
 
 type AttendanceRecord = {
   id: string;
@@ -39,7 +29,7 @@ export function useAttendanceSubmit() {
   const form = useForm<AttendanceFormValues>({
     defaultValues: {
       student_id: "",
-      status: "present" as AttendanceStatus,
+      status: "present",
       notes: "",
       date: today,
       time: format(new Date(), "HH:mm"),
@@ -71,7 +61,7 @@ export function useAttendanceSubmit() {
 
   useEffect(() => {
     if (existingAttendance) {
-      form.setValue("status", existingAttendance.status as AttendanceStatus);
+      form.setValue("status", existingAttendance.status as any);
       form.setValue("notes", existingAttendance.notes || "");
       if (existingAttendance.time) {
         form.setValue("time", existingAttendance.time);
