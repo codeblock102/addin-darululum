@@ -1,3 +1,4 @@
+
 import { useToast } from "@/hooks/use-toast";
 import {
   Card,
@@ -8,9 +9,7 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { RefreshCcw } from "lucide-react";
-import { MessageTabs } from "./components/MessageTabs";
-import { useRealtimeMessages } from "@/hooks/useRealtimeMessages";
-import { useTeacherMessages } from "@/hooks/useTeacherMessages";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface TeacherMessagesEnhancedProps {
   teacherId: string;
@@ -23,27 +22,12 @@ export const TeacherMessagesEnhanced = ({
 }: TeacherMessagesEnhancedProps) => {
   const { toast } = useToast();
 
-  // Initialize real-time messages updates
-  useRealtimeMessages(teacherId);
-
-  // Use the custom hook to fetch all message data
-  const {
-    inboxMessages,
-    sentMessages,
-    recipients,
-    inboxLoading,
-    sentLoading,
-    recipientsLoading,
-    refetchMessages,
-    unreadCount,
-  } = useTeacherMessages(teacherId);
-
   const handleRefresh = () => {
     toast({
-      title: "Refreshing messages",
-      description: "Getting your latest messages...",
+      title: "Feature Disabled",
+      description: "Messaging functionality is currently disabled.",
+      variant: "destructive",
     });
-    refetchMessages();
   };
 
   return (
@@ -57,24 +41,18 @@ export const TeacherMessagesEnhanced = ({
                 Communicate with other teachers and administrators
               </CardDescription>
             </div>
-            <Button variant="outline" onClick={handleRefresh} size="sm">
+            <Button variant="outline" onClick={handleRefresh} size="sm" disabled>
               <RefreshCcw className="h-4 w-4 mr-2" />
               Refresh
             </Button>
           </div>
         </CardHeader>
         <CardContent>
-          <MessageTabs
-            inboxMessages={inboxMessages}
-            sentMessages={sentMessages}
-            inboxLoading={inboxLoading}
-            sentLoading={sentLoading}
-            recipients={recipients}
-            recipientsLoading={recipientsLoading}
-            teacherId={teacherId}
-            teacherName={teacherName}
-            unreadCount={unreadCount}
-          />
+          <Alert>
+            <AlertDescription>
+              Messaging functionality is currently disabled. Please contact the system administrator to enable this feature.
+            </AlertDescription>
+          </Alert>
         </CardContent>
       </Card>
     </div>
