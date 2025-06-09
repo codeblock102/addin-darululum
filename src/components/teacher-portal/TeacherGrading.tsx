@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client.ts";
@@ -48,28 +49,22 @@ interface Student {
   current_juz?: number;
   last_grade?: string;
   memorization_quality?: string;
-  tajweed_level?: string;
 }
 
 interface ProgressData {
   current_surah?: number;
   current_juz?: number;
   memorization_quality?: string;
-  tajweed_level?: string;
 }
 
 interface GradeData {
-  memorization_quality: string;
-  tajweed_grade: string;
-  attendance_grade: string;
-  participation_grade: string;
+  memorization_quality: "excellent" | "good" | "average" | "needsWork" | "horrible";
   notes: string;
 }
 
 interface StudentGrade {
   created_at: string;
   memorization_quality: string | null;
-  tajweed_level: string | null;
   current_surah: number | null;
   current_juz: number | null;
   contributor_name: string | null;
@@ -80,11 +75,8 @@ export const TeacherGrading = ({ teacherId }: GradingProps) => {
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState("students");
   const [selectedStudent, setSelectedStudent] = useState("");
-  const [gradeData, setGradeData] = useState({
+  const [gradeData, setGradeData] = useState<GradeData>({
     memorization_quality: "average",
-    tajweed_grade: "",
-    attendance_grade: "",
-    participation_grade: "",
     notes: "",
   });
 
@@ -106,9 +98,7 @@ export const TeacherGrading = ({ teacherId }: GradingProps) => {
         data.map(async (student) => {
           const { data: progressData, error: progressError } = await supabase
             .from("progress")
-            .select(
-              "current_surah, current_juz, memorization_quality, tajweed_level",
-            )
+            .select("current_surah, current_juz, memorization_quality")
             .eq("student_id", student.id)
             .order("created_at", { ascending: false })
             .limit(1);
@@ -122,7 +112,6 @@ export const TeacherGrading = ({ teacherId }: GradingProps) => {
             } as Student;
           }
 
-          // Properly handle the case when progressData exists but might be empty
           if (progressData && progressData.length > 0) {
             try {
               const progress = progressData[0] as ProgressData;
@@ -133,14 +122,12 @@ export const TeacherGrading = ({ teacherId }: GradingProps) => {
                 current_surah: progress.current_surah,
                 current_juz: progress.current_juz,
                 memorization_quality: progress.memorization_quality,
-                tajweed_level: progress.tajweed_level,
               } as Student;
             } catch (e) {
               console.error("Error processing progress data:", e);
             }
           }
 
-          // Return basic student info without progress data
           return {
             id: student.id,
             name: student.name,
@@ -153,20 +140,17 @@ export const TeacherGrading = ({ teacherId }: GradingProps) => {
     },
   });
 
-  const { data: studentGrades, isLoading: _gradesLoading } = useQuery({
+  const { data: studentGrades } = useQuery({
     queryKey: ["student-grades", selectedStudent],
     queryFn: async () => {
       if (!selectedStudent) return [];
 
       const student = students?.find((s) => s.name === selectedStudent);
-
       if (!student) return [];
 
       const { data, error } = await supabase
         .from("progress")
-        .select(
-          "current_surah, current_juz, memorization_quality, tajweed_level, created_at, contributor_name",
-        )
+        .select("current_surah, current_juz, memorization_quality, created_at, notes")
         .eq("student_id", student.id)
         .order("created_at", { ascending: false })
         .limit(10);
@@ -176,7 +160,7 @@ export const TeacherGrading = ({ teacherId }: GradingProps) => {
         return [];
       }
 
-      return data;
+      return data || [];
     },
     enabled: !!selectedStudent && !!students,
   });
@@ -202,31 +186,26 @@ export const TeacherGrading = ({ teacherId }: GradingProps) => {
   const submitGradeMutation = useMutation({
     mutationFn: async (data: GradeData) => {
       const student = students?.find((s) => s.name === selectedStudent);
-
       if (!student) {
         throw new Error("Student not found");
       }
 
       const contributorInfo = teacherData
         ? {
-          contributor_id: teacherData.id,
-          contributor_name: `Teacher ${teacherData.name}`,
+          notes: `Teacher ${teacherData.name}: ${data.notes}`,
         }
         : {
-          contributor_id: teacherId,
-          contributor_name: "Teacher",
+          notes: `Teacher: ${data.notes}`,
         };
 
       const { data: result, error } = await supabase
         .from("progress")
-        .insert([{
+        .insert({
           student_id: student.id,
           memorization_quality: data.memorization_quality,
-          tajweed_level: data.tajweed_grade,
-          teacher_notes: data.notes,
           date: new Date().toISOString().split("T")[0],
           ...contributorInfo,
-        }]);
+        });
 
       if (error) throw new Error(error.message);
       return result;
@@ -241,9 +220,6 @@ export const TeacherGrading = ({ teacherId }: GradingProps) => {
       });
       setGradeData({
         memorization_quality: "average",
-        tajweed_grade: "",
-        attendance_grade: "",
-        participation_grade: "",
         notes: "",
       });
     },
@@ -358,7 +334,6 @@ export const TeacherGrading = ({ teacherId }: GradingProps) => {
                             <TableHead>Current Surah</TableHead>
                             <TableHead>Current Juz</TableHead>
                             <TableHead>Memorization Quality</TableHead>
-                            <TableHead>Tajweed Level</TableHead>
                             <TableHead className="text-right">
                               Actions
                             </TableHead>
@@ -398,9 +373,6 @@ export const TeacherGrading = ({ teacherId }: GradingProps) => {
                                   : (
                                     "Not graded"
                                   )}
-                              </TableCell>
-                              <TableCell>
-                                {student.tajweed_level || "Not graded"}
                               </TableCell>
                               <TableCell className="text-right">
                                 <Button
@@ -470,71 +442,32 @@ export const TeacherGrading = ({ teacherId }: GradingProps) => {
 
                   {selectedStudent && (
                     <>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <Label htmlFor="memorization_quality">
-                            Memorization Quality
-                          </Label>
-                          <Select
-                            value={gradeData.memorization_quality}
-                            onValueChange={(value) =>
-                              handleSelectChange("memorization_quality", value)}
-                          >
-                            <SelectTrigger id="memorization_quality">
-                              <SelectValue placeholder="Select quality" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="excellent">
-                                Excellent
-                              </SelectItem>
-                              <SelectItem value="good">Good</SelectItem>
-                              <SelectItem value="average">Average</SelectItem>
-                              <SelectItem value="needsWork">
-                                Needs Work
-                              </SelectItem>
-                              <SelectItem value="horrible">
-                                Incomplete
-                              </SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-
-                        <div className="space-y-2">
-                          <Label htmlFor="tajweed_grade">Tajweed Grade</Label>
-                          <Input
-                            id="tajweed_grade"
-                            name="tajweed_grade"
-                            value={gradeData.tajweed_grade}
-                            onChange={handleInputChange}
-                            placeholder="e.g., Excellent, Good, Needs Practice"
-                          />
-                        </div>
-                      </div>
-
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <Label htmlFor="attendance_grade">Attendance</Label>
-                          <Input
-                            id="attendance_grade"
-                            name="attendance_grade"
-                            value={gradeData.attendance_grade}
-                            onChange={handleInputChange}
-                            placeholder="e.g., 90%, Regular, Irregular"
-                          />
-                        </div>
-
-                        <div className="space-y-2">
-                          <Label htmlFor="participation_grade">
-                            Class Participation
-                          </Label>
-                          <Input
-                            id="participation_grade"
-                            name="participation_grade"
-                            value={gradeData.participation_grade}
-                            onChange={handleInputChange}
-                            placeholder="e.g., Active, Moderate, Low"
-                          />
-                        </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="memorization_quality">
+                          Memorization Quality
+                        </Label>
+                        <Select
+                          value={gradeData.memorization_quality}
+                          onValueChange={(value) =>
+                            handleSelectChange("memorization_quality", value)}
+                        >
+                          <SelectTrigger id="memorization_quality">
+                            <SelectValue placeholder="Select quality" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="excellent">
+                              Excellent
+                            </SelectItem>
+                            <SelectItem value="good">Good</SelectItem>
+                            <SelectItem value="average">Average</SelectItem>
+                            <SelectItem value="needsWork">
+                              Needs Work
+                            </SelectItem>
+                            <SelectItem value="horrible">
+                              Incomplete
+                            </SelectItem>
+                          </SelectContent>
+                        </Select>
                       </div>
 
                       <div className="space-y-2">
@@ -585,15 +518,13 @@ export const TeacherGrading = ({ teacherId }: GradingProps) => {
                             <TableRow>
                               <TableHead>Date</TableHead>
                               <TableHead>Memorization</TableHead>
-                              <TableHead>Tajweed</TableHead>
                               <TableHead>Surah</TableHead>
                               <TableHead>Juz</TableHead>
-                              <TableHead>Contributor</TableHead>
                             </TableRow>
                           </TableHeader>
                           <TableBody>
-                            {studentGrades.map((grade: StudentGrade) => (
-                              <TableRow key={grade.created_at}>
+                            {studentGrades.map((grade: any, index: number) => (
+                              <TableRow key={grade.created_at || index}>
                                 <TableCell>
                                   {new Date(grade.created_at)
                                     .toLocaleDateString()}
@@ -606,16 +537,10 @@ export const TeacherGrading = ({ teacherId }: GradingProps) => {
                                   {grade.memorization_quality || "N/A"}
                                 </TableCell>
                                 <TableCell>
-                                  {grade.tajweed_level || "N/A"}
-                                </TableCell>
-                                <TableCell>
                                   {grade.current_surah || "N/A"}
                                 </TableCell>
                                 <TableCell>
                                   {grade.current_juz || "N/A"}
-                                </TableCell>
-                                <TableCell>
-                                  {grade.contributor_name || "Unknown"}
                                 </TableCell>
                               </TableRow>
                             ))}
