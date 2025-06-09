@@ -58,25 +58,25 @@ export function DateSelector({ form }: DateSelectorProps) {
                 selected={field.value}
                 onSelect={field.onChange}
                 initialFocus
-                className={cn("p-3 pointer-events-auto bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100")}
+                className={cn("p-3 pointer-events-auto bg-white dark:bg-gray-800")}
                 classNames={{
-                  months: "text-gray-900 dark:text-gray-100",
-                  month: "text-gray-900 dark:text-gray-100", 
-                  caption: "text-gray-900 dark:text-gray-100 font-medium",
-                  caption_label: "text-gray-900 dark:text-gray-100 font-medium",
-                  nav_button: "text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700",
-                  nav_button_previous: "text-gray-900 dark:text-gray-100",
-                  nav_button_next: "text-gray-900 dark:text-gray-100",
-                  table: "text-gray-900 dark:text-gray-100",
-                  head_row: "text-gray-900 dark:text-gray-100",
-                  head_cell: "text-gray-700 dark:text-gray-300 font-medium",
-                  row: "text-gray-900 dark:text-gray-100",
-                  cell: "text-gray-900 dark:text-gray-100",
-                  day: "text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700",
-                  day_selected: "bg-blue-600 text-white hover:bg-blue-700",
-                  day_today: "bg-blue-100 dark:bg-blue-900 text-blue-900 dark:text-blue-100 font-semibold",
-                  day_outside: "text-gray-400 dark:text-gray-600",
-                  day_disabled: "text-gray-300 dark:text-gray-700",
+                  months: "text-black dark:text-white",
+                  month: "text-black dark:text-white", 
+                  caption: "text-black dark:text-white font-bold text-base",
+                  caption_label: "text-black dark:text-white font-bold text-base",
+                  nav_button: "text-black dark:text-white hover:bg-gray-200 dark:hover:bg-gray-600 font-bold",
+                  nav_button_previous: "text-black dark:text-white font-bold",
+                  nav_button_next: "text-black dark:text-white font-bold",
+                  table: "text-black dark:text-white",
+                  head_row: "text-black dark:text-white",
+                  head_cell: "text-black dark:text-white font-bold text-sm",
+                  row: "text-black dark:text-white",
+                  cell: "text-black dark:text-white",
+                  day: "text-black dark:text-white hover:bg-gray-200 dark:hover:bg-gray-600 font-medium",
+                  day_selected: "bg-blue-600 text-white hover:bg-blue-700 font-bold",
+                  day_today: "bg-blue-100 dark:bg-blue-900 text-blue-900 dark:text-blue-100 font-bold border-2 border-blue-500",
+                  day_outside: "text-gray-400 dark:text-gray-500",
+                  day_disabled: "text-gray-300 dark:text-gray-600",
                 }}
               />
             </PopoverContent>
