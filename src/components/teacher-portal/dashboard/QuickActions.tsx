@@ -15,25 +15,25 @@ export const QuickActions = ({ teacherId }: QuickActionsProps) => {
     {
       title: "Add Student",
       icon: Plus,
-      action: () => navigate("/teacher-portal?tab=students"),
+      action: () => navigate("/dashboard?tab=students"),
       color: "bg-blue-500 hover:bg-blue-600",
     },
     {
       title: "Take Attendance",
       icon: Calendar,
-      action: () => navigate("/teacher-portal?tab=attendance"),
+      action: () => navigate("/attendance"),
       color: "bg-green-500 hover:bg-green-600",
     },
     {
       title: "View Students",
       icon: Users,
-      action: () => navigate("/teacher-portal?tab=students"),
+      action: () => navigate("/dashboard?tab=students"),
       color: "bg-purple-500 hover:bg-purple-600",
     },
     {
       title: "Messages",
       icon: MessageSquare,
-      action: () => navigate("/teacher-portal?tab=messages"),
+      action: () => navigate("/dashboard?tab=messages"),
       color: "bg-orange-500 hover:bg-orange-600",
     },
   ];
