@@ -1,5 +1,6 @@
+
 import { useLocation, useNavigate } from "react-router-dom";
-import { Book, Home, LogOut, Users } from "lucide-react";
+import { Book, Home, LogOut, Users, ClipboardList } from "lucide-react";
 import { useRBAC } from "@/hooks/useRBAC.ts";
 import { cn } from "@/lib/utils.ts";
 import { useAuth } from "@/hooks/use-auth.ts";
@@ -12,17 +13,18 @@ export const BottomNavigation = () => {
 
   // Different navigation items for admin and teacher roles
   const adminNavItems = [
-    { icon: Home, label: "Dashboard", href: "/dashboard" }, // Corrected admin dashboard path
+    { icon: Home, label: "Dashboard", href: "/dashboard" },
     { icon: Users, label: "Teachers", href: "/teachers" },
     { icon: Users, label: "Students", href: "/students" },
-    { icon: Book, label: "Progress", href: "/progress-book" }, // Corrected progress path
+    { icon: ClipboardList, label: "Attendance", href: "/attendance" },
     { icon: LogOut, label: "Logout", action: signOut },
   ];
 
   const teacherNavItems = [
-    { icon: Home, label: "Dashboard", href: "/dashboard" }, // Corrected teacher dashboard path
-    { icon: Users, label: "Students", href: "/students" }, // Corrected students path
-    { icon: Book, label: "Progress", href: "/progress-book" }, // Corrected progress path
+    { icon: Home, label: "Dashboard", href: "/dashboard" },
+    { icon: Users, label: "Students", href: "/students" },
+    { icon: ClipboardList, label: "Attendance", href: "/attendance" },
+    { icon: Book, label: "Progress", href: "/progress-book" },
     { icon: LogOut, label: "Logout", action: signOut },
   ];
 
