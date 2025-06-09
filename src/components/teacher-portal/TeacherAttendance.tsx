@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import {
   Card,
@@ -46,28 +47,29 @@ interface StudentData {
 
 // Define the structure of an attendance record as fetched for this component
 // It combines data from 'attendance' and the related 'students' table.
-// Using Database types for better accuracy from attendance table structure
-type StudentAttendanceRecord =
-  & Omit<Database["public"]["Tables"]["attendance"]["Row"], "student_id">
-  & {
-    student_id: string; // Ensure student_id is not null after join/filtering
-    student_name: string; // Name from the joined 'students' table
-    // Include other fields from attendance.Row if necessary, e.g., notes, class_id
-  };
+type StudentAttendanceRecord = {
+  id: string;
+  date: string;
+  status: string;
+  notes: string | null;
+  class_id: string | null;
+  created_at: string | null;
+  time: string | null;
+  late_reason: string | null;
+  student_id: string;
+  student_name: string;
+};
 
-export const TeacherAttendance = (
-  /* { teacherId }: TeacherAttendanceProps */
-) => {
-  // console.log("TeacherAttendance mounted with teacherId:", teacherId); // Removed teacherId related log
+export const TeacherAttendance = () => {
   const [date, setDate] = useState<Date | undefined>(new Date());
   const [selectedStatus, setSelectedStatus] = useState<string | undefined>();
   const [searchQuery, setSearchQuery] = useState("");
-  const [editingStudentId, setEditingStudentId] = useState<string | null>(null); // State for inline editing
+  const [editingStudentId, setEditingStudentId] = useState<string | null>(null);
   const [selectedStudentIds, setSelectedStudentIds] = useState<Set<string>>(
     new Set(),
-  ); // For bulk actions
-  const [bulkActionStatus, setBulkActionStatus] = useState<string>(""); // Status for bulk update
-  const queryClient = useQueryClient(); // For invalidating queries
+  );
+  const [bulkActionStatus, setBulkActionStatus] = useState<string>("");
+  const queryClient = useQueryClient();
 
   // 1. Fetch ALL students from the 'students' table.
   const {
@@ -75,7 +77,7 @@ export const TeacherAttendance = (
     isLoading: studentsLoading,
     error: studentsError,
   } = useQuery<StudentData[], Error>({
-    queryKey: ["all-students"], // Changed queryKey, removed teacherId
+    queryKey: ["all-students"],
     queryFn: async () => {
       console.log("[QueryFn all-students] Starting to fetch all students.");
       const { data: studentDetails, error: studentDetailsError } =
@@ -96,12 +98,6 @@ export const TeacherAttendance = (
       }
       return studentDetails || [];
     },
-    // enabled: !!teacherId, // Removed: query should always be enabled
-  });
-  console.log("All Students Hook Result:", {
-    allStudents,
-    studentsLoading,
-    studentsError,
   });
 
   // 3. Fetch attendance records for ALL fetched students on the selected date.
@@ -114,16 +110,16 @@ export const TeacherAttendance = (
       "student-attendance-records",
       date,
       allStudents?.map((s) => s.id),
-    ], // Changed to allStudents
-    queryFn: async () => {
+    ],
+    queryFn: async (): Promise<StudentAttendanceRecord[]> => {
       console.log(
         "[QueryFn student-attendance-records] Starting. Date:",
         date,
         "All Students:",
         allStudents,
-      ); // Changed to allStudents
-      if (!date || !allStudents || allStudents.length === 0) return []; // Changed to allStudents
-      const studentIds = allStudents.map((student) => student.id); // Changed to allStudents
+      );
+      if (!date || !allStudents || allStudents.length === 0) return [];
+      const studentIds = allStudents.map((student) => student.id);
       if (studentIds.length === 0) return [];
       const formattedDate = format(date, "yyyy-MM-dd");
       console.log(
@@ -142,11 +138,14 @@ export const TeacherAttendance = (
           notes,
           class_id,
           created_at,
+          time,
+          late_reason,
           student_id,
           students:student_id (name) 
         `)
         .eq("date", formattedDate)
         .in("student_id", studentIds);
+      
       console.log(
         "[QueryFn student-attendance-records] Raw attendance data from Supabase:",
         data,
@@ -159,29 +158,26 @@ export const TeacherAttendance = (
         throw error;
       }
 
-      // Ensure record.students is properly handled if it might be null/undefined from the query result
-      const mappedData = data?.map((record) => ({
+      const mappedData: StudentAttendanceRecord[] = data?.map((record) => ({
         id: record.id,
         date: record.date,
         status: record.status,
         notes: record.notes,
         class_id: record.class_id,
         created_at: record.created_at,
+        time: record.time,
+        late_reason: record.late_reason,
         student_id: record.student_id!,
-        student_name: record.students?.name || "Unknown Student",
+        student_name: (record.students as any)?.name || "Unknown Student",
       })) || [];
+      
       console.log(
         "[QueryFn student-attendance-records] Mapped attendance data:",
         mappedData,
       );
       return mappedData;
     },
-    enabled: !!date && !!allStudents && allStudents.length > 0, // Changed to allStudents
-  });
-  console.log("Attendance Records Hook Result:", {
-    attendanceRecords,
-    attendanceLoading,
-    attendanceError,
+    enabled: !!date && !!allStudents && allStudents.length > 0,
   });
 
   const handleStatusUpdate = async (
@@ -196,7 +192,6 @@ export const TeacherAttendance = (
       `[handleStatusUpdate] Upserting for studentId: ${studentId}, date: ${formattedDate}, status: ${newStatus}`,
     );
 
-    // Assuming a unique constraint on (student_id, date) in your attendance table
     const { error } = await supabase
       .from("attendance")
       .upsert(
@@ -206,7 +201,6 @@ export const TeacherAttendance = (
 
     if (error) {
       console.error("[handleStatusUpdate] Error upserting attendance:", error);
-      // Optionally, show an error message to the user
     } else {
       console.log("[handleStatusUpdate] Upsert successful");
       await queryClient.invalidateQueries({
@@ -216,7 +210,7 @@ export const TeacherAttendance = (
           allStudents?.map((s) => s.id),
         ],
       });
-      setEditingStudentId(null); // Exit editing mode
+      setEditingStudentId(null);
     }
   };
 
@@ -229,10 +223,10 @@ export const TeacherAttendance = (
   const studentsWithAttendance = allStudents?.map((student) => {
     const attendance = attendanceMap.get(student.id);
     return {
-      ...student, // id, name
-      status: attendance?.status, // present, absent, late, excused, or undefined
+      ...student,
+      status: attendance?.status,
       notes: attendance?.notes,
-      attendance_id: attendance?.id, // To be used as key if needed, or for actions
+      attendance_id: attendance?.id,
     };
   });
 
@@ -245,14 +239,6 @@ export const TeacherAttendance = (
       studentName.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesStatus && matchesSearch;
   });
-  console.log(
-    "Filtered Students Result:",
-    filteredStudents,
-    "Selected Status:",
-    selectedStatus,
-    "Search Query:",
-    searchQuery,
-  );
 
   const handleRowCheckboxChange = (
     studentId: string,
@@ -306,7 +292,6 @@ export const TeacherAttendance = (
         "[handleBulkStatusUpdate] Error upserting bulk attendance:",
         error,
       );
-      // TODO: Show error to user, e.g., using a toast notification
     } else {
       console.log("[handleBulkStatusUpdate] Bulk upsert successful");
       await queryClient.invalidateQueries({
@@ -316,9 +301,9 @@ export const TeacherAttendance = (
           allStudents?.map((s) => s.id),
         ],
       });
-      setSelectedStudentIds(new Set()); // Clear selection
-      setBulkActionStatus(""); // Reset bulk status dropdown
-      setEditingStudentId(null); // Ensure individual edit mode is also exited
+      setSelectedStudentIds(new Set());
+      setBulkActionStatus("");
+      setEditingStudentId(null);
     }
   };
 
@@ -359,7 +344,6 @@ export const TeacherAttendance = (
   };
 
   // Early returns for loading/error states
-  // if (!teacherId) return <Card><CardContent className="pt-6"><p>Teacher ID not provided. Unable to load student attendance data.</p></CardContent></Card>; // Removed teacherId check
   if (studentsLoading) {
     return (
       <Card>
@@ -368,7 +352,7 @@ export const TeacherAttendance = (
           data...
         </CardContent>
       </Card>
-    ); // Updated message
+    );
   }
   if (studentsError) {
     return (
@@ -377,7 +361,7 @@ export const TeacherAttendance = (
           Error loading student data: {studentsError.message}
         </CardContent>
       </Card>
-    ); // Updated message
+    );
   }
 
   const isAllFilteredSelected = filteredStudents &&
@@ -491,7 +475,7 @@ export const TeacherAttendance = (
                     }
                   }}
                   disabled={attendanceLoading || !date || !allStudents ||
-                    allStudents.length === 0} // Changed to allStudents
+                    allStudents.length === 0}
                 >
                   <SelectTrigger className="w-[180px]">
                     <SelectValue placeholder="Filter by status" />
@@ -514,7 +498,7 @@ export const TeacherAttendance = (
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   disabled={attendanceLoading || !date || !allStudents ||
-                    allStudents.length === 0} // Changed to allStudents
+                    allStudents.length === 0}
                 />
               </div>
             </div>
@@ -605,8 +589,6 @@ export const TeacherAttendance = (
                                   <SelectItem value="excused">
                                     Excused
                                   </SelectItem>
-                                  {/* Option to clear status / mark as 'Not Marked' could be added here if needed */}
-                                  {/* e.g. <SelectItem value="">Not Marked</SelectItem> or a separate action */}
                                 </SelectContent>
                               </Select>
                             )
@@ -644,7 +626,6 @@ export const TeacherAttendance = (
                       allStudents && allStudents.length > 0 && (
                       <TableRow>
                         <TableCell colSpan={5} className="h-24 text-center">
-                          {/* Adjusted colSpan */}
                           No students match the current filters.
                         </TableCell>
                       </TableRow>
