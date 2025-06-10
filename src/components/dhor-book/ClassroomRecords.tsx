@@ -103,7 +103,10 @@ export function ClassroomRecords({ teacherId, isAdmin }: ClassroomRecordsProps) 
   } = useQuery({
     queryKey: ["classroom-students", teacherId, isAdmin, teacherData],
     queryFn: async () => {
-      let query = supabase.from("students").select("id, name, status");
+      let query = supabase
+        .from("students")
+        .select("id, name, status")
+        .not("madrassah_id", "is", null);
 
       if (isAdmin) {
         // Admins see all students

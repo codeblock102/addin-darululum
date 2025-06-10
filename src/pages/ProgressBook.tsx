@@ -95,9 +95,7 @@ const ProgressBookPage = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState("all"); // "all", "recent", "reports"
   const [viewMode, setViewMode] = useState<"daily" | "classroom">("daily");
-  const [selectedTeacherId, setSelectedTeacherId] = useState<string | null>(
-    null,
-  );
+  const [selectedTeacherId, setSelectedTeacherId] = useState<string>("all");
   const { isAdmin, isTeacher, teacherId } = useTeacherStatus();
   const { session } = useAuth();
   const userRole = session?.user?.user_metadata?.role;
@@ -144,27 +142,66 @@ const ProgressBookPage = () => {
       }
       return data;
     },
-    enabled: userRole === "teacher" && !!teacherId,
+    enabled: isTeacher && !!teacherId,
   });
 
+  const { data: selectedTeacherData, isLoading: isLoadingSelectedTeacher } =
+    useQuery({
+      queryKey: ["teacherData", selectedTeacherId],
+      queryFn: async () => {
+        if (!selectedTeacherId || selectedTeacherId === "all") return null;
+        const { data, error } = await supabase
+          .from("teachers")
+          .select("madrassah_id, section")
+          .eq("id", selectedTeacherId)
+          .single();
+        if (error) {
+          console.error("Error fetching selected teacher data:", error);
+          throw error;
+        }
+        return data;
+      },
+      enabled: isAdmin && !!selectedTeacherId && selectedTeacherId !== "all",
+    });
+
   const { data: students, isLoading: studentsLoading } = useQuery({
-    queryKey: ["students-for-progress-book", { role: userRole, teacherData }], // Renamed queryKey
+    queryKey: [
+      "students-for-progress-book",
+      { isAdmin, teacherData, selectedTeacherId },
+    ],
     queryFn: async () => {
       let query = supabase
         .from("students")
         .select("id, name, status")
         .eq("status", "active")
-        .order("name", { ascending: true });
+        .not("madrassah_id", "is", null);
 
-      if (userRole === "teacher") {
+      if (isAdmin) {
+        // Admin view: filter by selected teacher if one is chosen
+        if (selectedTeacherId && selectedTeacherId !== "all") {
+          if (selectedTeacherData) {
+            query = query
+              .eq("madrassah_id", selectedTeacherData.madrassah_id)
+              .eq("section", selectedTeacherData.section);
+          } else {
+            // If admin has a teacher selected, but the teacher's data isn't loaded,
+            // return an empty array to avoid showing all students.
+            return [];
+          }
+        }
+      } else {
+        // Teacher view: always filter by the logged-in teacher's section
         if (teacherData?.madrassah_id && teacherData?.section) {
           query = query
             .eq("madrassah_id", teacherData.madrassah_id)
             .eq("section", teacherData.section);
         } else {
+          // If teacher has no section, they see no students.
           return [];
         }
       }
+
+      query = query.order("name", { ascending: true });
 
       const { data, error } = await query;
       if (error) {
@@ -178,14 +215,13 @@ const ProgressBookPage = () => {
       }
       return data || [];
     },
-    enabled: userRole !== "teacher" || !isLoadingTeacher,
+    enabled:
+      (isAdmin && (selectedTeacherId === "all" || !isLoadingSelectedTeacher)) ||
+      (!isAdmin && !isLoadingTeacher),
     refetchInterval: 30000,
   });
 
-  const currentTeacherId = isTeacher
-    ? teacherId
-    : selectedTeacherId ||
-      (teachers && teachers.length > 0 ? teachers[0]?.id : undefined);
+  const currentTeacherId = isTeacher ? teacherId : selectedTeacherId;
 
   useRealtimeLeaderboard(currentTeacherId, () => {
     // Intentionally empty, realtime updates might trigger refetch of other queries if needed
@@ -340,10 +376,7 @@ const ProgressBookPage = () => {
                             Filter by Teacher
                           </h3>
                           <Select
-                            value={selectedTeacherId ||
-                              (teachers && teachers.length > 0
-                                ? teachers[0]?.id
-                                : undefined)}
+                            value={selectedTeacherId}
                             onValueChange={setSelectedTeacherId}
                           >
                             <SelectTrigger className="text-xs sm:text-sm h-9">
