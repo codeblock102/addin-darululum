@@ -42,10 +42,27 @@ export const TeacherDhorBook = ({ teacherId }: TeacherDhorBookProps) => {
   const [selectedStudentId, setSelectedStudentId] = useState<string | null>(
     null,
   );
-  const [_selectedStudentName, setSelectedStudentName] = useState<string>("");
   const [activeTab, setActiveTab] = useState("entries");
   const [viewMode, setViewMode] = useState<"daily" | "classroom">("daily");
   const isMobile = useIsMobile();
+
+  const { data: teacherData, isLoading: isLoadingTeacher } = useQuery({
+    queryKey: ["teacherData", teacherId],
+    queryFn: async () => {
+      if (!teacherId) return null;
+      const { data, error } = await supabase
+        .from("teachers")
+        .select("madrassah_id, section")
+        .eq("id", teacherId)
+        .single();
+      if (error) {
+        console.error("Error fetching teacher data:", error);
+        throw error;
+      }
+      return data;
+    },
+    enabled: !!teacherId,
+  });
 
   // Set up realtime updates for the records
   useRealtimeLeaderboard(teacherId, () => {
@@ -60,45 +77,35 @@ export const TeacherDhorBook = ({ teacherId }: TeacherDhorBookProps) => {
     const studentId = searchParams.get("studentId");
     if (studentId) {
       setSelectedStudentId(studentId);
-      // Get student name from database
-      const fetchStudentName = async () => {
-        const { data } = await supabase
-          .from("students")
-          .select("name")
-          .eq("id", studentId)
-          .single();
-
-        if (data) {
-          setSelectedStudentName(data.name);
-        } else {
-          console.log("Student not found with ID:", studentId);
-        }
-      };
-      fetchStudentName();
     }
   }, [location.search]);
 
-  // Verify student exists
+  // Verify student exists and belongs to teacher's classroom
   const { data: studentVerification, isLoading: studentVerifyLoading } =
     useQuery({
-      queryKey: ["verify-student", selectedStudentId],
+      queryKey: ["verify-student-for-teacher", selectedStudentId, teacherId],
       queryFn: async () => {
-        if (!selectedStudentId) return null;
+        if (!selectedStudentId || !teacherData) return null;
 
         const { data, error } = await supabase
           .from("students")
           .select("id, name")
           .eq("id", selectedStudentId)
+          .eq("madrassah_id", teacherData.madrassah_id)
+          .eq("section", teacherData.section)
           .single();
 
         if (error) {
-          console.error("Error verifying student:", error);
+          if (error.code !== "PGRST116") {
+            // PGRST116 is "exact one row not found", which is expected
+            console.error("Error verifying student:", error);
+          }
           return null;
         }
 
         return data;
       },
-      enabled: !!selectedStudentId,
+      enabled: !!selectedStudentId && !isLoadingTeacher && !!teacherData,
     });
 
   // Fetch attendance records for the selected student
@@ -120,9 +127,8 @@ export const TeacherDhorBook = ({ teacherId }: TeacherDhorBookProps) => {
   });
 
   // Handler for student selection
-  const handleStudentSelect = (studentId: string, studentName: string) => {
+  const handleStudentSelect = (studentId: string, _studentName: string) => {
     setSelectedStudentId(studentId);
-    setSelectedStudentName(studentName);
     setActiveTab("entries");
     setViewMode("daily"); // Reset to daily view when selecting a student
   };
@@ -237,6 +243,9 @@ export const TeacherDhorBook = ({ teacherId }: TeacherDhorBookProps) => {
                         <DhorBook
                           studentId={selectedStudentId}
                           teacherId={teacherId}
+                          isAdmin={false}
+                          teacherData={teacherData}
+                          isLoadingTeacher={isLoadingTeacher}
                         />
                       </TabsContent>
 
@@ -345,7 +354,7 @@ export const TeacherDhorBook = ({ teacherId }: TeacherDhorBookProps) => {
             )}
 
             {viewMode === "classroom" && (
-              <ClassroomRecords teacherId={teacherId} />
+              <ClassroomRecords teacherId={teacherId} isAdmin={false} />
             )}
           </CardContent>
         </Tabs>

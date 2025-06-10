@@ -13,6 +13,7 @@ interface DhorBookProps {
   teacherId?: string;
   teacherData?: { madrassah_id: string; section: string } | null;
   isAdmin: boolean;
+  isLoadingTeacher: boolean;
 }
 
 export const DhorBook = ({
@@ -20,6 +21,7 @@ export const DhorBook = ({
   teacherId,
   teacherData,
   isAdmin,
+  isLoadingTeacher,
 }: DhorBookProps) => {
   const [currentWeek, setCurrentWeek] = useState(new Date());
   const [entries, setEntries] = useState<DailyActivityEntry[]>([]);
@@ -37,46 +39,38 @@ export const DhorBook = ({
     isLoading: studentsLoading,
     error: studentsError,
   } = useQuery({
-    queryKey: ["classroom-students-dhorbook", teacherId, isAdmin, teacherData],
+    queryKey: ["dhorbook-student-auth", studentId, isAdmin, teacherData],
     queryFn: async () => {
+      // For teachers, if teacherData is not ready, don't fetch.
       if (!isAdmin && !teacherData) {
-        // For teachers, if teacherData is not ready, don't fetch.
         return [];
       }
 
-      // If admin, we only need to check if the specific student exists
-      if (isAdmin) {
-        const { data, error } = await supabase
-          .from("students")
-          .select("id")
-          .eq("id", studentId)
-          .limit(1);
-          
-        if (error) {
-          console.error("Error fetching student:", error);
-          throw error;
+      let query = supabase
+        .from("students")
+        .select("id")
+        .eq("id", studentId)
+        .limit(1);
+
+      // If not an admin, must be a teacher. Apply teacher filters for authorization.
+      if (!isAdmin) {
+        if (teacherData?.madrassah_id && teacherData?.section) {
+          query = query
+            .eq("madrassah_id", teacherData.madrassah_id)
+            .eq("section", teacherData.section);
+        } else {
+          // Teacher has no section/madrassah, so they are not authorized to see any student.
+          return [];
         }
-        return data || [];
-      } 
-      // For teachers, check if the student is in their section and madrassah
-      else if (teacherData?.madrassah_id && teacherData?.section) {
-        const { data, error } = await supabase
-          .from("students")
-          .select("id")
-          .eq("id", studentId)
-          .eq("madrassah_id", teacherData.madrassah_id)
-          .eq("section", teacherData.section)
-          .limit(1);
-          
-        if (error) {
-          console.error("Error fetching student:", error);
-          throw error;
-        }
-        return data || [];
       }
-      
-      // If teacher has no section, they can't see any students
-      return [];
+      // For Admins, query remains as a check for student existence by ID.
+
+      const { data, error } = await query;
+      if (error) {
+        console.error("Error fetching student for authorization:", error);
+        throw error;
+      }
+      return data || [];
     },
     enabled: !!studentId && (isAdmin || !!teacherData),
   });
@@ -240,6 +234,15 @@ export const DhorBook = ({
       setEntries(entriesData);
     }
   }, [entriesData]);
+
+  if (isLoadingTeacher) {
+    return (
+      <Card className="flex items-center justify-center p-6 h-full min-h-[200px]">
+        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+        <span className="ml-2 text-muted-foreground">Loading teacher data...</span>
+      </Card>
+    );
+  }
 
   // Handle refresh request
   const handleRefresh = () => {
