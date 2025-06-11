@@ -283,6 +283,14 @@ export const DhorBook = ({
     );
   }
 
+  if (studentsError) {
+    return (
+      <Card className="p-6 text-center text-red-500">
+        <p>Error verifying student access: {studentsError.message}</p>
+      </Card>
+    );
+  }
+
   // Show unauthorized message only after checks are complete
   if (showUnauthorized) {
     return (

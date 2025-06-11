@@ -53,7 +53,6 @@ import {
 import { useTeacherStatus } from "@/hooks/useTeacherStatus.ts";
 import { useRealtimeLeaderboard } from "@/hooks/useRealtimeLeaderboard.ts";
 import { useToast } from "@/hooks/use-toast.ts";
-import { useAuth } from "@/contexts/AuthContext.tsx";
 
 /**
  * @component ProgressBookPage
@@ -95,9 +94,7 @@ const ProgressBookPage = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState("all"); // "all", "recent", "reports"
   const [viewMode, setViewMode] = useState<"daily" | "classroom">("daily");
-  const { isAdmin, isTeacher, teacherId } = useTeacherStatus();
-  const { session } = useAuth();
-  const userRole = session?.user?.user_metadata?.role;
+  const { isAdmin, teacherId } = useTeacherStatus();
 
   useEffect(() => {
     const urlParams = new URLSearchParams(globalThis.location.search);
@@ -380,13 +377,15 @@ const ProgressBookPage = () => {
             </TabsContent>
 
             <TabsContent value="classroom">
-              <ClassroomRecords
-                students={students || []}
-                isLoading={studentsLoading}
-                teacherId={currentTeacherId ?? undefined}
-                madrassahId={teacherData?.madrassah_id}
-                isAdmin={isAdmin}
-              />
+              {currentTeacherId && (
+                <ClassroomRecords
+                  // students={students || []}
+                  // isLoading={studentsLoading}
+                  teacherId={currentTeacherId}
+                  // madrassahId={teacherData?.madrassah_id}
+                  isAdmin={isAdmin}
+                />
+              )}
             </TabsContent>
           </Tabs>
         </CardContent>

@@ -28,7 +28,7 @@ const CreateDemoAccount = () => {
   // Pre-calculate the username that will be generated
   const demoName = "Mufti Ammar Mulla";
 
-  const handleCreateAccount = async () => {
+  const handleCreateAccount = () => {
     setIsLoading(true);
     // This feature is disabled as the underlying function was part of a previous implementation.
     // The `createTeacherWithAccount` function in `createTeacherAccount.ts` can be used for this,

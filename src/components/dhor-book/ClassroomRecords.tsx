@@ -38,7 +38,6 @@ import {
 } from "lucide-react";
 import { format } from "date-fns";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "@/contexts/AuthContext.tsx";
 
 interface ClassroomRecordsProps {
   teacherId: string;
@@ -77,8 +76,6 @@ export function ClassroomRecords(
   const [recordType, setRecordType] = useState<
     "all" | "incomplete" | "complete"
   >("all");
-  const { session } = useAuth();
-  const userRole = session?.user?.user_metadata?.role;
 
   const { data: teacherData, isLoading: isLoadingTeacher } = useQuery({
     queryKey: ["teacherData", teacherId],
