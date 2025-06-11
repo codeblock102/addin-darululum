@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { AttendanceForm } from "@/components/attendance/AttendanceForm.tsx";
 import { AttendanceTable } from "@/components/attendance/AttendanceTable.tsx";
@@ -8,7 +7,14 @@ import {
   TabsList,
   TabsTrigger,
 } from "@/components/ui/tabs.tsx";
-import { CalendarCheck, Clock, Users, BookOpen, TrendingUp, AlertCircle } from "lucide-react";
+import {
+  AlertCircle,
+  BookOpen,
+  CalendarCheck,
+  Clock,
+  TrendingUp,
+  Users,
+} from "lucide-react";
 import {
   Card,
   CardContent,
@@ -58,7 +64,8 @@ const Attendance = () => {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-8">
         {/* Enhanced Header Section */}
         <div className="relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-r from-blue-600/10 via-purple-600/10 to-teal-600/10 rounded-3xl blur-3xl"></div>
+          <div className="absolute inset-0 bg-gradient-to-r from-blue-600/10 via-purple-600/10 to-teal-600/10 rounded-3xl blur-3xl">
+          </div>
           <div className="relative bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border border-white/20 dark:border-slate-700/30 rounded-2xl p-6 sm:p-8 shadow-xl">
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
               <div className="space-y-2">
@@ -83,11 +90,11 @@ const Attendance = () => {
                   className="bg-green-50 text-green-700 border-green-200 dark:bg-green-900/20 dark:text-green-300 dark:border-green-800 px-4 py-2 text-sm font-medium"
                 >
                   <CalendarCheck className="h-4 w-4 mr-2" />
-                  {new Date().toLocaleDateString('en-US', { 
-                    weekday: 'long', 
-                    year: 'numeric', 
-                    month: 'long', 
-                    day: 'numeric' 
+                  {new Date().toLocaleDateString("en-US", {
+                    weekday: "long",
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric",
                   })}
                 </Badge>
                 <Badge
@@ -95,9 +102,9 @@ const Attendance = () => {
                   className="bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-800 px-4 py-2 text-sm font-medium"
                 >
                   <Clock className="h-4 w-4 mr-2" />
-                  {new Date().toLocaleTimeString('en-US', { 
-                    hour: '2-digit', 
-                    minute: '2-digit' 
+                  {new Date().toLocaleTimeString("en-US", {
+                    hour: "2-digit",
+                    minute: "2-digit",
                   })}
                 </Badge>
               </div>
@@ -108,8 +115,8 @@ const Attendance = () => {
         {/* Stats Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
           {statsCards.map((stat, index) => (
-            <Card 
-              key={index} 
+            <Card
+              key={index}
               className={`${stat.bgColor} ${stat.borderColor} border-2 hover:shadow-lg transition-all duration-300 hover:-translate-y-1 group`}
             >
               <CardContent className="p-6">
@@ -127,7 +134,9 @@ const Attendance = () => {
                       </p>
                     </div>
                   </div>
-                  <div className={`p-3 rounded-xl ${stat.color} bg-white/50 dark:bg-slate-800/50 group-hover:scale-110 transition-transform duration-300`}>
+                  <div
+                    className={`p-3 rounded-xl ${stat.color} bg-white/50 dark:bg-slate-800/50 group-hover:scale-110 transition-transform duration-300`}
+                  >
                     <stat.icon className="h-6 w-6" />
                   </div>
                 </div>
@@ -148,7 +157,8 @@ const Attendance = () => {
                   Attendance Dashboard
                 </CardTitle>
                 <CardDescription className="text-slate-600 dark:text-slate-300 mt-2 text-base">
-                  Select students directly and record attendance with flexible timing and reasons
+                  Select students directly and record attendance with flexible
+                  timing and reasons
                 </CardDescription>
               </div>
             </div>
@@ -170,11 +180,15 @@ const Attendance = () => {
                       data-[state=active]:border-blue-500 data-[state=active]:bg-blue-50 dark:data-[state=active]:bg-blue-900/20
                       data-[state=active]:text-blue-700 dark:data-[state=active]:text-blue-300
                       hover:bg-slate-100 dark:hover:bg-slate-700/50
-                      ${isMobile ? 'flex-col gap-1 py-3' : ''}
+                      ${isMobile ? "flex-col gap-1 py-3" : ""}
                     `}
                   >
-                    <CalendarCheck className={`${isMobile ? 'h-5 w-5' : 'h-5 w-5'}`} />
-                    <span className={`${isMobile ? 'text-xs' : ''}`}>Take Attendance</span>
+                    <CalendarCheck
+                      className={`${isMobile ? "h-5 w-5" : "h-5 w-5"}`}
+                    />
+                    <span className={`${isMobile ? "text-xs" : ""}`}>
+                      Take Attendance
+                    </span>
                   </TabsTrigger>
                   <TabsTrigger
                     value="records"
@@ -184,11 +198,13 @@ const Attendance = () => {
                       data-[state=active]:border-purple-500 data-[state=active]:bg-purple-50 dark:data-[state=active]:bg-purple-900/20
                       data-[state=active]:text-purple-700 dark:data-[state=active]:text-purple-300
                       hover:bg-slate-100 dark:hover:bg-slate-700/50
-                      ${isMobile ? 'flex-col gap-1 py-3' : ''}
+                      ${isMobile ? "flex-col gap-1 py-3" : ""}
                     `}
                   >
-                    <Users className={`${isMobile ? 'h-5 w-5' : 'h-5 w-5'}`} />
-                    <span className={`${isMobile ? 'text-xs' : ''}`}>Attendance Records</span>
+                    <Users className={`${isMobile ? "h-5 w-5" : "h-5 w-5"}`} />
+                    <span className={`${isMobile ? "text-xs" : ""}`}>
+                      Attendance Records
+                    </span>
                   </TabsTrigger>
                 </TabsList>
               </div>
@@ -204,7 +220,8 @@ const Attendance = () => {
                         Record Student Attendance
                       </h3>
                       <p className="text-slate-600 dark:text-slate-400">
-                        Select students directly and set attendance with custom timing and reasons
+                        Select students directly and set attendance with custom
+                        timing and reasons
                       </p>
                     </div>
                     <AttendanceForm />
@@ -221,7 +238,8 @@ const Attendance = () => {
                         Attendance History
                       </h3>
                       <p className="text-slate-600 dark:text-slate-400">
-                        View and manage all attendance records across all students
+                        View and manage all attendance records across all
+                        students
                       </p>
                     </div>
                     <AttendanceTable />

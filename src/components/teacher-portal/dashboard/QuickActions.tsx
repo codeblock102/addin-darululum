@@ -1,7 +1,6 @@
-
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Plus, Users, Calendar, MessageSquare } from "lucide-react";
+import { Calendar, MessageSquare, Plus, Users } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 interface QuickActionsProps {

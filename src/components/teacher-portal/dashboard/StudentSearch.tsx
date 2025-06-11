@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 
 import { useQuery } from "@tanstack/react-query";
@@ -15,7 +14,6 @@ import { Loader2, Search, UserRound } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { AddStudentDialog } from "../students/AddStudentDialog.tsx";
 import { useRBAC } from "@/hooks/useRBAC.ts";
-
 
 interface StudentSearchProps {
   teacherId: string;
@@ -104,7 +102,7 @@ export const StudentSearch = ({ teacherId }: StudentSearchProps) => {
             <Search className="h-4 w-4" />
           </Button>
         </div>
-        
+
         {searchQuery && (
           <div className="text-sm text-muted-foreground">
             <div className="flex items-center gap-2 p-2 border rounded">

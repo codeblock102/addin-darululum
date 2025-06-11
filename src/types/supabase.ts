@@ -364,24 +364,27 @@ export type Database = {
         Row: {
           avatar_url: string | null;
           created_at: string | null;
-          full_name: string | null;
+          name: string | null;
           id: string;
+          role: string | null;
           updated_at: string | null;
           username: string | null;
         };
         Insert: {
           avatar_url?: string | null;
           created_at?: string | null;
-          full_name?: string | null;
+          name?: string | null;
           id: string;
+          role?: string | null;
           updated_at?: string | null;
           username?: string | null;
         };
         Update: {
           avatar_url?: string | null;
           created_at?: string | null;
-          full_name?: string | null;
+          name?: string | null;
           id?: string;
+          role?: string | null;
           updated_at?: string | null;
           username?: string | null;
         };
@@ -613,6 +616,7 @@ export type Database = {
           guardian_name: string | null;
           id: string;
           name: string;
+          medical_condition: string | null;
           status: Database["public"]["Enums"]["student_status"] | null;
         };
         Insert: {
@@ -625,6 +629,7 @@ export type Database = {
           guardian_name?: string | null;
           id?: string;
           name: string;
+          medical_condition?: string | null;
           status?: Database["public"]["Enums"]["student_status"] | null;
         };
         Update: {
@@ -637,6 +642,7 @@ export type Database = {
           guardian_name?: string | null;
           id?: string;
           name?: string;
+          medical_condition?: string | null;
           status?: Database["public"]["Enums"]["student_status"] | null;
         };
         Relationships: [];

@@ -1,7 +1,18 @@
-
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select.tsx";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select.tsx";
 import { Loader2 } from "lucide-react";
-import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form.tsx";
+import {
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form.tsx";
 import { UseFormReturn } from "react-hook-form";
 import { AttendanceFormValues } from "@/types/attendance-form.ts";
 
@@ -28,7 +39,7 @@ export function ClassSelector({
   selectedClassId,
   onClassChange,
   classesData,
-  label = "Class"
+  label = "Class",
 }: ClassSelectorProps) {
   const handleChange = (value: string) => {
     if (onClassChange) {
@@ -36,19 +47,19 @@ export function ClassSelector({
     }
   };
 
-  const triggerContent = isLoading ? (
-    <div className="flex items-center">
-      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-      Loading...
-    </div>
-  ) : (
-    <SelectValue placeholder={`Select a ${label.toLowerCase()}`} />
-  );
+  const triggerContent = isLoading
+    ? (
+      <div className="flex items-center">
+        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+        Loading...
+      </div>
+    )
+    : <SelectValue placeholder={`Select a ${label.toLowerCase()}`} />;
 
   return (
-    <FormField 
-      control={form.control} 
-      name="class_id" 
+    <FormField
+      control={form.control}
+      name="class_id"
       render={({ field }) => (
         <FormItem>
           <FormLabel>{label}</FormLabel>

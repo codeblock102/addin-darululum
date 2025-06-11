@@ -1,4 +1,3 @@
-
 export interface StudentLeaderboardData {
   id: string;
   name: string;

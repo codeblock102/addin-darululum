@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import {
   Card,
@@ -29,10 +28,11 @@ export const AdminMessageCompose = () => {
       <CardContent>
         <Alert>
           <AlertDescription>
-            Messaging functionality is currently disabled. Please contact the system administrator to enable this feature.
+            Messaging functionality is currently disabled. Please contact the
+            system administrator to enable this feature.
           </AlertDescription>
         </Alert>
-        
+
         <div className="mt-4">
           <AdminMessageForm
             selectedTeachers={selectedTeachers}

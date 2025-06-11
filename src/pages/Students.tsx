@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client.ts";
@@ -6,7 +5,14 @@ import { StudentDialog } from "@/components/students/StudentDialog.tsx";
 import { StudentList } from "@/components/students/StudentList.tsx";
 import { Input } from "@/components/ui/input.tsx";
 import { Button } from "@/components/ui/button.tsx";
-import { Search, UserPlus, Users, TrendingUp, UserCheck, GraduationCap } from "lucide-react";
+import {
+  GraduationCap,
+  Search,
+  TrendingUp,
+  UserCheck,
+  UserPlus,
+  Users,
+} from "lucide-react";
 import {
   Card,
   CardContent,
@@ -94,7 +100,6 @@ const Students = () => {
     avgAttendance,
   };
 
-
   const filteredStudents = students?.filter(
     (student) =>
       student.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -148,9 +153,9 @@ const Students = () => {
               </div>
             </div>
           </div>
-          
-          <Button 
-            onClick={handleAddStudent} 
+
+          <Button
+            onClick={handleAddStudent}
             className="gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-lg hover:shadow-xl transition-all duration-200 px-6 py-3 text-base font-medium"
             size="lg"
           >
@@ -174,22 +179,24 @@ const Students = () => {
               </div>
             </CardHeader>
             <CardContent className="pt-0">
-              {isLoadingStudents ? (
-                <div className="space-y-2">
-                  <Skeleton className="h-8 w-16" />
-                  <Skeleton className="h-4 w-24" />
-                </div>
-              ) : (
-                <div className="space-y-2">
-                  <div className="text-2xl sm:text-3xl font-bold text-gray-900">
-                    {stats.totalStudents}
+              {isLoadingStudents
+                ? (
+                  <div className="space-y-2">
+                    <Skeleton className="h-8 w-16" />
+                    <Skeleton className="h-4 w-24" />
                   </div>
-                  <p className="text-xs text-gray-600 flex items-center gap-1">
-                    <UserCheck className="h-3 w-3 text-green-500" />
-                    {stats.activeStudents} active
-                  </p>
-                </div>
-              )}
+                )
+                : (
+                  <div className="space-y-2">
+                    <div className="text-2xl sm:text-3xl font-bold text-gray-900">
+                      {stats.totalStudents}
+                    </div>
+                    <p className="text-xs text-gray-600 flex items-center gap-1">
+                      <UserCheck className="h-3 w-3 text-green-500" />
+                      {stats.activeStudents} active
+                    </p>
+                  </div>
+                )}
             </CardContent>
           </Card>
 
@@ -205,21 +212,26 @@ const Students = () => {
               </div>
             </CardHeader>
             <CardContent className="pt-0">
-              {isLoadingStudents ? (
-                <div className="space-y-2">
-                  <Skeleton className="h-8 w-16" />
-                  <Skeleton className="h-4 w-24" />
-                </div>
-              ) : (
-                <div className="space-y-2">
-                  <div className="text-2xl sm:text-3xl font-bold text-gray-900">
-                    {stats.activeStudents}
+              {isLoadingStudents
+                ? (
+                  <div className="space-y-2">
+                    <Skeleton className="h-8 w-16" />
+                    <Skeleton className="h-4 w-24" />
                   </div>
-                  <p className="text-xs text-gray-600">
-                    {((stats.activeStudents / stats.totalStudents) * 100).toFixed(0)}% of total
-                  </p>
-                </div>
-              )}
+                )
+                : (
+                  <div className="space-y-2">
+                    <div className="text-2xl sm:text-3xl font-bold text-gray-900">
+                      {stats.activeStudents}
+                    </div>
+                    <p className="text-xs text-gray-600">
+                      {stats.totalStudents > 0
+                        ? ((stats.activeStudents / stats.totalStudents) * 100)
+                          .toFixed(0)
+                        : 0}% of total
+                    </p>
+                  </div>
+                )}
             </CardContent>
           </Card>
 
@@ -235,36 +247,31 @@ const Students = () => {
               </div>
             </CardHeader>
             <CardContent className="pt-0">
-              {isLoadingStudents ? (
-                <div className="space-y-3">
-                  <Skeleton className="h-8 w-16" />
-                  <Skeleton className="h-2 w-full" />
-                  <Skeleton className="h-4 w-20" />
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  <div className="text-2xl sm:text-3xl font-bold text-gray-900">
-                    {stats.avgAttendance}%
+              {isLoadingStudents
+                ? (
+                  <div className="space-y-3">
+                    <Skeleton className="h-8 w-16" />
+                    <Skeleton className="h-2 w-full" />
+                    <Skeleton className="h-4 w-20" />
                   </div>
-                  <Progress 
-                    value={stats.avgAttendance} 
-                    className="h-2 bg-gray-200" 
-                  />
-                  <p className="text-xs text-gray-600">
-                    Last 30 days average
-                  </p>
-                </div>
-              )}
+                )
+                : (
+                  <div className="space-y-3">
+                    <div className="text-2xl sm:text-3xl font-bold text-gray-900">
+                      {stats.avgAttendance}%
+                    </div>
+                    <Progress
+                      value={stats.avgAttendance}
+                      className="h-2 bg-gray-200"
+                    />
+                    <p className="text-xs text-gray-600">
+                      Last 30 days average
+                    </p>
+                  </div>
+                )}
             </CardContent>
           </Card>
         </div>
-
-        <StudentList
-          students={filteredStudents}
-          isLoading={isLoadingStudents}
-          onEdit={handleEditStudent}
-        />
-      </div>
 
         {/* Enhanced Search and List Section */}
         <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg overflow-hidden">
@@ -279,7 +286,7 @@ const Students = () => {
                   Search and manage all student records
                 </p>
               </div>
-              
+
               <div className="relative w-full sm:w-auto">
                 <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
                 <Input
@@ -291,9 +298,13 @@ const Students = () => {
               </div>
             </div>
           </CardHeader>
-          
+
           <CardContent className="p-0">
-            <StudentList searchQuery={searchQuery} onEdit={handleEditStudent} />
+            <StudentList
+              students={filteredStudents}
+              isLoading={isLoadingStudents}
+              onEdit={handleEditStudent}
+            />
           </CardContent>
         </Card>
 

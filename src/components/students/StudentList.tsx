@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -23,9 +22,20 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog.tsx";
-import { Edit, Eye, Trash2, Users, Phone, Calendar, User, BookOpen, Award, GraduationCap } from "lucide-react";
+import {
+  Award,
+  BookOpen,
+  Calendar,
+  Edit,
+  Eye,
+  GraduationCap,
+  Phone,
+  Trash2,
+  User,
+  Users,
+} from "lucide-react";
 import { useToast } from "@/hooks/use-toast.ts";
-import { useIsMobile } from "@/hooks/use-mobile";
+import { useIsMobile } from "@/hooks/use-mobile.tsx";
 
 interface Student {
   id: string;
@@ -110,7 +120,10 @@ export const StudentList = ({
     return (
       <div className="p-6 space-y-4">
         {[...Array(5)].map((_, i) => (
-          <div key={i} className="flex items-center space-x-4 p-4 bg-white rounded-lg shadow-sm border">
+          <div
+            key={i}
+            className="flex items-center space-x-4 p-4 bg-white rounded-lg shadow-sm border"
+          >
             <Skeleton className="h-12 w-12 rounded-full" />
             <div className="space-y-2 flex-1">
               <Skeleton className="h-4 w-[200px]" />
@@ -137,10 +150,7 @@ export const StudentList = ({
           No students found
         </h3>
         <p className="text-gray-600 max-w-md">
-          {searchQuery 
-            ? "No students match your search criteria. Try adjusting your search terms."
-            : "No students have been added yet. Start by adding your first student."
-          }
+          No students match your search criteria or none have been added yet.
         </p>
       </div>
     );
@@ -150,7 +160,7 @@ export const StudentList = ({
   if (isMobile) {
     return (
       <div className="p-4 space-y-4">
-        {filteredStudents?.map((student) => (
+        {students?.map((student) => (
           <div
             key={student.id}
             className="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden cursor-pointer"
@@ -165,9 +175,13 @@ export const StudentList = ({
                       {student.name.substring(0, 2).toUpperCase()}
                     </span>
                   </div>
-                  <div className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-white ${
-                    student.status === "active" ? "bg-green-500" : "bg-red-500"
-                  }`} />
+                  <div
+                    className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-white ${
+                      student.status === "active"
+                        ? "bg-green-500"
+                        : "bg-red-500"
+                    }`}
+                  />
                 </div>
                 <div className="flex-1 min-w-0">
                   <h3 className="font-semibold text-gray-900 truncate">
@@ -202,7 +216,10 @@ export const StudentList = ({
                 {student.enrollment_date && (
                   <div className="flex items-center text-sm text-gray-600">
                     <Calendar className="h-4 w-4 mr-2 text-gray-400" />
-                    <span>Enrolled {new Date(student.enrollment_date).toLocaleDateString()}</span>
+                    <span>
+                      Enrolled{" "}
+                      {new Date(student.enrollment_date).toLocaleDateString()}
+                    </span>
                   </div>
                 )}
               </div>
@@ -211,7 +228,9 @@ export const StudentList = ({
               <div className="flex items-center justify-between mb-4 p-3 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg">
                 <div className="flex items-center space-x-2">
                   <BookOpen className="h-4 w-4 text-blue-600" />
-                  <span className="text-sm font-medium text-gray-700">Current Juz</span>
+                  <span className="text-sm font-medium text-gray-700">
+                    Current Juz
+                  </span>
                 </div>
                 <span className="text-sm font-bold text-blue-600">
                   {student.current_juz ?? "Not Set"}
@@ -222,7 +241,9 @@ export const StudentList = ({
                 <div className="mb-4">
                   <div className="flex items-center space-x-2 mb-2">
                     <Award className="h-4 w-4 text-amber-500" />
-                    <span className="text-sm font-medium text-gray-700">Completed Juz</span>
+                    <span className="text-sm font-medium text-gray-700">
+                      Completed Juz
+                    </span>
                   </div>
                   <div className="flex flex-wrap gap-1">
                     {student.completed_juz.slice(0, 5).map((juz) => (
@@ -290,24 +311,38 @@ export const StudentList = ({
       <Table>
         <TableHeader>
           <TableRow className="bg-gray-50/50 border-b">
-            <TableHead className="font-semibold text-gray-700">Student</TableHead>
-            <TableHead className="font-semibold text-gray-700">Guardian</TableHead>
-            <TableHead className="font-semibold text-gray-700">Contact</TableHead>
-            <TableHead className="font-semibold text-gray-700">Enrollment</TableHead>
-            <TableHead className="font-semibold text-gray-700">Current Juz</TableHead>
-            <TableHead className="font-semibold text-gray-700">Completed</TableHead>
-            <TableHead className="font-semibold text-gray-700">Status</TableHead>
-            <TableHead className="text-right font-semibold text-gray-700">Actions</TableHead>
+            <TableHead className="font-semibold text-gray-700">
+              Student
+            </TableHead>
+            <TableHead className="font-semibold text-gray-700">
+              Guardian
+            </TableHead>
+            <TableHead className="font-semibold text-gray-700">
+              Contact
+            </TableHead>
+            <TableHead className="font-semibold text-gray-700">
+              Enrollment
+            </TableHead>
+            <TableHead className="font-semibold text-gray-700">
+              Current Juz
+            </TableHead>
+            <TableHead className="font-semibold text-gray-700">
+              Completed
+            </TableHead>
+            <TableHead className="font-semibold text-gray-700">
+              Status
+            </TableHead>
+            <TableHead className="text-right font-semibold text-gray-700">
+              Actions
+            </TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-
-          {students?.map((student) => (
-            
+          {students?.map((student, index) => (
             <TableRow
               key={student.id}
               className={`transition-colors hover:bg-blue-50/50 cursor-pointer group ${
-                index % 2 === 0 ? 'bg-white' : 'bg-gray-50/30'
+                index % 2 === 0 ? "bg-white" : "bg-gray-50/30"
               }`}
               onClick={() => navigate(`/students/${student.id}`)}
             >
@@ -319,13 +354,21 @@ export const StudentList = ({
                         {student.name.substring(0, 2).toUpperCase()}
                       </span>
                     </div>
-                    <div className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-white ${
-                      student.status === "active" ? "bg-green-500" : "bg-red-500"
-                    }`} />
+                    <div
+                      className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-white ${
+                        student.status === "active"
+                          ? "bg-green-500"
+                          : "bg-red-500"
+                      }`}
+                    />
                   </div>
                   <div>
-                    <div className="font-medium text-gray-900">{student.name}</div>
-                    <div className="text-sm text-gray-500">ID: {student.id.slice(0, 8)}...</div>
+                    <div className="font-medium text-gray-900">
+                      {student.name}
+                    </div>
+                    <div className="text-sm text-gray-500">
+                      ID: {student.id.slice(0, 8)}...
+                    </div>
                   </div>
                 </div>
               </TableCell>
@@ -334,26 +377,33 @@ export const StudentList = ({
               </TableCell>
               <TableCell className="text-gray-700">
                 <div className="flex items-center space-x-1">
-                  {student.guardian_contact ? (
-                    <>
-                      <Phone className="h-3 w-3 text-gray-400" />
-                      <span>{student.guardian_contact}</span>
-                    </>
-                  ) : (
-                    "—"
-                  )}
+                  {student.guardian_contact
+                    ? (
+                      <>
+                        <Phone className="h-3 w-3 text-gray-400" />
+                        <span>{student.guardian_contact}</span>
+                      </>
+                    )
+                    : (
+                      "—"
+                    )}
                 </div>
               </TableCell>
               <TableCell className="text-gray-700">
                 <div className="flex items-center space-x-1">
-                  {student.enrollment_date ? (
-                    <>
-                      <Calendar className="h-3 w-3 text-gray-400" />
-                      <span>{new Date(student.enrollment_date).toLocaleDateString()}</span>
-                    </>
-                  ) : (
-                    "—"
-                  )}
+                  {student.enrollment_date
+                    ? (
+                      <>
+                        <Calendar className="h-3 w-3 text-gray-400" />
+                        <span>
+                          {new Date(student.enrollment_date)
+                            .toLocaleDateString()}
+                        </span>
+                      </>
+                    )
+                    : (
+                      "—"
+                    )}
                 </div>
               </TableCell>
               <TableCell>
@@ -365,25 +415,25 @@ export const StudentList = ({
                 </div>
               </TableCell>
               <TableCell>
-                {student.completed_juz && student.completed_juz.length > 0 ? (
-                  <div className="flex flex-wrap gap-1 max-w-32">
-                    {student.completed_juz.slice(0, 3).map((juz) => (
-                      <span
-                        key={juz}
-                        className="px-2 py-1 bg-amber-100 text-amber-800 text-xs rounded-full font-medium"
-                      >
-                        {juz}
-                      </span>
-                    ))}
-                    {student.completed_juz.length > 3 && (
-                      <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full">
-                        +{student.completed_juz.length - 3}
-                      </span>
-                    )}
-                  </div>
-                ) : (
-                  <span className="text-gray-400 italic">None</span>
-                )}
+                {student.completed_juz && student.completed_juz.length > 0
+                  ? (
+                    <div className="flex flex-wrap gap-1 max-w-32">
+                      {student.completed_juz.slice(0, 3).map((juz) => (
+                        <span
+                          key={juz}
+                          className="px-2 py-1 bg-amber-100 text-amber-800 text-xs rounded-full font-medium"
+                        >
+                          {juz}
+                        </span>
+                      ))}
+                      {student.completed_juz.length > 3 && (
+                        <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full">
+                          +{student.completed_juz.length - 3}
+                        </span>
+                      )}
+                    </div>
+                  )
+                  : <span className="text-gray-400 italic">None</span>}
               </TableCell>
               <TableCell>
                 <span

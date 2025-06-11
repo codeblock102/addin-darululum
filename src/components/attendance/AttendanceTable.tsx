@@ -59,27 +59,28 @@ export function AttendanceTable({ teacherId }: AttendanceTableProps) {
         return [];
       }
 
-      return data.map(record => ({
+      return data.map((record) => ({
         id: record.id,
         date: record.date,
         status: record.status,
         notes: record.notes,
-        student_id: record.student_id || '',
-        class_id: record.class_id || '',
+        student_id: record.student_id || "",
+        class_id: record.class_id || "",
         students: record.students,
-        classes: record.classes
+        classes: record.classes,
       }));
     },
   });
 
   // Filter records by search query
-  const filteredRecords = attendanceRecords?.filter((record) =>
-    record.students?.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    record.status.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    (record.classes?.name?.toLowerCase() || "").includes(
-      searchQuery.toLowerCase(),
-    )
-  ) || [];
+  const filteredRecords =
+    attendanceRecords?.filter((record) =>
+      record.students?.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      record.status.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (record.classes?.name?.toLowerCase() || "").includes(
+        searchQuery.toLowerCase(),
+      )
+    ) || [];
 
   // Function to handle search input changes
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -111,7 +112,7 @@ export function AttendanceTable({ teacherId }: AttendanceTableProps) {
                 />
               </div>
             </div>
-            
+
             {hasFilters && (
               <div className="flex items-center justify-between pt-2 border-t border-slate-200 dark:border-slate-600">
                 <p className="text-sm text-slate-600 dark:text-slate-400">
@@ -132,32 +133,37 @@ export function AttendanceTable({ teacherId }: AttendanceTableProps) {
       {/* Content Section */}
       <Card className="border-slate-200 dark:border-slate-700 shadow-lg">
         <CardContent className="p-0">
-          {isLoading ? (
-            <div className="flex justify-center items-center py-16">
-              <div className="space-y-4 text-center">
-                <div className="relative">
-                  <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-200 border-t-blue-600 mx-auto"></div>
+          {isLoading
+            ? (
+              <div className="flex justify-center items-center py-16">
+                <div className="space-y-4 text-center">
+                  <div className="relative">
+                    <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-200 border-t-blue-600 mx-auto">
+                    </div>
+                  </div>
+                  <p className="text-slate-600 dark:text-slate-400 font-medium">
+                    Loading attendance records...
+                  </p>
                 </div>
-                <p className="text-slate-600 dark:text-slate-400 font-medium">
-                  Loading attendance records...
-                </p>
               </div>
-            </div>
-          ) : !filteredRecords?.length ? (
-            <div className="p-8">
-              <AttendanceEmptyState
-                hasFilters={hasFilters}
-                resetFilters={resetFilters}
-              />
-            </div>
-          ) : (
-            <div className={`${isMobile ? 'p-4' : 'p-6'}`}>
-              <AttendanceDataTable
-                isLoading={isLoading}
-                attendanceRecords={filteredRecords}
-              />
-            </div>
-          )}
+            )
+            : !filteredRecords?.length
+            ? (
+              <div className="p-8">
+                <AttendanceEmptyState
+                  hasFilters={hasFilters}
+                  resetFilters={resetFilters}
+                />
+              </div>
+            )
+            : (
+              <div className={`${isMobile ? "p-4" : "p-6"}`}>
+                <AttendanceDataTable
+                  isLoading={isLoading}
+                  attendanceRecords={filteredRecords}
+                />
+              </div>
+            )}
         </CardContent>
       </Card>
     </div>

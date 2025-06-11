@@ -1,4 +1,3 @@
-
 /**
  * @file src/contexts/AuthContext.tsx
  * @summary This file defines the authentication context and provider for the application.

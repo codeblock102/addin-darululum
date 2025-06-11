@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -8,14 +7,9 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@/components/ui/tabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { GraduationCap } from "lucide-react";
-import { GradingProps, GradeData } from "./grading/types";
+import { GradeData, GradingProps } from "./grading/types";
 import { useGradingData, useStudentGrades } from "./grading/useGradingData";
 import { StudentsOverviewTable } from "./grading/StudentsOverviewTable";
 import { GradeForm } from "./grading/GradeForm";
@@ -30,7 +24,9 @@ export const TeacherGrading = ({ teacherId }: GradingProps) => {
     notes: "",
   });
 
-  const { students, studentsLoading, submitGradeMutation } = useGradingData(teacherId);
+  const { students, studentsLoading, submitGradeMutation } = useGradingData(
+    teacherId,
+  );
   const { data: studentGrades } = useStudentGrades(selectedStudent, students);
 
   const handleSubmitGrade = (e: React.FormEvent) => {
@@ -53,7 +49,7 @@ export const TeacherGrading = ({ teacherId }: GradingProps) => {
             notes: "",
           });
         },
-      }
+      },
     );
   };
 

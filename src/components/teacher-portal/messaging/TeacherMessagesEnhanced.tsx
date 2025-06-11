@@ -1,4 +1,3 @@
-
 import { useToast } from "@/hooks/use-toast";
 import {
   Card,
@@ -41,7 +40,12 @@ export const TeacherMessagesEnhanced = ({
                 Communicate with other teachers and administrators
               </CardDescription>
             </div>
-            <Button variant="outline" onClick={handleRefresh} size="sm" disabled>
+            <Button
+              variant="outline"
+              onClick={handleRefresh}
+              size="sm"
+              disabled
+            >
               <RefreshCcw className="h-4 w-4 mr-2" />
               Refresh
             </Button>
@@ -50,7 +54,8 @@ export const TeacherMessagesEnhanced = ({
         <CardContent>
           <Alert>
             <AlertDescription>
-              Messaging functionality is currently disabled. Please contact the system administrator to enable this feature.
+              Messaging functionality is currently disabled. Please contact the
+              system administrator to enable this feature.
             </AlertDescription>
           </Alert>
         </CardContent>

@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button.tsx";
 import { Loader2, Send } from "lucide-react";
@@ -44,13 +43,18 @@ export const MessageCompose = ({
     <form onSubmit={handleSendMessage} className="space-y-4">
       <Alert>
         <AlertDescription>
-          Messaging functionality is currently disabled. Please contact the system administrator to enable this feature.
+          Messaging functionality is currently disabled. Please contact the
+          system administrator to enable this feature.
         </AlertDescription>
       </Alert>
-      
+
       <div className="space-y-2">
         <Label>Recipient</Label>
-        <Select value={selectedRecipient} onValueChange={setSelectedRecipient} disabled>
+        <Select
+          value={selectedRecipient}
+          onValueChange={setSelectedRecipient}
+          disabled
+        >
           <SelectTrigger>
             <SelectValue placeholder="Select recipient" />
           </SelectTrigger>

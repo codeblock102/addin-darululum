@@ -44,11 +44,11 @@ export const MyStudents = ({ teacherId }: MyStudentsProps) => {
   const isMobile = useIsMobile();
 
   const { data: teacherData, isLoading: isLoadingTeacher } = useQuery({
-    queryKey: ["teacherData", teacherId],
+    queryKey: ["profileData", teacherId],
     queryFn: async () => {
       if (!teacherId) return null;
       const { data, error } = await supabase
-        .from("teachers")
+        .from("profiles")
         .select("madrassah_id, section")
         .eq("id", teacherId)
         .single();
@@ -61,7 +61,6 @@ export const MyStudents = ({ teacherId }: MyStudentsProps) => {
     enabled: !!teacherId,
   });
 
-  // Fetch all students instead of just assigned ones
   const { data: students, isLoading } = useQuery({
     queryKey: ["students-for-teacher", teacherData],
     queryFn: async () => {

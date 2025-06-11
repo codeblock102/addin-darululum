@@ -35,9 +35,10 @@ export const ProfileNotFound = (
     try {
       // Check if profile already exists
       const { data, error } = await supabase
-        .from("teachers")
+        .from("profiles")
         .select("id")
         .eq("email", email)
+        .eq("role", "teacher")
         .maybeSingle();
 
       if (error) throw error;

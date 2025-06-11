@@ -1,5 +1,9 @@
-
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { ClassFormData } from "./validation/classFormSchema";
 
 export interface ClassDialogProps {
@@ -18,9 +22,7 @@ export const ClassDialog = ({ onClose, selectedClass }: ClassDialogProps) => {
         </DialogHeader>
         <div className="p-4">
           <p>Class dialog content goes here</p>
-          {selectedClass && (
-            <p>Editing class: {selectedClass.id}</p>
-          )}
+          {selectedClass && <p>Editing class: {selectedClass.id}</p>}
         </div>
       </DialogContent>
     </Dialog>

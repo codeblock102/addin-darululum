@@ -1,4 +1,3 @@
-
 import { ClassFormData } from "./validation/classFormSchema";
 
 interface ClassListProps {

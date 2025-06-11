@@ -1,6 +1,11 @@
-
 import { Slider } from "@/components/ui/slider.tsx";
-import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form.tsx";
+import {
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form.tsx";
 import { UseFormReturn } from "react-hook-form";
 import { AttendanceFormValues } from "@/types/attendance-form.ts";
 
@@ -12,11 +17,14 @@ export function SliderTimeSelector({ form }: SliderTimeSelectorProps) {
   const timeValue = form.watch("time");
 
   // Parse current time value or default to 8:00
-  const [currentHour, currentMinute] = timeValue ?
-    timeValue.split(':').map(Number) : [8, 0];
+  const [currentHour, currentMinute] = timeValue
+    ? timeValue.split(":").map(Number)
+    : [8, 0];
 
   const handleTimeChange = (hour: number, minute: number) => {
-    const timeString = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
+    const timeString = `${hour.toString().padStart(2, "0")}:${
+      minute.toString().padStart(2, "0")
+    }`;
     form.setValue("time", timeString);
   };
 
@@ -34,13 +42,18 @@ export function SliderTimeSelector({ form }: SliderTimeSelectorProps) {
               {/* Current Time Display */}
               <div className="text-center">
                 <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                  {currentHour.toString().padStart(2, '0')}:{currentMinute.toString().padStart(2, '0')}
+                  {currentHour.toString().padStart(2, "0")}:{currentMinute
+                    .toString().padStart(2, "0")}
                 </div>
                 <div className="text-sm text-gray-600 dark:text-gray-400">
-                  {new Date(`2000-01-01T${currentHour.toString().padStart(2, '0')}:${currentMinute.toString().padStart(2, '0')}`).toLocaleTimeString('en-US', {
-                    hour: 'numeric',
-                    minute: '2-digit',
-                    hour12: true
+                  {new Date(
+                    `2000-01-01T${currentHour.toString().padStart(2, "0")}:${
+                      currentMinute.toString().padStart(2, "0")
+                    }`,
+                  ).toLocaleTimeString("en-US", {
+                    hour: "numeric",
+                    minute: "2-digit",
+                    hour12: true,
                   })}
                 </div>
               </div>
@@ -52,7 +65,8 @@ export function SliderTimeSelector({ form }: SliderTimeSelectorProps) {
                 </label>
                 <Slider
                   value={[currentHour]}
-                  onValueChange={(value) => handleTimeChange(value[0], currentMinute)}
+                  onValueChange={(value) =>
+                    handleTimeChange(value[0], currentMinute)}
                   max={23}
                   min={0}
                   step={1}
@@ -72,7 +86,8 @@ export function SliderTimeSelector({ form }: SliderTimeSelectorProps) {
                 </label>
                 <Slider
                   value={[currentMinute]}
-                  onValueChange={(value) => handleTimeChange(currentHour, value[0])}
+                  onValueChange={(value) =>
+                    handleTimeChange(currentHour, value[0])}
                   max={59}
                   min={0}
                   step={1}
