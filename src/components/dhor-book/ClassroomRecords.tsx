@@ -40,7 +40,7 @@ import { format } from "date-fns";
 import { useNavigate } from "react-router-dom";
 
 interface ClassroomRecordsProps {
-  teacherId: string;
+  teacherId?: string;
   isAdmin: boolean;
 }
 

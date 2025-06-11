@@ -35,7 +35,9 @@ interface UseAttendanceSubmitProps {
   onError?: (error: Error) => void;
 }
 
-export function useAttendanceSubmit({ onSuccess, onError }: UseAttendanceSubmitProps = {}) {
+export function useAttendanceSubmit(
+  { onSuccess, onError }: UseAttendanceSubmitProps = {},
+) {
   const [selectedStudent, setSelectedStudent] = useState<string>("");
   const [selectedReason, setSelectedReason] = useState<string>("");
   const { toast } = useToast();
@@ -57,7 +59,9 @@ export function useAttendanceSubmit({ onSuccess, onError }: UseAttendanceSubmitP
 
   const selectedDate = form.watch("date");
   const watchedStudentId = form.watch("student_id");
-  const formattedDate = selectedDate ? format(selectedDate, "yyyy-MM-dd") : format(today, "yyyy-MM-dd");
+  const formattedDate = selectedDate
+    ? format(selectedDate, "yyyy-MM-dd")
+    : format(today, "yyyy-MM-dd");
 
   // Update selectedStudent when form student_id changes
   useEffect(() => {
@@ -101,7 +105,9 @@ export function useAttendanceSubmit({ onSuccess, onError }: UseAttendanceSubmitP
       }
       toast({
         title: "Existing Record Found",
-        description: `Loading attendance record for ${format(selectedDate || today, "MMM dd, yyyy")}`,
+        description: `Loading attendance record for ${
+          format(selectedDate || today, "MMM dd, yyyy")
+        }`,
       });
     } else if (selectedStudent && selectedDate) {
       // Reset form for new record

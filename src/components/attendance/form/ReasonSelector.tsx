@@ -1,7 +1,12 @@
-
 import { ScrollArea } from "@/components/ui/scroll-area.tsx";
 import { Button } from "@/components/ui/button.tsx";
-import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form.tsx";
+import {
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form.tsx";
 import { UseFormReturn } from "react-hook-form";
 import { AttendanceStatus } from "@/types/attendance.ts";
 
@@ -21,7 +26,10 @@ interface ReasonSelectorProps {
   showOnlyForLate?: boolean;
 }
 
-export function ReasonSelector({ form, selectedReason, onReasonSelect, showOnlyForLate = true }: ReasonSelectorProps) {
+export function ReasonSelector(
+  { form, selectedReason, onReasonSelect, showOnlyForLate = true }:
+    ReasonSelectorProps,
+) {
   const predefinedReasons = [
     "Sick",
     "Family Emergency",
@@ -32,11 +40,11 @@ export function ReasonSelector({ form, selectedReason, onReasonSelect, showOnlyF
     "Personal Issue",
     "Weather Conditions",
     "Car Trouble",
-    "Other"
+    "Other",
   ];
 
   const currentStatus = form.watch("status");
-  
+
   // Only show reason selector for late status if showOnlyForLate is true
   if (showOnlyForLate && currentStatus !== "late") {
     return null;
@@ -58,7 +66,9 @@ export function ReasonSelector({ form, selectedReason, onReasonSelect, showOnlyF
                   <Button
                     key={reason}
                     type="button"
-                    variant={selectedReason === reason || field.value === reason ? "default" : "outline"}
+                    variant={selectedReason === reason || field.value === reason
+                      ? "default"
+                      : "outline"}
                     size="sm"
                     className={`w-full justify-start font-medium transition-all ${
                       selectedReason === reason || field.value === reason

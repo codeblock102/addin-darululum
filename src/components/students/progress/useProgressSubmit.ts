@@ -19,14 +19,14 @@ export const useProgressSubmit = (studentId: string) => {
 
       try {
         // First, check if user is a teacher
-        const { data: teacherData, error: teacherError } = await supabase
-          .from("teachers")
+        const { data: profileData, error: profileError } = await supabase
+          .from("profiles")
           .select("id, name")
           .eq("email", session.user.email)
           .single();
 
-        if (!teacherError && teacherData) {
-          setContributorName(`Teacher ${teacherData.name}`);
+        if (!profileError && profileData) {
+          setContributorName(`Teacher ${profileData.name}`);
           return;
         }
 
@@ -46,16 +46,16 @@ export const useProgressSubmit = (studentId: string) => {
 
     try {
       // First, check if user is a teacher
-      const { data: teacherData, error: teacherError } = await supabase
-        .from("teachers")
+      const { data: profileData, error: profileError } = await supabase
+        .from("profiles")
         .select("id, name")
         .eq("email", session.user.email)
         .single();
 
-      if (!teacherError && teacherData) {
+      if (!profileError && profileData) {
         return {
-          contributor_id: teacherData.id,
-          contributor_name: `Teacher ${teacherData.name}`,
+          contributor_id: profileData.id,
+          contributor_name: `Teacher ${profileData.name}`,
         };
       }
 

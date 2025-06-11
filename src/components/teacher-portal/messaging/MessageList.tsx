@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area.tsx";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar.tsx";
@@ -73,7 +72,8 @@ export const MessageList = ({
     <ScrollArea className="h-[400px]">
       <Alert className="mb-4">
         <AlertDescription>
-          Messaging functionality is currently disabled. Please contact the system administrator to enable this feature.
+          Messaging functionality is currently disabled. Please contact the
+          system administrator to enable this feature.
         </AlertDescription>
       </Alert>
       <div className="text-center p-6 text-muted-foreground">

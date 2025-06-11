@@ -1,4 +1,3 @@
-
 import {
   Table,
   TableBody,
@@ -8,7 +7,7 @@ import {
   TableRow,
 } from "@/components/ui/table.tsx";
 import { Button } from "@/components/ui/button.tsx";
-import { Trash2, UserPlus, UserMinus } from "lucide-react";
+import { Trash2, UserMinus, UserPlus } from "lucide-react";
 import { Student, StudentAssignment } from "../MyStudents.tsx";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client.ts";
@@ -17,7 +16,9 @@ import { useToast } from "@/hooks/use-toast.ts";
 interface StudentTableProps {
   students: Student[];
   assignedStudents?: StudentAssignment[];
-  setStudentToDelete: (student: { id: string; name: string; studentId: string } | null) => void;
+  setStudentToDelete: (
+    student: { id: string; name: string; studentId: string } | null,
+  ) => void;
   setIsDeleteDialogOpen: (open: boolean) => void;
   setIsDeleteType: (type: "remove" | "delete") => void;
 }
@@ -33,7 +34,9 @@ export const StudentTable = ({
   const queryClient = useQueryClient();
 
   const addStudentMutation = useMutation({
-    mutationFn: async ({ teacherId, studentName }: { teacherId: string; studentName: string }) => {
+    mutationFn: async (
+      { teacherId, studentName }: { teacherId: string; studentName: string },
+    ) => {
       const { error } = await supabase
         .from("students_teachers")
         .insert({
@@ -47,9 +50,12 @@ export const StudentTable = ({
     onSuccess: (_, variables) => {
       toast({
         title: "Student added",
-        description: `${variables.studentName} has been added to your students.`,
+        description:
+          `${variables.studentName} has been added to your students.`,
       });
-      queryClient.invalidateQueries({ queryKey: ["teacher-student-assignments"] });
+      queryClient.invalidateQueries({
+        queryKey: ["teacher-student-assignments"],
+      });
       queryClient.invalidateQueries({ queryKey: ["teacher-students-details"] });
     },
     onError: (error) => {
@@ -68,7 +74,9 @@ export const StudentTable = ({
   };
 
   const handleRemoveStudent = (student: Student) => {
-    const assignment = assignedStudents.find(a => a.student_name === student.name);
+    const assignment = assignedStudents.find((a) =>
+      a.student_name === student.name
+    );
     if (assignment) {
       setStudentToDelete({
         id: assignment.id,
@@ -91,7 +99,9 @@ export const StudentTable = ({
   };
 
   const isStudentAssigned = (studentName: string) => {
-    return assignedStudents.some(assignment => assignment.student_name === studentName);
+    return assignedStudents.some((assignment) =>
+      assignment.student_name === studentName
+    );
   };
 
   return (
@@ -99,10 +109,18 @@ export const StudentTable = ({
       <Table>
         <TableHeader>
           <TableRow className="bg-gray-50">
-            <TableHead className="font-semibold text-gray-700">Student</TableHead>
-            <TableHead className="font-semibold text-gray-700">Enrollment Date</TableHead>
-            <TableHead className="font-semibold text-gray-700">Status</TableHead>
-            <TableHead className="text-right font-semibold text-gray-700">Actions</TableHead>
+            <TableHead className="font-semibold text-gray-700">
+              Student
+            </TableHead>
+            <TableHead className="font-semibold text-gray-700">
+              Enrollment Date
+            </TableHead>
+            <TableHead className="font-semibold text-gray-700">
+              Status
+            </TableHead>
+            <TableHead className="text-right font-semibold text-gray-700">
+              Actions
+            </TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -112,20 +130,26 @@ export const StudentTable = ({
               <TableRow
                 key={student.id}
                 className={`transition-colors hover:bg-gray-50 ${
-                  isAssigned ? 'bg-blue-50' : ''
+                  isAssigned ? "bg-blue-50" : ""
                 }`}
               >
                 <TableCell>
                   <div className="flex items-center space-x-3">
-                    <div className={`h-10 w-10 rounded-full flex items-center justify-center text-white font-semibold ${
-                      isAssigned ? 'bg-blue-600' : 'bg-gray-400'
-                    }`}>
+                    <div
+                      className={`h-10 w-10 rounded-full flex items-center justify-center text-white font-semibold ${
+                        isAssigned ? "bg-blue-600" : "bg-gray-400"
+                      }`}
+                    >
                       {student.name.substring(0, 2).toUpperCase()}
                     </div>
                     <div>
-                      <div className="font-medium text-gray-900">{student.name}</div>
+                      <div className="font-medium text-gray-900">
+                        {student.name}
+                      </div>
                       {isAssigned && (
-                        <div className="text-sm text-blue-600">Assigned to you</div>
+                        <div className="text-sm text-blue-600">
+                          Assigned to you
+                        </div>
                       )}
                     </div>
                   </div>
@@ -148,28 +172,30 @@ export const StudentTable = ({
                 </TableCell>
                 <TableCell className="text-right">
                   <div className="flex justify-end gap-2">
-                    {isAssigned ? (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleRemoveStudent(student)}
-                        className="text-red-500 hover:text-red-600 hover:bg-red-50"
-                      >
-                        <UserMinus className="h-4 w-4 mr-1" />
-                        Remove
-                      </Button>
-                    ) : (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleAddStudent(student.name)}
-                        disabled={addStudentMutation.isPending}
-                        className="text-blue-500 hover:text-blue-600 hover:bg-blue-50"
-                      >
-                        <UserPlus className="h-4 w-4 mr-1" />
-                        {addStudentMutation.isPending ? "Adding..." : "Add"}
-                      </Button>
-                    )}
+                    {isAssigned
+                      ? (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleRemoveStudent(student)}
+                          className="text-red-500 hover:text-red-600 hover:bg-red-50"
+                        >
+                          <UserMinus className="h-4 w-4 mr-1" />
+                          Remove
+                        </Button>
+                      )
+                      : (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleAddStudent(student.name)}
+                          disabled={addStudentMutation.isPending}
+                          className="text-blue-500 hover:text-blue-600 hover:bg-blue-50"
+                        >
+                          <UserPlus className="h-4 w-4 mr-1" />
+                          {addStudentMutation.isPending ? "Adding..." : "Add"}
+                        </Button>
+                      )}
                     <Button
                       variant="outline"
                       size="sm"

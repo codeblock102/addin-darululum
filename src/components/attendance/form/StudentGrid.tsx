@@ -1,11 +1,16 @@
-
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client.ts";
 import { Card, CardContent } from "@/components/ui/card.tsx";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar.tsx";
 import { Loader2 } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area.tsx";
-import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form.tsx";
+import {
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form.tsx";
 import { UseFormReturn } from "react-hook-form";
 import { getInitials } from "@/utils/stringUtils.ts";
 import { AttendanceFormValues } from "@/types/attendance-form.ts";
@@ -17,7 +22,9 @@ interface StudentGridProps {
   selectedClassId?: string;
 }
 
-export function StudentGrid({ form, selectedStudent, onStudentSelect }: StudentGridProps) {
+export function StudentGrid(
+  { form, selectedStudent, onStudentSelect }: StudentGridProps,
+) {
   const { data: students, isLoading } = useQuery({
     queryKey: ["all-students-grid"],
     queryFn: async () => {
@@ -63,7 +70,8 @@ export function StudentGrid({ form, selectedStudent, onStudentSelect }: StudentG
                   <Card
                     key={student.id}
                     className={`cursor-pointer transition-all duration-200 hover:shadow-lg border-2 ${
-                      selectedStudent === student.id || field.value === student.id
+                      selectedStudent === student.id ||
+                        field.value === student.id
                         ? "ring-2 ring-blue-500 bg-blue-50 dark:bg-blue-900/30 border-blue-500 shadow-md"
                         : "hover:bg-gray-50 dark:hover:bg-gray-700 border-gray-200 dark:border-gray-600 hover:border-blue-300"
                     }`}

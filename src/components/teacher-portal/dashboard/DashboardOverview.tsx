@@ -1,4 +1,3 @@
-
 import { StudentSearch } from "./StudentSearch";
 import { QuickActions } from "./QuickActions";
 import { TodayStudents } from "./TodayStudents";
@@ -20,7 +19,7 @@ export const DashboardOverview = ({ teacherId }: DashboardOverviewProps) => {
           <QuickActions teacherId={teacherId} />
         </div>
       </div>
-      
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
         <div className="order-3 lg:order-3">
           <TodayStudents teacherId={teacherId} />

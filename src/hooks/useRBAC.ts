@@ -53,14 +53,14 @@ export const useRBAC = () => {
             session.user.email,
           );
           try {
-            const { data: teacherData, error } = await supabase
-              .from("teachers")
-              .select("id")
+            const { data: profileData, error } = await supabase
+              .from("profiles")
+              .select("id, role")
               .eq("email", session.user.email)
               .maybeSingle();
 
-            if (teacherData) {
-              console.log("Found teacher profile:", teacherData);
+            if (profileData && profileData.role === "teacher") {
+              console.log("Found teacher profile:", profileData);
               userRole = "teacher";
               localStorage.setItem("userRole", userRole);
             } else {

@@ -1,6 +1,5 @@
-
 import { Teacher } from "@/types/teacher";
-import { BookOpen, User, Mail, Phone } from "lucide-react";
+import { BookOpen, Mail, Phone, User } from "lucide-react";
 import { Card } from "@/components/ui/card";
 
 interface DashboardHeaderProps {
@@ -11,13 +10,15 @@ export const DashboardHeader = ({ teacher }: DashboardHeaderProps) => {
   return (
     <div className="relative mb-6">
       {/* Enhanced gradient background with better mobile design */}
-      <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 via-indigo-500/5 to-blue-500/10 rounded-2xl -z-10"></div>
+      <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 via-indigo-500/5 to-blue-500/10 rounded-2xl -z-10">
+      </div>
 
       <Card className="overflow-hidden border-0 shadow-lg bg-white/80 backdrop-blur-sm">
         <div className="relative">
           {/* Decorative pattern overlay */}
-          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-purple-500/10 to-transparent rounded-bl-full"></div>
-          
+          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-purple-500/10 to-transparent rounded-bl-full">
+          </div>
+
           <div className="p-6 sm:p-8">
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6">
               {/* Enhanced avatar section */}
@@ -94,7 +95,9 @@ export const DashboardHeader = ({ teacher }: DashboardHeaderProps) => {
               <div className="mt-4 pt-4 border-t border-gray-100">
                 <div className="flex items-start gap-2">
                   <User className="h-4 w-4 text-gray-400 mt-0.5 flex-shrink-0" />
-                  <p className="text-sm text-gray-700 leading-relaxed">{teacher.bio}</p>
+                  <p className="text-sm text-gray-700 leading-relaxed">
+                    {teacher.bio}
+                  </p>
                 </div>
               </div>
             )}

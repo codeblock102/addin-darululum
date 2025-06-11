@@ -28,7 +28,7 @@ const CreateTeacherProfileForTestAccount = () => {
       try {
         setIsChecking(true);
         const { data, error } = await supabase
-          .from("teachers")
+          .from("profiles")
           .select("*")
           .eq("email", testEmail)
           .maybeSingle();
@@ -53,7 +53,7 @@ const CreateTeacherProfileForTestAccount = () => {
 
     try {
       const { error } = await supabase
-        .from("teachers")
+        .from("profiles")
         .insert([
           {
             name: "Mufti Ammar Mulla",
@@ -61,6 +61,7 @@ const CreateTeacherProfileForTestAccount = () => {
             subject: "Islamic Studies",
             bio:
               "Islamic studies educator with expertise in Quranic teachings.",
+            role: "teacher",
           },
         ])
         .select("id, name, email, subject, bio, phone");

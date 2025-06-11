@@ -1,4 +1,3 @@
-
 import { Student } from "./types";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -93,19 +92,27 @@ export const StudentsOverviewTable = ({
               <TableCell>{student.current_surah || "N/A"}</TableCell>
               <TableCell>{student.current_juz || "N/A"}</TableCell>
               <TableCell>
-                {student.memorization_quality ? (
-                  <div className="flex flex-col gap-1">
-                    <span className={getQualityColor(student.memorization_quality)}>
-                      {student.memorization_quality}
-                    </span>
-                    <Progress
-                      value={getQualityPercentage(student.memorization_quality)}
-                      className="h-1"
-                    />
-                  </div>
-                ) : (
-                  "Not graded"
-                )}
+                {student.memorization_quality
+                  ? (
+                    <div className="flex flex-col gap-1">
+                      <span
+                        className={getQualityColor(
+                          student.memorization_quality,
+                        )}
+                      >
+                        {student.memorization_quality}
+                      </span>
+                      <Progress
+                        value={getQualityPercentage(
+                          student.memorization_quality,
+                        )}
+                        className="h-1"
+                      />
+                    </div>
+                  )
+                  : (
+                    "Not graded"
+                  )}
               </TableCell>
               <TableCell className="text-right">
                 <Button

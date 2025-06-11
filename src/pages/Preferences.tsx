@@ -1,4 +1,3 @@
-
 import { DashboardLayout } from "@/components/layouts/DashboardLayout.tsx";
 import { TeacherPreferences } from "@/components/teacher-portal/TeacherPreferences.tsx";
 

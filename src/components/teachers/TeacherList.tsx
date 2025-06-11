@@ -56,7 +56,7 @@ export const TeacherList = ({
     isLoading,
     error,
   } = useQuery({
-    queryKey: ["teachers", madrassahId],
+    queryKey: ["profiles", madrassahId, "role", "teacher"],
     queryFn: async () => {
       let query = supabase.from("profiles").select(
         "id, name, subject, email, phone, bio",
@@ -109,7 +109,7 @@ export const TeacherList = ({
         description: "Teacher deleted successfully",
       });
       queryClient.invalidateQueries({
-        queryKey: ["teachers", madrassahId],
+        queryKey: ["profiles", madrassahId, "role", "teacher"],
       });
     } catch (error: unknown) {
       toast({

@@ -291,7 +291,9 @@ export const TeacherDialog = (
       console.group("Supabase Error Details");
       console.error("Message:", supabaseError.message);
       if (supabaseError.status) console.error("Status:", supabaseError.status);
-      if (supabaseError.details) console.error("Details:", supabaseError.details);
+      if (supabaseError.details) {
+        console.error("Details:", supabaseError.details);
+      }
       if (supabaseError.hint) console.error("Hint:", supabaseError.hint);
       console.error("Full Error Object:", error);
       console.groupEnd();

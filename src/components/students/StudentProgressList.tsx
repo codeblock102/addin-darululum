@@ -1,4 +1,3 @@
-
 import {
   Table,
   TableBody,
@@ -9,7 +8,14 @@ import {
 } from "@/components/ui/table";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Edit2, BookOpen, Calendar, Star, MessageSquare, User } from "lucide-react";
+import {
+  BookOpen,
+  Calendar,
+  Edit2,
+  MessageSquare,
+  Star,
+  User,
+} from "lucide-react";
 import { useState } from "react";
 import { EditProgressDialog } from "./EditProgressDialog";
 import { MobileTable } from "@/components/mobile/MobileTable";
@@ -97,7 +103,8 @@ export const StudentProgressList = ({ progress }: StudentProgressListProps) => {
               No Progress Entries Yet
             </h3>
             <p className="text-gray-600 max-w-md">
-              Start tracking this student's memorization journey by adding their first progress entry.
+              Start tracking this student's memorization journey by adding their
+              first progress entry.
             </p>
           </div>
         </div>
@@ -116,7 +123,9 @@ export const StudentProgressList = ({ progress }: StudentProgressListProps) => {
           <div className="flex items-center space-x-2">
             <Calendar className="h-4 w-4 text-blue-600" />
             <span className="font-medium">
-              {value && typeof value === 'string' ? new Date(value).toLocaleDateString() : "N/A"}
+              {value && typeof value === "string"
+                ? new Date(value).toLocaleDateString()
+                : "N/A"}
             </span>
           </div>
         ),
@@ -133,7 +142,8 @@ export const StudentProgressList = ({ progress }: StudentProgressListProps) => {
                 <span>Surah {entry.current_surah || "—"}</span>
               </div>
               <div className="text-xs text-gray-500">
-                Juz {entry.current_juz || "—"} • Ayat {entry.start_ayat || "—"}-{entry.end_ayat || "—"}
+                Juz {entry.current_juz || "—"} • Ayat{" "}
+                {entry.start_ayat || "—"}-{entry.end_ayat || "—"}
               </div>
             </div>
           );
@@ -144,7 +154,11 @@ export const StudentProgressList = ({ progress }: StudentProgressListProps) => {
         key: "memorization_quality",
         status: true,
         render: (value: unknown) => (
-          <span className={`px-2 py-1 rounded-full text-xs font-medium border ${getQualityColor(value as string)}`}>
+          <span
+            className={`px-2 py-1 rounded-full text-xs font-medium border ${
+              getQualityColor(value as string)
+            }`}
+          >
             {formatQualityText(value as string)}
           </span>
         ),
@@ -166,18 +180,22 @@ export const StudentProgressList = ({ progress }: StudentProgressListProps) => {
           const entry = record as unknown as Progress;
           return (
             <div className="space-y-1">
-              {entry.notes ? (
-                <div className="flex items-start space-x-1">
-                  <MessageSquare className="h-3 w-3 text-gray-500 mt-0.5 flex-shrink-0" />
-                  <span className="text-xs text-gray-600 line-clamp-2">{entry.notes}</span>
-                </div>
-              ) : (
-                <span className="text-xs text-gray-400">No notes</span>
-              )}
+              {entry.notes
+                ? (
+                  <div className="flex items-start space-x-1">
+                    <MessageSquare className="h-3 w-3 text-gray-500 mt-0.5 flex-shrink-0" />
+                    <span className="text-xs text-gray-600 line-clamp-2">
+                      {entry.notes}
+                    </span>
+                  </div>
+                )
+                : <span className="text-xs text-gray-400">No notes</span>}
               {entry.teacher_notes && (
                 <div className="flex items-start space-x-1 mt-1">
                   <User className="h-3 w-3 text-blue-500 mt-0.5 flex-shrink-0" />
-                  <span className="text-xs text-blue-600 line-clamp-2">{entry.teacher_notes}</span>
+                  <span className="text-xs text-blue-600 line-clamp-2">
+                    {entry.teacher_notes}
+                  </span>
                 </div>
               )}
             </div>
@@ -190,7 +208,9 @@ export const StudentProgressList = ({ progress }: StudentProgressListProps) => {
         render: (value: unknown) => (
           <div className="flex items-center space-x-1">
             <User className="h-3 w-3 text-gray-500" />
-            <span className="text-xs text-gray-600">{(value as string) || "Unknown"}</span>
+            <span className="text-xs text-gray-600">
+              {(value as string) || "Unknown"}
+            </span>
           </div>
         ),
       },
@@ -212,7 +232,7 @@ export const StudentProgressList = ({ progress }: StudentProgressListProps) => {
       <>
         <div className="space-y-3">
           <MobileTable
-            data={progress.map(entry => ({ ...entry }))}
+            data={progress.map((entry) => ({ ...entry }))}
             columns={mobileColumns}
             actions={mobileActions}
           />
@@ -237,7 +257,7 @@ export const StudentProgressList = ({ progress }: StudentProgressListProps) => {
             <span>Progress History</span>
           </h3>
         </div>
-        
+
         <Table>
           <TableHeader>
             <TableRow className="bg-gray-50/50">
@@ -247,27 +267,41 @@ export const StudentProgressList = ({ progress }: StudentProgressListProps) => {
                   <span>Date</span>
                 </div>
               </TableHead>
-              <TableHead className="font-semibold text-gray-700">Position</TableHead>
-              <TableHead className="font-semibold text-gray-700">Verses</TableHead>
-              <TableHead className="font-semibold text-gray-700">Quality</TableHead>
-              <TableHead className="font-semibold text-gray-700">Notes</TableHead>
-              <TableHead className="font-semibold text-gray-700">Contributor</TableHead>
-              <TableHead className="text-right font-semibold text-gray-700">Actions</TableHead>
+              <TableHead className="font-semibold text-gray-700">
+                Position
+              </TableHead>
+              <TableHead className="font-semibold text-gray-700">
+                Verses
+              </TableHead>
+              <TableHead className="font-semibold text-gray-700">
+                Quality
+              </TableHead>
+              <TableHead className="font-semibold text-gray-700">
+                Notes
+              </TableHead>
+              <TableHead className="font-semibold text-gray-700">
+                Contributor
+              </TableHead>
+              <TableHead className="text-right font-semibold text-gray-700">
+                Actions
+              </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {progress.map((entry, index) => (
-              <TableRow 
-                key={entry.id} 
+              <TableRow
+                key={entry.id}
                 className={`hover:bg-blue-50/50 transition-colors ${
-                  index % 2 === 0 ? 'bg-white' : 'bg-gray-50/30'
+                  index % 2 === 0 ? "bg-white" : "bg-gray-50/30"
                 }`}
               >
                 <TableCell className="font-medium">
                   <div className="flex items-center space-x-2">
                     <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
                     <span>
-                      {entry.date ? new Date(entry.date).toLocaleDateString() : "N/A"}
+                      {entry.date
+                        ? new Date(entry.date).toLocaleDateString()
+                        : "N/A"}
                     </span>
                   </div>
                 </TableCell>
@@ -280,37 +314,54 @@ export const StudentProgressList = ({ progress }: StudentProgressListProps) => {
                       </span>
                     </div>
                     <div className="text-sm text-gray-500">
-                      Juz {entry.current_juz || "—"} • Ayat {entry.start_ayat || "—"}-{entry.end_ayat || "—"}
+                      Juz {entry.current_juz || "—"} • Ayat{" "}
+                      {entry.start_ayat || "—"}-{entry.end_ayat || "—"}
                     </div>
                   </div>
                 </TableCell>
                 <TableCell>
                   <div className="flex items-center space-x-2">
                     <Star className="h-4 w-4 text-yellow-500" />
-                    <span className="font-semibold text-gray-900">{entry.verses_memorized || 0}</span>
+                    <span className="font-semibold text-gray-900">
+                      {entry.verses_memorized || 0}
+                    </span>
                   </div>
                 </TableCell>
                 <TableCell>
-                  <span className={`px-3 py-1 rounded-full text-sm font-medium border ${getQualityColor(entry.memorization_quality)}`}>
+                  <span
+                    className={`px-3 py-1 rounded-full text-sm font-medium border ${
+                      getQualityColor(entry.memorization_quality)
+                    }`}
+                  >
                     {formatQualityText(entry.memorization_quality)}
                   </span>
                 </TableCell>
                 <TableCell className="max-w-xs">
                   <div className="space-y-2">
-                    {entry.notes ? (
-                      <div className="flex items-start space-x-2">
-                        <MessageSquare className="h-4 w-4 text-gray-500 mt-0.5 flex-shrink-0" />
-                        <div className="truncate text-sm text-gray-700" title={entry.notes}>
-                          {entry.notes}
+                    {entry.notes
+                      ? (
+                        <div className="flex items-start space-x-2">
+                          <MessageSquare className="h-4 w-4 text-gray-500 mt-0.5 flex-shrink-0" />
+                          <div
+                            className="truncate text-sm text-gray-700"
+                            title={entry.notes}
+                          >
+                            {entry.notes}
+                          </div>
                         </div>
-                      </div>
-                    ) : (
-                      <span className="text-gray-400 text-sm italic">No notes</span>
-                    )}
+                      )
+                      : (
+                        <span className="text-gray-400 text-sm italic">
+                          No notes
+                        </span>
+                      )}
                     {entry.teacher_notes && (
                       <div className="flex items-start space-x-2">
                         <User className="h-4 w-4 text-blue-500 mt-0.5 flex-shrink-0" />
-                        <div className="truncate text-sm text-blue-600" title={entry.teacher_notes}>
+                        <div
+                          className="truncate text-sm text-blue-600"
+                          title={entry.teacher_notes}
+                        >
                           Teacher: {entry.teacher_notes}
                         </div>
                       </div>
