@@ -191,7 +191,8 @@ export const TeacherDialog = (
 
   const isValidUUID = (id: string | undefined): id is string => {
     if (!id) return false;
-    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    const uuidRegex =
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
     return uuidRegex.test(id);
   };
 
@@ -228,7 +229,8 @@ export const TeacherDialog = (
         if (!isValidUUID(madrassahId)) {
           toast({
             title: "Cannot Create Teacher",
-            description: "A valid Madrassah ID is required. Please ensure a madrassah is selected.",
+            description:
+              "A valid Madrassah ID is required. Please ensure a madrassah is selected.",
             variant: "destructive",
           });
           setIsSubmitting(false);

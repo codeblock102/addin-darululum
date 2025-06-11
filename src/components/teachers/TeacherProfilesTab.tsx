@@ -9,7 +9,9 @@ interface TeacherProfilesTabProps {
   madrassahId?: string;
 }
 
-export function TeacherProfilesTab({ onEditTeacher, madrassahId }: TeacherProfilesTabProps) {
+export function TeacherProfilesTab(
+  { onEditTeacher, madrassahId }: TeacherProfilesTabProps,
+) {
   const [searchQuery, setSearchQuery] = useState("");
 
   return (

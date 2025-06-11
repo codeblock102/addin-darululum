@@ -10,7 +10,7 @@
  *
  * The `useAuth` hook is a convenience hook for consuming the `AuthContext`.
  */
-import { ReactNode, useEffect, useState, useContext } from "react";
+import { ReactNode, useContext, useEffect, useState } from "react";
 import { Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client.ts";
 import { useToast } from "@/components/ui/use-toast.ts";
