@@ -38,10 +38,12 @@ interface Teacher {
 interface TeacherListProps {
   searchQuery: string;
   onEdit: (teacher: Teacher) => void;
+  madrassahId?: string;
 }
 export const TeacherList = ({
   searchQuery,
   onEdit,
+  madrassahId,
 }: TeacherListProps) => {
   const {
     toast,
@@ -54,14 +56,21 @@ export const TeacherList = ({
     isLoading,
     error,
   } = useQuery({
-    queryKey: ["teachers"],
+    queryKey: ["teachers", madrassahId],
     queryFn: async () => {
+      let query = supabase.from("profiles").select(
+        "id, name, subject, email, phone, bio",
+      ).eq("role", "teacher");
+
+      if (madrassahId) {
+        query = query.eq("madrassah_id", madrassahId);
+      }
+
       const {
         data,
         error,
-      } = await supabase.from("teachers").select(
-        "id, name, subject, email, phone, bio",
-      );
+      } = await query;
+
       if (error) {
         toast({
           title: "Error fetching teachers",
@@ -93,14 +102,14 @@ export const TeacherList = ({
     try {
       const {
         error,
-      } = await supabase.from("teachers").delete().eq("id", teacherId);
+      } = await supabase.from("profiles").delete().eq("id", teacherId);
       if (error) throw error;
       toast({
         title: "Success",
         description: "Teacher deleted successfully",
       });
       queryClient.invalidateQueries({
-        queryKey: ["teachers"],
+        queryKey: ["teachers", madrassahId],
       });
     } catch (error: unknown) {
       toast({
