@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -12,6 +13,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Textarea } from "@/components/ui/textarea";
 import { StudentFormData } from "./studentTypes";
 
 interface StudentFormProps {
@@ -38,9 +40,10 @@ export const StudentForm = ({
   return (
     <form onSubmit={handleFormSubmit} className="space-y-4 pt-2">
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid grid-cols-3 mb-4">
+        <TabsList className="grid grid-cols-4 mb-4">
           <TabsTrigger value="basic">Student Info</TabsTrigger>
           <TabsTrigger value="guardian">Guardian</TabsTrigger>
+          <TabsTrigger value="emergency">Emergency</TabsTrigger>
           <TabsTrigger value="quran">Quran Progress</TabsTrigger>
         </TabsList>
 
@@ -111,11 +114,27 @@ export const StudentForm = ({
               </SelectContent>
             </Select>
           </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="medicalConditions">Medical Conditions</Label>
+            <Textarea
+              id="medicalConditions"
+              placeholder="Any medical conditions or allergies the teacher should know about"
+              value={formData.medicalConditions}
+              onChange={(e) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  medicalConditions: e.target.value,
+                }))}
+            />
+          </div>
         </TabsContent>
 
         <TabsContent value="guardian" className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="guardianName">Guardian Name</Label>
+            <Label htmlFor="guardianName">
+              Guardian Name <span className="text-red-500">*</span>
+            </Label>
             <Input
               id="guardianName"
               placeholder="Enter guardian's name"
@@ -125,20 +144,78 @@ export const StudentForm = ({
                   ...prev,
                   guardianName: e.target.value,
                 }))}
+              required
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="guardianContact">Guardian Contact</Label>
+            <Label htmlFor="guardianContact">
+              Guardian Phone <span className="text-red-500">*</span>
+            </Label>
             <Input
               id="guardianContact"
-              placeholder="Enter guardian's contact number"
+              placeholder="Enter guardian's phone number"
               value={formData.guardianContact}
               onChange={(e) =>
                 setFormData((prev) => ({
                   ...prev,
                   guardianContact: e.target.value,
                 }))}
+              required
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="guardianEmail">
+              Guardian Email <span className="text-red-500">*</span>
+            </Label>
+            <Input
+              id="guardianEmail"
+              type="email"
+              placeholder="Enter guardian's email address"
+              value={formData.guardianEmail}
+              onChange={(e) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  guardianEmail: e.target.value,
+                }))}
+              required
+            />
+          </div>
+        </TabsContent>
+
+        <TabsContent value="emergency" className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="emergencyContactName">
+              Emergency Contact Name <span className="text-red-500">*</span>
+            </Label>
+            <Input
+              id="emergencyContactName"
+              placeholder="Enter emergency contact's name"
+              value={formData.emergencyContactName}
+              onChange={(e) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  emergencyContactName: e.target.value,
+                }))}
+              required
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="emergencyContactPhone">
+              Emergency Contact Phone <span className="text-red-500">*</span>
+            </Label>
+            <Input
+              id="emergencyContactPhone"
+              placeholder="Enter emergency contact's phone number"
+              value={formData.emergencyContactPhone}
+              onChange={(e) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  emergencyContactPhone: e.target.value,
+                }))}
+              required
             />
           </div>
         </TabsContent>

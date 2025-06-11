@@ -1,3 +1,4 @@
+
 /**
  * @file src/App.tsx
  * @summary This is the main application component that sets up the overall structure, routing, and global providers.
@@ -11,7 +12,7 @@
  *
  * It also includes the `<Toaster>` component, which is used to display toast notifications globally throughout the application.
  */
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
 import { Toaster } from "@/components/ui/toaster.tsx";
 import { ThemeProvider } from "@/components/theme-provider.tsx";
 import Index from "@/pages/Index.tsx";
@@ -24,6 +25,7 @@ import Classes from "@/pages/Classes.tsx";
 import ProgressBook from "@/pages/ProgressBook.tsx";
 import TeacherAccounts from "@/pages/TeacherAccounts.tsx";
 import Auth from "@/pages/Auth.tsx";
+import Attendance from "@/pages/Attendance.tsx";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute.tsx";
 import { DashboardLayout } from "@/components/layouts/DashboardLayout.tsx";
 import Settings from "@/pages/Settings.tsx";
@@ -80,6 +82,8 @@ function App() {
           >
             <Route path="/" element={<Index />} />
             <Route path="/dashboard" element={<Dashboard />} />
+            {/* Redirect /teacher-portal to /dashboard for consistency */}
+            <Route path="/teacher-portal" element={<Navigate to="/dashboard" replace />} />
             <Route path="/students" element={<Students />} />
             <Route path="/students/:id" element={<StudentDetail />} />
             <Route
@@ -100,6 +104,7 @@ function App() {
             />
             <Route path="/classes" element={<Classes />} />
             <Route path="/progress-book" element={<ProgressBook />} />
+            <Route path="/attendance" element={<Attendance />} />
             <Route
               path="/teacher-accounts"
               element={

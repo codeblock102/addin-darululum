@@ -1,5 +1,6 @@
+
 import { Card, CardContent } from "@/components/ui/card";
-import { BookOpen, CheckCircle, Users } from "lucide-react";
+import { BookOpen, CheckCircle, Users, TrendingUp } from "lucide-react";
 import { SummaryData } from "@/types/teacher";
 
 interface DashboardSummaryProps {
@@ -8,77 +9,89 @@ interface DashboardSummaryProps {
 
 export const DashboardSummary = ({ summaryData }: DashboardSummaryProps) => {
   return (
-    <div className="grid gap-4 md:grid-cols-3">
-      <Card className="overflow-hidden border-green-100 shadow-sm hover:shadow-md transition-all duration-300">
-        <div className="bg-green-50 dark:bg-green-900/20 p-4 flex justify-between items-center">
-          <div>
-            <h3 className="font-medium text-lg">Total Students</h3>
-            <p className="text-4xl font-bold">
-              {summaryData?.studentsCount || 0}
-            </p>
+    <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+      <Card className="overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 bg-white/80 backdrop-blur-sm">
+        <div className="relative">
+          <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-green-500/10 to-transparent rounded-bl-full"></div>
+          <div className="bg-gradient-to-br from-green-50 to-emerald-50 p-4 sm:p-6 flex justify-between items-center">
+            <div className="space-y-1">
+              <h3 className="font-semibold text-green-800 text-sm sm:text-base">Total Students</h3>
+              <p className="text-3xl sm:text-4xl font-bold text-green-700">
+                {summaryData?.studentsCount || 0}
+              </p>
+            </div>
+            <div className="p-3 sm:p-4 bg-gradient-to-br from-green-500 to-green-600 rounded-2xl shadow-lg">
+              <Users className="h-6 w-6 sm:h-8 sm:w-8 text-white" />
+            </div>
           </div>
-          <div className="p-3 bg-green-100 dark:bg-green-800/30 rounded-full">
-            <Users className="h-6 w-6 text-green-600 dark:text-green-400" />
-          </div>
-        </div>
-        <CardContent className="p-4">
-          <div className="text-sm text-muted-foreground">
-            <div className="flex justify-between">
-              <span>Recent Progress:</span>
-              <span className="font-medium">
+          <CardContent className="p-4 sm:p-6">
+            <div className="flex items-center justify-between text-sm">
+              <div className="flex items-center gap-2">
+                <TrendingUp className="h-4 w-4 text-green-500" />
+                <span className="text-gray-600">Recent Progress</span>
+              </div>
+              <span className="font-semibold text-green-600 bg-green-50 px-2 py-1 rounded-full">
                 {summaryData?.recentProgressEntries || 0} entries
               </span>
             </div>
-          </div>
-        </CardContent>
+          </CardContent>
+        </div>
       </Card>
 
-      <Card className="overflow-hidden border-amber-100 shadow-sm hover:shadow-md transition-all duration-300">
-        <div className="bg-amber-50 dark:bg-amber-900/20 p-4 flex justify-between items-center">
-          <div>
-            <h3 className="font-medium text-lg">Today's Classes</h3>
-            <p className="text-4xl font-bold">
-              {summaryData?.todayClasses || 0}
-            </p>
+      <Card className="overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 bg-white/80 backdrop-blur-sm">
+        <div className="relative">
+          <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-amber-500/10 to-transparent rounded-bl-full"></div>
+          <div className="bg-gradient-to-br from-amber-50 to-orange-50 p-4 sm:p-6 flex justify-between items-center">
+            <div className="space-y-1">
+              <h3 className="font-semibold text-amber-800 text-sm sm:text-base">Today's Classes</h3>
+              <p className="text-3xl sm:text-4xl font-bold text-amber-700">
+                {summaryData?.todayClasses || 0}
+              </p>
+            </div>
+            <div className="p-3 sm:p-4 bg-gradient-to-br from-amber-500 to-orange-500 rounded-2xl shadow-lg">
+              <BookOpen className="h-6 w-6 sm:h-8 sm:w-8 text-white" />
+            </div>
           </div>
-          <div className="p-3 bg-amber-100 dark:bg-amber-800/30 rounded-full">
-            <BookOpen className="h-6 w-6 text-amber-600 dark:text-amber-400" />
-          </div>
-        </div>
-        <CardContent className="p-4">
-          <div className="text-sm text-muted-foreground">
-            <div className="flex justify-between">
-              <span>Average Quality:</span>
-              <span className="font-medium capitalize">
+          <CardContent className="p-4 sm:p-6">
+            <div className="flex items-center justify-between text-sm">
+              <div className="flex items-center gap-2">
+                <CheckCircle className="h-4 w-4 text-amber-500" />
+                <span className="text-gray-600">Average Quality</span>
+              </div>
+              <span className="font-semibold text-amber-600 bg-amber-50 px-2 py-1 rounded-full capitalize">
                 {summaryData?.averageQuality || "N/A"}
               </span>
             </div>
-          </div>
-        </CardContent>
+          </CardContent>
+        </div>
       </Card>
 
-      <Card className="overflow-hidden border-blue-100 shadow-sm hover:shadow-md transition-all duration-300">
-        <div className="bg-blue-50 dark:bg-blue-900/20 p-4 flex justify-between items-center">
-          <div>
-            <h3 className="font-medium text-lg">Total Revisions</h3>
-            <p className="text-4xl font-bold">
-              {summaryData?.totalRevisions || 0}
-            </p>
+      <Card className="overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 bg-white/80 backdrop-blur-sm sm:col-span-2 lg:col-span-1">
+        <div className="relative">
+          <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-blue-500/10 to-transparent rounded-bl-full"></div>
+          <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-4 sm:p-6 flex justify-between items-center">
+            <div className="space-y-1">
+              <h3 className="font-semibold text-blue-800 text-sm sm:text-base">Total Revisions</h3>
+              <p className="text-3xl sm:text-4xl font-bold text-blue-700">
+                {summaryData?.totalRevisions || 0}
+              </p>
+            </div>
+            <div className="p-3 sm:p-4 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-2xl shadow-lg">
+              <CheckCircle className="h-6 w-6 sm:h-8 sm:w-8 text-white" />
+            </div>
           </div>
-          <div className="p-3 bg-blue-100 dark:bg-blue-800/30 rounded-full">
-            <CheckCircle className="h-6 w-6 text-blue-600 dark:text-blue-400" />
-          </div>
-        </div>
-        <CardContent className="p-4">
-          <div className="text-sm text-muted-foreground">
-            <div className="flex justify-between">
-              <span>Pending:</span>
-              <span className="font-medium">
+          <CardContent className="p-4 sm:p-6">
+            <div className="flex items-center justify-between text-sm">
+              <div className="flex items-center gap-2">
+                <TrendingUp className="h-4 w-4 text-blue-500" />
+                <span className="text-gray-600">Pending</span>
+              </div>
+              <span className="font-semibold text-blue-600 bg-blue-50 px-2 py-1 rounded-full">
                 {summaryData?.pendingRevisions || 0} revisions
               </span>
             </div>
-          </div>
-        </CardContent>
+          </CardContent>
+        </div>
       </Card>
     </div>
   );

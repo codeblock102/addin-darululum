@@ -1,7 +1,18 @@
+
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client.ts";
-import { TeacherAccount } from "@/types/teacher.ts";
-import { useToast } from "@/components/ui/use-toast.ts";
+import { supabase } from "@/integrations/supabase/client";
+import { TeacherAccount } from "@/types/teacher";
+import { useToast } from "@/components/ui/use-toast";
+
+interface Teacher {
+  id: string;
+  name: string;
+  email: string | null;
+  subject: string;
+  bio: string | null;
+  phone: string | null;
+  experience?: number;
+}
 
 export function useTeacherAccounts() {
   const { toast } = useToast();
@@ -79,7 +90,7 @@ export function useTeacherAccounts() {
             lastLogin: userData?.created_at || null,
             classesCount: classesData?.length || 0,
             studentsCount: studentsData?.length || 0,
-            experience: teacher.experience,
+            experience: 0,
           });
         }
       }
