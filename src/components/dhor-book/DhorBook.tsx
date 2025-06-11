@@ -83,8 +83,8 @@ export const DhorBook = ({
   });
 
   // Authorization is confirmed if user is admin OR if the studentId is in the fetched list
-  const isAuthorized =
-    isAdmin || (students?.some((s) => s.id === studentId) ?? false);
+  const isAuthorized = isAdmin ||
+    (students?.some((s) => s.id === studentId) ?? false);
 
   const showUnauthorized = !isAdmin && !studentsLoading && !isAuthorized;
 
@@ -246,7 +246,9 @@ export const DhorBook = ({
     return (
       <Card className="flex items-center justify-center p-6 h-full min-h-[200px]">
         <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-        <span className="ml-2 text-muted-foreground">Loading teacher data...</span>
+        <span className="ml-2 text-muted-foreground">
+          Loading teacher data...
+        </span>
       </Card>
     );
   }

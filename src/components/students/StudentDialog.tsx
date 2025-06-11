@@ -221,7 +221,10 @@ export const StudentDialog = (
                     placeholder="Enter madrassah ID"
                     value={formData.madrassah_id}
                     onChange={(e) =>
-                      setFormData((prev) => ({ ...prev, madrassah_id: e.target.value }))}
+                      setFormData((prev) => ({
+                        ...prev,
+                        madrassah_id: e.target.value,
+                      }))}
                   />
                 </div>
                 <div className="space-y-2">
@@ -231,7 +234,10 @@ export const StudentDialog = (
                     placeholder="Enter section"
                     value={formData.section}
                     onChange={(e) =>
-                      setFormData((prev) => ({ ...prev, section: e.target.value }))}
+                      setFormData((prev) => ({
+                        ...prev,
+                        section: e.target.value,
+                      }))}
                   />
                 </div>
               </div>

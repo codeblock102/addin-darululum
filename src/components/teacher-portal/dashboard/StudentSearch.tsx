@@ -33,7 +33,10 @@ export const StudentSearch = ({ teacherId }: StudentSearchProps) => {
         .eq("id", teacherId)
         .single();
       if (error) {
-        console.error("Error fetching teacher data for dashboard search:", error);
+        console.error(
+          "Error fetching teacher data for dashboard search:",
+          error,
+        );
         throw error;
       }
       return data;

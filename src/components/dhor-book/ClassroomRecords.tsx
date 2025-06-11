@@ -66,7 +66,9 @@ interface StudentRecordSummary {
   completionScore?: number;
 }
 
-export function ClassroomRecords({ teacherId, isAdmin }: ClassroomRecordsProps) {
+export function ClassroomRecords(
+  { teacherId, isAdmin }: ClassroomRecordsProps,
+) {
   const navigate = useNavigate();
   const [selectedDate, setSelectedDate] = useState<string>(
     format(new Date(), "yyyy-MM-dd"),

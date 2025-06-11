@@ -113,7 +113,8 @@ const CreateDemoAccount = () => {
                 {_result.message || _result.error || (
                   _result.success
                     ? `Teacher account created. Try logging in now.`
-                    : "Failed to create teacher account")}
+                    : "Failed to create teacher account"
+                )}
               </AlertDescription>
             </Alert>
           )}
