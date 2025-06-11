@@ -51,7 +51,7 @@ export const TeacherDhorBook = ({ teacherId }: TeacherDhorBookProps) => {
     queryFn: async () => {
       if (!teacherId) return null;
       const { data, error } = await supabase
-        .from("teachers")
+        .from("profiles")
         .select("madrassah_id, section")
         .eq("id", teacherId)
         .single();

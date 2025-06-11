@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { createMuftiAmmarAccount } from "@/utils/createTeacherAccount.ts";
 import { Button } from "@/components/ui/button.tsx";
 import {
   Card,
@@ -22,7 +21,7 @@ interface CreateAccountResult {
 
 const CreateDemoAccount = () => {
   const [isLoading, setIsLoading] = useState(false);
-  const [result, setResult] = useState<CreateAccountResult | null>(null);
+  const [_result, setResult] = useState<CreateAccountResult | null>(null);
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -31,35 +30,19 @@ const CreateDemoAccount = () => {
 
   const handleCreateAccount = async () => {
     setIsLoading(true);
-    try {
-      const result = await createMuftiAmmarAccount();
-      setResult(result);
-
-      if (result.success) {
-        toast({
-          title: "Success!",
-          description:
-            `Teacher account created for Mufti Ammar. Try logging in now.`,
-        });
-      } else {
-        toast({
-          title: "Error",
-          description: result.error || "Failed to create account",
-          variant: "destructive",
-        });
-      }
-    } catch (error) {
-      const message = error instanceof Error
-        ? error.message
-        : "An unexpected error occurred";
-      toast({
-        title: "Error",
-        description: message,
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
+    // This feature is disabled as the underlying function was part of a previous implementation.
+    // The `createTeacherWithAccount` function in `createTeacherAccount.ts` can be used for this,
+    // but this component is likely for a one-off demo setup.
+    toast({
+      title: "Feature Disabled",
+      description: "This demo account creation is no longer available.",
+      variant: "destructive",
+    });
+    setResult({
+      success: false,
+      error: "This feature has been disabled.",
+    });
+    setIsLoading(false);
   };
 
   const goToLogin = () => {
@@ -113,23 +96,24 @@ const CreateDemoAccount = () => {
             </Alert>
           </div>
 
-          {result && (
+          {_result && (
             <Alert
-              variant={result.success ? "default" : "destructive"}
+              variant={_result.success ? "default" : "destructive"}
               className={`p-4 rounded-md text-sm mt-4 ${
-                result.success
+                _result.success
                   ? "bg-green-50 text-green-800 border-green-200"
                   : "bg-red-50 text-red-800 border-red-200"
               }`}
             >
-              {result.success
+              {_result.success
                 ? <CheckCircle className="h-4 w-4" />
                 : <AlertTriangle className="h-4 w-4" />}
-              <AlertTitle>{result.success ? "Success!" : "Error"}</AlertTitle>
+              <AlertTitle>{_result.success ? "Success!" : "Error"}</AlertTitle>
               <AlertDescription>
-                {result.message || result.error || (result.success
-                  ? `Teacher account created. Try logging in now.`
-                  : "Failed to create teacher account")}
+                {_result.message || _result.error || (
+                  _result.success
+                    ? `Teacher account created. Try logging in now.`
+                    : "Failed to create teacher account")}
               </AlertDescription>
             </Alert>
           )}

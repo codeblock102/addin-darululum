@@ -17,6 +17,7 @@ import { Teacher } from "@/types/teacher.ts";
 import { TeacherProfilesTab } from "@/components/teachers/TeacherProfilesTab.tsx";
 import { TeacherAccountsTab } from "@/components/teachers/TeacherAccountsTab.tsx";
 import { TeacherStatsSection } from "@/components/teachers/TeacherStatsSection.tsx";
+import { useAuth } from "@/contexts/AuthContext.tsx";
 
 /**
  * @file Teachers.tsx
@@ -43,10 +44,30 @@ const Teachers = () => {
   const [selectedTeacher, setSelectedTeacher] = useState<Teacher | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("profiles");
+  const { session } = useAuth();
+  const userId = session?.user?.id;
+
+  const { data: adminData, isLoading: isAdminDataLoading } = useQuery({
+    queryKey: ["adminDataForTeachersPage", userId],
+    queryFn: async () => {
+      if (!userId) return null;
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("madrassah_id")
+        .eq("id", userId)
+        .single();
+      if (error) {
+        console.error("Error fetching admin data:", error);
+        throw error;
+      }
+      return data;
+    },
+    enabled: !!userId,
+  });
 
   // Get teacher stats
   const { data: stats } = useQuery({
-    queryKey: ["teacher-stats"],
+    queryKey: ["teacher-stats", adminData],
     /**
      * @function queryFn (for teacher stats)
      * @description Fetches statistics related to teachers and students from Supabase.
@@ -60,8 +81,18 @@ const Teachers = () => {
      * @property {number} totalClasses - Placeholder for total classes (currently 0).
      */
     queryFn: async () => {
-      const { data: teachers } = await supabase.from("teachers").select("*");
-      const { data: students } = await supabase.from("students").select("*");
+      if (!adminData?.madrassah_id) return null;
+
+      const { data: teachers } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("role", "teacher")
+        .eq("madrassah_id", adminData.madrassah_id);
+
+      const { data: students } = await supabase
+        .from("students")
+        .select("*")
+        .eq("madrassah_id", adminData.madrassah_id);
 
       return {
         totalTeachers: teachers?.length || 0,
@@ -73,6 +104,7 @@ const Teachers = () => {
         totalClasses: 0, // Will be populated later
       };
     },
+    enabled: !!adminData,
   });
 
   // Check authentication
@@ -180,13 +212,14 @@ const Teachers = () => {
         />
 
         {/* Stats Cards */}
-        <TeacherStatsSection stats={stats} />
+        <TeacherStatsSection stats={stats || undefined} />
 
         {/* Action Button */}
         <div className="flex justify-end">
           <Button
             className="bg-amber-500 hover:bg-amber-600 text-black"
             onClick={handleCreateTeacher}
+            disabled={isAdminDataLoading}
           >
             <UserPlus className="mr-2 h-4 w-4" />
             Add Teacher
@@ -207,7 +240,10 @@ const Teachers = () => {
 
           {/* Profiles Tab */}
           <TabsContent value="profiles">
-            <TeacherProfilesTab onEditTeacher={handleEditTeacher} />
+            <TeacherProfilesTab
+              onEditTeacher={handleEditTeacher}
+              madrassahId={adminData?.madrassah_id}
+            />
           </TabsContent>
 
           {/* Accounts Tab */}
@@ -224,6 +260,7 @@ const Teachers = () => {
           onClose={handleCloseDialog}
           open={dialogOpen}
           onOpenChange={setDialogOpen}
+          madrassahId={adminData?.madrassah_id}
         />
       )}
     </div>

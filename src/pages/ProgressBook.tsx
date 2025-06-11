@@ -95,7 +95,6 @@ const ProgressBookPage = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState("all"); // "all", "recent", "reports"
   const [viewMode, setViewMode] = useState<"daily" | "classroom">("daily");
-  const [selectedTeacherId, setSelectedTeacherId] = useState<string>("all");
   const { isAdmin, isTeacher, teacherId } = useTeacherStatus();
   const { session } = useAuth();
   const userRole = session?.user?.user_metadata?.role;
@@ -108,16 +107,10 @@ const ProgressBookPage = () => {
     }
   }, []);
 
-  useEffect(() => {
-    if (isTeacher && teacherId) {
-      setSelectedTeacherId(teacherId);
-    }
-  }, [isTeacher, teacherId]);
-
   const { data: teachers } = useQuery({
     queryKey: ["active-teachers"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("teachers").select("id, name")
+      const { data, error } = await supabase.from("profiles").select("id, name")
         .order("name", { ascending: true });
       if (error) {
         console.error("Error fetching teachers:", error);
@@ -132,7 +125,7 @@ const ProgressBookPage = () => {
     queryFn: async () => {
       if (!teacherId) return null;
       const { data, error } = await supabase
-        .from("teachers")
+        .from("profiles")
         .select("madrassah_id, section")
         .eq("id", teacherId)
         .single();
@@ -142,59 +135,28 @@ const ProgressBookPage = () => {
       }
       return data;
     },
-    enabled: isTeacher && !!teacherId,
+    enabled: !!teacherId,
   });
-
-  const { data: selectedTeacherData, isLoading: isLoadingSelectedTeacher } =
-    useQuery({
-      queryKey: ["teacherData", selectedTeacherId],
-      queryFn: async () => {
-        if (!selectedTeacherId || selectedTeacherId === "all") return null;
-        const { data, error } = await supabase
-          .from("teachers")
-          .select("madrassah_id, section")
-          .eq("id", selectedTeacherId)
-          .single();
-        if (error) {
-          console.error("Error fetching selected teacher data:", error);
-          throw error;
-        }
-        return data;
-      },
-      enabled: isAdmin && !!selectedTeacherId && selectedTeacherId !== "all",
-    });
 
   const { data: students, isLoading: studentsLoading } = useQuery({
     queryKey: [
       "students-for-progress-book",
-      { isAdmin, teacherData, selectedTeacherId },
+      { isAdmin, userMadrassahId: teacherData?.madrassah_id },
     ],
     queryFn: async () => {
+      if (!teacherData?.madrassah_id) return [];
+
       let query = supabase
         .from("students")
         .select("id, name, status")
         .eq("status", "active")
-        .not("madrassah_id", "is", null);
+        .not("madrassah_id", "is", null)
+        .eq("madrassah_id", teacherData.madrassah_id);
 
-      if (isAdmin) {
-        // Admin view: filter by selected teacher if one is chosen
-        if (selectedTeacherId && selectedTeacherId !== "all") {
-          if (selectedTeacherData) {
-            query = query
-              .eq("madrassah_id", selectedTeacherData.madrassah_id)
-              .eq("section", selectedTeacherData.section);
-          } else {
-            // If admin has a teacher selected, but the teacher's data isn't loaded,
-            // return an empty array to avoid showing all students.
-            return [];
-          }
-        }
-      } else {
-        // Teacher view: always filter by the logged-in teacher's section
-        if (teacherData?.madrassah_id && teacherData?.section) {
-          query = query
-            .eq("madrassah_id", teacherData.madrassah_id)
-            .eq("section", teacherData.section);
+      if (!isAdmin) {
+        // Teacher view: also filter by the logged-in teacher's section
+        if (teacherData.section) {
+          query = query.eq("section", teacherData.section);
         } else {
           // If teacher has no section, they see no students.
           return [];
@@ -215,15 +177,13 @@ const ProgressBookPage = () => {
       }
       return data || [];
     },
-    enabled:
-      (isAdmin && (selectedTeacherId === "all" || !isLoadingSelectedTeacher)) ||
-      (!isAdmin && !isLoadingTeacher),
+    enabled: !isLoadingTeacher && !!teacherData,
     refetchInterval: 30000,
   });
 
-  const currentTeacherId = isTeacher ? teacherId : selectedTeacherId;
+  const currentTeacherId = teacherId;
 
-  useRealtimeLeaderboard(currentTeacherId, () => {
+  useRealtimeLeaderboard(currentTeacherId ?? undefined, () => {
     // Intentionally empty, realtime updates might trigger refetch of other queries if needed
   });
 
@@ -369,48 +329,6 @@ const ProgressBookPage = () => {
                               )
                           )}
                       </div>
-
-                      {isAdmin && (
-                        <div>
-                          <h3 className="mb-1 sm:mb-1.5 text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">
-                            Filter by Teacher
-                          </h3>
-                          <Select
-                            value={selectedTeacherId}
-                            onValueChange={setSelectedTeacherId}
-                          >
-                            <SelectTrigger className="text-xs sm:text-sm h-9">
-                              <SelectValue placeholder="All Teachers" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem
-                                value="all"
-                                className="text-xs sm:text-sm"
-                              >
-                                All Teachers
-                              </SelectItem>
-                              {teachers?.map((teacher) => (
-                                <SelectItem
-                                  key={teacher.id}
-                                  value={teacher.id}
-                                  className="text-xs sm:text-sm"
-                                >
-                                  {teacher.name}
-                                </SelectItem>
-                              ))}
-                              {(!teachers || teachers.length === 0) && (
-                                <SelectItem
-                                  value="no-teachers"
-                                  disabled
-                                  className="text-xs sm:text-sm"
-                                >
-                                  No teachers found
-                                </SelectItem>
-                              )}
-                            </SelectContent>
-                          </Select>
-                        </div>
-                      )}
                     </div>
 
                     <div className="md:col-span-3">
@@ -418,7 +336,7 @@ const ProgressBookPage = () => {
                         ? (
                           <DhorBookComponent
                             studentId={selectedStudentId}
-                            teacherId={currentTeacherId}
+                            teacherId={currentTeacherId ?? undefined}
                             teacherData={teacherData}
                             isAdmin={isAdmin}
                             isLoadingTeacher={isLoadingTeacher}
@@ -426,13 +344,13 @@ const ProgressBookPage = () => {
                         )
                         : (
                           <div className="border rounded-lg flex flex-col items-center justify-center h-[200px] sm:h-[300px] bg-gray-50 dark:bg-gray-800/20 p-4 text-center">
-                            <Book className="h-8 w-8 sm:h-10 sm:w-10 mx-auto mb-2 sm:mb-3 text-gray-400 dark:text-gray-500" />
-                            <h3 className="text-sm sm:text-base font-semibold mb-1 text-gray-700 dark:text-gray-300">
-                              No Student Selected
+                            <Book size={40} className="text-gray-400 mb-3" />
+                            <h3 className="font-semibold text-md sm:text-lg">
+                              Select a Student
                             </h3>
-                            <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 max-w-xs mx-auto">
-                              Please select a student from the list to view or
-                              add their Progress Book entries.
+                            <p className="text-xs sm:text-sm text-gray-500">
+                              Choose a student from the list to view their
+                              progress entries.
                             </p>
                           </div>
                         )}
@@ -463,7 +381,10 @@ const ProgressBookPage = () => {
 
             <TabsContent value="classroom">
               <ClassroomRecords
-                teacherId={currentTeacherId}
+                students={students || []}
+                isLoading={studentsLoading}
+                teacherId={currentTeacherId ?? undefined}
+                madrassahId={teacherData?.madrassah_id}
                 isAdmin={isAdmin}
               />
             </TabsContent>

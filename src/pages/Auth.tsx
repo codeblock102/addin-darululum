@@ -147,7 +147,7 @@ const Auth = () => {
           refreshedUser.email,
         );
         const { data: teacherData, error: teacherError } = await supabase
-          .from("teachers")
+          .from("profiles")
           .select("id")
           .eq("email", refreshedUser.email)
           .maybeSingle();
