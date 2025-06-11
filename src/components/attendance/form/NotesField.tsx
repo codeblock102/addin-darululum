@@ -1,3 +1,4 @@
+
 import { Textarea } from "@/components/ui/textarea.tsx";
 import {
   FormControl,
@@ -7,14 +8,8 @@ import {
   FormMessage,
 } from "@/components/ui/form.tsx";
 import { UseFormReturn } from "react-hook-form";
-import { AttendanceStatus } from "@/types/attendance.ts";
+import { AttendanceFormValues } from "@/types/attendance-form.ts";
 
-type AttendanceFormValues = {
-  class_id: string;
-  student_id: string;
-  status: AttendanceStatus;
-  notes: string;
-};
 interface NotesFieldProps {
   form: UseFormReturn<AttendanceFormValues>;
 }

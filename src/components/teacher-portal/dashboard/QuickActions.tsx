@@ -1,48 +1,61 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Plus, Users, Calendar, MessageSquare } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { BookOpen, CalendarCheck, Users } from "lucide-react";
 
 interface QuickActionsProps {
-  teacherId?: string;
+  teacherId: string;
 }
 
-export const QuickActions = () => {
+export const QuickActions = ({ teacherId }: QuickActionsProps) => {
   const navigate = useNavigate();
 
+  const actions = [
+    {
+      title: "Add Student",
+      icon: Plus,
+      action: () => navigate("/dashboard?tab=students"),
+      color: "bg-blue-500 hover:bg-blue-600",
+    },
+    {
+      title: "Take Attendance",
+      icon: Calendar,
+      action: () => navigate("/attendance"),
+      color: "bg-green-500 hover:bg-green-600",
+    },
+    {
+      title: "View Students",
+      icon: Users,
+      action: () => navigate("/dashboard?tab=students"),
+      color: "bg-purple-500 hover:bg-purple-600",
+    },
+    {
+      title: "Messages",
+      icon: MessageSquare,
+      action: () => navigate("/dashboard?tab=messages"),
+      color: "bg-orange-500 hover:bg-orange-600",
+    },
+  ];
+
   return (
-    <Card className="h-auto">
+    <Card>
       <CardHeader>
         <CardTitle>Quick Actions</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="space-y-3">
-          <Button
-            variant="outline"
-            className="w-full justify-start text-left text-foreground"
-            onClick={() => navigate("/attendance")}
-          >
-            <CalendarCheck className="mr-2 h-4 w-4" />
-            Take Attendance
-          </Button>
-
-          <Button
-            variant="outline"
-            className="w-full justify-start text-left text-foreground"
-            onClick={() => navigate("/student-progress")}
-          >
-            <BookOpen className="mr-2 h-4 w-4" />
-            Record Progress
-          </Button>
-
-          <Button
-            variant="outline"
-            className="w-full justify-start text-left text-foreground"
-            onClick={() => navigate("/students")}
-          >
-            <Users className="mr-2 h-4 w-4" />
-            View My Students
-          </Button>
+        <div className="grid grid-cols-2 gap-3">
+          {actions.map((action, index) => (
+            <Button
+              key={index}
+              variant="outline"
+              className="h-20 flex flex-col items-center justify-center gap-2 border-2 hover:border-primary"
+              onClick={action.action}
+            >
+              <action.icon className="h-6 w-6" />
+              <span className="text-sm font-medium">{action.title}</span>
+            </Button>
+          ))}
         </div>
       </CardContent>
     </Card>
