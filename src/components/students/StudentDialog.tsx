@@ -36,6 +36,8 @@ interface Student {
   status: "active" | "inactive";
   completed_juz?: number[];
   current_juz?: number | null;
+  madrassah_id?: string;
+  section?: string;
 }
 
 interface StudentDialogProps {
@@ -61,6 +63,8 @@ export const StudentDialog = (
     status: selectedStudent?.status || "active",
     completed_juz: selectedStudent?.completed_juz || [],
     current_juz: selectedStudent?.current_juz?.toString() || "_none_",
+    madrassah_id: selectedStudent?.madrassah_id || "",
+    section: selectedStudent?.section || "",
   });
 
   // Update form data when selectedStudent changes
@@ -76,6 +80,8 @@ export const StudentDialog = (
         status: selectedStudent.status || "active",
         completed_juz: selectedStudent.completed_juz || [],
         current_juz: selectedStudent.current_juz?.toString() || "_none_",
+        madrassah_id: selectedStudent.madrassah_id || "",
+        section: selectedStudent.section || "",
       });
     } else {
       // Reset form data for new student
@@ -88,6 +94,8 @@ export const StudentDialog = (
         status: "active",
         completed_juz: [],
         current_juz: "_none_", // Default to special "None" value
+        madrassah_id: "",
+        section: "",
       });
     }
   }, [selectedStudent]);
@@ -202,6 +210,34 @@ export const StudentDialog = (
                         enrollment_date: e.target.value,
                       }))}
                     required
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="madrassah_id">Madrassah ID</Label>
+                  <Input
+                    id="madrassah_id"
+                    placeholder="Enter madrassah ID"
+                    value={formData.madrassah_id}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        madrassah_id: e.target.value,
+                      }))}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="section">Section</Label>
+                  <Input
+                    id="section"
+                    placeholder="Enter section"
+                    value={formData.section}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        section: e.target.value,
+                      }))}
                   />
                 </div>
               </div>

@@ -30,64 +30,59 @@ export const StudentSearch = ({
 }: StudentSearchProps) => {
   const [searchQuery, setSearchQuery] = useState("");
 
+  const { data: teacherData } = useQuery({
+    queryKey: ["teacherDataForSearch", teacherId],
+    queryFn: async () => {
+      if (!teacherId) return null;
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("madrassah_id, section")
+        .eq("id", teacherId)
+        .single();
+      if (error) {
+        console.error("Error fetching teacher data for search:", error);
+        return null;
+      }
+      return data;
+    },
+    enabled: !!teacherId && !showAllStudents,
+  });
+
   // Fetch students with optional teacher filter
   const {
     data: students,
     isLoading,
     error,
   } = useQuery({
-    queryKey: ["students-search", teacherId, showAllStudents],
+    queryKey: ["students-search", teacherId, showAllStudents, teacherData],
     queryFn: async () => {
-      console.log(
-        "Fetching students with teacherId:",
-        teacherId,
-        "showAllStudents:",
-        showAllStudents,
-      );
+      let query = supabase
+        .from("students")
+        .select("id, name")
+        .eq("status", "active")
+        .not("madrassah_id", "is", null);
 
-      try {
-        let query = supabase.from("students").select("id, name").eq(
-          "status",
-          "active",
-        );
-
-        // Only filter by teacher if not showing all students and teacher ID is provided
-        if (teacherId && !showAllStudents) {
-          // First, check if any students are explicitly assigned to this teacher
-          const { data: assignedStudents } = await supabase
-            .from("students_teachers")
-            .select("student_name")
-            .eq("teacher_id", teacherId);
-
-          console.log(
-            "Teacher assigned students:",
-            assignedStudents?.length || 0,
-          );
-
-          // If there are specifically assigned students, get them
-          if (assignedStudents && assignedStudents.length > 0) {
-            // Get student names from assignments
-            const studentNames = assignedStudents.map((s) => s.student_name);
-            if (studentNames.length > 0) {
-              query = query.in("name", studentNames);
-            }
-          }
+      // Filter by teacher's section if a teacherId is provided and we are not showing all students
+      if (teacherId && !showAllStudents) {
+        if (teacherData) {
+          query = query
+            .eq("madrassah_id", teacherData.madrassah_id)
+            .eq("section", teacherData.section);
+        } else {
+          // If teacher data is still loading or failed, return no students for this context
+          return [];
         }
-
-        const { data, error } = await query.order("name");
-
-        if (error) {
-          console.error("Error fetching students:", error);
-          throw error;
-        }
-
-        console.log(`Found ${data?.length || 0} students for search component`);
-        return data || [];
-      } catch (error) {
-        console.error("Error in student search query:", error);
-        return [];
       }
+
+      const { data, error } = await query.order("name");
+
+      if (error) {
+        console.error("Error fetching students:", error);
+        throw error;
+      }
+      return data || [];
     },
+    enabled: showAllStudents || (!!teacherId && !!teacherData),
   });
 
   // Filter students based on search query

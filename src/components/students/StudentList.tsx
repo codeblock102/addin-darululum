@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client.ts";
 import {
   Table,
@@ -35,35 +35,26 @@ interface Student {
   status: "active" | "inactive";
   completed_juz?: number[];
   current_juz?: number | null;
+  madrassah_id?: string;
+  section?: string;
 }
 
 interface StudentListProps {
-  searchQuery: string;
+  students: Student[] | undefined;
+  isLoading: boolean;
   onEdit: (student: Student) => void;
 }
 
-export const StudentList = ({ searchQuery, onEdit }: StudentListProps) => {
+export const StudentList = ({
+  students,
+  isLoading,
+  onEdit,
+}: StudentListProps) => {
   const navigate = useNavigate();
   const [studentToDelete, setStudentToDelete] = useState<Student | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
-
-  const { data: students, isLoading } = useQuery({
-    queryKey: ["students"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("students")
-        .select("*")
-        .order("name", { ascending: true });
-
-      if (error) throw error;
-      console.log("Raw student data from Supabase:", data);
-      return data as Student[];
-    },
-    // Add a refetch interval to keep the list updated
-    refetchInterval: 30000, // Refresh every 30 seconds
-  });
 
   const deleteStudentMutation = useMutation({
     mutationFn: async (studentId: string) => {
@@ -114,15 +105,6 @@ export const StudentList = ({ searchQuery, onEdit }: StudentListProps) => {
     }
   };
 
-  const filteredStudents = students?.filter(
-    (student) =>
-      student.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (student.guardian_name &&
-        student.guardian_name.toLowerCase().includes(
-          searchQuery.toLowerCase(),
-        )),
-  );
-
   if (isLoading) {
     return (
       <div className="p-4 space-y-4">
@@ -131,7 +113,7 @@ export const StudentList = ({ searchQuery, onEdit }: StudentListProps) => {
     );
   }
 
-  if (filteredStudents?.length === 0) {
+  if (students?.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center p-8 text-center">
         <Users className="h-8 w-8 text-muted-foreground mb-4" />
@@ -160,7 +142,7 @@ export const StudentList = ({ searchQuery, onEdit }: StudentListProps) => {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {filteredStudents?.map((student) => (
+          {students?.map((student) => (
             <TableRow
               key={student.id}
               className="transition-colors hover:bg-muted/50 cursor-pointer group"
