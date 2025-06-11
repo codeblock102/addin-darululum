@@ -22,6 +22,7 @@ export interface Teacher {
   id: string;
   name: string;
   subject: string;
+  section?: string;
   email?: string;
   bio?: string;
   phone?: string;

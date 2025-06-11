@@ -24,7 +24,7 @@ export const useUserRole = () => {
 
         // Check for teacher profile data
         const { data: teacherData } = await supabase
-          .from("teachers")
+          .from("profiles")
           .select("id")
           .eq("email", session.user.email)
           .maybeSingle();

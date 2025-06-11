@@ -11,9 +11,18 @@ import { DailyActivityEntry } from "@/types/dhor-book.ts";
 interface DhorBookProps {
   studentId: string;
   teacherId?: string;
+  teacherData?: { madrassah_id: string; section: string } | null;
+  isAdmin: boolean;
+  isLoadingTeacher: boolean;
 }
 
-export const DhorBook = ({ studentId, teacherId }: DhorBookProps) => {
+export const DhorBook = ({
+  studentId,
+  teacherId,
+  teacherData,
+  isAdmin,
+  isLoadingTeacher,
+}: DhorBookProps) => {
   const [currentWeek, setCurrentWeek] = useState(new Date());
   const [entries, setEntries] = useState<DailyActivityEntry[]>([]);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -25,6 +34,60 @@ export const DhorBook = ({ studentId, teacherId }: DhorBookProps) => {
     format(weekEnd, "MMM d, yyyy")
   }`;
 
+  const {
+    data: students,
+    isLoading: studentsLoading,
+    error: studentsError,
+  } = useQuery({
+    queryKey: ["dhorbook-student-auth", studentId, isAdmin, teacherData],
+    queryFn: async () => {
+      // For teachers, if teacherData is not ready, don't fetch.
+      if (!isAdmin && !teacherData) {
+        return [];
+      }
+
+      let query = supabase
+        .from("students")
+        .select("id")
+        .eq("id", studentId)
+        .limit(1);
+
+      // If not an admin, must be a teacher. Apply teacher filters for authorization.
+      if (!isAdmin) {
+        if (teacherData?.madrassah_id && teacherData?.section) {
+          query = query
+            .eq("madrassah_id", teacherData.madrassah_id)
+            .eq("section", teacherData.section);
+        } else {
+          // Teacher has no section/madrassah, so they are not authorized to see any student.
+          return [];
+        }
+      } else {
+        // For Admins, check if student is in their madrassah
+        if (teacherData?.madrassah_id) {
+          query = query.eq("madrassah_id", teacherData.madrassah_id);
+        } else {
+          return [];
+        }
+      }
+      // For Admins, query remains as a check for student existence by ID.
+
+      const { data, error } = await query;
+      if (error) {
+        console.error("Error fetching student for authorization:", error);
+        throw error;
+      }
+      return data || [];
+    },
+    enabled: !!studentId && (isAdmin || !!teacherData),
+  });
+
+  // Authorization is confirmed if user is admin OR if the studentId is in the fetched list
+  const isAuthorized = isAdmin ||
+    (students?.some((s) => s.id === studentId) ?? false);
+
+  const showUnauthorized = !isAdmin && !studentsLoading && !isAuthorized;
+
   // Previous and next week handlers
   const goToPreviousWeek = () => setCurrentWeek((prev) => subWeeks(prev, 1));
   const goToNextWeek = () => setCurrentWeek((prev) => addWeeks(prev, 1));
@@ -33,7 +96,7 @@ export const DhorBook = ({ studentId, teacherId }: DhorBookProps) => {
   // Fetch main entries for the student
   const {
     data: entriesData,
-    isLoading,
+    isLoading: entriesLoading,
     refetch,
   } = useQuery({
     queryKey: [
@@ -169,7 +232,7 @@ export const DhorBook = ({ studentId, teacherId }: DhorBookProps) => {
       );
       return finalCombinedEntries;
     },
-    enabled: !!studentId,
+    enabled: !!studentId && isAuthorized,
   });
 
   // Update entries when data changes
@@ -178,6 +241,17 @@ export const DhorBook = ({ studentId, teacherId }: DhorBookProps) => {
       setEntries(entriesData);
     }
   }, [entriesData]);
+
+  if (isLoadingTeacher) {
+    return (
+      <Card className="flex items-center justify-center p-6 h-full min-h-[200px]">
+        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+        <span className="ml-2 text-muted-foreground">
+          Loading teacher data...
+        </span>
+      </Card>
+    );
+  }
 
   // Handle refresh request
   const handleRefresh = () => {
@@ -197,14 +271,46 @@ export const DhorBook = ({ studentId, teacherId }: DhorBookProps) => {
     );
   }
 
-  if (isLoading) {
+  // Show loading spinner while we're confirming the student list
+  if (studentsLoading && !isAdmin) {
     return (
       <Card className="p-6">
         <div className="flex justify-center items-center py-8">
           <Loader2 className="h-8 w-8 animate-spin text-primary mr-2" />
-          <span>Loading Dhor Book entries...</span>
+          <span>Verifying student access...</span>
         </div>
       </Card>
+    );
+  }
+
+  if (studentsError) {
+    return (
+      <Card className="p-6 text-center text-red-500">
+        <p>Error verifying student access: {studentsError.message}</p>
+      </Card>
+    );
+  }
+
+  // Show unauthorized message only after checks are complete
+  if (showUnauthorized) {
+    return (
+      <Card className="p-6 text-center text-red-500">
+        <p>You are not authorized to view this student's records.</p>
+      </Card>
+    );
+  }
+
+  // Don't render the grid if not authorized or still loading entries
+  if (!isAuthorized || entriesLoading) {
+    return (
+      <div className="flex justify-center items-center py-8">
+        {entriesLoading && (
+          <>
+            <Loader2 className="h-8 w-8 animate-spin text-primary mr-2" />
+            <span>Loading Dhor Book entries...</span>
+          </>
+        )}
+      </div>
     );
   }
 

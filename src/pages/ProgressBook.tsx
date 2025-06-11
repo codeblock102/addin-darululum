@@ -76,13 +76,9 @@ const ProgressBookPage = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState("all"); // "all", "recent", "reports"
   const [viewMode, setViewMode] = useState<"daily" | "classroom">("daily");
-  const [selectedTeacherId, setSelectedTeacherId] = useState<string | null>(null);
-  const {
-    isAdmin,
-    isTeacher,
-    teacherId
-  } = useTeacherStatus();
-  const isMobile = useIsMobile();
+
+  const { isAdmin, teacherId } = useTeacherStatus();
+
   useEffect(() => {
     const urlParams = new URLSearchParams(globalThis.location.search);
     const studentIdParam = urlParams.get("studentId");
@@ -90,22 +86,14 @@ const ProgressBookPage = () => {
       setSelectedStudentId(studentIdParam);
     }
   }, []);
-  useEffect(() => {
-    if (isTeacher && teacherId) {
-      setSelectedTeacherId(teacherId);
-    }
-  }, [isTeacher, teacherId]);
-  const {
-    data: teachers
-  } = useQuery({
+
+
+  const { data: teachers } = useQuery({
     queryKey: ["active-teachers"],
     queryFn: async () => {
-      const {
-        data,
-        error
-      } = await supabase.from("teachers").select("id, name").order("name", {
-        ascending: true
-      });
+      const { data, error } = await supabase.from("profiles").select("id, name")
+        .order("name", { ascending: true });
+
       if (error) {
         console.error("Error fetching teachers:", error);
         return [];
@@ -113,19 +101,53 @@ const ProgressBookPage = () => {
       return data || [];
     }
   });
-  const {
-    data: students,
-    isLoading: studentsLoading
-  } = useQuery({
-    queryKey: ["all-students-for-progress-book"],
-    // Renamed queryKey
+
+  const { data: teacherData, isLoading: isLoadingTeacher } = useQuery({
+    queryKey: ["teacherData", teacherId],
     queryFn: async () => {
-      const {
-        data,
-        error
-      } = await supabase.from("students").select("id, name, status").eq("status", "active").order("name", {
-        ascending: true
-      });
+      if (!teacherId) return null;
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("madrassah_id, section")
+        .eq("id", teacherId)
+        .single();
+      if (error) {
+        console.error("Error fetching teacher data:", error);
+        throw error;
+      }
+      return data;
+    },
+    enabled: !!teacherId,
+  });
+
+  const { data: students, isLoading: studentsLoading } = useQuery({
+    queryKey: [
+      "students-for-progress-book",
+      { isAdmin, userMadrassahId: teacherData?.madrassah_id },
+    ],
+    queryFn: async () => {
+      if (!teacherData?.madrassah_id) return [];
+
+      let query = supabase
+        .from("students")
+        .select("id, name, status")
+        .eq("status", "active")
+        .not("madrassah_id", "is", null)
+        .eq("madrassah_id", teacherData.madrassah_id);
+
+      if (!isAdmin) {
+        // Teacher view: also filter by the logged-in teacher's section
+        if (teacherData.section) {
+          query = query.eq("section", teacherData.section);
+        } else {
+          // If teacher has no section, they see no students.
+          return [];
+        }
+      }
+
+      query = query.order("name", { ascending: true });
+
+      const { data, error } = await query;
       if (error) {
         console.error("Error fetching students:", error);
         toast({
@@ -137,10 +159,15 @@ const ProgressBookPage = () => {
       }
       return data || [];
     },
-    refetchInterval: 30000
+
+    enabled: !isLoadingTeacher && !!teacherData,
+    refetchInterval: 30000,
   });
-  const currentTeacherId = isTeacher ? teacherId : selectedTeacherId || (teachers && teachers.length > 0 ? teachers[0]?.id : undefined);
-  useRealtimeLeaderboard(currentTeacherId, () => {
+
+  const currentTeacherId = teacherId;
+
+  useRealtimeLeaderboard(currentTeacherId ?? undefined, () => {
+
     // Intentionally empty, realtime updates might trigger refetch of other queries if needed
   });
   const filteredStudents = students?.filter(student => student.name.toLowerCase().includes(searchQuery.toLowerCase()));
@@ -280,6 +307,7 @@ const ProgressBookPage = () => {
                           </Card>}
                       </div>
                     </div>
+
                   </TabsContent>
 
                   <TabsContent value="recent" className="mt-4 sm:mt-6">
@@ -300,6 +328,7 @@ const ProgressBookPage = () => {
                     </Card>
                   </TabsContent>
 
+
                   <TabsContent value="reports" className="mt-4 sm:mt-6">
                     <Card className="p-8 text-center bg-gradient-to-br from-purple-50 to-pink-50 border-purple-200">
                       <div className="flex flex-col items-center space-y-4">
@@ -319,6 +348,7 @@ const ProgressBookPage = () => {
                   </TabsContent>
                 </Tabs>
               </TabsContent>
+
 
               <TabsContent value="classroom" className="mt-4 sm:mt-6">
                 {isAdmin && <Card className="p-4 mb-4 bg-gradient-to-r from-green-50 to-emerald-50 border-green-200">
@@ -348,6 +378,7 @@ const ProgressBookPage = () => {
             </Tabs>
           </CardContent>
         </div>
+
       </Card>
     </div>;
 };

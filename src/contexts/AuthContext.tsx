@@ -11,7 +11,7 @@
  *
  * The `useAuth` hook is a convenience hook for consuming the `AuthContext`.
  */
-import { ReactNode, useEffect, useState } from "react";
+import { ReactNode, useContext, useEffect, useState } from "react";
 import { Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client.ts";
 import { useToast } from "@/hooks/use-toast.ts";
@@ -158,4 +158,23 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       {children}
     </AuthContext.Provider>
   );
+};
+
+/**
+ * @function useAuth
+ * @description Custom hook to access the authentication context.
+ *
+ * This hook is a simple wrapper around `useContext(AuthContext)` that provides a more
+ * convenient way to access the auth state. It ensures that the hook is used within an
+ * `AuthProvider` tree.
+ *
+ * @returns {AuthContextType} The authentication context value.
+ * @throws {Error} If the hook is used outside of an `AuthProvider`.
+ */
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (context === undefined) {
+    throw new Error("useAuth must be used within an AuthProvider");
+  }
+  return context;
 };
