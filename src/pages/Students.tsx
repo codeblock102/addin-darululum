@@ -15,6 +15,8 @@ import {
 } from "@/components/ui/card.tsx";
 import { Progress } from "@/components/ui/progress.tsx";
 import { Skeleton } from "@/components/ui/skeleton.tsx";
+import { useAuth } from "@/contexts/AuthContext.tsx";
+import { useRBAC } from "@/hooks/useRBAC.ts";
 
 interface Student {
   id: string;
@@ -24,6 +26,8 @@ interface Student {
   guardian_name: string | null;
   guardian_contact: string | null;
   status: "active" | "inactive";
+  madrassah_id?: string;
+  section?: string;
 }
 
 const Students = () => {
@@ -31,21 +35,52 @@ const Students = () => {
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-  const { data: students, isLoading: isLoadingStudents } = useQuery<Student[]>({
-    queryKey: ["students"],
+  const { session } = useAuth();
+  const { isAdmin } = useRBAC();
+  const userId = session?.user?.id;
+
+  const { data: userData, isLoading: isLoadingUser } = useQuery({
+    queryKey: ["userData", userId],
     queryFn: async () => {
+      if (!userId) return null;
       const { data, error } = await supabase
+        .from("profiles")
+        .select("madrassah_id, section")
+        .eq("id", userId)
+        .single();
+      if (error) {
+        console.error("Error fetching user data:", error);
+        throw error;
+      }
+      return data;
+    },
+    enabled: !!userId,
+  });
+
+  const { data: students, isLoading: isLoadingStudents } = useQuery<Student[]>({
+    queryKey: ["students", { isAdmin, userData }],
+    queryFn: async () => {
+      if (!userData?.madrassah_id) return [];
+
+      let query = supabase
         .from("students")
-        .select(
-          "id, name, date_of_birth, enrollment_date, guardian_name, guardian_contact, status",
-        );
+        .select("*")
+        .eq("madrassah_id", userData.madrassah_id);
+
+      // If the user is a teacher, also filter by section.
+      if (!isAdmin && userData.section) {
+        query = query.eq("section", userData.section);
+      }
+
+      const { data, error } = await query;
 
       if (error) {
-        console.error("Error fetching students for stats:", error);
+        console.error("Error fetching students:", error);
         throw error;
       }
       return data || [];
     },
+    enabled: !isLoadingUser && !!userData,
   });
 
   const totalStudents = students?.length || 0;
@@ -58,6 +93,25 @@ const Students = () => {
     activeStudents,
     avgAttendance,
   };
+
+
+  const filteredStudents = students?.filter(
+    (student) =>
+      student.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (student.guardian_name &&
+        student.guardian_name.toLowerCase().includes(
+          searchQuery.toLowerCase(),
+        )),
+  );
+
+  /**
+   * @function handleEditStudent
+   * @description Sets the selected student and opens the dialog for editing.
+   * @param {Student} student - The student object to be edited.
+   * @input student - The student data to populate the edit dialog.
+   * @output Opens the student editing dialog pre-filled with the selected student's information.
+   * @returns {void}
+   */
 
   const handleEditStudent = (student: Student) => {
     setSelectedStudent(student);
@@ -204,6 +258,13 @@ const Students = () => {
             </CardContent>
           </Card>
         </div>
+
+        <StudentList
+          students={filteredStudents}
+          isLoading={isLoadingStudents}
+          onEdit={handleEditStudent}
+        />
+      </div>
 
         {/* Enhanced Search and List Section */}
         <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg overflow-hidden">
