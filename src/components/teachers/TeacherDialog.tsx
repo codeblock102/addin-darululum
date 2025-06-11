@@ -180,15 +180,6 @@ export const TeacherDialog = (
     return password;
   };
 
-  // Create a valid username from teacher name
-  const createValidUsername = (name: string) => {
-    return name
-      .toLowerCase()
-      .replace(/\s+/g, ".") // Replace spaces with dots
-      .replace(/[^a-z0-9.]/g, "") // Remove any characters that aren't letters, numbers, or dots
-      .trim(); // Remove any leading/trailing spaces
-  };
-
   const isValidUUID = (id: string | undefined): id is string => {
     if (!id) return false;
     const uuidRegex =
@@ -290,18 +281,24 @@ export const TeacherDialog = (
       });
       queryClient.invalidateQueries({ queryKey: ["teacher-stats"] });
       onClose();
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const supabaseError = error as {
+        message: string;
+        status?: number;
+        details?: string;
+        hint?: string;
+      };
       console.group("Supabase Error Details");
-      console.error("Message:", error.message);
-      if (error.status) console.error("Status:", error.status);
-      if (error.details) console.error("Details:", error.details);
-      if (error.hint) console.error("Hint:", error.hint);
+      console.error("Message:", supabaseError.message);
+      if (supabaseError.status) console.error("Status:", supabaseError.status);
+      if (supabaseError.details) console.error("Details:", supabaseError.details);
+      if (supabaseError.hint) console.error("Hint:", supabaseError.hint);
       console.error("Full Error Object:", error);
       console.groupEnd();
 
       toast({
         title: "Error",
-        description: error.message ||
+        description: supabaseError.message ||
           "An unexpected error occurred. Check the console for details.",
         variant: "destructive",
       });
