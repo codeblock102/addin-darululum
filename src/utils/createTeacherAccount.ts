@@ -18,7 +18,7 @@ export const createTeacherWithAccount = async (
 
     // Check if teacher already exists with this email
     const { data: existingTeacher } = await supabase
-      .from("teachers")
+      .from("profiles")
       .select("id, name, email")
       .eq("email", email)
       .maybeSingle();
@@ -27,12 +27,13 @@ export const createTeacherWithAccount = async (
     let teacherData = existingTeacher;
 
     if (!existingTeacher) {
-      // 1. Create teacher record in the teachers table
+      // 1. Create teacher record in the profiles table
       const { data: newTeacherData, error: teacherError } = await supabase
-        .from("teachers")
+        .from("profiles")
         .insert([{
           name: name,
           email: email,
+          role: "teacher", // Assign the role here
           subject: "Islamic Studies",
           experience: "10+ years",
         }])
@@ -64,11 +65,11 @@ export const createTeacherWithAccount = async (
     if (existingUser) {
       console.log("User account already exists:", existingUser);
 
-      // Update user metadata if teacher_id is missing
-      if (!existingUser.user_metadata?.teacher_id) {
+      // Update user metadata if profile_id is missing
+      if (!existingUser.user_metadata?.profile_id) {
         await supabase.auth.updateUser({
           data: {
-            teacher_id: teacherId,
+            profile_id: teacherId, // Use profile_id instead
             role: "teacher",
           },
         });
@@ -91,7 +92,7 @@ export const createTeacherWithAccount = async (
           password: password,
           email_confirm: true, // Auto-confirm email
           user_metadata: {
-            teacher_id: teacherId,
+            profile_id: teacherId, // Use profile_id instead
             role: "teacher",
           },
         });
@@ -120,7 +121,7 @@ export const createTeacherWithAccount = async (
           password: password,
           options: {
             data: {
-              teacher_id: teacherId,
+              profile_id: teacherId, // Use profile_id instead
               role: "teacher",
             },
             emailRedirectTo: `${globalThis.location.origin}/auth`,
@@ -155,16 +156,4 @@ export const createTeacherWithAccount = async (
       error: errorMessage,
     };
   }
-};
-
-// Execute the account creation for Mufti Ammar
-export const createMuftiAmmarAccount = async () => {
-  const result = await createTeacherWithAccount(
-    "Mufti Ammar Mulla",
-    "Ammarmulla21@gmail.com",
-    "Ammarmulla2021",
-  );
-
-  console.log("Account creation result:", result);
-  return result;
-};
+}; 

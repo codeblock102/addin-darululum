@@ -23,6 +23,7 @@ import {
 import { Progress } from "@/components/ui/progress.tsx";
 import { Skeleton } from "@/components/ui/skeleton.tsx";
 import { useAuth } from "@/contexts/AuthContext.tsx";
+import { useRBAC } from "@/hooks/useRBAC.ts";
 
 interface Student {
   id: string;
@@ -49,42 +50,41 @@ const Students = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   const { session } = useAuth();
-  const userRole = session?.user?.user_metadata?.role;
-  const teacherId = session?.user?.user_metadata?.teacher_id;
+  const { isAdmin } = useRBAC();
+  const userId = session?.user?.id;
 
-  const { data: teacherData, isLoading: isLoadingTeacher } = useQuery({
-    queryKey: ["teacherData", teacherId],
+  const { data: userData, isLoading: isLoadingUser } = useQuery({
+    queryKey: ["userData", userId],
     queryFn: async () => {
-      if (!teacherId) return null;
+      if (!userId) return null;
       const { data, error } = await supabase
-        .from("teachers")
+        .from("profiles")
         .select("madrassah_id, section")
-        .eq("id", teacherId)
+        .eq("id", userId)
         .single();
       if (error) {
-        console.error("Error fetching teacher data:", error);
+        console.error("Error fetching user data:", error);
         throw error;
       }
       return data;
     },
-    enabled: userRole === "teacher" && !!teacherId,
+    enabled: !!userId,
   });
 
   const { data: students, isLoading: isLoadingStudents } = useQuery<Student[]>({
-    queryKey: ["students", { role: userRole, teacherData }],
+    queryKey: ["students", { isAdmin, userData }],
     queryFn: async () => {
-      let query = supabase.from("students").select("*");
+      if (!userData?.madrassah_id) return [];
 
-      if (userRole === "teacher") {
-        if (teacherData?.madrassah_id && teacherData?.section) {
-          query = query
-            .eq("madrassah_id", teacherData.madrassah_id)
-            .eq("section", teacherData.section);
-        } else {
-          return [];
-        }
+      let query = supabase
+        .from("students")
+        .select("*")
+        .eq("madrassah_id", userData.madrassah_id);
+
+      // If the user is a teacher, also filter by section.
+      if (!isAdmin && userData.section) {
+        query = query.eq("section", userData.section);
       }
-      
 
       const { data, error } = await query;
 
@@ -94,7 +94,7 @@ const Students = () => {
       }
       return data || [];
     },
-    enabled: userRole !== "teacher" || !isLoadingTeacher,
+    enabled: !isLoadingUser && !!userData,
   });
 
   const totalStudents = students?.length || 0;

@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button.tsx";
 import { Loader2, Search, UserRound } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { AddStudentDialog } from "../students/AddStudentDialog.tsx";
+import { useRBAC } from "@/hooks/useRBAC.ts";
 
 interface StudentSearchProps {
   teacherId?: string;
@@ -20,13 +21,14 @@ interface StudentSearchProps {
 export const StudentSearch = ({ teacherId }: StudentSearchProps) => {
   const [searchQuery, setSearchQuery] = useState("");
   const navigate = useNavigate();
+  const { isAdmin } = useRBAC();
 
   const { data: teacherData, isLoading: isLoadingTeacher } = useQuery({
     queryKey: ["teacherDataForDashboardSearch", teacherId],
     queryFn: async () => {
       if (!teacherId) return null;
       const { data, error } = await supabase
-        .from("teachers")
+        .from("profiles")
         .select("madrassah_id, section")
         .eq("id", teacherId)
         .single();
@@ -41,16 +43,23 @@ export const StudentSearch = ({ teacherId }: StudentSearchProps) => {
 
   // Fetch all students
   const { data: students, isLoading: isLoadingStudents } = useQuery({
-    queryKey: ["teacher-students-for-dashboard", teacherData],
+    queryKey: ["teacher-students-for-dashboard", teacherData, isAdmin],
     queryFn: async () => {
       if (!teacherData) return [];
-      const { data, error } = await supabase
+      let query = supabase
         .from("students")
         .select("id, name")
         .eq("status", "active")
-        .eq("madrassah_id", teacherData.madrassah_id)
-        .eq("section", teacherData.section)
-        .order("name", { ascending: true });
+        .eq("madrassah_id", teacherData.madrassah_id);
+
+      // If the user is a teacher, also filter by section. Admins see all sections.
+      if (!isAdmin && teacherData.section) {
+        query = query.eq("section", teacherData.section);
+      }
+
+      query = query.order("name", { ascending: true });
+
+      const { data, error } = await query;
 
       if (error) {
         console.error("Error fetching students:", error);

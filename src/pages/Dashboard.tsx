@@ -96,7 +96,7 @@ const Dashboard = () => { // Renamed from TeacherPortal to Dashboard
       console.log("Fetching teacher profile for email:", session.user.email);
 
       const { data, error } = await supabase
-        .from("teachers")
+        .from("profiles")
         .select("id, name, subject, email, bio, phone")
         .eq("email", session.user.email)
         .maybeSingle();
@@ -144,7 +144,7 @@ const Dashboard = () => { // Renamed from TeacherPortal to Dashboard
 
         // Explicitly check if a teacher profile exists in the database
         const { data: teacherExistsData, error: checkError } = await supabase
-          .from("teachers")
+          .from("profiles")
           .select("id")
           .eq("email", session.user.email)
           .maybeSingle();
@@ -202,7 +202,7 @@ const Dashboard = () => { // Renamed from TeacherPortal to Dashboard
   // If user is admin, they should be able to view the teacher portal with a generic profile
   if (isAdmin) {
     const adminViewProfile: Teacher = {
-      id: "admin-view",
+      id: session?.user?.id ?? "fallback-admin-id",
       name: "Admin View",
       subject: "Administration",
       email: session?.user?.email || "admin@example.com",

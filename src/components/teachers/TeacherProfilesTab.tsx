@@ -6,9 +6,10 @@ import { Teacher } from "@/types/teacher";
 
 interface TeacherProfilesTabProps {
   onEditTeacher: (teacher: Teacher) => void;
+  madrassahId?: string;
 }
 
-export function TeacherProfilesTab({ onEditTeacher }: TeacherProfilesTabProps) {
+export function TeacherProfilesTab({ onEditTeacher, madrassahId }: TeacherProfilesTabProps) {
   const [searchQuery, setSearchQuery] = useState("");
 
   return (
@@ -25,6 +26,7 @@ export function TeacherProfilesTab({ onEditTeacher }: TeacherProfilesTabProps) {
         <TeacherList
           searchQuery={searchQuery}
           onEdit={onEditTeacher}
+          madrassahId={madrassahId}
         />
       </div>
     </Card>

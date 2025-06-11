@@ -83,7 +83,7 @@ export function ClassroomRecords({ teacherId, isAdmin }: ClassroomRecordsProps) 
     queryFn: async () => {
       if (!teacherId) return null;
       const { data, error } = await supabase
-        .from("teachers")
+        .from("profiles")
         .select("madrassah_id, section")
         .eq("id", teacherId)
         .single();
@@ -109,8 +109,12 @@ export function ClassroomRecords({ teacherId, isAdmin }: ClassroomRecordsProps) 
         .not("madrassah_id", "is", null);
 
       if (isAdmin) {
-        // Admins see all students
-        query = query.order("name", { ascending: true });
+        // Admins see all students in their madrassah
+        if (teacherData?.madrassah_id) {
+          query = query.eq("madrassah_id", teacherData.madrassah_id);
+        } else {
+          return []; // No madrassah, no students
+        }
       } else {
         // If not an admin, must be a teacher. Apply teacher filters.
         if (teacherData?.madrassah_id && teacherData?.section) {

@@ -62,6 +62,13 @@ export const DhorBook = ({
           // Teacher has no section/madrassah, so they are not authorized to see any student.
           return [];
         }
+      } else {
+        // For Admins, check if student is in their madrassah
+        if (teacherData?.madrassah_id) {
+          query = query.eq("madrassah_id", teacherData.madrassah_id);
+        } else {
+          return [];
+        }
       }
       // For Admins, query remains as a check for student existence by ID.
 
