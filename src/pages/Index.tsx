@@ -20,9 +20,10 @@ export default function Index() {
     try {
       const { supabase } = await import("@/integrations/supabase/client.ts");
       const { data } = await supabase
-        .from("teachers")
+        .from("profiles")
         .select("id")
         .eq("email", email)
+        .eq("role", "teacher")
         .maybeSingle();
 
       if (data) {
