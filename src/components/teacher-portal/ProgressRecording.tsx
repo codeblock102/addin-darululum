@@ -44,8 +44,10 @@ export const ProgressRecording = ({
   const { data: teacherData } = useQuery({
     queryKey: ["teacher-details", teacherId],
     queryFn: async () => {
-      const { data, error } = await supabase.from("teachers").select("id, name")
-        .eq("id", teacherId).single();
+      const { data, error } = await supabase.from("profiles").select("id, name")
+        .eq("id", teacherId)
+        .eq("role", "teacher")
+        .single();
       if (error) {
         console.error("Error fetching teacher details:", error);
         return null;
