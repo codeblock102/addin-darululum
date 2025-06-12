@@ -1,3 +1,4 @@
+
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client.ts";
 import {
@@ -14,8 +15,9 @@ export const TeacherManagement = () => {
     queryKey: ["teacher-stats"],
     queryFn: async () => {
       const { data: teachersData, error: teachersError } = await supabase
-        .from("teachers")
-        .select("id");
+        .from("profiles")
+        .select("id")
+        .eq("role", "teacher");
 
       if (teachersError) throw teachersError;
 
