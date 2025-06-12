@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import {
   AlertDialog,
@@ -62,9 +63,9 @@ export function AccountActionDialog({
         }
 
         case "delete": {
-          // Delete the teacher record
+          // Delete the teacher record from profiles
           const { error } = await supabase
-            .from("teachers")
+            .from("profiles")
             .delete()
             .eq("id", teacher.id);
 

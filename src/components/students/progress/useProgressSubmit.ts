@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client.ts";
@@ -20,9 +21,10 @@ export const useProgressSubmit = (studentId: string) => {
       try {
         // First, check if user is a teacher
         const { data: teacherData, error: teacherError } = await supabase
-          .from("teachers")
+          .from("profiles")
           .select("id, name")
           .eq("email", session.user.email)
+          .eq("role", "teacher")
           .single();
 
         if (!teacherError && teacherData) {
@@ -47,9 +49,10 @@ export const useProgressSubmit = (studentId: string) => {
     try {
       // First, check if user is a teacher
       const { data: teacherData, error: teacherError } = await supabase
-        .from("teachers")
+        .from("profiles")
         .select("id, name")
         .eq("email", session.user.email)
+        .eq("role", "teacher")
         .single();
 
       if (!teacherError && teacherData) {

@@ -71,9 +71,9 @@ export function TeacherEditDialog({
 
     setLoading(true);
     try {
-      // Update teacher information in the database
+      // Update teacher information in the profiles table
       const { error } = await supabase
-        .from("teachers")
+        .from("profiles")
         .update({
           name: formData.name,
           email: formData.email,
