@@ -105,7 +105,7 @@ export type Database = {
             foreignKeyName: "classes_teacher_id_fkey"
             columns: ["teacher_id"]
             isOneToOne: false
-            referencedRelation: "teachers"
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -191,7 +191,7 @@ export type Database = {
           id: string
           location: string | null
           name: string
-          section: string | null
+          section: string[] | null
         }
         Insert: {
           admin_id?: string | null
@@ -199,7 +199,7 @@ export type Database = {
           id?: string
           location?: string | null
           name: string
-          section?: string | null
+          section?: string[] | null
         }
         Update: {
           admin_id?: string | null
@@ -207,36 +207,56 @@ export type Database = {
           id?: string
           location?: string | null
           name?: string
-          section?: string | null
+          section?: string[] | null
         }
         Relationships: []
       }
       profiles: {
         Row: {
-          avatar_url: string | null
-          created_at: string | null
-          full_name: string | null
+          bio: string | null
+          created_at: string
+          email: string | null
           id: string
-          updated_at: string | null
-          username: string | null
+          madrassah_id: string | null
+          name: string
+          phone: string | null
+          role: string | null
+          section: string | null
+          subject: string | null
         }
         Insert: {
-          avatar_url?: string | null
-          created_at?: string | null
-          full_name?: string | null
-          id: string
-          updated_at?: string | null
-          username?: string | null
+          bio?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          madrassah_id?: string | null
+          name: string
+          phone?: string | null
+          role?: string | null
+          section?: string | null
+          subject?: string | null
         }
         Update: {
-          avatar_url?: string | null
-          created_at?: string | null
-          full_name?: string | null
+          bio?: string | null
+          created_at?: string
+          email?: string | null
           id?: string
-          updated_at?: string | null
-          username?: string | null
+          madrassah_id?: string | null
+          name?: string
+          phone?: string | null
+          role?: string | null
+          section?: string | null
+          subject?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "teachers_madrassah_id_fkey"
+            columns: ["madrassah_id"]
+            isOneToOne: false
+            referencedRelation: "madrassahs"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       progress: {
         Row: {
@@ -495,7 +515,7 @@ export type Database = {
             foreignKeyName: "students_teachers_teacher_id_fkey"
             columns: ["teacher_id"]
             isOneToOne: false
-            referencedRelation: "teachers"
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -520,50 +540,6 @@ export type Database = {
           total_ayat?: number
         }
         Relationships: []
-      }
-      teachers: {
-        Row: {
-          bio: string | null
-          created_at: string
-          email: string | null
-          id: string
-          madrassah_id: string | null
-          name: string
-          phone: string | null
-          section: string | null
-          subject: string
-        }
-        Insert: {
-          bio?: string | null
-          created_at?: string
-          email?: string | null
-          id?: string
-          madrassah_id?: string | null
-          name: string
-          phone?: string | null
-          section?: string | null
-          subject: string
-        }
-        Update: {
-          bio?: string | null
-          created_at?: string
-          email?: string | null
-          id?: string
-          madrassah_id?: string | null
-          name?: string
-          phone?: string | null
-          section?: string | null
-          subject?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "teachers_madrassah_id_fkey"
-            columns: ["madrassah_id"]
-            isOneToOne: false
-            referencedRelation: "madrassahs"
-            referencedColumns: ["id"]
-          },
-        ]
       }
       user_roles: {
         Row: {
