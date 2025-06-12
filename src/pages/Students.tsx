@@ -94,7 +94,6 @@ const Students = () => {
     avgAttendance,
   };
 
-
   const filteredStudents = students?.filter(
     (student) =>
       student.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -259,13 +258,6 @@ const Students = () => {
           </Card>
         </div>
 
-        <StudentList
-          students={filteredStudents}
-          isLoading={isLoadingStudents}
-          onEdit={handleEditStudent}
-        />
-      </div>
-
         {/* Enhanced Search and List Section */}
         <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg overflow-hidden">
           <CardHeader className="bg-gradient-to-r from-gray-50 to-blue-50 border-b border-gray-100 pb-4">
@@ -293,7 +285,11 @@ const Students = () => {
           </CardHeader>
           
           <CardContent className="p-0">
-            <StudentList searchQuery={searchQuery} onEdit={handleEditStudent} />
+            <StudentList 
+              students={filteredStudents}
+              isLoading={isLoadingStudents}
+              onEdit={handleEditStudent}
+            />
           </CardContent>
         </Card>
 
