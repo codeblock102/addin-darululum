@@ -23,7 +23,7 @@ interface UserInfo {
 }
 
 export default function ManualRoleSetup() {
-  const [isLoading, setIs Loading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [selectedRole, setSelectedRole] = useState<"admin" | "teacher">(
     "admin",
   );
