@@ -72,9 +72,10 @@ export const useGradingData = (teacherId: string) => {
     queryKey: ["teacher-details-for-grading", teacherId],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("teachers")
+        .from("profiles")
         .select("id, name")
         .eq("id", teacherId)
+        .eq("role", "teacher")
         .single();
 
       if (error) {
