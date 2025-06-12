@@ -2,6 +2,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "./use-auth";
+import { hasPermission as checkPermission, RolePermission } from "@/utils/roleUtils";
 
 interface UserRole {
   role?: string;
@@ -60,6 +61,16 @@ export const useRBAC = () => {
   const isTeacher = userRole?.role === "teacher";
   const teacherId = userRole?.teacher_id;
 
+  // Add hasPermission function
+  const hasPermission = async (permission: RolePermission): Promise<boolean> => {
+    try {
+      return await checkPermission(permission);
+    } catch (error) {
+      console.error("Error checking permission:", error);
+      return false;
+    }
+  };
+
   console.log("RBAC Hook - Role:", userRole?.role, "Admin:", isAdmin, "Teacher:", isTeacher, "Teacher ID:", teacherId);
 
   return {
@@ -68,5 +79,6 @@ export const useRBAC = () => {
     teacherId,
     role: userRole?.role,
     isLoading,
+    hasPermission,
   };
 };

@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client.ts";
 import {
@@ -7,7 +8,7 @@ import {
   CardTitle,
 } from "@/components/ui/card.tsx";
 import { Button } from "@/components/ui/button.tsx";
-import { useToast } from "@/components/ui/use-toast.ts";
+import { useToast } from "@/hooks/use-toast.ts";
 import { AlertTriangle, Check, Loader2 } from "lucide-react";
 import { DashboardLayout } from "@/components/layouts/DashboardLayout.tsx";
 import { Link } from "react-router-dom";
@@ -28,9 +29,10 @@ const CreateTeacherProfileForTestAccount = () => {
       try {
         setIsChecking(true);
         const { data, error } = await supabase
-          .from("teachers")
+          .from("profiles")
           .select("*")
           .eq("email", testEmail)
+          .eq("role", "teacher")
           .maybeSingle();
 
         if (error) throw error;
@@ -53,14 +55,14 @@ const CreateTeacherProfileForTestAccount = () => {
 
     try {
       const { error } = await supabase
-        .from("teachers")
+        .from("profiles")
         .insert([
           {
             name: "Mufti Ammar Mulla",
             email: testEmail,
+            role: "teacher",
             subject: "Islamic Studies",
-            bio:
-              "Islamic studies educator with expertise in Quranic teachings.",
+            bio: "Islamic studies educator with expertise in Quranic teachings.",
           },
         ])
         .select("id, name, email, subject, bio, phone");
