@@ -9,6 +9,7 @@ import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/comp
 import { UseFormReturn } from "react-hook-form";
 import { getInitials } from "@/utils/stringUtils.ts";
 import { AttendanceFormValues } from "@/types/attendance-form.ts";
+import { useIsMobile } from "@/hooks/use-mobile.tsx";
 
 interface StudentGridProps {
   form: UseFormReturn<AttendanceFormValues>;
@@ -26,6 +27,8 @@ export function StudentGrid({
   multiSelect = false,
   selectedStudents = new Set()
 }: StudentGridProps) {
+  const isMobile = useIsMobile();
+  
   const { data: students, isLoading } = useQuery({
     queryKey: ["all-students-grid"],
     queryFn: async () => {
@@ -48,9 +51,9 @@ export function StudentGrid({
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center p-8">
-        <Loader2 className="h-6 w-6 animate-spin mr-2" />
-        Loading students...
+      <div className="flex items-center justify-center p-6 sm:p-8">
+        <Loader2 className="h-5 w-5 sm:h-6 sm:w-6 animate-spin mr-2" />
+        <span className="text-sm sm:text-base">Loading students...</span>
       </div>
     );
   }
@@ -77,12 +80,12 @@ export function StudentGrid({
       name="student_id"
       render={({ field }) => (
         <FormItem>
-          <FormLabel className="text-gray-900 dark:text-gray-100 font-medium">
+          <FormLabel className="text-gray-900 dark:text-gray-100 font-medium text-sm sm:text-base">
             {multiSelect ? "Select Students (Multiple)" : "Select Student"}
           </FormLabel>
           <FormControl>
-            <ScrollArea className="h-80 w-full rounded-lg border-2 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm p-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            <ScrollArea className={`${isMobile ? 'h-64' : 'h-80'} w-full rounded-lg border-2 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm p-3 sm:p-4`}>
+              <div className={`grid gap-2 sm:gap-3 ${isMobile ? 'grid-cols-1' : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3'}`}>
                 {students?.map((student) => {
                   const isSelected = isStudentSelected(student.id);
                   
@@ -97,19 +100,19 @@ export function StudentGrid({
                       onClick={() => handleStudentClick(student.id)}
                     >
                       {isSelected && multiSelect && (
-                        <div className="absolute top-2 right-2 w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center">
-                          <Check className="h-4 w-4 text-white" />
+                        <div className="absolute top-2 right-2 w-5 h-5 sm:w-6 sm:h-6 bg-blue-500 rounded-full flex items-center justify-center">
+                          <Check className="h-3 w-3 sm:h-4 sm:w-4 text-white" />
                         </div>
                       )}
-                      <CardContent className="p-4">
-                        <div className="flex items-center space-x-3">
-                          <Avatar className="h-10 w-10">
-                            <AvatarFallback className="bg-purple-100 text-purple-600 dark:bg-purple-900 dark:text-purple-300 font-medium">
+                      <CardContent className="p-3 sm:p-4">
+                        <div className="flex items-center space-x-2 sm:space-x-3">
+                          <Avatar className="h-8 w-8 sm:h-10 sm:w-10">
+                            <AvatarFallback className="bg-purple-100 text-purple-600 dark:bg-purple-900 dark:text-purple-300 font-medium text-xs sm:text-sm">
                               {getInitials(student.name)}
                             </AvatarFallback>
                           </Avatar>
                           <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
+                            <p className="text-xs sm:text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
                               {student.name}
                             </p>
                             <p className="text-xs text-gray-500 dark:text-gray-400">
@@ -123,8 +126,8 @@ export function StudentGrid({
                 })}
               </div>
               {(!students || students.length === 0) && (
-                <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-                  No students found
+                <div className="text-center py-6 sm:py-8 text-gray-500 dark:text-gray-400">
+                  <p className="text-sm sm:text-base">No students found</p>
                 </div>
               )}
             </ScrollArea>
