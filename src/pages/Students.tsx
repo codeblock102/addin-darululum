@@ -314,7 +314,8 @@ const Students = () => {
           </CardHeader>
 
           <CardContent className="p-0">
-            <StudentList
+            <StudentList 
+
               students={filteredStudents}
               isLoading={isLoadingStudents}
               onEdit={handleEditStudent}

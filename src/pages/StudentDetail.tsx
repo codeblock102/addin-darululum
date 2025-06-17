@@ -1,11 +1,3 @@
-/**
- * @file StudentDetail.tsx
- * @description This file defines the `StudentDetail` component, which displays detailed information about a specific student.
- * It fetches student data and their progress entries from a Supabase backend.
- * The component includes sections for student information, progress overview (chart and list), and a Dhor (memorization) book.
- * It allows users to navigate back to the students list and add new progress entries for the student.
- * The component handles loading and error states, displaying appropriate messages to the user.
- */
 
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
@@ -30,6 +22,7 @@ import { Skeleton } from "@/components/ui/skeleton.tsx";
 import { NewProgressEntry } from "@/components/students/NewProgressEntry.tsx";
 import { useToast } from "@/hooks/use-toast.ts";
 import { DhorBook } from "@/components/dhor-book/DhorBook.tsx";
+
 import { useAuth } from "@/contexts/AuthContext.tsx";
 import { useTeacherStatus } from "@/hooks/useTeacherStatus.ts";
 
@@ -43,33 +36,18 @@ interface Student {
   status: "active" | "inactive";
 }
 
-/**
- * @function StudentDetail
- * @description The main component for displaying a student's details and progress.
- * It fetches student data and progress entries based on the student ID from the URL parameters.
- * It uses Tanstack Query for data fetching and caching.
- * It displays student information, a progress chart, a progress list, and a Dhor book.
- * It also provides functionality to add new progress entries.
- * @returns {JSX.Element} The rendered student detail page.
- */
 const StudentDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+
   const { session } = useAuth();
   const { isAdmin } = useTeacherStatus();
 
   const { data: student, isLoading: studentLoading, error: studentError } =
     useQuery({
       queryKey: ["student", id],
-      /**
-       * @function queryFn (for student data)
-       * @description Fetches the details of a specific student from the Supabase 'students' table.
-       * @async
-       * @throws {Error} If the student ID is not provided or if there is an error fetching the data.
-       * @returns {Promise<Student>} A promise that resolves to the student object.
-       */
       queryFn: async () => {
         if (!id) throw new Error("Student ID is required");
 
@@ -105,14 +83,6 @@ const StudentDetail = () => {
 
   const { data: progressEntries, isLoading: progressLoading } = useQuery({
     queryKey: ["student-progress", id],
-    /**
-     * @function queryFn (for progress entries)
-     * @description Fetches the progress entries for a specific student from the Supabase 'progress' table.
-     * The entries are ordered by date in descending order.
-     * @async
-     * @throws {Error} If the student ID is not provided or if there is an error fetching the data.
-     * @returns {Promise<any[]>} A promise that resolves to an array of progress entries.
-     */
     queryFn: async () => {
       if (!id) throw new Error("Student ID is required");
 
@@ -139,10 +109,6 @@ const StudentDetail = () => {
     }
   }, [studentError, navigate, toast]);
 
-  /**
-   * @section Loading State
-   * @description Displays a skeleton loader while student data is being fetched.
-   */
   if (studentLoading) {
     return (
       <div className="space-y-6">
@@ -165,10 +131,6 @@ const StudentDetail = () => {
     );
   }
 
-  /**
-   * @section Not Found State
-   * @description Displays a "Student Not Found" message if the student data is not available.
-   */
   if (!student) {
     return (
       <div className="flex flex-col items-center justify-center h-[60vh]">
@@ -183,11 +145,6 @@ const StudentDetail = () => {
     );
   }
 
-  /**
-   * @section Main Content
-   * @description Renders the main content of the student detail page, including student information,
-   * progress overview, and Dhor book, once the student data is loaded.
-   */
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -311,22 +268,8 @@ const StudentDetail = () => {
           </TabsTrigger>
         </TabsList>
         <TabsContent value="dhor-book">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <BookOpen className="h-5 w-5" />
-                Progress Book
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <DhorBook
-                studentId={student.id}
-                isAdmin={isAdmin}
-                teacherData={userProfileData}
-                isLoadingTeacher={isLoadingUserProfile}
-              />
-            </CardContent>
-          </Card>
+          <DhorBook studentId={student.id} isAdmin={isAdmin} isLoadingTeacher={false} />
+
         </TabsContent>
         <TabsContent value="revisions">
           {student && (

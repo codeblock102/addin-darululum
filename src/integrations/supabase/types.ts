@@ -102,6 +102,7 @@ export type Database = {
         };
         Relationships: [
           {
+
             foreignKeyName: "classes_teacher_id_fkey";
             columns: ["teacher_id"];
             isOneToOne: false;
@@ -492,6 +493,7 @@ export type Database = {
         };
         Relationships: [
           {
+
             foreignKeyName: "students_teachers_teacher_id_fkey";
             columns: ["teacher_id"];
             isOneToOne: false;
@@ -514,6 +516,7 @@ export type Database = {
           total_ayat: number;
         };
         Update: {
+
           id?: number;
           name?: string;
           surah_number?: number;

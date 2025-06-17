@@ -74,6 +74,7 @@ export const useGradingData = (teacherId: string) => {
         .from("profiles")
         .select("id, name")
         .eq("id", teacherId)
+        .eq("role", "teacher")
         .single();
 
       if (error) {
