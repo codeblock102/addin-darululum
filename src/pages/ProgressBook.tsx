@@ -3,28 +3,53 @@ import { useEffect, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card.tsx";
 import { supabase } from "@/integrations/supabase/client.ts";
 import { useQuery } from "@tanstack/react-query";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs.tsx";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select.tsx";
-import { Button } from "@/components/ui/button.tsx";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@/components/ui/tabs.tsx";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select.tsx";
 import { Input } from "@/components/ui/input.tsx";
 import { DhorBook as DhorBookComponent } from "@/components/dhor-book/DhorBook.tsx";
 import { ClassroomRecords } from "@/components/dhor-book/ClassroomRecords.tsx";
-import { TeacherStatsSection } from "@/components/teachers/TeacherStatsSection.tsx";
-import { AlertCircle, Book, CalendarDays, FileText, Loader2, Search, Users, BookOpen, TrendingUp, Download } from "lucide-react";
+import {
+  Book,
+  BookOpen,
+  CalendarDays,
+  FileText,
+  Loader2,
+  Search,
+  TrendingUp,
+  Users,
+} from "lucide-react";
 import { useTeacherStatus } from "@/hooks/useTeacherStatus.ts";
-import { useRealtimeLeaderboard } from "@/hooks/useRealtimeLeaderboard.ts";
 import { useToast } from "@/hooks/use-toast.ts";
-import { useIsMobile } from "@/hooks/use-mobile";
+import { AlertCircle } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext.tsx";
 
 const ProgressBookPage = () => {
   const { toast } = useToast();
-  const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
+
+  const [selectedStudentId, setSelectedStudentId] = useState<string | null>(
+    null,
+  );
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState("all");
   const [viewMode, setViewMode] = useState<"daily" | "classroom">("daily");
-  const [selectedTeacherId, setSelectedTeacherId] = useState<string | null>(null);
+  const [selectedTeacherId, setSelectedTeacherId] = useState<
+    string | undefined
+  >(undefined);
 
-  const { isAdmin, teacherId } = useTeacherStatus();
+  const { isAdmin, teacherId: currentTeacherId } = useTeacherStatus();
+  const { session } = useAuth();
+  const userId = session?.user?.id;
 
   useEffect(() => {
     const urlParams = new URLSearchParams(globalThis.location.search);
@@ -34,94 +59,126 @@ const ProgressBookPage = () => {
     }
   }, []);
 
+
+  useEffect(() => {
+    if (!isAdmin && currentTeacherId) {
+      setSelectedTeacherId(currentTeacherId);
+    }
+  }, [isAdmin, currentTeacherId]);
+
   const { data: teachers } = useQuery({
-    queryKey: ["active-teachers"],
+    queryKey: ["active-teachers", "role", "teacher"],
     queryFn: async () => {
       const { data, error } = await supabase.from("profiles").select("id, name")
         .eq("role", "teacher")
         .order("name", { ascending: true });
-
       if (error) {
         console.error("Error fetching teachers:", error);
         return [];
       }
       return data || [];
-    }
+    },
+    enabled: isAdmin, // Only fetch all teachers if the user is an admin
   });
 
-  const { data: teacherData, isLoading: isLoadingTeacher } = useQuery({
-    queryKey: ["teacherData", teacherId],
+  const { data: userProfileData, isLoading: isLoadingUserProfile } = useQuery({
+    queryKey: ["userProfileForProgressBook", userId],
     queryFn: async () => {
-      if (!teacherId) return null;
+      if (!userId) return null;
       const { data, error } = await supabase
         .from("profiles")
         .select("madrassah_id, section")
-        .eq("id", teacherId)
+        .eq("id", userId)
         .single();
       if (error) {
-        console.error("Error fetching teacher data:", error);
+        console.error("Error fetching user profile data:", error);
         throw error;
       }
       return data;
     },
-    enabled: !!teacherId,
+    enabled: !!userId,
   });
 
   const { data: students, isLoading: studentsLoading } = useQuery({
     queryKey: [
       "students-for-progress-book",
-      { isAdmin, userMadrassahId: teacherData?.madrassah_id },
+      {
+        isAdmin,
+        userMadrassahId: userProfileData?.madrassah_id,
+        selectedTeacherId: isAdmin ? selectedTeacherId : currentTeacherId,
+      },
     ],
     queryFn: async () => {
-      if (!teacherData?.madrassah_id) return [];
+      if (!userProfileData?.madrassah_id) return [];
 
       let query = supabase
         .from("students")
         .select("id, name, status")
         .eq("status", "active")
-        .not("madrassah_id", "is", null)
-        .eq("madrassah_id", teacherData.madrassah_id);
+        .eq("madrassah_id", userProfileData.madrassah_id);
 
-      if (!isAdmin) {
-        // Teacher view: also filter by the logged-in teacher's section
-        if (teacherData.section) {
-          query = query.eq("section", teacherData.section);
-        } else {
-          // If teacher has no section, they see no students.
+      if (isAdmin) {
+        if (selectedTeacherId && selectedTeacherId !== "all") {
+          const { data: studentIds, error: studentIdError } = await supabase
+            .from("students_teachers")
+            .select("student_id")
+            .eq("teacher_id", selectedTeacherId);
+
+          if (studentIdError) {
+            console.error(
+              "Error fetching student IDs for teacher",
+              studentIdError,
+            );
+            return [];
+          }
+          const ids = studentIds.map((s) => s.student_id);
+          query = query.in("id", ids);
+        }
+      } else if (currentTeacherId && userProfileData.section) {
+        const { data: studentLinks, error: linkError } = await supabase
+          .from("students_teachers")
+          .select("student_id")
+          .eq("teacher_id", currentTeacherId);
+
+        if (linkError) {
+          console.error("Error fetching teacher's students", linkError);
           return [];
         }
+
+        const studentIds = studentLinks.map((link) => link.student_id);
+
+        if (studentIds.length === 0) {
+          return [];
+        }
+
+        query = query.in("id", studentIds).eq("section", userProfileData.section);
+      } else {
+        return [];
       }
 
-      query = query.order("name", { ascending: true });
+      const { data, error } = await query.order("name", { ascending: true });
 
-      const { data, error } = await query;
       if (error) {
         console.error("Error fetching students:", error);
         toast({
           title: "Error fetching students",
           description: "Could not retrieve student data.",
-          variant: "destructive"
+          variant: "destructive",
         });
         return [];
       }
       return data || [];
     },
-
-    enabled: !isLoadingTeacher && !!teacherData,
-    refetchInterval: 30000,
+    enabled: !isLoadingUserProfile && !!userProfileData,
   });
 
-  const currentTeacherId = teacherId;
 
-  useRealtimeLeaderboard(currentTeacherId ?? undefined, () => {
-    // Intentionally empty, realtime updates might trigger refetch of other queries if needed
-  });
-  
-  const filteredStudents = students?.filter(student => student.name.toLowerCase().includes(searchQuery.toLowerCase()));
-  
+  const filteredStudents = students?.filter((student) =>
+    student.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   return (
     <div className="space-y-4 sm:space-y-6 pb-16">
-      {/* Enhanced Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
         <div className="space-y-2">
           <div className="flex items-center space-x-3">
@@ -140,18 +197,27 @@ const ProgressBookPage = () => {
         </div>
       </div>
 
-      {/* Main Content Card */}
       <Card className="overflow-hidden shadow-lg border-0 bg-white">
         <div className="bg-gradient-to-r from-gray-50 to-blue-50 border-b border-gray-200">
           <CardContent className="p-4 sm:p-6">
-            <Tabs value={viewMode} onValueChange={value => setViewMode(value as "daily" | "classroom")}>
+            <Tabs
+              value={viewMode}
+              onValueChange={(value) =>
+                setViewMode(value as "daily" | "classroom")}
+            >
               <div className="mb-4 sm:mb-6">
                 <TabsList className="w-full grid grid-cols-2 bg-white shadow-sm border">
-                  <TabsTrigger value="daily" className="flex items-center gap-2 text-sm sm:text-base py-2 sm:py-3 data-[state=active]:bg-blue-600 data-[state=active]:text-white">
+                  <TabsTrigger
+                    value="daily"
+                    className="flex items-center gap-2 text-sm sm:text-base py-2 sm:py-3 data-[state=active]:bg-blue-600 data-[state=active]:text-white"
+                  >
                     <CalendarDays className="h-4 w-4" />
                     <span>Daily Records</span>
                   </TabsTrigger>
-                  <TabsTrigger value="classroom" className="flex items-center gap-2 text-sm sm:text-base py-2 sm:py-3 data-[state=active]:bg-blue-600 data-[state=active]:text-white">
+                  <TabsTrigger
+                    value="classroom"
+                    className="flex items-center gap-2 text-sm sm:text-base py-2 sm:py-3 data-[state=active]:bg-blue-600 data-[state=active]:text-white"
+                  >
                     <Users className="h-4 w-4" />
                     <span>Leaderboard View</span>
                   </TabsTrigger>
@@ -159,60 +225,99 @@ const ProgressBookPage = () => {
               </div>
 
               <TabsContent value="daily" className="space-y-4 sm:space-y-6">
-                <Tabs value={activeTab} onValueChange={setActiveTab}>
-                  <div className="flex flex-col space-y-4 sm:space-y-0 sm:flex-row sm:justify-between sm:items-center">
-                    <div className="overflow-x-auto">
-                      <TabsList className="flex-nowrap w-full sm:w-auto bg-gray-100">
-                        <TabsTrigger value="all" className="text-xs sm:text-sm whitespace-nowrap px-3 sm:px-4 py-2">
-                          <Users className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-                          All Students
-                        </TabsTrigger>
-                        <TabsTrigger value="recent" className="text-xs sm:text-sm whitespace-nowrap px-3 sm:px-4 py-2">
-                          <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-                          Recent Entries
-                        </TabsTrigger>
-                        <TabsTrigger value="reports" className="text-xs sm:text-sm whitespace-nowrap px-3 sm:px-4 py-2">
-                          <FileText className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-                          Reports
-                        </TabsTrigger>
-                      </TabsList>
-                    </div>
-                    <div className="relative w-full sm:w-auto">
-                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                      <Input placeholder="Search students..." className="pl-10 w-full sm:w-[250px] md:w-[300px] bg-white border-gray-200 focus:border-blue-500 focus:ring-blue-500" value={searchQuery} onChange={e => setSearchQuery(e.target.value)} />
-                    </div>
+                <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 sm:gap-6">
+                  <div className="lg:col-span-1 space-y-4">
+                    {isAdmin && (
+                      <Card className="p-4 bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200">
+                        <h3 className="font-semibold text-gray-900 mb-3 flex items-center">
+                          <Users className="h-4 w-4 mr-2 text-blue-600" />
+                          Filter by Teacher
+                        </h3>
+                        <Select
+                          value={selectedTeacherId}
+                          onValueChange={(id) =>
+                            setSelectedTeacherId(id === "all" ? undefined : id)}
+                        >
+                          <SelectTrigger className="w-full bg-white">
+                            <SelectValue placeholder="All Teachers" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="all">All Teachers</SelectItem>
+                            {teachers?.map((teacher) => (
+                              <SelectItem key={teacher.id} value={teacher.id}>
+                                {teacher.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </Card>
+                    )}
+                    <Card className="p-4 bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200">
+                      <h3 className="font-semibold text-gray-900 mb-3 flex items-center">
+                        <Users className="h-4 w-4 mr-2 text-blue-600" />
+                        Select Student
+                      </h3>
+                      <div className="relative w-full sm:w-auto mb-4">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                        <Input
+                          placeholder="Search students..."
+                          className="pl-10 w-full bg-white border-gray-200 focus:border-blue-500 focus:ring-blue-500"
+                          value={searchQuery}
+                          onChange={(e) => setSearchQuery(e.target.value)}
+                        />
+                      </div>
+                      {studentsLoading
+                        ? (
+                          <div className="flex items-center text-sm text-gray-600 p-3 border rounded-lg bg-white/50">
+                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                            Loading students...
+                          </div>
+                        )
+                        : filteredStudents && filteredStudents.length > 0
+                        ? (
+                          <ul className="space-y-2 max-h-96 overflow-y-auto">
+                            {filteredStudents.map((student) => (
+                              <li key={student.id}>
+                                <button
+                                  onClick={() =>
+                                    setSelectedStudentId(student.id)}
+                                  className={`w-full text-left p-3 rounded-lg text-sm transition-colors ${
+                                    selectedStudentId === student.id
+                                      ? "bg-blue-600 text-white font-semibold"
+                                      : "bg-white/50 hover:bg-white"
+                                  }`}
+                                >
+                                  {student.name}
+                                </button>
+                              </li>
+                            ))}
+                          </ul>
+                        )
+                        : (
+                          <div className="flex items-center text-sm text-amber-700 p-3 border border-amber-200 rounded-lg bg-amber-50">
+                            <AlertCircle className="h-4 w-4 mr-2" />
+                            No active students found.
+                          </div>
+                        )}
+                    </Card>
                   </div>
-
-                  <TabsContent value="all" className="mt-4 sm:mt-6">
-                    <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 sm:gap-6">
-                      <div className="lg:col-span-1 space-y-4">
-                        <Card className="p-4 bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200">
-                          <h3 className="font-semibold text-gray-900 mb-3 flex items-center">
-                            <Users className="h-4 w-4 mr-2 text-blue-600" />
-                            Select Student
-                          </h3>
-                          {studentsLoading ? <div className="flex items-center text-sm text-gray-600 p-3 border rounded-lg bg-white/50">
-                              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                              Loading students...
-                            </div> : students && students.length > 0 ? <Select value={selectedStudentId || undefined} onValueChange={setSelectedStudentId}>
-                                <SelectTrigger className="bg-white border-blue-200 focus:border-blue-500 focus:ring-blue-500">
-                                  <SelectValue placeholder="Choose a student" />
-                                </SelectTrigger>
-                                <SelectContent className="bg-white border-gray-200 shadow-lg">
-                                  {filteredStudents?.map(student => <SelectItem key={student.id} value={student.id} className="focus:bg-blue-50 focus:text-blue-900">
-                                      {student.name}
-                                    </SelectItem>)}
-                                </SelectContent>
-                              </Select> : <div className="flex items-center text-sm text-amber-700 p-3 border border-amber-200 rounded-lg bg-amber-50">
-                                <AlertCircle className="h-4 w-4 mr-2" />
-                                No active students found
-                              </div>}
-                        </Card>
-
-                        {isAdmin && <Card className="p-4 bg-gradient-to-br from-green-50 to-emerald-50 border-green-200">
-                            <h3 className="font-semibold text-gray-900 mb-3 flex items-center">
-                              <Users className="h-4 w-4 mr-2 text-green-600" />
-                              Filter by Teacher
+                  <div className="lg:col-span-3">
+                    <div className="mt-4">
+                      {selectedStudentId
+                        ? (
+                          <DhorBookComponent
+                            studentId={selectedStudentId}
+                            teacherId={currentTeacherId || ""}
+                            isAdmin={isAdmin}
+                            isLoadingTeacher={isLoadingUserProfile}
+                            teacherData={userProfileData}
+                          />
+                        )
+                        : (
+                          <div className="flex flex-col items-center justify-center h-full bg-gray-50 rounded-lg p-8">
+                            <Book className="h-16 w-16 text-gray-300 mb-4" />
+                            <h3 className="text-xl font-semibold text-gray-700">
+                              Select a Student
                             </h3>
                             <Select value={selectedTeacherId || (teachers && teachers.length > 0 ? teachers[0]?.id : undefined)} onValueChange={setSelectedTeacherId}>
                               <SelectTrigger className="bg-white border-green-200 focus:border-green-500 focus:ring-green-500">
@@ -302,21 +407,20 @@ const ProgressBookPage = () => {
                     <Select value={selectedTeacherId || (teachers && teachers.length > 0 ? teachers[0]?.id : undefined)} onValueChange={setSelectedTeacherId}>
                       <SelectTrigger className="bg-white border-green-200 focus:border-green-500 focus:ring-green-500">
                         <SelectValue placeholder="Choose a teacher" />
+
                       </SelectTrigger>
-                      <SelectContent className="bg-white border-gray-200 shadow-lg">
-                        <SelectItem value="all" className="focus:bg-green-50 focus:text-green-900">
-                          All Teachers
-                        </SelectItem>
-                        {teachers?.map(teacher => <SelectItem key={teacher.id} value={teacher.id} className="focus:bg-green-50 focus:text-green-900">
+                      <SelectContent>
+                        <SelectItem value="all">All Teachers</SelectItem>
+                        {teachers?.map((teacher) => (
+                          <SelectItem key={teacher.id} value={teacher.id}>
                             {teacher.name}
-                          </SelectItem>)}
-                        {(!teachers || teachers.length === 0) && <SelectItem value="no-teachers" disabled>
-                            No teachers found
-                          </SelectItem>}
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                   </Card>}
                 <ClassroomRecords teacherId={currentTeacherId || (teachers && teachers.length > 0 ? teachers[0]?.id : "default")} isAdmin={isAdmin} />
+
               </TabsContent>
             </Tabs>
           </CardContent>

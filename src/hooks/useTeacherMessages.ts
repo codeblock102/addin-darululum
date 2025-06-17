@@ -1,4 +1,3 @@
-
 import { useQuery } from "@tanstack/react-query";
 
 export const useTeacherMessages = (teacherId: string) => {

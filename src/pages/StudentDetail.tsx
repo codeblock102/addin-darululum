@@ -22,6 +22,8 @@ import { Skeleton } from "@/components/ui/skeleton.tsx";
 import { NewProgressEntry } from "@/components/students/NewProgressEntry.tsx";
 import { useToast } from "@/hooks/use-toast.ts";
 import { DhorBook } from "@/components/dhor-book/DhorBook.tsx";
+
+import { useAuth } from "@/contexts/AuthContext.tsx";
 import { useTeacherStatus } from "@/hooks/useTeacherStatus.ts";
 
 interface Student {
@@ -39,7 +41,9 @@ const StudentDetail = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const { isAdmin, teacherId } = useTeacherStatus();
+
+  const { session } = useAuth();
+  const { isAdmin } = useTeacherStatus();
 
   const { data: student, isLoading: studentLoading, error: studentError } =
     useQuery({
@@ -58,6 +62,24 @@ const StudentDetail = () => {
       },
       enabled: !!id,
     });
+
+  const { data: userProfileData, isLoading: isLoadingUserProfile } = useQuery({
+    queryKey: ["userProfileForStudentDetail", session?.user?.id],
+    queryFn: async () => {
+      if (!session?.user?.id) return null;
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("madrassah_id, section")
+        .eq("id", session.user.id)
+        .single();
+      if (error) {
+        console.error("Error fetching user profile data:", error);
+        throw error;
+      }
+      return data;
+    },
+    enabled: !!session?.user?.id,
+  });
 
   const { data: progressEntries, isLoading: progressLoading } = useQuery({
     queryKey: ["student-progress", id],
@@ -238,7 +260,7 @@ const StudentDetail = () => {
         <TabsList className="mb-4">
           <TabsTrigger value="dhor-book">
             <BookOpen className="w-4 h-4 mr-2" />
-            Dhor Book
+            Progress Book
           </TabsTrigger>
           <TabsTrigger value="revisions">
             <RefreshCw className="w-4 h-4 mr-2" />
@@ -247,6 +269,7 @@ const StudentDetail = () => {
         </TabsList>
         <TabsContent value="dhor-book">
           <DhorBook studentId={student.id} isAdmin={isAdmin} isLoadingTeacher={false} />
+
         </TabsContent>
         <TabsContent value="revisions">
           {student && (

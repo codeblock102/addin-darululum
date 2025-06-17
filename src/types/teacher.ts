@@ -1,4 +1,3 @@
-
 import { Json } from "@/types/supabase";
 
 export interface TeacherFormValues {

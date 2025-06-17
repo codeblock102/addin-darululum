@@ -178,7 +178,6 @@ export const TeacherDhorBook = ({ teacherId }: TeacherDhorBookProps) => {
                   selectedStudentId={selectedStudentId}
                   teacherId={teacherId}
                   showHeader={false}
-                  showAllStudents
                 />
 
                 {studentVerifyLoading && selectedStudentId && (

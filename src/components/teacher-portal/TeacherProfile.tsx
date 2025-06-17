@@ -1,4 +1,3 @@
-
 interface TeacherProfileProps {
   children: React.ReactNode;
 }

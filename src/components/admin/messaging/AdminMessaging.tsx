@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useToast } from "@/components/ui/use-toast.ts";
 import {
@@ -38,7 +37,12 @@ export const AdminMessaging = () => {
                 Send and receive messages to and from teachers
               </CardDescription>
             </div>
-            <Button variant="outline" onClick={handleRefresh} size="sm" disabled>
+            <Button
+              variant="outline"
+              onClick={handleRefresh}
+              size="sm"
+              disabled
+            >
               <RefreshCcw className="h-4 w-4 mr-2" />
               Refresh
             </Button>
@@ -47,10 +51,11 @@ export const AdminMessaging = () => {
         <CardContent className="bg-gray-600">
           <Alert className="mb-4">
             <AlertDescription>
-              Messaging functionality is currently disabled. Please contact the system administrator to enable this feature.
+              Messaging functionality is currently disabled. Please contact the
+              system administrator to enable this feature.
             </AlertDescription>
           </Alert>
-          
+
           <Tabs
             defaultValue="inbox"
             value={activeTab}

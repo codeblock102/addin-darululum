@@ -1,4 +1,3 @@
-
 export interface GradingProps {
   teacherId: string;
 }
@@ -20,7 +19,12 @@ export interface ProgressData {
 }
 
 export interface GradeData {
-  memorization_quality: "excellent" | "good" | "average" | "needsWork" | "horrible";
+  memorization_quality:
+    | "excellent"
+    | "good"
+    | "average"
+    | "needsWork"
+    | "horrible";
   notes: string;
 }
 

@@ -1,4 +1,3 @@
-
 export const TeacherPreferences = () => {
   return (
     <div className="space-y-6">

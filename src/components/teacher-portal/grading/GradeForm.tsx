@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -51,21 +50,25 @@ export const GradeForm = ({
             <SelectValue placeholder="Select a student" />
           </SelectTrigger>
           <SelectContent>
-            {studentsLoading ? (
-              <div className="flex justify-center p-2">
-                <Loader2 className="h-4 w-4 animate-spin" />
-              </div>
-            ) : students && students.length > 0 ? (
-              students.map((student: Student) => (
-                <SelectItem key={student.name} value={student.name}>
-                  {student.name}
+            {studentsLoading
+              ? (
+                <div className="flex justify-center p-2">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                </div>
+              )
+              : students && students.length > 0
+              ? (
+                students.map((student: Student) => (
+                  <SelectItem key={student.name} value={student.name}>
+                    {student.name}
+                  </SelectItem>
+                ))
+              )
+              : (
+                <SelectItem value="none" disabled>
+                  No students available
                 </SelectItem>
-              ))
-            ) : (
-              <SelectItem value="none" disabled>
-                No students available
-              </SelectItem>
-            )}
+              )}
           </SelectContent>
         </Select>
       </div>
@@ -77,8 +80,7 @@ export const GradeForm = ({
             <Select
               value={gradeData.memorization_quality}
               onValueChange={(value) =>
-                handleSelectChange("memorization_quality", value)
-              }
+                handleSelectChange("memorization_quality", value)}
             >
               <SelectTrigger id="memorization_quality">
                 <SelectValue placeholder="Select quality" />
@@ -107,17 +109,19 @@ export const GradeForm = ({
 
           <div className="flex justify-end">
             <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Submitting...
-                </>
-              ) : (
-                <>
-                  <Save className="mr-2 h-4 w-4" />
-                  Submit Grade
-                </>
-              )}
+              {isSubmitting
+                ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Submitting...
+                  </>
+                )
+                : (
+                  <>
+                    <Save className="mr-2 h-4 w-4" />
+                    Submit Grade
+                  </>
+                )}
             </Button>
           </div>
         </>

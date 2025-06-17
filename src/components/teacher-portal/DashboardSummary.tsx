@@ -1,6 +1,5 @@
-
 import { Card, CardContent } from "@/components/ui/card";
-import { BookOpen, CheckCircle, Users, TrendingUp } from "lucide-react";
+import { BookOpen, CheckCircle, TrendingUp, Users } from "lucide-react";
 import { SummaryData } from "@/types/teacher";
 
 interface DashboardSummaryProps {
@@ -12,10 +11,13 @@ export const DashboardSummary = ({ summaryData }: DashboardSummaryProps) => {
     <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
       <Card className="overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 bg-white/80 backdrop-blur-sm">
         <div className="relative">
-          <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-green-500/10 to-transparent rounded-bl-full"></div>
+          <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-green-500/10 to-transparent rounded-bl-full">
+          </div>
           <div className="bg-gradient-to-br from-green-50 to-emerald-50 p-4 sm:p-6 flex justify-between items-center">
             <div className="space-y-1">
-              <h3 className="font-semibold text-green-800 text-sm sm:text-base">Total Students</h3>
+              <h3 className="font-semibold text-green-800 text-sm sm:text-base">
+                Total Students
+              </h3>
               <p className="text-3xl sm:text-4xl font-bold text-green-700">
                 {summaryData?.studentsCount || 0}
               </p>
@@ -40,10 +42,13 @@ export const DashboardSummary = ({ summaryData }: DashboardSummaryProps) => {
 
       <Card className="overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 bg-white/80 backdrop-blur-sm">
         <div className="relative">
-          <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-amber-500/10 to-transparent rounded-bl-full"></div>
+          <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-amber-500/10 to-transparent rounded-bl-full">
+          </div>
           <div className="bg-gradient-to-br from-amber-50 to-orange-50 p-4 sm:p-6 flex justify-between items-center">
             <div className="space-y-1">
-              <h3 className="font-semibold text-amber-800 text-sm sm:text-base">Today's Classes</h3>
+              <h3 className="font-semibold text-amber-800 text-sm sm:text-base">
+                Today's Classes
+              </h3>
               <p className="text-3xl sm:text-4xl font-bold text-amber-700">
                 {summaryData?.todayClasses || 0}
               </p>
@@ -68,10 +73,13 @@ export const DashboardSummary = ({ summaryData }: DashboardSummaryProps) => {
 
       <Card className="overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 bg-white/80 backdrop-blur-sm sm:col-span-2 lg:col-span-1">
         <div className="relative">
-          <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-blue-500/10 to-transparent rounded-bl-full"></div>
+          <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-blue-500/10 to-transparent rounded-bl-full">
+          </div>
           <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-4 sm:p-6 flex justify-between items-center">
             <div className="space-y-1">
-              <h3 className="font-semibold text-blue-800 text-sm sm:text-base">Total Revisions</h3>
+              <h3 className="font-semibold text-blue-800 text-sm sm:text-base">
+                Total Revisions
+              </h3>
               <p className="text-3xl sm:text-4xl font-bold text-blue-700">
                 {summaryData?.totalRevisions || 0}
               </p>

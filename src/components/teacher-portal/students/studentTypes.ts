@@ -1,4 +1,3 @@
-
 export interface StudentFormData {
   studentName: string;
   dateOfBirth: string;

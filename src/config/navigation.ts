@@ -1,4 +1,3 @@
-
 /**
  * @file src/config/navigation.ts
  * @summary This file defines the navigation structures for different user roles in the application.

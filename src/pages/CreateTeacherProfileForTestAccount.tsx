@@ -62,7 +62,10 @@ const CreateTeacherProfileForTestAccount = () => {
             email: testEmail,
             role: "teacher",
             subject: "Islamic Studies",
-            bio: "Islamic studies educator with expertise in Quranic teachings.",
+
+            bio:
+              "Islamic studies educator with expertise in Quranic teachings.",
+            role: "teacher",
           },
         ])
         .select("id, name, email, subject, bio, phone");

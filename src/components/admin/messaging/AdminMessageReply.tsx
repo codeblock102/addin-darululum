@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Button } from "@/components/ui/button.tsx";
 import { X } from "lucide-react";
@@ -32,7 +31,8 @@ export const AdminMessageReply = ({
       <CardContent className="pt-2">
         <Alert>
           <AlertDescription>
-            Messaging functionality is currently disabled. Please contact the system administrator to enable this feature.
+            Messaging functionality is currently disabled. Please contact the
+            system administrator to enable this feature.
           </AlertDescription>
         </Alert>
       </CardContent>

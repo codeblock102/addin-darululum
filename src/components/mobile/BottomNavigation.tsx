@@ -1,6 +1,5 @@
-
 import { useLocation, useNavigate } from "react-router-dom";
-import { Book, Home, LogOut, Users, ClipboardList } from "lucide-react";
+import { Book, ClipboardList, Home, LogOut, Users } from "lucide-react";
 import { useRBAC } from "@/hooks/useRBAC.ts";
 import { cn } from "@/lib/utils.ts";
 import { useAuth } from "@/hooks/use-auth.ts";

@@ -1,8 +1,7 @@
-
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Student, ProgressData, GradeData } from "./types";
+import { GradeData, ProgressData, Student } from "./types";
 
 export const useGradingData = (teacherId: string) => {
   const { toast } = useToast();
@@ -69,7 +68,7 @@ export const useGradingData = (teacherId: string) => {
   });
 
   const { data: teacherData } = useQuery({
-    queryKey: ["teacher-details-for-grading", teacherId],
+    queryKey: ["profile-details-for-grading", teacherId],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("profiles")
@@ -88,7 +87,9 @@ export const useGradingData = (teacherId: string) => {
   });
 
   const submitGradeMutation = useMutation({
-    mutationFn: async (data: { gradeData: GradeData; selectedStudent: string }) => {
+    mutationFn: async (
+      data: { gradeData: GradeData; selectedStudent: string },
+    ) => {
       const student = students?.find((s) => s.name === data.selectedStudent);
       if (!student) {
         throw new Error("Student not found");
@@ -140,7 +141,10 @@ export const useGradingData = (teacherId: string) => {
   };
 };
 
-export const useStudentGrades = (selectedStudent: string, students: Student[] | undefined) => {
+export const useStudentGrades = (
+  selectedStudent: string,
+  students: Student[] | undefined,
+) => {
   return useQuery({
     queryKey: ["student-grades", selectedStudent],
     queryFn: async () => {
@@ -151,7 +155,9 @@ export const useStudentGrades = (selectedStudent: string, students: Student[] | 
 
       const { data, error } = await supabase
         .from("progress")
-        .select("current_surah, current_juz, memorization_quality, created_at, notes")
+        .select(
+          "current_surah, current_juz, memorization_quality, created_at, notes",
+        )
         .eq("student_id", student.id)
         .order("created_at", { ascending: false })
         .limit(10);

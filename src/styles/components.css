@@ -1,4 +1,3 @@
-
 /* Card hover effects */
 .card-hover {
   @apply transition-all duration-300 hover:shadow-md hover:-translate-y-1;
@@ -20,8 +19,9 @@
 
 /* Enhanced Card Styles */
 .enhanced-dashboard-card {
-  @apply bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700
-    transition-all duration-300 hover:shadow-xl hover:-translate-y-1 p-6;
+  @apply bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100
+    dark:border-gray-700 transition-all duration-300 hover:shadow-xl
+    hover:-translate-y-1 p-6;
 }
 
 .enhanced-stats-grid {
@@ -34,26 +34,30 @@
 
 /* Enhanced Search Section */
 .enhanced-search-section {
-  @apply bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-900
-    rounded-2xl p-6 border border-blue-100 dark:border-gray-700;
+  @apply bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-gray-800
+    dark:to-gray-900 rounded-2xl p-6 border border-blue-100
+    dark:border-gray-700;
 }
 
 /* Enhanced Quick Actions Section */
 .enhanced-quick-actions {
-  @apply bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-gray-800 dark:to-gray-900
-    rounded-2xl p-6 border border-emerald-100 dark:border-gray-700;
+  @apply bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-gray-800
+    dark:to-gray-900 rounded-2xl p-6 border border-emerald-100
+    dark:border-gray-700;
 }
 
 /* Enhanced Today's Students Section */
 .enhanced-today-students {
-  @apply bg-gradient-to-br from-purple-50 to-pink-50 dark:from-gray-800 dark:to-gray-900
-    rounded-2xl p-6 border border-purple-100 dark:border-gray-700;
+  @apply bg-gradient-to-br from-purple-50 to-pink-50 dark:from-gray-800
+    dark:to-gray-900 rounded-2xl p-6 border border-purple-100
+    dark:border-gray-700;
 }
 
 /* Enhanced Recent Activity Section */
 .enhanced-recent-activity {
-  @apply bg-gradient-to-br from-amber-50 to-orange-50 dark:from-gray-800 dark:to-gray-900
-    rounded-2xl p-6 border border-amber-100 dark:border-gray-700;
+  @apply bg-gradient-to-br from-amber-50 to-orange-50 dark:from-gray-800
+    dark:to-gray-900 rounded-2xl p-6 border border-amber-100
+    dark:border-gray-700;
 }
 
 /* Custom scrollbar */
@@ -78,7 +82,7 @@
 
 /* Enhanced Interactive Elements */
 .interactive-element {
-  @apply transition-all duration-200 hover:scale-105 active:scale-95 
+  @apply transition-all duration-200 hover:scale-105 active:scale-95
     focus:outline-none focus:ring-4 focus:ring-blue-500/20;
 }
 
@@ -88,8 +92,8 @@
 }
 
 .btn-animate::before {
-  content: '';
-  @apply absolute inset-0 bg-white/20 transform -translate-x-full 
+  content: "";
+  @apply absolute inset-0 bg-white/20 transform -translate-x-full
     transition-transform duration-300 ease-out;
 }
 
@@ -99,7 +103,7 @@
 
 /* Loading Pulse Animation */
 .loading-pulse {
-  @apply animate-pulse bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200 
+  @apply animate-pulse bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200
     dark:from-gray-700 dark:via-gray-600 dark:to-gray-700;
   background-size: 200% 200%;
   animation: loading-shimmer 1.5s ease-in-out infinite;
@@ -120,9 +124,9 @@
 }
 
 .status-indicator::before {
-  content: '';
-  @apply absolute -left-2 top-1/2 transform -translate-y-1/2 
-    w-2 h-2 rounded-full animate-pulse;
+  content: "";
+  @apply absolute -left-2 top-1/2 transform -translate-y-1/2 w-2 h-2
+    rounded-full animate-pulse;
 }
 
 .status-indicator.active::before {
@@ -139,7 +143,7 @@
 
 /* Enhanced Hover Effects for Tables */
 .table-row-enhanced {
-  @apply transition-all duration-200 hover:bg-blue-50 dark:hover:bg-gray-700 
+  @apply transition-all duration-200 hover:bg-blue-50 dark:hover:bg-gray-700
     hover:shadow-sm cursor-pointer;
 }
 
@@ -173,11 +177,11 @@
   .enhanced-dashboard-card {
     @apply rounded-xl p-4;
   }
-  
+
   .enhanced-stats-grid {
     @apply grid-cols-1 gap-4;
   }
-  
+
   .enhanced-content-grid {
     @apply grid-cols-1 gap-4;
   }

@@ -1,4 +1,3 @@
-
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client.ts";
 import { useToast } from "@/hooks/use-toast.ts";
@@ -63,9 +62,13 @@ export const StudentDeleteDialog = ({
   });
 
   const deleteStudentMutation = useMutation({
-    mutationFn: async ({ studentId, studentName }: { studentId: string; studentName: string }) => {
-      console.log(`Starting deletion process for student: ${studentName} (ID: ${studentId})`);
-      
+    mutationFn: async (
+      { studentId, studentName }: { studentId: string; studentName: string },
+    ) => {
+      console.log(
+        `Starting deletion process for student: ${studentName} (ID: ${studentId})`,
+      );
+
       // First, delete all attendance records for this student
       const { error: attendanceError } = await supabase
         .from("attendance")
@@ -74,7 +77,9 @@ export const StudentDeleteDialog = ({
 
       if (attendanceError) {
         console.error("Error deleting attendance records:", attendanceError);
-        throw new Error(`Failed to delete attendance records: ${attendanceError.message}`);
+        throw new Error(
+          `Failed to delete attendance records: ${attendanceError.message}`,
+        );
       }
 
       // Then, delete all progress records for this student
@@ -85,7 +90,9 @@ export const StudentDeleteDialog = ({
 
       if (progressError) {
         console.error("Error deleting progress records:", progressError);
-        throw new Error(`Failed to delete progress records: ${progressError.message}`);
+        throw new Error(
+          `Failed to delete progress records: ${progressError.message}`,
+        );
       }
 
       // Delete juz_revisions records
@@ -95,8 +102,13 @@ export const StudentDeleteDialog = ({
         .eq("student_id", studentId);
 
       if (juzRevisionsError) {
-        console.error("Error deleting juz_revisions records:", juzRevisionsError);
-        throw new Error(`Failed to delete juz_revisions records: ${juzRevisionsError.message}`);
+        console.error(
+          "Error deleting juz_revisions records:",
+          juzRevisionsError,
+        );
+        throw new Error(
+          `Failed to delete juz_revisions records: ${juzRevisionsError.message}`,
+        );
       }
 
       // Delete sabaq_para records
@@ -107,7 +119,9 @@ export const StudentDeleteDialog = ({
 
       if (sabaqParaError) {
         console.error("Error deleting sabaq_para records:", sabaqParaError);
-        throw new Error(`Failed to delete sabaq_para records: ${sabaqParaError.message}`);
+        throw new Error(
+          `Failed to delete sabaq_para records: ${sabaqParaError.message}`,
+        );
       }
 
       // Delete all teacher-student relationships
@@ -117,8 +131,13 @@ export const StudentDeleteDialog = ({
         .eq("student_name", studentName);
 
       if (relationshipError) {
-        console.error("Error deleting teacher-student relationships:", relationshipError);
-        throw new Error(`Failed to delete teacher-student relationships: ${relationshipError.message}`);
+        console.error(
+          "Error deleting teacher-student relationships:",
+          relationshipError,
+        );
+        throw new Error(
+          `Failed to delete teacher-student relationships: ${relationshipError.message}`,
+        );
       }
 
       // Finally, delete the student record
@@ -129,7 +148,9 @@ export const StudentDeleteDialog = ({
 
       if (studentError) {
         console.error("Error deleting student record:", studentError);
-        throw new Error(`Failed to delete student record: ${studentError.message}`);
+        throw new Error(
+          `Failed to delete student record: ${studentError.message}`,
+        );
       }
 
       console.log(`Successfully deleted student: ${studentName}`);
@@ -138,7 +159,8 @@ export const StudentDeleteDialog = ({
     onSuccess: () => {
       toast({
         title: "Student deleted",
-        description: `${studentToDelete?.name} has been permanently deleted from the system.`,
+        description:
+          `${studentToDelete?.name} has been permanently deleted from the system.`,
       });
 
       queryClient.invalidateQueries({
@@ -165,15 +187,16 @@ export const StudentDeleteDialog = ({
       if (isDeleteType === "remove") {
         removeStudentMutation.mutate({ assignmentId: studentToDelete.id });
       } else {
-        deleteStudentMutation.mutate({ 
-          studentId: studentToDelete.studentId, 
-          studentName: studentToDelete.name 
+        deleteStudentMutation.mutate({
+          studentId: studentToDelete.studentId,
+          studentName: studentToDelete.name,
         });
       }
     }
   };
 
-  const isLoading = removeStudentMutation.isPending || deleteStudentMutation.isPending;
+  const isLoading = removeStudentMutation.isPending ||
+    deleteStudentMutation.isPending;
 
   return (
     <AlertDialog open={isOpen} onOpenChange={setIsOpen}>
@@ -183,10 +206,9 @@ export const StudentDeleteDialog = ({
             {isDeleteType === "remove" ? "Remove Student" : "Delete Student"}
           </AlertDialogTitle>
           <AlertDialogDescription>
-            {isDeleteType === "remove" 
+            {isDeleteType === "remove"
               ? `Are you sure you want to remove ${studentToDelete?.name} from your students? This will only remove the assignment, not delete the student from the system.`
-              : `Are you sure you want to permanently delete ${studentToDelete?.name} from the system? This action cannot be undone and will remove all associated data including attendance records, progress, and revisions.`
-            }
+              : `Are you sure you want to permanently delete ${studentToDelete?.name} from the system? This action cannot be undone and will remove all associated data including attendance records, progress, and revisions.`}
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
@@ -195,7 +217,9 @@ export const StudentDeleteDialog = ({
             onClick={handleConfirmDelete}
             className="bg-red-600 text-white hover:bg-red-700"
           >
-            {isLoading ? (isDeleteType === "remove" ? "Removing..." : "Deleting...") : (isDeleteType === "remove" ? "Remove" : "Delete")}
+            {isLoading
+              ? (isDeleteType === "remove" ? "Removing..." : "Deleting...")
+              : (isDeleteType === "remove" ? "Remove" : "Delete")}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

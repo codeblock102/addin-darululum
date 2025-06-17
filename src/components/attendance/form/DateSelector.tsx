@@ -1,4 +1,3 @@
-
 import { CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -40,21 +39,24 @@ export function DateSelector({ form }: DateSelectorProps) {
                   variant="outline"
                   className={cn(
                     "w-full pl-3 text-left font-normal border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500",
-                    !field.value && "text-slate-500 dark:text-slate-400"
+                    !field.value && "text-slate-500 dark:text-slate-400",
                   )}
                 >
-                  {field.value ? (
-                    <span className="text-slate-900 dark:text-slate-100">
-                      {format(field.value, "PPP")}
-                    </span>
-                  ) : (
-                    <span>Pick a date</span>
-                  )}
+                  {field.value
+                    ? (
+                      <span className="text-slate-900 dark:text-slate-100">
+                        {format(field.value, "PPP")}
+                      </span>
+                    )
+                    : <span>Pick a date</span>}
                   <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                 </Button>
               </FormControl>
             </PopoverTrigger>
-            <PopoverContent className="w-auto p-0 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-lg rounded-lg" align="start">
+            <PopoverContent
+              className="w-auto p-0 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-lg rounded-lg"
+              align="start"
+            >
               <Calendar
                 mode="single"
                 selected={field.value}

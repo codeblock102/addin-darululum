@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client.ts";
@@ -6,7 +5,14 @@ import { StudentDialog } from "@/components/students/StudentDialog.tsx";
 import { StudentList } from "@/components/students/StudentList.tsx";
 import { Input } from "@/components/ui/input.tsx";
 import { Button } from "@/components/ui/button.tsx";
-import { Search, UserPlus, Users, TrendingUp, UserCheck, GraduationCap } from "lucide-react";
+import {
+  GraduationCap,
+  Search,
+  TrendingUp,
+  UserCheck,
+  UserPlus,
+  Users,
+} from "lucide-react";
 import {
   Card,
   CardContent,
@@ -16,7 +22,6 @@ import {
 import { Progress } from "@/components/ui/progress.tsx";
 import { Skeleton } from "@/components/ui/skeleton.tsx";
 import { useAuth } from "@/contexts/AuthContext.tsx";
-import { useRBAC } from "@/hooks/useRBAC.ts";
 
 interface Student {
   id: string;
@@ -36,52 +41,67 @@ const Students = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   const { session } = useAuth();
-  const { isAdmin } = useRBAC();
   const userId = session?.user?.id;
 
-  const { data: userData, isLoading: isLoadingUser } = useQuery({
-    queryKey: ["userData", userId],
+  const { data, isLoading: isLoadingStudents } = useQuery({
+    queryKey: ["studentsPageData", userId],
     queryFn: async () => {
-      if (!userId) return null;
-      const { data, error } = await supabase
+      if (!userId) return { students: [], userData: null };
+
+      // 1. Fetch user profile
+      const { data: userData, error: userError } = await supabase
         .from("profiles")
-        .select("madrassah_id, section")
+        .select("madrassah_id, section, role")
         .eq("id", userId)
         .single();
-      if (error) {
-        console.error("Error fetching user data:", error);
-        throw error;
+
+      if (userError) {
+        console.error("Error fetching user data:", userError);
+        throw userError;
       }
-      return data;
+
+      if (!userData?.madrassah_id) {
+        console.log("No madrassah_id found for this user.");
+        return { students: [], userData };
+      }
+
+      let query;
+
+      // 2. Build the query based on the user's role
+      if (userData.role === 'admin') {
+        console.log(`User is an ADMIN. Fetching all students for madrassah: ${userData.madrassah_id}`);
+        query = supabase
+          .from("students")
+          .select("*")
+          .eq("madrassah_id", userData.madrassah_id);
+      } else if (userData.role === 'teacher' && userData.section) {
+        console.log(`User is a TEACHER. Fetching students for madrassah ${userData.madrassah_id}, section: ${userData.section}`);
+        query = supabase
+          .from("students")
+          .select("*")
+          .eq("madrassah_id", userData.madrassah_id)
+          .eq("section", userData.section);
+      } else {
+        console.log(`User role is '${userData.role}'. No permissions to fetch students or missing data.`);
+        return { students: [], userData };
+      }
+
+      // 3. Execute the query
+      const { data: students, error: studentsError } = await query;
+
+      if (studentsError) {
+        console.error("Error fetching students:", studentsError);
+        throw studentsError;
+      }
+      
+      console.log(`Successfully fetched ${students?.length || 0} students.`);
+      return { students: students || [], userData };
     },
     enabled: !!userId,
   });
 
-  const { data: students, isLoading: isLoadingStudents } = useQuery<Student[]>({
-    queryKey: ["students", { isAdmin, userData }],
-    queryFn: async () => {
-      if (!userData?.madrassah_id) return [];
-
-      let query = supabase
-        .from("students")
-        .select("*")
-        .eq("madrassah_id", userData.madrassah_id);
-
-      // If the user is a teacher, also filter by section.
-      if (!isAdmin && userData.section) {
-        query = query.eq("section", userData.section);
-      }
-
-      const { data, error } = await query;
-
-      if (error) {
-        console.error("Error fetching students:", error);
-        throw error;
-      }
-      return data || [];
-    },
-    enabled: !isLoadingUser && !!userData,
-  });
+  const students = data?.students || [];
+  const userData = data?.userData;
 
   const totalStudents = students?.length || 0;
   const activeStudents =
@@ -147,9 +167,9 @@ const Students = () => {
               </div>
             </div>
           </div>
-          
-          <Button 
-            onClick={handleAddStudent} 
+
+          <Button
+            onClick={handleAddStudent}
             className="gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-lg hover:shadow-xl transition-all duration-200 px-6 py-3 text-base font-medium"
             size="lg"
           >
@@ -173,22 +193,24 @@ const Students = () => {
               </div>
             </CardHeader>
             <CardContent className="pt-0">
-              {isLoadingStudents ? (
-                <div className="space-y-2">
-                  <Skeleton className="h-8 w-16" />
-                  <Skeleton className="h-4 w-24" />
-                </div>
-              ) : (
-                <div className="space-y-2">
-                  <div className="text-2xl sm:text-3xl font-bold text-gray-900">
-                    {stats.totalStudents}
+              {isLoadingStudents
+                ? (
+                  <div className="space-y-2">
+                    <Skeleton className="h-8 w-16" />
+                    <Skeleton className="h-4 w-24" />
                   </div>
-                  <p className="text-xs text-gray-600 flex items-center gap-1">
-                    <UserCheck className="h-3 w-3 text-green-500" />
-                    {stats.activeStudents} active
-                  </p>
-                </div>
-              )}
+                )
+                : (
+                  <div className="space-y-2">
+                    <div className="text-2xl sm:text-3xl font-bold text-gray-900">
+                      {stats.totalStudents}
+                    </div>
+                    <p className="text-xs text-gray-600 flex items-center gap-1">
+                      <UserCheck className="h-3 w-3 text-green-500" />
+                      {stats.activeStudents} active
+                    </p>
+                  </div>
+                )}
             </CardContent>
           </Card>
 
@@ -204,21 +226,26 @@ const Students = () => {
               </div>
             </CardHeader>
             <CardContent className="pt-0">
-              {isLoadingStudents ? (
-                <div className="space-y-2">
-                  <Skeleton className="h-8 w-16" />
-                  <Skeleton className="h-4 w-24" />
-                </div>
-              ) : (
-                <div className="space-y-2">
-                  <div className="text-2xl sm:text-3xl font-bold text-gray-900">
-                    {stats.activeStudents}
+              {isLoadingStudents
+                ? (
+                  <div className="space-y-2">
+                    <Skeleton className="h-8 w-16" />
+                    <Skeleton className="h-4 w-24" />
                   </div>
-                  <p className="text-xs text-gray-600">
-                    {((stats.activeStudents / stats.totalStudents) * 100).toFixed(0)}% of total
-                  </p>
-                </div>
-              )}
+                )
+                : (
+                  <div className="space-y-2">
+                    <div className="text-2xl sm:text-3xl font-bold text-gray-900">
+                      {stats.activeStudents}
+                    </div>
+                    <p className="text-xs text-gray-600">
+                      {stats.totalStudents > 0
+                        ? ((stats.activeStudents / stats.totalStudents) * 100)
+                          .toFixed(0)
+                        : 0}% of total
+                    </p>
+                  </div>
+                )}
             </CardContent>
           </Card>
 
@@ -234,26 +261,28 @@ const Students = () => {
               </div>
             </CardHeader>
             <CardContent className="pt-0">
-              {isLoadingStudents ? (
-                <div className="space-y-3">
-                  <Skeleton className="h-8 w-16" />
-                  <Skeleton className="h-2 w-full" />
-                  <Skeleton className="h-4 w-20" />
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  <div className="text-2xl sm:text-3xl font-bold text-gray-900">
-                    {stats.avgAttendance}%
+              {isLoadingStudents
+                ? (
+                  <div className="space-y-3">
+                    <Skeleton className="h-8 w-16" />
+                    <Skeleton className="h-2 w-full" />
+                    <Skeleton className="h-4 w-20" />
                   </div>
-                  <Progress 
-                    value={stats.avgAttendance} 
-                    className="h-2 bg-gray-200" 
-                  />
-                  <p className="text-xs text-gray-600">
-                    Last 30 days average
-                  </p>
-                </div>
-              )}
+                )
+                : (
+                  <div className="space-y-3">
+                    <div className="text-2xl sm:text-3xl font-bold text-gray-900">
+                      {stats.avgAttendance}%
+                    </div>
+                    <Progress
+                      value={stats.avgAttendance}
+                      className="h-2 bg-gray-200"
+                    />
+                    <p className="text-xs text-gray-600">
+                      Last 30 days average
+                    </p>
+                  </div>
+                )}
             </CardContent>
           </Card>
         </div>
@@ -271,7 +300,7 @@ const Students = () => {
                   Search and manage all student records
                 </p>
               </div>
-              
+
               <div className="relative w-full sm:w-auto">
                 <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
                 <Input
@@ -283,9 +312,10 @@ const Students = () => {
               </div>
             </div>
           </CardHeader>
-          
+
           <CardContent className="p-0">
             <StudentList 
+
               students={filteredStudents}
               isLoading={isLoadingStudents}
               onEdit={handleEditStudent}

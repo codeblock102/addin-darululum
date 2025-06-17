@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button.tsx";
 import { Textarea } from "@/components/ui/textarea.tsx";
@@ -13,11 +12,11 @@ interface AdminMessageFormProps {
   onSendSuccess: () => void;
 }
 
-export const AdminMessageForm = ({ 
-  selectedTeachers, 
-  messageType, 
-  category, 
-  onSendSuccess 
+export const AdminMessageForm = ({
+  selectedTeachers,
+  messageType,
+  category,
+  onSendSuccess,
 }: AdminMessageFormProps) => {
   const [message, setMessage] = useState("");
   const [isSending, setIsSending] = useState(false);
@@ -32,10 +31,11 @@ export const AdminMessageForm = ({
     <form onSubmit={handleSubmit} className="space-y-4">
       <Alert>
         <AlertDescription>
-          Messaging functionality is currently disabled. Please contact the system administrator to enable this feature.
+          Messaging functionality is currently disabled. Please contact the
+          system administrator to enable this feature.
         </AlertDescription>
       </Alert>
-      
+
       <div>
         <Label htmlFor="message">Message</Label>
         <Textarea
@@ -49,9 +49,10 @@ export const AdminMessageForm = ({
       </div>
 
       <div className="flex justify-end space-x-2">
-        <Button 
-          type="submit" 
-          disabled={!message.trim() || selectedTeachers.length === 0 || isSending}
+        <Button
+          type="submit"
+          disabled={!message.trim() || selectedTeachers.length === 0 ||
+            isSending}
         >
           {isSending ? "Sending..." : "Send Message"}
         </Button>

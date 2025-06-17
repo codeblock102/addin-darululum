@@ -1,4 +1,3 @@
-
 /**
  * @file src/components/layouts/Sidebar.tsx
  * @summary This file defines the main Sidebar component for the application's dashboard layout.
@@ -20,7 +19,14 @@ import { Link } from "react-router-dom";
 import { useEffect } from "react";
 import { useIsMobile } from "@/hooks/use-mobile.tsx";
 import { Button } from "@/components/ui/button.tsx";
-import { BookOpen, ChevronLeft, ChevronRight, Menu, ShieldCheck, X } from "lucide-react";
+import {
+  BookOpen,
+  ChevronLeft,
+  ChevronRight,
+  Menu,
+  ShieldCheck,
+  X,
+} from "lucide-react";
 import { adminNavItems, teacherNavItems } from "@/config/navigation.ts";
 import { type NavItem } from "@/types/navigation.ts";
 import { useRBAC } from "@/hooks/useRBAC.ts";
@@ -146,7 +152,9 @@ export const Sidebar = (
                 ? (
                   <ShieldCheck className="h-5 w-5 sm:h-6 sm:w-6 text-amber-400 drop-shadow-sm" />
                 )
-                : <BookOpen className="h-5 w-5 sm:h-6 sm:w-6 text-primary drop-shadow-sm" />}
+                : (
+                  <BookOpen className="h-5 w-5 sm:h-6 sm:w-6 text-primary drop-shadow-sm" />
+                )}
               <span
                 className={cn(
                   "text-sm sm:text-base transition-all duration-300 whitespace-nowrap font-medium",
@@ -212,10 +220,10 @@ export const Sidebar = (
           )}
         </div>
 
-        <div 
+        <div
           className={cn(
             "flex-1 overflow-auto transition-all duration-300",
-            (!isMobile && isOpen === false) ? "py-2" : "py-2 sm:py-4"
+            (!isMobile && isOpen === false) ? "py-2" : "py-2 sm:py-4",
           )}
         >
           {/* DEBUG: Log navItems for admin */}

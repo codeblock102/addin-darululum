@@ -1,4 +1,3 @@
-
 /**
  * @file src/App.tsx
  * @summary This is the main application component that sets up the overall structure, routing, and global providers.
@@ -12,7 +11,7 @@
  *
  * It also includes the `<Toaster>` component, which is used to display toast notifications globally throughout the application.
  */
-import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { Toaster } from "@/components/ui/toaster.tsx";
 import { ThemeProvider } from "@/components/theme-provider.tsx";
 import Index from "@/pages/Index.tsx";
@@ -65,11 +64,8 @@ function App() {
         <Routes>
           <Route path="/auth" element={<Auth />} />
           <Route path="/create-demo-account" element={<CreateDemoAccount />} />
-          <Route
-            path="/create-teacher-profile"
-            element={<CreateTeacherProfileForTestAccount />}
-          />
-          <Route path="/admin/setup" element={<SetupAdmin />} />
+          <Route path="/create-teacher-profile" element={<CreateTeacherProfileForTestAccount />} />
+          <Route path="/setup-admin" element={<SetupAdmin />} />
           <Route path="/role-setup" element={<ManualRoleSetup />} />
           <Route path="*" element={<NotFound />} />
 
@@ -83,7 +79,10 @@ function App() {
             <Route path="/" element={<Index />} />
             <Route path="/dashboard" element={<Dashboard />} />
             {/* Redirect /teacher-portal to /dashboard for consistency */}
-            <Route path="/teacher-portal" element={<Navigate to="/dashboard" replace />} />
+            <Route
+              path="/teacher-portal"
+              element={<Navigate to="/dashboard" replace />}
+            />
             <Route path="/students" element={<Students />} />
             <Route path="/students/:id" element={<StudentDetail />} />
             <Route

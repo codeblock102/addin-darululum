@@ -1,10 +1,47 @@
-
 import { useState } from "react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Edit, Users } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+
+import { useNavigate } from "react-router-dom";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client.ts";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table.tsx";
+import { Button } from "@/components/ui/button.tsx";
+import { Skeleton } from "@/components/ui/skeleton.tsx";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog.tsx";
+import {
+  Award,
+  BookOpen,
+  Calendar,
+  Edit,
+  Eye,
+  GraduationCap,
+  Phone,
+  Trash2,
+  User,
+  Users,
+} from "lucide-react";
+import { useToast } from "@/hooks/use-toast.ts";
+import { useIsMobile } from "@/hooks/use-mobile.tsx";
 
 interface Student {
   id: string;
@@ -30,6 +67,7 @@ export const StudentList = ({ students, isLoading, onEdit }: StudentListProps) =
       <div className="space-y-4">
         {[...Array(5)].map((_, index) => (
           <div key={index} className="flex items-center space-x-4 p-4 border rounded-lg">
+
             <Skeleton className="h-12 w-12 rounded-full" />
             <div className="space-y-2 flex-1">
               <Skeleton className="h-4 w-[250px]" />
@@ -47,6 +85,7 @@ export const StudentList = ({ students, isLoading, onEdit }: StudentListProps) =
       <div className="text-center py-8">
         <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
         <p className="text-gray-600">No students found.</p>
+
       </div>
     );
   }
@@ -78,6 +117,7 @@ export const StudentList = ({ students, isLoading, onEdit }: StudentListProps) =
                 >
                   {student.status}
                 </Badge>
+
               </div>
               
               <div className="text-sm text-gray-600 space-y-1">
@@ -88,6 +128,7 @@ export const StudentList = ({ students, isLoading, onEdit }: StudentListProps) =
                   <p>Contact: {student.guardian_contact}</p>
                 )}
                 {student.enrollment_date && (
+
                   <p>
                     Enrolled: {new Date(student.enrollment_date).toLocaleDateString()}
                   </p>
@@ -111,6 +152,7 @@ export const StudentList = ({ students, isLoading, onEdit }: StudentListProps) =
           </div>
         </div>
       ))}
+
     </div>
   );
 };

@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import {
   Card,
@@ -145,7 +144,7 @@ export const TeacherAttendance = () => {
         `)
         .eq("date", formattedDate)
         .in("student_id", studentIds);
-      
+
       console.log(
         "[QueryFn student-attendance-records] Raw attendance data from Supabase:",
         data,
@@ -170,7 +169,7 @@ export const TeacherAttendance = () => {
         student_id: record.student_id!,
         student_name: (record.students as any)?.name || "Unknown Student",
       })) || [];
-      
+
       console.log(
         "[QueryFn student-attendance-records] Mapped attendance data:",
         mappedData,
