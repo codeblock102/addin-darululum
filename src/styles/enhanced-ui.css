@@ -1,15 +1,14 @@
-
 /* Enhanced UI Improvements for Hifz Management System */
 
 /* Modern Card Design System */
 .modern-card {
-  @apply bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 
-    transition-all duration-300 hover:shadow-lg hover:shadow-gray-200/50 dark:hover:shadow-gray-900/50 
-    hover:-translate-y-1;
+  @apply bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100
+    dark:border-gray-700 transition-all duration-300 hover:shadow-lg
+    hover:shadow-gray-200/50 dark:hover:shadow-gray-900/50 hover:-translate-y-1;
 }
 
 .modern-card-header {
-  @apply p-6 border-b border-gray-100 dark:border-gray-700 bg-gradient-to-r 
+  @apply p-6 border-b border-gray-100 dark:border-gray-700 bg-gradient-to-r
     from-blue-50 to-indigo-50 dark:from-gray-700 dark:to-gray-800 rounded-t-xl;
 }
 
@@ -19,21 +18,23 @@
 
 /* Enhanced Stats Cards */
 .stats-card-enhanced {
-  @apply bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900
-    rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700
-    transition-all duration-300 hover:shadow-xl hover:scale-[1.02]
-    relative overflow-hidden;
+  @apply bg-gradient-to-br from-white to-gray-50 dark:from-gray-800
+    dark:to-gray-900 rounded-2xl shadow-lg border border-gray-100
+    dark:border-gray-700 transition-all duration-300 hover:shadow-xl
+    hover:scale-[1.02] relative overflow-hidden;
 }
 
 .stats-card-enhanced::before {
-  content: '';
-  @apply absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500;
+  content: "";
+  @apply absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500
+    via-purple-500 to-pink-500;
 }
 
 .stats-card-icon {
   @apply w-12 h-12 rounded-full flex items-center justify-center
-    bg-gradient-to-br from-blue-100 to-blue-200 dark:from-blue-900 dark:to-blue-800
-    shadow-lg transition-all duration-300 group-hover:scale-110;
+    bg-gradient-to-br from-blue-100 to-blue-200 dark:from-blue-900
+    dark:to-blue-800 shadow-lg transition-all duration-300
+    group-hover:scale-110;
 }
 
 /* Enhanced Empty States */
@@ -41,13 +42,14 @@
   @apply flex flex-col items-center justify-center p-12 text-center
     bg-gradient-to-br from-gray-50 to-white dark:from-gray-900 dark:to-gray-800
     rounded-2xl border-2 border-dashed border-gray-200 dark:border-gray-700
-    transition-all duration-300 hover:border-blue-300 dark:hover:border-blue-600;
+    transition-all duration-300 hover:border-blue-300
+    dark:hover:border-blue-600;
 }
 
 .empty-state-icon {
-  @apply w-20 h-20 mx-auto mb-6 p-4 rounded-full
-    bg-gradient-to-br from-blue-100 to-indigo-100 dark:from-blue-900 dark:to-indigo-900
-    text-blue-600 dark:text-blue-400 shadow-lg;
+  @apply w-20 h-20 mx-auto mb-6 p-4 rounded-full bg-gradient-to-br from-blue-100
+    to-indigo-100 dark:from-blue-900 dark:to-indigo-900 text-blue-600
+    dark:text-blue-400 shadow-lg;
 }
 
 .empty-state-title {
@@ -60,30 +62,35 @@
 
 /* Enhanced Button Styles */
 .btn-primary-enhanced {
-  @apply bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700
-    text-white px-6 py-3 rounded-xl font-medium shadow-lg shadow-blue-500/30
-    transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/40 hover:scale-105
-    focus:outline-none focus:ring-4 focus:ring-blue-500/50;
+  @apply bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700
+    hover:to-indigo-700 text-white px-6 py-3 rounded-xl font-medium shadow-lg
+    shadow-blue-500/30 transition-all duration-300 hover:shadow-xl
+    hover:shadow-blue-500/40 hover:scale-105 focus:outline-none focus:ring-4
+    focus:ring-blue-500/50;
 }
 
 .btn-secondary-enhanced {
   @apply bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-600
     text-gray-700 dark:text-gray-300 px-6 py-3 rounded-xl font-medium
-    transition-all duration-300 hover:border-blue-400 hover:bg-blue-50 dark:hover:bg-gray-700
-    hover:scale-105 focus:outline-none focus:ring-4 focus:ring-blue-500/50;
+    transition-all duration-300 hover:border-blue-400 hover:bg-blue-50
+    dark:hover:bg-gray-700 hover:scale-105 focus:outline-none focus:ring-4
+    focus:ring-blue-500/50;
 }
 
 /* Enhanced Table Styles */
 .table-enhanced {
-  @apply bg-white dark:bg-gray-800 rounded-2xl shadow-lg overflow-hidden border border-gray-100 dark:border-gray-700;
+  @apply bg-white dark:bg-gray-800 rounded-2xl shadow-lg overflow-hidden border
+    border-gray-100 dark:border-gray-700;
 }
 
 .table-enhanced thead {
-  @apply bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-800;
+  @apply bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-700
+    dark:to-gray-800;
 }
 
 .table-enhanced th {
-  @apply px-6 py-4 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider;
+  @apply px-6 py-4 text-left text-xs font-semibold text-gray-600
+    dark:text-gray-300 uppercase tracking-wider;
 }
 
 .table-enhanced td {
@@ -91,7 +98,8 @@
 }
 
 .table-enhanced tbody tr {
-  @apply transition-all duration-200 hover:bg-blue-50 dark:hover:bg-gray-700 cursor-pointer;
+  @apply transition-all duration-200 hover:bg-blue-50 dark:hover:bg-gray-700
+    cursor-pointer;
 }
 
 .table-enhanced tbody tr:nth-child(even) {
@@ -107,47 +115,49 @@
 
 .status-badge-inactive {
   @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-medium
-    bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200
-    shadow-sm border border-gray-200 dark:border-gray-600;
+    bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200 shadow-sm
+    border border-gray-200 dark:border-gray-600;
 }
 
 .status-badge-warning {
   @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-medium
-    bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200
-    shadow-sm border border-amber-200 dark:border-amber-700;
+    bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200 shadow-sm
+    border border-amber-200 dark:border-amber-700;
 }
 
 /* Enhanced Form Inputs */
 .input-enhanced {
-  @apply w-full px-4 py-3 rounded-xl border-2 border-gray-200 dark:border-gray-600
-    bg-white dark:bg-gray-800 text-gray-900 dark:text-white
+  @apply w-full px-4 py-3 rounded-xl border-2 border-gray-200
+    dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white
     focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 focus:outline-none
     transition-all duration-300 placeholder-gray-400 dark:placeholder-gray-500;
 }
 
 .search-input-enhanced {
-  @apply input-enhanced pl-12 bg-gradient-to-r from-white to-gray-50 dark:from-gray-800 dark:to-gray-900
-    shadow-sm hover:shadow-md transition-all duration-300;
+  @apply input-enhanced pl-12 bg-gradient-to-r from-white to-gray-50
+    dark:from-gray-800 dark:to-gray-900 shadow-sm hover:shadow-md transition-all
+    duration-300;
 }
 
 /* Enhanced Quick Actions */
 .quick-action-card {
-  @apply bg-gradient-to-br from-white via-blue-50 to-indigo-50 dark:from-gray-800 dark:via-gray-700 dark:to-gray-900
-    rounded-2xl shadow-lg border border-blue-100 dark:border-gray-600
-    p-6 transition-all duration-300 hover:shadow-xl hover:scale-105
-    cursor-pointer group relative overflow-hidden;
+  @apply bg-gradient-to-br from-white via-blue-50 to-indigo-50
+    dark:from-gray-800 dark:via-gray-700 dark:to-gray-900 rounded-2xl shadow-lg
+    border border-blue-100 dark:border-gray-600 p-6 transition-all duration-300
+    hover:shadow-xl hover:scale-105 cursor-pointer group relative
+    overflow-hidden;
 }
 
 .quick-action-card::before {
-  content: '';
-  @apply absolute inset-0 bg-gradient-to-br from-blue-500/5 to-indigo-500/5 opacity-0
-    transition-opacity duration-300 group-hover:opacity-100;
+  content: "";
+  @apply absolute inset-0 bg-gradient-to-br from-blue-500/5 to-indigo-500/5
+    opacity-0 transition-opacity duration-300 group-hover:opacity-100;
 }
 
 .quick-action-icon {
   @apply w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600
-    text-white flex items-center justify-center shadow-lg
-    transition-all duration-300 group-hover:scale-110 group-hover:rotate-3;
+    text-white flex items-center justify-center shadow-lg transition-all
+    duration-300 group-hover:scale-110 group-hover:rotate-3;
 }
 
 /* Loading States */
@@ -178,7 +188,8 @@
 }
 
 .progress-bar-enhanced {
-  @apply w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3 shadow-inner overflow-hidden;
+  @apply w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3 shadow-inner
+    overflow-hidden;
 }
 
 .progress-fill {
@@ -206,15 +217,15 @@
   .modern-card {
     @apply rounded-lg shadow-md;
   }
-  
+
   .stats-card-enhanced {
     @apply rounded-xl;
   }
-  
+
   .empty-state-enhanced {
     @apply p-8 rounded-xl;
   }
-  
+
   .quick-action-card {
     @apply rounded-xl p-4;
   }
@@ -222,7 +233,8 @@
 
 /* Accessibility Improvements */
 .focus-visible {
-  @apply outline-none ring-4 ring-blue-500/50 ring-offset-2 ring-offset-white dark:ring-offset-gray-900;
+  @apply outline-none ring-4 ring-blue-500/50 ring-offset-2 ring-offset-white
+    dark:ring-offset-gray-900;
 }
 
 /* High contrast mode support */
@@ -230,7 +242,7 @@
   .modern-card {
     @apply border-2 border-gray-400;
   }
-  
+
   .btn-primary-enhanced {
     @apply bg-blue-700 border-2 border-blue-800;
   }

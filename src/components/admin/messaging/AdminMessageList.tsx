@@ -1,4 +1,3 @@
-
 import { ScrollArea } from "@/components/ui/scroll-area.tsx";
 import { Mail } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert.tsx";
@@ -21,7 +20,8 @@ export const AdminMessageList = ({
         <Mail className="h-12 w-12 mx-auto mb-2 opacity-20" />
         <Alert>
           <AlertDescription>
-            Messaging functionality is currently disabled. Please contact the system administrator to enable this feature.
+            Messaging functionality is currently disabled. Please contact the
+            system administrator to enable this feature.
           </AlertDescription>
         </Alert>
       </div>

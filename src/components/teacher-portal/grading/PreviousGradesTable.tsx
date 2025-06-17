@@ -1,4 +1,3 @@
-
 import {
   Table,
   TableBody,
@@ -60,7 +59,9 @@ export const PreviousGradesTable = ({
                 <TableCell>
                   {new Date(grade.created_at).toLocaleDateString()}
                 </TableCell>
-                <TableCell className={getQualityColor(grade.memorization_quality)}>
+                <TableCell
+                  className={getQualityColor(grade.memorization_quality)}
+                >
                   {grade.memorization_quality || "N/A"}
                 </TableCell>
                 <TableCell>{grade.current_surah || "N/A"}</TableCell>

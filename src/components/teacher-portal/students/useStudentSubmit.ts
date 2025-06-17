@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client.ts";
 import { StudentFormData } from "./studentTypes.ts";
@@ -69,6 +68,7 @@ export const useStudentSubmit = ({
             guardian_contact: formData.guardianContact || null,
             guardian_email: formData.guardianEmail || null,
             status: formData.status,
+            medical_condition: formData.medicalConditions || null,
             current_juz: formData.currentJuz === "_none_"
               ? null
               : Number(formData.currentJuz),
@@ -86,6 +86,7 @@ export const useStudentSubmit = ({
             guardian_contact: formData.guardianContact || null,
             guardian_email: formData.guardianEmail || null,
             status: formData.status,
+            medical_condition: formData.medicalConditions || null,
             current_juz: formData.currentJuz === "_none_"
               ? null
               : Number(formData.currentJuz),

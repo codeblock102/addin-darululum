@@ -1,4 +1,3 @@
-
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -18,7 +17,10 @@ interface LeaderboardOptions {
   metricPriority: "sabaqs" | "sabaqPara" | "total";
 }
 
-export const useLeaderboardData = (teacherId: string, options: LeaderboardOptions) => {
+export const useLeaderboardData = (
+  teacherId: string,
+  options: LeaderboardOptions,
+) => {
   const { data: leaderboardData, isLoading, refetch: refreshData } = useQuery({
     queryKey: ["leaderboard", teacherId, options],
     queryFn: async (): Promise<StudentLeaderboardData[]> => {
@@ -54,7 +56,10 @@ export const useLeaderboardData = (teacherId: string, options: LeaderboardOption
   };
 };
 
-export const useRealtimeLeaderboard = (teacherId: string, refreshCallback: () => void) => {
+export const useRealtimeLeaderboard = (
+  teacherId: string,
+  refreshCallback: () => void,
+) => {
   // Mock implementation for real-time updates
   return null;
 };

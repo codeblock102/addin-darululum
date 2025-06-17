@@ -1,27 +1,24 @@
-
-import React from 'react';
-import { cn } from '@/lib/utils';
+import React from "react";
+import { cn } from "@/lib/utils";
 
 interface SkeletonProps {
   className?: string;
-  variant?: 'text' | 'title' | 'card' | 'circle' | 'button';
+  variant?: "text" | "title" | "card" | "circle" | "button";
 }
 
-export const LoadingSkeleton: React.FC<SkeletonProps> = ({ 
-  className, 
-  variant = 'text' 
+export const LoadingSkeleton: React.FC<SkeletonProps> = ({
+  className,
+  variant = "text",
 }) => {
   const variantClasses = {
-    text: 'skeleton-text',
-    title: 'skeleton-title',
-    card: 'skeleton-card',
-    circle: 'skeleton-loader w-12 h-12 rounded-full',
-    button: 'skeleton-loader h-10 w-24 rounded-xl'
+    text: "skeleton-text",
+    title: "skeleton-title",
+    card: "skeleton-card",
+    circle: "skeleton-loader w-12 h-12 rounded-full",
+    button: "skeleton-loader h-10 w-24 rounded-xl",
   };
 
-  return (
-    <div className={cn(variantClasses[variant], className)} />
-  );
+  return <div className={cn(variantClasses[variant], className)} />;
 };
 
 export const DashboardSkeleton: React.FC = () => {
@@ -32,7 +29,7 @@ export const DashboardSkeleton: React.FC = () => {
         <LoadingSkeleton variant="title" className="w-64" />
         <LoadingSkeleton variant="button" />
       </div>
-      
+
       {/* Stats cards skeleton */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {[1, 2, 3].map((i) => (
@@ -46,7 +43,7 @@ export const DashboardSkeleton: React.FC = () => {
           </div>
         ))}
       </div>
-      
+
       {/* Content skeleton */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {[1, 2].map((i) => (

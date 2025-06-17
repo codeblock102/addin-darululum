@@ -1,4 +1,3 @@
-
 /**
  * @file src/pages/Dashboard.tsx
  * @summary This file defines the main Dashboard page, which serves as a unified landing page for both Admins and Teachers.

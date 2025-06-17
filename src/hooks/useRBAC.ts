@@ -26,14 +26,38 @@ export const useRBAC = () => {
         .eq("email", session.user.email)
         .maybeSingle();
 
-      if (profileError) {
-        console.error("Error fetching user profile:", profileError);
-        return {};
-      }
 
-      let result: UserRole = {
-        role: profile?.role || undefined,
-      };
+        // If not admin in metadata, check profiles table
+        if (session.user.email) {
+          console.log(
+            "Checking for profile with email:",
+            session.user.email,
+          );
+          try {
+            const { data: profileData, error } = await supabase
+              .from("profiles")
+              .select("id, role")
+              .eq("email", session.user.email)
+              .maybeSingle();
+
+            if (profileData) {
+              console.log("Found profile:", profileData);
+              userRole = profileData.role as UserRole;
+              localStorage.setItem("userRole", userRole);
+            } else {
+              console.log(
+                "No profile found or error:",
+                error?.message || "No data",
+              );
+              // If no role is found, clear any cached role
+              localStorage.removeItem("userRole");
+            }
+          } catch (error) {
+            console.log("Error checking profile:", error);
+            // On error, clear any cached role
+            localStorage.removeItem("userRole");
+          }
+        }
 
       // If user is a teacher, get their teacher ID
       if (profile?.role === "teacher") {
@@ -51,11 +75,9 @@ export const useRBAC = () => {
         }
       }
 
-      console.log("User role data:", result);
-      return result;
-    },
-    enabled: !!session?.user?.email,
-  });
+
+    fetchRoleAndPermissions();
+  }, [session]); // Remove role from dependencies to prevent loops
 
   const isAdmin = userRole?.role === "admin";
   const isTeacher = userRole?.role === "teacher";

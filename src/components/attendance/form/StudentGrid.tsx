@@ -1,11 +1,16 @@
-
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client.ts";
 import { Card, CardContent } from "@/components/ui/card.tsx";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar.tsx";
 import { Loader2, Check } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area.tsx";
-import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form.tsx";
+import {
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form.tsx";
 import { UseFormReturn } from "react-hook-form";
 import { getInitials } from "@/utils/stringUtils.ts";
 import { AttendanceFormValues } from "@/types/attendance-form.ts";
@@ -28,7 +33,7 @@ export function StudentGrid({
   selectedStudents = new Set()
 }: StudentGridProps) {
   const isMobile = useIsMobile();
-  
+
   const { data: students, isLoading } = useQuery({
     queryKey: ["all-students-grid"],
     queryFn: async () => {
@@ -119,6 +124,7 @@ export function StudentGrid({
                               Active Student
                             </p>
                           </div>
+
                         </div>
                       </CardContent>
                     </Card>
