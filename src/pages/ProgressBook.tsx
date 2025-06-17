@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card.tsx";
 import { supabase } from "@/integrations/supabase/client.ts";
@@ -197,235 +196,108 @@ const ProgressBookPage = () => {
         </div>
       </div>
 
-      <Card className="overflow-hidden shadow-lg border-0 bg-white">
-        <div className="bg-gradient-to-r from-gray-50 to-blue-50 border-b border-gray-200">
-          <CardContent className="p-4 sm:p-6">
-            <Tabs
-              value={viewMode}
-              onValueChange={(value) =>
-                setViewMode(value as "daily" | "classroom")}
-            >
-              <div className="mb-4 sm:mb-6">
-                <TabsList className="w-full grid grid-cols-2 bg-white shadow-sm border">
-                  <TabsTrigger
-                    value="daily"
-                    className="flex items-center gap-2 text-sm sm:text-base py-2 sm:py-3 data-[state=active]:bg-blue-600 data-[state=active]:text-white"
-                  >
-                    <CalendarDays className="h-4 w-4" />
-                    <span>Daily Records</span>
-                  </TabsTrigger>
-                  <TabsTrigger
-                    value="classroom"
-                    className="flex items-center gap-2 text-sm sm:text-base py-2 sm:py-3 data-[state=active]:bg-blue-600 data-[state=active]:text-white"
-                  >
-                    <Users className="h-4 w-4" />
-                    <span>Leaderboard View</span>
-                  </TabsTrigger>
-                </TabsList>
-              </div>
-
-              <TabsContent value="daily" className="space-y-4 sm:space-y-6">
-                <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 sm:gap-6">
-                  <div className="lg:col-span-1 space-y-4">
-                    {isAdmin && (
-                      <Card className="p-4 bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200">
-                        <h3 className="font-semibold text-gray-900 mb-3 flex items-center">
-                          <Users className="h-4 w-4 mr-2 text-blue-600" />
-                          Filter by Teacher
-                        </h3>
-                        <Select
-                          value={selectedTeacherId}
-                          onValueChange={(id) =>
-                            setSelectedTeacherId(id === "all" ? undefined : id)}
-                        >
-                          <SelectTrigger className="w-full bg-white">
-                            <SelectValue placeholder="All Teachers" />
-                          </SelectTrigger>
+      <Tabs value={viewMode} onValueChange={(value) => setViewMode(value as "daily" | "classroom")} className="w-full">
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="daily">Daily Records</TabsTrigger>
+          <TabsTrigger value="classroom">Leaderboard View</TabsTrigger>
+        </TabsList>
+        <TabsContent value="daily">
+          <Card className="mt-4">
+            <CardContent className="p-4 sm:p-6">
+              <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 sm:gap-6">
+                <div className="lg:col-span-1 space-y-4">
+                  {isAdmin && (
+                    <Card>
+                      <CardContent className="p-4">
+                        <h3 className="font-semibold text-gray-900 mb-3">Filter by Teacher</h3>
+                        <Select onValueChange={(id) => setSelectedTeacherId(id === "all" ? undefined : id)}>
+                          <SelectTrigger><SelectValue placeholder="All Teachers" /></SelectTrigger>
                           <SelectContent>
                             <SelectItem value="all">All Teachers</SelectItem>
                             {teachers?.map((teacher) => (
-                              <SelectItem key={teacher.id} value={teacher.id}>
-                                {teacher.name}
-                              </SelectItem>
+                              <SelectItem key={teacher.id} value={teacher.id}>{teacher.name}</SelectItem>
                             ))}
                           </SelectContent>
                         </Select>
-                      </Card>
-                    )}
-                    <Card className="p-4 bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200">
-                      <h3 className="font-semibold text-gray-900 mb-3 flex items-center">
-                        <Users className="h-4 w-4 mr-2 text-blue-600" />
-                        Select Student
-                      </h3>
-                      <div className="relative w-full sm:w-auto mb-4">
+                      </CardContent>
+                    </Card>
+                  )}
+                  <Card>
+                    <CardContent className="p-4">
+                      <h3 className="font-semibold text-gray-900 mb-3">Select Student</h3>
+                      <div className="relative mb-4">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                         <Input
                           placeholder="Search students..."
-                          className="pl-10 w-full bg-white border-gray-200 focus:border-blue-500 focus:ring-blue-500"
+                          className="pl-10"
                           value={searchQuery}
                           onChange={(e) => setSearchQuery(e.target.value)}
                         />
                       </div>
-                      {studentsLoading
-                        ? (
-                          <div className="flex items-center text-sm text-gray-600 p-3 border rounded-lg bg-white/50">
-                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                            Loading students...
-                          </div>
-                        )
-                        : filteredStudents && filteredStudents.length > 0
-                        ? (
-                          <ul className="space-y-2 max-h-96 overflow-y-auto">
-                            {filteredStudents.map((student) => (
-                              <li key={student.id}>
-                                <button
-                                  onClick={() =>
-                                    setSelectedStudentId(student.id)}
-                                  className={`w-full text-left p-3 rounded-lg text-sm transition-colors ${
-                                    selectedStudentId === student.id
-                                      ? "bg-blue-600 text-white font-semibold"
-                                      : "bg-white/50 hover:bg-white"
-                                  }`}
-                                >
-                                  {student.name}
-                                </button>
-                              </li>
-                            ))}
-                          </ul>
-                        )
-                        : (
-                          <div className="flex items-center text-sm text-amber-700 p-3 border border-amber-200 rounded-lg bg-amber-50">
-                            <AlertCircle className="h-4 w-4 mr-2" />
-                            No active students found.
-                          </div>
-                        )}
-                    </Card>
-                  </div>
-                  <div className="lg:col-span-3">
-                    <div className="mt-4">
-                      {selectedStudentId
-                        ? (
-                          <DhorBookComponent
-                            studentId={selectedStudentId}
-                            teacherId={currentTeacherId || ""}
-                            isAdmin={isAdmin}
-                            isLoadingTeacher={isLoadingUserProfile}
-                            teacherData={userProfileData}
-                          />
-                        )
-                        : (
-                          <div className="flex flex-col items-center justify-center h-full bg-gray-50 rounded-lg p-8">
-                            <Book className="h-16 w-16 text-gray-300 mb-4" />
-                            <h3 className="text-xl font-semibold text-gray-700">
-                              Select a Student
-                            </h3>
-                            <Select value={selectedTeacherId || (teachers && teachers.length > 0 ? teachers[0]?.id : undefined)} onValueChange={setSelectedTeacherId}>
-                              <SelectTrigger className="bg-white border-green-200 focus:border-green-500 focus:ring-green-500">
-                                <SelectValue placeholder="All Teachers" />
-                              </SelectTrigger>
-                              <SelectContent className="bg-white border-gray-200 shadow-lg">
-                                <SelectItem value="all" className="focus:bg-green-50 focus:text-green-900">
-                                  All Teachers
-                                </SelectItem>
-                                {teachers?.map(teacher => <SelectItem key={teacher.id} value={teacher.id} className="focus:bg-green-50 focus:text-green-900">
-                                    {teacher.name}
-                                  </SelectItem>)}
-                                {(!teachers || teachers.length === 0) && <SelectItem value="no-teachers" disabled>
-                                    No teachers found
-                                  </SelectItem>}
-                              </SelectContent>
-                            </Select>
-                          </Card>}
-                      </div>
-
-                      <div className="lg:col-span-3">
-                        {selectedStudentId ? <DhorBookComponent studentId={selectedStudentId} teacherId={currentTeacherId || "default"} isAdmin={isAdmin} isLoadingTeacher={isLoadingTeacher} /> : <Card className="p-8 sm:p-12 text-center bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 border-blue-200">
-                            <div className="flex flex-col items-center space-y-4">
-                              <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center">
-                                <Book className="h-8 w-8 text-white" />
-                              </div>
-                              <div>
-                                <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2">
-                                  Ready to Track Progress
-                                </h3>
-                                <p className="text-sm sm:text-base text-gray-600 max-w-md">
-                                  Select a student from the sidebar to view their memorization progress, 
-                                  add new entries, and track their Quranic journey.
-                                </p>
-                              </div>
-                            </div>
-                          </Card>}
+                      {studentsLoading ? (
+                        <div><Loader2 className="h-4 w-4 mr-2 animate-spin" />Loading...</div>
+                      ) : (
+                        <ul className="space-y-2 max-h-96 overflow-y-auto">
+                          {filteredStudents?.map((student) => (
+                            <li key={student.id}>
+                              <button
+                                onClick={() => setSelectedStudentId(student.id)}
+                                className={`w-full text-left p-2 rounded-md text-sm ${selectedStudentId === student.id ? 'bg-blue-600 text-white' : 'hover:bg-gray-100'}`}
+                              >
+                                {student.name}
+                              </button>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </CardContent>
+                  </Card>
+                </div>
+                <div className="lg:col-span-3">
+                  {selectedStudentId ? (
+                    <DhorBookComponent
+                      studentId={selectedStudentId}
+                      teacherId={currentTeacherId || ""}
+                      isAdmin={isAdmin}
+                      isLoadingTeacher={isLoadingUserProfile}
+                      teacherData={userProfileData}
+                    />
+                  ) : (
+                    <div className="flex items-center justify-center h-full rounded-lg bg-gray-50 p-8 text-center">
+                      <div>
+                        <Book className="h-12 w-12 mx-auto text-gray-400 mb-4" />
+                        <h3 className="text-lg font-semibold text-gray-800">Select a Student</h3>
+                        <p className="text-sm text-gray-600">Choose a student from the list to view their detailed progress.</p>
                       </div>
                     </div>
-
-                  </TabsContent>
-
-                  <TabsContent value="recent" className="mt-4 sm:mt-6">
-                    <Card className="p-8 text-center bg-gradient-to-br from-amber-50 to-orange-50 border-amber-200">
-                      <div className="flex flex-col items-center space-y-4">
-                        <div className="w-16 h-16 bg-gradient-to-br from-amber-500 to-orange-600 rounded-full flex items-center justify-center">
-                          <TrendingUp className="h-8 w-8 text-white" />
-                        </div>
-                        <div>
-                          <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                            Recent Activity
-                          </h3>
-                          <p className="text-gray-600">
-                            Recent progress entries will be displayed here.
-                          </p>
-                        </div>
-                      </div>
-                    </Card>
-                  </TabsContent>
-
-                  <TabsContent value="reports" className="mt-4 sm:mt-6">
-                    <Card className="p-8 text-center bg-gradient-to-br from-purple-50 to-pink-50 border-purple-200">
-                      <div className="flex flex-col items-center space-y-4">
-                        <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-pink-600 rounded-full flex items-center justify-center">
-                          <FileText className="h-8 w-8 text-white" />
-                        </div>
-                        <div>
-                          <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                            Progress Reports
-                          </h3>
-                          <p className="text-gray-600">
-                            Comprehensive progress reports will be generated here.
-                          </p>
-                        </div>
-                      </div>
-                    </Card>
-                  </TabsContent>
-                </Tabs>
-              </TabsContent>
-
-              <TabsContent value="classroom" className="mt-4 sm:mt-6">
-                {isAdmin && <Card className="p-4 mb-4 bg-gradient-to-r from-green-50 to-emerald-50 border-green-200">
-                    <h3 className="font-semibold text-gray-900 mb-3 flex items-center">
-                      <Users className="h-4 w-4 mr-2 text-green-600" />
-                      Select Teacher for Classroom View
-                    </h3>
-                    <Select value={selectedTeacherId || (teachers && teachers.length > 0 ? teachers[0]?.id : undefined)} onValueChange={setSelectedTeacherId}>
-                      <SelectTrigger className="bg-white border-green-200 focus:border-green-500 focus:ring-green-500">
-                        <SelectValue placeholder="Choose a teacher" />
-
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">All Teachers</SelectItem>
-                        {teachers?.map((teacher) => (
-                          <SelectItem key={teacher.id} value={teacher.id}>
-                            {teacher.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </Card>}
-                <ClassroomRecords teacherId={currentTeacherId || (teachers && teachers.length > 0 ? teachers[0]?.id : "default")} isAdmin={isAdmin} />
-
-              </TabsContent>
-            </Tabs>
-          </CardContent>
-        </div>
-      </Card>
+                  )}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+        <TabsContent value="classroom">
+          <Card className="mt-4">
+            <CardContent className="p-4 sm:p-6">
+              {isAdmin && (
+                <div className="mb-4">
+                  <h3 className="font-semibold text-gray-900 mb-3">Select Teacher for Classroom View</h3>
+                  <Select onValueChange={setSelectedTeacherId}>
+                    <SelectTrigger><SelectValue placeholder="Choose a teacher" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Teachers</SelectItem>
+                      {teachers?.map((teacher) => (
+                        <SelectItem key={teacher.id} value={teacher.id}>{teacher.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+              <ClassroomRecords teacherId={selectedTeacherId || currentTeacherId} isAdmin={isAdmin} />
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };

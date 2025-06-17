@@ -1,13 +1,8 @@
 import { useState } from "react";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Edit, Users } from "lucide-react";
-import { Skeleton } from "@/components/ui/skeleton";
-
-import { useNavigate } from "react-router-dom";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client.ts";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar.tsx";
+import { Badge } from "@/components/ui/badge.tsx";
+import { Button } from "@/components/ui/button.tsx";
+import { Skeleton } from "@/components/ui/skeleton.tsx";
 import {
   Table,
   TableBody,
@@ -16,8 +11,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table.tsx";
-import { Button } from "@/components/ui/button.tsx";
-import { Skeleton } from "@/components/ui/skeleton.tsx";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -40,6 +33,9 @@ import {
   User,
   Users,
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client.ts";
 import { useToast } from "@/hooks/use-toast.ts";
 import { useIsMobile } from "@/hooks/use-mobile.tsx";
 
