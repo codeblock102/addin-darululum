@@ -22,7 +22,7 @@ export function useTeacherAccounts() {
     queryKey: ["teacher-accounts"],
     queryFn: async () => {
       const { data: teachersData, error } = await supabase
-        .from("teachers")
+        .from("profiles")
         .select(`
           id, 
           name, 
@@ -30,7 +30,8 @@ export function useTeacherAccounts() {
           subject,
           bio,
           phone
-        `);
+        `)
+        .eq("role", "teacher");
 
       if (error) {
         console.error(
@@ -56,7 +57,7 @@ export function useTeacherAccounts() {
               const { data: profileData } = await supabase
                 .from("profiles")
                 .select("id, created_at")
-                .eq("username", teacher.email)
+                .eq("email", teacher.email)
                 .maybeSingle();
 
               if (profileData) {

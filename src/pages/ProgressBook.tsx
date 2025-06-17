@@ -1,24 +1,4 @@
-/**
- * @file src/pages/ProgressBook.tsx
- * @summary This page provides a comprehensive interface for tracking student academic progress.
- * It allows users (teachers and admins) to view and manage daily progress entries for individual students
- * (sabaq, sabaq para, dhor) and also offers a classroom-wide overview of student activity for a selected date.
- *
- * Key Features:
- * - Two main view modes: "Daily Records" for individual student focus and "Classroom View" for a broader look.
- * - In "Daily Records" mode:
- *   - Student selection dropdown, with search functionality.
- *   - Tabbed interface for "All Students" (to select a student), "Recent Entries", and "Reports" (placeholders).
- *   - Displays the `DhorBookComponent` (to be renamed ProgressBookComponent) for the selected student, showing their daily entries.
- *   - Admins can filter by teacher.
- * - In "Classroom View" mode:
- *   - Displays the `ClassroomRecords` component, showing a summary of all students' progress for a selected date.
- *   - Admins can select a specific teacher to view their classroom or see all students.
- * - Fetches necessary data: list of active students, list of teachers (for admins).
- * - Handles student ID selection from URL parameters for direct linking.
- * - Includes a `TeacherStatsSection` for displaying aggregate statistics (currently basic).
- * - Utilizes realtime updates via `useRealtimeLeaderboard` (though its direct impact here might be for other parts of the system).
- */
+
 import { useEffect, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card.tsx";
 import { supabase } from "@/integrations/supabase/client.ts";
@@ -54,40 +34,9 @@ import { useToast } from "@/hooks/use-toast.ts";
 import { AlertCircle } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext.tsx";
 
-/**
- * @component ProgressBookPage
- * @description The main page component for the Progress Book feature.
- *
- * Renders a layout that allows users to view and manage student progress records.
- * It includes student selection, teacher filtering (for admins), and different views
- * for individual student details and classroom overviews.
- *
- * State Management:
- *  - `selectedStudentId`: Stores the ID of the currently selected student for detailed view.
- *  - `searchQuery`: Holds the current text entered in the student search input.
- *  - `activeTab`: Manages the active tab within the "Daily Records" view (e.g., "all", "recent", "reports").
- *  - `viewMode`: Switches between "daily" records view and "classroom" overview.
- *  - `selectedTeacherId`: Stores the ID of the teacher selected by an admin for filtering.
- *
- * Data Fetching:
- *  - Fetches a list of all active teachers (`useQuery(['active-teachers'])`).
- *  - Fetches a list of all active students (`useQuery(['all-students-for-progress-book'])`).
- *
- * Effects:
- *  - Populates `selectedStudentId` from URL parameters on initial load.
- *  - Sets `selectedTeacherId` to the current teacher's ID if the user is a teacher.
- *
- * Child Components:
- *  - `DashboardLayout`: Provides the overall page structure with sidebar and header.
- *  - `TeacherStatsSection`: Displays summary statistics related to teachers and students.
- *  - `DhorBookComponent` (to be renamed `ProgressBookComponent`): Displays detailed progress entries for a single student.
- *  - `ClassroomRecords`: Shows a tabular view of progress for all students in a classroom setting for a specific date.
- *  - Various UI components from `@/components/ui` (Card, Tabs, Select, Button, Input).
- *
- * @returns {JSX.Element} The rendered Progress Book page.
- */
 const ProgressBookPage = () => {
   const { toast } = useToast();
+
   const [selectedStudentId, setSelectedStudentId] = useState<string | null>(
     null,
   );
@@ -109,6 +58,7 @@ const ProgressBookPage = () => {
       setSelectedStudentId(studentIdParam);
     }
   }, []);
+
 
   useEffect(() => {
     if (!isAdmin && currentTeacherId) {
@@ -222,6 +172,7 @@ const ProgressBookPage = () => {
     enabled: !isLoadingUserProfile && !!userProfileData,
   });
 
+
   const filteredStudents = students?.filter((student) =>
     student.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
@@ -245,6 +196,7 @@ const ProgressBookPage = () => {
           </div>
         </div>
       </div>
+
       <Card className="overflow-hidden shadow-lg border-0 bg-white">
         <div className="bg-gradient-to-r from-gray-50 to-blue-50 border-b border-gray-200">
           <CardContent className="p-4 sm:p-6">
@@ -367,26 +319,95 @@ const ProgressBookPage = () => {
                             <h3 className="text-xl font-semibold text-gray-700">
                               Select a Student
                             </h3>
-                            <p className="text-gray-500 text-center mt-2">
-                              Choose a student from the list to view their
-                              progress.
-                            </p>
-                          </div>
-                        )}
+                            <Select value={selectedTeacherId || (teachers && teachers.length > 0 ? teachers[0]?.id : undefined)} onValueChange={setSelectedTeacherId}>
+                              <SelectTrigger className="bg-white border-green-200 focus:border-green-500 focus:ring-green-500">
+                                <SelectValue placeholder="All Teachers" />
+                              </SelectTrigger>
+                              <SelectContent className="bg-white border-gray-200 shadow-lg">
+                                <SelectItem value="all" className="focus:bg-green-50 focus:text-green-900">
+                                  All Teachers
+                                </SelectItem>
+                                {teachers?.map(teacher => <SelectItem key={teacher.id} value={teacher.id} className="focus:bg-green-50 focus:text-green-900">
+                                    {teacher.name}
+                                  </SelectItem>)}
+                                {(!teachers || teachers.length === 0) && <SelectItem value="no-teachers" disabled>
+                                    No teachers found
+                                  </SelectItem>}
+                              </SelectContent>
+                            </Select>
+                          </Card>}
+                      </div>
+
+                      <div className="lg:col-span-3">
+                        {selectedStudentId ? <DhorBookComponent studentId={selectedStudentId} teacherId={currentTeacherId || "default"} isAdmin={isAdmin} isLoadingTeacher={isLoadingTeacher} /> : <Card className="p-8 sm:p-12 text-center bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 border-blue-200">
+                            <div className="flex flex-col items-center space-y-4">
+                              <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center">
+                                <Book className="h-8 w-8 text-white" />
+                              </div>
+                              <div>
+                                <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2">
+                                  Ready to Track Progress
+                                </h3>
+                                <p className="text-sm sm:text-base text-gray-600 max-w-md">
+                                  Select a student from the sidebar to view their memorization progress, 
+                                  add new entries, and track their Quranic journey.
+                                </p>
+                              </div>
+                            </div>
+                          </Card>}
+                      </div>
                     </div>
-                  </div>
-                </div>
+
+                  </TabsContent>
+
+                  <TabsContent value="recent" className="mt-4 sm:mt-6">
+                    <Card className="p-8 text-center bg-gradient-to-br from-amber-50 to-orange-50 border-amber-200">
+                      <div className="flex flex-col items-center space-y-4">
+                        <div className="w-16 h-16 bg-gradient-to-br from-amber-500 to-orange-600 rounded-full flex items-center justify-center">
+                          <TrendingUp className="h-8 w-8 text-white" />
+                        </div>
+                        <div>
+                          <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                            Recent Activity
+                          </h3>
+                          <p className="text-gray-600">
+                            Recent progress entries will be displayed here.
+                          </p>
+                        </div>
+                      </div>
+                    </Card>
+                  </TabsContent>
+
+                  <TabsContent value="reports" className="mt-4 sm:mt-6">
+                    <Card className="p-8 text-center bg-gradient-to-br from-purple-50 to-pink-50 border-purple-200">
+                      <div className="flex flex-col items-center space-y-4">
+                        <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-pink-600 rounded-full flex items-center justify-center">
+                          <FileText className="h-8 w-8 text-white" />
+                        </div>
+                        <div>
+                          <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                            Progress Reports
+                          </h3>
+                          <p className="text-gray-600">
+                            Comprehensive progress reports will be generated here.
+                          </p>
+                        </div>
+                      </div>
+                    </Card>
+                  </TabsContent>
+                </Tabs>
               </TabsContent>
-              <TabsContent value="classroom" className="space-y-4 sm:space-y-6">
-                {isAdmin && (
-                  <div className="mb-4 max-w-xs">
-                    <Select
-                      value={selectedTeacherId}
-                      onValueChange={(id) =>
-                        setSelectedTeacherId(id === "all" ? undefined : id)}
-                    >
-                      <SelectTrigger className="w-full bg-white">
-                        <SelectValue placeholder="All Teachers" />
+
+              <TabsContent value="classroom" className="mt-4 sm:mt-6">
+                {isAdmin && <Card className="p-4 mb-4 bg-gradient-to-r from-green-50 to-emerald-50 border-green-200">
+                    <h3 className="font-semibold text-gray-900 mb-3 flex items-center">
+                      <Users className="h-4 w-4 mr-2 text-green-600" />
+                      Select Teacher for Classroom View
+                    </h3>
+                    <Select value={selectedTeacherId || (teachers && teachers.length > 0 ? teachers[0]?.id : undefined)} onValueChange={setSelectedTeacherId}>
+                      <SelectTrigger className="bg-white border-green-200 focus:border-green-500 focus:ring-green-500">
+                        <SelectValue placeholder="Choose a teacher" />
+
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="all">All Teachers</SelectItem>
@@ -397,12 +418,9 @@ const ProgressBookPage = () => {
                         ))}
                       </SelectContent>
                     </Select>
-                  </div>
-                )}
-                <ClassroomRecords
-                  teacherId={selectedTeacherId}
-                  isAdmin={isAdmin}
-                />
+                  </Card>}
+                <ClassroomRecords teacherId={currentTeacherId || (teachers && teachers.length > 0 ? teachers[0]?.id : "default")} isAdmin={isAdmin} />
+
               </TabsContent>
             </Tabs>
           </CardContent>

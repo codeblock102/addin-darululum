@@ -1,3 +1,4 @@
+
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client.ts";
 import { Label } from "@/components/ui/label.tsx";
@@ -23,8 +24,9 @@ export const TeacherSelector = (
     queryKey: ["admin-message-teachers"],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("teachers")
+        .from("profiles")
         .select("id, name")
+        .eq("role", "teacher")
         .order("name", { ascending: true });
 
       if (error) throw error;

@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client.ts";
@@ -51,6 +52,7 @@ export const MyStudents = ({ teacherId }: MyStudentsProps) => {
         .from("profiles")
         .select("madrassah_id, section")
         .eq("id", teacherId)
+        .eq("role", "teacher")
         .single();
       if (error) {
         console.error("Error fetching teacher data:", error);

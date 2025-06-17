@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client.ts";
 import {
@@ -7,7 +8,7 @@ import {
   CardTitle,
 } from "@/components/ui/card.tsx";
 import { Button } from "@/components/ui/button.tsx";
-import { useToast } from "@/components/ui/use-toast.ts";
+import { useToast } from "@/hooks/use-toast.ts";
 import { AlertTriangle, Check, Loader2 } from "lucide-react";
 import { DashboardLayout } from "@/components/layouts/DashboardLayout.tsx";
 import { Link } from "react-router-dom";
@@ -31,6 +32,7 @@ const CreateTeacherProfileForTestAccount = () => {
           .from("profiles")
           .select("*")
           .eq("email", testEmail)
+          .eq("role", "teacher")
           .maybeSingle();
 
         if (error) throw error;
@@ -58,7 +60,9 @@ const CreateTeacherProfileForTestAccount = () => {
           {
             name: "Mufti Ammar Mulla",
             email: testEmail,
+            role: "teacher",
             subject: "Islamic Studies",
+
             bio:
               "Islamic studies educator with expertise in Quranic teachings.",
             role: "teacher",

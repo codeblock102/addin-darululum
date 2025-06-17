@@ -106,7 +106,7 @@ export const StudentSearch = ({ teacherId }: StudentSearchProps) => {
         {searchQuery && (
           <div className="text-sm text-muted-foreground">
             <div className="flex items-center gap-2 p-2 border rounded">
-              <User className="h-4 w-4" />
+              <UserRound className="h-4 w-4" />
               <span>No students found for "{searchQuery}"</span>
             </div>
           </div>

@@ -1,50 +1,31 @@
-import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client.ts";
-import { useAuth } from "@/hooks/use-auth.ts";
-import { RolePermission } from "@/utils/roleUtils.ts";
 
-export type UserRole = "admin" | "teacher" | "student";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "./use-auth";
+import { hasPermission as checkPermission, RolePermission } from "@/utils/roleUtils";
+
+interface UserRole {
+  role?: string;
+  teacher_id?: string;
+}
 
 export const useRBAC = () => {
   const { session } = useAuth();
-  const [role, setRole] = useState<UserRole | null>(() => {
-    // Try to get cached role from localStorage first for immediate response
-    const cachedRole = localStorage.getItem("userRole") as UserRole | null;
-    console.log("useRBAC initial from localStorage:", cachedRole);
-    return cachedRole;
-  });
-  const [permissions, setPermissions] = useState<RolePermission[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const fetchRoleAndPermissions = async () => {
-      if (!session) {
-        setRole(null);
-        setPermissions([]);
-        setIsLoading(false);
-        localStorage.removeItem("userRole"); // Clear cached role if no session
-        return;
-      }
+  const { data: userRole, isLoading } = useQuery<UserRole>({
+    queryKey: ["user-role", session?.user?.id],
+    queryFn: async () => {
+      if (!session?.user?.email) return {};
 
-      try {
-        setIsLoading(true);
-        let userRole: UserRole | null = null;
+      console.log("Fetching user role for email:", session.user.email);
 
-        // First, check if user has admin role from metadata (fastest method)
-        console.log(
-          "Checking user metadata for role:",
-          session.user.user_metadata,
-        );
-        const isUserAdmin = session.user.user_metadata?.role === "admin";
-        if (isUserAdmin) {
-          userRole = "admin";
-          localStorage.setItem("userRole", userRole);
-          console.log("User is admin based on metadata");
-          setRole(userRole);
-          setIsLoading(false);
-          return; // Exit early if admin role is confirmed
-        }
+      // Check user profile to get role
+      const { data: profile, error: profileError } = await supabase
+        .from("profiles")
+        .select("role")
+        .eq("email", session.user.email)
+        .maybeSingle();
+
 
         // If not admin in metadata, check profiles table
         if (session.user.email) {
@@ -78,37 +59,48 @@ export const useRBAC = () => {
           }
         }
 
-        setRole(userRole);
-        console.log(`RBAC role check complete: role=${userRole}`);
-      } catch (error) {
-        console.error("Error fetching user role:", error);
-        setError("Failed to check user permissions");
-        // On error, clear any cached role
-        localStorage.removeItem("userRole");
-      } finally {
-        setIsLoading(false);
+      // If user is a teacher, get their teacher ID
+      if (profile?.role === "teacher") {
+        const { data: teacherProfile, error: teacherError } = await supabase
+          .from("profiles")
+          .select("id")
+          .eq("email", session.user.email)
+          .eq("role", "teacher")
+          .maybeSingle();
+
+        if (teacherError) {
+          console.error("Error fetching teacher profile:", teacherError);
+        } else if (teacherProfile) {
+          result.teacher_id = teacherProfile.id;
+        }
       }
-    };
+
 
     fetchRoleAndPermissions();
   }, [session]); // Remove role from dependencies to prevent loops
 
-  const hasPermission = (requiredPermission: RolePermission): boolean => {
-    // Give all permissions to admins
-    if (role === "admin") return true;
+  const isAdmin = userRole?.role === "admin";
+  const isTeacher = userRole?.role === "teacher";
+  const teacherId = userRole?.teacher_id;
 
-    // Check if the permission is in the permissions array
-    return permissions.includes(requiredPermission);
+  // Add hasPermission function
+  const hasPermission = async (permission: RolePermission): Promise<boolean> => {
+    try {
+      return await checkPermission(permission);
+    } catch (error) {
+      console.error("Error checking permission:", error);
+      return false;
+    }
   };
 
+  console.log("RBAC Hook - Role:", userRole?.role, "Admin:", isAdmin, "Teacher:", isTeacher, "Teacher ID:", teacherId);
+
   return {
-    role,
-    isAdmin: role === "admin",
-    isTeacher: role === "teacher" || role === "admin",
-    isStudent: role === "student",
-    permissions,
-    hasPermission,
+    isAdmin,
+    isTeacher,
+    teacherId,
+    role: userRole?.role,
     isLoading,
-    error,
+    hasPermission,
   };
 };
