@@ -11,7 +11,8 @@ import {
 } from "@/components/ui/card.tsx";
 import { useToast } from "@/components/ui/use-toast.ts";
 import { Loader2 } from "lucide-react";
-import { setUserAsAdmin } from "@/utils/adminUtils.ts";
+import { setupAdminAccount } from "@/utils/adminUtils.ts";
+import { supabase } from "@/integrations/supabase/client.ts";
 
 export default function SetupAdmin() {
   const [isLoading, setIsLoading] = useState(false);
@@ -22,18 +23,24 @@ export default function SetupAdmin() {
     setIsLoading(true);
 
     try {
-      const success = await setUserAsAdmin("");
+      // Get current user's email
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      
+      if (userError || !user?.email) {
+        throw new Error("Could not get current user's email");
+      }
+
+      const success = await setupAdminAccount(user.email);
 
       if (success) {
         toast({
           title: "Admin Setup Complete",
-          description:
-            "Your account has been set up as an admin. You will be redirected to the admin dashboard.",
+          description: "Your account has been set up as an admin. You will be redirected to the dashboard.",
         });
 
         // Wait a moment before redirecting
         setTimeout(() => {
-          navigate("/admin");
+          navigate("/dashboard");
         }, 2000);
       } else {
         toast({
@@ -46,8 +53,7 @@ export default function SetupAdmin() {
       console.error("Error setting up admin:", error);
       toast({
         title: "Error",
-        description:
-          "An unexpected error occurred while setting up admin account.",
+        description: "An unexpected error occurred while setting up admin account.",
         variant: "destructive",
       });
     } finally {
@@ -68,6 +74,14 @@ export default function SetupAdmin() {
           <p className="mb-4">
             This will set your current account as an administrator. You will
             have access to all admin features after this setup.
+          </p>
+          <p className="text-sm text-muted-foreground">
+            This process will:
+            <ul className="list-disc list-inside mt-2">
+              <li>Set your user role to admin in metadata</li>
+              <li>Create necessary database entries</li>
+              <li>Set up your admin profile</li>
+            </ul>
           </p>
         </CardContent>
         <CardFooter>
