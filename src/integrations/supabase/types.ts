@@ -218,7 +218,7 @@ export type Database = {
           email: string | null
           id: string
           madrassah_id: string | null
-          name: string
+          name: string | null
           phone: string | null
           role: string | null
           section: string | null
@@ -230,7 +230,7 @@ export type Database = {
           email?: string | null
           id?: string
           madrassah_id?: string | null
-          name: string
+          name?: string | null
           phone?: string | null
           role?: string | null
           section?: string | null
@@ -242,7 +242,7 @@ export type Database = {
           email?: string | null
           id?: string
           madrassah_id?: string | null
-          name?: string
+          name?: string | null
           phone?: string | null
           role?: string | null
           section?: string | null
