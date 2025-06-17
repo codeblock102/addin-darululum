@@ -5,9 +5,9 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+} from "@/components/ui/table.tsx";
+import { Card } from "@/components/ui/card.tsx";
+import { Button } from "@/components/ui/button.tsx";
 import {
   BookOpen,
   Calendar,
@@ -17,9 +17,9 @@ import {
   User,
 } from "lucide-react";
 import { useState } from "react";
-import { EditProgressDialog } from "./EditProgressDialog";
-import { MobileTable } from "@/components/mobile/MobileTable";
-import { useIsMobile } from "@/hooks/use-mobile";
+import { EditProgressDialog } from "./EditProgressDialog.tsx";
+import { MobileTable } from "@/components/mobile/MobileTable.tsx";
+import { useIsMobile } from "@/hooks/use-mobile.ts";
 
 interface Progress {
   id: string;

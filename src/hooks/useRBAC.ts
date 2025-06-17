@@ -46,10 +46,10 @@ export const useRBAC = () => {
           return; // Exit early if admin role is confirmed
         }
 
-        // If not admin, check for teacher profile
+        // If not admin in metadata, check profiles table
         if (session.user.email) {
           console.log(
-            "Checking for teacher profile with email:",
+            "Checking for profile with email:",
             session.user.email,
           );
           try {
@@ -59,20 +59,20 @@ export const useRBAC = () => {
               .eq("email", session.user.email)
               .maybeSingle();
 
-            if (profileData && profileData.role === "teacher") {
-              console.log("Found teacher profile:", profileData);
-              userRole = "teacher";
+            if (profileData) {
+              console.log("Found profile:", profileData);
+              userRole = profileData.role as UserRole;
               localStorage.setItem("userRole", userRole);
             } else {
               console.log(
-                "No teacher profile found or error:",
+                "No profile found or error:",
                 error?.message || "No data",
               );
               // If no role is found, clear any cached role
               localStorage.removeItem("userRole");
             }
           } catch (error) {
-            console.log("Error checking teacher profile:", error);
+            console.log("Error checking profile:", error);
             // On error, clear any cached role
             localStorage.removeItem("userRole");
           }
@@ -91,7 +91,7 @@ export const useRBAC = () => {
     };
 
     fetchRoleAndPermissions();
-  }, [session, role]); // Remove role from dependencies to prevent loops
+  }, [session]); // Remove role from dependencies to prevent loops
 
   const hasPermission = (requiredPermission: RolePermission): boolean => {
     // Give all permissions to admins

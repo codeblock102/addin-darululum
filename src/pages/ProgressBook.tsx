@@ -52,6 +52,7 @@ import {
 import { useTeacherStatus } from "@/hooks/useTeacherStatus.ts";
 import { useToast } from "@/hooks/use-toast.ts";
 import { AlertCircle } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext.tsx";
 
 /**
  * @component ProgressBookPage
@@ -98,6 +99,8 @@ const ProgressBookPage = () => {
   >(undefined);
 
   const { isAdmin, teacherId: currentTeacherId } = useTeacherStatus();
+  const { session } = useAuth();
+  const userId = session?.user?.id;
 
   useEffect(() => {
     const urlParams = new URLSearchParams(globalThis.location.search);
@@ -128,22 +131,22 @@ const ProgressBookPage = () => {
     enabled: isAdmin, // Only fetch all teachers if the user is an admin
   });
 
-  const { data: teacherData, isLoading: isLoadingTeacher } = useQuery({
-    queryKey: ["teacherData", currentTeacherId],
+  const { data: userProfileData, isLoading: isLoadingUserProfile } = useQuery({
+    queryKey: ["userProfileForProgressBook", userId],
     queryFn: async () => {
-      if (!currentTeacherId) return null;
+      if (!userId) return null;
       const { data, error } = await supabase
         .from("profiles")
         .select("madrassah_id, section")
-        .eq("id", currentTeacherId)
+        .eq("id", userId)
         .single();
       if (error) {
-        console.error("Error fetching teacher data:", error);
+        console.error("Error fetching user profile data:", error);
         throw error;
       }
       return data;
     },
-    enabled: !!currentTeacherId,
+    enabled: !!userId,
   });
 
   const { data: students, isLoading: studentsLoading } = useQuery({
@@ -151,24 +154,21 @@ const ProgressBookPage = () => {
       "students-for-progress-book",
       {
         isAdmin,
-        userMadrassahId: teacherData?.madrassah_id,
+        userMadrassahId: userProfileData?.madrassah_id,
         selectedTeacherId: isAdmin ? selectedTeacherId : currentTeacherId,
       },
     ],
     queryFn: async () => {
-      if (!teacherData?.madrassah_id) return [];
+      if (!userProfileData?.madrassah_id) return [];
 
       let query = supabase
         .from("students")
-        .select("id, name, status, teacher_id")
+        .select("id, name, status")
         .eq("status", "active")
-        .eq("madrassah_id", teacherData.madrassah_id);
+        .eq("madrassah_id", userProfileData.madrassah_id);
 
       if (isAdmin) {
         if (selectedTeacherId && selectedTeacherId !== "all") {
-          // This part of the logic assumes a `teacher_id` column on the `students` table
-          // If students are linked to teachers via a join table, this query will need to be adjusted.
-          // For now, proceeding with the assumption of a direct `teacher_id` link.
           const { data: studentIds, error: studentIdError } = await supabase
             .from("students_teachers")
             .select("student_id")
@@ -184,8 +184,7 @@ const ProgressBookPage = () => {
           const ids = studentIds.map((s) => s.student_id);
           query = query.in("id", ids);
         }
-      } else if (currentTeacherId && teacherData.section) {
-        // For teachers, get students assigned to them in their section
+      } else if (currentTeacherId && userProfileData.section) {
         const { data: studentLinks, error: linkError } = await supabase
           .from("students_teachers")
           .select("student_id")
@@ -202,9 +201,8 @@ const ProgressBookPage = () => {
           return [];
         }
 
-        query = query.in("id", studentIds).eq("section", teacherData.section);
+        query = query.in("id", studentIds).eq("section", userProfileData.section);
       } else {
-        // If not admin and no teacher id or section, return no students
         return [];
       }
 
@@ -221,7 +219,7 @@ const ProgressBookPage = () => {
       }
       return data || [];
     },
-    enabled: !isLoadingTeacher && !!teacherData,
+    enabled: !isLoadingUserProfile && !!userProfileData,
   });
 
   const filteredStudents = students?.filter((student) =>
@@ -352,27 +350,30 @@ const ProgressBookPage = () => {
                     </Card>
                   </div>
                   <div className="lg:col-span-3">
-                    {selectedStudentId
-                      ? (
-                        <DhorBookComponent
-                          studentId={selectedStudentId}
-                          teacherId={currentTeacherId || ""}
-                          isAdmin={isAdmin}
-                          isLoadingTeacher={isLoadingTeacher}
-                        />
-                      )
-                      : (
-                        <div className="flex flex-col items-center justify-center h-full bg-gray-50 rounded-lg p-8">
-                          <Book className="h-16 w-16 text-gray-300 mb-4" />
-                          <h3 className="text-xl font-semibold text-gray-700">
-                            Select a Student
-                          </h3>
-                          <p className="text-gray-500 text-center mt-2">
-                            Choose a student from the list to view their
-                            progress.
-                          </p>
-                        </div>
-                      )}
+                    <div className="mt-4">
+                      {selectedStudentId
+                        ? (
+                          <DhorBookComponent
+                            studentId={selectedStudentId}
+                            teacherId={currentTeacherId || ""}
+                            isAdmin={isAdmin}
+                            isLoadingTeacher={isLoadingUserProfile}
+                            teacherData={userProfileData}
+                          />
+                        )
+                        : (
+                          <div className="flex flex-col items-center justify-center h-full bg-gray-50 rounded-lg p-8">
+                            <Book className="h-16 w-16 text-gray-300 mb-4" />
+                            <h3 className="text-xl font-semibold text-gray-700">
+                              Select a Student
+                            </h3>
+                            <p className="text-gray-500 text-center mt-2">
+                              Choose a student from the list to view their
+                              progress.
+                            </p>
+                          </div>
+                        )}
+                    </div>
                   </div>
                 </div>
               </TabsContent>

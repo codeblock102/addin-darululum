@@ -64,11 +64,8 @@ function App() {
         <Routes>
           <Route path="/auth" element={<Auth />} />
           <Route path="/create-demo-account" element={<CreateDemoAccount />} />
-          <Route
-            path="/create-teacher-profile"
-            element={<CreateTeacherProfileForTestAccount />}
-          />
-          <Route path="/admin/setup" element={<SetupAdmin />} />
+          <Route path="/create-teacher-profile" element={<CreateTeacherProfileForTestAccount />} />
+          <Route path="/setup-admin" element={<SetupAdmin />} />
           <Route path="/role-setup" element={<ManualRoleSetup />} />
           <Route path="*" element={<NotFound />} />
 
