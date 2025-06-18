@@ -11,7 +11,7 @@ export const AdminStatsCards = () => {
       const [studentsResult, teachersResult, progressResult] = await Promise.all([
         supabase.from("students").select("id", { count: "exact" }).eq("status", "active"),
         supabase.from("profiles").select("id", { count: "exact" }).eq("role", "teacher"),
-        supabase.from("student_progress").select("id", { count: "exact" }),
+        supabase.from("progress").select("id", { count: "exact" }),
       ]);
 
       return {
