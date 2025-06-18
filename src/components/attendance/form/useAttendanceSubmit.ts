@@ -9,8 +9,8 @@ import { useToast } from "@/hooks/use-toast.ts";
 import { AttendanceFormValues } from "@/types/attendance-form.ts";
 
 const attendanceSchema = z.object({
-  class_id: z.string().min(1, "Please select a class"),
-  student_id: z.string().min(1, "Please select a student"),
+  class_id: z.string().optional(),
+  student_id: z.string().optional(),
   date: z.date(),
   time: z.string().min(1, "Time is required"),
   status: z.enum(["present", "absent", "late", "excused"]),
@@ -63,7 +63,6 @@ export function useAttendanceSubmit(
     ? format(selectedDate, "yyyy-MM-dd")
     : format(today, "yyyy-MM-dd");
 
-  // Update selectedStudent when form student_id changes
   useEffect(() => {
     if (watchedStudentId && watchedStudentId !== selectedStudent) {
       setSelectedStudent(watchedStudentId);
@@ -90,7 +89,6 @@ export function useAttendanceSubmit(
 
   useEffect(() => {
     if (existingAttendance) {
-      // Load existing record into form
       form.setValue("status", existingAttendance.status as any);
       form.setValue("notes", existingAttendance.notes || "");
       if (existingAttendance.time) {
@@ -103,61 +101,43 @@ export function useAttendanceSubmit(
       if (existingAttendance.class_id) {
         form.setValue("class_id", existingAttendance.class_id);
       }
-      toast({
-        title: "Existing Record Found",
-        description: `Loading attendance record for ${
-          format(selectedDate || today, "MMM dd, yyyy")
-        }`,
-      });
     } else if (selectedStudent && selectedDate) {
-      // Reset form for new record
       form.setValue("status", "present");
       form.setValue("notes", "");
       form.setValue("time", format(new Date(), "HH:mm"));
       form.setValue("late_reason", "");
+      form.setValue("class_id", "");
       setSelectedReason("");
     }
-  }, [existingAttendance, form, selectedStudent, selectedDate, toast, today]);
+  }, [existingAttendance, form, selectedStudent, selectedDate]);
 
-  const saveAttendance = useMutation({
-    mutationFn: async (values: AttendanceFormValues) => {
-      if (!selectedStudent) {
-        throw new Error("Please select a student");
-      }
+  const saveAttendanceMutation = useMutation({
+    mutationFn: async (values: {
+      student_ids: string[],
+      status: string,
+      formData: AttendanceFormValues,
+    }) => {
+      const { student_ids, status, formData } = values;
+      
+      const records = student_ids.map(studentId => ({
+        student_id: studentId,
+        date: format(formData.date, "yyyy-MM-dd"),
+        time: formData.time,
+        status: status,
+        notes: formData.notes,
+        late_reason: status === 'late' ? formData.late_reason : null,
+        class_id: formData.class_id || null,
+      }));
 
-      const attendanceData = {
-        student_id: selectedStudent,
-        date: formattedDate,
-        status: values.status,
-        notes: values.notes,
-        time: values.time,
-        late_reason: values.status === "late" ? values.late_reason : null,
-        class_id: values.class_id || null,
-      };
-
-      if (existingAttendance) {
-        const { error } = await supabase
-          .from("attendance")
-          .update(attendanceData)
-          .eq("id", existingAttendance.id);
-
-        if (error) throw error;
-        return { action: "updated" };
-      } else {
-        const { error } = await supabase
-          .from("attendance")
-          .insert([attendanceData]);
-
-        if (error) throw error;
-        return { action: "created" };
-      }
+      const { error } = await supabase.from('attendance').upsert(records, { onConflict: 'student_id,date' });
+      if (error) throw error;
+      return { count: student_ids.length };
     },
     onSuccess: (data) => {
       toast({
         title: "Success",
-        description: `Attendance ${data.action} successfully`,
+        description: `Attendance recorded for ${data.count} students.`,
       });
-      refetchAttendance();
       queryClient.invalidateQueries({ queryKey: ["attendance"] });
       onSuccess?.();
     },
@@ -167,25 +147,20 @@ export function useAttendanceSubmit(
         description: error.message,
         variant: "destructive",
       });
-      onError?.(error);
+      onError?.(error as Error);
     },
   });
 
-  const handleSubmit = (values: AttendanceFormValues) => {
-    saveAttendance.mutate(values);
+  const handleBulkSubmit = (student_ids: string[], status: string) => {
+    const formData = form.getValues();
+    saveAttendanceMutation.mutate({ student_ids, status, formData });
   };
 
-  const isProcessing = saveAttendance.isPending;
+  const isProcessing = saveAttendanceMutation.isPending;
 
   return {
     form,
-    handleSubmit,
     isProcessing,
-    selectedStudent,
-    setSelectedStudent,
-    selectedReason,
-    setSelectedReason,
-    existingAttendance,
-    saveAttendance,
+    handleBulkSubmit,
   };
 }
