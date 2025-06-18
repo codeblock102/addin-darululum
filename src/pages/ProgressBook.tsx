@@ -118,19 +118,19 @@ const ProgressBookPage = () => {
 
       if (isAdmin) {
         if (selectedTeacherId && selectedTeacherId !== "all") {
-          const { data: studentIds, error: studentIdError } = await supabase
+          const { data: teacherStudents, error: teacherStudentsError } = await supabase
             .from("students_teachers")
             .select("student_id")
             .eq("teacher_id", selectedTeacherId);
 
-          if (studentIdError) {
+          if (teacherStudentsError) {
             console.error(
               "Error fetching student IDs for teacher",
-              studentIdError,
+              teacherStudentsError,
             );
             return [];
           }
-          const ids = studentIds.map((s) => s.student_id);
+          const ids = teacherStudents.map((s) => s.student_id);
           query = query.in("id", ids);
         }
       } else if (currentTeacherId && userProfileData.section) {
