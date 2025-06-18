@@ -120,7 +120,7 @@ const ProgressBookPage = () => {
         if (selectedTeacherId && selectedTeacherId !== "all") {
           const { data: teacherStudents, error: teacherStudentsError } = await supabase
             .from("students_teachers")
-            .select("student_id")
+            .select("id")
             .eq("teacher_id", selectedTeacherId);
 
           if (teacherStudentsError) {
@@ -130,13 +130,13 @@ const ProgressBookPage = () => {
             );
             return [];
           }
-          const ids = teacherStudents.map((s) => s.student_id);
+          const ids = teacherStudents.map((s) => s.id);
           query = query.in("id", ids);
         }
       } else if (currentTeacherId && userProfileData.section) {
         const { data: studentLinks, error: linkError } = await supabase
           .from("students_teachers")
-          .select("student_id")
+          .select("id")
           .eq("teacher_id", currentTeacherId);
 
         if (linkError) {
@@ -144,7 +144,7 @@ const ProgressBookPage = () => {
           return [];
         }
 
-        const studentIds = studentLinks.map((link) => link.student_id);
+        const studentIds = studentLinks.map((link) => link.id);
 
         if (studentIds.length === 0) {
           return [];
