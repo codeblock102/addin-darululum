@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -268,8 +267,13 @@ const StudentDetail = () => {
           </TabsTrigger>
         </TabsList>
         <TabsContent value="dhor-book">
-          <DhorBook studentId={student.id} isAdmin={isAdmin} isLoadingTeacher={false} />
-
+          <DhorBook
+            studentId={student.id}
+            teacherId={session?.user?.id}
+            teacherData={userProfileData}
+            isAdmin={isAdmin}
+            isLoadingTeacher={isLoadingUserProfile}
+          />
         </TabsContent>
         <TabsContent value="revisions">
           {student && (
