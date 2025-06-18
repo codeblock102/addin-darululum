@@ -218,7 +218,7 @@ const Dashboard = () => {
 
     return (
       <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-red-50">
-        <TeacherDashboard teacher={adminViewProfile} />
+        <TeacherDashboard teacher={adminViewProfile} isAdmin={true} />
       </div>
     );
   }
