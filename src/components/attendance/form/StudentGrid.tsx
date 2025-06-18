@@ -1,146 +1,119 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client.ts";
-import { Card, CardContent } from "@/components/ui/card.tsx";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar.tsx";
-import { Loader2, Check } from "lucide-react";
-import { ScrollArea } from "@/components/ui/scroll-area.tsx";
-import {
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form.tsx";
+import { Tables } from "@/integrations/supabase/types.ts";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card.tsx";
+import { Checkbox } from "@/components/ui/checkbox.tsx";
+import { Button } from "@/components/ui/button.tsx";
 import { UseFormReturn } from "react-hook-form";
-import { getInitials } from "@/utils/stringUtils.ts";
-import { AttendanceFormValues } from "@/types/attendance-form.ts";
-import { useIsMobile } from "@/hooks/use-mobile.tsx";
+import { AlertCircle, Loader2 } from "lucide-react";
+import { Session } from "@supabase/supabase-js";
+
+type Student = Pick<Tables<"students">, "id" | "name">;
 
 interface StudentGridProps {
-  form: UseFormReturn<AttendanceFormValues>;
-  selectedStudent?: string;
-  onStudentSelect?: (studentId: string) => void;
-  selectedClassId?: string;
-  multiSelect?: boolean;
-  selectedStudents?: Set<string>;
+  form: UseFormReturn<any>;
+  user: Session['user'] | null;
+  multiSelect: boolean;
+  selectedStudents: Set<string>;
+  onStudentSelect: (studentId: string) => void;
+  onSelectAll: (students: Student[]) => void;
 }
 
-export function StudentGrid({ 
-  form, 
-  selectedStudent, 
-  onStudentSelect,
-  multiSelect = false,
-  selectedStudents = new Set()
-}: StudentGridProps) {
-  const isMobile = useIsMobile();
+const fetchStudentsForUser = async (user: Session['user'] | null): Promise<Student[]> => {
+  if (!user?.id) return [];
 
-  const { data: students, isLoading } = useQuery({
-    queryKey: ["all-students-grid"],
-    queryFn: async () => {
-      console.log("Fetching all students for grid");
-      const { data, error } = await supabase
-        .from("students")
-        .select("id, name, status")
-        .eq("status", "active")
-        .order("name", { ascending: true });
+  const { data: userData, error: userError } = await supabase
+    .from("profiles")
+    .select("madrassah_id, section, role")
+    .eq("id", user.id)
+    .single();
 
-      if (error) {
-        console.error("Error fetching students for grid:", error);
-        throw error;
-      }
+  if (userError) {
+    console.error("Error fetching user data:", userError);
+    throw new Error("Could not fetch user profile.");
+  }
+  
+  if (!userData?.madrassah_id) {
+    console.log("No madrassah_id found for this user.");
+    return [];
+  }
 
-      console.log(`Found ${data?.length || 0} students for grid`);
-      return data || [];
-    },
+  const { madrassah_id, role, section } = userData;
+
+  let query = supabase
+    .from("students")
+    .select("id, name")
+    .eq("madrassah_id", madrassah_id);
+
+  if (role === 'teacher' && section) {
+    query = query.eq('section', section);
+  }
+  
+  const { data, error } = await query;
+  
+  if (error) {
+    console.error("Error fetching students for user:", error);
+    throw new Error("Failed to load students.");
+  }
+  return data as Student[];
+};
+
+export const StudentGrid = ({ user, selectedStudents, onStudentSelect, onSelectAll }: StudentGridProps) => {
+  const { data: students = [], isLoading, isError, error } = useQuery<Student[]>({
+    queryKey: ["students", user?.id],
+    queryFn: () => fetchStudentsForUser(user),
+    enabled: !!user,
   });
 
   if (isLoading) {
+    return <div className="flex justify-center items-center h-48"><Loader2 className="animate-spin h-8 w-8 text-blue-500" /></div>;
+  }
+
+  if (isError) {
+    console.error(error);
+    return <div className="flex justify-center items-center h-48 text-red-500"><AlertCircle className="mr-2"/> Error loading students. See console for details.</div>;
+  }
+  
+  if (!user) {
     return (
-      <div className="flex items-center justify-center p-6 sm:p-8">
-        <Loader2 className="h-5 w-5 sm:h-6 sm:w-6 animate-spin mr-2" />
-        <span className="text-sm sm:text-base">Loading students...</span>
-      </div>
+      <Card className="flex items-center justify-center h-48">
+        <p className="text-slate-500">Could not identify user to fetch students.</p>
+      </Card>
     );
   }
 
-  const handleStudentClick = (studentId: string) => {
-    if (multiSelect) {
-      onStudentSelect?.(studentId);
-    } else {
-      form.setValue("student_id", studentId);
-      onStudentSelect?.(studentId);
-    }
-  };
-
-  const isStudentSelected = (studentId: string) => {
-    if (multiSelect) {
-      return selectedStudents.has(studentId);
-    }
-    return selectedStudent === studentId || form.getValues("student_id") === studentId;
-  };
-
   return (
-    <FormField
-      control={form.control}
-      name="student_id"
-      render={({ field }) => (
-        <FormItem>
-          <FormLabel className="text-gray-900 dark:text-gray-100 font-medium text-sm sm:text-base">
-            {multiSelect ? "Select Students (Multiple)" : "Select Student"}
-          </FormLabel>
-          <FormControl>
-            <ScrollArea className={`${isMobile ? 'h-64' : 'h-80'} w-full rounded-lg border-2 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm p-3 sm:p-4`}>
-              <div className={`grid gap-2 sm:gap-3 ${isMobile ? 'grid-cols-1' : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3'}`}>
-                {students?.map((student) => {
-                  const isSelected = isStudentSelected(student.id);
-                  
-                  return (
-                    <Card
-                      key={student.id}
-                      className={`cursor-pointer transition-all duration-200 hover:shadow-lg border-2 relative ${
-                        isSelected
-                          ? "ring-2 ring-blue-500 bg-blue-50 dark:bg-blue-900/30 border-blue-500 shadow-md"
-                          : "hover:bg-gray-50 dark:hover:bg-gray-700 border-gray-200 dark:border-gray-600 hover:border-blue-300"
-                      }`}
-                      onClick={() => handleStudentClick(student.id)}
-                    >
-                      {isSelected && multiSelect && (
-                        <div className="absolute top-2 right-2 w-5 h-5 sm:w-6 sm:h-6 bg-blue-500 rounded-full flex items-center justify-center">
-                          <Check className="h-3 w-3 sm:h-4 sm:w-4 text-white" />
-                        </div>
-                      )}
-                      <CardContent className="p-3 sm:p-4">
-                        <div className="flex items-center space-x-2 sm:space-x-3">
-                          <Avatar className="h-8 w-8 sm:h-10 sm:w-10">
-                            <AvatarFallback className="bg-purple-100 text-purple-600 dark:bg-purple-900 dark:text-purple-300 font-medium text-xs sm:text-sm">
-                              {getInitials(student.name)}
-                            </AvatarFallback>
-                          </Avatar>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-xs sm:text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
-                              {student.name}
-                            </p>
-                            <p className="text-xs text-gray-500 dark:text-gray-400">
-                              Active Student
-                            </p>
-                          </div>
-
-                        </div>
-                      </CardContent>
-                    </Card>
-                  );
-                })}
-              </div>
-              {(!students || students.length === 0) && (
-                <div className="text-center py-6 sm:py-8 text-gray-500 dark:text-gray-400">
-                  <p className="text-sm sm:text-base">No students found</p>
-                </div>
-              )}
-            </ScrollArea>
-          </FormControl>
-          <FormMessage />
-        </FormItem>
-      )}
-    />
+    <Card>
+      <CardHeader>
+        <div className="flex justify-between items-center">
+          <CardTitle>Select Students</CardTitle>
+          <Button variant="outline" onClick={() => onSelectAll(students)}>
+            {selectedStudents.size === students.length ? "Deselect All" : "Select All"}
+          </Button>
+        </div>
+      </CardHeader>
+      <CardContent>
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+          {students.map((student) => (
+            <div
+              key={student.id}
+              onClick={() => onStudentSelect(student.id)}
+              className={`p-3 border rounded-lg cursor-pointer transition-all flex items-center space-x-3 ${
+                selectedStudents.has(student.id)
+                  ? "bg-blue-100 dark:bg-blue-900 border-blue-400"
+                  : "bg-slate-50 dark:bg-slate-800"
+              }`}
+            >
+              <Checkbox
+                checked={selectedStudents.has(student.id)}
+                onCheckedChange={() => onStudentSelect(student.id)}
+              />
+              <span className="font-medium text-sm">{student.name}</span>
+            </div>
+          ))}
+        </div>
+        {students.length === 0 && <p className="text-center text-slate-500 py-8">No students found.</p>}
+      </CardContent>
+    </Card>
   );
-}
+};
