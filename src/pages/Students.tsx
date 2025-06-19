@@ -127,8 +127,8 @@ const Students = () => {
   const inactiveStudents = students?.filter((s) => s.status === "inactive").length || 0;
   const avgAttendance = 85; // Mock data for now
 
-  // Get unique sections for filter - fix the type issues here
-  const sections = [...new Set(students?.map(s => s.section).filter((section): section is string => Boolean(section)))];
+  // Get unique sections for filter - properly type the sections
+  const sections: string[] = [...new Set(students?.map(s => s.section).filter((section): section is string => Boolean(section)))];
 
   const filteredStudents = students?.filter((student) => {
     const matchesSearch = student.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -387,7 +387,7 @@ const Students = () => {
                     </SelectTrigger>
                     <SelectContent className="admin-theme">
                       <SelectItem value="all">All Sections</SelectItem>
-                      {sections.map((section) => (
+                      {sections.map((section: string) => (
                         <SelectItem key={section} value={section}>
                           {section || "General"}
                         </SelectItem>
