@@ -37,9 +37,9 @@ export function StudentGrid({
   const [searchQuery, setSearchQuery] = useState("");
   const selectedStudentId = form.watch('student_id');
 
-  const { data: students, isLoading } = useQuery({
+  const { data: students, isLoading } = useQuery<Student[]>({
     queryKey: ['class-students', selectedClassId],
-    queryFn: async () => {
+    queryFn: async (): Promise<Student[]> => {
       if (!selectedClassId) return [];
 
       const { data, error } = await supabase
@@ -50,7 +50,7 @@ export function StudentGrid({
         .order('name');
 
       if (error) throw error;
-      return data as Student[];
+      return (data || []) as Student[];
     },
     enabled: !!selectedClassId,
   });
