@@ -1,4 +1,5 @@
 
+
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -37,9 +38,9 @@ export function StudentGrid({
   const [searchQuery, setSearchQuery] = useState("");
   const selectedStudentId = form.watch('student_id');
 
-  const studentsQuery = useQuery({
+  const studentsQuery = useQuery<Student[]>({
     queryKey: ['class-students', selectedClassId],
-    queryFn: async () => {
+    queryFn: async (): Promise<Student[]> => {
       if (!selectedClassId) {
         return [];
       }
@@ -58,7 +59,7 @@ export function StudentGrid({
     enabled: !!selectedClassId,
   });
 
-  const students = studentsQuery.data as Student[] | undefined;
+  const students = studentsQuery.data;
   const isLoading = studentsQuery.isLoading;
 
   // Filter students based on search query
@@ -290,3 +291,4 @@ export function StudentGrid({
     </div>
   );
 }
+
