@@ -4,14 +4,14 @@ import { Activity } from "lucide-react";
 
 export const AdminRecentActivity = () => {
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Activity className="h-5 w-5" />
+    <Card className="admin-card">
+      <CardHeader className="pb-3 md:pb-4">
+        <CardTitle className="flex items-center gap-2 text-base md:text-lg">
+          <Activity className="h-4 w-4 md:h-5 md:w-5" />
           Recent System Activity
         </CardTitle>
       </CardHeader>
-      <CardContent>
+      <CardContent className="pt-0">
         <div className="space-y-3">
           <div className="text-sm text-muted-foreground">
             No recent system activity to display

@@ -64,31 +64,31 @@ export const AdminDashboardContent = () => {
   ];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 md:space-y-6 px-2 md:px-0">
       {/* Stats Cards */}
       <AdminStatsCards />
 
       {/* Quick Actions Grid */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Plus className="h-5 w-5" />
+      <Card className="admin-card">
+        <CardHeader className="pb-3 md:pb-4">
+          <CardTitle className="flex items-center gap-2 text-base md:text-lg">
+            <Plus className="h-4 w-4 md:h-5 md:w-5" />
             Quick Actions
           </CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <CardContent className="pt-0">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
             {quickActions.map((action, index) => (
               <Button
                 key={index}
                 variant="outline"
-                className="h-24 flex flex-col items-center justify-center gap-2 border-2 hover:border-primary transition-all duration-200"
+                className="h-20 md:h-24 flex flex-col items-center justify-center gap-2 border-2 hover:border-primary transition-all duration-200 p-3 admin-btn-secondary"
                 onClick={action.action}
               >
-                <action.icon className="h-6 w-6" />
+                <action.icon className="h-5 w-5 md:h-6 md:w-6 flex-shrink-0" />
                 <div className="text-center">
-                  <div className="font-medium">{action.title}</div>
-                  <div className="text-xs text-muted-foreground mt-1">
+                  <div className="font-medium text-xs md:text-sm">{action.title}</div>
+                  <div className="text-xs text-muted-foreground mt-1 hidden sm:block">
                     {action.description}
                   </div>
                 </div>
@@ -99,17 +99,17 @@ export const AdminDashboardContent = () => {
       </Card>
 
       {/* Dashboard Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 md:gap-6">
         {/* System Overview */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <BarChart3 className="h-5 w-5" />
+        <Card className="admin-card">
+          <CardHeader className="pb-3 md:pb-4">
+            <CardTitle className="flex items-center gap-2 text-base md:text-lg">
+              <BarChart3 className="h-4 w-4 md:h-5 md:w-5" />
               System Overview
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
+          <CardContent className="pt-0">
+            <div className="space-y-3 md:space-y-4">
               <div className="flex justify-between items-center p-3 bg-muted/50 rounded-lg">
                 <span className="text-sm font-medium">Active Students</span>
                 <span className="text-lg font-bold text-primary">--</span>
@@ -131,43 +131,43 @@ export const AdminDashboardContent = () => {
       </div>
 
       {/* Management Links */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Management Links</CardTitle>
+      <Card className="admin-card">
+        <CardHeader className="pb-3 md:pb-4">
+          <CardTitle className="text-base md:text-lg">Management Links</CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <CardContent className="pt-0">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
             <Button
               variant="ghost"
-              className="h-16 flex flex-col gap-2"
+              className="h-14 md:h-16 flex flex-col gap-1 md:gap-2 p-2 admin-btn-secondary"
               onClick={() => navigate("/teacher-accounts")}
             >
-              <GraduationCap className="h-5 w-5" />
-              <span className="text-sm">Teacher Accounts</span>
+              <GraduationCap className="h-4 w-4 md:h-5 md:w-5 flex-shrink-0" />
+              <span className="text-xs md:text-sm text-center leading-tight">Teacher Accounts</span>
             </Button>
             <Button
               variant="ghost"
-              className="h-16 flex flex-col gap-2"
+              className="h-14 md:h-16 flex flex-col gap-1 md:gap-2 p-2 admin-btn-secondary"
               onClick={() => navigate("/classes")}
             >
-              <BookOpen className="h-5 w-5" />
-              <span className="text-sm">Classes</span>
+              <BookOpen className="h-4 w-4 md:h-5 md:w-5 flex-shrink-0" />
+              <span className="text-xs md:text-sm text-center leading-tight">Classes</span>
             </Button>
             <Button
               variant="ghost"
-              className="h-16 flex flex-col gap-2"
+              className="h-14 md:h-16 flex flex-col gap-1 md:gap-2 p-2 admin-btn-secondary"
               onClick={() => navigate("/admin/database-seeder")}
             >
-              <Settings className="h-5 w-5" />
-              <span className="text-sm">Database Tools</span>
+              <Settings className="h-4 w-4 md:h-5 md:w-5 flex-shrink-0" />
+              <span className="text-xs md:text-sm text-center leading-tight">Database Tools</span>
             </Button>
             <Button
               variant="ghost"
-              className="h-16 flex flex-col gap-2"
+              className="h-14 md:h-16 flex flex-col gap-1 md:gap-2 p-2 admin-btn-secondary"
               onClick={() => navigate("/preferences")}
             >
-              <MessageSquare className="h-5 w-5" />
-              <span className="text-sm">Preferences</span>
+              <MessageSquare className="h-4 w-4 md:h-5 md:w-5 flex-shrink-0" />
+              <span className="text-xs md:text-sm text-center leading-tight">Preferences</span>
             </Button>
           </div>
         </CardContent>
