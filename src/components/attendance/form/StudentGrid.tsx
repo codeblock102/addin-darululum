@@ -6,10 +6,11 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { CheckCircle, Circle, User, Users } from 'lucide-react';
+import { CheckCircle, Circle, User, Users, Search } from 'lucide-react';
 import { UseFormReturn } from 'react-hook-form';
 import { AttendanceFormValues } from '@/types/attendance-form';
 import { cn } from '@/lib/utils';
+import { Input } from '@/components/ui/input';
 
 interface StudentGridProps {
   form: UseFormReturn<AttendanceFormValues>;
@@ -33,6 +34,7 @@ export function StudentGrid({
   selectedStudents = new Set(), 
   onStudentSelect 
 }: StudentGridProps) {
+  const [searchQuery, setSearchQuery] = useState("");
   const selectedStudentId = form.watch('student_id');
 
   const { data: students, isLoading } = useQuery({
@@ -52,6 +54,11 @@ export function StudentGrid({
     },
     enabled: !!selectedClassId,
   });
+
+  // Filter students based on search query
+  const filteredStudents = students?.filter(student =>
+    student.name.toLowerCase().includes(searchQuery.toLowerCase())
+  ) || [];
 
   const handleStudentClick = (student: Student) => {
     if (multiSelect && onStudentSelect) {
@@ -145,12 +152,24 @@ export function StudentGrid({
           </p>
         </div>
         <Badge variant="secondary" className="bg-green-500/20 text-green-300 border-green-500/30 px-3 py-1">
-          {students.length} students
+          {filteredStudents.length} students
         </Badge>
       </div>
 
+      {/* Search Bar */}
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+        <Input
+          type="text"
+          placeholder="Search students by name..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="pl-10 bg-white/5 border-white/10 text-gray-100 placeholder-gray-400 focus:border-green-500/50 focus:ring-green-500/20"
+        />
+      </div>
+
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {students.map((student) => {
+        {filteredStudents.map((student) => {
           const isSelected = multiSelect 
             ? selectedStudents.has(student.id)
             : selectedStudentId === student.id;
@@ -244,6 +263,21 @@ export function StudentGrid({
         <div className="mt-6 p-4 bg-green-500/10 border border-green-500/30 rounded-lg">
           <p className="text-sm text-green-300 font-medium">
             {selectedStudents.size} student{selectedStudents.size > 1 ? 's' : ''} selected for attendance recording
+          </p>
+        </div>
+      )}
+
+      {/* No results message */}
+      {searchQuery && filteredStudents.length === 0 && (
+        <div className="text-center py-8">
+          <div className="w-16 h-16 bg-gradient-to-br from-gray-400 to-gray-500 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Search className="h-8 w-8 text-white" />
+          </div>
+          <h3 className="text-lg font-medium text-gray-100 mb-2">
+            No Students Found
+          </h3>
+          <p className="text-gray-400 text-center max-w-sm mx-auto">
+            No students match your search for "{searchQuery}". Try adjusting your search terms.
           </p>
         </div>
       )}
