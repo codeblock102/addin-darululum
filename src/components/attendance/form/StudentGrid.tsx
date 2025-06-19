@@ -1,146 +1,252 @@
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client.ts";
-import { Card, CardContent } from "@/components/ui/card.tsx";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar.tsx";
-import { Loader2, Check } from "lucide-react";
-import { ScrollArea } from "@/components/ui/scroll-area.tsx";
-import {
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form.tsx";
-import { UseFormReturn } from "react-hook-form";
-import { getInitials } from "@/utils/stringUtils.ts";
-import { AttendanceFormValues } from "@/types/attendance-form.ts";
-import { useIsMobile } from "@/hooks/use-mobile.tsx";
+
+import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { Card, CardContent } from '@/components/ui/card';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
+import { CheckCircle, Circle, User, Users } from 'lucide-react';
+import { UseFormReturn } from 'react-hook-form';
+import { AttendanceFormValues } from '@/types/attendance-form';
+import { cn } from '@/lib/utils';
 
 interface StudentGridProps {
   form: UseFormReturn<AttendanceFormValues>;
-  selectedStudent?: string;
-  onStudentSelect?: (studentId: string) => void;
-  selectedClassId?: string;
+  selectedClassId: string;
   multiSelect?: boolean;
   selectedStudents?: Set<string>;
+  onStudentSelect?: (studentId: string) => void;
+}
+
+interface Student {
+  id: string;
+  name: string;
+  status: 'active' | 'inactive';
+  section?: string;
 }
 
 export function StudentGrid({ 
   form, 
-  selectedStudent, 
-  onStudentSelect,
-  multiSelect = false,
-  selectedStudents = new Set()
+  selectedClassId, 
+  multiSelect = false, 
+  selectedStudents = new Set(), 
+  onStudentSelect 
 }: StudentGridProps) {
-  const isMobile = useIsMobile();
+  const selectedStudentId = form.watch('student_id');
 
   const { data: students, isLoading } = useQuery({
-    queryKey: ["all-students-grid"],
+    queryKey: ['class-students', selectedClassId],
     queryFn: async () => {
-      console.log("Fetching all students for grid");
+      if (!selectedClassId) return [];
+
       const { data, error } = await supabase
-        .from("students")
-        .select("id, name, status")
-        .eq("status", "active")
-        .order("name", { ascending: true });
+        .from('students')
+        .select('id, name, status, section')
+        .eq('class_id', selectedClassId)
+        .eq('status', 'active')
+        .order('name');
 
-      if (error) {
-        console.error("Error fetching students for grid:", error);
-        throw error;
-      }
-
-      console.log(`Found ${data?.length || 0} students for grid`);
-      return data || [];
+      if (error) throw error;
+      return data as Student[];
     },
+    enabled: !!selectedClassId,
   });
+
+  const handleStudentClick = (student: Student) => {
+    if (multiSelect && onStudentSelect) {
+      onStudentSelect(student.id);
+    } else {
+      form.setValue('student_id', student.id);
+    }
+  };
+
+  const getInitials = (name: string) => {
+    return name
+      .split(' ')
+      .map(n => n[0])
+      .join('')
+      .toUpperCase()
+      .substring(0, 2);
+  };
+
+  if (!selectedClassId) {
+    return (
+      <Card className="border-2 border-dashed border-gray-300 dark:border-gray-600 bg-gray-50/50 dark:bg-gray-800/50">
+        <CardContent className="flex flex-col items-center justify-center py-12">
+          <div className="w-16 h-16 bg-gradient-to-br from-gray-400 to-gray-500 rounded-full flex items-center justify-center mb-4">
+            <Users className="h-8 w-8 text-white" />
+          </div>
+          <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
+            Select a Class First
+          </h3>
+          <p className="text-gray-600 dark:text-gray-400 text-center max-w-sm">
+            Choose a class from the dropdown above to view and select students for attendance recording.
+          </p>
+        </CardContent>
+      </Card>
+    );
+  }
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center p-6 sm:p-8">
-        <Loader2 className="h-5 w-5 sm:h-6 sm:w-6 animate-spin mr-2" />
-        <span className="text-sm sm:text-base">Loading students...</span>
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <Skeleton className="h-6 w-32 bg-white/10" />
+          <Skeleton className="h-5 w-20 bg-white/10" />
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {[...Array(6)].map((_, i) => (
+            <Card key={i} className="bg-white/5 border-white/10">
+              <CardContent className="p-4">
+                <div className="flex items-center space-x-3">
+                  <Skeleton className="h-12 w-12 rounded-full bg-white/10" />
+                  <div className="space-y-2 flex-1">
+                    <Skeleton className="h-4 w-24 bg-white/10" />
+                    <Skeleton className="h-3 w-16 bg-white/10" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
       </div>
     );
   }
 
-  const handleStudentClick = (studentId: string) => {
-    if (multiSelect) {
-      onStudentSelect?.(studentId);
-    } else {
-      form.setValue("student_id", studentId);
-      onStudentSelect?.(studentId);
-    }
-  };
-
-  const isStudentSelected = (studentId: string) => {
-    if (multiSelect) {
-      return selectedStudents.has(studentId);
-    }
-    return selectedStudent === studentId || form.getValues("student_id") === studentId;
-  };
+  if (!students?.length) {
+    return (
+      <Card className="border-2 border-dashed border-amber-300 dark:border-amber-600 bg-amber-50/50 dark:bg-amber-900/20">
+        <CardContent className="flex flex-col items-center justify-center py-12">
+          <div className="w-16 h-16 bg-gradient-to-br from-amber-400 to-amber-500 rounded-full flex items-center justify-center mb-4">
+            <User className="h-8 w-8 text-white" />
+          </div>
+          <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
+            No Active Students
+          </h3>
+          <p className="text-gray-600 dark:text-gray-400 text-center max-w-sm">
+            There are no active students in this class. Add students to the class to record attendance.
+          </p>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
-    <FormField
-      control={form.control}
-      name="student_id"
-      render={({ field }) => (
-        <FormItem>
-          <FormLabel className="text-gray-900 dark:text-gray-100 font-medium text-sm sm:text-base">
-            {multiSelect ? "Select Students (Multiple)" : "Select Student"}
-          </FormLabel>
-          <FormControl>
-            <ScrollArea className={`${isMobile ? 'h-64' : 'h-80'} w-full rounded-lg border-2 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm p-3 sm:p-4`}>
-              <div className={`grid gap-2 sm:gap-3 ${isMobile ? 'grid-cols-1' : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3'}`}>
-                {students?.map((student) => {
-                  const isSelected = isStudentSelected(student.id);
-                  
-                  return (
-                    <Card
-                      key={student.id}
-                      className={`cursor-pointer transition-all duration-200 hover:shadow-lg border-2 relative ${
-                        isSelected
-                          ? "ring-2 ring-blue-500 bg-blue-50 dark:bg-blue-900/30 border-blue-500 shadow-md"
-                          : "hover:bg-gray-50 dark:hover:bg-gray-700 border-gray-200 dark:border-gray-600 hover:border-blue-300"
-                      }`}
-                      onClick={() => handleStudentClick(student.id)}
-                    >
-                      {isSelected && multiSelect && (
-                        <div className="absolute top-2 right-2 w-5 h-5 sm:w-6 sm:h-6 bg-blue-500 rounded-full flex items-center justify-center">
-                          <Check className="h-3 w-3 sm:h-4 sm:w-4 text-white" />
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div className="space-y-1">
+          <h3 className="text-lg font-semibold text-gray-100 flex items-center gap-2">
+            <Users className="h-5 w-5 text-green-400" />
+            Select Students
+          </h3>
+          <p className="text-sm text-gray-400">
+            {multiSelect ? 'Choose multiple students for bulk attendance' : 'Choose a student to record attendance'}
+          </p>
+        </div>
+        <Badge variant="secondary" className="bg-green-500/20 text-green-300 border-green-500/30 px-3 py-1">
+          {students.length} students
+        </Badge>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        {students.map((student) => {
+          const isSelected = multiSelect 
+            ? selectedStudents.has(student.id)
+            : selectedStudentId === student.id;
+
+          return (
+            <Card
+              key={student.id}
+              className={cn(
+                "group cursor-pointer transition-all duration-300 hover:shadow-xl hover:-translate-y-1",
+                "bg-white/5 backdrop-blur-xl border border-white/10 shadow-lg",
+                "hover:bg-white/10 hover:border-green-500/30",
+                isSelected && "bg-green-500/20 border-green-500/50 shadow-green-500/20"
+              )}
+              onClick={() => handleStudentClick(student)}
+            >
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-4">
+                    <div className="relative">
+                      <Avatar className={cn(
+                        "h-14 w-14 ring-2 transition-colors duration-300",
+                        isSelected 
+                          ? "ring-green-400 ring-offset-2 ring-offset-slate-800" 
+                          : "ring-white/20 group-hover:ring-green-400/50"
+                      )}>
+                        <AvatarFallback className={cn(
+                          "text-sm font-semibold transition-colors duration-300",
+                          isSelected
+                            ? "bg-green-500 text-white"
+                            : "bg-gradient-to-br from-blue-500 to-blue-600 text-white group-hover:from-green-500 group-hover:to-green-600"
+                        )}>
+                          {getInitials(student.name)}
+                        </AvatarFallback>
+                      </Avatar>
+                      {isSelected && (
+                        <div className="absolute -top-1 -right-1 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center shadow-lg">
+                          <CheckCircle className="h-4 w-4 text-white" />
                         </div>
                       )}
-                      <CardContent className="p-3 sm:p-4">
-                        <div className="flex items-center space-x-2 sm:space-x-3">
-                          <Avatar className="h-8 w-8 sm:h-10 sm:w-10">
-                            <AvatarFallback className="bg-purple-100 text-purple-600 dark:bg-purple-900 dark:text-purple-300 font-medium text-xs sm:text-sm">
-                              {getInitials(student.name)}
-                            </AvatarFallback>
-                          </Avatar>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-xs sm:text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
-                              {student.name}
-                            </p>
-                            <p className="text-xs text-gray-500 dark:text-gray-400">
-                              Active Student
-                            </p>
-                          </div>
+                    </div>
+                    
+                    <div className="space-y-1">
+                      <h4 className={cn(
+                        "font-medium transition-colors duration-300",
+                        isSelected ? "text-green-300" : "text-gray-100 group-hover:text-green-300"
+                      )}>
+                        {student.name}
+                      </h4>
+                      <div className="flex items-center gap-2">
+                        <Badge 
+                          variant="outline" 
+                          className={cn(
+                            "text-xs border transition-colors duration-300",
+                            isSelected 
+                              ? "bg-green-500/20 text-green-300 border-green-500/50"
+                              : "bg-blue-500/20 text-blue-300 border-blue-500/50 group-hover:bg-green-500/20 group-hover:text-green-300 group-hover:border-green-500/50"
+                          )}
+                        >
+                          Active Student
+                        </Badge>
+                        {student.section && (
+                          <Badge 
+                            variant="secondary" 
+                            className="text-xs bg-white/10 text-gray-300 border-white/20"
+                          >
+                            {student.section}
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+                  </div>
 
-                        </div>
-                      </CardContent>
-                    </Card>
-                  );
-                })}
-              </div>
-              {(!students || students.length === 0) && (
-                <div className="text-center py-6 sm:py-8 text-gray-500 dark:text-gray-400">
-                  <p className="text-sm sm:text-base">No students found</p>
+                  <div className={cn(
+                    "transition-colors duration-300",
+                    isSelected ? "text-green-400" : "text-gray-400 group-hover:text-green-400"
+                  )}>
+                    {isSelected ? (
+                      <CheckCircle className="h-6 w-6" />
+                    ) : (
+                      <Circle className="h-6 w-6" />
+                    )}
+                  </div>
                 </div>
-              )}
-            </ScrollArea>
-          </FormControl>
-          <FormMessage />
-        </FormItem>
+              </CardContent>
+            </Card>
+          );
+        })}
+      </div>
+
+      {multiSelect && selectedStudents.size > 0 && (
+        <div className="mt-6 p-4 bg-green-500/10 border border-green-500/30 rounded-lg">
+          <p className="text-sm text-green-300 font-medium">
+            {selectedStudents.size} student{selectedStudents.size > 1 ? 's' : ''} selected for attendance recording
+          </p>
+        </div>
       )}
-    />
+    </div>
   );
 }
