@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client.ts";
@@ -128,8 +127,8 @@ const Students = () => {
   const inactiveStudents = students?.filter((s) => s.status === "inactive").length || 0;
   const avgAttendance = 85; // Mock data for now
 
-  // Get unique sections for filter
-  const sections = [...new Set(students?.map(s => s.section).filter(Boolean))];
+  // Get unique sections for filter - fix the type issues here
+  const sections = [...new Set(students?.map(s => s.section).filter((section): section is string => Boolean(section)))];
 
   const filteredStudents = students?.filter((student) => {
     const matchesSearch = student.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -389,7 +388,7 @@ const Students = () => {
                     <SelectContent className="admin-theme">
                       <SelectItem value="all">All Sections</SelectItem>
                       {sections.map((section) => (
-                        <SelectItem key={section} value={section || "general"}>
+                        <SelectItem key={section} value={section}>
                           {section || "General"}
                         </SelectItem>
                       ))}
