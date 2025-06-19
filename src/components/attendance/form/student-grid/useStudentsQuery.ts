@@ -6,9 +6,9 @@ import { Student } from './types';
 export function useStudentsQuery(selectedClassId: string) {
   return useQuery({
     queryKey: ['class-students', selectedClassId],
-    queryFn: async () => {
+    queryFn: async (): Promise<Student[]> => {
       if (!selectedClassId) {
-        return [] as Student[];
+        return [];
       }
 
       const { data, error } = await supabase
@@ -20,7 +20,12 @@ export function useStudentsQuery(selectedClassId: string) {
 
       if (error) throw error;
       
-      return (data || []) as Student[];
+      return data?.map(item => ({
+        id: item.id,
+        name: item.name,
+        status: item.status as 'active' | 'inactive',
+        section: item.section
+      })) || [];
     },
     enabled: !!selectedClassId,
   });
