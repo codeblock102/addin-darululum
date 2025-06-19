@@ -13,14 +13,14 @@ export function useStudentsQuery(selectedClassId: string) {
 
       const { data, error } = await supabase
         .from('students')
-        .select('id, name, status, section')
+        .select('*')
         .eq('class_id', selectedClassId)
         .eq('status', 'active')
         .order('name');
 
       if (error) throw error;
       
-      return data?.map(item => ({
+      return data?.map((item: any) => ({
         id: item.id,
         name: item.name,
         status: item.status as 'active' | 'inactive',
