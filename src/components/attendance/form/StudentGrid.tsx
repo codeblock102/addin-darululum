@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -37,10 +36,10 @@ export function StudentGrid({
   const [searchQuery, setSearchQuery] = useState("");
   const selectedStudentId = form.watch('student_id');
 
-  const { data: students, isLoading } = useQuery<Student[]>({
+  const { data: students, isLoading } = useQuery({
     queryKey: ['class-students', selectedClassId],
-    queryFn: async (): Promise<Student[]> => {
-      if (!selectedClassId) return [];
+    queryFn: async () => {
+      if (!selectedClassId) return [] as Student[];
 
       const { data, error } = await supabase
         .from('students')
