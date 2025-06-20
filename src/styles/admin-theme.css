@@ -1,4 +1,3 @@
-
 /* Admin theme specific styles */
 .admin-theme {
   --admin-bg: 222 47% 11%;
@@ -12,56 +11,32 @@
   color: hsl(0 0% 95%);
 }
 
-/* Enhanced icon contrast improvements for admin theme */
+/* Icon contrast improvements for admin theme */
 .admin-theme svg,
 .admin-theme .lucide {
-  @apply text-gray-200 opacity-100;
-  color: rgb(229 231 235) !important;
+  @apply text-gray-300;
 }
 
 .admin-theme button svg,
 .admin-theme a svg {
-  @apply text-gray-100 opacity-100;
-  color: rgb(243 244 246) !important;
+  @apply text-gray-200;
 }
 
 /* Active navigation icons */
 .admin-theme nav button.active svg,
 .admin-theme nav a.active svg {
-  @apply text-amber-400 opacity-100;
-  color: rgb(251 191 36) !important;
+  @apply text-amber-400;
 }
 
 /* Hover state for icons */
 .admin-theme button:hover svg,
 .admin-theme a:hover svg {
-  @apply text-amber-300 opacity-100;
-  color: rgb(252 211 77) !important;
-}
-
-/* Card header icons */
-.admin-theme .card svg,
-.admin-theme [data-component="card"] svg {
-  @apply text-gray-100 opacity-100;
-  color: rgb(243 244 246) !important;
-}
-
-/* Stats card icons with colored backgrounds */
-.admin-theme .admin-stats-card svg {
-  @apply opacity-100;
-  color: inherit !important;
-}
-
-/* Quick action button icons */
-.admin-theme .admin-btn-secondary svg {
-  @apply text-gray-200 opacity-100;
-  color: rgb(229 231 235) !important;
+  @apply text-amber-400;
 }
 
 /* Sidebar icons */
 .admin-theme .sidebar svg {
-  @apply text-gray-200 opacity-100;
-  color: rgb(229 231 235) !important;
+  @apply text-gray-300;
 }
 
 /* Glass card effect */
@@ -208,45 +183,28 @@
   @apply text-amber-500 bg-white/5;
 }
 
-/* Enhanced navigation icons specifically */
+/* Navigation icons specifically */
 .admin-theme nav a svg,
 .admin-theme nav button svg {
-  @apply text-gray-200 opacity-100;
-  color: rgb(229 231 235) !important;
+  @apply text-gray-300;
 }
 
 .admin-theme nav a:hover svg,
 .admin-theme nav button:hover svg {
-  @apply text-amber-400 opacity-100;
-  color: rgb(251 191 36) !important;
+  @apply text-amber-400;
 }
 
-/* Enhanced card icons */
+/* Card icons */
 .admin-theme .card svg {
-  @apply text-gray-200 opacity-100;
-  color: rgb(229 231 235) !important;
+  @apply text-gray-300;
 }
 
-/* Enhanced quick actions icons */
+/* Quick actions icons */
 .admin-theme .quick-actions svg {
-  @apply text-gray-200 opacity-100;
-  color: rgb(229 231 235) !important;
+  @apply text-gray-300;
 }
 
-/* Enhanced dashboard icons */
+/* Dashboard icons */
 .admin-theme .dashboard-overview svg {
-  @apply text-gray-200 opacity-100;
-  color: rgb(229 231 235) !important;
-}
-
-/* Management links icons */
-.admin-theme .admin-btn-secondary svg {
-  @apply text-gray-200 opacity-100;
-  color: rgb(229 231 235) !important;
-}
-
-/* Card header title icons */
-.admin-theme .card-header svg {
-  @apply text-gray-100 opacity-100;
-  color: rgb(243 244 246) !important;
+  @apply text-gray-300;
 }
