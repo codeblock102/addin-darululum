@@ -67,27 +67,6 @@ export const StudentTable = ({
     },
   });
 
-  const handleAddStudent = (studentName: string) => {
-    // Get teacherId from localStorage or context - this is a simplified version
-    const teacherId = "temp-teacher-id"; // This should come from your auth context
-    addStudentMutation.mutate({ teacherId, studentName });
-  };
-
-  const handleRemoveStudent = (student: Student) => {
-    const assignment = assignedStudents.find((a) =>
-      a.student_name === student.name
-    );
-    if (assignment) {
-      setStudentToDelete({
-        id: assignment.id,
-        name: student.name,
-        studentId: student.id,
-      });
-      setIsDeleteType("remove");
-      setIsDeleteDialogOpen(true);
-    }
-  };
-
   const handleDeleteStudent = (student: Student) => {
     setStudentToDelete({
       id: "", // Not needed for complete deletion
@@ -172,30 +151,6 @@ export const StudentTable = ({
                 </TableCell>
                 <TableCell className="text-right">
                   <div className="flex justify-end gap-2">
-                    {isAssigned
-                      ? (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleRemoveStudent(student)}
-                          className="text-red-500 hover:text-red-600 hover:bg-red-50"
-                        >
-                          <UserMinus className="h-4 w-4 mr-1" />
-                          Remove
-                        </Button>
-                      )
-                      : (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleAddStudent(student.name)}
-                          disabled={addStudentMutation.isPending}
-                          className="text-blue-500 hover:text-blue-600 hover:bg-blue-50"
-                        >
-                          <UserPlus className="h-4 w-4 mr-1" />
-                          {addStudentMutation.isPending ? "Adding..." : "Add"}
-                        </Button>
-                      )}
                     <Button
                       variant="outline"
                       size="sm"

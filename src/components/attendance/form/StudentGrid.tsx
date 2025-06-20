@@ -4,12 +4,14 @@ import { AlertCircle, Loader2 } from 'lucide-react';
 import { User } from '@supabase/supabase-js';
 
 import { supabase } from '../../../integrations/supabase/client.ts';
-import { Student } from '../../../types/student.ts';
+import { Database } from '../../../integrations/supabase/types.ts';
 
 import { Button } from '../../ui/button.tsx';
 import { Card, CardContent, CardHeader, CardTitle } from '../../ui/card.tsx';
 import { Checkbox } from '../../ui/checkbox.tsx';
 import { Input } from '../../ui/input.tsx';
+
+type Student = Database['public']['Tables']['students']['Row'];
 
 async function fetchStudentsForUser(user: User | null): Promise<Student[]> {
   if (!user) {
