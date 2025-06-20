@@ -1,0 +1,243 @@
+
+/* Enhanced Admin Theme - Modern Dark Interface */
+.admin-theme {
+  /* Enhanced color palette */
+  --admin-bg-primary: 15 23 42;
+  --admin-bg-secondary: 30 41 59;
+  --admin-accent: 245 158 11; /* Amber accent */
+  --admin-accent-muted: 251 191 36;
+  --admin-border: 71 85 105;
+  --admin-text-primary: 248 250 252;
+  --admin-text-secondary: 203 213 225;
+  --admin-text-muted: 148 163 184;
+
+  /* Modern gradients */
+  --admin-gradient-primary: linear-gradient(135deg, rgb(15 23 42) 0%, rgb(30 41 59) 100%);
+  --admin-gradient-card: linear-gradient(145deg, rgba(30, 41, 59, 0.8) 0%, rgba(15, 23, 42, 0.9) 100%);
+  --admin-gradient-accent: linear-gradient(135deg, rgb(245 158 11) 0%, rgb(251 191 36) 100%);
+
+  /* Enhanced shadows */
+  --admin-shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.1);
+  --admin-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.15);
+  --admin-shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.2);
+  --admin-shadow-xl: 0 12px 48px rgba(0, 0, 0, 0.25);
+
+  /* Apply base styles */
+  background: var(--admin-gradient-primary);
+  color: rgb(var(--admin-text-primary));
+  min-height: 100vh;
+}
+
+/* Enhanced card styling */
+.admin-theme .admin-card {
+  background: var(--admin-gradient-card);
+  border: 1px solid rgb(var(--admin-border) / 0.2);
+  border-radius: 12px;
+  box-shadow: var(--admin-shadow-lg);
+  backdrop-filter: blur(16px);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.admin-theme .admin-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--admin-shadow-xl);
+  border-color: rgb(var(--admin-accent) / 0.3);
+}
+
+/* Enhanced headers */
+.admin-theme .admin-header {
+  background: var(--admin-gradient-primary);
+  border-bottom: 1px solid rgb(var(--admin-border) / 0.2);
+  backdrop-filter: blur(8px);
+}
+
+.admin-theme .admin-title {
+  background: var(--admin-gradient-accent);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+}
+
+/* Enhanced buttons */
+.admin-theme .admin-btn-primary {
+  background: var(--admin-gradient-accent);
+  color: rgb(15 23 42);
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  box-shadow: var(--admin-shadow-md);
+}
+
+.admin-theme .admin-btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--admin-shadow-lg);
+  filter: brightness(1.1);
+}
+
+.admin-theme .admin-btn-secondary {
+  background: rgba(var(--admin-bg-secondary), 0.8);
+  color: rgb(var(--admin-text-primary));
+  border: 1px solid rgb(var(--admin-border) / 0.3);
+  border-radius: 8px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.admin-theme .admin-btn-secondary:hover {
+  background: rgba(var(--admin-bg-secondary), 1);
+  border-color: rgb(var(--admin-accent) / 0.5);
+}
+
+/* Enhanced navigation */
+.admin-theme .admin-nav {
+  background: var(--admin-gradient-primary);
+  border-right: 1px solid rgb(var(--admin-border) / 0.2);
+  backdrop-filter: blur(16px);
+}
+
+.admin-theme .admin-nav-item {
+  color: rgb(var(--admin-text-secondary));
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  margin: 2px 8px;
+}
+
+.admin-theme .admin-nav-item:hover {
+  background: rgba(var(--admin-accent), 0.1);
+  color: rgb(var(--admin-accent));
+  transform: translateX(4px);
+}
+
+.admin-theme .admin-nav-item.active {
+  background: rgba(var(--admin-accent), 0.15);
+  color: rgb(var(--admin-accent));
+  box-shadow: var(--admin-shadow-sm);
+}
+
+/* Enhanced stats cards */
+.admin-theme .admin-stats-card {
+  background: var(--admin-gradient-card);
+  border: 1px solid rgb(var(--admin-border) / 0.2);
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: var(--admin-shadow-md);
+  transition: all 0.3s ease;
+}
+
+.admin-theme .admin-stats-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--admin-shadow-xl);
+}
+
+.admin-theme .admin-stats-value {
+  font-size: 2.5rem;
+  font-weight: 700;
+  background: var(--admin-gradient-accent);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.admin-theme .admin-stats-label {
+  color: rgb(var(--admin-text-secondary));
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-size: 0.875rem;
+}
+
+/* Enhanced tables */
+.admin-theme .admin-table {
+  background: var(--admin-gradient-card);
+  border: 1px solid rgb(var(--admin-border) / 0.2);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: var(--admin-shadow-md);
+}
+
+.admin-theme .admin-table-header {
+  background: rgba(var(--admin-bg-secondary), 0.8);
+  border-bottom: 1px solid rgb(var(--admin-border) / 0.2);
+}
+
+.admin-theme .admin-table-row {
+  border-bottom: 1px solid rgb(var(--admin-border) / 0.1);
+  transition: all 0.2s ease;
+}
+
+.admin-theme .admin-table-row:hover {
+  background: rgba(var(--admin-accent), 0.05);
+}
+
+/* Enhanced forms */
+.admin-theme .admin-input {
+  background: rgba(var(--admin-bg-secondary), 0.5);
+  border: 1px solid rgb(var(--admin-border) / 0.3);
+  border-radius: 8px;
+  color: rgb(var(--admin-text-primary));
+  transition: all 0.2s ease;
+}
+
+.admin-theme .admin-input:focus {
+  border-color: rgb(var(--admin-accent));
+  box-shadow: 0 0 0 3px rgba(var(--admin-accent), 0.1);
+  outline: none;
+}
+
+/* Enhanced badges */
+.admin-theme .admin-badge-success {
+  background: rgba(34, 197, 94, 0.15);
+  color: rgb(74, 222, 128);
+  border: 1px solid rgba(34, 197, 94, 0.3);
+}
+
+.admin-theme .admin-badge-warning {
+  background: rgba(var(--admin-accent), 0.15);
+  color: rgb(var(--admin-accent));
+  border: 1px solid rgba(var(--admin-accent), 0.3);
+}
+
+.admin-theme .admin-badge-error {
+  background: rgba(239, 68, 68, 0.15);
+  color: rgb(248, 113, 113);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+/* Mobile responsive enhancements */
+@media (max-width: 768px) {
+  .admin-theme .admin-card {
+    border-radius: 8px;
+    margin: 8px;
+  }
+  
+  .admin-theme .admin-stats-card {
+    padding: 16px;
+  }
+  
+  .admin-theme .admin-stats-value {
+    font-size: 2rem;
+  }
+}
+
+/* Scrollbar styling */
+.admin-theme ::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.admin-theme ::-webkit-scrollbar-track {
+  background: rgba(var(--admin-bg-secondary), 0.3);
+  border-radius: 3px;
+}
+
+.admin-theme ::-webkit-scrollbar-thumb {
+  background: rgba(var(--admin-accent), 0.5);
+  border-radius: 3px;
+}
+
+.admin-theme ::-webkit-scrollbar-thumb:hover {
+  background: rgba(var(--admin-accent), 0.7);
+}

@@ -26,6 +26,7 @@ export const useRBAC = () => {
       // 2. If no role in metadata, query the profiles table
       const { data: profile, error } = await supabase
         .from("profiles")
+
         .select("id, role")
         .eq("id", session.user.id)
         .single();
