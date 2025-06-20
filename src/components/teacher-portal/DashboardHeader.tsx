@@ -1,6 +1,6 @@
-import { Teacher } from "@/types/teacher";
+import { Teacher } from "@/types/teacher.ts";
 import { BookOpen, Mail, Phone, User } from "lucide-react";
-import { Card } from "@/components/ui/card";
+import { Card } from "@/components/ui/card.tsx";
 
 interface DashboardHeaderProps {
   teacher: Teacher;
@@ -51,9 +51,6 @@ export const DashboardHeader = ({ teacher }: DashboardHeaderProps) => {
                     <BookOpen className="h-4 w-4" />
                     {teacher.subject}
                   </span>
-                  <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
-                    Teacher ID: {teacher.id.slice(0, 8)}...
-                  </span>
                 </div>
 
                 {/* Enhanced contact info for larger screens */}
@@ -64,12 +61,7 @@ export const DashboardHeader = ({ teacher }: DashboardHeaderProps) => {
                       <span className="truncate max-w-48">{teacher.email}</span>
                     </div>
                   )}
-                  {teacher.phone && (
-                    <div className="flex items-center gap-1">
-                      <Phone className="h-4 w-4 text-gray-400" />
-                      <span>{teacher.phone}</span>
-                    </div>
-                  )}
+                  
                 </div>
               </div>
 
