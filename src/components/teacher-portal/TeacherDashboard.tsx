@@ -1,10 +1,12 @@
-import { TeacherDashboardProps } from "@/types/teacher";
-import { useTeacherSummary } from "@/hooks/useTeacherSummary";
-import { DashboardHeader } from "./DashboardHeader";
-import { DashboardContent } from "./dashboard/DashboardContent";
-import { useActiveTab } from "./dashboard/DashboardNav";
+import { TeacherDashboardProps } from "@/types/teacher.ts";
+import { useTeacherSummary } from "@/hooks/useTeacherSummary.ts";
+import { DashboardHeader } from "./DashboardHeader.tsx";
+import { DashboardContent } from "./dashboard/DashboardContent.tsx";
+import { useActiveTab } from "./dashboard/DashboardNav.tsx";
 
-export const TeacherDashboard = ({ teacher }: TeacherDashboardProps) => {
+export const TeacherDashboard = (
+  { teacher, isAdmin = false }: TeacherDashboardProps & { isAdmin?: boolean },
+) => {
   const { activeTab } = useActiveTab();
   useTeacherSummary(teacher.id);
 
@@ -24,6 +26,7 @@ export const TeacherDashboard = ({ teacher }: TeacherDashboardProps) => {
         activeTab={activeTab}
         teacherId={teacher.id}
         teacherName={teacher.name}
+        isAdmin={isAdmin}
       />
     </div>
   );

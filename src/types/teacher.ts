@@ -30,7 +30,8 @@ export interface Teacher {
 
 export interface TeacherAccount extends Teacher {
   userId: string | null;
-  status: "active" | "suspended";
+  role: 'teacher' | 'admin' | null;
+  status: "active" | "suspended" | "deleted";
   lastLogin: string | null;
   classesCount: number;
   studentsCount: number;

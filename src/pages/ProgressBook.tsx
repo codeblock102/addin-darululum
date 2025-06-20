@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card.tsx";
 import { supabase } from "@/integrations/supabase/client.ts";
@@ -549,6 +548,7 @@ const ProgressBookPage = () => {
           </div>
         </Card>
       </div>
+
     </div>
   );
 };

@@ -1,76 +1,52 @@
-
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "./use-auth";
-import { hasPermission as checkPermission, RolePermission } from "@/utils/roleUtils";
+import { supabase } from "@/integrations/supabase/client.ts";
+import { useAuth } from "@/hooks/use-auth.ts";
 
 interface UserRole {
-  role?: string;
-  teacher_id?: string;
+  role: string | null;
+  teacher_id: string | null;
 }
 
 export const useRBAC = () => {
   const { session } = useAuth();
 
-  const { data: userRole, isLoading } = useQuery<UserRole>({
+  const { data: userRole, isLoading } = useQuery<UserRole | null>({
     queryKey: ["user-role", session?.user?.id],
-    queryFn: async () => {
-      if (!session?.user?.email) return {};
+    queryFn: async (): Promise<UserRole | null> => {
+      if (!session?.user?.id) {
+        return null;
+      }
 
-      console.log("Fetching user role for email:", session.user.email);
+      // 1. Check auth metadata first for a quick role check
+      const authRole = session.user.user_metadata?.role;
+      if (authRole) {
+        return { role: authRole, teacher_id: session.user.id };
+      }
 
-      // Check user profile to get role
-      const { data: profile, error: profileError } = await supabase
+      // 2. If no role in metadata, query the profiles table
+      const { data: profile, error } = await supabase
         .from("profiles")
-        .select("role")
-        .eq("email", session.user.email)
-        .maybeSingle();
 
-      if (profileError) {
-        console.error("Error fetching profile:", profileError);
-        return {};
+        .select("id, role")
+        .eq("id", session.user.id)
+        .single();
+
+      if (error) {
+        console.error("Error fetching user profile for RBAC:", error);
+        return null;
       }
 
-      const result: UserRole = {};
-
-      if (profile?.role) {
-        result.role = profile.role;
-      }
-
-      // If user is a teacher, get their teacher ID
-      if (profile?.role === "teacher") {
-        const { data: teacherProfile, error: teacherError } = await supabase
-          .from("profiles")
-          .select("id")
-          .eq("email", session.user.email)
-          .eq("role", "teacher")
-          .maybeSingle();
-
-        if (teacherError) {
-          console.error("Error fetching teacher profile:", teacherError);
-        } else if (teacherProfile) {
-          result.teacher_id = teacherProfile.id;
-        }
-      }
-
-      return result;
+      return {
+        role: profile.role,
+        teacher_id: profile.id, // The profile ID is the teacher ID
+      };
     },
-    enabled: !!session?.user?.email,
+    enabled: !!session?.user?.id,
   });
 
   const isAdmin = userRole?.role === "admin";
   const isTeacher = userRole?.role === "teacher";
   const teacherId = userRole?.teacher_id;
-
-  // Add hasPermission function
-  const hasPermission = async (permission: RolePermission): Promise<boolean> => {
-    try {
-      return await checkPermission(permission);
-    } catch (error) {
-      console.error("Error checking permission:", error);
-      return false;
-    }
-  };
 
   console.log("RBAC Hook - Role:", userRole?.role, "Admin:", isAdmin, "Teacher:", isTeacher, "Teacher ID:", teacherId);
 
@@ -80,6 +56,5 @@ export const useRBAC = () => {
     teacherId,
     role: userRole?.role,
     isLoading,
-    hasPermission,
   };
 };

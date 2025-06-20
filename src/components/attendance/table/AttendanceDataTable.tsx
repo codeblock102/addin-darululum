@@ -1,4 +1,4 @@
-import { format, parseISO } from "date-fns";
+import { format, parse, parseISO } from "date-fns";
 import { ScrollArea } from "@/components/ui/scroll-area.tsx";
 import {
   Table,
@@ -8,12 +8,13 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table.tsx";
-import { Loader2 } from "lucide-react";
+import { Clock, Loader2 } from "lucide-react";
 import { StatusBadge, StatusType } from "@/components/ui/status-badge.tsx";
 
 type AttendanceRecord = {
   id: string;
   date: string;
+  time?: string | null;
   status: string;
   notes?: string;
   students: {
@@ -48,6 +49,16 @@ export function AttendanceDataTable(
     return null;
   }
 
+  const formatTime = (timeString: string | null | undefined) => {
+    if (!timeString) return "N/A";
+    try {
+      const time = parse(timeString, "HH:mm:ss", new Date());
+      return format(time, "p");
+    } catch (e) {
+      return timeString;
+    }
+  };
+
   return (
     <ScrollArea className="h-[400px]">
       <div className="border border-purple-100 dark:border-purple-900/30 rounded-lg overflow-hidden">
@@ -56,6 +67,9 @@ export function AttendanceDataTable(
             <TableRow>
               <TableHead className="text-purple-700 dark:text-purple-300">
                 Date
+              </TableHead>
+              <TableHead className="text-purple-700 dark:text-purple-300">
+                Time
               </TableHead>
               <TableHead className="text-purple-700 dark:text-purple-300">
                 Student
@@ -76,6 +90,10 @@ export function AttendanceDataTable(
               <TableRow key={record.id} className=" transition-colors">
                 <TableCell className="text-gray-900 dark:text-gray-200 font-medium">
                   {format(parseISO(record.date), "PPP")}
+                </TableCell>
+                <TableCell className="text-gray-900 dark:text-gray-200 flex items-center gap-2">
+                  <Clock className="h-4 w-4 text-gray-400" />
+                  {formatTime(record.time)}
                 </TableCell>
                 <TableCell className="text-gray-900 dark:text-gray-200">
                   {record.students?.name || "Unknown Student"}
