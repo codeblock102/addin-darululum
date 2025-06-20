@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client.ts";
@@ -19,6 +18,7 @@ import { useIsMobile } from "@/hooks/use-mobile.tsx";
 
 interface MyStudentsProps {
   teacherId: string;
+  isAdmin?: boolean;
 }
 
 export interface Student {
@@ -33,7 +33,7 @@ export interface StudentAssignment {
   student_name: string;
 }
 
-export const MyStudents = ({ teacherId }: MyStudentsProps) => {
+export const MyStudents = ({ teacherId, isAdmin = false }: MyStudentsProps) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [studentToDelete, setStudentToDelete] = useState<
     { id: string; name: string; studentId: string } | null
@@ -44,18 +44,24 @@ export const MyStudents = ({ teacherId }: MyStudentsProps) => {
   );
   const isMobile = useIsMobile();
 
-  const { data: teacherData, isLoading: isLoadingTeacher } = useQuery({
-    queryKey: ["profileData", teacherId],
+  const { data: userData, isLoading: isLoadingUser } = useQuery({
+    queryKey: ["profileData", teacherId, isAdmin],
     queryFn: async () => {
       if (!teacherId) return null;
-      const { data, error } = await supabase
+      
+      let query = supabase
         .from("profiles")
         .select("madrassah_id, section")
-        .eq("id", teacherId)
-        .eq("role", "teacher")
-        .single();
+        .eq("id", teacherId);
+      
+      if (!isAdmin) {
+        query = query.eq("role", "teacher");
+      }
+      
+      const { data, error } = await query.single();
+      
       if (error) {
-        console.error("Error fetching teacher data:", error);
+        console.error("Error fetching user data:", error);
         throw error;
       }
       return data;
@@ -64,18 +70,21 @@ export const MyStudents = ({ teacherId }: MyStudentsProps) => {
   });
 
   const { data: students, isLoading } = useQuery({
-    queryKey: ["students-for-teacher", teacherData],
+    queryKey: ["students-for-user", userData, isAdmin],
     queryFn: async () => {
-      if (!teacherData?.madrassah_id || !teacherData?.section) {
-        return [];
-      }
+      if (!userData?.madrassah_id) return [];
 
-      const { data, error } = await supabase
+      let query = supabase
         .from("students")
         .select("id, name, enrollment_date, status")
         .eq("status", "active")
-        .eq("madrassah_id", teacherData.madrassah_id)
-        .eq("section", teacherData.section);
+        .eq("madrassah_id", userData.madrassah_id);
+
+      if (!isAdmin && userData.section) {
+        query = query.eq("section", userData.section);
+      }
+
+      const { data, error } = await query;
 
       if (error) {
         console.error("Error fetching students:", error);
@@ -84,10 +93,9 @@ export const MyStudents = ({ teacherId }: MyStudentsProps) => {
 
       return (data as Student[]) || [];
     },
-    enabled: !isLoadingTeacher && !!teacherData,
+    enabled: !isLoadingUser && !!userData,
   });
 
-  // Keep track of assigned students for UI differentiation
   const { data: assignedStudents } = useQuery({
     queryKey: ["teacher-student-assignments", teacherId],
     queryFn: async () => {
@@ -104,10 +112,9 @@ export const MyStudents = ({ teacherId }: MyStudentsProps) => {
 
       return data as StudentAssignment[] || [];
     },
-    enabled: !!teacherId,
+    enabled: !!teacherId && !isAdmin,
   });
 
-  // Filter students based on search query
   const filteredStudents = students?.filter((student) =>
     student.name.toLowerCase().includes(searchQuery.toLowerCase())
   );

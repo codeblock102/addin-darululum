@@ -17,6 +17,7 @@ interface AttendanceTableProps {
 interface AttendanceRecord {
   id: string;
   date: string;
+  time: string | null;
   status: string;
   notes?: string;
   student_id: string;
@@ -44,7 +45,7 @@ export function AttendanceTable({ teacherId }: AttendanceTableProps) {
       const { data, error } = await supabase
         .from("attendance")
         .select(`
-          id, date, status, notes, student_id, class_id,
+          id, date, status, notes, student_id, class_id, time,
           students (id, name), 
           classes (id, name)
         `)
@@ -62,6 +63,7 @@ export function AttendanceTable({ teacherId }: AttendanceTableProps) {
       return data.map((record) => ({
         id: record.id,
         date: record.date,
+        time: record.time,
         status: record.status,
         notes: record.notes,
         student_id: record.student_id || "",

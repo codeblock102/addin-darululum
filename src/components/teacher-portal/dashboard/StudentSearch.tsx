@@ -1,5 +1,4 @@
-import { useState } from "react";
-
+import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client.ts";
 import {
@@ -13,30 +12,40 @@ import { Button } from "@/components/ui/button.tsx";
 import { Loader2, Search, UserRound } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { AddStudentDialog } from "../students/AddStudentDialog.tsx";
-import { useRBAC } from "@/hooks/useRBAC.ts";
 
 interface StudentSearchProps {
   teacherId: string;
+  isAdmin?: boolean;
 }
 
-export const StudentSearch = ({ teacherId }: StudentSearchProps) => {
+export const StudentSearch = (
+  { teacherId, isAdmin = false }: StudentSearchProps,
+) => {
   const [searchQuery, setSearchQuery] = useState("");
+  const [filteredStudents, setFilteredStudents] = useState<
+    { id: string; name: string }[]
+  >([]);
 
   const navigate = useNavigate();
-  const { isAdmin } = useRBAC();
 
   const { data: teacherData, isLoading: isLoadingTeacher } = useQuery({
-    queryKey: ["teacherDataForDashboardSearch", teacherId],
+    queryKey: ["teacherDataForDashboardSearch", teacherId, isAdmin],
     queryFn: async () => {
       if (!teacherId) return null;
-      const { data, error } = await supabase
+      let query = supabase
         .from("profiles")
         .select("madrassah_id, section")
-        .eq("id", teacherId)
-        .single();
+        .eq("id", teacherId);
+
+      if (!isAdmin) {
+        query = query.eq("role", "teacher");
+      }
+
+      const { data, error } = await query.single();
+
       if (error) {
         console.error(
-          "Error fetching teacher data for dashboard search:",
+          "Error fetching user data for dashboard search:",
           error,
         );
         throw error;
@@ -44,40 +53,57 @@ export const StudentSearch = ({ teacherId }: StudentSearchProps) => {
       return data;
     },
     enabled: !!teacherId,
+    onSuccess: (data) => {
+      console.log("StudentSearch: Fetched user profile for search:", data);
+    },
+    onError: (error) => {
+      console.error("StudentSearch: Error fetching user profile:", error);
+    },
   });
 
-  // Fetch all students
   const { data: students, isLoading: isLoadingStudents } = useQuery({
-    queryKey: ["teacher-students-for-dashboard", teacherData, isAdmin],
+    queryKey: ["all-students-for-search", teacherData, isAdmin],
     queryFn: async () => {
-      if (!teacherData) return [];
+      if (!teacherData?.madrassah_id) return [];
+
       let query = supabase
         .from("students")
         .select("id, name")
         .eq("status", "active")
         .eq("madrassah_id", teacherData.madrassah_id);
 
-      // If the user is a teacher, also filter by section. Admins see all sections.
       if (!isAdmin && teacherData.section) {
         query = query.eq("section", teacherData.section);
       }
 
-      query = query.order("name", { ascending: true });
-
       const { data, error } = await query;
-
-      if (error) {
-        console.error("Error fetching students:", error);
-        throw error;
-      }
+      if (error) throw error;
       return data || [];
     },
     enabled: !!teacherData,
+    onSuccess: (data) => {
+      console.log(
+        `StudentSearch: Fetched ${data?.length || 0} students for search list.`,
+      );
+    },
+    onError: (error) => {
+      console.error("StudentSearch: Error fetching students:", error);
+    },
   });
 
-  const handleSearch = () => {
-    console.log("Searching for:", searchQuery);
-    // Implement search functionality
+  useEffect(() => {
+    if (searchQuery.trim() === "") {
+      setFilteredStudents([]);
+    } else if (students) {
+      const filtered = students.filter((student) =>
+        student.name.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+      setFilteredStudents(filtered);
+    }
+  }, [searchQuery, students]);
+
+  const handleStudentClick = (studentId: string) => {
+    navigate(`/students/${studentId}`);
   };
 
   const isLoading = isLoadingTeacher || isLoadingStudents;
@@ -96,19 +122,37 @@ export const StudentSearch = ({ teacherId }: StudentSearchProps) => {
             placeholder="Search students by name..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            onKeyPress={(e) => e.key === "Enter" && handleSearch()}
+            disabled={isLoading}
           />
-          <Button onClick={handleSearch}>
-            <Search className="h-4 w-4" />
-          </Button>
         </div>
 
-        {searchQuery && (
-          <div className="text-sm text-muted-foreground">
-            <div className="flex items-center gap-2 p-2 border rounded">
-              <UserRound className="h-4 w-4" />
-              <span>No students found for "{searchQuery}"</span>
-            </div>
+        {isLoading && (
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <Loader2 className="h-4 w-4 animate-spin" />
+            <span>Loading students...</span>
+          </div>
+        )}
+        
+        {searchQuery && !isLoading && (
+          <div className="space-y-2">
+            {filteredStudents.length > 0
+              ? (
+                filteredStudents.map((student) => (
+                  <div
+                    key={student.id}
+                    className="flex items-center gap-2 p-2 border rounded-lg cursor-pointer hover:bg-muted"
+                    onClick={() => handleStudentClick(student.id)}
+                  >
+                    <UserRound className="h-4 w-4" />
+                    <span>{student.name}</span>
+                  </div>
+                ))
+              )
+              : (
+                <div className="text-sm text-muted-foreground p-2">
+                  No students found for "{searchQuery}"
+                </div>
+              )}
           </div>
         )}
       </CardContent>
