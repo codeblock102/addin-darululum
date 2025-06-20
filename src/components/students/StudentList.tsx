@@ -1,9 +1,4 @@
 
-import { useState } from "react";
-
-import { useNavigate } from "react-router-dom";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client.ts";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar.tsx";
 import { Badge } from "@/components/ui/badge.tsx";
 import { Button } from "@/components/ui/button.tsx";
@@ -16,34 +11,16 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table.tsx";
+
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog.tsx";
-import {
-  Award,
-  BookOpen,
   Calendar,
   Edit,
-  Eye,
   GraduationCap,
   Phone,
-  Trash2,
   User,
   Users,
-  Mail,
-  MapPin,
 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client.ts";
-import { useToast } from "@/hooks/use-toast.ts";
+
 import { useIsMobile } from "@/hooks/use-mobile.tsx";
 
 interface Student {

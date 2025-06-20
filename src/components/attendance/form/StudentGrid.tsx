@@ -1,14 +1,12 @@
 
 import { useState } from 'react';
-import { UseFormReturn } from 'react-hook-form';
-import { AttendanceFormValues } from '@/types/attendance-form';
-import { StudentGridProps, Student } from './student-grid/types';
-import { useStudentsQuery } from './student-grid/useStudentsQuery';
-import { NoClassSelectedState, NoStudentsState, NoSearchResultsState } from './student-grid/EmptyStates';
-import { StudentGridLoadingState } from './student-grid/LoadingState';
-import { SearchBar } from './student-grid/SearchBar';
-import { StudentGridHeader } from './student-grid/StudentGridHeader';
-import { StudentCard } from './student-grid/StudentCard';
+import { StudentGridProps, Student } from './student-grid/types.ts';
+import { useStudentsQuery } from './student-grid/useStudentsQuery.ts';
+import { NoClassSelectedState, NoStudentsState, NoSearchResultsState } from './student-grid/EmptyStates.tsx';
+import { StudentGridLoadingState } from './student-grid/LoadingState.tsx';
+import { SearchBar } from './student-grid/SearchBar.tsx';
+import { StudentGridHeader } from './student-grid/StudentGridHeader.tsx';
+import { StudentCard } from './student-grid/StudentCard.tsx';
 
 export function StudentGrid({ 
   form, 
@@ -83,3 +81,5 @@ export function StudentGrid({
         <NoSearchResultsState searchQuery={searchQuery} />
       )}
     </div>
+  );
+}
