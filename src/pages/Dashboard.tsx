@@ -209,20 +209,20 @@ const Dashboard = () => {
   if (isAdmin) {
     return <AdminDashboard />;
 
-<!--     const adminViewProfile: Teacher = {
-      id: session?.user?.id ?? "fallback-admin-id",
-      name: "Admin View",
-      subject: "Administration",
-      email: session?.user?.email || "admin@example.com",
-      bio: "Viewing the teacher portal as an administrator",
-      phone: "",
-    };
+  // const adminViewProfile: Teacher = {
+  //     id: session?.user?.id ?? "fallback-admin-id",
+  //     name: "Admin View",
+  //     subject: "Administration",
+  //     email: session?.user?.email || "admin@example.com",
+  //     bio: "Viewing the teacher portal as an administrator",
+  //     phone: "",
+  //   };
 
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-red-50">
-        <TeacherDashboard teacher={adminViewProfile} isAdmin={true} />
-      </div>
-    ); -->
+  //   return (
+  //     <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-red-50">
+  //       <TeacherDashboard teacher={adminViewProfile} isAdmin={true} />
+  //     </div>
+  //   ); 
 
   }
 
