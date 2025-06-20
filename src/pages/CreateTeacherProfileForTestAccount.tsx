@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client.ts";
 import {
@@ -62,10 +61,7 @@ const CreateTeacherProfileForTestAccount = () => {
             email: testEmail,
             role: "teacher",
             subject: "Islamic Studies",
-
-            bio:
-              "Islamic studies educator with expertise in Quranic teachings.",
-            role: "teacher",
+            bio: "Islamic studies educator with expertise in Quranic teachings.",
           },
         ])
         .select("id, name, email, subject, bio, phone");
