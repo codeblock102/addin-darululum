@@ -1,4 +1,3 @@
-
 /**
  * @file src/index.css
  * @summary This is the main global CSS file for the application.
@@ -13,5 +12,4 @@
 @import "./styles/animations.css";
 @import "./styles/components.css";
 @import "./styles/admin-theme.css";
-@import "./styles/admin-theme-enhanced.css";
 @import "./styles/teacher-theme.css";

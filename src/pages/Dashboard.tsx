@@ -20,7 +20,6 @@ import { useAuth } from "@/hooks/use-auth.ts";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client.ts";
 import { TeacherDashboard } from "@/components/teacher-portal/TeacherDashboard.tsx";
-import { AdminDashboard } from "@/components/admin/AdminDashboard.tsx";
 import { useToast } from "@/components/ui/use-toast.ts";
 import { LoadingState } from "@/components/teacher-portal/LoadingState.tsx";
 import { AccessDenied } from "@/components/teacher-portal/AccessDenied.tsx";
@@ -33,7 +32,7 @@ import { useRBAC } from "@/hooks/useRBAC.ts";
  * @description The main dashboard page component.
  *
  * This component acts as a router for displaying different dashboard views based on user role.
- * For admins, it provides a dedicated admin dashboard with admin-specific functionality.
+ * For admins, it provides a tabbed interface with admin-specific sections and an embedded view of the teacher portal.
  * For teachers, it displays their specific dashboard.
  *
  * State Management:
@@ -50,7 +49,8 @@ import { useRBAC } from "@/hooks/useRBAC.ts";
  * Conditional Rendering Logic:
  *  - Shows a `LoadingState` if role/profile data is being fetched (for non-admins).
  *  - If the user is an Admin:
- *    - Renders the dedicated `AdminDashboard` component.
+ *    - Renders an admin-specific layout with tabs for "Overview", "Analytics", and "Messages".
+ *    - The "Overview" tab includes admin stats and an embedded `TeacherDashboard` with a mock admin profile.
  *  - If the user is a Teacher (and data is loaded):
  *    - Renders the `TeacherDashboard` with their profile data.
  *  - If a non-admin user's teacher profile is not found:
@@ -205,8 +205,9 @@ const Dashboard = () => {
     );
   }
 
-  // If user is admin, show the dedicated admin dashboard
+  // If user is admin, they should be able to view the teacher portal with a generic profile
   if (isAdmin) {
+<<<<<<< HEAD
     return <AdminDashboard />;
 
   // const adminViewProfile: Teacher = {
@@ -224,6 +225,22 @@ const Dashboard = () => {
   //     </div>
   //   ); 
 
+=======
+    const adminViewProfile: Teacher = {
+      id: session?.user?.id ?? "fallback-admin-id",
+      name: "Admin View",
+      subject: "Administration",
+      email: session?.user?.email || "admin@example.com",
+      bio: "Viewing the teacher portal as an administrator",
+      phone: "",
+    };
+
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-red-50">
+        <TeacherDashboard teacher={adminViewProfile} isAdmin={true} />
+      </div>
+    );
+>>>>>>> parent of 45294a6 (Merge pull request #12 from Adekunes/kuns)
   }
 
   // Show profile not found if teacher data is missing (for non-admin users)
