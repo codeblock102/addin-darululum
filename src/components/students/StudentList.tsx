@@ -1,8 +1,4 @@
-<<<<<<< HEAD
-
-=======
 import { useState } from "react";
->>>>>>> parent of 45294a6 (Merge pull request #12 from Adekunes/kuns)
 import { Avatar, AvatarFallback } from "@/components/ui/avatar.tsx";
 import { Badge } from "@/components/ui/badge.tsx";
 import { Button } from "@/components/ui/button.tsx";
