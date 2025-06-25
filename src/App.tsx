@@ -34,6 +34,7 @@ import CreateTeacherProfileForTestAccount from "@/pages/CreateTeacherProfileForT
 import DatabaseSeeder from "@/pages/admin/DatabaseSeeder.tsx";
 import SetupAdmin from "@/pages/admin/SetupAdmin.tsx";
 import ManualRoleSetup from "@/pages/admin/ManualRoleSetup.tsx";
+import AdminLayout from "@/pages/admin/AdminLayout.tsx";
 
 /**
  * @component App
@@ -59,15 +60,27 @@ import ManualRoleSetup from "@/pages/admin/ManualRoleSetup.tsx";
  */
 function App() {
   return (
-    <ThemeProvider defaultTheme="light" storageKey="vite-ui-theme">
+    <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
       <BrowserRouter>
         <Routes>
           <Route path="/auth" element={<Auth />} />
           <Route path="/create-demo-account" element={<CreateDemoAccount />} />
           <Route path="/create-teacher-profile" element={<CreateTeacherProfileForTestAccount />} />
-          <Route path="/setup-admin" element={<SetupAdmin />} />
-          <Route path="/role-setup" element={<ManualRoleSetup />} />
           <Route path="*" element={<NotFound />} />
+
+          {/* Admin Routes */}
+          <Route
+            path="/admin"
+            element={
+              <ProtectedRoute requireAdmin>
+                <AdminLayout />
+              </ProtectedRoute>
+            }
+          >
+            <Route path="setup" element={<SetupAdmin />} />
+            <Route path="roles" element={<ManualRoleSetup />} />
+            <Route path="seeder" element={<DatabaseSeeder />} />
+          </Route>
 
           <Route
             element={
@@ -114,14 +127,6 @@ function App() {
             />
             <Route path="/settings" element={<Settings />} />
             <Route path="/preferences" element={<Preferences />} />
-            <Route
-              path="/admin/database-seeder"
-              element={
-                <ProtectedRoute requireAdmin>
-                  <DatabaseSeeder />
-                </ProtectedRoute>
-              }
-            />
           </Route>
         </Routes>
       </BrowserRouter>
