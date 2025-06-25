@@ -4,16 +4,17 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client.ts";
 import { AttendanceDataTable } from "./table/AttendanceDataTable.tsx";
 import { AttendanceEmptyState } from "./table/AttendanceEmptyState.tsx";
-import { AttendanceTableHeader } from "./table/AttendanceTableHeader.tsx";
 import { SearchInput } from "../table/SearchInput.tsx";
-import { Card, CardContent } from "@/components/ui/card.tsx";
-import { useIsMobile } from "@/hooks/use-mobile.tsx";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card.tsx";
+import { Skeleton } from "@/components/ui/skeleton.tsx";
+import { Button } from "@/components/ui/button.tsx";
 
-interface AttendanceTableProps {
-  teacherId?: string;
-}
-
-// Define the AttendanceRecord interface to match what we expect from the database
 interface AttendanceRecord {
   id: string;
   date: string;
@@ -22,152 +23,87 @@ interface AttendanceRecord {
   notes?: string;
   student_id: string;
   class_id: string;
-  students: {
-    id: string;
-    name: string;
-  } | null;
-  classes: {
-    id: string;
-    name: string;
-  } | null;
+  students: { id: string; name: string } | null;
+  classes: { id: string; name: string } | null;
 }
 
-export function AttendanceTable({ teacherId }: AttendanceTableProps) {
+export function AttendanceTable() {
   const [searchQuery, setSearchQuery] = useState("");
-  const isMobile = useIsMobile();
 
-  const { data: attendanceRecords, isLoading } = useQuery<
-    AttendanceRecord[],
-    Error
-  >({
-    queryKey: ["attendance-records", teacherId],
+  const { data: attendanceRecords, isLoading } = useQuery<AttendanceRecord[], Error>({
+    queryKey: ["attendance-records"],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("attendance")
-        .select(`
-          id, date, status, notes, student_id, class_id, time,
-          students (id, name), 
-          classes (id, name)
-        `)
+        .select(
+          `id, date, status, notes, student_id, class_id, time, students (id, name), classes (id, name)`,
+        )
         .order("date", { ascending: false });
 
       if (error) {
         console.error("Error fetching attendance records:", error);
         throw error;
       }
-
-      if (!data) {
-        return [];
-      }
-
-      return data.map((record) => ({
-        id: record.id,
-        date: record.date,
-        time: record.time,
-        status: record.status,
-        notes: record.notes,
-        student_id: record.student_id || "",
-        class_id: record.class_id || "",
-        students: record.students,
-        classes: record.classes,
-      }));
+      return data || [];
     },
   });
 
-  // Filter records by search query
   const filteredRecords =
-    attendanceRecords?.filter((record) =>
-      record.students?.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      record.status.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (record.classes?.name?.toLowerCase() || "").includes(
-        searchQuery.toLowerCase(),
-      )
+    attendanceRecords?.filter(
+      (record) =>
+        record.students?.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        record.status.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (record.classes?.name?.toLowerCase() || "").includes(searchQuery.toLowerCase()),
     ) || [];
 
-  // Function to handle search input changes
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);
   };
 
-  // Function to reset filters
-  const resetFilters = () => {
-    setSearchQuery("");
-  };
-
+  const resetFilters = () => setSearchQuery("");
   const hasFilters = searchQuery.length > 0;
 
   return (
-    <div className="space-y-6">
-      <AttendanceTableHeader />
-
-      {/* Enhanced Search Section */}
-      <Card className="border-slate-200 dark:border-slate-700 bg-gradient-to-r from-slate-50 to-blue-50/30 dark:from-slate-800 dark:to-slate-700">
-        <CardContent className="p-4 sm:p-6">
-          <div className="space-y-4">
-            <div className="flex flex-col sm:flex-row gap-4">
-              <div className="flex-1">
-                <SearchInput
-                  value={searchQuery}
-                  onChange={handleSearchChange}
-                  placeholder="Search students, status, or classes..."
-                  className="h-12 bg-white/80 dark:bg-slate-800/80 border-slate-300 dark:border-slate-600 focus:border-blue-500 dark:focus:border-blue-400"
-                />
-              </div>
-            </div>
-
-            {hasFilters && (
-              <div className="flex items-center justify-between pt-2 border-t border-slate-200 dark:border-slate-600">
-                <p className="text-sm text-slate-600 dark:text-slate-400">
-                  {filteredRecords?.length || 0} record(s) found
-                </p>
-                <button
-                  onClick={resetFilters}
-                  className="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-medium transition-colors"
-                >
-                  Clear filters
-                </button>
-              </div>
-            )}
+    <Card>
+      <CardHeader>
+        <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
+          <div>
+            <CardTitle>Attendance History</CardTitle>
+            <CardDescription>
+              View and search past attendance records.
+            </CardDescription>
           </div>
-        </CardContent>
-      </Card>
-
-      {/* Content Section */}
-      <Card className="border-slate-200 dark:border-slate-700 shadow-lg">
-        <CardContent className="p-0">
-          {isLoading
-            ? (
-              <div className="flex justify-center items-center py-16">
-                <div className="space-y-4 text-center">
-                  <div className="relative">
-                    <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-200 border-t-blue-600 mx-auto">
-                    </div>
-                  </div>
-                  <p className="text-slate-600 dark:text-slate-400 font-medium">
-                    Loading attendance records...
-                  </p>
-                </div>
-              </div>
-            )
-            : !filteredRecords?.length
-            ? (
-              <div className="p-8">
-                <AttendanceEmptyState
-                  hasFilters={hasFilters}
-                  resetFilters={resetFilters}
-                />
-              </div>
-            )
-            : (
-              <div className={`${isMobile ? "p-4" : "p-6"}`}>
-                <AttendanceDataTable
-                  isLoading={isLoading}
-                  attendanceRecords={filteredRecords}
-                />
-              </div>
-            )}
-        </CardContent>
-      </Card>
-    </div>
+          <div className="w-full sm:w-auto">
+            <SearchInput
+              value={searchQuery}
+              onChange={handleSearchChange}
+              placeholder="Search by student, status, or class..."
+              className="w-full"
+            />
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent>
+        {isLoading ? (
+          <div className="space-y-4">
+            <Skeleton className="h-12 w-full" />
+            <Skeleton className="h-12 w-full" />
+            <Skeleton className="h-12 w-full" />
+          </div>
+        ) : filteredRecords.length > 0 ? (
+          <AttendanceDataTable attendanceRecords={filteredRecords} />
+        ) : (
+          <div className="text-center py-12">
+            <AttendanceEmptyState hasFilters={hasFilters}>
+              {hasFilters && (
+                <Button onClick={resetFilters} variant="outline" className="mt-4">
+                  Clear Filters
+                </Button>
+              )}
+            </AttendanceEmptyState>
+          </div>
+        )}
+      </CardContent>
+    </Card>
   );
 }

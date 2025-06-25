@@ -1,17 +1,8 @@
-
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button.tsx";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card.tsx";
 import { useToast } from "@/hooks/use-toast.ts";
-import { Loader2 } from "lucide-react";
+import { Loader2, User, Shield, Briefcase } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client.ts";
 import { useAuth } from "@/hooks/use-auth.ts";
 import { Label } from "@/components/ui/label.tsx";
@@ -24,14 +15,10 @@ interface UserInfo {
 
 export default function ManualRoleSetup() {
   const [isLoading, setIsLoading] = useState(false);
-  const [selectedRole, setSelectedRole] = useState<"admin" | "teacher">(
-    "admin",
-  );
+  const [selectedRole, setSelectedRole] = useState<"admin" | "teacher">("admin");
   const { toast } = useToast();
   const navigate = useNavigate();
   const { refreshSession } = useAuth();
-
-  // Get current user info for display
   const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
 
   useEffect(() => {
@@ -49,99 +36,34 @@ export default function ManualRoleSetup() {
 
   const handleRoleSetup = async () => {
     setIsLoading(true);
-
     try {
-      // Direct call to updateUser using Supabase JS client
-      console.log(`Setting user role to: ${selectedRole}`);
-
-      const updateResponse = await supabase.auth.updateUser({
+      const { data: { user } } = await supabase.auth.updateUser({
         data: { role: selectedRole },
       });
 
-      console.log("Update response:", updateResponse);
+      if (!user) throw new Error("Failed to update user.");
 
-      if (updateResponse.error) {
-        throw new Error(
-          `Failed to update user metadata: ${updateResponse.error.message}`,
-        );
-      }
-
-      // If the role is teacher, ensure a teacher record exists
-      if (selectedRole === "teacher" && updateResponse.data.user?.email) {
-        const userEmail = updateResponse.data.user.email;
-        console.log(
-          `Selected role is teacher. Checking/creating teacher record for ${userEmail}`,
-        );
-
-        const { data: existingTeacher, error: checkError } = await supabase
+      if (selectedRole === "teacher") {
+        const { error } = await supabase
           .from("profiles")
-          .select("id")
-          .eq("email", userEmail)
-          .eq("role", "teacher")
-          .maybeSingle();
-
-        if (checkError) {
-          console.error(
-            "Error checking for existing teacher record:",
-            checkError.message,
-          );
-          // Decide if this should be a fatal error or just a warning
-        }
-
-        if (!existingTeacher) {
-          console.log(
-            `No existing teacher record found for ${userEmail}. Creating one.`,
-          );
-          const { error: insertError } = await supabase
-            .from("profiles")
-            .insert([{
-              email: userEmail,
-              name: userEmail, // Use email as name for now
-              role: "teacher",
-              subject: "To be determined", // Placeholder
-              bio: "Profile to be completed.", // Placeholder for bio
-              // Add any other required fields with default/placeholder values
-            }]);
-
-          if (insertError) {
-            console.error(
-              "Error creating teacher record:",
-              insertError.message,
-            );
-            toast({
-              title: "Teacher Record Creation Failed",
-              description:
-                `Could not create a teacher record for ${userEmail}. Please do this manually.`,
-            });
-          }
-        }
+          .upsert({ email: user.email!, role: 'teacher', name: user.email! }, { onConflict: 'email' });
+        if (error) throw error;
       }
 
-      // Store in localStorage for immediate client-side use
-      globalThis.localStorage.setItem("user_role", selectedRole);
-
-      // Refresh session to get updated claims
       await refreshSession();
 
       toast({
         title: "Role Set Successfully",
-        description:
-          `Your role has been set to ${selectedRole}. Redirecting...`,
+        description: `Your role is now ${selectedRole}. Redirecting...`,
       });
 
-      // Redirect after a short delay
-      setTimeout(() => {
-        navigate(selectedRole === "admin" ? "/admin" : "/teacher-portal");
-      }, 1500);
+      setTimeout(() => navigate(selectedRole === "admin" ? "/admin/setup" : "/dashboard"), 1500);
     } catch (error) {
-      const errorMessage = error instanceof Error
-        ? error.message
-        : "An unknown error occurred.";
-      console.error("Role setup failed:", errorMessage);
+      const errorMessage = error instanceof Error ? error.message : "An unknown error occurred.";
       toast({
         variant: "destructive",
         title: "Role Setup Failed",
-        description: `An error occurred: ${errorMessage}. Please try again.`,
+        description: errorMessage,
       });
     } finally {
       setIsLoading(false);
@@ -149,54 +71,85 @@ export default function ManualRoleSetup() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100 dark:bg-gray-900">
-      <Card className="w-[380px]">
-        <CardHeader>
-          <CardTitle>Manual Role Setup</CardTitle>
-          <CardDescription>
-            Choose a role for the current user. This is for setup purposes.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {userInfo && (
-            <div className="text-sm p-3 bg-muted rounded-md">
-              <p>
-                <strong>Email:</strong> {userInfo.email}
-              </p>
-              <p>
-                <strong>Current Metadata:</strong>
-              </p>
-              <pre className="text-xs bg-background p-2 rounded-md mt-1 whitespace-pre-wrap">
-                {JSON.stringify(userInfo.metadata, null, 2)}
-              </pre>
+    <div className="bg-white p-8 rounded-lg shadow-md max-w-2xl mx-auto">
+      <div className="flex items-center mb-6">
+        <div className="bg-blue-500 text-white rounded-full p-3 mr-4">
+          <Shield className="h-6 w-6" />
+        </div>
+        <div>
+          <h2 className="text-2xl font-bold text-gray-800">Manual Role Setup</h2>
+          <p className="text-gray-600">Assign a role to the current user for setup.</p>
+        </div>
+      </div>
+
+      {userInfo && (
+        <div className="mb-6 p-4 bg-gray-50 border border-gray-200 rounded-lg">
+          <h3 className="font-semibold text-lg text-gray-800 mb-2 flex items-center">
+            <User className="mr-2 h-5 w-5 text-gray-500" />
+            Current User
+          </h3>
+          <p className="text-gray-700"><strong>Email:</strong> {userInfo.email}</p>
+          <div className="mt-2">
+            <p className="text-gray-700"><strong>Current Metadata:</strong></p>
+            <pre className="text-xs bg-gray-100 p-3 rounded-md mt-1 whitespace-pre-wrap">
+              {JSON.stringify(userInfo.metadata, null, 2)}
+            </pre>
+          </div>
+        </div>
+      )}
+
+      <div className="space-y-4">
+        <h3 className="font-semibold text-lg text-gray-800">Select a Role:</h3>
+        <RadioGroup
+          value={selectedRole}
+          onValueChange={(value: "admin" | "teacher") => setSelectedRole(value)}
+          className="space-y-3"
+        >
+          <Label
+            htmlFor="admin-role"
+            className={`flex items-center p-4 rounded-lg border cursor-pointer transition-all ${
+              selectedRole === 'admin' ? 'bg-blue-50 border-blue-500 shadow-sm' : 'border-gray-200 bg-white'
+            }`}
+          >
+            <RadioGroupItem value="admin" id="admin-role" className="mr-4" />
+            <Shield className="h-5 w-5 mr-3 text-blue-600" />
+            <div>
+              <p className="font-bold text-gray-800">Admin</p>
+              <p className="text-sm text-gray-600">Full access to all settings and user management.</p>
             </div>
+          </Label>
+          <Label
+            htmlFor="teacher-role"
+            className={`flex items-center p-4 rounded-lg border cursor-pointer transition-all ${
+              selectedRole === 'teacher' ? 'bg-blue-50 border-blue-500 shadow-sm' : 'border-gray-200 bg-white'
+            }`}
+          >
+            <RadioGroupItem value="teacher" id="teacher-role" className="mr-4" />
+            <Briefcase className="h-5 w-5 mr-3 text-blue-600" />
+            <div>
+              <p className="font-bold text-gray-800">Teacher</p>
+              <p className="text-sm text-gray-600">Access to teacher portal for managing students.</p>
+            </div>
+          </Label>
+        </RadioGroup>
+      </div>
+
+      <div className="mt-8 pt-6 border-t border-gray-200">
+        <Button
+          onClick={handleRoleSetup}
+          disabled={isLoading}
+          className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition-all duration-300"
+        >
+          {isLoading ? (
+            <>
+              <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+              Setting Role...
+            </>
+          ) : (
+            "Set Role and Proceed"
           )}
-          <RadioGroup
-            value={selectedRole}
-            onValueChange={(value: "admin" | "teacher") =>
-              setSelectedRole(value)}
-          >
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="admin" id="admin" />
-              <Label htmlFor="admin">Admin</Label>
-            </div>
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="teacher" id="teacher" />
-              <Label htmlFor="teacher">Teacher</Label>
-            </div>
-          </RadioGroup>
-        </CardContent>
-        <CardFooter>
-          <Button
-            onClick={handleRoleSetup}
-            disabled={isLoading}
-            className="w-full"
-          >
-            {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Set Role and Proceed
-          </Button>
-        </CardFooter>
-      </Card>
+        </Button>
+      </div>
     </div>
   );
 }
