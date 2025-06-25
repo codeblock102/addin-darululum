@@ -34,6 +34,7 @@ export type DhorBookCombinedFormData = FormSabaqData & FormSabaqParaData & {
   comments?: string;
   points?: number;
   detention?: boolean;
+  pages_memorized?: number;
 
   // Single Dhor fields from Zod schema (replaces dhor1_... and dhor2_...)
   dhor_juz?: number;
@@ -86,6 +87,7 @@ export function useDhorEntryMutation({
               current_surah: formData.current_surah,
               start_ayat: formData.start_ayat,
               end_ayat: formData.end_ayat,
+              pages_memorized: formData.pages_memorized,
             };
           if (formData.memorization_quality) {
             progressRecord.memorization_quality = formData.memorization_quality;
