@@ -41,6 +41,7 @@ const formSchema = z.object({
   end_ayat: z.coerce.number().min(1),
   page_start: z.coerce.number().min(1).optional(),
   page_end: z.coerce.number().min(1).optional(),
+  pages_memorized: z.coerce.number().min(0).optional(),
   verses_memorized: z.coerce.number().min(1),
   memorization_quality: z.enum([
     "excellent",
@@ -133,6 +134,11 @@ export const TeacherSabaqRecording: React.FC<TeacherSabaqRecordingProps> = (
         autoRating = "horrible";
       }
 
+      let pagesMemorized = values.pages_memorized || 0;
+      if (values.page_start && values.page_end && values.page_end >= values.page_start) {
+        pagesMemorized = values.page_end - values.page_start + 1;
+      }
+
       // Format and save the data
       const progressData = {
         student_id: values.student_id,
@@ -142,6 +148,7 @@ export const TeacherSabaqRecording: React.FC<TeacherSabaqRecordingProps> = (
         start_ayat: values.start_ayat,
         end_ayat: values.end_ayat,
         verses_memorized: values.verses_memorized,
+        pages_memorized: pagesMemorized,
         memorization_quality: values.memorization_quality,
         page_start: values.page_start,
         page_end: values.page_end,
@@ -256,33 +263,7 @@ export const TeacherSabaqRecording: React.FC<TeacherSabaqRecordingProps> = (
                   )}
                 />
 
-                <FormField
-                  control={form.control}
-                  name="is_new_lesson"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Lesson Status</FormLabel>
-                      <Select
-                        onValueChange={(value) =>
-                          field.onChange(value === "new")}
-                        defaultValue={field.value ? "new" : "revision"}
-                      >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="New or Revision" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="new">New Lesson</SelectItem>
-                          <SelectItem value="revision">Revision</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-3 gap-4">
                   <FormField
                     control={form.control}
                     name="current_surah"
@@ -290,67 +271,62 @@ export const TeacherSabaqRecording: React.FC<TeacherSabaqRecordingProps> = (
                       <FormItem>
                         <FormLabel>Surah</FormLabel>
                         <FormControl>
-                          <Input type="number" {...field} />
+                          <Input type="number" placeholder="e.g. 2" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
-
-                  <div className="grid grid-cols-2 gap-2">
-                    <FormField
-                      control={form.control}
-                      name="start_ayat"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>From Ayat</FormLabel>
-                          <FormControl>
-                            <Input type="number" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="end_ayat"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>To Ayat</FormLabel>
-                          <FormControl>
-                            <Input type="number" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
+                  <FormField
+                    control={form.control}
+                    name="start_ayat"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Start Ayat</FormLabel>
+                        <FormControl>
+                          <Input type="number" placeholder="e.g. 1" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="end_ayat"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>End Ayat</FormLabel>
+                        <FormControl>
+                          <Input type="number" placeholder="e.g. 5" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                 </div>
-
+                
                 <div className="grid grid-cols-2 gap-4">
                   <FormField
                     control={form.control}
                     name="page_start"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Start Page (13-line)</FormLabel>
+                        <FormLabel>Start Page</FormLabel>
                         <FormControl>
-                          <Input type="number" {...field} />
+                          <Input type="number" placeholder="e.g. 120" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
-
                   <FormField
                     control={form.control}
                     name="page_end"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>End Page (13-line)</FormLabel>
+                        <FormLabel>End Page</FormLabel>
                         <FormControl>
-                          <Input type="number" {...field} />
+                          <Input type="number" placeholder="e.g. 121" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -359,28 +335,27 @@ export const TeacherSabaqRecording: React.FC<TeacherSabaqRecordingProps> = (
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
-                  <FormField
+                   <FormField
                     control={form.control}
                     name="verses_memorized"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Verses Memorized</FormLabel>
+                        <FormLabel>Total Verses</FormLabel>
                         <FormControl>
-                          <Input type="number" {...field} />
+                          <Input type="number" placeholder="e.g. 5" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
-
-                  <FormField
+                   <FormField
                     control={form.control}
-                    name="mistake_count"
+                    name="pages_memorized"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Number of Mistakes</FormLabel>
+                        <FormLabel>Pages (if no range)</FormLabel>
                         <FormControl>
-                          <Input type="number" {...field} />
+                          <Input type="number" placeholder="e.g. 1" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -393,7 +368,7 @@ export const TeacherSabaqRecording: React.FC<TeacherSabaqRecordingProps> = (
                   name="memorization_quality"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Quality Rating</FormLabel>
+                      <FormLabel>Teacher Rating</FormLabel>
                       <Select
                         onValueChange={field.onChange}
                         defaultValue={field.value}
@@ -408,11 +383,23 @@ export const TeacherSabaqRecording: React.FC<TeacherSabaqRecordingProps> = (
                           <SelectItem value="good">Good</SelectItem>
                           <SelectItem value="average">Average</SelectItem>
                           <SelectItem value="needsWork">Needs Work</SelectItem>
-                          <SelectItem value="horrible">
-                            Needs Significant Improvement
-                          </SelectItem>
+                          <SelectItem value="horrible">Horrible</SelectItem>
                         </SelectContent>
                       </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="mistake_count"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Number of Mistakes</FormLabel>
+                      <FormControl>
+                        <Input type="number" {...field} />
+                      </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -426,8 +413,7 @@ export const TeacherSabaqRecording: React.FC<TeacherSabaqRecordingProps> = (
                       <FormLabel>Notes</FormLabel>
                       <FormControl>
                         <Textarea
-                          placeholder="Additional notes or comments about today's lesson"
-                          className="resize-none"
+                          placeholder="Any comments on the student's performance..."
                           {...field}
                         />
                       </FormControl>
@@ -436,25 +422,26 @@ export const TeacherSabaqRecording: React.FC<TeacherSabaqRecordingProps> = (
                   )}
                 />
 
-                <Button type="submit" className="w-full" disabled={isLoading}>
-                  {isLoading ? "Saving..." : "Save Progress"}
+                <Button type="submit" disabled={isLoading}>
+                  {isLoading ? "Saving..." : "Record Progress"}
                 </Button>
               </form>
             </Form>
           </CardContent>
         </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Student Status</CardTitle>
-            <CardDescription>
-              View which students have pending sabaq or revisions
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <StudentStatusList teacherId={teacherId} />
-          </CardContent>
-        </Card>
+        <div className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Daily Status</CardTitle>
+              <CardDescription>
+                Live overview of student lesson statuses for today
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <StudentStatusList teacherId={teacherId} />
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </div>
   );

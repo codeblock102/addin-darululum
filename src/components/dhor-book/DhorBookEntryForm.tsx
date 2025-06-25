@@ -146,10 +146,12 @@ export function DhorBookEntryForm(
         endAyah,
       );
       setCalculatedPages(pages);
+      form.setValue("pages_memorized", pages);
     } else {
       setCalculatedPages(0);
+      form.setValue("pages_memorized", 0);
     }
-  }, [startAyah, endAyah, quranFormat]);
+  }, [startAyah, endAyah, quranFormat, form]);
 
   function handleSubmit(data: DailyActivityFormValues) {
     console.log("Form data from RHF (DailyActivityFormValues):", data);
@@ -164,6 +166,7 @@ export function DhorBookEntryForm(
     const finalPayload: DhorBookCombinedFormData = {
       ...data,
       entry_date: format(date, "yyyy-MM-dd"),
+      pages_memorized: calculatedPages,
     };
     console.log(
       "Final payload for onSubmit (DhorBookCombinedFormData):",
@@ -802,7 +805,7 @@ export function DhorBookEntryForm(
 
         {calculatedPages > 0 && (
           <div className="text-sm text-muted-foreground">
-            Pages to memorize: {calculatedPages} pages
+            Pages memorized: {calculatedPages} pages
           </div>
         )}
 
