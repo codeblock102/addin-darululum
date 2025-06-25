@@ -108,12 +108,12 @@ export const StudentGrid = ({ user, selectedStudents, onStudentSelect, onSelectA
       </CardHeader>
       <CardContent>
         {filteredStudents.length > 0 ? (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+          <div className="grid grid-cols-[repeat(auto-fit,minmax(12rem,1fr))] gap-4">
             {filteredStudents.map((student) => (
               <div
                 key={student.id}
                 onClick={() => onStudentSelect(student.id)}
-                className={`p-3 border rounded-lg cursor-pointer transition-all flex items-center space-x-3 ${
+                className={`w-full p-3 border rounded-lg cursor-pointer transition-all flex items-center space-x-3 ${
                   selectedStudents.has(student.id)
                     ? 'bg-blue-100 dark:bg-blue-900 border-blue-400'
                     : 'bg-slate-50 dark:bg-slate-800'
@@ -123,7 +123,9 @@ export const StudentGrid = ({ user, selectedStudents, onStudentSelect, onSelectA
                   checked={selectedStudents.has(student.id)}
                   onCheckedChange={() => onStudentSelect(student.id)}
                 />
-                <span className="font-medium text-sm">{student.name}</span>
+                <span className="font-medium text-sm flex-1 min-w-0 break-words">
+                  {student.name}
+                </span>
               </div>
             ))}
           </div>
