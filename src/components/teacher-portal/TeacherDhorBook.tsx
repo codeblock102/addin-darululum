@@ -23,6 +23,7 @@ import {
   BookOpen,
   Calendar,
   Loader2,
+  Mail,
   Plus,
   Search,
   Users,
@@ -32,6 +33,7 @@ import { AttendanceStats } from "@/components/student-progress/AttendanceStats.t
 import { StudentPerformanceMetrics } from "@/components/student-progress/StudentPerformanceMetrics.tsx";
 import { useRealtimeLeaderboard } from "@/hooks/useRealtimeLeaderboard.ts";
 import { useIsMobile } from "@/hooks/use-mobile.tsx";
+import { useToast } from "@/hooks/use-toast.ts";
 
 interface TeacherDhorBookProps {
   teacherId: string;
@@ -39,11 +41,13 @@ interface TeacherDhorBookProps {
 
 export const TeacherDhorBook = ({ teacherId }: TeacherDhorBookProps) => {
   const location = useLocation();
+  const { toast } = useToast();
   const [selectedStudentId, setSelectedStudentId] = useState<string | null>(
     null,
   );
   const [activeTab, setActiveTab] = useState("entries");
   const [viewMode, setViewMode] = useState<"daily" | "classroom">("daily");
+  const [isSendingEmails, setIsSendingEmails] = useState(false);
   const isMobile = useIsMobile();
 
   const { data: teacherData, isLoading: isLoadingTeacher } = useQuery({
@@ -133,15 +137,52 @@ export const TeacherDhorBook = ({ teacherId }: TeacherDhorBookProps) => {
     setViewMode("daily"); // Reset to daily view when selecting a student
   };
 
+  const handleSendEmails = async () => {
+    setIsSendingEmails(true);
+    toast({
+      title: "Sending Emails",
+      description: "Triggering the daily progress emails. This may take a moment.",
+    });
+    try {
+      const { error } = await supabase.functions.invoke("daily-progress-email");
+      if (error) {
+        throw error;
+      }
+      toast({
+        title: "Success",
+        description: "Successfully triggered the daily progress emails.",
+      });
+    } catch (error: any) {
+      console.error("Failed to invoke daily-progress-email function:", error);
+      toast({
+        title: "Error Sending Emails",
+        description: error.message || "An unexpected error occurred.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSendingEmails(false);
+    }
+  };
+
   return (
     <div className="space-y-4 md:space-y-6 pb-16 px-1 sm:px-0">
-      <div className="text-center sm:text-left">
-        <h2 className="text-lg sm:text-xl md:text-2xl font-bold tracking-tight">
-          Dhor Book
-        </h2>
-        <p className="text-xs sm:text-sm text-muted-foreground">
-          Record and track student progress
-        </p>
+      <div className="flex justify-between items-center text-center sm:text-left">
+        <div>
+          <h2 className="text-lg sm:text-xl md:text-2xl font-bold tracking-tight">
+            Dhor Book
+          </h2>
+          <p className="text-xs sm:text-sm text-muted-foreground">
+            Record and track student progress
+          </p>
+        </div>
+        <Button onClick={handleSendEmails} disabled={isSendingEmails} size="sm">
+          {isSendingEmails ? (
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+          ) : (
+            <Mail className="mr-2 h-4 w-4" />
+          )}
+          <span className="hidden sm:inline">Send Daily Emails</span>
+        </Button>
       </div>
 
       {/* View mode tabs - more prominent */}
