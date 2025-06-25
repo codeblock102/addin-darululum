@@ -246,16 +246,6 @@ export const TeacherDhorBook = ({ teacherId }: TeacherDhorBookProps) => {
                       <h3 className="text-base sm:text-lg md:text-xl font-semibold truncate text-foreground">
                         {studentVerification.name}'s Progress
                       </h3>
-                      <div className="flex flex-wrap gap-2">
-                        <Button variant="outline" size="sm" className="text-xs">
-                          <Calendar className="mr-1 h-3 w-3 sm:h-4 sm:w-4" />
-                          {!isMobile ? "Schedule Revision" : "Schedule"}
-                        </Button>
-                        <Button size="sm" className="text-xs">
-                          <Plus className="mr-1 h-3 w-3 sm:h-4 sm:w-4" />
-                          {!isMobile ? "New Entry" : "New"}
-                        </Button>
-                      </div>
                     </div>
 
                     {/* Performance metrics at the top */}
