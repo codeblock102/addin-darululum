@@ -36,8 +36,8 @@ import { useAuth } from "@/contexts/AuthContext.tsx";
 const ProgressBookPage = () => {
   const { toast } = useToast();
 
-  const [selectedStudentId, setSelectedStudentId] = useState<string | null>(
-    null,
+  const [selectedStudentId, setSelectedStudentId] = useState<string | undefined>(
+    undefined,
   );
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState("all");
@@ -53,9 +53,7 @@ const ProgressBookPage = () => {
   useEffect(() => {
     const urlParams = new URLSearchParams(globalThis.location.search);
     const studentIdParam = urlParams.get("studentId");
-    if (studentIdParam) {
-      setSelectedStudentId(studentIdParam);
-    }
+    setSelectedStudentId(studentIdParam === null ? undefined : studentIdParam);
   }, []);
 
 
@@ -171,14 +169,13 @@ const ProgressBookPage = () => {
     enabled: !isLoadingUserProfile && !!userProfileData,
   });
 
-
   const filteredStudents = students?.filter((student) =>
     student.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   return (
     <div className="space-y-4 sm:space-y-6 pb-16">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+      <div className="flex items-center gap-4">
         <div className="space-y-2">
           <div className="flex items-center space-x-3">
             <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center">
@@ -293,7 +290,7 @@ const ProgressBookPage = () => {
                   </Select>
                 </div>
               )}
-              <ClassroomRecords teacherId={selectedTeacherId || currentTeacherId} isAdmin={isAdmin} />
+              <ClassroomRecords teacherId={selectedTeacherId ?? (currentTeacherId || undefined)} isAdmin={isAdmin} />
             </CardContent>
           </Card>
         </TabsContent>
