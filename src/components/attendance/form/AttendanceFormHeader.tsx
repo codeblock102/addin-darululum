@@ -1,20 +1,27 @@
 import { CalendarCheck } from "lucide-react";
 import { format } from "date-fns";
-import { 
-  CardHeader, 
+import {
+  CardDescription,
+  CardHeader,
   CardTitle,
-  CardDescription
-} from "@/components/ui/card";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+} from "@/components/ui/card.tsx";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip.tsx";
 
 export function AttendanceFormHeader() {
   const today = new Date();
-  
+
   return (
     <CardHeader className="border-b border-purple-100 dark:border-purple-900/30">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <CardTitle className="text-purple-700 dark:text-purple-300">Mark Attendance</CardTitle>
+          <CardTitle className="text-purple-700 dark:text-purple-300">
+            Mark Attendance
+          </CardTitle>
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>

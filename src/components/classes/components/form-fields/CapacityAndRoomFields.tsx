@@ -1,6 +1,11 @@
-
-import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
+import {
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form.tsx";
+import { Input } from "@/components/ui/input.tsx";
 import { useFormContext } from "react-hook-form";
 
 export const CapacityAndRoomFields = () => {
@@ -32,7 +37,8 @@ export const CapacityAndRoomFields = () => {
               <Input
                 type="number"
                 {...field}
-                onChange={(e) => field.onChange(Number(e.target.value))}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  field.onChange(Number(e.target.value))}
               />
             </FormControl>
             <FormMessage />

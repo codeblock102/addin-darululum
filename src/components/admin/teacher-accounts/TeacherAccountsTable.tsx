@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import {
   Table,
@@ -7,21 +6,23 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import { TeacherAccount } from "@/types/teacher";
+} from "@/components/ui/table.tsx";
+import { TeacherAccount } from "@/types/teacher.ts";
 import { formatDistanceToNow } from "date-fns";
-import { TeacherDetailDialog } from "./TeacherDetailDialog";
-import { TeacherEditDialog } from "./TeacherEditDialog";
-import { AccountActionDialog } from "./AccountActionDialog";
-import { TeacherStatusBadge } from "./TeacherStatusBadge";
-import { TeacherAccountActions } from "./TeacherAccountActions";
+import { TeacherDetailDialog } from "./TeacherDetailDialog.tsx";
+import { TeacherEditDialog } from "./TeacherEditDialog.tsx";
+import { AccountActionDialog } from "./AccountActionDialog.tsx";
+import { TeacherStatusBadge } from "./TeacherStatusBadge.tsx";
+import { TeacherAccountActions } from "./TeacherAccountActions.tsx";
 
 interface TeacherAccountsTableProps {
   teachers: TeacherAccount[];
 }
 
 export function TeacherAccountsTable({ teachers }: TeacherAccountsTableProps) {
-  const [selectedTeacher, setSelectedTeacher] = useState<TeacherAccount | null>(null);
+  const [selectedTeacher, setSelectedTeacher] = useState<TeacherAccount | null>(
+    null,
+  );
   const [detailDialogOpen, setDetailDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [suspendDialogOpen, setSuspendDialogOpen] = useState(false);
@@ -63,39 +64,45 @@ export function TeacherAccountsTable({ teachers }: TeacherAccountsTableProps) {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {teachers.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={7} className="h-24 text-center">
-                  No teacher accounts found.
-                </TableCell>
-              </TableRow>
-            ) : (
-              teachers.map((teacher) => (
-                <TableRow key={teacher.id} className="hover:bg-secondary/5">
-                  <TableCell className="font-medium">{teacher.name}</TableCell>
-                  <TableCell>{teacher.email || "No email"}</TableCell>
-                  <TableCell>
-                    {teacher.lastLogin
-                      ? formatDistanceToNow(new Date(teacher.lastLogin), { addSuffix: true })
-                      : "Never logged in"}
-                  </TableCell>
-                  <TableCell>
-                    <TeacherStatusBadge status={teacher.status} />
-                  </TableCell>
-                  <TableCell>{teacher.classesCount}</TableCell>
-                  <TableCell>{teacher.studentsCount}</TableCell>
-                  <TableCell className="text-right">
-                    <TeacherAccountActions
-                      teacher={teacher}
-                      onView={handleViewTeacher}
-                      onEdit={handleEditTeacher}
-                      onSuspend={handleSuspendTeacher}
-                      onDelete={handleDeleteTeacher}
-                    />
+            {teachers.length === 0
+              ? (
+                <TableRow>
+                  <TableCell colSpan={7} className="h-24 text-center">
+                    No teacher accounts found.
                   </TableCell>
                 </TableRow>
-              ))
-            )}
+              )
+              : (
+                teachers.map((teacher) => (
+                  <TableRow key={teacher.id} className="hover:bg-secondary/5">
+                    <TableCell className="font-medium">
+                      {teacher.name}
+                    </TableCell>
+                    <TableCell>{teacher.email || "No email"}</TableCell>
+                    <TableCell>
+                      {teacher.lastLogin
+                        ? formatDistanceToNow(new Date(teacher.lastLogin), {
+                          addSuffix: true,
+                        })
+                        : "Never logged in"}
+                    </TableCell>
+                    <TableCell>
+                      <TeacherStatusBadge status={teacher.status} />
+                    </TableCell>
+                    <TableCell>{teacher.classesCount}</TableCell>
+                    <TableCell>{teacher.studentsCount}</TableCell>
+                    <TableCell className="text-right">
+                      <TeacherAccountActions
+                        teacher={teacher}
+                        onView={handleViewTeacher}
+                        onEdit={handleEditTeacher}
+                        onSuspend={handleSuspendTeacher}
+                        onDelete={handleDeleteTeacher}
+                      />
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
           </TableBody>
         </Table>
       </div>
@@ -117,7 +124,9 @@ export function TeacherAccountsTable({ teachers }: TeacherAccountsTableProps) {
         teacher={selectedTeacher}
         open={suspendDialogOpen}
         onOpenChange={setSuspendDialogOpen}
-        actionType={selectedTeacher?.status === "active" ? "suspend" : "reactivate"}
+        actionType={selectedTeacher?.status === "active"
+          ? "suspend"
+          : "reactivate"}
       />
 
       <AccountActionDialog

@@ -1,11 +1,11 @@
 /**
  * @file src/components/layouts/Sidebar.tsx
  * @summary This file defines the main Sidebar component for the application's dashboard layout.
- * 
+ *
  * The Sidebar is responsible for displaying navigation links and user information. It adapts its appearance
  * and behavior based on the user's role (admin or teacher) and the device (mobile or desktop).
  * It can be collapsible on desktop and is typically hidden by default on mobile, requiring a toggle.
- * 
+ *
  * Key Features:
  * - Role-based navigation items: Displays `adminNavItems` or `teacherNavItems` based on the user's role.
  * - Responsive design: Adapts for mobile and desktop views using `useIsMobile` hook.
@@ -17,14 +17,22 @@
  */
 import { Link } from "react-router-dom";
 import { useEffect } from "react";
-import { useIsMobile } from "@/hooks/use-mobile";
-import { Button } from "@/components/ui/button";
-import { ShieldCheck, BookOpen, ChevronLeft, X, Menu } from "lucide-react";
-import { adminNavItems, teacherNavItems } from "@/config/navigation";
-import { useRBAC } from "@/hooks/useRBAC";
-import { SidebarNav } from "./sidebar/SidebarNav";
-import { SidebarUser } from "./sidebar/SidebarUser";
-import { cn } from "@/lib/utils";
+import { useIsMobile } from "@/hooks/use-mobile.tsx";
+import { Button } from "@/components/ui/button.tsx";
+import {
+  BookOpen,
+  ChevronLeft,
+  ChevronRight,
+  Menu,
+  ShieldCheck,
+  X,
+} from "lucide-react";
+import { adminNavItems, teacherNavItems } from "@/config/navigation.ts";
+import { type NavItem } from "@/types/navigation.ts";
+import { useRBAC } from "@/hooks/useRBAC.ts";
+import { SidebarNav } from "./sidebar/SidebarNav.tsx";
+import { SidebarUser } from "./sidebar/SidebarUser.tsx";
+import { cn } from "@/lib/utils.ts";
 
 interface SidebarProps {
   /** Optional callback function to be invoked when the sidebar should be closed, typically on mobile. */
@@ -38,12 +46,12 @@ interface SidebarProps {
 /**
  * @component Sidebar
  * @description Renders the main application sidebar with navigation links and user information.
- * 
+ *
  * This component determines the appropriate set of navigation items (`adminNavItems` or `teacherNavItems`)
  * based on the user's role fetched via the `useRBAC` hook. It handles responsive behavior, including
  * a close button for mobile and a toggle button for collapsing/expanding on desktop.
  * The sidebar's visual appearance (colors, borders) also changes depending on whether an admin or a teacher is viewing it.
- * 
+ *
  * Props:
  *  - `onCloseSidebar`: Function to call when the sidebar requests to be closed (e.g., on mobile after a navigation event or pressing the close button).
  *  - `toggleSidebar`: Function to call to toggle the `isOpen` state (used by the collapse/expand button on desktop).
@@ -53,22 +61,24 @@ interface SidebarProps {
  *  - `useIsMobile`: Detects if the current view is mobile.
  *  - `useRBAC`: Provides role information (`isAdmin`, `isTeacher`, `isRoleLoading`).
  *  - `useEffect`: Manages an event listener to close the sidebar on mobile navigation events.
- * 
+ *
  * Child Components:
  *  - `SidebarNav`: Renders the actual list of navigation links.
  *  - `SidebarUser`: Renders the user information section at the bottom of the sidebar.
  *  - `Button` (from ui/button): Used for close and toggle controls.
  *  - `Link` (from react-router-dom): For the main portal link in the sidebar header.
  *  - Lucide icons: For visual elements.
- * 
+ *
  * @param {SidebarProps} props - The properties for the Sidebar component.
  * @returns {JSX.Element | null} The rendered Sidebar component, or a loading indicator if role information is pending.
  */
-export const Sidebar = ({ onCloseSidebar, toggleSidebar, isOpen }: SidebarProps) => {
+export const Sidebar = (
+  { onCloseSidebar, toggleSidebar, isOpen }: SidebarProps,
+) => {
   const isMobile = useIsMobile();
   const { isTeacher, isAdmin, isLoading: isRoleLoading } = useRBAC();
-  
-  let navItems;
+
+  let navItems: NavItem[];
   if (isAdmin) {
     navItems = adminNavItems;
   } else if (isTeacher) {
@@ -85,18 +95,18 @@ export const Sidebar = ({ onCloseSidebar, toggleSidebar, isOpen }: SidebarProps)
       }
     };
 
-    window.addEventListener('navigate-mobile', handleNavigation);
-    
+    globalThis.addEventListener("navigate-mobile", handleNavigation);
+
     return () => {
-      window.removeEventListener('navigate-mobile', handleNavigation);
+      globalThis.removeEventListener("navigate-mobile", handleNavigation);
     };
   }, [onCloseSidebar, isMobile]);
 
   if (isRoleLoading) {
     return (
-        <div className="relative h-full flex flex-col items-center justify-center">
-            {/* Optionally, a more specific sidebar loading spinner */}
-        </div>
+      <div className="relative h-full flex flex-col items-center justify-center">
+        {/* Optionally, a more specific sidebar loading spinner */}
+      </div>
     );
   }
 
@@ -104,71 +114,123 @@ export const Sidebar = ({ onCloseSidebar, toggleSidebar, isOpen }: SidebarProps)
     <div className="relative h-full flex flex-col sidebar">
       {/* Close button for mobile */}
       {isMobile && onCloseSidebar && (
-        <Button 
-          variant="ghost" 
-          size="icon" 
+        <Button
+          variant="ghost"
+          size="icon"
           className={cn(
             "absolute top-3 right-3 z-50",
-            isAdmin ? "text-white hover:bg-white/10" : ""
+            isAdmin ? "text-white hover:bg-white/10" : "",
           )}
           onClick={onCloseSidebar}
         >
           <X className="h-5 w-5" />
         </Button>
       )}
-      
-      <div className={cn(
-        "flex h-full w-full flex-col",
-        isAdmin 
-          ? "bg-[#131724] text-white" 
-          : "bg-white text-gray-800"
-      )}>
-        <div className={cn(
-          "flex h-14 sm:h-16 items-center px-4 sm:px-5",
-          isAdmin 
-            ? "border-b border-white/10" 
-            : "border-b border-gray-100",
-          (!isMobile && isOpen === false) ? "justify-center" : "justify-between"
-        )}>
-          { (isOpen !== false || isMobile) && (
-            <Link 
+
+      <div
+        className={cn(
+          "flex h-full w-full flex-col transition-all duration-300 ease-in-out",
+          isAdmin ? "bg-[#131724] text-white" : "bg-white text-gray-800",
+          !isMobile && isOpen === false && "shadow-lg border-r-2",
+        )}
+      >
+        <div
+          className={cn(
+            "flex h-14 sm:h-16 items-center transition-all duration-300 ease-in-out",
+            isAdmin ? "border-b border-white/10" : "border-b border-gray-100",
+            (!isMobile && isOpen === false)
+              ? "justify-center px-2"
+              : "justify-between px-4 sm:px-5",
+          )}
+        >
+          {(isOpen !== false || isMobile) && (
+            <Link
               to="/dashboard"
-              className="flex items-center gap-2 font-semibold"
+              className="flex items-center gap-2 font-semibold hover:opacity-80 transition-opacity"
             >
-              {isAdmin ? (
-                <ShieldCheck className="h-5 w-5 sm:h-6 sm:w-6 text-amber-400" />
-              ) : (
-                <BookOpen className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
-              )}
-              <span className={cn(
-                "text-sm sm:text-base transition-opacity duration-300 whitespace-nowrap",
-                isAdmin ? "text-white" : "text-gray-800"
-              )}>
+              {isAdmin
+                ? (
+                  <ShieldCheck className="h-5 w-5 sm:h-6 sm:w-6 text-amber-400 drop-shadow-sm" />
+                )
+                : (
+                  <BookOpen className="h-5 w-5 sm:h-6 sm:w-6 text-primary drop-shadow-sm" />
+                )}
+              <span
+                className={cn(
+                  "text-sm sm:text-base transition-all duration-300 whitespace-nowrap font-medium",
+                  isAdmin ? "text-white" : "text-gray-800",
+                )}
+              >
                 {isAdmin ? "Admin Portal" : "Teacher Portal"}
               </span>
             </Link>
           )}
-          
-          {!isMobile && toggleSidebar && (
-            <Button 
-              variant="ghost" 
-              size="icon" 
+
+          {/* Collapsed state logo */}
+          {!isMobile && isOpen === false && (
+            <Link
+              to="/dashboard"
+              className="flex items-center justify-center w-full hover:bg-white/5 rounded-lg p-2 transition-all duration-200"
+              title={isAdmin ? "Admin Portal" : "Teacher Portal"}
+            >
+              {isAdmin
+                ? (
+                  <ShieldCheck className="h-6 w-6 text-amber-400 drop-shadow-sm" />
+                )
+                : <BookOpen className="h-6 w-6 text-primary drop-shadow-sm" />}
+            </Link>
+          )}
+
+          {!isMobile && toggleSidebar && isOpen !== false && (
+            <Button
+              variant="ghost"
+              size="icon"
               className={cn(
-                isAdmin ? "text-white hover:bg-white/10" : "text-slate-700 hover:bg-slate-100",
-                "transition-all duration-300",
+                isAdmin
+                  ? "text-white hover:bg-white/10"
+                  : "text-slate-700 hover:bg-slate-100",
+                "transition-all duration-300 hover:scale-105",
               )}
               onClick={toggleSidebar}
-              title={isOpen ? "Collapse sidebar" : "Expand sidebar"}
+              title="Collapse sidebar"
             >
-              {isOpen ? <ChevronLeft className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-              <span className="sr-only">{isOpen ? "Collapse sidebar" : "Expand sidebar"}</span>
+              <ChevronLeft className="h-5 w-5" />
+              <span className="sr-only">Collapse sidebar</span>
+            </Button>
+          )}
+
+          {/* Expand button for collapsed state */}
+          {!isMobile && toggleSidebar && isOpen === false && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className={cn(
+                "absolute -right-3 top-1/2 -translate-y-1/2 z-10 rounded-full shadow-lg border-2",
+                isAdmin
+                  ? "bg-[#131724] border-amber-400/20 text-amber-400 hover:bg-amber-400/10 hover:border-amber-400/40"
+                  : "bg-white border-primary/20 text-primary hover:bg-primary/5 hover:border-primary/40",
+                "transition-all duration-300 hover:scale-110",
+              )}
+              onClick={toggleSidebar}
+              title="Expand sidebar"
+            >
+              <ChevronRight className="h-4 w-4" />
+              <span className="sr-only">Expand sidebar</span>
             </Button>
           )}
         </div>
-        
-        <div className="flex-1 overflow-auto py-2 sm:py-4">
+
+        <div
+          className={cn(
+            "flex-1 overflow-auto transition-all duration-300",
+            (!isMobile && isOpen === false) ? "py-2" : "py-2 sm:py-4",
+          )}
+        >
           {/* DEBUG: Log navItems for admin */}
-          {isAdmin && (() => { console.log("Admin NavItems being passed to SidebarNav:", navItems); return null; })()}
+          {isAdmin && (() => {
+            console.log("Admin NavItems being passed to SidebarNav:", navItems);
+            return null;
+          })()}
           <SidebarNav items={navItems} isAdmin={isAdmin} isOpen={isOpen} />
         </div>
 

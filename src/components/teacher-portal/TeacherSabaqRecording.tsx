@@ -1,17 +1,35 @@
-
-import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import React, { useEffect, useState } from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card.tsx";
+import { Button } from "@/components/ui/button.tsx";
+import { Input } from "@/components/ui/input.tsx";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select.tsx";
+import { Textarea } from "@/components/ui/textarea.tsx";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form.tsx";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/components/ui/use-toast";
-import { StudentStatusList } from "./StudentStatusList";
+import { supabase } from "@/integrations/supabase/client.ts";
+import { useToast } from "@/hooks/use-toast.ts";
+import { StudentStatusList } from "./StudentStatusList.tsx";
 
 // Define the form schema
 const formSchema = z.object({
@@ -23,11 +41,18 @@ const formSchema = z.object({
   end_ayat: z.coerce.number().min(1),
   page_start: z.coerce.number().min(1).optional(),
   page_end: z.coerce.number().min(1).optional(),
+  pages_memorized: z.coerce.number().min(0).optional(),
   verses_memorized: z.coerce.number().min(1),
-  memorization_quality: z.enum(['excellent', 'good', 'average', 'needsWork', 'horrible']),
+  memorization_quality: z.enum([
+    "excellent",
+    "good",
+    "average",
+    "needsWork",
+    "horrible",
+  ]),
   mistake_count: z.coerce.number().min(0).optional(),
   is_new_lesson: z.boolean().default(true),
-  lesson_type: z.enum(['hifz', 'nazirah', 'qaida']).default('hifz'),
+  lesson_type: z.enum(["hifz", "nazirah", "qaida"]).default("hifz"),
   notes: z.string().optional(),
 });
 
@@ -42,7 +67,9 @@ interface TeacherSabaqRecordingProps {
   teacherId: string;
 }
 
-export const TeacherSabaqRecording: React.FC<TeacherSabaqRecordingProps> = ({ teacherId }) => {
+export const TeacherSabaqRecording: React.FC<TeacherSabaqRecordingProps> = (
+  { teacherId },
+) => {
   const [students, setStudents] = useState<Student[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
@@ -67,20 +94,20 @@ export const TeacherSabaqRecording: React.FC<TeacherSabaqRecordingProps> = ({ te
   useEffect(() => {
     const fetchStudents = async () => {
       const { data, error } = await supabase
-        .from('students_teachers')
-        .select('student_name, id')
-        .eq('teacher_id', teacherId)
-        .eq('active', true);
+        .from("students_teachers")
+        .select("student_name, id")
+        .eq("teacher_id", teacherId)
+        .eq("active", true);
 
       if (error) {
-        console.error('Error fetching students:', error);
+        console.error("Error fetching students:", error);
         return;
       }
 
       if (data) {
-        setStudents(data.map(st => ({
+        setStudents(data.map((st) => ({
           id: st.id,
-          name: st.student_name
+          name: st.student_name,
         })));
       }
     };
@@ -92,30 +119,36 @@ export const TeacherSabaqRecording: React.FC<TeacherSabaqRecordingProps> = ({ te
     setIsLoading(true);
     try {
       // Calculate auto_rating based on mistake_count
-      let autoRating = 'excellent';
+      let autoRating = "excellent";
       const mistakes = values.mistake_count || 0;
-      
+
       if (mistakes === 0) {
-        autoRating = 'excellent';
+        autoRating = "excellent";
       } else if (mistakes >= 1 && mistakes <= 3) {
-        autoRating = 'good';
+        autoRating = "good";
       } else if (mistakes >= 4 && mistakes <= 7) {
-        autoRating = 'average';
+        autoRating = "average";
       } else if (mistakes >= 8 && mistakes <= 12) {
-        autoRating = 'needsWork';
+        autoRating = "needsWork";
       } else {
-        autoRating = 'horrible';
+        autoRating = "horrible";
+      }
+
+      let pagesMemorized = values.pages_memorized || 0;
+      if (values.page_start && values.page_end && values.page_end >= values.page_start) {
+        pagesMemorized = values.page_end - values.page_start + 1;
       }
 
       // Format and save the data
       const progressData = {
         student_id: values.student_id,
-        date: new Date().toISOString().split('T')[0],
+        date: new Date().toISOString().split("T")[0],
         current_surah: values.current_surah,
         current_juz: 1, // Would need to calculate or add to form
         start_ayat: values.start_ayat,
         end_ayat: values.end_ayat,
         verses_memorized: values.verses_memorized,
+        pages_memorized: pagesMemorized,
         memorization_quality: values.memorization_quality,
         page_start: values.page_start,
         page_end: values.page_end,
@@ -124,11 +157,11 @@ export const TeacherSabaqRecording: React.FC<TeacherSabaqRecordingProps> = ({ te
         is_new_lesson: values.is_new_lesson,
         lesson_type: values.lesson_type,
         notes: values.notes,
-        teacher_id: teacherId
+        teacher_id: teacherId,
       };
 
       const { error } = await supabase
-        .from('progress')
+        .from("progress")
         .insert([progressData]);
 
       if (error) throw error;
@@ -140,7 +173,7 @@ export const TeacherSabaqRecording: React.FC<TeacherSabaqRecordingProps> = ({ te
 
       form.reset();
     } catch (error) {
-      console.error('Error saving progress:', error);
+      console.error("Error saving progress:", error);
       toast({
         variant: "destructive",
         title: "Failed to record progress",
@@ -154,10 +187,14 @@ export const TeacherSabaqRecording: React.FC<TeacherSabaqRecordingProps> = ({ te
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-bold tracking-tight">Record Student Progress</h2>
-        <p className="text-muted-foreground">Track daily sabaq and lessons for your students</p>
+        <h2 className="text-2xl font-bold tracking-tight">
+          Record Student Progress
+        </h2>
+        <p className="text-muted-foreground">
+          Track daily sabaq and lessons for your students
+        </p>
       </div>
-      
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
           <CardHeader>
@@ -168,14 +205,20 @@ export const TeacherSabaqRecording: React.FC<TeacherSabaqRecordingProps> = ({ te
           </CardHeader>
           <CardContent>
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              <form
+                onSubmit={form.handleSubmit(onSubmit)}
+                className="space-y-4"
+              >
                 <FormField
                   control={form.control}
                   name="student_id"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Student</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <Select
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                      >
                         <FormControl>
                           <SelectTrigger>
                             <SelectValue placeholder="Select a student" />
@@ -193,14 +236,17 @@ export const TeacherSabaqRecording: React.FC<TeacherSabaqRecordingProps> = ({ te
                     </FormItem>
                   )}
                 />
-                
+
                 <FormField
                   control={form.control}
                   name="lesson_type"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Lesson Type</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <Select
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                      >
                         <FormControl>
                           <SelectTrigger>
                             <SelectValue placeholder="Select lesson type" />
@@ -216,33 +262,8 @@ export const TeacherSabaqRecording: React.FC<TeacherSabaqRecordingProps> = ({ te
                     </FormItem>
                   )}
                 />
-                
-                <FormField
-                  control={form.control}
-                  name="is_new_lesson"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Lesson Status</FormLabel>
-                      <Select 
-                        onValueChange={(value) => field.onChange(value === "new")}
-                        defaultValue={field.value ? "new" : "revision"}
-                      >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="New or Revision" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="new">New Lesson</SelectItem>
-                          <SelectItem value="revision">Revision</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                <div className="grid grid-cols-2 gap-4">
+
+                <div className="grid grid-cols-3 gap-4">
                   <FormField
                     control={form.control}
                     name="current_surah"
@@ -250,42 +271,38 @@ export const TeacherSabaqRecording: React.FC<TeacherSabaqRecordingProps> = ({ te
                       <FormItem>
                         <FormLabel>Surah</FormLabel>
                         <FormControl>
-                          <Input type="number" {...field} />
+                          <Input type="number" placeholder="e.g. 2" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
-                  
-                  <div className="grid grid-cols-2 gap-2">
-                    <FormField
-                      control={form.control}
-                      name="start_ayat"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>From Ayat</FormLabel>
-                          <FormControl>
-                            <Input type="number" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <FormField
-                      control={form.control}
-                      name="end_ayat"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>To Ayat</FormLabel>
-                          <FormControl>
-                            <Input type="number" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
+                  <FormField
+                    control={form.control}
+                    name="start_ayat"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Start Ayat</FormLabel>
+                        <FormControl>
+                          <Input type="number" placeholder="e.g. 1" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="end_ayat"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>End Ayat</FormLabel>
+                        <FormControl>
+                          <Input type="number" placeholder="e.g. 5" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                 </div>
                 
                 <div className="grid grid-cols-2 gap-4">
@@ -294,67 +311,68 @@ export const TeacherSabaqRecording: React.FC<TeacherSabaqRecordingProps> = ({ te
                     name="page_start"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Start Page (13-line)</FormLabel>
+                        <FormLabel>Start Page</FormLabel>
                         <FormControl>
-                          <Input type="number" {...field} />
+                          <Input type="number" placeholder="e.g. 120" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
-                  
                   <FormField
                     control={form.control}
                     name="page_end"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>End Page (13-line)</FormLabel>
+                        <FormLabel>End Page</FormLabel>
                         <FormControl>
-                          <Input type="number" {...field} />
+                          <Input type="number" placeholder="e.g. 121" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
                 </div>
-                
+
                 <div className="grid grid-cols-2 gap-4">
-                  <FormField
+                   <FormField
                     control={form.control}
                     name="verses_memorized"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Verses Memorized</FormLabel>
+                        <FormLabel>Total Verses</FormLabel>
                         <FormControl>
-                          <Input type="number" {...field} />
+                          <Input type="number" placeholder="e.g. 5" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
-                  
-                  <FormField
+                   <FormField
                     control={form.control}
-                    name="mistake_count"
+                    name="pages_memorized"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Number of Mistakes</FormLabel>
+                        <FormLabel>Pages (if no range)</FormLabel>
                         <FormControl>
-                          <Input type="number" {...field} />
+                          <Input type="number" placeholder="e.g. 1" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
                 </div>
-                
+
                 <FormField
                   control={form.control}
                   name="memorization_quality"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Quality Rating</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormLabel>Teacher Rating</FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                      >
                         <FormControl>
                           <SelectTrigger>
                             <SelectValue placeholder="Select quality" />
@@ -365,14 +383,28 @@ export const TeacherSabaqRecording: React.FC<TeacherSabaqRecordingProps> = ({ te
                           <SelectItem value="good">Good</SelectItem>
                           <SelectItem value="average">Average</SelectItem>
                           <SelectItem value="needsWork">Needs Work</SelectItem>
-                          <SelectItem value="horrible">Needs Significant Improvement</SelectItem>
+                          <SelectItem value="horrible">Horrible</SelectItem>
                         </SelectContent>
                       </Select>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
-                
+
+                <FormField
+                  control={form.control}
+                  name="mistake_count"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Number of Mistakes</FormLabel>
+                      <FormControl>
+                        <Input type="number" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
                 <FormField
                   control={form.control}
                   name="notes"
@@ -381,8 +413,7 @@ export const TeacherSabaqRecording: React.FC<TeacherSabaqRecordingProps> = ({ te
                       <FormLabel>Notes</FormLabel>
                       <FormControl>
                         <Textarea
-                          placeholder="Additional notes or comments about today's lesson"
-                          className="resize-none"
+                          placeholder="Any comments on the student's performance..."
                           {...field}
                         />
                       </FormControl>
@@ -390,26 +421,27 @@ export const TeacherSabaqRecording: React.FC<TeacherSabaqRecordingProps> = ({ te
                     </FormItem>
                   )}
                 />
-                
-                <Button type="submit" className="w-full" disabled={isLoading}>
-                  {isLoading ? "Saving..." : "Save Progress"}
+
+                <Button type="submit" disabled={isLoading}>
+                  {isLoading ? "Saving..." : "Record Progress"}
                 </Button>
               </form>
             </Form>
           </CardContent>
         </Card>
-        
-        <Card>
-          <CardHeader>
-            <CardTitle>Student Status</CardTitle>
-            <CardDescription>
-              View which students have pending sabaq or revisions
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <StudentStatusList teacherId={teacherId} />
-          </CardContent>
-        </Card>
+        <div className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Daily Status</CardTitle>
+              <CardDescription>
+                Live overview of student lesson statuses for today
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <StudentStatusList teacherId={teacherId} />
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </div>
   );

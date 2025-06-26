@@ -1,19 +1,19 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogFooter
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
-import { TeacherAccount } from "@/types/teacher";
-import { Textarea } from "@/components/ui/textarea";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/components/ui/use-toast";
+} from "@/components/ui/dialog.tsx";
+import { Input } from "@/components/ui/input.tsx";
+import { Label } from "@/components/ui/label.tsx";
+import { Button } from "@/components/ui/button.tsx";
+import { TeacherAccount } from "@/types/teacher.ts";
+import { Textarea } from "@/components/ui/textarea.tsx";
+import { supabase } from "@/integrations/supabase/client.ts";
+import { useToast } from "@/hooks/use-toast.ts";
 import { useQueryClient } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 
@@ -26,7 +26,7 @@ interface TeacherEditDialogProps {
 export function TeacherEditDialog({
   teacher,
   open,
-  onOpenChange
+  onOpenChange,
 }: TeacherEditDialogProps) {
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState<{
@@ -40,7 +40,7 @@ export function TeacherEditDialog({
     email: teacher?.email || "",
     phone: teacher?.phone || "",
     subject: teacher?.subject || "",
-    bio: teacher?.bio || ""
+    bio: teacher?.bio || "",
   });
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -53,12 +53,14 @@ export function TeacherEditDialog({
         email: teacher.email || "",
         phone: teacher.phone || "",
         subject: teacher.subject || "",
-        bio: teacher.bio || ""
+        bio: teacher.bio || "",
       });
     }
   }, [teacher]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+  ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
@@ -69,17 +71,17 @@ export function TeacherEditDialog({
 
     setLoading(true);
     try {
-      // Update teacher information in the database
+      // Update teacher information in the profiles table
       const { error } = await supabase
-        .from('teachers')
+        .from("profiles")
         .update({
           name: formData.name,
           email: formData.email,
           phone: formData.phone,
           subject: formData.subject,
-          bio: formData.bio
+          bio: formData.bio,
         })
-        .eq('id', teacher.id);
+        .eq("id", teacher.id);
 
       if (error) {
         throw error;
@@ -102,12 +104,15 @@ export function TeacherEditDialog({
 
       toast({
         title: "Teacher account updated",
-        description: `${formData.name}'s account has been successfully updated.`
+        description:
+          `${formData.name}'s account has been successfully updated.`,
       });
 
       // Refresh the teacher accounts data
-      queryClient.invalidateQueries({ queryKey: ['teacher-accounts'] });
-      queryClient.invalidateQueries({ queryKey: ['teacher-detail', teacher.id] });
+      queryClient.invalidateQueries({ queryKey: ["teacher-accounts"] });
+      queryClient.invalidateQueries({
+        queryKey: ["teacher-detail", teacher.id],
+      });
 
       // Close the dialog
       onOpenChange(false);
@@ -116,7 +121,7 @@ export function TeacherEditDialog({
       toast({
         title: "Update failed",
         description: "There was an error updating the teacher account.",
-        variant: "destructive"
+        variant: "destructive",
       });
     } finally {
       setLoading(false);
@@ -202,7 +207,11 @@ export function TeacherEditDialog({
             </div>
           </div>
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => onOpenChange(false)}
+            >
               Cancel
             </Button>
             <Button type="submit" disabled={loading}>

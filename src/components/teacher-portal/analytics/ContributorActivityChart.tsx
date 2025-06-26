@@ -1,6 +1,18 @@
-
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Bar, BarChart, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card.tsx";
+import {
+  Bar,
+  BarChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
 import { UserIcon } from "lucide-react";
 
 interface ContributorData {
@@ -13,7 +25,9 @@ interface ContributorActivityChartProps {
   data: ContributorData[];
 }
 
-export const ContributorActivityChart = ({ data }: ContributorActivityChartProps) => {
+export const ContributorActivityChart = (
+  { data }: ContributorActivityChartProps,
+) => {
   const defaultData = [
     { name: "Teacher A", count: 0, color: "#a855f7" },
     { name: "Teacher B", count: 0, color: "#ec4899" },
@@ -37,7 +51,12 @@ export const ContributorActivityChart = ({ data }: ContributorActivityChartProps
         <div className="h-[200px]">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={chartData}>
-              <XAxis dataKey="name" fontSize={12} tickLine={false} axisLine={false} />
+              <XAxis
+                dataKey="name"
+                fontSize={12}
+                tickLine={false}
+                axisLine={false}
+              />
               <YAxis
                 tickFormatter={(value) => `${value}`}
                 fontSize={12}
@@ -56,13 +75,17 @@ export const ContributorActivityChart = ({ data }: ContributorActivityChartProps
                             <span className="text-[0.70rem] uppercase text-muted-foreground">
                               Contributor
                             </span>
-                            <span className="font-bold text-sm">{payload[0].payload.name}</span>
+                            <span className="font-bold text-sm">
+                              {payload[0].payload.name}
+                            </span>
                           </div>
                           <div className="flex flex-col">
                             <span className="text-[0.70rem] uppercase text-muted-foreground">
                               Entries
                             </span>
-                            <span className="font-bold text-sm">{payload[0].payload.count}</span>
+                            <span className="font-bold text-sm">
+                              {payload[0].payload.count}
+                            </span>
                           </div>
                         </div>
                       </div>

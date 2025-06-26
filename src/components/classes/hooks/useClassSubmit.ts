@@ -1,16 +1,16 @@
-
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
-import { hasPermission } from "@/utils/roleUtils";
-import { ClassFormData } from "../validation/classFormSchema";
+import { supabase } from "@/integrations/supabase/client.ts";
+import { useToast } from "@/hooks/use-toast.ts";
+import { ClassFormData } from "../validation/classFormSchema.ts";
 
 interface UseClassSubmitProps {
-  selectedClass: any;
+  selectedClass: (Partial<ClassFormData> & { id: string }) | null;
   onSuccess: () => void;
 }
 
-export const useClassSubmit = ({ selectedClass, onSuccess }: UseClassSubmitProps) => {
+export const useClassSubmit = (
+  { selectedClass, onSuccess }: UseClassSubmitProps,
+) => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -24,8 +24,8 @@ export const useClassSubmit = ({ selectedClass, onSuccess }: UseClassSubmitProps
         // }
 
         // Ensure days_of_week is always an array
-        const daysOfWeek = Array.isArray(values.days_of_week) 
-          ? values.days_of_week 
+        const daysOfWeek = Array.isArray(values.days_of_week)
+          ? values.days_of_week
           : [];
 
         const formattedValues = {
@@ -44,43 +44,45 @@ export const useClassSubmit = ({ selectedClass, onSuccess }: UseClassSubmitProps
 
         if (selectedClass) {
           const { error } = await supabase
-            .from('classes')
+            .from("classes")
             .update(formattedValues)
-            .eq('id', selectedClass.id);
-          
+            .eq("id", selectedClass.id);
+
           if (error) {
             console.error("Error updating class:", error);
             throw new Error(error.message || "Failed to update class");
           }
         } else {
           const { error } = await supabase
-            .from('classes')
+            .from("classes")
             .insert([{
               ...formattedValues,
               current_students: 0,
-              status: 'active'
+              status: "active",
             }]);
-            
+
           if (error) {
             console.error("Error creating class:", error);
             throw new Error(error.message || "Failed to create class");
           }
         }
-      } catch (error: any) {
+      } catch (error) {
         console.error("Class submission error:", error);
         throw error;
       }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['classes'] });
-      queryClient.invalidateQueries({ queryKey: ['admin-schedules'] });
-      queryClient.invalidateQueries({ queryKey: ['teacher-schedule'] });
-      
+      queryClient.invalidateQueries({ queryKey: ["classes"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-schedules"] });
+      queryClient.invalidateQueries({ queryKey: ["teacher-schedule"] });
+
       toast({
         title: selectedClass ? "Class Updated" : "Class Created",
-        description: `Class has been ${selectedClass ? 'updated' : 'created'} successfully.`,
+        description: `Class has been ${
+          selectedClass ? "updated" : "created"
+        } successfully.`,
       });
-      
+
       onSuccess();
     },
     onError: (error: Error) => {

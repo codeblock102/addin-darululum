@@ -1,7 +1,6 @@
-
-import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/contexts/AuthContext";
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client.ts";
+import { useAuth } from "@/hooks/use-auth.ts";
 
 export const useTeacherStatus = () => {
   const { session } = useAuth();
@@ -11,43 +10,37 @@ export const useTeacherStatus = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const checkTeacherStatus = async () => {
-      if (!session?.user?.email) {
+    const checkUserRole = async () => {
+      if (!session?.user?.id) {
         setIsTeacher(false);
         setIsAdmin(false);
         setTeacherId(null);
         setIsLoading(false);
         return;
       }
-      
+
       try {
-        // Check if user is an admin from metadata
-        const isUserAdmin = session.user.user_metadata?.role === 'admin';
-        setIsAdmin(isUserAdmin);
-        
-        // Check if user is a teacher by looking for their record in the teachers table
-        const { data, error } = await supabase
-          .from('teachers')
-          .select('id')
-          .eq('email', session.user.email);
-          
+        const { data: profile, error } = await supabase
+          .from("profiles")
+          .select("id, role")
+          .eq("id", session.user.id)
+          .single();
+
         if (error) throw error;
-        
-        const isUserTeacher = data && data.length > 0;
-        // Set teacher status based on database or admin status
-        const finalTeacherStatus = isUserTeacher || isUserAdmin;
-        setIsTeacher(finalTeacherStatus);
-        
-        // Set teacher ID if found
-        if (isUserTeacher && data && data.length > 0) {
-          setTeacherId(data[0].id);
-        } else {
-          setTeacherId(null);
-        }
-        
-        console.log(`Teacher status check: isTeacher=${finalTeacherStatus}, isAdmin=${isUserAdmin}, teacherId=${isUserTeacher ? data[0].id : null}`);
+
+        const userRole = profile?.role;
+        const isUserAdmin = userRole === "admin";
+        const isUserTeacher = userRole === "teacher";
+
+        setIsAdmin(isUserAdmin);
+        setIsTeacher(isUserTeacher || isUserAdmin);
+        setTeacherId(profile?.id || null);
+
+        console.log(
+          `User status check: isTeacher=${isUserTeacher}, isAdmin=${isUserAdmin}, profileId=${profile?.id}`,
+        );
       } catch (error) {
-        console.error("Error checking teacher status:", error);
+        console.error("Error checking user status:", error);
         setIsTeacher(false);
         setIsAdmin(false);
         setTeacherId(null);
@@ -55,8 +48,8 @@ export const useTeacherStatus = () => {
         setIsLoading(false);
       }
     };
-    
-    checkTeacherStatus();
+
+    checkUserRole();
   }, [session]);
 
   return { isTeacher, isAdmin, teacherId, isLoading };

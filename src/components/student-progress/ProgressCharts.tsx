@@ -1,27 +1,41 @@
-
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Progress } from "@/types/progress";
-import { Tables } from "@/integrations/supabase/types";
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card.tsx";
+import { DailyActivityEntry } from "@/types/dhor-book.ts";
+import { Tables } from "@/integrations/supabase/types.ts";
+import {
+  Bar,
+  BarChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
 
 export interface ProgressChartsProps {
-  progressData: Progress[];
+  progressData: DailyActivityEntry[];
   sabaqParaData: Tables<"sabaq_para">[];
   juzRevisionsData: Tables<"juz_revisions">[];
 }
 
-export const ProgressCharts = ({ 
-  progressData, 
-  sabaqParaData, 
-  juzRevisionsData 
+export const ProgressCharts = ({
+  progressData,
 }: ProgressChartsProps) => {
   // Transform data for chart visualization
-  const chartData = progressData.map(entry => ({
-    date: entry.date || new Date(entry.created_at).toLocaleDateString(),
-    verses: entry.verses_memorized || 0,
-    juz: entry.current_juz || 0,
-    surah: entry.current_surah || 0
-  }));
+  const chartData = progressData.map((entry) => {
+    const versesMemorized = (entry.end_ayat && entry.start_ayat)
+      ? (entry.end_ayat - entry.start_ayat + 1)
+      : 0;
+    return {
+      date: entry.entry_date,
+      verses: versesMemorized,
+      juz: entry.current_juz || 0,
+      surah: entry.current_surah || 0,
+    };
+  });
 
   return (
     <Card>

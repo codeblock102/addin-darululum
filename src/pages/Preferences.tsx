@@ -1,6 +1,5 @@
-
-import { DashboardLayout } from "@/components/layouts/DashboardLayout";
-import { TeacherPreferences } from "@/components/teacher-portal/TeacherPreferences";
+import { DashboardLayout } from "@/components/layouts/DashboardLayout.tsx";
+import { TeacherPreferences } from "@/components/teacher-portal/TeacherPreferences.tsx";
 
 export default function Preferences() {
   return (

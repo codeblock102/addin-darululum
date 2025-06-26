@@ -1,124 +1,145 @@
-
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { format } from "date-fns";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
-import { AttendanceStatus } from "@/types/attendance";
+import { supabase } from "@/integrations/supabase/client.ts";
+import { useToast } from "@/hooks/use-toast.ts";
+import { AttendanceFormValues } from "@/types/attendance-form.ts";
 
-export function useAttendanceSubmit() {
-  const [selectedClass, setSelectedClass] = useState<string>("");
+const attendanceSchema = z.object({
+  class_id: z.string().optional(),
+  student_id: z.string().optional(),
+  date: z.date(),
+  time: z.string().min(1, "Time is required"),
+  status: z.enum(["present", "absent", "late", "excused"]),
+  late_reason: z.string().optional(),
+  notes: z.string().optional(),
+});
+
+type AttendanceRecord = {
+  id: string;
+  class_id: string | null;
+  created_at: string | null;
+  date: string;
+  notes: string | null;
+  status: string;
+  student_id: string | null;
+  time: string | null;
+  late_reason: string | null;
+};
+
+interface UseAttendanceSubmitProps {
+  onSuccess?: () => void;
+  onError?: (error: Error) => void;
+}
+
+export function useAttendanceSubmit(
+  { onSuccess, onError }: UseAttendanceSubmitProps = {},
+) {
   const [selectedStudent, setSelectedStudent] = useState<string>("");
+  const [selectedReason, setSelectedReason] = useState<string>("");
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const today = new Date();
-  const formattedDate = format(today, "yyyy-MM-dd");
 
-  const form = useForm({
+  const form = useForm<AttendanceFormValues>({
+    resolver: zodResolver(attendanceSchema),
     defaultValues: {
-      status: "present" as AttendanceStatus,
+      class_id: "",
+      student_id: "",
+      date: today,
+      time: format(new Date(), "HH:mm"),
+      status: "present",
+      late_reason: "",
       notes: "",
     },
   });
 
-  const { data: classesData, isLoading: isLoadingClasses } = useQuery({
-    queryKey: ["class-schedules"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("classes")
-        .select("id, name, days_of_week, time_slots")
-        .order("name", { ascending: true });
-      
-      if (error) throw error;
-      return data;
-    },
-  });
+  const selectedDate = form.watch("date");
+  const watchedStudentId = form.watch("student_id");
+  const formattedDate = selectedDate
+    ? format(selectedDate, "yyyy-MM-dd")
+    : format(today, "yyyy-MM-dd");
 
-  const { data: students, isLoading: isLoadingStudents } = useQuery({
-    queryKey: ["students-by-class", selectedClass],
-    queryFn: async () => {
-      if (!selectedClass) return [];
-      
-      const { data, error } = await supabase
-        .from("students")
-        .select("id, name")
-        .eq("status", "active")
-        .order("name");
-      
-      if (error) throw error;
-      return data;
-    },
-    enabled: !!selectedClass,
-  });
+  useEffect(() => {
+    if (watchedStudentId && watchedStudentId !== selectedStudent) {
+      setSelectedStudent(watchedStudentId);
+    }
+  }, [watchedStudentId, selectedStudent]);
 
   const { data: existingAttendance, refetch: refetchAttendance } = useQuery({
-    queryKey: ["attendance", selectedStudent, selectedClass, formattedDate],
-    queryFn: async () => {
-      if (!selectedStudent || !selectedClass) return null;
-      
+    queryKey: ["attendance", selectedStudent, formattedDate],
+    queryFn: async (): Promise<AttendanceRecord | null> => {
+      if (!selectedStudent) return null;
+
       const { data, error } = await supabase
         .from("attendance")
         .select("*")
         .eq("student_id", selectedStudent)
-        .eq("class_id", selectedClass)
         .eq("date", formattedDate)
         .maybeSingle();
-      
+
       if (error) throw error;
       return data;
     },
-    enabled: !!selectedStudent && !!selectedClass,
+    enabled: !!selectedStudent,
   });
 
   useEffect(() => {
     if (existingAttendance) {
-      form.setValue("status", existingAttendance.status as AttendanceStatus);
+      form.setValue("status", existingAttendance.status as any);
       form.setValue("notes", existingAttendance.notes || "");
-    } else {
+      if (existingAttendance.time) {
+        form.setValue("time", existingAttendance.time);
+      }
+      if (existingAttendance.late_reason) {
+        form.setValue("late_reason", existingAttendance.late_reason);
+        setSelectedReason(existingAttendance.late_reason);
+      }
+      if (existingAttendance.class_id) {
+        form.setValue("class_id", existingAttendance.class_id);
+      }
+    } else if (selectedStudent && selectedDate) {
       form.setValue("status", "present");
       form.setValue("notes", "");
+      form.setValue("time", format(new Date(), "HH:mm"));
+      form.setValue("late_reason", "");
+      form.setValue("class_id", "");
+      setSelectedReason("");
     }
-  }, [existingAttendance, form]);
+  }, [existingAttendance, form, selectedStudent, selectedDate]);
 
-  const saveAttendance = useMutation({
-    mutationFn: async (values: { status: AttendanceStatus; notes: string }) => {
-      if (!selectedStudent || !selectedClass) {
-        throw new Error("Please select a class and student");
-      }
+  const saveAttendanceMutation = useMutation({
+    mutationFn: async (values: {
+      student_ids: string[],
+      status: string,
+      formData: AttendanceFormValues,
+    }) => {
+      const { student_ids, status, formData } = values;
+      
+      const records = student_ids.map(studentId => ({
+        student_id: studentId,
+        date: format(formData.date, "yyyy-MM-dd"),
+        time: formData.time,
+        status: status,
+        notes: formData.notes,
+        late_reason: status === 'late' ? formData.late_reason : null,
+        class_id: formData.class_id || null,
+      }));
 
-      const attendanceData = {
-        student_id: selectedStudent,
-        class_id: selectedClass,
-        date: formattedDate,
-        status: values.status,
-        notes: values.notes,
-      };
-
-      if (existingAttendance) {
-        const { error } = await supabase
-          .from("attendance")
-          .update(attendanceData)
-          .eq("id", existingAttendance.id);
-
-        if (error) throw error;
-        return { action: "updated" };
-      } else {
-        const { error } = await supabase
-          .from("attendance")
-          .insert([attendanceData]);
-
-        if (error) throw error;
-        return { action: "created" };
-      }
+      const { error } = await supabase.from('attendance').upsert(records, { onConflict: 'student_id,date' });
+      if (error) throw error;
+      return { count: student_ids.length };
     },
     onSuccess: (data) => {
       toast({
         title: "Success",
-        description: `Attendance ${data.action} successfully`,
+        description: `Attendance recorded for ${data.count} students.`,
       });
-      refetchAttendance();
       queryClient.invalidateQueries({ queryKey: ["attendance"] });
+      onSuccess?.();
     },
     onError: (error) => {
       toast({
@@ -126,25 +147,20 @@ export function useAttendanceSubmit() {
         description: error.message,
         variant: "destructive",
       });
+      onError?.(error as Error);
     },
   });
 
-  const onSubmit = (values: { status: AttendanceStatus; notes: string }) => {
-    saveAttendance.mutate(values);
+  const handleBulkSubmit = (student_ids: string[], status: string) => {
+    const formData = form.getValues();
+    saveAttendanceMutation.mutate({ student_ids, status, formData });
   };
+
+  const isProcessing = saveAttendanceMutation.isPending;
 
   return {
     form,
-    onSubmit,
-    selectedClass,
-    setSelectedClass,
-    selectedStudent,
-    setSelectedStudent,
-    classesData,
-    students,
-    isLoadingClasses,
-    isLoadingStudents,
-    existingAttendance,
-    saveAttendance,
+    isProcessing,
+    handleBulkSubmit,
   };
 }

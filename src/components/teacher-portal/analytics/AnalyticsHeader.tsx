@@ -1,7 +1,16 @@
-
-import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Button } from "@/components/ui/button";
+import {
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card.tsx";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select.tsx";
+import { Button } from "@/components/ui/button.tsx";
 import { Download } from "lucide-react";
 
 interface AnalyticsHeaderProps {
@@ -10,7 +19,9 @@ interface AnalyticsHeaderProps {
   onExport: () => void;
 }
 
-export const AnalyticsHeader = ({ timeRange, setTimeRange, onExport }: AnalyticsHeaderProps) => {
+export const AnalyticsHeader = (
+  { timeRange, setTimeRange, onExport }: AnalyticsHeaderProps,
+) => {
   return (
     <CardHeader>
       <div className="flex flex-col space-y-2 md:flex-row md:items-center md:justify-between md:space-y-0">

@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 
 interface CircularProgressIndicatorProps {
@@ -13,27 +12,27 @@ export const CircularProgressIndicator = ({
   strokeWidth = 5,
 }: CircularProgressIndicatorProps) => {
   const [progress, setProgress] = useState(0);
-  
+
   // Animate the progress value
   useEffect(() => {
     const timeout = setTimeout(() => {
       setProgress(value);
     }, 100);
-    
+
     return () => clearTimeout(timeout);
   }, [value]);
-  
+
   const radius = (size - strokeWidth) / 2;
   const circumference = radius * 2 * Math.PI;
   const strokeDashoffset = circumference - (progress / 100) * circumference;
-  
+
   // Determine color based on progress value
   const getProgressColor = () => {
     if (progress >= 70) return "#10B981"; // green-500
     if (progress >= 40) return "#F59E0B"; // amber-500
     return "#EF4444"; // red-500
   };
-  
+
   return (
     <div className="relative" style={{ width: size, height: size }}>
       {/* Background circle */}
@@ -50,7 +49,7 @@ export const CircularProgressIndicator = ({
           strokeWidth={strokeWidth}
           className="fill-none stroke-gray-200 dark:stroke-gray-800"
         />
-        
+
         {/* Foreground circle */}
         <circle
           cx={size / 2}
@@ -65,7 +64,7 @@ export const CircularProgressIndicator = ({
           style={{ transition: "stroke-dashoffset 0.5s ease-out" }}
         />
       </svg>
-      
+
       {/* Percentage text */}
       <div
         className="absolute inset-0 flex items-center justify-center text-xs font-medium"

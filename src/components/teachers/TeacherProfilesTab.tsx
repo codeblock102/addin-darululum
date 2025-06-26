@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { TeacherList } from "@/components/teachers/TeacherList";
 import { SearchInput } from "@/components/table/SearchInput";
@@ -7,9 +6,12 @@ import { Teacher } from "@/types/teacher";
 
 interface TeacherProfilesTabProps {
   onEditTeacher: (teacher: Teacher) => void;
+  madrassahId?: string;
 }
 
-export function TeacherProfilesTab({ onEditTeacher }: TeacherProfilesTabProps) {
+export function TeacherProfilesTab(
+  { onEditTeacher, madrassahId }: TeacherProfilesTabProps,
+) {
   const [searchQuery, setSearchQuery] = useState("");
 
   return (
@@ -21,11 +23,12 @@ export function TeacherProfilesTab({ onEditTeacher }: TeacherProfilesTabProps) {
           onChange={setSearchQuery}
         />
       </div>
-      
+
       <div className="border-t">
-        <TeacherList 
+        <TeacherList
           searchQuery={searchQuery}
           onEdit={onEditTeacher}
+          madrassahId={madrassahId}
         />
       </div>
     </Card>

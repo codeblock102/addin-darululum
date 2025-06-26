@@ -1,10 +1,12 @@
+import { Json } from "@/types/supabase";
+
 export interface TeacherFormValues {
   name: string;
   bio?: string;
   email?: string;
   phone?: string;
   subject?: string;
-  preferences?: Record<string, any>;
+  preferences?: Json;
   createAccount?: boolean;
   generatePassword?: boolean;
   password?: string;
@@ -12,26 +14,29 @@ export interface TeacherFormValues {
 
 export interface TeacherPreferencesType {
   id: string;
-  preferences?: Record<string, any>;
+  preferences?: Json;
 }
 
 export interface Teacher {
   id: string;
   name: string;
   subject: string;
+  section?: string;
   email?: string;
   bio?: string;
   phone?: string;
-  preferences?: Record<string, any>;
+  preferences?: Json;
 }
 
 export interface TeacherAccount extends Teacher {
   userId: string | null;
-  status: 'active' | 'suspended';
+  role: 'teacher' | 'admin' | null;
+  status: "active" | "suspended" | "deleted";
   lastLogin: string | null;
   classesCount: number;
   studentsCount: number;
   created_at?: string;
+  experience?: number;
 }
 
 export interface TeacherDashboardProps {
@@ -43,7 +48,7 @@ export interface SummaryData {
   activeClasses: number;
   upcomingRevisions: number;
   completionRate: number;
-  
+
   // Add missing fields referenced in components
   studentsCount: number;
   recentProgressEntries: number;

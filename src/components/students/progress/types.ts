@@ -1,18 +1,22 @@
-
 export interface ProgressFormData {
   current_surah: number;
   current_juz: number;
   start_ayat: number;
   end_ayat: number;
   verses_memorized: number;
-  memorization_quality: 'excellent' | 'good' | 'average' | 'needsWork' | 'horrible';
+  memorization_quality:
+    | "excellent"
+    | "good"
+    | "average"
+    | "needsWork"
+    | "horrible";
   notes: string;
   page_start?: number;
   page_end?: number;
   mistake_count?: number;
   is_new_lesson?: boolean;
-  lesson_type?: 'hifz' | 'nazirah' | 'qaida';
-  quality_rating?: 'excellent' | 'good' | 'average' | 'needsWork' | 'horrible';
+  lesson_type?: "hifz" | "nazirah" | "qaida";
+  quality_rating?: "excellent" | "good" | "average" | "needsWork" | "horrible";
   auto_rating?: string;
 }
 
@@ -40,13 +44,18 @@ export interface RevisionEntry {
   juz_number: number;
   surah_number?: number;
   revision_date: string;
-  memorization_quality: 'excellent' | 'good' | 'average' | 'needsWork' | 'horrible';
+  memorization_quality:
+    | "excellent"
+    | "good"
+    | "average"
+    | "needsWork"
+    | "horrible";
   revision_count: number;
-  quarters_revised: '1st_quarter' | '2_quarters' | '3_quarters' | '4_quarters';
+  quarters_revised: "1st_quarter" | "2_quarters" | "3_quarters" | "4_quarters";
   teacher_notes?: string;
   teacher_id?: string;
   teacher_name?: string;
-  status: 'completed' | 'pending' | 'needs_improvement';
+  status: "completed" | "pending" | "needs_improvement";
 }
 
 export interface DhorBookProps {
@@ -57,10 +66,15 @@ export interface DhorBookProps {
 export interface RevisionFormData {
   juz_number: number;
   surah_number?: number;
-  quarters_revised: '1st_quarter' | '2_quarters' | '3_quarters' | '4_quarters';
-  memorization_quality: 'excellent' | 'good' | 'average' | 'needsWork' | 'horrible';
+  quarters_revised: "1st_quarter" | "2_quarters" | "3_quarters" | "4_quarters";
+  memorization_quality:
+    | "excellent"
+    | "good"
+    | "average"
+    | "needsWork"
+    | "horrible";
   teacher_notes?: string;
-  status: 'completed' | 'pending' | 'needs_improvement';
+  status: "completed" | "pending" | "needs_improvement";
 }
 
 // Student Assignment Types
@@ -73,8 +87,8 @@ export interface StudentAssignment {
   end_ayat: number;
   page_start?: number;
   page_end?: number;
-  assignment_type: 'sabaq' | 'sabaq_para' | 'dhor' | 'nazirah' | 'qaida';
-  status: 'pending' | 'completed' | 'missed';
+  assignment_type: "sabaq" | "sabaq_para" | "dhor" | "nazirah" | "qaida";
+  status: "pending" | "completed" | "missed";
   teacher_id?: string;
   created_at?: string;
 }
@@ -82,7 +96,7 @@ export interface StudentAssignment {
 export interface StudentStatusSummary {
   student_id: string;
   student_name: string;
-  learning_type: 'hifz' | 'nazirah' | 'qaida';
+  learning_type: "hifz" | "nazirah" | "qaida";
   pending_assignments: number;
   missed_assignments: number;
   pending_details?: string;
@@ -99,6 +113,6 @@ export interface DifficultAyah {
   notes: string;
   revision_count: number;
   last_revised: string | null;
-  status: 'active' | 'resolved';
+  status: "active" | "resolved";
   created_at?: string;
 }

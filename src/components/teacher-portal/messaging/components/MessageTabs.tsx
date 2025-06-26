@@ -1,9 +1,13 @@
-
 import { useState } from "react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { MessageList } from "../MessageList";
-import { MessageCompose } from "../MessageCompose";
-import { Message, MessageRecipient } from "@/types/progress";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@/components/ui/tabs.tsx";
+import { MessageList } from "../MessageList.tsx";
+import { MessageCompose } from "../MessageCompose.tsx";
+import { Message, MessageRecipient } from "@/types/progress.ts";
 
 interface MessageTabsProps {
   inboxMessages: Message[] | undefined;
@@ -25,8 +29,7 @@ export const MessageTabs = ({
   recipients,
   recipientsLoading,
   teacherId,
-  teacherName,
-  unreadCount
+  unreadCount,
 }: MessageTabsProps) => {
   const [messageTab, setMessageTab] = useState("inbox");
   const [inboxTab, setInboxTab] = useState("received");
@@ -44,37 +47,36 @@ export const MessageTabs = ({
         </TabsTrigger>
         <TabsTrigger value="compose">Compose</TabsTrigger>
       </TabsList>
-      
+
       <TabsContent value="inbox">
         <Tabs value={inboxTab} onValueChange={setInboxTab}>
           <TabsList className="mb-4">
             <TabsTrigger value="received">Received</TabsTrigger>
             <TabsTrigger value="sent">Sent</TabsTrigger>
           </TabsList>
-          
+
           <TabsContent value="received">
-            <MessageList 
-              messages={inboxMessages} 
+            <MessageList
+              messages={inboxMessages}
               isLoading={inboxLoading}
               emptyMessage="No messages in your inbox"
             />
           </TabsContent>
-          
+
           <TabsContent value="sent">
-            <MessageList 
-              messages={sentMessages} 
+            <MessageList
+              messages={sentMessages}
               isLoading={sentLoading}
               emptyMessage="No sent messages"
-              showRecipient={true}
+              showRecipient
             />
           </TabsContent>
         </Tabs>
       </TabsContent>
-      
+
       <TabsContent value="compose">
-        <MessageCompose 
+        <MessageCompose
           teacherId={teacherId}
-          teacherName={teacherName}
           recipients={recipients || []}
           recipientsLoading={recipientsLoading}
         />

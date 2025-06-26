@@ -1,9 +1,13 @@
-
-import { UserFormData, FormErrors } from "@/types/adminUser";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-
+import { FormErrors, UserFormData } from "@/types/adminUser.ts";
+import { Input } from "@/components/ui/input.tsx";
+import { Label } from "@/components/ui/label.tsx";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select.tsx";
 interface UserFormFieldsProps {
   formData: UserFormData;
   errors: FormErrors;
@@ -21,12 +25,14 @@ export const UserFormFields = ({
   teachers,
   handleInputChange,
   handleTeacherChange,
-  handleRoleChange
+  handleRoleChange,
 }: UserFormFieldsProps) => {
   return (
     <>
       <div className="space-y-2">
-        <Label htmlFor="email">Email <span className="text-red-500">*</span></Label>
+        <Label htmlFor="email">
+          Email <span className="text-red-500">*</span>
+        </Label>
         <Input
           id="email"
           name="email"
@@ -38,9 +44,11 @@ export const UserFormFields = ({
         />
         {errors.email && <p className="text-sm text-red-500">{errors.email}</p>}
       </div>
-      
+
       <div className="space-y-2">
-        <Label htmlFor="username">Username <span className="text-red-500">*</span></Label>
+        <Label htmlFor="username">
+          Username <span className="text-red-500">*</span>
+        </Label>
         <Input
           id="username"
           name="username"
@@ -49,9 +57,11 @@ export const UserFormFields = ({
           onChange={handleInputChange}
           className={errors.username ? "border-red-500" : ""}
         />
-        {errors.username && <p className="text-sm text-red-500">{errors.username}</p>}
+        {errors.username && (
+          <p className="text-sm text-red-500">{errors.username}</p>
+        )}
       </div>
-      
+
       <div className="space-y-2">
         <Label htmlFor="password">
           Password {!isEdit && <span className="text-red-500">*</span>}
@@ -60,19 +70,27 @@ export const UserFormFields = ({
           id="password"
           name="password"
           type="password"
-          placeholder={isEdit ? "Leave blank to keep current password" : "Enter password"}
+          placeholder={isEdit
+            ? "Leave blank to keep current password"
+            : "Enter password"}
           value={formData.password}
           onChange={handleInputChange}
           className={errors.password ? "border-red-500" : ""}
         />
-        {errors.password && <p className="text-sm text-red-500">{errors.password}</p>}
+        {errors.password && (
+          <p className="text-sm text-red-500">{errors.password}</p>
+        )}
         {isEdit && (
-          <p className="text-xs text-gray-500">Leave blank to keep the current password.</p>
+          <p className="text-xs text-gray-500">
+            Leave blank to keep the current password.
+          </p>
         )}
       </div>
-      
+
       <div className="space-y-2">
-        <Label htmlFor="role">User Role <span className="text-red-500">*</span></Label>
+        <Label htmlFor="role">
+          User Role <span className="text-red-500">*</span>
+        </Label>
         <Select
           value={formData.role || "teacher"}
           onValueChange={handleRoleChange}
@@ -86,10 +104,11 @@ export const UserFormFields = ({
           </SelectContent>
         </Select>
         <p className="text-xs text-gray-500">
-          Teachers can manage students and classes. Administrators have access to all system features.
+          Teachers can manage students and classes. Administrators have access
+          to all system features.
         </p>
       </div>
-      
+
       <div className="space-y-2">
         <Label htmlFor="teacherId">Assign to Teacher Profile</Label>
         <Select
@@ -109,7 +128,8 @@ export const UserFormFields = ({
           </SelectContent>
         </Select>
         <p className="text-xs text-gray-500">
-          Linking a user to a teacher profile allows them to access the teacher portal with that teacher's data.
+          Linking a user to a teacher profile allows them to access the teacher
+          portal with that teacher's data.
         </p>
       </div>
     </>

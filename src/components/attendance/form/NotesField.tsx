@@ -1,14 +1,16 @@
-
-import { Textarea } from "@/components/ui/textarea";
-import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
+import { Textarea } from "@/components/ui/textarea.tsx";
+import {
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form.tsx";
 import { UseFormReturn } from "react-hook-form";
-import { AttendanceStatus } from "@/types/attendance";
+import { AttendanceFormValues } from "@/types/attendance-form.ts";
 
 interface NotesFieldProps {
-  form: UseFormReturn<{
-    status: AttendanceStatus;
-    notes: string;
-  }>;
+  form: UseFormReturn<AttendanceFormValues>;
 }
 
 export function NotesField({ form }: NotesFieldProps) {
@@ -18,7 +20,9 @@ export function NotesField({ form }: NotesFieldProps) {
       name="notes"
       render={({ field }) => (
         <FormItem>
-          <FormLabel className="text-gray-700 dark:text-gray-300">Notes (Optional)</FormLabel>
+          <FormLabel className="text-gray-700 dark:text-gray-300">
+            Notes (Optional)
+          </FormLabel>
           <FormControl>
             <Textarea
               placeholder="Add any additional notes about attendance"

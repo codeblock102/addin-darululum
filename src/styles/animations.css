@@ -1,13 +1,12 @@
-
 @layer utilities {
   .animate-fadeIn {
     animation: fadeIn 0.5s ease-out;
   }
-  
+
   .animate-slideIn {
     animation: slideIn 0.4s ease-out;
   }
-  
+
   .animate-scaleIn {
     animation: scaleIn 0.3s ease-out;
   }
@@ -15,12 +14,12 @@
   .hover-scale {
     @apply transition-transform duration-200 hover:scale-105;
   }
-  
+
   /* Add slide-in animation class */
   .slide-in {
     @apply animate-slideIn;
   }
-  
+
   /* Add fade-in animation class */
   .fade-in {
     @apply animate-fadeIn;
@@ -34,15 +33,19 @@
   .admin-card-hover {
     @apply transition-all duration-300 hover:scale-[1.02] hover:shadow-lg;
   }
-  
+
   .admin-button-hover {
     @apply transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md;
   }
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes slideIn {

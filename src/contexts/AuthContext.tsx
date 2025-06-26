@@ -1,56 +1,32 @@
 /**
  * @file src/contexts/AuthContext.tsx
  * @summary This file defines the authentication context and provider for the application.
- * 
- * It uses Supabase for authentication and provides the session state, loading status, 
+ *
+ * It uses Supabase for authentication and provides the session state, loading status,
  * sign-out functionality, session refresh, and any authentication errors to its children components.
- * 
+ *
  * The `AuthProvider` component initializes the Supabase session and listens for authentication state changes.
  * It handles session refresh and sign-out operations, providing user feedback via toasts.
- * 
+ *
  * The `useAuth` hook is a convenience hook for consuming the `AuthContext`.
  */
-import { createContext, useContext, useEffect, useState, ReactNode } from "react";
+import { ReactNode, useContext, useEffect, useState } from "react";
 import { Session } from "@supabase/supabase-js";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/components/ui/use-toast";
-
-/**
- * @interface AuthContextType
- * @description Defines the shape of the authentication context data.
- * @property {Session | null} session - The current Supabase session object, or null if not authenticated.
- * @property {boolean} isLoading - True if the authentication state is currently being determined or an operation is in progress, false otherwise.
- * @property {() => Promise<void>} signOut - Function to sign the current user out.
- * @property {() => Promise<void>} refreshSession - Function to attempt to refresh the current session.
- * @property {string | null} error - Stores any error message related to authentication operations.
- */
-interface AuthContextType {
-  session: Session | null;
-  isLoading: boolean;
-  signOut: () => Promise<void>;
-  refreshSession: () => Promise<void>;
-  error: string | null;
-}
-
-const AuthContext = createContext<AuthContextType>({ 
-  session: null, 
-  isLoading: true,
-  signOut: async () => { console.warn("signOut called outside of AuthProvider"); },
-  refreshSession: async () => { console.warn("refreshSession called outside of AuthProvider"); },
-  error: null
-});
+import { supabase } from "@/integrations/supabase/client.ts";
+import { useToast } from "@/hooks/use-toast.ts";
+import { AuthContext } from "@/types/auth.ts";
 
 /**
  * @component AuthProvider
  * @description Provides authentication state and methods to the application.
- * 
+ *
  * Manages the user's session with Supabase, including:
  *  - Initializing the session on load.
  *  - Listening to `onAuthStateChange` events from Supabase to keep the session state up-to-date.
  *  - Providing a `signOut` method.
  *  - Providing a `refreshSession` method.
  *  - Tracking loading states and errors related to authentication.
- * 
+ *
  * @param {{ children: ReactNode }} props - Props for the component.
  * @param {ReactNode} props.children - The child components that will have access to the auth context.
  * @returns {JSX.Element} The AuthContext.Provider wrapping the children components.
@@ -77,7 +53,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setError("Failed to refresh session");
         return;
       }
-      
+
       console.log("Session refreshed successfully:", !!data.session);
       setSession(data.session);
       setError(null);
@@ -92,40 +68,42 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (_event, currentSession) => {
         console.log("Auth state changed:", _event, !!currentSession);
-        
+
         // Update the session state
         setSession(currentSession);
-        
+
         // If we have a new session, let's fetch user role metadata
         if (currentSession?.user) {
           console.log("User metadata:", currentSession.user.user_metadata);
         }
-        
+
         // We only set isLoading to false here, after the initial check or an auth event.
         // Avoids showing logout toast on initial load if there was no session.
-        if (!currentSession && !isLoadingInitialCheck) { 
+        if (!currentSession && !isLoadingInitialCheck) {
           toast({
             title: "Logged out",
             description: "You have been logged out of your account.",
-            variant: "default"
+            variant: "default",
           });
         }
-        setIsLoading(false); 
-      }
+        setIsLoading(false);
+      },
     );
 
     // THEN check for existing session
     let isLoadingInitialCheck = true;
-    supabase.auth.getSession().then(({ data: { session: currentSession }, error }) => {
-      console.log("Initial session check:", !!currentSession, error);
-      if (error) {
-        console.error("Error retrieving session:", error);
-        setError("Failed to retrieve session");
-      }
-      setSession(currentSession);
-      setIsLoading(false);
-      isLoadingInitialCheck = false;
-    });
+    supabase.auth.getSession().then(
+      ({ data: { session: currentSession }, error }) => {
+        console.log("Initial session check:", !!currentSession, error);
+        if (error) {
+          console.error("Error retrieving session:", error);
+          setError("Failed to retrieve session");
+        }
+        setSession(currentSession);
+        setIsLoading(false);
+        isLoadingInitialCheck = false;
+      },
+    );
 
     return () => {
       subscription.unsubscribe();
@@ -149,11 +127,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         toast({
           title: "Sign out failed",
           description: "There was a problem signing you out. Please try again.",
-          variant: "destructive"
+          variant: "destructive",
         });
         return;
       }
-      
+
       console.log("Signed out successfully");
       setSession(null);
       setError(null);
@@ -167,25 +145,30 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       toast({
         title: "Sign out failed",
         description: "An unexpected error occurred. Please try again.",
-        variant: "destructive"
+        variant: "destructive",
       });
     }
   };
 
   return (
-    <AuthContext.Provider value={{ session, isLoading, signOut, refreshSession, error }}>
+    <AuthContext.Provider
+      value={{ session, isLoading, signOut, refreshSession, error }}
+    >
       {children}
     </AuthContext.Provider>
   );
 };
 
 /**
- * @hook useAuth
- * @description Custom hook to easily consume the authentication context.
- * 
- * Ensures that the hook is used within an `AuthProvider` to prevent runtime errors.
- * @throws {Error} If used outside of an `AuthProvider`.
- * @returns {AuthContextType} The authentication context values (session, isLoading, signOut, etc.).
+ * @function useAuth
+ * @description Custom hook to access the authentication context.
+ *
+ * This hook is a simple wrapper around `useContext(AuthContext)` that provides a more
+ * convenient way to access the auth state. It ensures that the hook is used within an
+ * `AuthProvider` tree.
+ *
+ * @returns {AuthContextType} The authentication context value.
+ * @throws {Error} If the hook is used outside of an `AuthProvider`.
  */
 export const useAuth = () => {
   const context = useContext(AuthContext);

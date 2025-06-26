@@ -1,11 +1,16 @@
-import { useAuth } from "@/contexts/AuthContext";
-import { useNavigate } from "react-router-dom";
-import { LogOut } from "lucide-react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
-import { toast } from "@/components/ui/use-toast";
-import { getInitials } from "@/utils/stringUtils";
-import { cn } from "@/lib/utils";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar.tsx";
+import { Button } from "@/components/ui/button.tsx";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu.tsx";
+import { useAuth } from "@/hooks/use-auth.ts";
+import { LogOut, Settings, User } from "lucide-react";
+import { cn } from "@/lib/utils.ts";
+import { useIsMobile } from "@/hooks/use-mobile.tsx";
 
 interface SidebarUserProps {
   isAdmin: boolean;
@@ -13,72 +18,171 @@ interface SidebarUserProps {
 }
 
 export const SidebarUser = ({ isAdmin, isOpen }: SidebarUserProps) => {
-  const navigate = useNavigate();
   const { session, signOut } = useAuth();
-  const user = session?.user;
+  const isMobile = useIsMobile();
 
-  const handleSignOut = async () => {
-    try {
-      await signOut();
-      toast({
-        title: "Signed out successfully",
-        description: "You have been logged out of your account"
-      });
-      navigate("/auth");
-    } catch (error) {
-      console.error("Error signing out:", error);
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Could not sign out. Please try again."
-      });
-    }
-  };
+  if (!session?.user) return null;
 
-  return (
-    <div className={cn(
-      "mt-auto",
-      isAdmin ? "border-t border-white/5" : "border-t",
-      isOpen === false ? "px-1 py-2 sm:px-2 sm:py-4" : "px-4 py-4"
-    )}>
-      <div className={cn(
-        "flex items-center rounded-lg",
-        isOpen === false ? "justify-center gap-1 sm:gap-2" : "gap-3 px-2 py-2"
-      )}>
-        <Avatar className={cn(
-          "h-9 w-9 sm:h-10 sm:w-10",
-          isAdmin ? "ring-1 sm:ring-2 ring-amber-500/50" : ""
-        )}>
-          <AvatarImage alt="User avatar" />
-          <AvatarFallback className={isAdmin ? "bg-amber-500 text-[#121827] font-semibold" : "bg-primary text-primary-foreground"}>
-            {getInitials(user?.email)}
-          </AvatarFallback>
-        </Avatar>
-        {isOpen !== false && (
-          <div className="transition-opacity duration-300">
-            <div className={`text-sm font-medium ${isAdmin ? "text-white" : ""}`}>
-              {user?.email?.split("@")[0] || "User"}
+  const userEmail = session.user.email || "user@example.com";
+  const userName = session.user.user_metadata?.full_name ||
+    userEmail.split("@")[0];
+  const userInitials = userName
+    .split(" ")
+    .map((n: string) => n[0])
+    .join("")
+    .toUpperCase()
+    .slice(0, 2);
+
+  // Collapsed state
+  if (!isMobile && isOpen === false) {
+    return (
+      <div className="p-2 border-t border-white/10">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="ghost"
+              className={cn(
+                "w-full h-12 p-2 hover:bg-white/5 transition-all duration-200 group",
+                "justify-center rounded-lg",
+              )}
+              title={userName}
+            >
+              <Avatar className="h-8 w-8 border-2 border-white/20 group-hover:border-white/40 transition-all duration-200">
+                <AvatarFallback
+                  className={cn(
+                    "text-xs font-semibold",
+                    isAdmin
+                      ? "bg-amber-400 text-gray-900"
+                      : "bg-primary text-white",
+                  )}
+                >
+                  {userInitials}
+                </AvatarFallback>
+              </Avatar>
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent
+            side="right"
+            align="end"
+            className="w-56 ml-2"
+            sideOffset={8}
+          >
+            <div className="flex items-center gap-2 p-2">
+              <Avatar className="h-8 w-8">
+                <AvatarFallback
+                  className={cn(
+                    "text-xs font-semibold",
+                    isAdmin
+                      ? "bg-amber-400 text-gray-900"
+                      : "bg-primary text-white",
+                  )}
+                >
+                  {userInitials}
+                </AvatarFallback>
+              </Avatar>
+              <div className="flex flex-col space-y-1">
+                <p className="text-sm font-medium leading-none">{userName}</p>
+                <p className="text-xs leading-none text-muted-foreground truncate">
+                  {userEmail}
+                </p>
+              </div>
             </div>
-            <div className={`text-xs ${isAdmin ? "text-amber-400" : "text-muted-foreground"}`}>
-              {isAdmin ? "Administrator" : "Teacher"}
-            </div>
-          </div>
-        )}
-        <Button 
-          variant={isAdmin ? "ghost" : "ghost"} 
-          size="icon" 
-          className={cn(
-            "transition-all duration-300", 
-            isAdmin ? "hover:bg-white/10 text-white" : "hover:bg-gray-100",
-            isOpen === false ? "" : "ml-auto"
-          )}
-          onClick={handleSignOut}
-          title="Log out"
-        >
-          <LogOut className={cn("h-5 w-5", isAdmin ? "text-amber-400" : "")} />
-          <span className="sr-only">Log out</span>
-        </Button>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem className="cursor-pointer">
+              <User className="mr-2 h-4 w-4" />
+              <span>Profile</span>
+            </DropdownMenuItem>
+            <DropdownMenuItem className="cursor-pointer">
+              <Settings className="mr-2 h-4 w-4" />
+              <span>Settings</span>
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              className="cursor-pointer text-red-600 focus:text-red-600"
+              onClick={() => signOut()}
+            >
+              <LogOut className="mr-2 h-4 w-4" />
+              <span>Log out</span>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
+    );
+  }
+
+  // Expanded state
+  return (
+    <div
+      className={cn(
+        "p-3 sm:p-4",
+        isAdmin ? "border-t border-white/10" : "border-t border-gray-100",
+      )}
+    >
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button
+            variant="ghost"
+            className={cn(
+              "w-full justify-start h-auto p-3 transition-all duration-200",
+              isAdmin
+                ? "hover:bg-white/5 text-white"
+                : "hover:bg-gray-100/60 text-gray-700",
+              "hover:shadow-sm rounded-lg",
+            )}
+          >
+            <div className="flex items-center gap-3 w-full">
+              <Avatar
+                className={cn(
+                  "h-10 w-10 border-2 transition-all duration-200",
+                  isAdmin ? "border-white/20" : "border-gray-200",
+                )}
+              >
+                <AvatarFallback
+                  className={cn(
+                    "text-sm font-semibold",
+                    isAdmin
+                      ? "bg-amber-400 text-gray-900"
+                      : "bg-primary text-white",
+                  )}
+                >
+                  {userInitials}
+                </AvatarFallback>
+              </Avatar>
+              <div className="flex flex-col items-start space-y-1 flex-1 min-w-0">
+                <p className="text-sm font-medium leading-none truncate w-full">
+                  {userName}
+                </p>
+                <p
+                  className={cn(
+                    "text-xs leading-none truncate w-full",
+                    isAdmin ? "text-gray-300" : "text-muted-foreground",
+                  )}
+                >
+                  {userEmail}
+                </p>
+              </div>
+            </div>
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent side="top" align="end" className="w-56">
+          <DropdownMenuItem className="cursor-pointer">
+            <User className="mr-2 h-4 w-4" />
+            <span>Profile</span>
+          </DropdownMenuItem>
+          <DropdownMenuItem className="cursor-pointer">
+            <Settings className="mr-2 h-4 w-4" />
+            <span>Settings</span>
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem
+            className="cursor-pointer text-red-600 focus:text-red-600"
+            onClick={() => signOut()}
+          >
+            <LogOut className="mr-2 h-4 w-4" />
+            <span>Log out</span>
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
     </div>
   );
 };

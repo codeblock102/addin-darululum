@@ -1,20 +1,19 @@
-
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button.tsx";
+import { Card } from "@/components/ui/card.tsx";
 import { useQuery } from "@tanstack/react-query";
 import { Download } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
-import { exportDataAsCSV } from "@/utils/exportUtils";
-import { useToast } from "@/components/ui/use-toast";
+import { supabase } from "@/integrations/supabase/client.ts";
+import { exportDataAsCSV } from "@/utils/exportUtils.ts";
+import { useToast } from "@/components/ui/use-toast.ts";
 
 export const ProgressReportGenerator = () => {
   const { toast } = useToast();
 
   const { data: students, isLoading } = useQuery({
-    queryKey: ['student-progress-report'],
+    queryKey: ["student-progress-report"],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('progress')
+        .from("progress")
         .select(`
           student_id,
           verses_memorized,
@@ -22,18 +21,18 @@ export const ProgressReportGenerator = () => {
             name
           )
         `)
-        .order('created_at', { ascending: false });
+        .order("created_at", { ascending: false });
 
       if (error) {
         console.error("Error fetching progress:", error);
         return [];
       }
 
-      return data.map(progress => ({
-        name: progress.students?.name || 'Unknown',
-        verses: progress.verses_memorized || 0
+      return data.map((progress) => ({
+        name: progress.students?.name || "Unknown",
+        verses: progress.verses_memorized || 0,
       }));
-    }
+    },
   });
 
   const handleExport = () => {
@@ -41,7 +40,7 @@ export const ProgressReportGenerator = () => {
       toast({
         title: "No data to export",
         description: "There is no student progress data available to export.",
-        variant: "destructive"
+        variant: "destructive",
       });
       return;
     }

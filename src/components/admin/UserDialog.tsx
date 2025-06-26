@@ -1,32 +1,38 @@
-
-import { useState, useEffect } from "react";
-import { useToast } from "@/components/ui/use-toast";
-import { Button } from "@/components/ui/button";
+import { useEffect, useState } from "react";
+import { useToast } from "@/hooks/use-toast.ts";
+import { Button } from "@/components/ui/button.tsx";
 import {
   DialogContent,
-  DialogHeader,
-  DialogTitle,
   DialogDescription,
   DialogFooter,
-} from "@/components/ui/dialog";
-import { Loader2, AlertCircle } from "lucide-react";
-import { UserFormData, UserDialogProps, FormErrors, UserRole } from "@/types/adminUser";
-import { UserFormFields } from "./user/UserFormFields";
-import { validateUserForm } from "./user/UserFormValidation";
-import { handleUserSubmit } from "./user/UserFormSubmitHandler";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog.tsx";
+import { AlertCircle, Loader2 } from "lucide-react";
+import {
+  FormErrors,
+  UserDialogProps,
+  UserFormData,
+  UserRole,
+} from "@/types/adminUser.ts";
+import { UserFormFields } from "./user/UserFormFields.tsx";
+import { validateUserForm } from "./user/UserFormValidation.ts";
+import { handleUserSubmit } from "./user/UserFormSubmitHandler.ts";
+import { Alert, AlertDescription } from "@/components/ui/alert.tsx";
 
-export const UserDialog = ({ selectedUser, teachers, onSuccess }: UserDialogProps) => {
+export const UserDialog = (
+  { selectedUser, teachers, onSuccess }: UserDialogProps,
+) => {
   const { toast } = useToast();
   const [isProcessing, setIsProcessing] = useState(false);
   const [errors, setErrors] = useState<FormErrors>({});
-  
+
   const [formData, setFormData] = useState<UserFormData>({
     email: "",
     username: "",
     password: "",
     teacherId: null,
-    role: "teacher" // Default to teacher role
+    role: "teacher", // Default to teacher role
   });
 
   useEffect(() => {
@@ -36,7 +42,7 @@ export const UserDialog = ({ selectedUser, teachers, onSuccess }: UserDialogProp
         username: selectedUser.username || "",
         password: "", // Don't populate password for security reasons
         teacherId: selectedUser.teacherId || null,
-        role: selectedUser.role || "teacher"
+        role: selectedUser.role || "teacher",
       });
     } else {
       setFormData({
@@ -44,7 +50,7 @@ export const UserDialog = ({ selectedUser, teachers, onSuccess }: UserDialogProp
         username: "",
         password: "",
         teacherId: null,
-        role: "teacher" // Default to teacher role
+        role: "teacher", // Default to teacher role
       });
     }
     setErrors({});
@@ -52,10 +58,10 @@ export const UserDialog = ({ selectedUser, teachers, onSuccess }: UserDialogProp
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-    
+    setFormData((prev) => ({ ...prev, [name]: value }));
+
     if (errors[name]) {
-      setErrors(prev => {
+      setErrors((prev) => {
         const newErrors = { ...prev };
         delete newErrors[name];
         return newErrors;
@@ -64,17 +70,20 @@ export const UserDialog = ({ selectedUser, teachers, onSuccess }: UserDialogProp
   };
 
   const handleTeacherChange = (value: string) => {
-    setFormData(prev => ({ ...prev, teacherId: value === "none" ? null : value }));
+    setFormData((prev) => ({
+      ...prev,
+      teacherId: value === "none" ? null : value,
+    }));
   };
 
   const handleRoleChange = (value: string) => {
     // Ensure the value is cast to UserRole type
-    setFormData(prev => ({ ...prev, role: value as UserRole }));
+    setFormData((prev) => ({ ...prev, role: value as UserRole }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     const validationErrors = validateUserForm(formData, !!selectedUser);
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
@@ -85,28 +94,28 @@ export const UserDialog = ({ selectedUser, teachers, onSuccess }: UserDialogProp
       });
       return;
     }
-    
+
     setIsProcessing(true);
 
     try {
       const message = await handleUserSubmit(
-        formData, 
-        selectedUser?.id, 
+        formData,
+        selectedUser?.id,
         onSuccess,
-        (errorMsg) => {
+        (errorMsg: string) => {
           toast({
             title: selectedUser ? "Error updating user" : "Error creating user",
             description: errorMsg,
             variant: "destructive",
           });
-        }
+        },
       );
-      
+
       toast({
         title: "Success",
         description: message,
       });
-    } catch (error) {
+    } catch (_error) {
       // Error is handled in handleUserSubmit
     } finally {
       setIsProcessing(false);
@@ -120,21 +129,22 @@ export const UserDialog = ({ selectedUser, teachers, onSuccess }: UserDialogProp
           {selectedUser ? "Edit User" : "Add New User"}
         </DialogTitle>
         <DialogDescription>
-          {selectedUser 
-            ? "Update the user's information and credentials." 
+          {selectedUser
+            ? "Update the user's information and credentials."
             : "Create a new user account with access to the system."}
         </DialogDescription>
       </DialogHeader>
-      
+
       {selectedUser && (
         <Alert variant="destructive" className="mb-4">
           <AlertCircle className="h-4 w-4" />
           <AlertDescription>
-            Editing existing users requires admin privileges and is currently disabled.
+            Editing existing users requires admin privileges and is currently
+            disabled.
           </AlertDescription>
         </Alert>
       )}
-      
+
       <form onSubmit={handleSubmit} className="space-y-4">
         <UserFormFields
           formData={formData}
@@ -145,21 +155,23 @@ export const UserDialog = ({ selectedUser, teachers, onSuccess }: UserDialogProp
           handleTeacherChange={handleTeacherChange}
           handleRoleChange={handleRoleChange}
         />
-        
+
         <DialogFooter>
           <Button
             type="submit"
             disabled={isProcessing || !!selectedUser}
             className="w-full sm:w-auto"
           >
-            {isProcessing ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                {selectedUser ? "Updating..." : "Creating..."}
-              </>
-            ) : (
-              selectedUser ? "Update User" : "Create User"
-            )}
+            {isProcessing
+              ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  {selectedUser ? "Updating..." : "Creating..."}
+                </>
+              )
+              : (
+                selectedUser ? "Update User" : "Create User"
+              )}
           </Button>
         </DialogFooter>
       </form>

@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/components/ui/use-toast";
+import { supabase } from "@/integrations/supabase/client.ts";
+import { useToast } from "@/hooks/use-toast.ts";
 
 interface UpdateCompletedJuzArgs {
   studentId: string;
@@ -12,23 +12,29 @@ export function useUpdateStudentCompletedJuz() {
   const { toast } = useToast();
 
   return useMutation({
-    mutationFn: async ({ studentId, newlyCompletedJuz }: UpdateCompletedJuzArgs) => {
+    mutationFn: async (
+      { studentId, newlyCompletedJuz }: UpdateCompletedJuzArgs,
+    ) => {
       // 1. Fetch the ID and current completed_juz array of the most recent progress entry
       const { data: latestProgressEntry, error: fetchError } = await supabase
-        .from('progress')
-        .select('id, completed_juz')
-        .eq('student_id', studentId)
-        .order('date', { ascending: false })
+        .from("progress")
+        .select("id, completed_juz")
+        .eq("student_id", studentId)
+        .order("date", { ascending: false })
         .limit(1)
         .maybeSingle();
 
       if (fetchError) {
-        console.error('Error fetching latest progress entry:', fetchError);
-        throw new Error('Failed to fetch latest progress entry: ' + fetchError.message);
+        console.error("Error fetching latest progress entry:", fetchError);
+        throw new Error(
+          "Failed to fetch latest progress entry: " + fetchError.message,
+        );
       }
 
       if (!latestProgressEntry) {
-        console.warn('No progress entry found for student to update completed_juz.');
+        console.warn(
+          "No progress entry found for student to update completed_juz.",
+        );
         // Depending on requirements, we might want to create one or handle this differently
         // For now, we'll just return, as there's no record to update.
         // Or, if the `progress` table might not have any entries yet, but `students` table has `completed_juz`
@@ -37,24 +43,30 @@ export function useUpdateStudentCompletedJuz() {
         return { message: "No progress entry to update." };
       }
 
-      const currentCompletedJuz = (latestProgressEntry.completed_juz || []) as number[];
-      
+      const currentCompletedJuz =
+        (latestProgressEntry.completed_juz || []) as number[];
+
       if (currentCompletedJuz.includes(newlyCompletedJuz)) {
         console.log(`Juz ${newlyCompletedJuz} already in completed_juz array.`);
-        return { message: `Juz ${newlyCompletedJuz} already marked as completed.` };
+        return {
+          message: `Juz ${newlyCompletedJuz} already marked as completed.`,
+        };
       }
 
-      const updatedCompletedJuz = [...currentCompletedJuz, newlyCompletedJuz].sort((a,b) => a-b);
+      const updatedCompletedJuz = [...currentCompletedJuz, newlyCompletedJuz]
+        .sort((a, b) => a - b);
 
       // 2. Update the most recent progress entry with the new array
       const { error: updateError } = await supabase
-        .from('progress')
-        .update({ completed_juz: updatedCompletedJuz as any })
-        .eq('id', latestProgressEntry.id);
+        .from("progress")
+        .update({ completed_juz: updatedCompletedJuz })
+        .eq("id", latestProgressEntry.id);
 
       if (updateError) {
-        console.error('Error updating completed_juz:', updateError);
-        throw new Error('Failed to update completed_juz: ' + updateError.message);
+        console.error("Error updating completed_juz:", updateError);
+        throw new Error(
+          "Failed to update completed_juz: " + updateError.message,
+        );
       }
 
       // Return a success message or potentially the updated array if needed elsewhere
@@ -63,10 +75,13 @@ export function useUpdateStudentCompletedJuz() {
     onSuccess: (data, variables) => {
       toast({
         title: "Juz Completion Updated",
-        description: data.message || `Juz ${variables.newlyCompletedJuz} marked as completed.`,
+        description: data.message ||
+          `Juz ${variables.newlyCompletedJuz} marked as completed.`,
       });
       // Invalidate queries that depend on student's overall progress or completed Juz list
-      queryClient.invalidateQueries({ queryKey: ['student-juz-progress', variables.studentId] });
+      queryClient.invalidateQueries({
+        queryKey: ["student-juz-progress", variables.studentId],
+      });
       // If you have other queries that show completed_juz list from student summary, invalidate them too.
       // e.g., queryClient.invalidateQueries({ queryKey: ['student-summary', variables.studentId] });
     },
@@ -78,4 +93,4 @@ export function useUpdateStudentCompletedJuz() {
       });
     },
   });
-} 
+}

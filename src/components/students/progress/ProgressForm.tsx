@@ -1,4 +1,3 @@
-
 import { useForm } from "react-hook-form";
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -11,12 +10,12 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { 
+import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue 
+  SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { ProgressFormData } from "./types";
@@ -27,7 +26,9 @@ interface ProgressFormProps {
   defaultValues?: Partial<ProgressFormData>;
 }
 
-export const ProgressForm = ({ onSubmit, isProcessing, defaultValues }: ProgressFormProps) => {
+export const ProgressForm = (
+  { onSubmit, isProcessing, defaultValues }: ProgressFormProps,
+) => {
   const form = useForm<ProgressFormData>({
     defaultValues: {
       current_surah: 1,
@@ -35,9 +36,9 @@ export const ProgressForm = ({ onSubmit, isProcessing, defaultValues }: Progress
       start_ayat: 1,
       end_ayat: 7,
       verses_memorized: 7,
-      memorization_quality: 'average',
-      notes: '',
-      ...defaultValues
+      memorization_quality: "average",
+      notes: "",
+      ...defaultValues,
     },
   });
 
@@ -46,12 +47,12 @@ export const ProgressForm = ({ onSubmit, isProcessing, defaultValues }: Progress
   };
 
   // Watch values to avoid controlled/uncontrolled component warnings
-  const currentSurah = form.watch('current_surah');
-  const currentJuz = form.watch('current_juz');
-  const startAyat = form.watch('start_ayat');
-  const endAyat = form.watch('end_ayat');
-  const versesMemorized = form.watch('verses_memorized');
-  const memorizationQuality = form.watch('memorization_quality');
+  const currentSurah = form.watch("current_surah");
+  const currentJuz = form.watch("current_juz");
+  const startAyat = form.watch("start_ayat");
+  const endAyat = form.watch("end_ayat");
+  const versesMemorized = form.watch("verses_memorized");
+  const memorizationQuality = form.watch("memorization_quality");
 
   return (
     <Form {...form}>
@@ -64,11 +65,14 @@ export const ProgressForm = ({ onSubmit, isProcessing, defaultValues }: Progress
               <FormItem>
                 <FormLabel>Current Surah</FormLabel>
                 <FormControl>
-                  <Input 
-                    type="number" 
+                  <Input
+                    type="number"
                     {...field}
-                    value={field.value !== undefined ? field.value : currentSurah}
-                    onChange={e => field.onChange(parseInt(e.target.value) || 1)} 
+                    value={field.value !== undefined
+                      ? field.value
+                      : currentSurah}
+                    onChange={(e) =>
+                      field.onChange(parseInt(e.target.value) || 1)}
                   />
                 </FormControl>
                 <FormMessage />
@@ -82,11 +86,12 @@ export const ProgressForm = ({ onSubmit, isProcessing, defaultValues }: Progress
               <FormItem>
                 <FormLabel>Current Juz</FormLabel>
                 <FormControl>
-                  <Input 
-                    type="number" 
+                  <Input
+                    type="number"
                     {...field}
                     value={field.value !== undefined ? field.value : currentJuz}
-                    onChange={e => field.onChange(parseInt(e.target.value) || 1)} 
+                    onChange={(e) =>
+                      field.onChange(parseInt(e.target.value) || 1)}
                   />
                 </FormControl>
                 <FormMessage />
@@ -102,11 +107,12 @@ export const ProgressForm = ({ onSubmit, isProcessing, defaultValues }: Progress
               <FormItem>
                 <FormLabel>Start Verse</FormLabel>
                 <FormControl>
-                  <Input 
-                    type="number" 
+                  <Input
+                    type="number"
                     {...field}
                     value={field.value !== undefined ? field.value : startAyat}
-                    onChange={e => field.onChange(parseInt(e.target.value) || 1)} 
+                    onChange={(e) =>
+                      field.onChange(parseInt(e.target.value) || 1)}
                   />
                 </FormControl>
                 <FormMessage />
@@ -120,11 +126,12 @@ export const ProgressForm = ({ onSubmit, isProcessing, defaultValues }: Progress
               <FormItem>
                 <FormLabel>End Verse</FormLabel>
                 <FormControl>
-                  <Input 
-                    type="number" 
+                  <Input
+                    type="number"
                     {...field}
                     value={field.value !== undefined ? field.value : endAyat}
-                    onChange={e => field.onChange(parseInt(e.target.value) || 1)} 
+                    onChange={(e) =>
+                      field.onChange(parseInt(e.target.value) || 1)}
                   />
                 </FormControl>
                 <FormMessage />
@@ -139,11 +146,14 @@ export const ProgressForm = ({ onSubmit, isProcessing, defaultValues }: Progress
             <FormItem>
               <FormLabel>Verses Memorized</FormLabel>
               <FormControl>
-                <Input 
-                  type="number" 
+                <Input
+                  type="number"
                   {...field}
-                  value={field.value !== undefined ? field.value : versesMemorized}
-                  onChange={e => field.onChange(parseInt(e.target.value) || 0)} 
+                  value={field.value !== undefined
+                    ? field.value
+                    : versesMemorized}
+                  onChange={(e) =>
+                    field.onChange(parseInt(e.target.value) || 0)}
                 />
               </FormControl>
               <FormMessage />
@@ -156,8 +166,8 @@ export const ProgressForm = ({ onSubmit, isProcessing, defaultValues }: Progress
           render={({ field }) => (
             <FormItem>
               <FormLabel>Memorization Quality</FormLabel>
-              <Select 
-                onValueChange={field.onChange} 
+              <Select
+                onValueChange={field.onChange}
                 defaultValue={field.value}
                 value={field.value || memorizationQuality}
               >
@@ -171,7 +181,9 @@ export const ProgressForm = ({ onSubmit, isProcessing, defaultValues }: Progress
                   <SelectItem value="good">Good</SelectItem>
                   <SelectItem value="average">Average</SelectItem>
                   <SelectItem value="needsWork">Needs Work</SelectItem>
-                  <SelectItem value="horrible">Needs Significant Improvement</SelectItem>
+                  <SelectItem value="horrible">
+                    Needs Significant Improvement
+                  </SelectItem>
                 </SelectContent>
               </Select>
               <FormMessage />
@@ -185,10 +197,10 @@ export const ProgressForm = ({ onSubmit, isProcessing, defaultValues }: Progress
             <FormItem>
               <FormLabel>Notes</FormLabel>
               <FormControl>
-                <Textarea 
-                  placeholder="Add any additional notes or observations" 
-                  className="resize-none" 
-                  {...field} 
+                <Textarea
+                  placeholder="Add any additional notes or observations"
+                  className="resize-none"
+                  {...field}
                 />
               </FormControl>
               <FormMessage />
@@ -197,14 +209,16 @@ export const ProgressForm = ({ onSubmit, isProcessing, defaultValues }: Progress
         />
         <div className="flex justify-end">
           <Button type="submit" disabled={isProcessing}>
-            {isProcessing ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Saving...
-              </>
-            ) : (
-              "Save Progress"
-            )}
+            {isProcessing
+              ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Saving...
+                </>
+              )
+              : (
+                "Save Progress"
+              )}
           </Button>
         </div>
       </form>

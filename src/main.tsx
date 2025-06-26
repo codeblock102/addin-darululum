@@ -1,7 +1,7 @@
 /**
  * @file src/main.tsx
  * @summary This is the main entry point for the React application.
- * 
+ *
  * It sets up the root of the React application by:
  * 1. Importing the main `App` component.
  * 2. Importing global styles from `index.css`.
@@ -10,12 +10,11 @@
  *    - `AuthProvider`: For managing authentication state and user information across the application.
  * 4. Rendering the root component into the DOM element with the ID "root" (typically in `index.html`).
  */
-
-import { createRoot } from 'react-dom/client'
-import App from './App.tsx'
-import './index.css'
-import { AuthProvider } from "@/contexts/AuthContext"
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
+import { createRoot } from "react-dom/client";
+import App from "./App.tsx";
+import "./index.css";
+import { AuthProvider } from "@/contexts/AuthContext.tsx";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 const queryClient = new QueryClient();
 
@@ -24,5 +23,5 @@ createRoot(document.getElementById("root")!).render(
     <AuthProvider>
       <App />
     </AuthProvider>
-  </QueryClientProvider>
+  </QueryClientProvider>,
 );

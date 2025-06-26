@@ -1,9 +1,8 @@
-
-import { StatusBadge } from "@/components/ui/status-badge";
-import { StatusType } from "@/components/ui/status-badge";
+import { StatusBadge } from "@/components/ui/status-badge.tsx";
+import { StatusType } from "@/components/ui/status-badge.tsx";
 
 interface AttendanceStatusBadgeProps {
-  status: string;
+  status: StatusType;
 }
 
 export function AttendanceStatusBadge({ status }: AttendanceStatusBadgeProps) {

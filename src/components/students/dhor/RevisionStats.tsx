@@ -1,4 +1,3 @@
-
 import { Card, CardContent } from "@/components/ui/card";
 
 export interface RevisionStatsProps {
@@ -16,7 +15,7 @@ export const RevisionStats = ({
   goodRevisions,
   averageRevisions,
   needsWorkRevisions,
-  horribleRevisions
+  horribleRevisions,
 }: RevisionStatsProps) => {
   return (
     <Card>
@@ -28,23 +27,33 @@ export const RevisionStats = ({
             <div className="text-sm text-muted-foreground">Total</div>
           </div>
           <div className="bg-green-100 p-4 rounded-md text-center">
-            <div className="text-2xl font-bold text-green-700">{excellentRevisions}</div>
+            <div className="text-2xl font-bold text-green-700">
+              {excellentRevisions}
+            </div>
             <div className="text-sm text-green-700">Excellent</div>
           </div>
           <div className="bg-blue-100 p-4 rounded-md text-center">
-            <div className="text-2xl font-bold text-blue-700">{goodRevisions}</div>
+            <div className="text-2xl font-bold text-blue-700">
+              {goodRevisions}
+            </div>
             <div className="text-sm text-blue-700">Good</div>
           </div>
           <div className="bg-yellow-100 p-4 rounded-md text-center">
-            <div className="text-2xl font-bold text-yellow-700">{averageRevisions}</div>
+            <div className="text-2xl font-bold text-yellow-700">
+              {averageRevisions}
+            </div>
             <div className="text-sm text-yellow-700">Average</div>
           </div>
           <div className="bg-orange-100 p-4 rounded-md text-center">
-            <div className="text-2xl font-bold text-orange-700">{needsWorkRevisions}</div>
+            <div className="text-2xl font-bold text-orange-700">
+              {needsWorkRevisions}
+            </div>
             <div className="text-sm text-orange-700">Needs Work</div>
           </div>
           <div className="bg-red-100 p-4 rounded-md text-center">
-            <div className="text-2xl font-bold text-red-700">{horribleRevisions}</div>
+            <div className="text-2xl font-bold text-red-700">
+              {horribleRevisions}
+            </div>
             <div className="text-sm text-red-700">Incomplete</div>
           </div>
         </div>
