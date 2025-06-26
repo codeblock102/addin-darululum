@@ -1,18 +1,22 @@
-
-import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { AppearanceSettings } from "@/types/settings";
+import { Label } from "@/components/ui/label.tsx";
+import { Switch } from "@/components/ui/switch.tsx";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group.tsx";
+import { AppearanceSettings } from "@/types/settings.ts";
 import { Palette, PanelRightClose, ScanLine, Sparkles } from "lucide-react";
-import { SettingsCard } from "./SettingsCard";
+import { SettingsCard } from "./SettingsCard.tsx";
 
 interface AppearanceSettingsSectionProps {
   settings: AppearanceSettings;
   onUpdate: (settings: AppearanceSettings) => void;
 }
 
-export function AppearanceSettingsSection({ settings, onUpdate }: AppearanceSettingsSectionProps) {
-  const handleChange = (key: keyof AppearanceSettings, value: any) => {
+export function AppearanceSettingsSection(
+  { settings, onUpdate }: AppearanceSettingsSectionProps,
+) {
+  const handleChange = <K extends keyof AppearanceSettings>(
+    key: K,
+    value: AppearanceSettings[K],
+  ) => {
     onUpdate({ ...settings, [key]: value });
   };
 
@@ -27,7 +31,8 @@ export function AppearanceSettingsSection({ settings, onUpdate }: AppearanceSett
           <Label className="font-medium">Theme</Label>
           <RadioGroup
             value={settings.theme}
-            onValueChange={(value) => handleChange('theme', value)}
+            onValueChange={(value) =>
+              handleChange("theme", value as AppearanceSettings["theme"])}
             className="flex flex-col space-y-1"
           >
             <div className="flex items-center space-x-2">
@@ -44,7 +49,7 @@ export function AppearanceSettingsSection({ settings, onUpdate }: AppearanceSett
             </div>
           </RadioGroup>
         </div>
-        
+
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
@@ -54,10 +59,11 @@ export function AppearanceSettingsSection({ settings, onUpdate }: AppearanceSett
             <Switch
               id="sidebar-compact"
               checked={settings.sidebarCompact}
-              onCheckedChange={(checked) => handleChange('sidebarCompact', checked)}
+              onCheckedChange={(checked) =>
+                handleChange("sidebarCompact", checked)}
             />
           </div>
-          
+
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
               <ScanLine className="h-4 w-4 text-muted-foreground" />
@@ -66,10 +72,11 @@ export function AppearanceSettingsSection({ settings, onUpdate }: AppearanceSett
             <Switch
               id="high-contrast"
               checked={settings.highContrastMode}
-              onCheckedChange={(checked) => handleChange('highContrastMode', checked)}
+              onCheckedChange={(checked) =>
+                handleChange("highContrastMode", checked)}
             />
           </div>
-          
+
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
               <Sparkles className="h-4 w-4 text-muted-foreground" />
@@ -78,7 +85,8 @@ export function AppearanceSettingsSection({ settings, onUpdate }: AppearanceSett
             <Switch
               id="animations"
               checked={settings.animationsEnabled}
-              onCheckedChange={(checked) => handleChange('animationsEnabled', checked)}
+              onCheckedChange={(checked) =>
+                handleChange("animationsEnabled", checked)}
             />
           </div>
         </div>

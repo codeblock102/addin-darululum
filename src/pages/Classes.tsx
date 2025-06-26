@@ -1,20 +1,23 @@
-
-import { useState } from "react";
-import { DashboardLayout } from "@/components/layouts/DashboardLayout";
-import { ClassDialog } from "@/components/classes/ClassDialog";
-import { ClassList } from "@/components/classes/ClassList";
-import { Button } from "@/components/ui/button";
-import { Dialog, DialogTrigger } from "@/components/ui/dialog";
-import { SearchInput } from "@/components/table/SearchInput";
+import { Fragment, useState } from "react";
+import { ClassDialog } from "@/components/classes/ClassDialog.tsx";
+import { ClassList } from "@/components/classes/ClassList.tsx";
+import { Button } from "@/components/ui/button.tsx";
+import { Dialog, DialogTrigger } from "@/components/ui/dialog.tsx";
+import { SearchInput } from "@/components/table/SearchInput.tsx";
 import { Plus } from "lucide-react";
-import { AdminHeader } from "@/components/admin/AdminHeader";
+import { AdminHeader } from "@/components/admin/AdminHeader.tsx";
+import { ClassFormData } from "@/components/classes/validation/classFormSchema.ts";
 
 export default function Classes() {
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedClass, setSelectedClass] = useState<any>(null);
+  const [selectedClass, setSelectedClass] = useState<
+    (Partial<ClassFormData> & { id: string }) | null
+  >(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-  const handleOpenDialog = (classItem?: any) => {
+  const handleOpenDialog = (
+    classItem?: Partial<ClassFormData> & { id: string },
+  ) => {
     setSelectedClass(classItem || null);
     setIsDialogOpen(true);
   };
@@ -25,17 +28,17 @@ export default function Classes() {
   };
 
   return (
-    <DashboardLayout>
+    <Fragment>
       <div className="space-y-6">
         <AdminHeader
           title="Class Management"
           description="Create and manage class schedules and assignments"
         />
-        
+
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <div className="flex justify-end mb-4">
             <DialogTrigger asChild>
-              <Button 
+              <Button
                 className="bg-amber-500 hover:bg-amber-600 text-black"
                 onClick={() => handleOpenDialog()}
               >
@@ -44,7 +47,7 @@ export default function Classes() {
               </Button>
             </DialogTrigger>
           </div>
-          <ClassDialog 
+          <ClassDialog
             selectedClass={selectedClass}
             onClose={handleCloseDialog}
           />
@@ -57,12 +60,12 @@ export default function Classes() {
             onChange={setSearchQuery}
             className="border-gray-700/30 bg-white/5"
           />
-          <ClassList 
+          <ClassList
             searchQuery={searchQuery}
             onEdit={handleOpenDialog}
           />
         </div>
       </div>
-    </DashboardLayout>
+    </Fragment>
   );
 }

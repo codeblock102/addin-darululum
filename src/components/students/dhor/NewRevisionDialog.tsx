@@ -1,13 +1,24 @@
 import { useState } from "react";
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/components/ui/use-toast";
-import { RevisionFormData } from "../progress/types";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog.tsx";
+import { Button } from "@/components/ui/button.tsx";
+import { Label } from "@/components/ui/label.tsx";
+import { Input } from "@/components/ui/input.tsx";
+import { Textarea } from "@/components/ui/textarea.tsx";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select.tsx";
+import { supabase } from "@/integrations/supabase/client.ts";
+import { useToast } from "@/hooks/use-toast.ts";
 
 interface NewRevisionDialogProps {
   open: boolean;
@@ -25,14 +36,12 @@ export const NewRevisionDialog = ({
   onSuccess,
 }: NewRevisionDialogProps) => {
   const [juzNumber, setJuzNumber] = useState<number | undefined>();
-  const [surahNumber, setSurahNumber] = useState<number | undefined>();
   const [quartersRevised, setQuartersRevised] = useState<
     "1st_quarter" | "2_quarters" | "3_quarters" | "4_quarters" | undefined
   >();
   const [memorizationQuality, setMemorizationQuality] = useState<
     "excellent" | "good" | "average" | "needsWork" | "horrible" | undefined
   >();
-  const [status, setStatus] = useState<"completed" | "pending" | "needs_improvement">("completed");
   const [teacherNotes, setTeacherNotes] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
@@ -40,10 +49,8 @@ export const NewRevisionDialog = ({
 
   const resetForm = () => {
     setJuzNumber(undefined);
-    setSurahNumber(undefined);
     setQuartersRevised(undefined);
     setMemorizationQuality(undefined);
-    setStatus("completed");
     setTeacherNotes("");
   };
 
@@ -91,7 +98,7 @@ export const NewRevisionDialog = ({
     setIsLoading(true);
     try {
       // First record the revision in juz_revisions
-      const { data: juzRevisionData, error: juzRevisionError } = await supabase
+      const { error: juzRevisionError } = await supabase
         .from("juz_revisions")
         .insert({
           student_id: studentId,
@@ -106,88 +113,27 @@ export const NewRevisionDialog = ({
 
       if (juzRevisionError) throw juzRevisionError;
 
-      // Create a fully valid RevisionFormData object to satisfy TypeScript
-      const formData: RevisionFormData = {
-        juz_number: juzNumber!,
-        surah_number: surahNumber,
-        quarters_revised: quartersRevised!,
-        memorization_quality: memorizationQuality!,
-        teacher_notes: teacherNotes,
-        status: status
-      };
-
-      // Update any related revision schedule items for this juz
-      // await updateRevisionSchedule(studentId, juzNumber!, formData); // Commented out
-
       toast({
         title: "Revision recorded successfully",
-        description: `Revision for Juz ${juzNumber} has been recorded for ${studentName}.`,
+        description:
+          `Revision for Juz ${juzNumber} has been recorded for ${studentName}.`,
       });
 
       resetForm();
       onSuccess();
       onOpenChange(false);
-    } catch (error: any) {
+    } catch (error) {
       console.error("Error recording revision:", error);
       toast({
         variant: "destructive",
         title: "Failed to record revision",
-        description: "There was an error recording the revision. Please try again.",
+        description:
+          "There was an error recording the revision. Please try again.",
       });
     } finally {
       setIsLoading(false);
     }
   };
-
-  /* // Commented out updateRevisionSchedule function
-  const updateRevisionSchedule = async (
-    studentId: string,
-    juzNumber: number,
-    formData: RevisionFormData
-  ) => {
-    // Find any scheduled revisions for this juz and update them
-    const { data: scheduledRevisions, error: fetchError } = await supabase
-      .from("revision_schedule")
-      .select("*")
-      .eq("student_id", studentId)
-      .eq("juz_number", juzNumber)
-      .eq("status", "pending");
-
-    if (fetchError) {
-      console.error("Error fetching scheduled revisions:", fetchError);
-      return;
-    }
-
-    if (scheduledRevisions && scheduledRevisions.length > 0) {
-      // Update the most recent scheduled revision to completed
-      await supabase
-        .from("revision_schedule")
-        .update({
-          status: "completed",
-        })
-        .eq("id", scheduledRevisions[0].id);
-    }
-
-    // If the revision quality is not good, schedule a follow-up revision
-    if (
-      formData.memorization_quality === "needsWork" ||
-      formData.memorization_quality === "horrible" ||
-      formData.status === "needs_improvement"
-    ) {
-      const nextRevisionDate = new Date();
-      nextRevisionDate.setDate(nextRevisionDate.getDate() + 2); // Schedule 2 days later
-
-      await supabase.from("revision_schedule").insert({
-        student_id: studentId,
-        juz_number: juzNumber,
-        surah_number: formData.surah_number,
-        scheduled_date: nextRevisionDate.toISOString().split("T")[0],
-        priority: "high",
-        status: "pending",
-      });
-    }
-  };
-  */ // Commented out updateRevisionSchedule function end
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
@@ -205,7 +151,8 @@ export const NewRevisionDialog = ({
                 min={1}
                 max={30}
                 value={juzNumber || ""}
-                onChange={(e) => setJuzNumber(parseInt(e.target.value) || undefined)}
+                onChange={(e) =>
+                  setJuzNumber(parseInt(e.target.value) || undefined)}
               />
             </div>
             <div>
@@ -215,8 +162,8 @@ export const NewRevisionDialog = ({
                 type="number"
                 min={1}
                 max={114}
-                value={surahNumber || ""}
-                onChange={(e) => setSurahNumber(parseInt(e.target.value) || undefined)}
+                value=""
+                onChange={() => {}}
               />
             </div>
           </div>
@@ -226,9 +173,12 @@ export const NewRevisionDialog = ({
               value={quartersRevised}
               onValueChange={(value) =>
                 setQuartersRevised(
-                  value as "1st_quarter" | "2_quarters" | "3_quarters" | "4_quarters"
-                )
-              }
+                  value as
+                    | "1st_quarter"
+                    | "2_quarters"
+                    | "3_quarters"
+                    | "4_quarters",
+                )}
             >
               <SelectTrigger id="quarters_revised">
                 <SelectValue placeholder="Select portion revised" />
@@ -247,9 +197,13 @@ export const NewRevisionDialog = ({
               value={memorizationQuality}
               onValueChange={(value) =>
                 setMemorizationQuality(
-                  value as "excellent" | "good" | "average" | "needsWork" | "horrible"
-                )
-              }
+                  value as
+                    | "excellent"
+                    | "good"
+                    | "average"
+                    | "needsWork"
+                    | "horrible",
+                )}
             >
               <SelectTrigger id="memorization_quality">
                 <SelectValue placeholder="Select quality" />
@@ -259,20 +213,9 @@ export const NewRevisionDialog = ({
                 <SelectItem value="good">Good</SelectItem>
                 <SelectItem value="average">Average</SelectItem>
                 <SelectItem value="needsWork">Needs Work</SelectItem>
-                <SelectItem value="horrible">Needs Significant Improvement</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <div>
-            <Label htmlFor="status">Status</Label>
-            <Select value={status} onValueChange={(value) => setStatus(value as any)}>
-              <SelectTrigger id="status">
-                <SelectValue placeholder="Select status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="completed">Completed</SelectItem>
-                <SelectItem value="pending">Pending</SelectItem>
-                <SelectItem value="needs_improvement">Needs Improvement</SelectItem>
+                <SelectItem value="horrible">
+                  Needs Significant Improvement
+                </SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -288,7 +231,11 @@ export const NewRevisionDialog = ({
           </div>
         </div>
         <DialogFooter>
-          <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => onOpenChange(false)}
+          >
             Cancel
           </Button>
           <Button type="submit" onClick={handleSubmit} disabled={isLoading}>

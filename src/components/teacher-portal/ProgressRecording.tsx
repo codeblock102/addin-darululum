@@ -1,16 +1,32 @@
-
-import { useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client.ts";
+import { useToast } from "@/hooks/use-toast.ts";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card.tsx";
+import { Button } from "@/components/ui/button.tsx";
+import { Input } from "@/components/ui/input.tsx";
+import { Textarea } from "@/components/ui/textarea.tsx";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select.tsx";
+import {
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form.tsx";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm, FormProvider } from "react-hook-form";
+import { FormProvider, useForm } from "react-hook-form";
 import * as z from "zod";
 import { Loader2, Save } from "lucide-react";
 
@@ -19,54 +35,63 @@ interface ProgressRecordingProps {
 }
 
 export const ProgressRecording = ({
-  teacherId
+  teacherId,
 }: ProgressRecordingProps) => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
   // Fetch teacher details for contributor info
   const { data: teacherData } = useQuery({
-    queryKey: ['teacher-details', teacherId],
+    queryKey: ["profile-details", teacherId],
     queryFn: async () => {
-      const { data, error } = await supabase.from('teachers').select('id, name').eq('id', teacherId).single();
+      const { data, error } = await supabase.from("profiles").select("id, name")
+
+        .eq("id", teacherId).single();
       if (error) {
-        console.error('Error fetching teacher details:', error);
+        console.error("Error fetching teacher details:", error);
         return null;
       }
       return data;
-    }
+    },
   });
 
   // Fetch all students from shared database
   const {
     data: students,
-    isLoading: studentsLoading
+    isLoading: studentsLoading,
   } = useQuery({
-    queryKey: ['all-students-for-progress'],
+    queryKey: ["all-students-for-progress"],
     queryFn: async () => {
-      const { data, error } = await supabase.from('students').select('id, name').eq('status', 'active').order('name', {
-        ascending: true
-      });
+      const { data, error } = await supabase.from("students").select("id, name")
+        .eq("status", "active").order("name", {
+          ascending: true,
+        });
       if (error) {
-        console.error('Error fetching students:', error);
+        console.error("Error fetching students:", error);
         return [];
       }
       return data;
-    }
+    },
   });
 
   // Progress entry form schema
   const formSchema = z.object({
     student_id: z.string({
-      required_error: "Please select a student"
+      required_error: "Please select a student",
     }),
     current_surah: z.coerce.number().min(1).max(114),
     current_juz: z.coerce.number().min(1).max(30),
     start_ayat: z.coerce.number().min(1),
     end_ayat: z.coerce.number().min(1),
-    memorization_quality: z.enum(["excellent", "good", "average", "needsWork", "horrible"]),
+    memorization_quality: z.enum([
+      "excellent",
+      "good",
+      "average",
+      "needsWork",
+      "horrible",
+    ]),
     tajweed_level: z.string().min(1, "Tajweed level is required"),
-    notes: z.string().optional()
+    notes: z.string().optional(),
   });
 
   // Form setup
@@ -80,24 +105,26 @@ export const ProgressRecording = ({
       end_ayat: 1,
       memorization_quality: "average",
       tajweed_level: "",
-      notes: ""
-    }
+      notes: "",
+    },
   });
 
   // Handle form submission
   const progressMutation = useMutation({
     mutationFn: async (values: z.infer<typeof formSchema>) => {
       // Create contributor info
-      const contributorInfo = teacherData ? {
-        contributor_id: teacherData.id,
-        contributor_name: `Teacher ${teacherData.name}`
-      } : {
-        contributor_id: teacherId,
-        contributor_name: "Teacher"
-      };
+      const contributorInfo = teacherData
+        ? {
+          contributor_id: teacherData.id,
+          contributor_name: `Teacher ${teacherData.name}`,
+        }
+        : {
+          contributor_id: teacherId,
+          contributor_name: "Teacher",
+        };
 
       // Create progress entry with contributor info
-      const { data, error } = await supabase.from('progress').insert([{
+      const { data, error } = await supabase.from("progress").insert([{
         student_id: values.student_id,
         current_surah: values.current_surah,
         current_juz: values.current_juz,
@@ -106,24 +133,24 @@ export const ProgressRecording = ({
         memorization_quality: values.memorization_quality,
         tajweed_level: values.tajweed_level,
         teacher_notes: values.notes,
-        date: new Date().toISOString().split('T')[0],
+        date: new Date().toISOString().split("T")[0],
         verses_memorized: values.end_ayat - values.start_ayat + 1,
-        ...contributorInfo // Add contributor information
+        ...contributorInfo, // Add contributor information
       }]);
-      
+
       if (error) {
         throw new Error(`Failed to save progress: ${error.message}`);
       }
-      
+
       return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ['teacher-summary', teacherId]
+        queryKey: ["teacher-summary", teacherId],
       });
       toast({
         title: "Progress Recorded",
-        description: "Student progress has been successfully saved."
+        description: "Student progress has been successfully saved.",
       });
       form.reset();
     },
@@ -131,16 +158,17 @@ export const ProgressRecording = ({
       toast({
         title: "Error Saving Progress",
         description: error.message,
-        variant: "destructive"
+        variant: "destructive",
       });
-    }
+    },
   });
-  
+
   function onSubmit(values: z.infer<typeof formSchema>) {
     progressMutation.mutate(values);
   }
-  
-  return <Card>
+
+  return (
+    <Card>
       <CardHeader>
         <CardTitle>Record Student Sabaq Progress</CardTitle>
         <CardDescription>
@@ -156,14 +184,18 @@ export const ProgressRecording = ({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Student</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value} disabled={studentsLoading}>
+                  <Select
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                    disabled={studentsLoading}
+                  >
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Select a student" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {students?.map(student => (
+                      {students?.map((student) => (
                         <SelectItem key={student.id} value={student.id}>
                           {student.name}
                         </SelectItem>
@@ -174,7 +206,7 @@ export const ProgressRecording = ({
                 </FormItem>
               )}
             />
-            
+
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <FormField
                 control={form.control}
@@ -189,7 +221,7 @@ export const ProgressRecording = ({
                   </FormItem>
                 )}
               />
-              
+
               <FormField
                 control={form.control}
                 name="current_juz"
@@ -204,7 +236,7 @@ export const ProgressRecording = ({
                 )}
               />
             </div>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormField
                 control={form.control}
@@ -219,7 +251,7 @@ export const ProgressRecording = ({
                   </FormItem>
                 )}
               />
-              
+
               <FormField
                 control={form.control}
                 name="end_ayat"
@@ -234,7 +266,7 @@ export const ProgressRecording = ({
                 )}
               />
             </div>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormField
                 control={form.control}
@@ -242,7 +274,10 @@ export const ProgressRecording = ({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Memorization Quality</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Select quality" />
@@ -260,7 +295,7 @@ export const ProgressRecording = ({
                   </FormItem>
                 )}
               />
-              
+
               <FormField
                 control={form.control}
                 name="tajweed_level"
@@ -268,14 +303,17 @@ export const ProgressRecording = ({
                   <FormItem>
                     <FormLabel>Tajweed Level</FormLabel>
                     <FormControl>
-                      <Input placeholder="e.g., Excellent, Good, Needs Practice" {...field} />
+                      <Input
+                        placeholder="e.g., Excellent, Good, Needs Practice"
+                        {...field}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
             </div>
-            
+
             <FormField
               control={form.control}
               name="notes"
@@ -283,38 +321,46 @@ export const ProgressRecording = ({
                 <FormItem>
                   <FormLabel>Teacher Notes</FormLabel>
                   <FormControl>
-                    <Textarea 
-                      placeholder="Additional notes about the student's progress, areas for improvement, or specific achievements" 
-                      className="min-h-[120px]" 
-                      {...field} 
+                    <Textarea
+                      placeholder="Additional notes about the student's progress, areas for improvement, or specific achievements"
+                      className="min-h-[120px]"
+                      {...field}
                     />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
-            
-            <Button type="submit" className="w-full" disabled={progressMutation.isPending}>
-              {progressMutation.isPending ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Saving...
-                </>
-              ) : (
-                <>
-                  <Save className="mr-2 h-4 w-4" />
-                  Record Progress
-                </>
-              )}
+
+            <Button
+              type="submit"
+              className="w-full"
+              disabled={progressMutation.isPending}
+            >
+              {progressMutation.isPending
+                ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Saving...
+                  </>
+                )
+                : (
+                  <>
+                    <Save className="mr-2 h-4 w-4" />
+                    Record Progress
+                  </>
+                )}
             </Button>
-            
+
             {teacherData && (
               <p className="text-xs text-center text-muted-foreground mt-2">
-                Entry will be recorded as submitted by Teacher {teacherData.name}
+                Entry will be recorded as submitted by Teacher{" "}
+                {teacherData.name}
               </p>
             )}
           </form>
         </FormProvider>
       </CardContent>
-    </Card>;
+    </Card>
+  );
 };

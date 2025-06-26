@@ -1,5 +1,4 @@
-
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/button.tsx";
 import {
   Dialog,
   DialogContent,
@@ -7,7 +6,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
+} from "@/components/ui/dialog.tsx";
 import {
   Form,
   FormControl,
@@ -15,13 +14,13 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
+} from "@/components/ui/form.tsx";
+import { Input } from "@/components/ui/input.tsx";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { BookOpen } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast.ts";
+import { supabase } from "@/integrations/supabase/client.ts";
 import { useQueryClient } from "@tanstack/react-query";
 
 interface ProgressFormData {
@@ -31,7 +30,12 @@ interface ProgressFormData {
   start_ayat: number;
   end_ayat: number;
   verses_memorized: number;
-  memorization_quality: 'excellent' | 'good' | 'average' | 'needsWork' | 'horrible';
+  memorization_quality:
+    | "excellent"
+    | "good"
+    | "average"
+    | "needsWork"
+    | "horrible";
   notes: string;
 }
 
@@ -39,7 +43,7 @@ export const NewProgressDialog = () => {
   const [open, setOpen] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  
+
   const form = useForm<ProgressFormData>({
     defaultValues: {
       current_surah: 1,
@@ -47,15 +51,15 @@ export const NewProgressDialog = () => {
       start_ayat: 1,
       end_ayat: 1,
       verses_memorized: 0,
-      memorization_quality: 'average',
-      notes: '',
+      memorization_quality: "average",
+      notes: "",
     },
   });
 
   const onSubmit = async (data: ProgressFormData) => {
     try {
       const { error } = await supabase
-        .from('progress')
+        .from("progress")
         .insert([{
           ...data,
           date: new Date().toISOString(),
@@ -68,11 +72,12 @@ export const NewProgressDialog = () => {
         title: "Success",
         description: "Progress entry has been saved",
       });
-      
-      queryClient.invalidateQueries({ queryKey: ['progress'] });
+
+      queryClient.invalidateQueries({ queryKey: ["progress"] });
       setOpen(false);
       form.reset();
     } catch (error) {
+      console.error("Failed to save progress entry:", error);
       toast({
         title: "Error",
         description: "Failed to save progress entry",

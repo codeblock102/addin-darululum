@@ -1,26 +1,26 @@
-
-import { useForm, FormProvider } from "react-hook-form";
+import { FormProvider, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Form } from "@/components/ui/form";
-import { Button } from "@/components/ui/button";
+import { Form } from "@/components/ui/form.tsx";
+import { Button } from "@/components/ui/button.tsx";
 import { Loader2 } from "lucide-react";
-import { classSchema, ClassFormData } from "../validation/classFormSchema";
-import { ClassFormFields } from "./ClassFormFields";
+import { ClassFormData, classSchema } from "../validation/classFormSchema.ts";
+import { ClassFormFields } from "./ClassFormFields.tsx";
+import { Teacher } from "@/types/teacher.ts";
 
 interface ClassFormProps {
-  selectedClass: any;
+  selectedClass: Partial<ClassFormData> | null;
   onSubmit: (data: ClassFormData) => void;
   onCancel: () => void;
   isSubmitting: boolean;
-  teachers?: any[];
+  teachers?: Teacher[];
 }
 
-export const ClassForm = ({ 
-  selectedClass, 
-  onSubmit, 
-  onCancel, 
+export const ClassForm = ({
+  selectedClass,
+  onSubmit,
+  onCancel,
   isSubmitting,
-  teachers 
+  teachers,
 }: ClassFormProps) => {
   const form = useForm<ClassFormData>({
     resolver: zodResolver(classSchema),
@@ -40,7 +40,7 @@ export const ClassForm = ({
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
           <ClassFormFields teachers={teachers} />
-          
+
           <div className="flex justify-end gap-2">
             <Button
               type="button"
@@ -53,14 +53,16 @@ export const ClassForm = ({
               type="submit"
               disabled={isSubmitting}
             >
-              {isSubmitting ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  {selectedClass ? "Updating..." : "Creating..."}
-                </>
-              ) : (
-                selectedClass ? "Update Class" : "Create Class"
-              )}
+              {isSubmitting
+                ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    {selectedClass ? "Updating..." : "Creating..."}
+                  </>
+                )
+                : (
+                  selectedClass ? "Update Class" : "Create Class"
+                )}
             </Button>
           </div>
         </form>

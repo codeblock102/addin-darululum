@@ -1,16 +1,23 @@
 import { Info } from "lucide-react";
 import {
+  CardDescription,
   CardHeader,
   CardTitle,
-  CardDescription
-} from "@/components/ui/card";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+} from "@/components/ui/card.tsx";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip.tsx";
 
 export function AttendanceTableHeader() {
   return (
     <CardHeader className="border-b border-purple-100 dark:border-purple-900/30">
       <div className="flex items-center gap-2">
-        <CardTitle className="text-purple-700 dark:text-purple-300">Student Attendance History</CardTitle>
+        <CardTitle className="text-purple-700 dark:text-purple-300">
+          Student Attendance History
+        </CardTitle>
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>

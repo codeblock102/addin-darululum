@@ -1,20 +1,24 @@
-
 import { useState } from "react";
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Switch } from "@/components/ui/switch";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
-import { DifficultAyah } from "@/types/progress";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog.tsx";
+import { Button } from "@/components/ui/button.tsx";
+import { Input } from "@/components/ui/input.tsx";
+import { Label } from "@/components/ui/label.tsx";
+import { Textarea } from "@/components/ui/textarea.tsx";
+import { Switch } from "@/components/ui/switch.tsx";
+import { supabase } from "@/integrations/supabase/client.ts";
+import { useToast } from "@/hooks/use-toast.ts";
+import { DifficultAyahEntry } from "@/types/dhor-book.ts";
 
 interface EditDifficultAyahDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  difficultAyah: DifficultAyah | null;
-  studentId: string;
+  difficultAyah: DifficultAyahEntry | null;
   onSuccess: () => void;
 }
 
@@ -22,11 +26,12 @@ export const EditDifficultAyahDialog = ({
   open,
   onOpenChange,
   difficultAyah,
-  studentId,
   onSuccess,
 }: EditDifficultAyahDialogProps) => {
   const [notes, setNotes] = useState(difficultAyah?.notes || "");
-  const [isResolved, setIsResolved] = useState(difficultAyah?.status === "resolved");
+  const [isResolved, setIsResolved] = useState(
+    difficultAyah?.status === "resolved",
+  );
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
@@ -49,8 +54,12 @@ export const EditDifficultAyahDialog = ({
         .update({
           notes,
           status: isResolved ? "resolved" : "active",
-          last_revised: isResolved ? new Date().toISOString().split("T")[0] : difficultAyah.last_revised,
-          revision_count: isResolved ? (difficultAyah.revision_count || 0) + 1 : difficultAyah.revision_count,
+          last_revised: isResolved
+            ? new Date().toISOString().split("T")[0]
+            : difficultAyah.last_revised,
+          revision_count: isResolved
+            ? (difficultAyah.revision_count || 0) + 1
+            : difficultAyah.revision_count,
         })
         .eq("id", difficultAyah.id);
 

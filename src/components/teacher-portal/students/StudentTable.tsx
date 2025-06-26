@@ -1,169 +1,170 @@
-import { useNavigate } from "react-router-dom";
-import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
-} from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
-import { User, UserCheck, Trash2 } from "lucide-react";
-import { Student, StudentAssignment } from "../MyStudents";
-import { useIsMobile } from "@/hooks/use-mobile";
-import { MobileTable } from "@/components/mobile/MobileTable";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table.tsx";
+import { Button } from "@/components/ui/button.tsx";
+import { Trash2, UserMinus, UserPlus } from "lucide-react";
+import { Student, StudentAssignment } from "../MyStudents.tsx";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client.ts";
+import { useToast } from "@/hooks/use-toast.ts";
 
 interface StudentTableProps {
   students: Student[];
-  assignedStudents: StudentAssignment[] | undefined;
-  setStudentToDelete: (student: { id: string, name: string, studentId: string } | null) => void;
-  setIsDeleteDialogOpen: (isOpen: boolean) => void;
-  setIsDeleteType: (type: 'remove' | 'delete') => void;
+  assignedStudents?: StudentAssignment[];
+  setStudentToDelete: (
+    student: { id: string; name: string; studentId: string } | null,
+  ) => void;
+  setIsDeleteDialogOpen: (open: boolean) => void;
+  setIsDeleteType: (type: "remove" | "delete") => void;
 }
 
-export const StudentTable = ({ 
-  students, 
-  assignedStudents,
+export const StudentTable = ({
+  students,
+  assignedStudents = [],
   setStudentToDelete,
   setIsDeleteDialogOpen,
-  setIsDeleteType
+  setIsDeleteType,
 }: StudentTableProps) => {
-  const navigate = useNavigate();
-  const isMobile = useIsMobile();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
 
-  // Handle click on "View Progress" button
-  const handleViewProgress = (studentId: string) => {
-    navigate(`/teacher-portal?tab=dhor-book&studentId=${studentId}`);
+  const addStudentMutation = useMutation({
+    mutationFn: async (
+      { teacherId, studentName }: { teacherId: string; studentName: string },
+    ) => {
+      const { error } = await supabase
+        .from("students_teachers")
+        .insert({
+          teacher_id: teacherId,
+          student_name: studentName,
+          active: true,
+        });
+
+      if (error) throw error;
+    },
+    onSuccess: (_, variables) => {
+      toast({
+        title: "Student added",
+        description:
+          `${variables.studentName} has been added to your students.`,
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["teacher-student-assignments"],
+      });
+      queryClient.invalidateQueries({ queryKey: ["teacher-students-details"] });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: `Failed to add student: ${error.message}`,
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleDeleteStudent = (student: Student) => {
+    setStudentToDelete({
+      id: "", // Not needed for complete deletion
+      name: student.name,
+      studentId: student.id,
+    });
+    setIsDeleteType("delete");
+    setIsDeleteDialogOpen(true);
   };
-  
-  // Handle click on delete button
-  const handleDeleteClick = (student: Student, deleteType: 'remove' | 'delete') => {
-    const assignment = assignedStudents?.find(a => a.student_name === student.name);
-    if (assignment) {
-      setStudentToDelete({ id: assignment.id, name: student.name, studentId: student.id });
-      setIsDeleteType(deleteType);
-      setIsDeleteDialogOpen(true);
-    }
-  };
 
-  if (isMobile) {
-    const columns = [
-      { 
-        key: "name",
-        title: "Name",
-        primary: true,
-        render: (value: string) => (
-          <div className="flex items-center">
-            <User className="h-4 w-4 mr-2 text-muted-foreground" />
-            <span>{value}</span>
-          </div>
-        )
-      },
-      { 
-        key: "enrollment_date",
-        title: "Enrollment Date",
-        render: (value: string) => value ? new Date(value).toLocaleDateString() : 'N/A'
-      },
-      { 
-        key: "status",
-        title: "Status",
-        status: true
-      }
-    ];
-
-    // Fix the type issue with actions - create an array of action objects with the correct type
-    const mobileActions = [
-      {
-        label: "View Progress",
-        onClick: (student: Student) => handleViewProgress(student.id),
-        icon: UserCheck as React.ElementType,
-        variant: "outline" as const
-      },
-      {
-        label: "Remove",
-        onClick: (student: Student) => handleDeleteClick(student, 'remove'),
-        icon: User as React.ElementType,
-        variant: "outline" as const
-      },
-      {
-        label: "Delete",
-        onClick: (student: Student) => handleDeleteClick(student, 'delete'),
-        icon: Trash2 as React.ElementType,
-        variant: "outline" as const
-      }
-    ];
-
-    return (
-      <MobileTable
-        columns={columns}
-        data={students}
-        actions={mobileActions}
-      />
+  const isStudentAssigned = (studentName: string) => {
+    return assignedStudents.some((assignment) =>
+      assignment.student_name === studentName
     );
-  }
+  };
 
   return (
-    <div className="overflow-x-auto">
+    <div className="rounded-lg border border-gray-200 overflow-hidden">
       <Table>
         <TableHeader>
-          <TableRow>
-            <TableHead>Student Name</TableHead>
-            <TableHead>Enrollment Date</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead className="text-right">Actions</TableHead>
+          <TableRow className="bg-gray-50">
+            <TableHead className="font-semibold text-gray-700">
+              Student
+            </TableHead>
+            <TableHead className="font-semibold text-gray-700">
+              Enrollment Date
+            </TableHead>
+            <TableHead className="font-semibold text-gray-700">
+              Status
+            </TableHead>
+            <TableHead className="text-right font-semibold text-gray-700">
+              Actions
+            </TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-          {students.map((student) => (
-            <TableRow key={student.id}>
-              <TableCell className="font-medium">
-                <div className="flex items-center">
-                  <User className="h-4 w-4 mr-2 text-muted-foreground" />
-                  {student.name}
-                </div>
-              </TableCell>
-              <TableCell>
-                {student.enrollment_date ? new Date(student.enrollment_date).toLocaleDateString() : 'N/A'}
-              </TableCell>
-              <TableCell>
-                <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                  student.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                }`}>
-                  {student.status || 'N/A'}
-                </span>
-              </TableCell>
-              <TableCell className="text-right">
-                <div className="flex justify-end gap-2">
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={() => handleViewProgress(student.id)}
+          {students.map((student) => {
+            const isAssigned = isStudentAssigned(student.name);
+            return (
+              <TableRow
+                key={student.id}
+                className={`transition-colors hover:bg-gray-50 ${
+                  isAssigned ? "bg-blue-50" : ""
+                }`}
+              >
+                <TableCell>
+                  <div className="flex items-center space-x-3">
+                    <div
+                      className={`h-10 w-10 rounded-full flex items-center justify-center text-white font-semibold ${
+                        isAssigned ? "bg-blue-600" : "bg-gray-400"
+                      }`}
+                    >
+                      {student.name.substring(0, 2).toUpperCase()}
+                    </div>
+                    <div>
+                      <div className="font-medium text-gray-900">
+                        {student.name}
+                      </div>
+                      {isAssigned && (
+                        <div className="text-sm text-blue-600">
+                          Assigned to you
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </TableCell>
+                <TableCell className="text-gray-700">
+                  {student.enrollment_date
+                    ? new Date(student.enrollment_date).toLocaleDateString()
+                    : "—"}
+                </TableCell>
+                <TableCell>
+                  <span
+                    className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                      student.status === "active"
+                        ? "bg-green-100 text-green-800"
+                        : "bg-red-100 text-red-800"
+                    }`}
                   >
-                    <UserCheck className="h-4 w-4 mr-2" />
-                    View Progress
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="text-amber-500 hover:text-amber-600 hover:bg-amber-50 border-amber-200"
-                    onClick={() => handleDeleteClick(student, 'remove')}
-                    title="Remove from your students"
-                  >
-                    <User className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="text-red-500 hover:text-red-600 hover:bg-red-50 border-red-200"
-                    onClick={() => handleDeleteClick(student, 'delete')}
-                    title="Delete student from database"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
-              </TableCell>
-            </TableRow>
-          ))}
+                    {student.status}
+                  </span>
+                </TableCell>
+                <TableCell className="text-right">
+                  <div className="flex justify-end gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleDeleteStudent(student)}
+                      className="text-red-500 hover:text-red-600 hover:bg-red-50"
+                    >
+                      <Trash2 className="h-4 w-4 mr-1" />
+                      Delete
+                    </Button>
+                  </div>
+                </TableCell>
+              </TableRow>
+            );
+          })}
         </TableBody>
       </Table>
     </div>

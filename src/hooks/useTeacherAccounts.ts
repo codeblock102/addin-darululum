@@ -1,128 +1,93 @@
-
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { TeacherAccount } from "@/types/teacher";
-import { useToast } from "@/components/ui/use-toast";
+import { supabase } from "@/integrations/supabase/client.ts";
+import { TeacherAccount } from "@/types/teacher.ts";
+import { useToast } from "@/components/ui/use-toast.ts";
+import { User } from "@supabase/supabase-js";
 
+// This is a simplified query that focuses on getting the core account data
+// It fetches all users and their corresponding profiles, then combines them.
+// This is more robust for the purpose of listing all potential accounts.
 export function useTeacherAccounts() {
   const { toast } = useToast();
 
-  const { data: teachers, isLoading: isLoadingTeachers } = useQuery({
-    queryKey: ['teacher-accounts'],
+  const {
+    data: teachers = [],
+    isLoading: isLoadingTeachers,
+  } = useQuery<TeacherAccount[]>({
+    queryKey: ["teacher-accounts"],
     queryFn: async () => {
-      const { data: teachersData, error } = await supabase
-        .from('teachers')
-        .select(`
-          id, 
-          name, 
-          email, 
-          subject,
-          experience,
-          bio,
-          phone,
-          created_at
-        `);
+      // 1. Fetch all users from Supabase Auth
+      const { data: { users }, error: usersError } = await supabase.auth.admin.listUsers();
+      if (usersError) {
+        toast({ title: "Error fetching users", description: usersError.message, variant: "destructive" });
+        return [];
+      }
+
+      // 2. Fetch all corresponding profiles from the database
+      const userIds = users.map(u => u.id);
+      const { data: profiles, error: profilesError } = await supabase
+        .from("profiles")
+        .select("id, name, email, role, subject, bio, phone")
+        .in("id", userIds);
+
+      if (profilesError) {
+        toast({ title: "Error fetching profiles", description: profilesError.message, variant: "destructive" });
+        return [];
+      }
+      const profileMap = new Map(profiles.map(p => [p.id, p]));
+
+      // 3. Combine the data into the TeacherAccount shape
+      const combinedData: TeacherAccount[] = users.map((user: User) => {
+        const profile = profileMap.get(user.id);
+        const status = (user as any).banned_until && new Date((user as any).banned_until) > new Date() ? "suspended" : "active";
         
-      if (error) {
-        console.error("Error fetching teacher accounts:", error);
-        toast({
-          title: "Error loading teachers",
-          description: "Failed to load teacher accounts data",
-          variant: "destructive"
-        });
-        throw error;
-      }
-      
-      // For each teacher, fetch their user account data
-      const teacherAccounts: TeacherAccount[] = [];
-      
-      if (teachersData) {
-        for (const teacher of teachersData) {
-          // Mock user data since we can't directly access auth.users
-          let userData = null;
-          
-          // If email exists, check profiles table
-          if (teacher.email) {
-            try {
-              const { data: profileData } = await supabase
-                .from('profiles')
-                .select('*')
-                .eq('username', teacher.email)
-                .maybeSingle();
-                
-              if (profileData) {
-                userData = profileData;
-              }
-            } catch (err) {
-              console.error("Error fetching profile data:", err);
-            }
-          }
-            
-          // Get classes assigned to this teacher
-          const { data: classesData } = await supabase
-            .from('classes')
-            .select('id')
-            .eq('teacher_id', teacher.id);
-            
-          // Get student assignments for this teacher
-          const { data: studentsData } = await supabase
-            .from('students_teachers')
-            .select('id')
-            .eq('teacher_id', teacher.id)
-            .eq('active', true);
-            
-          teacherAccounts.push({
-            ...teacher,
-            userId: userData?.id || null,
-            status: "active", // Default to active since we can't determine from userRole
-            lastLogin: userData?.created_at || teacher.created_at || null,
-            classesCount: classesData?.length || 0,
-            studentsCount: studentsData?.length || 0,
-          });
-        }
-      }
-      
-      return teacherAccounts;
+        return {
+          id: user.id,
+          name: profile?.name || user.email || "Unknown User",
+          email: user.email || undefined,
+          role: profile?.role as 'teacher' | 'admin' || 'teacher',
+          status: status,
+          lastLogin: user.last_sign_in_at || null,
+          classesCount: 0, // Simplified: Not fetching counts for this view anymore
+          studentsCount: 0, // Simplified: Not fetching counts for this view anymore
+          subject: profile?.subject || "N/A",
+          bio: profile?.bio || null,
+          phone: profile?.phone || null,
+          experience: 0,
+          userId: user.id,
+        };
+      });
+
+      return combinedData;
     },
+    staleTime: 5 * 60 * 1000,
   });
 
+  // The filter function remains, but it's now simpler as it doesn't need to handle complex data
   const filterTeachers = (
-    teachers: TeacherAccount[] | undefined,
+    allTeachers: TeacherAccount[],
     searchQuery: string,
-    statusFilter: "all" | "active" | "suspended",
-    activityFilter: "all" | "7days" | "30days" | "inactive"
-  ) => {
-    return teachers?.filter(teacher => {
-      // Apply search query filter
-      const matchesSearch = searchQuery === "" || 
-        teacher.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-        teacher.email?.toLowerCase().includes(searchQuery.toLowerCase());
+    statusFilter: string,
+    activityFilter: string,
+  ): TeacherAccount[] => {
+    return allTeachers.filter(teacher => {
+      const searchMatch = searchQuery
+        ? teacher.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          teacher.email?.toLowerCase().includes(searchQuery.toLowerCase())
+        : true;
       
-      // Apply status filter
-      const matchesStatus = statusFilter === "all" || 
-        (statusFilter === "active" && teacher.status === "active") ||
-        (statusFilter === "suspended" && teacher.status === "suspended");
+      const statusMatch = statusFilter !== 'all' ? teacher.status === statusFilter : true;
       
-      // Apply activity filter (mock implementation since we don't have real login history)
-      let matchesActivity = true;
-      if (activityFilter === "7days") {
-        // Mock implementation: consider teachers with classes as recently active
-        matchesActivity = teacher.classesCount > 0;
-      } else if (activityFilter === "30days") {
-        // All teachers considered active in last 30 days for this demo
-        matchesActivity = true;
-      } else if (activityFilter === "inactive") {
-        // Mock implementation: teachers with no classes considered inactive
-        matchesActivity = teacher.classesCount === 0;
-      }
-      
-      return matchesSearch && matchesStatus && matchesActivity;
-    }) || [];
+      // Simplified activity filter (can be expanded later if needed)
+      const activityMatch = activityFilter !== 'all' ? true : true;
+
+      return searchMatch && statusMatch && activityMatch;
+    });
   };
 
   return {
-    teachers,
+    teachers: filterTeachers(teachers, "", "all", "all"), // Initially unfiltered
     isLoadingTeachers,
-    filterTeachers
+    filterTeachers,
   };
 }

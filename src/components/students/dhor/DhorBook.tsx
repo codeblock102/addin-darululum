@@ -1,12 +1,11 @@
-
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Badge } from "@/components/ui/badge";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { RevisionTabs } from "./RevisionTabs";
-import { NewRevisionDialog } from "./NewRevisionDialog";
+import { supabase } from "@/integrations/supabase/client.ts";
+import { Skeleton } from "@/components/ui/skeleton.tsx";
+import { Badge } from "@/components/ui/badge.tsx";
+import { ScrollArea } from "@/components/ui/scroll-area.tsx";
+import { RevisionTabs } from "@/components/students/dhor/RevisionTabs.tsx";
+import { NewRevisionDialog } from "@/components/students/dhor/NewRevisionDialog.tsx";
 import { AlertCircle } from "lucide-react";
 
 interface DhorBookProps {
@@ -19,41 +18,41 @@ export const DhorBook = ({ studentId, studentName }: DhorBookProps) => {
 
   // First fetch the student to verify they exist
   const { data: studentData, isLoading: isStudentLoading } = useQuery({
-    queryKey: ['student', studentId],
+    queryKey: ["student", studentId],
     queryFn: async () => {
       console.log(`Checking if student exists with ID: ${studentId}`);
-      
+
       const { data, error } = await supabase
-        .from('students')
-        .select('*')
-        .eq('id', studentId)
+        .from("students")
+        .select("*")
+        .eq("id", studentId)
         .single();
 
       if (error) {
         console.error("Error fetching student:", error);
         return null;
       }
-      
+
       if (data) {
         console.log("Student found:", data.name);
       } else {
         console.log("No student found with ID:", studentId);
       }
-      
+
       return data;
     },
   });
 
   // Only fetch other data if student exists
-  const { data: difficultAyahs, isLoading, refetch } = useQuery({
-    queryKey: ['difficult-ayahs', studentId],
+  const { isLoading } = useQuery({
+    queryKey: ["difficult-ayahs", studentId],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('difficult_ayahs')
-        .select('*')
-        .eq('student_id', studentId)
-        .order('surah_number', { ascending: true })
-        .order('ayah_number', { ascending: true });
+        .from("difficult_ayahs")
+        .select("*")
+        .eq("student_id", studentId)
+        .order("surah_number", { ascending: true })
+        .order("ayah_number", { ascending: true });
 
       if (error) {
         console.error("Error fetching difficult ayahs:", error);
@@ -64,14 +63,18 @@ export const DhorBook = ({ studentId, studentName }: DhorBookProps) => {
     enabled: !!studentData, // Only run this query if student exists
   });
 
-  const { data: juzRevisions, isLoading: isRevisionsLoading } = useQuery({
-    queryKey: ['juz-revisions', studentId],
+  const {
+    data: juzRevisions,
+    isLoading: isRevisionsLoading,
+    refetch: refetchRevisions,
+  } = useQuery({
+    queryKey: ["juz-revisions", studentId],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('juz_revisions')
-        .select('*')
-        .eq('student_id', studentId)
-        .order('revision_date', { ascending: false });
+        .from("juz_revisions")
+        .select("*")
+        .eq("student_id", studentId)
+        .order("revision_date", { ascending: false });
 
       if (error) {
         console.error("Error fetching juz revisions:", error);
@@ -83,7 +86,7 @@ export const DhorBook = ({ studentId, studentName }: DhorBookProps) => {
   });
 
   const onRevisionSuccess = () => {
-    refetch();
+    refetchRevisions();
   };
 
   if (isStudentLoading) {
@@ -102,7 +105,9 @@ export const DhorBook = ({ studentId, studentName }: DhorBookProps) => {
         <AlertCircle className="h-10 w-10 text-yellow-500" />
         <h3 className="text-lg font-medium">Student Not Found</h3>
         <p className="text-sm text-muted-foreground max-w-md">
-          The student with ID {studentId} could not be found. Please check that the student ID is correct or select another student.
+          The student with ID {studentId}{" "}
+          could not be found. Please check that the student ID is correct or
+          select another student.
         </p>
       </div>
     );
@@ -143,7 +148,7 @@ export const DhorBook = ({ studentId, studentName }: DhorBookProps) => {
           onAddJuzRevision={() => setIsNewRevisionDialogOpen(true)}
         />
       </ScrollArea>
-      
+
       <NewRevisionDialog
         open={isNewRevisionDialogOpen}
         onOpenChange={setIsNewRevisionDialogOpen}
@@ -153,4 +158,4 @@ export const DhorBook = ({ studentId, studentName }: DhorBookProps) => {
       />
     </div>
   );
-}
+};

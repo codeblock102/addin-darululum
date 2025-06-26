@@ -1,5 +1,10 @@
-
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card.tsx";
 import { ReactNode } from "react";
 
 interface SettingsCardProps {
@@ -9,7 +14,9 @@ interface SettingsCardProps {
   children: ReactNode;
 }
 
-export function SettingsCard({ title, description, icon, children }: SettingsCardProps) {
+export function SettingsCard(
+  { title, description, icon, children }: SettingsCardProps,
+) {
   return (
     <Card className="settings-card overflow-hidden">
       <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary/40 to-primary/10" />

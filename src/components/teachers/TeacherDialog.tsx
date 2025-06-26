@@ -1,32 +1,39 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/components/ui/use-toast";
-import { useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client.ts";
+import { useToast } from "@/hooks/use-toast.ts";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
+} from "@/components/ui/dialog.tsx";
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
-  FormDescription,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
+} from "@/components/ui/form.tsx";
+import { Input } from "@/components/ui/input.tsx";
+import { Button } from "@/components/ui/button.tsx";
+import { Checkbox } from "@/components/ui/checkbox.tsx";
 import { Loader2 } from "lucide-react";
-import { Teacher } from "@/types/teacher";
-import { hasPermission } from "@/utils/roleUtils";
+import { Teacher } from "@/types/teacher.ts";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select.tsx";
 
 const teacherSchema = z.object({
   name: z.string().min(2, {
@@ -39,15 +46,35 @@ const teacherSchema = z.object({
   subject: z.string().min(2, {
     message: "Subject must be at least 2 characters.",
   }).optional(),
+  section: z.string({
+    required_error: "Please select a section for the teacher.",
+  }),
   bio: z.string().optional().nullable(),
   createAccount: z.boolean().default(true),
   generatePassword: z.boolean().default(true),
-  password: z.string().optional()
-    .refine(val => {
-      // Password is required if createAccount is true and generatePassword is false
-      if (val === undefined) return true;
-      return val.length >= 6 || "Password must be at least 6 characters";
-    }),
+  password: z.string().optional(),
+}).superRefine((data, ctx) => {
+  // If we are creating an account for the teacher
+  if (data.createAccount) {
+    // Email is mandatory
+    if (!data.email) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["email"],
+        message: "Email is required to create a user account.",
+      });
+    }
+    // If we are not auto-generating a password, we must validate the manual one
+    if (!data.generatePassword) {
+      if (!data.password || data.password.length < 6) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["password"],
+          message: "Password must be at least 6 characters.",
+        });
+      }
+    }
+  }
 });
 
 interface TeacherDialogProps {
@@ -55,12 +82,45 @@ interface TeacherDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onClose: () => void;
+  madrassahId?: string;
 }
 
-export const TeacherDialog = ({ selectedTeacher, open, onOpenChange, onClose }: TeacherDialogProps) => {
+export const TeacherDialog = (
+  {
+    selectedTeacher,
+    open,
+    onOpenChange,
+    onClose,
+    madrassahId,
+  }: TeacherDialogProps,
+) => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const { data: sections, isLoading: isLoadingSections } = useQuery({
+    queryKey: ["sections", madrassahId],
+    queryFn: async (): Promise<string[]> => {
+      if (!madrassahId) return [];
+      const { data, error } = await supabase
+        .from("madrassahs")
+        .select("section")
+        .eq("id", madrassahId)
+        .single();
+
+      if (error) {
+        console.error("Error fetching sections from madrassah:", error);
+        toast({
+          title: "Error fetching sections",
+          description: "Could not load the list of available sections.",
+          variant: "destructive",
+        });
+        return [];
+      }
+      return data?.section || [];
+    },
+    enabled: !!madrassahId,
+  });
 
   const form = useForm<z.infer<typeof teacherSchema>>({
     resolver: zodResolver(teacherSchema),
@@ -69,6 +129,7 @@ export const TeacherDialog = ({ selectedTeacher, open, onOpenChange, onClose }: 
       email: null,
       phone: null,
       subject: "",
+      section: "",
       bio: null,
       createAccount: true,
       generatePassword: true,
@@ -87,9 +148,10 @@ export const TeacherDialog = ({ selectedTeacher, open, onOpenChange, onClose }: 
         email: selectedTeacher.email || null,
         phone: selectedTeacher.phone || null,
         subject: selectedTeacher.subject || "",
+        section: selectedTeacher.section || "",
         bio: selectedTeacher.bio || null,
         createAccount: false, // Don't create account when editing
-        generatePassword: true, 
+        generatePassword: true,
         password: "",
       });
     } else {
@@ -98,6 +160,7 @@ export const TeacherDialog = ({ selectedTeacher, open, onOpenChange, onClose }: 
         email: null,
         phone: null,
         subject: "",
+        section: "",
         bio: null,
         createAccount: true,
         generatePassword: true,
@@ -108,7 +171,8 @@ export const TeacherDialog = ({ selectedTeacher, open, onOpenChange, onClose }: 
 
   // Generate a random password
   const generateRandomPassword = () => {
-    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()";
+    const chars =
+      "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()";
     let password = "";
     for (let i = 0; i < 10; i++) {
       password += chars.charAt(Math.floor(Math.random() * chars.length));
@@ -116,40 +180,33 @@ export const TeacherDialog = ({ selectedTeacher, open, onOpenChange, onClose }: 
     return password;
   };
 
-  // Create a valid username from teacher name
-  const createValidUsername = (name: string) => {
-    return name
-      .toLowerCase()
-      .replace(/\s+/g, '.') // Replace spaces with dots
-      .replace(/[^a-z0-9.]/g, '') // Remove any characters that aren't letters, numbers, or dots
-      .trim(); // Remove any leading/trailing spaces
+  const isValidUUID = (id: string | undefined): id is string => {
+    if (!id) return false;
+    const uuidRegex =
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    return uuidRegex.test(id);
   };
 
   const handleSubmit = async (values: z.infer<typeof teacherSchema>) => {
     try {
       setIsSubmitting(true);
 
-      // Create or update the teacher profile
       if (selectedTeacher) {
-        const { error } = await supabase
-          .from("teachers")
+        // --- UPDATE EXISTING TEACHER IN 'profiles' table ---
+        const { error: updateError } = await supabase
+          .from("profiles")
           .update({
             name: values.name,
             email: values.email || null,
             phone: values.phone || null,
             subject: values.subject || "",
-            bio: values.bio || null
+            bio: values.bio || null,
+            section: values.section,
           })
           .eq("id", selectedTeacher.id);
 
-        if (error) {
-          console.error("Error updating teacher:", error);
-          toast({
-            title: "Error",
-            description: error.message || "Failed to update teacher. Please try again.",
-            variant: "destructive",
-          });
-          return;
+        if (updateError) {
+          throw updateError;
         }
 
         toast({
@@ -157,104 +214,94 @@ export const TeacherDialog = ({ selectedTeacher, open, onOpenChange, onClose }: 
           description: "Teacher profile updated successfully!",
         });
       } else {
-        // Create new teacher profile
-        const { data: teacherData, error: teacherError } = await supabase
-          .from("teachers")
-          .insert([{
-            name: values.name,
-            email: values.email || null,
-            phone: values.phone || null,
-            subject: values.subject || "",
-            bio: values.bio || null
-          }])
-          .select();
+        // --- CREATE NEW TEACHER (triggers will handle profile creation) ---
 
-        if (teacherError) {
-          console.error("Error creating teacher:", teacherError);
+        // CRITICAL VALIDATION: Ensure we have a valid Madrassah UUID before proceeding.
+        if (!isValidUUID(madrassahId)) {
           toast({
-            title: "Error",
-            description: teacherError.message || "Failed to create teacher. Please try again.",
+            title: "Cannot Create Teacher",
+            description:
+              "A valid Madrassah ID is required. Please ensure a madrassah is selected.",
+            variant: "destructive",
+          });
+          setIsSubmitting(false);
+          return;
+        }
+
+        if (!values.createAccount || !values.email) {
+          toast({
+            title: "Cannot Create Profile",
+            description: "An email is required to create a user account.",
             variant: "destructive",
           });
           return;
         }
 
-        // If create account is enabled, create a user account
-        if (values.createAccount && values.email) {
-          // Generate or use provided password
-          const password = values.generatePassword 
-            ? generateRandomPassword()
-            : values.password;
+        const password = values.generatePassword
+          ? generateRandomPassword()
+          : values.password!;
 
-          if (!password) {
-            toast({
-              title: "Error",
-              description: "Password is required when creating an account with manual password.",
-              variant: "destructive",
-            });
-            return;
-          }
-
-          const newTeacher = teacherData?.[0];
-          
-          // Create a valid username from the teacher's name
-          const username = createValidUsername(values.name);
-          
-          // Create the user account
-          console.log("Creating user account with:", {
-            email: values.email,
-            password: password.length,
-            teacher_id: newTeacher?.id,
-            username
-          });
-          
-          const { data: userData, error: userError } = await supabase.auth.signUp({
+        const { data: userData, error: userError } = await supabase.auth
+          .signUp({
             email: values.email,
             password: password,
             options: {
               data: {
-                username: username,
-                teacher_id: newTeacher?.id,
-                role: 'teacher'
-              }
-            }
+                // These keys must match the column names in your `profiles` table
+                name: values.name,
+                role: "teacher",
+                phone: values.phone || null,
+                subject: values.subject || "",
+                bio: values.bio || null,
+                section: values.section,
+                madrassah_id: madrassahId,
+              },
+            },
           });
 
-          if (userError) {
-            console.error("Error creating user account:", userError);
-            toast({
-              title: "Warning",
-              description: `Teacher profile created but failed to create user account: ${userError.message}`,
-              variant: "destructive",
-            });
-          } else {
-            console.log("User account created successfully:", userData);
-            toast({
-              title: "Success",
-              description: values.generatePassword 
-                ? `Teacher and user account created! Username: ${username} | Temporary password: ${password}`
-                : `Teacher and user account created! Username: ${username}`,
-            });
-          }
-        } else {
-          toast({
-            title: "Success",
-            description: "Teacher profile created successfully!",
-          });
+        if (userError) {
+          throw userError;
         }
+
+        if (!userData.user) {
+          throw new Error("User creation did not return a user object.");
+        }
+
+        toast({
+          title: "Success",
+          description: values.generatePassword
+            ? `Teacher and user account created! Temporary password: ${password}`
+            : `Teacher and user account created!`,
+        });
       }
 
-      // Invalidate teacher queries to refresh the data
-      queryClient.invalidateQueries({ queryKey: ['teachers'] });
-      queryClient.invalidateQueries({ queryKey: ['teacher-accounts'] });
-      queryClient.invalidateQueries({ queryKey: ['teachers-dropdown'] });
-      
+      // Invalidate queries to refresh data
+      queryClient.invalidateQueries({
+        queryKey: ["teacher-profiles", madrassahId],
+      });
+      queryClient.invalidateQueries({ queryKey: ["teacher-stats"] });
       onClose();
-    } catch (error) {
-      console.error("Unexpected error:", error);
+    } catch (error: unknown) {
+      const supabaseError = error as {
+        message: string;
+        status?: number;
+        details?: string;
+        hint?: string;
+      };
+      console.group("Supabase Error Details");
+      console.error("Message:", supabaseError.message);
+      if (supabaseError.status) console.error("Status:", supabaseError.status);
+      if (supabaseError.details) {
+        console.error("Details:", supabaseError.details);
+      }
+      if (supabaseError.hint) console.error("Hint:", supabaseError.hint);
+      console.error("Full Error Object:", error);
+      console.groupEnd();
+
       toast({
         title: "Error",
-        description: "An unexpected error occurred. Please check the console for details.",
+        description: supabaseError.message ||
+          "An unexpected error occurred. Check the console for details.",
         variant: "destructive",
       });
     } finally {
@@ -264,7 +311,7 @@ export const TeacherDialog = ({ selectedTeacher, open, onOpenChange, onClose }: 
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
+      <DialogContent className="sm:max-w-[600px] flex flex-col max-h-[95vh]">
         <DialogHeader>
           <DialogTitle>
             {selectedTeacher ? "Edit Teacher" : "Add Teacher"}
@@ -275,99 +322,160 @@ export const TeacherDialog = ({ selectedTeacher, open, onOpenChange, onClose }: 
               : "Enter information for the new teacher."}
           </DialogDescription>
         </DialogHeader>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
-            <FormField
-              control={form.control}
-              name="name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Name</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Teacher's Name" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Email</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Teacher's Email" {...field} value={field.value || ""} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="phone"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Phone</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Teacher's Phone" {...field} value={field.value || ""} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="subject"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Subject</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Teacher's Subject" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="bio"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Bio</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Teacher's Bio" {...field} value={field.value || ""} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            {!selectedTeacher && (
-              <>
+        <div className="flex-grow overflow-y-auto -mx-6 px-6">
+          <Form {...form}>
+            <form id="teacher-form" className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <FormField
                   control={form.control}
-                  name="createAccount"
+                  name="name"
                   render={({ field }) => (
-                    <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                    <FormItem>
+                      <FormLabel>Name</FormLabel>
                       <FormControl>
-                        <Checkbox
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
-                        />
+                        <Input placeholder="Teacher's Name" {...field} />
                       </FormControl>
-                      <div className="space-y-1 leading-none">
-                        <FormLabel>Create user account</FormLabel>
-                        <FormDescription>
-                          Automatically create a user account for this teacher
-                        </FormDescription>
-                      </div>
+                      <FormMessage />
                     </FormItem>
                   )}
                 />
+                <FormField
+                  control={form.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Email</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="Teacher's Email"
+                          {...field}
+                          value={field.value || ""}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
 
-                {createAccountValue && (
-                  <>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="phone"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Phone</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="Teacher's Phone"
+                          {...field}
+                          value={field.value || ""}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="subject"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Subject</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Teacher's Subject" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <FormField
+                control={form.control}
+                name="section"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Section</FormLabel>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                      value={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select a section" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {isLoadingSections && (
+                          <SelectItem value="loading" disabled>
+                            Loading sections...
+                          </SelectItem>
+                        )}
+                        {sections && sections.length > 0
+                          ? (
+                            sections.map((section) => (
+                              <SelectItem key={section} value={section}>
+                                {section}
+                              </SelectItem>
+                            ))
+                          )
+                          : !isLoadingSections && (
+                            <SelectItem value="no-sections" disabled>
+                              No sections found
+                            </SelectItem>
+                          )}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="bio"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Bio</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="Teacher's Bio"
+                        {...field}
+                        value={field.value || ""}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {/* Account Creation Fields - Only show for new teachers */}
+              {!selectedTeacher && (
+                <>
+                  <FormField
+                    control={form.control}
+                    name="createAccount"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                        <FormControl>
+                          <Checkbox
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                          />
+                        </FormControl>
+                        <div className="space-y-1 leading-none">
+                          <FormLabel>Create user account</FormLabel>
+                          <FormDescription>
+                            Automatically create a user account for this teacher
+                          </FormDescription>
+                        </div>
+                      </FormItem>
+                    )}
+                  />
+
+                  {createAccountValue && (
                     <FormField
                       control={form.control}
                       name="generatePassword"
@@ -380,47 +488,57 @@ export const TeacherDialog = ({ selectedTeacher, open, onOpenChange, onClose }: 
                             />
                           </FormControl>
                           <div className="space-y-1 leading-none">
-                            <FormLabel>Auto-generate password</FormLabel>
+                            <FormLabel>Generate Random Password</FormLabel>
                             <FormDescription>
-                              Automatically generate a secure password
+                              A secure password will be generated automatically.
                             </FormDescription>
                           </div>
                         </FormItem>
                       )}
                     />
+                  )}
 
-                    {!generatePasswordValue && (
-                      <FormField
-                        control={form.control}
-                        name="password"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Password</FormLabel>
-                            <FormControl>
-                              <Input type="password" placeholder="Minimum 6 characters" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    )}
-                  </>
-                )}
-              </>
-            )}
-
-            <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Please wait
+                  {createAccountValue && !generatePasswordValue && (
+                    <FormField
+                      control={form.control}
+                      name="password"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Password</FormLabel>
+                          <FormControl>
+                            <Input
+                              type="password"
+                              placeholder="Enter a password"
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  )}
                 </>
-              ) : (
-                "Submit"
               )}
-            </Button>
-          </form>
-        </Form>
+            </form>
+          </Form>
+        </div>
+        <DialogFooter>
+          <Button type="button" variant="outline" onClick={onClose}>
+            Cancel
+          </Button>
+          <Button
+            type="submit"
+            form="teacher-form"
+            disabled={isSubmitting}
+            onClick={form.handleSubmit(handleSubmit)}
+          >
+            {isSubmitting
+              ? <Loader2 className="animate-spin mr-2" />
+              : selectedTeacher
+              ? "Update Teacher"
+              : "Create Teacher"}
+          </Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );

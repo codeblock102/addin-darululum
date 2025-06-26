@@ -1,9 +1,9 @@
-// Import directly from the shadcn toast component
-import { type ToastActionElement, type ToastProps } from "@/components/ui/toast";
 import * as React from "react";
-
-const TOAST_LIMIT = 100;
-const TOAST_REMOVE_DELAY = 1000000;
+// Import directly from the shadcn toast component
+import {
+  type ToastActionElement,
+  type ToastProps,
+} from "@/components/ui/toast";
 
 type ToasterToast = ToastProps & {
   id: string;
@@ -29,21 +29,21 @@ type ActionType = typeof actionTypes;
 
 type Action =
   | {
-      type: ActionType["ADD_TOAST"];
-      toast: Omit<ToasterToast, "id">;
-    }
+    type: ActionType["ADD_TOAST"];
+    toast: Omit<ToasterToast, "id">;
+  }
   | {
-      type: ActionType["UPDATE_TOAST"];
-      toast: Partial<ToasterToast> & { id: string };
-    }
+    type: ActionType["UPDATE_TOAST"];
+    toast: Partial<ToasterToast> & { id: string };
+  }
   | {
-      type: ActionType["DISMISS_TOAST"];
-      toastId?: string;
-    }
+    type: ActionType["DISMISS_TOAST"];
+    toastId?: string;
+  }
   | {
-      type: ActionType["REMOVE_TOAST"];
-      toastId?: string;
-    };
+    type: ActionType["REMOVE_TOAST"];
+    toastId?: string;
+  };
 
 interface State {
   toasts: ToasterToast[];
@@ -92,9 +92,9 @@ const reducer = (state: State, action: Action): State => {
         toasts: state.toasts.map((t) =>
           t.id === toastId || toastId === undefined
             ? {
-                ...t,
-                open: false,
-              }
+              ...t,
+              open: false,
+            }
             : t
         ),
       };
@@ -151,11 +151,12 @@ function useToast() {
   return {
     ...state,
     toast,
-    dismiss: (toastId?: string) => dispatch({
-      type: actionTypes.DISMISS_TOAST,
-      toastId,
-    }),
+    dismiss: (toastId?: string) =>
+      dispatch({
+        type: actionTypes.DISMISS_TOAST,
+        toastId,
+      }),
   };
 }
 
-export { useToast, toast };
+export { toast, useToast };

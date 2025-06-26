@@ -1,11 +1,11 @@
 /**
  * @file src/pages/Auth.tsx
  * @summary This file defines the authentication page component for user login.
- * 
+ *
  * It provides a form for users to sign in using their email and password.
  * The component handles the sign-in process using Supabase authentication, displays error messages,
  * and redirects users based on their role (admin or teacher) or to a role setup page if no role is defined.
- * 
+ *
  * Key Features:
  * - Email and password input fields.
  * - Show/hide password functionality.
@@ -19,24 +19,38 @@
  */
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { useToast } from "@/components/ui/use-toast";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
-import { Eye, EyeOff, LockKeyhole, Mail, AlertTriangle, Loader2 } from "lucide-react";
-import { useAuth } from "@/contexts/AuthContext";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { supabase } from "@/integrations/supabase/client.ts";
+import { Button } from "@/components/ui/button.tsx";
+import { Input } from "@/components/ui/input.tsx";
+import { useToast } from "@/components/ui/use-toast.ts";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card.tsx";
+import { Label } from "@/components/ui/label.tsx";
+import {
+  AlertTriangle,
+  Eye,
+  EyeOff,
+  Loader2,
+  LockKeyhole,
+  Mail,
+} from "lucide-react";
+import { useAuth } from "@/hooks/use-auth.ts";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert.tsx";
 
 /**
  * @component Auth
  * @description Renders the user authentication (login) page.
- * 
+ *
  * This component provides a user interface for email/password login.
  * It interacts with Supabase for authentication, handles user feedback (loading states, errors, success toasts),
  * and navigates the user to the appropriate part of the application upon successful authentication.
- * 
+ *
  * State Management:
  *  - `email`: Stores the content of the email input field.
  *  - `password`: Stores the content of the password input field.
@@ -67,10 +81,10 @@ const Auth = () => {
    * It prevents the default form submission, sets loading states, and calls Supabase `signInWithPassword`.
    * After a successful sign-in, it refreshes the session, checks the user's role (admin or teacher),
    * and navigates them accordingly. Displays errors using state and toasts.
-   * 
+   *
    * Input:
    *  - `e`: React.FormEvent, the form submission event.
-   * 
+   *
    * Output:
    *  - Navigates the user to `/dashboard` or `/role-setup` on success.
    *  - Sets `errorMessage` and shows a toast on failure.
@@ -83,10 +97,11 @@ const Auth = () => {
 
     try {
       console.log(`Attempting to login with email: ${email}`);
-      const { data, error: signInError } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
+      const { data, error: signInError } = await supabase.auth
+        .signInWithPassword({
+          email,
+          password,
+        });
 
       if (signInError) {
         if (signInError.message.includes("Invalid login credentials")) {
@@ -101,20 +116,23 @@ const Auth = () => {
         setErrorMessage("Login failed. User data not found.");
         throw new Error("User data not found after sign in.");
       }
-      
+
       await refreshSession();
 
-      const { data: { user: refreshedUser }, error: refreshedUserError } = await supabase.auth.getUser();
+      const { data: { user: refreshedUser }, error: refreshedUserError } =
+        await supabase.auth.getUser();
 
       if (refreshedUserError || !refreshedUser) {
-        setErrorMessage("Login failed. Could not retrieve user details after session refresh.");
+        setErrorMessage(
+          "Login failed. Could not retrieve user details after session refresh.",
+        );
         if (refreshedUserError) throw refreshedUserError;
         throw new Error("Refreshed user is null after session refresh.");
       }
 
       console.log("Checking user metadata:", refreshedUser.user_metadata);
-      if (refreshedUser.user_metadata?.role === 'admin') {
-        localStorage.setItem('userRole', 'admin');
+      if (refreshedUser.user_metadata?.role === "admin") {
+        localStorage.setItem("userRole", "admin");
         toast({
           title: "Login Successful",
           description: "Welcome back, Admin! Redirecting...",
@@ -124,17 +142,23 @@ const Auth = () => {
       }
 
       if (refreshedUser.email) {
-        console.log("Checking for teacher profile with email:", refreshedUser.email);
+        console.log(
+          "Checking for teacher profile with email:",
+          refreshedUser.email,
+        );
         const { data: teacherData, error: teacherError } = await supabase
-          .from('teachers')
-          .select('id')
-          .eq('email', refreshedUser.email)
+          .from("profiles")
+          .select("id")
+          .eq("email", refreshedUser.email)
           .maybeSingle();
 
         if (teacherError) {
-          console.error("Error checking teacher profile:", teacherError.message);
+          console.error(
+            "Error checking teacher profile:",
+            teacherError.message,
+          );
         } else if (teacherData) {
-          localStorage.setItem('userRole', 'teacher');
+          localStorage.setItem("userRole", "teacher");
           toast({
             title: "Login Successful",
             description: "Welcome back, Teacher! Redirecting...",
@@ -147,15 +171,18 @@ const Auth = () => {
       console.log("No role found, redirecting to role setup");
       toast({
         title: "Role Setup Required",
-        description: "Your account needs a role assignment. Please select your role.",
+        description:
+          "Your account needs a role assignment. Please select your role.",
       });
       navigate("/role-setup");
-
-    } catch (error: any) {
-      console.error("Authentication error:", error.message);
+    } catch (error) {
+      const message = error instanceof Error
+        ? error.message
+        : "An unexpected error occurred during login. Please try again.";
+      console.error("Authentication error:", message);
       toast({
         title: "Login Error",
-        description: errorMessage || "An unexpected error occurred during login. Please try again.",
+        description: errorMessage || message,
         variant: "destructive",
       });
     } finally {
@@ -167,15 +194,24 @@ const Auth = () => {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 to-slate-800 p-4">
       <Card className="w-full max-w-md shadow-2xl bg-slate-800 border-slate-700 text-white">
         <CardHeader className="text-center">
-          <img src="/logo.png" alt="Darul Uloom Logo" className="w-20 h-20 mx-auto mb-4 rounded-full" />
-          <CardTitle className="text-3xl font-bold text-sky-400">Darul Uloom Login</CardTitle>
+          <img
+            src="/logo.png"
+            alt="Darul Uloom Logo"
+            className="w-20 h-20 mx-auto mb-4 rounded-full"
+          />
+          <CardTitle className="text-3xl font-bold text-sky-400">
+            Darul Uloom Login
+          </CardTitle>
           <CardDescription className="text-slate-400">
             Access your dashboard
           </CardDescription>
         </CardHeader>
         <CardContent>
           {errorMessage && (
-            <Alert variant="destructive" className="mb-4 bg-red-500/10 border-red-500/50 text-red-300">
+            <Alert
+              variant="destructive"
+              className="mb-4 bg-red-500/10 border-red-500/50 text-red-300"
+            >
               <AlertTriangle className="h-4 w-4 !text-red-400" />
               <AlertTitle>Login Failed</AlertTitle>
               <AlertDescription>{errorMessage}</AlertDescription>
@@ -199,7 +235,9 @@ const Auth = () => {
               </div>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password" className="text-slate-300">Password</Label>
+              <Label htmlFor="password" className="text-slate-300">
+                Password
+              </Label>
               <div className="relative">
                 <LockKeyhole className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-500" />
                 <Input
@@ -220,23 +258,27 @@ const Auth = () => {
                   onClick={() => setShowPassword(!showPassword)}
                   aria-label={showPassword ? "Hide password" : "Show password"}
                 >
-                  {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                  {showPassword
+                    ? <EyeOff className="h-5 w-5" />
+                    : <Eye className="h-5 w-5" />}
                 </Button>
               </div>
             </div>
-            <Button 
-              type="submit" 
+            <Button
+              type="submit"
               className="w-full bg-sky-500 hover:bg-sky-600 text-white font-semibold py-3 transition-colors duration-150 ease-in-out"
               disabled={isLoading}
             >
-              {isLoading ? (
-                <>
-                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                  Signing In...
-                </>
-              ) : (
-                "Sign In"
-              )}
+              {isLoading
+                ? (
+                  <>
+                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                    Signing In...
+                  </>
+                )
+                : (
+                  "Sign In"
+                )}
             </Button>
           </form>
         </CardContent>
@@ -244,8 +286,14 @@ const Auth = () => {
           <p className="text-xs text-slate-500">
             &copy; {new Date().getFullYear()} Darul Uloom. All rights reserved.
           </p>
-           <p className="text-xs text-slate-500">
-            Need help? <a href="mailto:support@example.com" className="text-sky-500 hover:underline">Contact Support</a>
+          <p className="text-xs text-slate-500">
+            Need help?{" "}
+            <a
+              href="mailto:support@example.com"
+              className="text-sky-500 hover:underline"
+            >
+              Contact Support
+            </a>
           </p>
         </CardFooter>
       </Card>

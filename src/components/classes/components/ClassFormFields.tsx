@@ -1,10 +1,9 @@
-
-import { Teacher } from "@/types/teacher";
-import { BasicInfoFields } from "./form-fields/BasicInfoFields";
-import { TimeFields } from "./form-fields/TimeFields";
-import { CapacityAndRoomFields } from "./form-fields/CapacityAndRoomFields";
-import { DaysOfWeekField } from "./form-fields/DaysOfWeekField";
+import { Teacher } from "@/types/teacher.ts";
+import { BasicInfoFields } from "./form-fields/BasicInfoFields.tsx";
+import { TimeFields } from "./form-fields/TimeFields.tsx";
+import { CapacityAndRoomFields } from "./form-fields/CapacityAndRoomFields.tsx";
 import { useFormContext } from "react-hook-form";
+import { DaysOfWeekField } from "./form-fields/DaysOfWeekField.tsx";
 
 interface ClassFormFieldsProps {
   teachers?: Teacher[];

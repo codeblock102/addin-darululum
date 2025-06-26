@@ -1,16 +1,12 @@
-
 project_id = "depsfpodwaprzxffdcks"
 
 [api]
 enabled = true
-url = "https://depsfpodwaprzxffdcks.supabase.co"
-service_role_key = "your-service-role-key-here"
 
 [functions]
-dhor_book_utils = {
-  verify_jwt = true
-}
-
-[functions.student_status]
-verify_jwt = true
-
+  [functions.dhor_book_utils]
+    verify_jwt = true
+  [functions.student_status]
+    verify_jwt = true
+  [functions."daily-progress-email"]
+    verify_jwt = false

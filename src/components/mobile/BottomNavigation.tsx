@@ -1,50 +1,43 @@
-import { useNavigate, useLocation } from "react-router-dom";
-import { Home, Users, Book, CalendarDays, LogOut } from "lucide-react";
-import { useTeacherStatus } from "@/hooks/useTeacherStatus";
-import { cn } from "@/lib/utils";
-import { useAuth } from "@/contexts/AuthContext";
+import { useLocation, useNavigate } from "react-router-dom";
+import { Book, ClipboardList, Home, LogOut, Users } from "lucide-react";
+import { useRBAC } from "@/hooks/useRBAC.ts";
+import { cn } from "@/lib/utils.ts";
+import { useAuth } from "@/hooks/use-auth.ts";
 
 export const BottomNavigation = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { isTeacher, isAdmin } = useTeacherStatus();
+  const { isAdmin } = useRBAC();
   const { signOut } = useAuth();
 
   // Different navigation items for admin and teacher roles
   const adminNavItems = [
-    { icon: Home, label: "Dashboard", href: "/admin" }, // Updated to correct admin dashboard path
+    { icon: Home, label: "Dashboard", href: "/dashboard" },
     { icon: Users, label: "Teachers", href: "/teachers" },
     { icon: Users, label: "Students", href: "/students" },
-    { icon: Book, label: "Progress", href: "/dhor-book" },
-    { icon: LogOut, label: "Logout", action: signOut }
+    { icon: ClipboardList, label: "Attendance", href: "/attendance" },
+    { icon: LogOut, label: "Logout", action: signOut },
   ];
 
   const teacherNavItems = [
-    { icon: Home, label: "Dashboard", href: "/teacher-portal" },
-    { icon: Users, label: "Students", href: "/teacher-portal?tab=students" },
-    { icon: Book, label: "Progress", href: "/teacher-portal?tab=dhor-book" },
-    { icon: LogOut, label: "Logout", action: signOut }
+    { icon: Home, label: "Dashboard", href: "/dashboard" },
+    { icon: Users, label: "Students", href: "/students" },
+    { icon: ClipboardList, label: "Attendance", href: "/attendance" },
+    { icon: Book, label: "Progress", href: "/progress-book" },
+    { icon: LogOut, label: "Logout", action: signOut },
   ];
 
   const navItems = isAdmin ? adminNavItems : teacherNavItems;
 
   const isActive = (item: { href?: string; label?: string }) => {
     if (!item.href) return false;
-
-    // Specifically handle Dashboard for teachers to be exact
-    if (item.label === "Dashboard" && (item.href === "/teacher-portal" || item.href === "/admin")) {
-      return location.pathname === item.href && location.search === "";
-    }
-    
-    if (item.href.includes('?tab=')) {
-      const [path, search] = item.href.split('?');
-      return location.pathname === path && location.search.includes(search);
-    }
-    
-    return location.pathname === item.href && location.search === ""; // Make default check exact as well
+    // Exact match for all paths now, as query params are removed
+    return location.pathname === item.href;
   };
 
-  const handleNavigation = (item: { href?: string; action?: () => Promise<void> }) => {
+  const handleNavigation = (
+    item: { href?: string; action?: () => Promise<void> },
+  ) => {
     if (item.action) {
       item.action();
     } else if (item.href) {
@@ -62,20 +55,18 @@ export const BottomNavigation = () => {
             type="button"
             className={cn(
               "inline-flex flex-col items-center justify-center px-1 hover:bg-gray-50 dark:hover:bg-gray-800 group",
-              isActive(item) && (isAdmin 
-                ? "text-amber-500 bg-black/5 dark:bg-white/10" 
-                : "text-primary bg-primary/5")
+              isActive(item) && (isAdmin
+                ? "text-amber-500 bg-black/5 dark:bg-white/10"
+                : "text-primary bg-primary/5"),
             )}
           >
-            <item.icon 
+            <item.icon
               className={cn(
-                "w-5 h-5 mb-1 group-hover:text-primary", 
+                "w-5 h-5 mb-1 group-hover:text-primary",
                 isActive(item)
-                  ? isAdmin 
-                    ? "text-amber-500" 
-                    : "text-primary"
-                  : "text-gray-500 dark:text-gray-400"
-              )} 
+                  ? isAdmin ? "text-amber-500" : "text-primary"
+                  : "text-gray-500 dark:text-gray-400",
+              )}
             />
             <span className="text-xs whitespace-nowrap truncate max-w-[4rem]">
               {item.label}

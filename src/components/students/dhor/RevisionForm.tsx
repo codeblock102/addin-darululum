@@ -1,11 +1,10 @@
-
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { format } from "date-fns";
 import { CalendarIcon } from "lucide-react";
-import * as z from "zod";
+import { RevisionFormValues, revisionSchema } from "@/types/revision.ts";
 
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/button.tsx";
 import {
   Form,
   FormControl,
@@ -13,33 +12,24 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
-import { Calendar } from "@/components/ui/calendar";
+} from "@/components/ui/form.tsx";
+import { Calendar } from "@/components/ui/calendar.tsx";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/components/ui/popover";
+} from "@/components/ui/popover.tsx";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Slider } from "@/components/ui/slider";
-import { Textarea } from "@/components/ui/textarea";
-import { cn } from "@/lib/utils";
-import { LoadingSpinner } from "@/components/teacher-portal/students/LoadingSpinner";
-
-export const revisionSchema = z.object({
-  date: z.date(),
-  memorization_quality: z.enum(["excellent", "good", "average", "needsWork", "horrible"]),
-  time_spent: z.number().min(0).max(60),
-  notes: z.string().optional(),
-});
-
-export type RevisionFormValues = z.infer<typeof revisionSchema>;
+} from "@/components/ui/select.tsx";
+import { Slider } from "@/components/ui/slider.tsx";
+import { Textarea } from "@/components/ui/textarea.tsx";
+import { cn } from "@/lib/utils.ts";
+import { LoadingSpinner } from "@/components/teacher-portal/students/LoadingSpinner.tsx";
 
 interface RevisionFormProps {
   defaultValues: RevisionFormValues;
@@ -47,7 +37,9 @@ interface RevisionFormProps {
   isLoading?: boolean;
 }
 
-export function RevisionForm({ defaultValues, onSubmit, isLoading }: RevisionFormProps) {
+export function RevisionForm(
+  { defaultValues, onSubmit, isLoading }: RevisionFormProps,
+) {
   const form = useForm<RevisionFormValues>({
     resolver: zodResolver(revisionSchema),
     defaultValues,
@@ -71,17 +63,17 @@ export function RevisionForm({ defaultValues, onSubmit, isLoading }: RevisionFor
                 <PopoverTrigger asChild>
                   <FormControl>
                     <Button
-                      variant={"outline"}
+                      variant="outline"
                       className={cn(
                         "w-[240px] pl-3 text-left font-normal",
-                        !field.value && "text-muted-foreground"
+                        !field.value && "text-muted-foreground",
                       )}
                     >
-                      {field.value ? (
-                        format(field.value, "PPP")
-                      ) : (
-                        <span>Pick a date</span>
-                      )}
+                      {field.value
+                        ? (
+                          format(field.value, "PPP")
+                        )
+                        : <span>Pick a date</span>}
                       <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                     </Button>
                   </FormControl>
@@ -92,8 +84,7 @@ export function RevisionForm({ defaultValues, onSubmit, isLoading }: RevisionFor
                     selected={field.value}
                     onSelect={field.onChange}
                     disabled={(date) =>
-                      date > new Date() || date < new Date("2023-01-01")
-                    }
+                      date > new Date() || date < new Date("2023-01-01")}
                     initialFocus
                   />
                 </PopoverContent>

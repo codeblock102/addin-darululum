@@ -1,16 +1,21 @@
-
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { StudentProgressChart } from "./StudentProgressChart";
-import { ProgressDistributionChart } from "./ProgressDistributionChart";
-import { TimeProgressChart } from "./TimeProgressChart";
-import { ContributorActivityChart } from "./ContributorActivityChart";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card.tsx";
+import { StudentProgressChart } from "./StudentProgressChart.tsx";
+import { ProgressDistributionChart } from "./ProgressDistributionChart.tsx";
+import { TimeProgressChart } from "./TimeProgressChart.tsx";
+import { ContributorActivityChart } from "./ContributorActivityChart.tsx";
 
 interface AnalyticsChartsProps {
   studentProgress: { name: string; verses: number }[];
   qualityDistribution: { quality: string; count: number }[];
   timeProgress: { date: string; count: number }[];
   contributorActivity: { name: string; count: number }[];
-  timeRange: 'week' | 'month' | 'year';
+  timeRange: "week" | "month" | "year";
 }
 
 export const AnalyticsCharts = ({
@@ -18,12 +23,12 @@ export const AnalyticsCharts = ({
   qualityDistribution,
   timeProgress,
   contributorActivity,
-  timeRange
+  timeRange,
 }: AnalyticsChartsProps) => {
   // Transform data to match the chart component prop types
-  const formattedQualityData = qualityDistribution.map(item => ({
+  const formattedQualityData = qualityDistribution.map((item) => ({
     name: item.quality,
-    value: item.count
+    value: item.count,
   }));
 
   return (
@@ -39,7 +44,7 @@ export const AnalyticsCharts = ({
           <StudentProgressChart data={studentProgress} />
         </CardContent>
       </Card>
-      
+
       <Card>
         <CardHeader>
           <CardTitle>Quality Distribution</CardTitle>
@@ -51,7 +56,7 @@ export const AnalyticsCharts = ({
           <ProgressDistributionChart data={formattedQualityData} />
         </CardContent>
       </Card>
-      
+
       <Card>
         <CardHeader>
           <CardTitle>Progress Over Time</CardTitle>
@@ -63,7 +68,7 @@ export const AnalyticsCharts = ({
           <TimeProgressChart data={timeProgress} />
         </CardContent>
       </Card>
-      
+
       <Card className="col-span-2">
         <CardHeader>
           <CardTitle>Contributor Activity</CardTitle>

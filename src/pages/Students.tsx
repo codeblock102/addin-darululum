@@ -1,20 +1,20 @@
-/**
- * @file Students.tsx
- * @description This file defines the `Students` page component, which is responsible for displaying and managing a list of students.
- * It features functionality to search for students, view summary statistics (like total students, active students, and average attendance),
- * add new students, and edit existing student details through a dialog interface.
- * The component utilizes other custom components like `StudentDialog` for adding/editing students and `StudentList` for displaying them.
- * State management for search queries, selected student for editing, and dialog visibility is handled within this component.
- */
 import { useState } from "react";
-import { DashboardLayout } from "@/components/layouts/DashboardLayout";
-import { StudentDialog } from "@/components/students/StudentDialog";
-import { StudentList } from "@/components/students/StudentList";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Search, UserPlus, Users } from "lucide-react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client.ts";
+import { StudentDialog } from "@/components/students/StudentDialog.tsx";
+import { StudentList } from "@/components/students/StudentList.tsx";
+import { Input } from "@/components/ui/input.tsx";
+import { Button } from "@/components/ui/button.tsx";
+import { PlusCircle, Search, Users, Activity, CheckCircle } from "lucide-react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card.tsx";
+import { useAuth } from "@/hooks/use-auth.ts";
+import { Skeleton } from "@/components/ui/skeleton.tsx";
 
 interface Student {
   id: string;
@@ -23,123 +23,173 @@ interface Student {
   enrollment_date: string | null;
   guardian_name: string | null;
   guardian_contact: string | null;
-  status: 'active' | 'inactive';
+  status: "active" | "inactive";
+  madrassah_id?: string;
+  section?: string;
 }
 
-/**
- * @function Students
- * @description The main component for the students management page.
- * It handles the display of student statistics, a search input for filtering students,
- * a list of students, and a dialog for adding or editing student information.
- * @returns {JSX.Element} The rendered students page.
- */
+const StatCard = ({ title, value, icon, description, isLoading, isAdmin }: any) => (
+  <Card>
+    <CardHeader
+      className={`flex flex-row items-center justify-between space-y-0 ${
+        isAdmin ? "border-b border-primary/30 pb-4" : "pb-2"
+      }`}
+    >
+      <CardTitle className="text-sm font-medium">{title}</CardTitle>
+      {icon}
+    </CardHeader>
+    <CardContent className="pt-4">
+      {isLoading ? (
+        <>
+          <Skeleton className="h-8 w-1/2" />
+          <Skeleton className="h-4 w-1/3 mt-2" />
+        </>
+      ) : (
+        <>
+          <div className="text-2xl font-bold">{value}</div>
+          <p className="text-xs text-muted-foreground">{description}</p>
+        </>
+      )}
+    </CardContent>
+  </Card>
+);
+
 const Students = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const { session } = useAuth();
+  const queryClient = useQueryClient();
+  const userId = session?.user?.id;
 
-  // Example stats - in a real app these would come from your data source
-  const stats = {
-    totalStudents: 150,
-    activeStudents: 142,
-    avgAttendance: 95
-  };
+  const { data, isLoading } = useQuery({
+    queryKey: ["students", userId],
+    queryFn: async () => {
+      if (!userId) return { students: [], userData: null };
+      const { data: userData } = await supabase
+        .from("profiles")
+        .select("madrassah_id, section, role")
+        .eq("id", userId)
+        .single();
+      if (!userData?.madrassah_id) return { students: [], userData };
+      const query = supabase
+        .from("students")
+        .select("*")
+        .eq("madrassah_id", userData.madrassah_id);
+      if (userData.role === "teacher" && userData.section)
+        query.eq("section", userData.section);
+      const { data: students } = await query;
+      return { students: students || [], userData };
+    },
+    enabled: !!userId,
+  });
 
-  /**
-   * @function handleEditStudent
-   * @description Sets the selected student and opens the dialog for editing.
-   * @param {Student} student - The student object to be edited.
-   * @input student - The student data to populate the edit dialog.
-   * @output Opens the student editing dialog pre-filled with the selected student's information.
-   * @returns {void}
-   */
+  const isAdmin = data?.userData?.role === 'admin';
+  const students = data?.students || [];
+  const totalStudents = students.length;
+  const activeStudents = students.filter((s) => s.status === "active").length;
+  const inactiveStudents = totalStudents - activeStudents;
+
+  const filteredStudents = students.filter(
+    (student) =>
+      student.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (student.guardian_name || "").toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   const handleEditStudent = (student: Student) => {
     setSelectedStudent(student);
     setIsDialogOpen(true);
   };
 
-  /**
-   * @function handleAddStudent
-   * @description Clears any selected student and opens the dialog for adding a new student.
-   * @input None.
-   * @output Opens the student dialog in "add new" mode.
-   * @returns {void}
-   */
   const handleAddStudent = () => {
     setSelectedStudent(null);
     setIsDialogOpen(true);
   };
 
-  /**
-   * @function handleCloseDialog
-   * @description Clears the selected student and closes the student dialog.
-   * @input None.
-   * @output Closes the student dialog and resets the selected student state.
-   * @returns {void}
-   */
   const handleCloseDialog = () => {
     setSelectedStudent(null);
     setIsDialogOpen(false);
+    queryClient.invalidateQueries({ queryKey: ["students", userId] });
   };
 
   return (
-    <DashboardLayout>
-      <div className="space-y-6">
-        <div className="flex flex-col gap-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold">Students</h1>
-              <p className="text-muted-foreground">Manage and monitor student progress</p>
-            </div>
-            <Button onClick={handleAddStudent} className="gap-2">
-              <UserPlus className="h-5 w-5" />
-              Add Student
-            </Button>
-          </div>
-
-          <div className="grid gap-4 md:grid-cols-3">
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 dark:bg-purple-900/20">
-                <CardTitle className="text-sm font-medium text-purple-700 dark:text-purple-300">Total Students</CardTitle>
-                <Users className="h-4 w-4 text-purple-600 dark:text-purple-400" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{stats.totalStudents}</div>
-                <p className="text-xs text-muted-foreground">
-                  {stats.activeStudents} active students
-                </p>
-                <Progress value={stats.avgAttendance} className="mt-3" />
-                <p className="mt-2 text-xs text-muted-foreground">
-                  {stats.avgAttendance}% average attendance
-                </p>
-              </CardContent>
-            </Card>
-          </div>
+    <div className="p-4 sm:p-6 lg:p-8 space-y-6">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">Students</h1>
+          <p className="text-muted-foreground">
+            Manage student records and view their details.
+          </p>
         </div>
-
-        <div className="bg-white dark:bg-card shadow-sm rounded-lg border">
-          <div className="p-4 border-b">
-            <div className="relative flex max-w-sm items-center">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input 
-                placeholder="Search students by name or guardian..." 
-                value={searchQuery} 
-                onChange={e => setSearchQuery(e.target.value)} 
-                className="pl-9"
-              />
-            </div>
-          </div>
-          <StudentList searchQuery={searchQuery} onEdit={handleEditStudent} />
-        </div>
+        <Button onClick={handleAddStudent} className="w-full sm:w-auto">
+          <PlusCircle className="mr-2 h-4 w-4" />
+          Add New Student
+        </Button>
       </div>
 
-      <StudentDialog 
-        open={isDialogOpen} 
-        onOpenChange={setIsDialogOpen} 
-        selectedStudent={selectedStudent} 
-        onClose={handleCloseDialog} 
-      />
-    </DashboardLayout>
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <StatCard
+          title="Total Students"
+          value={totalStudents}
+          description={`${activeStudents} active`}
+          icon={<Users className="h-4 w-4 text-muted-foreground" />}
+          isLoading={isLoading}
+          isAdmin={isAdmin}
+        />
+        <StatCard
+          title="Active"
+          value={activeStudents}
+          description={`${((activeStudents / totalStudents) * 100 || 0).toFixed(0)}% of students`}
+          icon={<CheckCircle className="h-4 w-4 text-muted-foreground" />}
+          isLoading={isLoading}
+          isAdmin={isAdmin}
+        />
+        <StatCard
+          title="Inactive"
+          value={inactiveStudents}
+          description={`${((inactiveStudents / totalStudents) * 100 || 0).toFixed(0)}% of students`}
+          icon={<Activity className="h-4 w-4 text-muted-foreground" />}
+          isLoading={isLoading}
+          isAdmin={isAdmin}
+        />
+      </div>
+
+      <Card>
+        <CardHeader
+          className={isAdmin ? "border-b border-primary/30" : ""}
+        >
+          <CardTitle>All Students</CardTitle>
+          <CardDescription>
+            A list of all students in the system.
+          </CardDescription>
+          <div className="relative pt-4">
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search by name or guardian..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-8 w-full"
+            />
+          </div>
+        </CardHeader>
+        <CardContent>
+          <StudentList
+            students={filteredStudents}
+            isLoading={isLoading}
+            onEditStudent={handleEditStudent}
+          />
+        </CardContent>
+      </Card>
+
+      {isDialogOpen && (
+        <StudentDialog
+          isOpen={isDialogOpen}
+          onClose={handleCloseDialog}
+          student={selectedStudent}
+          madrassahId={data?.userData?.madrassah_id}
+        />
+      )}
+    </div>
   );
 };
 

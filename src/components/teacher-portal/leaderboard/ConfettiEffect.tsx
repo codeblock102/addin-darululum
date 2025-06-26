@@ -1,14 +1,15 @@
-
-import { useEffect, useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Star, Award, Trophy } from 'lucide-react';
+import { useEffect, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
+import { Award, Star, Trophy } from "lucide-react";
 
 interface ConfettiEffectProps {
   active: boolean;
   duration?: number;
 }
 
-export const ConfettiEffect = ({ active, duration = 5000 }: ConfettiEffectProps) => {
+export const ConfettiEffect = (
+  { active, duration = 5000 }: ConfettiEffectProps,
+) => {
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
@@ -34,18 +35,16 @@ export const ConfettiEffect = ({ active, duration = 5000 }: ConfettiEffectProps)
       const delay = Math.random() * 0.2;
       const duration = 1 + Math.random() * 2;
       const rotate = Math.random() * 360;
-      
+
       // Alternate between different icons that exist in lucide-react
-      const IconComponent = i % 3 === 0 ? Star 
-        : i % 3 === 1 ? Award 
-        : Trophy;
-      
-      const color = i % 3 === 0 
-        ? 'text-yellow-500' 
-        : i % 3 === 1 
-          ? 'text-indigo-500' 
-          : 'text-rose-500';
-      
+      const IconComponent = i % 3 === 0 ? Star : i % 3 === 1 ? Award : Trophy;
+
+      const color = i % 3 === 0
+        ? "text-yellow-500"
+        : i % 3 === 1
+        ? "text-indigo-500"
+        : "text-rose-500";
+
       return { x, y, size, delay, duration, rotate, IconComponent, color };
     });
   };
@@ -58,27 +57,27 @@ export const ConfettiEffect = ({ active, duration = 5000 }: ConfettiEffectProps)
             <motion.div
               key={i}
               className="absolute"
-              initial={{ 
-                x: `${particle.x}vw`, 
+              initial={{
+                x: `${particle.x}vw`,
                 y: `${particle.y}vh`,
                 opacity: 1,
-                scale: 1
+                scale: 1,
               }}
-              animate={{ 
-                y: '110vh', 
+              animate={{
+                y: "110vh",
                 rotate: particle.rotate,
                 opacity: [1, 1, 0.8, 0.6, 0],
-                scale: [1, 1.2, 1, 0.8, 0.6]
+                scale: [1, 1.2, 1, 0.8, 0.6],
               }}
-              transition={{ 
-                duration: particle.duration, 
+              transition={{
+                duration: particle.duration,
                 delay: particle.delay,
-                ease: "easeOut"
+                ease: "easeOut",
               }}
             >
-              <particle.IconComponent 
-                size={particle.size} 
-                className={`${particle.color}`} 
+              <particle.IconComponent
+                size={particle.size}
+                className={`${particle.color}`}
               />
             </motion.div>
           ))}

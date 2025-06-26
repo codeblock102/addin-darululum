@@ -1,7 +1,7 @@
 /**
  * @file src/config/defaultSettings.ts
  * @summary This file defines the default system settings for the application.
- * 
+ *
  * It exports a `DEFAULT_SETTINGS` constant, which is an object conforming to the `SystemSettings` type.
  * This object provides the initial values for various application settings, categorized into sections like:
  * - `appearance`: Theme, layout, font size, animations.
@@ -28,13 +28,13 @@ import { SystemSettings } from "@/types/settings";
  */
 export const DEFAULT_SETTINGS: SystemSettings = {
   appearance: {
-    theme: 'light',
+    theme: "light",
     sidebarCompact: false,
     highContrastMode: false,
     animationsEnabled: true,
-    fontSize: 'medium',
-    colorTheme: 'default',
-    layoutDensity: 'comfortable',
+    fontSize: "medium",
+    colorTheme: "default",
+    layoutDensity: "comfortable",
   },
   notifications: {
     emailNotifications: true,
@@ -42,11 +42,11 @@ export const DEFAULT_SETTINGS: SystemSettings = {
     attendanceReminders: true,
     systemAnnouncements: true,
     pushNotifications: false,
-    notificationPriority: 'all',
+    notificationPriority: "all",
     quietHours: {
       enabled: false,
-      start: '22:00',
-      end: '08:00',
+      start: "22:00",
+      end: "08:00",
     },
     customTemplates: false,
   },
@@ -61,8 +61,8 @@ export const DEFAULT_SETTINGS: SystemSettings = {
     },
     loginTimeRestrictions: {
       enabled: false,
-      startTime: '08:00',
-      endTime: '18:00',
+      startTime: "08:00",
+      endTime: "18:00",
     },
     passwordPolicy: {
       minLength: 8,
@@ -74,29 +74,29 @@ export const DEFAULT_SETTINGS: SystemSettings = {
   academic: {
     defaultJuzPerWeek: 1,
     attendanceThreshold: 75,
-    progressReportFrequency: 'weekly',
-    academicYearStart: '09-01',
-    academicYearEnd: '06-30',
-    gradingScale: 'percentage',
+    progressReportFrequency: "weekly",
+    academicYearStart: "09-01",
+    academicYearEnd: "06-30",
+    gradingScale: "percentage",
     customAssessments: false,
     curriculumCustomization: false,
     milestoneTracking: false,
   },
   localization: {
-    language: 'english',
-    timeFormat: '12h',
-    dateFormat: 'MM/DD/YYYY',
-    firstDayOfWeek: 'sunday',
-    region: 'US',
+    language: "english",
+    timeFormat: "12h",
+    dateFormat: "MM/DD/YYYY",
+    firstDayOfWeek: "sunday",
+    region: "US",
   },
   integrations: {
     calendarSync: {
       enabled: false,
-      provider: 'none',
+      provider: "none",
     },
     communicationTools: {
       enabled: false,
-      preferredPlatform: 'email',
+      preferredPlatform: "email",
     },
     externalApis: false,
     automations: false,
@@ -104,7 +104,7 @@ export const DEFAULT_SETTINGS: SystemSettings = {
   dataManagement: {
     autoBackup: {
       enabled: false,
-      frequency: 'weekly',
+      frequency: "weekly",
       retention: 30,
     },
     dataExport: {
@@ -121,7 +121,7 @@ export const DEFAULT_SETTINGS: SystemSettings = {
   userExperience: {
     guidedTours: true,
     keyboardShortcuts: false,
-    defaultLandingPage: 'dashboard',
+    defaultLandingPage: "dashboard",
     widgetCustomization: false,
   },
   advancedOptions: {
@@ -131,6 +131,6 @@ export const DEFAULT_SETTINGS: SystemSettings = {
       betaFeatures: false,
       experimentalUi: false,
     },
-    performanceMode: 'balanced',
+    performanceMode: "balanced",
   },
 };

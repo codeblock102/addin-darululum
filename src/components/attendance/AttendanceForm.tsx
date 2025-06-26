@@ -1,66 +1,115 @@
+import { useState } from "react";
+import { Form } from "@/components/ui/form.tsx";
+import { useToast } from "@/hooks/use-toast.ts";
+import { DateSelector } from "./form/DateSelector.tsx";
+import { NotesField } from "./form/NotesField.tsx";
+import { useAttendanceSubmit } from "./form/useAttendanceSubmit.ts";
+import { StudentGrid } from "./form/StudentGrid.tsx";
+import { BulkActions } from "./form/BulkActions.tsx";
+import { useAuth } from "@/hooks/use-auth.ts";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card.tsx";
 
-import { Card, CardContent } from "@/components/ui/card";
-import { Form } from "@/components/ui/form";
-import { AttendanceFormHeader } from "./form/AttendanceFormHeader";
-import { ClassSelector } from "./form/ClassSelector";
-import { StudentSelector } from "./form/StudentSelector";
-import { AttendanceStatusRadioGroup } from "./form/AttendanceStatusRadioGroup";
-import { NotesField } from "./form/NotesField";
-import { SubmitButton } from "./form/SubmitButton";
-import { useAttendanceSubmit } from "./form/useAttendanceSubmit";
+export const AttendanceForm = () => {
+  const { session } = useAuth();
+  const [selectedStudents, setSelectedStudents] = useState<Set<string>>(new Set());
+  const { toast } = useToast();
 
-export function AttendanceForm() {
-  const {
-    form,
-    onSubmit,
-    selectedClass,
-    setSelectedClass,
-    selectedStudent,
-    setSelectedStudent,
-    classesData,
-    students,
-    isLoadingClasses,
-    isLoadingStudents,
-    existingAttendance,
-    saveAttendance,
-  } = useAttendanceSubmit();
+  const { form, isProcessing, handleBulkSubmit } = useAttendanceSubmit({
+    onSuccess: () => setSelectedStudents(new Set()),
+    onError: (error: Error) =>
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      }),
+  });
+
+  const handleStudentSelect = (studentId: string) => {
+    setSelectedStudents((prev) => {
+      const newSelected = new Set(prev);
+      if (newSelected.has(studentId)) newSelected.delete(studentId);
+      else newSelected.add(studentId);
+      return newSelected;
+    });
+  };
+
+  const handleSelectAll = (students: { id: string }[] = []) => {
+    if (selectedStudents.size === students.length) setSelectedStudents(new Set());
+    else setSelectedStudents(new Set(students.map((s) => s.id)));
+  };
 
   return (
-    <Card className="border border-purple-200 dark:border-purple-800/40 shadow-sm overflow-hidden bg-white dark:bg-gray-900">
-      <AttendanceFormHeader />
-      <CardContent className="p-6">
-        <div className="space-y-4">
-          <ClassSelector 
-            form={form}
-            selectedClass={selectedClass}
-            setSelectedClass={setSelectedClass}
-            isLoading={isLoadingClasses}
-            classesData={classesData}
-          />
+    <Form {...form}>
+      <div className="space-y-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>Date and Time</CardTitle>
+            <CardDescription>
+              Select the date and time for the attendance records.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <DateSelector form={form} />
+          </CardContent>
+        </Card>
 
-          <StudentSelector 
-            form={form}
-            selectedStudent={selectedStudent}
-            setSelectedStudent={setSelectedStudent}
-            isLoading={isLoadingStudents}
-            students={students}
-            disabled={!selectedClass}
-          />
+        <Card>
+          <CardHeader>
+            <CardTitle>Select Students</CardTitle>
+            <CardDescription>
+              Choose the students to mark attendance for.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <StudentGrid
+              form={form}
+              user={session?.user ?? null}
+              multiSelect
+              selectedStudents={selectedStudents}
+              onStudentSelect={handleStudentSelect}
+              onSelectAll={handleSelectAll}
+            />
+          </CardContent>
+        </Card>
 
-          {selectedStudent && (
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                <AttendanceStatusRadioGroup form={form} />
-                <NotesField form={form} />
-                <SubmitButton 
-                  isPending={saveAttendance.isPending} 
-                  isUpdate={!!existingAttendance}
-                />
-              </form>
-            </Form>
-          )}
-        </div>
-      </CardContent>
-    </Card>
+        {selectedStudents.size > 0 && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Bulk Actions</CardTitle>
+              <CardDescription>
+                Apply the same attendance status to all selected students.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <BulkActions
+                form={form}
+                selectedStudents={selectedStudents}
+                onClear={() => setSelectedStudents(new Set())}
+                isSubmitting={isProcessing}
+                onSubmit={handleBulkSubmit}
+              />
+            </CardContent>
+          </Card>
+        )}
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Additional Notes</CardTitle>
+            <CardDescription>
+              Add any relevant notes for this attendance record.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <NotesField form={form} />
+          </CardContent>
+        </Card>
+      </div>
+    </Form>
   );
-}
+};
