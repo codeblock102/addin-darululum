@@ -8,6 +8,7 @@ import { useIsMobile } from "@/hooks/use-mobile.tsx";
 import { BottomNavigation } from "@/components/mobile/BottomNavigation.tsx";
 import { Outlet } from "react-router-dom";
 import { cn } from "@/lib/utils.ts";
+import { useTheme } from "@/hooks/use-theme.ts";
 
 interface DashboardLayoutProps {
   children?: React.ReactNode;
@@ -15,8 +16,22 @@ interface DashboardLayoutProps {
 
 export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   const { isAdmin, isTeacher, isLoading } = useRBAC();
+  const { setTheme } = useTheme();
   const isMobile = useIsMobile();
   const [sidebarOpen, setSidebarOpen] = useState(!isMobile);
+
+  useEffect(() => {
+    const root = document.documentElement;
+    if (isTeacher && !isAdmin) {
+      root.classList.remove("dark");
+      root.classList.add("teacher-theme");
+      setTheme("light");
+    } else if (isAdmin) {
+      root.classList.remove("teacher-theme");
+      root.classList.add("dark");
+      setTheme("dark");
+    }
+  }, [isAdmin, isTeacher, setTheme]);
 
   useEffect(() => {
     if (isMobile) {
@@ -39,9 +54,10 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
 
   return (
     <div
-      className={`flex min-h-screen w-full overflow-hidden ${
-        isAdmin ? "admin-theme" : "teacher-theme"
-      }`}
+      className={cn(
+        "flex min-h-screen w-full overflow-hidden",
+        isAdmin ? "admin-theme" : "teacher-theme",
+      )}
     >
       <div
         className={cn(
