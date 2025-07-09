@@ -18,6 +18,7 @@ import {
 import { Input } from "@/components/ui/input.tsx";
 import { DhorBook as DhorBookComponent } from "@/components/dhor-book/DhorBook.tsx";
 import { ClassroomRecords } from "@/components/dhor-book/ClassroomRecords.tsx";
+import { MonthlyProgress } from "@/components/progress/MonthlyProgress.tsx";
 import {
   Book,
   BookOpen,
@@ -41,7 +42,7 @@ const ProgressBookPage = () => {
   );
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState("all");
-  const [viewMode, setViewMode] = useState<"daily" | "classroom">("daily");
+  const [viewMode, setViewMode] = useState<"daily" | "classroom" | "monthly">("daily");
   const [selectedTeacherId, setSelectedTeacherId] = useState<
     string | undefined
   >(undefined);
@@ -193,9 +194,10 @@ const ProgressBookPage = () => {
         </div>
       </div>
 
-      <Tabs value={viewMode} onValueChange={(value) => setViewMode(value as "daily" | "classroom")} className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
+      <Tabs value={viewMode} onValueChange={(value) => setViewMode(value as "daily" | "classroom" | "monthly")} className="w-full">
+        <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="daily">Daily Records</TabsTrigger>
+          <TabsTrigger value="monthly">Monthly Progress</TabsTrigger>
           <TabsTrigger value="classroom">Leaderboard View</TabsTrigger>
         </TabsList>
         <TabsContent value="daily">
@@ -273,6 +275,19 @@ const ProgressBookPage = () => {
             </CardContent>
           </Card>
         </TabsContent>
+        
+        <TabsContent value="monthly">
+          <Card className="mt-4">
+            <CardContent className="p-4 sm:p-6">
+              <MonthlyProgress
+                isAdmin={isAdmin}
+                teacherId={selectedTeacherId ?? (currentTeacherId || undefined)}
+                userProfileData={userProfileData}
+              />
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
         <TabsContent value="classroom">
           <Card className="mt-4">
             <CardContent className="p-4 sm:p-6">

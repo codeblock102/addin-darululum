@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client.ts";
 import { StudentFormData } from "./studentTypes.ts";
+import { getErrorMessage } from "@/utils/stringUtils.ts";
 
 interface UseStudentSubmitProps {
   teacherId: string;
@@ -43,7 +44,20 @@ export const useStudentSubmit = ({
         throw new Error("Emergency contact phone is required");
       }
 
-      // First, check if the student exists in students table
+      // First, get the teacher's profile to get madrassah_id and section
+      const { data: teacherProfile, error: teacherError } = await supabase
+        .from("profiles")
+        .select("madrassah_id, section")
+        .eq("id", teacherId)
+        .single();
+
+      if (teacherError) throw teacherError;
+
+      if (!teacherProfile?.madrassah_id) {
+        throw new Error("Teacher must be assigned to a madrassah to create students");
+      }
+
+      // Check if the student exists in students table
       const { data: existingStudent, error: lookupError } = await supabase
         .from("students")
         .select("id, name")
@@ -73,6 +87,8 @@ export const useStudentSubmit = ({
               ? null
               : Number(formData.currentJuz),
             completed_juz: completedJuz,
+            madrassah_id: teacherProfile.madrassah_id,
+            section: teacherProfile.section,
           });
 
         if (createError) throw createError;
@@ -91,6 +107,8 @@ export const useStudentSubmit = ({
               ? null
               : Number(formData.currentJuz),
             completed_juz: completedJuz,
+            madrassah_id: teacherProfile.madrassah_id,
+            section: teacherProfile.section,
           })
           .eq("id", existingStudent.id);
 
@@ -111,7 +129,8 @@ export const useStudentSubmit = ({
       onSuccess?.();
     } catch (error: unknown) {
       console.error("Failed to add student:", error);
-      onError?.(error instanceof Error ? error : new Error(String(error)));
+      const errorMessage = getErrorMessage(error, "Failed to add student");
+      onError?.(new Error(errorMessage));
     } finally {
       setIsProcessing(false);
     }

@@ -26,6 +26,7 @@ interface Student {
   status: "active" | "inactive";
   madrassah_id?: string;
   section?: string;
+  medical_condition?: string | null;
 }
 
 const StatCard = ({ title, value, icon, description, isLoading, isAdmin }: any) => (
@@ -74,7 +75,7 @@ const Students = () => {
       if (!userData?.madrassah_id) return { students: [], userData };
       const query = supabase
         .from("students")
-        .select("*")
+        .select("id, name, date_of_birth, enrollment_date, guardian_name, guardian_contact, status, madrassah_id, section, medical_condition")
         .eq("madrassah_id", userData.madrassah_id);
       if (userData.role === "teacher" && userData.section)
         query.eq("section", userData.section);
@@ -181,14 +182,13 @@ const Students = () => {
         </CardContent>
       </Card>
 
-      {isDialogOpen && (
-        <StudentDialog
-          isOpen={isDialogOpen}
-          onClose={handleCloseDialog}
-          student={selectedStudent}
-          madrassahId={data?.userData?.madrassah_id}
-        />
-      )}
+      <StudentDialog
+        open={isDialogOpen}
+        onOpenChange={setIsDialogOpen}
+        selectedStudent={selectedStudent}
+        onClose={handleCloseDialog}
+        madrassahId={data?.userData?.madrassah_id}
+      />
     </div>
   );
 };

@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client.ts";
 import { Button } from "@/components/ui/button.tsx";
 import { Input } from "@/components/ui/input.tsx";
 import { Label } from "@/components/ui/label.tsx";
+import { Textarea } from "@/components/ui/textarea.tsx";
 import {
   Dialog,
   DialogContent,
@@ -38,6 +39,7 @@ interface Student {
   current_juz?: number | null;
   madrassah_id?: string;
   section?: string;
+  medical_condition?: string | null;
 }
 
 interface StudentDialogProps {
@@ -45,10 +47,12 @@ interface StudentDialogProps {
   onOpenChange: (open: boolean) => void;
   selectedStudent: Student | null;
   onClose: () => void;
+  madrassahId?: string;
+  isTeacher?: boolean;
 }
 
 export const StudentDialog = (
-  { open, onOpenChange, selectedStudent, onClose }: StudentDialogProps,
+  { open, onOpenChange, selectedStudent, onClose, madrassahId, isTeacher = false }: StudentDialogProps,
 ) => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -63,8 +67,9 @@ export const StudentDialog = (
     status: selectedStudent?.status || "active",
     completed_juz: selectedStudent?.completed_juz || [],
     current_juz: selectedStudent?.current_juz?.toString() || "_none_",
-    madrassah_id: selectedStudent?.madrassah_id || "",
+    madrassah_id: selectedStudent?.madrassah_id || madrassahId || "",
     section: selectedStudent?.section || "",
+    medicalConditions: selectedStudent?.medical_condition || "",
   });
 
   // Update form data when selectedStudent changes
@@ -82,6 +87,7 @@ export const StudentDialog = (
         current_juz: selectedStudent.current_juz?.toString() || "_none_",
         madrassah_id: selectedStudent.madrassah_id || "",
         section: selectedStudent.section || "",
+        medicalConditions: selectedStudent.medical_condition || "",
       });
     } else {
       // Reset form data for new student
@@ -94,24 +100,32 @@ export const StudentDialog = (
         status: "active",
         completed_juz: [],
         current_juz: "_none_", // Default to special "None" value
-        madrassah_id: "",
+        madrassah_id: madrassahId || "",
         section: "",
+        medicalConditions: "",
       });
     }
-  }, [selectedStudent]);
+  }, [selectedStudent, madrassahId]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsProcessing(true);
 
     try {
-      const submissionData = {
-        ...formData,
+      const { medicalConditions, section, ...formDataWithoutMedical } = formData;
+      const baseSubmissionData = {
+        ...formDataWithoutMedical,
         current_juz: formData.current_juz === "_none_"
           ? null
           : Number(formData.current_juz),
         completed_juz: formData.completed_juz.map((juz) => Number(juz)),
+        medical_condition: formData.medicalConditions || null,
       };
+
+      // Teachers cannot modify section assignments
+      const submissionData = isTeacher 
+        ? baseSubmissionData 
+        : { ...baseSubmissionData, section };
 
       if (selectedStudent) {
         const { error } = await supabase
@@ -213,33 +227,46 @@ export const StudentDialog = (
                   />
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="madrassah_id">Madrassah ID</Label>
-                  <Input
-                    id="madrassah_id"
-                    placeholder="Enter madrassah ID"
-                    value={formData.madrassah_id}
-                    onChange={(e) =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        madrassah_id: e.target.value,
-                      }))}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="section">Section</Label>
-                  <Input
-                    id="section"
-                    placeholder="Enter section"
-                    value={formData.section}
-                    onChange={(e) =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        section: e.target.value,
-                      }))}
-                  />
-                </div>
+              <div className="space-y-2">
+                <Label htmlFor="section">
+                  Section
+                  {isTeacher && (
+                    <span className="text-xs text-muted-foreground ml-2">
+                      (Admin only)
+                    </span>
+                  )}
+                </Label>
+                <Input
+                  id="section"
+                  placeholder={isTeacher ? "Managed by administrator" : "Enter section"}
+                  value={formData.section}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      section: e.target.value,
+                    }))}
+                  disabled={isTeacher}
+                  className={isTeacher ? "bg-muted cursor-not-allowed" : ""}
+                />
+                {isTeacher && (
+                  <p className="text-xs text-muted-foreground">
+                    Section assignments are managed by administrators
+                  </p>
+                )}
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="medicalConditions">Medical Conditions</Label>
+                <Textarea
+                  id="medicalConditions"
+                  placeholder="Any medical conditions or allergies that teachers should know about"
+                  value={formData.medicalConditions}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      medicalConditions: e.target.value,
+                    }))}
+                  rows={3}
+                />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="status">Status</Label>

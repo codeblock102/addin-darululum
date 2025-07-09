@@ -56,8 +56,22 @@ export const AddStudentDialog = ({ teacherId }: AddStudentDialogProps) => {
       queryClient.invalidateQueries({
         queryKey: ["teacher-student-assignments"],
       });
+      
+      // Invalidate all student-related queries to ensure UI updates everywhere
+      queryClient.invalidateQueries({ queryKey: ["students-for-user"] });
+      queryClient.invalidateQueries({ queryKey: ["all-students-for-search"] });
+      queryClient.invalidateQueries({ queryKey: ["classroom-students"] });
+      queryClient.invalidateQueries({ queryKey: ["students"] });
+      queryClient.invalidateQueries({ queryKey: ["all-students"] });
+      queryClient.invalidateQueries({ queryKey: ["teacher-students"] });
+      queryClient.invalidateQueries({ queryKey: ["students-for-assignment"] });
+      queryClient.invalidateQueries({ queryKey: ["all-students-for-progress"] });
+      queryClient.invalidateQueries({ queryKey: ["all-students-list"] });
+      queryClient.invalidateQueries({ queryKey: ["all-students-selector"] });
+      queryClient.invalidateQueries({ queryKey: ["all-students-bulk"] });
+      queryClient.invalidateQueries({ queryKey: ["students-search"] });
     },
-    onError: (error) => {
+    onError: (error: Error) => {
       toast({
         title: "Error",
         description: error.message,
