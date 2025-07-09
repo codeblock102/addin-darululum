@@ -7,11 +7,12 @@ import {
   TableRow,
 } from "@/components/ui/table.tsx";
 import { Button } from "@/components/ui/button.tsx";
-import { Trash2, UserMinus, UserPlus } from "lucide-react";
+import { Trash2, UserMinus, UserPlus, Edit } from "lucide-react";
 import { Student, StudentAssignment } from "../MyStudents.tsx";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client.ts";
 import { useToast } from "@/hooks/use-toast.ts";
+import { getErrorMessage } from "@/utils/stringUtils.ts";
 
 interface StudentTableProps {
   students: Student[];
@@ -21,6 +22,7 @@ interface StudentTableProps {
   ) => void;
   setIsDeleteDialogOpen: (open: boolean) => void;
   setIsDeleteType: (type: "remove" | "delete") => void;
+  onEditStudent?: (student: Student) => void;
 }
 
 export const StudentTable = ({
@@ -29,6 +31,7 @@ export const StudentTable = ({
   setStudentToDelete,
   setIsDeleteDialogOpen,
   setIsDeleteType,
+  onEditStudent,
 }: StudentTableProps) => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -57,11 +60,23 @@ export const StudentTable = ({
         queryKey: ["teacher-student-assignments"],
       });
       queryClient.invalidateQueries({ queryKey: ["teacher-students-details"] });
+      
+      // Invalidate all student-related queries to ensure UI updates everywhere
+      queryClient.invalidateQueries({ queryKey: ["students-for-user"] });
+      queryClient.invalidateQueries({ queryKey: ["all-students-for-search"] });
+      queryClient.invalidateQueries({ queryKey: ["classroom-students"] });
+      queryClient.invalidateQueries({ queryKey: ["students"] });
+      queryClient.invalidateQueries({ queryKey: ["all-students"] });
+      queryClient.invalidateQueries({ queryKey: ["teacher-students"] });
+      queryClient.invalidateQueries({ queryKey: ["students-for-assignment"] });
+      queryClient.invalidateQueries({ queryKey: ["all-students-for-progress"] });
+      queryClient.invalidateQueries({ queryKey: ["students-search"] });
     },
     onError: (error) => {
+      const errorMessage = getErrorMessage(error, "Failed to add student");
       toast({
         title: "Error",
-        description: `Failed to add student: ${error.message}`,
+        description: errorMessage,
         variant: "destructive",
       });
     },
@@ -108,9 +123,10 @@ export const StudentTable = ({
             return (
               <TableRow
                 key={student.id}
-                className={`transition-colors hover:bg-gray-50 ${
+                className={`transition-colors hover:bg-gray-50 cursor-pointer ${
                   isAssigned ? "bg-blue-50" : ""
                 }`}
+                onClick={() => onEditStudent?.(student)}
               >
                 <TableCell>
                   <div className="flex items-center space-x-3">
@@ -151,10 +167,27 @@ export const StudentTable = ({
                 </TableCell>
                 <TableCell className="text-right">
                   <div className="flex justify-end gap-2">
+                    {onEditStudent && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation(); // Prevent row click when clicking the button
+                          onEditStudent(student);
+                        }}
+                        className="text-blue-500 hover:text-blue-600 hover:bg-blue-50"
+                      >
+                        <Edit className="h-4 w-4 mr-1" />
+                        Edit
+                      </Button>
+                    )}
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => handleDeleteStudent(student)}
+                      onClick={(e) => {
+                        e.stopPropagation(); // Prevent row click when clicking the button
+                        handleDeleteStudent(student);
+                      }}
                       className="text-red-500 hover:text-red-600 hover:bg-red-50"
                     >
                       <Trash2 className="h-4 w-4 mr-1" />

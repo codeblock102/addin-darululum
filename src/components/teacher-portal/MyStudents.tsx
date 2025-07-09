@@ -14,6 +14,7 @@ import { StudentTable } from "./students/StudentTable.tsx";
 import { StudentMobileList } from "./students/StudentMobileList.tsx";
 import { StudentDeleteDialog } from "./students/StudentDeleteDialog.tsx";
 import { AddStudentDialog } from "./students/AddStudentDialog.tsx";
+import { StudentDialog } from "@/components/students/StudentDialog.tsx";
 import { useIsMobile } from "@/hooks/use-mobile.tsx";
 
 interface MyStudentsProps {
@@ -26,6 +27,12 @@ export interface Student {
   name: string;
   enrollment_date: string | null;
   status: "active" | "inactive";
+  date_of_birth: string | null;
+  guardian_name: string | null;
+  guardian_contact: string | null;
+  madrassah_id?: string;
+  section?: string;
+  medical_condition: string | null;
 }
 
 export interface StudentAssignment {
@@ -42,6 +49,8 @@ export const MyStudents = ({ teacherId, isAdmin = false }: MyStudentsProps) => {
   const [isDeleteType, setIsDeleteType] = useState<"remove" | "delete">(
     "remove",
   );
+  const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const isMobile = useIsMobile();
 
   const { data: userData, isLoading: isLoadingUser } = useQuery({
@@ -76,7 +85,7 @@ export const MyStudents = ({ teacherId, isAdmin = false }: MyStudentsProps) => {
 
       let query = supabase
         .from("students")
-        .select("id, name, enrollment_date, status")
+        .select("id, name, enrollment_date, status, date_of_birth, guardian_name, guardian_contact, madrassah_id, section, medical_condition")
         .eq("status", "active")
         .eq("madrassah_id", userData.madrassah_id);
 
@@ -119,6 +128,24 @@ export const MyStudents = ({ teacherId, isAdmin = false }: MyStudentsProps) => {
     student.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  const handleEditStudent = (student: Student) => {
+    // Transform student to match StudentDialog interface
+    const transformedStudent = {
+      ...student,
+      date_of_birth: student.date_of_birth || null,
+      guardian_name: student.guardian_name || null,
+      guardian_contact: student.guardian_contact || null,
+      medical_condition: student.medical_condition || null,
+    };
+    setSelectedStudent(transformedStudent);
+    setIsEditDialogOpen(true);
+  };
+
+  const handleCloseEditDialog = () => {
+    setSelectedStudent(null);
+    setIsEditDialogOpen(false);
+  };
+
   return (
     <Card className="w-full overflow-hidden">
       <CardHeader>
@@ -135,6 +162,11 @@ export const MyStudents = ({ teacherId, isAdmin = false }: MyStudentsProps) => {
           searchQuery={searchQuery}
           setSearchQuery={setSearchQuery}
         />
+        {filteredStudents && filteredStudents.length > 0 && (
+          <div className="px-4 py-2 text-xs text-muted-foreground bg-muted/30 border rounded-md">
+            💡 Click on any student row/card to edit their details
+          </div>
+        )}
       </CardHeader>
       <CardContent className="p-0 md:p-6">
         {isLoading ? <LoadingSpinner /> : (
@@ -149,6 +181,7 @@ export const MyStudents = ({ teacherId, isAdmin = false }: MyStudentsProps) => {
                       setStudentToDelete={setStudentToDelete}
                       setIsDeleteDialogOpen={setIsDeleteDialogOpen}
                       setIsDeleteType={setIsDeleteType}
+                      onEditStudent={handleEditStudent}
                     />
                   )
                   : (
@@ -158,6 +191,7 @@ export const MyStudents = ({ teacherId, isAdmin = false }: MyStudentsProps) => {
                       setStudentToDelete={setStudentToDelete}
                       setIsDeleteDialogOpen={setIsDeleteDialogOpen}
                       setIsDeleteType={setIsDeleteType}
+                      onEditStudent={handleEditStudent}
                     />
                   )
               )
@@ -177,6 +211,15 @@ export const MyStudents = ({ teacherId, isAdmin = false }: MyStudentsProps) => {
         setIsOpen={setIsDeleteDialogOpen}
         studentToDelete={studentToDelete}
         isDeleteType={isDeleteType}
+      />
+
+      <StudentDialog
+        open={isEditDialogOpen}
+        onOpenChange={setIsEditDialogOpen}
+        selectedStudent={selectedStudent}
+        onClose={handleCloseEditDialog}
+        madrassahId={userData?.madrassah_id}
+        isTeacher={true}
       />
     </Card>
   );

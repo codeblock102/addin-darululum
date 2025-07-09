@@ -35,6 +35,7 @@ import DatabaseSeeder from "@/pages/admin/DatabaseSeeder.tsx";
 import SetupAdmin from "@/pages/admin/SetupAdmin.tsx";
 import ManualRoleSetup from "@/pages/admin/ManualRoleSetup.tsx";
 import AdminLayout from "@/pages/admin/AdminLayout.tsx";
+import AdminAccessDiagnostic from "@/pages/admin/AdminAccessDiagnostic.tsx";
 
 /**
  * @component App
@@ -66,6 +67,7 @@ function App() {
           <Route path="/auth" element={<Auth />} />
           <Route path="/create-demo-account" element={<CreateDemoAccount />} />
           <Route path="/create-teacher-profile" element={<CreateTeacherProfileForTestAccount />} />
+          <Route path="/admin-diagnostic" element={<AdminAccessDiagnostic />} />
           <Route path="*" element={<NotFound />} />
 
           {/* Admin Routes */}
