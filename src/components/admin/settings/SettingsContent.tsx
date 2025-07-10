@@ -9,6 +9,7 @@ import { IntegrationSettingsSection } from "./IntegrationSettings.tsx";
 import { DataManagementSettingsSection } from "./DataManagementSettings.tsx";
 import { UserExperienceSettingsSection } from "./UserExperienceSettings.tsx";
 import { AdvancedSettingsSection } from "./AdvancedSettings.tsx";
+import { EmailScheduleManager } from "../EmailScheduleManager.tsx";
 
 interface SettingsContentProps {
   settings: SystemSettings;
@@ -18,9 +19,13 @@ interface SettingsContentProps {
 export function SettingsContent(
   { settings, updateSettings }: SettingsContentProps,
 ) {
+  const commonProps = {
+    className: "mt-0 data-[state=active]:animate-fadeIn"
+  };
+
   return (
     <>
-      <TabsContent value="appearance" className="mt-0 animate-fadeIn">
+      <TabsContent value="appearance" {...commonProps}>
         <AppearanceSettingsSection
           settings={settings.appearance}
           onUpdate={(newSettings) =>
@@ -28,7 +33,7 @@ export function SettingsContent(
         />
       </TabsContent>
 
-      <TabsContent value="notifications" className="animate-slideIn">
+      <TabsContent value="notifications" {...commonProps}>
         <NotificationSettingsSection
           settings={settings.notifications}
           onUpdate={(newSettings) =>
@@ -36,7 +41,7 @@ export function SettingsContent(
         />
       </TabsContent>
 
-      <TabsContent value="security" className="animate-slideIn">
+      <TabsContent value="security" {...commonProps}>
         <SecuritySettingsSection
           settings={settings.security}
           onUpdate={(newSettings) =>
@@ -44,7 +49,7 @@ export function SettingsContent(
         />
       </TabsContent>
 
-      <TabsContent value="academic" className="animate-slideIn">
+      <TabsContent value="academic" {...commonProps}>
         <AcademicSettingsSection
           settings={settings.academic}
           onUpdate={(newSettings) =>
@@ -52,7 +57,7 @@ export function SettingsContent(
         />
       </TabsContent>
 
-      <TabsContent value="localization" className="animate-slideIn">
+      <TabsContent value="localization" {...commonProps}>
         <LocalizationSettingsSection
           settings={settings.localization}
           onUpdate={(newSettings) =>
@@ -66,6 +71,10 @@ export function SettingsContent(
           onUpdate={(newSettings) =>
             updateSettings({ ...settings, integrations: newSettings })}
         />
+      </TabsContent>
+
+      <TabsContent value="email-schedule" className="animate-slideIn">
+        <EmailScheduleManager />
       </TabsContent>
 
       <TabsContent value="data-management" className="animate-slideIn">
