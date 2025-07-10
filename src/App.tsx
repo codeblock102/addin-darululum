@@ -36,6 +36,7 @@ import SetupAdmin from "@/pages/admin/SetupAdmin.tsx";
 import ManualRoleSetup from "@/pages/admin/ManualRoleSetup.tsx";
 import AdminLayout from "@/pages/admin/AdminLayout.tsx";
 import AdminAccessDiagnostic from "@/pages/admin/AdminAccessDiagnostic.tsx";
+import DevAdminManagement from "@/pages/DevAdminManagement.tsx";
 
 /**
  * @component App
@@ -82,6 +83,7 @@ function App() {
             <Route path="setup" element={<SetupAdmin />} />
             <Route path="roles" element={<ManualRoleSetup />} />
             <Route path="seeder" element={<DatabaseSeeder />} />
+            <Route path="admin-creator" element={<DevAdminManagement />} />
           </Route>
 
           <Route
