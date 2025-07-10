@@ -42,6 +42,17 @@ import { useRealtimeLeaderboard } from "@/hooks/useRealtimeLeaderboard.ts";
 import { useIsMobile } from "@/hooks/use-mobile.tsx";
 import { useToast } from "@/hooks/use-toast.ts";
 import { format, startOfMonth, endOfMonth, subMonths, parseISO } from "date-fns";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger
+} from "@/components/ui/alert-dialog.tsx";
 
 interface TeacherDhorBookProps {
   teacherId: string;
@@ -56,6 +67,7 @@ export const TeacherDhorBook = ({ teacherId }: TeacherDhorBookProps) => {
   const [activeTab, setActiveTab] = useState("entries");
   const [viewMode, setViewMode] = useState<"daily" | "classroom">("daily");
   const [isSendingEmails, setIsSendingEmails] = useState(false);
+  const [showEmailConfirmDialog, setShowEmailConfirmDialog] = useState(false);
   const isMobile = useIsMobile();
 
   const { data: teacherData, isLoading: isLoadingTeacher } = useQuery({
@@ -329,6 +341,7 @@ export const TeacherDhorBook = ({ teacherId }: TeacherDhorBookProps) => {
 
   const handleSendEmails = async () => {
     setIsSendingEmails(true);
+    setShowEmailConfirmDialog(false);
     toast({
       title: "Sending Emails",
       description: "Triggering the daily progress emails. This may take a moment.",
@@ -365,14 +378,36 @@ export const TeacherDhorBook = ({ teacherId }: TeacherDhorBookProps) => {
             Record and track student progress
           </p>
         </div>
-        <Button onClick={handleSendEmails} disabled={isSendingEmails} size="sm">
-          {isSendingEmails ? (
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-          ) : (
-            <Mail className="mr-2 h-4 w-4" />
-          )}
-          <span className="hidden sm:inline">Send Daily Emails</span>
-        </Button>
+        
+        <AlertDialog open={showEmailConfirmDialog} onOpenChange={setShowEmailConfirmDialog}>
+          <AlertDialogTrigger asChild>
+            <Button disabled={isSendingEmails} size="sm">
+              {isSendingEmails ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <Mail className="mr-2 h-4 w-4" />
+              )}
+              <span className="hidden sm:inline">Send Daily Emails</span>
+            </Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Confirm Email Send</AlertDialogTitle>
+              <AlertDialogDescription>
+                Are you sure you want to send daily progress emails to all guardian email addresses? 
+                This action will send progress reports for all students who have progress entries from the last 24 hours.
+                <br /><br />
+                <strong>This action cannot be undone.</strong>
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction onClick={handleSendEmails} className="bg-blue-600 hover:bg-blue-700">
+                Yes, Send Emails
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
 
       {/* View mode tabs - more prominent */}

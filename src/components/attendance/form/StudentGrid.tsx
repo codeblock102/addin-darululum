@@ -70,7 +70,7 @@ export const StudentGrid = ({ user, selectedStudents, onStudentSelect, onSelectA
     enabled: !!user,
   });
 
-  const filteredStudents = students.filter((student) =>
+  const filteredStudents = (students || []).filter((student) =>
     student.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
