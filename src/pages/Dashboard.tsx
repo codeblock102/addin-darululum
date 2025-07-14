@@ -99,15 +99,22 @@ const Dashboard = () => {
         .from("profiles")
         .select("id, name, subject, email, bio, phone")
         .eq("email", session.user.email)
-        .maybeSingle();
+        .limit(1);
 
       if (error) {
         console.error("Error fetching teacher profile:", error);
         throw error;
       }
 
-      console.log("Teacher profile fetch result:", data);
-      return data as Teacher | null;
+      // Handle potential duplicate records gracefully
+      const profileData = data && data.length > 0 ? data[0] : null;
+      
+      if (data && data.length > 1) {
+        console.warn(`Warning: Found ${data.length} profiles for email ${session.user.email}. Using the first one.`, data);
+      }
+
+      console.log("Teacher profile fetch result:", profileData);
+      return profileData ? (profileData as unknown as Teacher) : null;
     },
     enabled: !!session?.user?.email && !isAdmin, // Only enabled for non-admin users
     retry: 1,
@@ -147,17 +154,24 @@ const Dashboard = () => {
           .from("profiles")
           .select("id")
           .eq("email", session.user.email)
-          .maybeSingle();
+          .limit(1);
 
         if (checkError) throw checkError;
 
+        // Handle potential duplicate records gracefully
+        const profileExists = teacherExistsData && teacherExistsData.length > 0 ? teacherExistsData[0] : null;
+        
+        if (teacherExistsData && teacherExistsData.length > 1) {
+          console.warn(`Warning: Found ${teacherExistsData.length} profiles for email ${session.user.email} during existence check.`);
+        }
+
         console.log(
           "Teacher profile check result:",
-          teacherExistsData ? "Found" : "Not found",
+          profileExists ? "Found" : "Not found",
         );
 
         // Force refetch of the query
-        if (teacherExistsData) {
+        if (profileExists) {
           refetch();
         }
       } catch (error) {

@@ -22,6 +22,7 @@ interface Student {
   status: "active" | "inactive";
   madrassah_id?: string;
   section?: string;
+  medical_condition?: string | null;
 }
 
 interface StudentListProps {
@@ -57,6 +58,9 @@ export const StudentList = ({
 
   return (
     <div className="rounded-lg border">
+      <div className="px-4 py-2 text-xs text-muted-foreground bg-muted/30 border-b">
+        💡 Click on any student row or use the Edit button to view and edit student details
+      </div>
       <Table>
         <TableHeader>
           <TableRow>
@@ -69,7 +73,11 @@ export const StudentList = ({
         </TableHeader>
         <TableBody>
           {students.map((student) => (
-            <TableRow key={student.id}>
+            <TableRow 
+              key={student.id}
+              className="cursor-pointer hover:bg-muted/50 transition-colors"
+              onClick={() => onEditStudent?.(student)}
+            >
               <TableCell>
                 <div className="flex items-center space-x-4">
                   <Avatar>
@@ -101,16 +109,17 @@ export const StudentList = ({
                   : "N/A"}
               </TableCell>
               <TableCell className="text-right">
-                {onEditStudent && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => onEditStudent(student)}
-                  >
-                    <Edit className="h-4 w-4 mr-2" />
-                    Edit
-                  </Button>
-                )}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={(e) => {
+                    e.stopPropagation(); // Prevent row click when clicking the button
+                    onEditStudent?.(student);
+                  }}
+                >
+                  <Edit className="h-4 w-4 mr-2" />
+                  Edit
+                </Button>
               </TableCell>
             </TableRow>
           ))}

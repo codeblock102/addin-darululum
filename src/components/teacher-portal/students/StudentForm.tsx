@@ -1,19 +1,19 @@
 import { useState } from "react";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
-import { DialogFooter } from "@/components/ui/dialog";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Input } from "@/components/ui/input.tsx";
+import { Label } from "@/components/ui/label.tsx";
+import { Button } from "@/components/ui/button.tsx";
+import { DialogFooter } from "@/components/ui/dialog.tsx";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs.tsx";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Textarea } from "@/components/ui/textarea";
-import { StudentFormData } from "./studentTypes";
+} from "@/components/ui/select.tsx";
+import { Checkbox } from "@/components/ui/checkbox.tsx";
+import { Textarea } from "@/components/ui/textarea.tsx";
+import { StudentFormData } from "./studentTypes.ts";
 
 interface StudentFormProps {
   initialFormData: StudentFormData;

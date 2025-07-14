@@ -1,9 +1,10 @@
 import { Student, StudentAssignment } from "../MyStudents.tsx";
 import { Button } from "@/components/ui/button.tsx";
-import { Trash2, UserMinus, UserPlus } from "lucide-react";
+import { Trash2, UserMinus, UserPlus, Edit } from "lucide-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client.ts";
 import { useToast } from "@/hooks/use-toast.ts";
+import { getErrorMessage } from "@/utils/stringUtils.ts";
 
 interface StudentMobileListProps {
   students: Student[];
@@ -13,6 +14,7 @@ interface StudentMobileListProps {
   ) => void;
   setIsDeleteDialogOpen: (open: boolean) => void;
   setIsDeleteType: (type: "remove" | "delete") => void;
+  onEditStudent?: (student: Student) => void;
 }
 
 export const StudentMobileList = ({
@@ -21,6 +23,7 @@ export const StudentMobileList = ({
   setStudentToDelete,
   setIsDeleteDialogOpen,
   setIsDeleteType,
+  onEditStudent,
 }: StudentMobileListProps) => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -49,11 +52,23 @@ export const StudentMobileList = ({
         queryKey: ["teacher-student-assignments"],
       });
       queryClient.invalidateQueries({ queryKey: ["teacher-students-details"] });
+      
+      // Invalidate all student-related queries to ensure UI updates everywhere
+      queryClient.invalidateQueries({ queryKey: ["students-for-user"] });
+      queryClient.invalidateQueries({ queryKey: ["all-students-for-search"] });
+      queryClient.invalidateQueries({ queryKey: ["classroom-students"] });
+      queryClient.invalidateQueries({ queryKey: ["students"] });
+      queryClient.invalidateQueries({ queryKey: ["all-students"] });
+      queryClient.invalidateQueries({ queryKey: ["teacher-students"] });
+      queryClient.invalidateQueries({ queryKey: ["students-for-assignment"] });
+      queryClient.invalidateQueries({ queryKey: ["all-students-for-progress"] });
+      queryClient.invalidateQueries({ queryKey: ["students-search"] });
     },
     onError: (error) => {
+      const errorMessage = getErrorMessage(error, "Failed to add student");
       toast({
         title: "Error",
-        description: `Failed to add student: ${error.message}`,
+        description: errorMessage,
         variant: "destructive",
       });
     },
@@ -103,11 +118,12 @@ export const StudentMobileList = ({
         return (
           <div
             key={student.id}
-            className={`rounded-lg border p-4 space-y-3 ${
+            className={`rounded-lg border p-4 space-y-3 cursor-pointer hover:shadow-md transition-shadow ${
               isAssigned
                 ? "border-blue-200 bg-blue-50"
                 : "border-gray-200 bg-white"
             }`}
+            onClick={() => onEditStudent?.(student)}
           >
             <div className="flex items-center space-x-3">
               <div
@@ -140,12 +156,29 @@ export const StudentMobileList = ({
             </div>
 
             <div className="flex justify-end gap-2">
+              {onEditStudent && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={(e) => {
+                    e.stopPropagation(); // Prevent card click when clicking the button
+                    onEditStudent(student);
+                  }}
+                  className="text-blue-500 hover:text-blue-600 hover:bg-blue-50 border-blue-200"
+                >
+                  <Edit className="h-4 w-4 mr-1" />
+                  Edit
+                </Button>
+              )}
               {isAssigned
                 ? (
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => handleRemoveStudent(student)}
+                    onClick={(e) => {
+                      e.stopPropagation(); // Prevent card click when clicking the button
+                      handleRemoveStudent(student);
+                    }}
                     className="text-red-500 hover:text-red-600 hover:bg-red-50 border-red-200"
                   >
                     <UserMinus className="h-4 w-4 mr-1" />
@@ -156,7 +189,10 @@ export const StudentMobileList = ({
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => handleAddStudent(student.name)}
+                    onClick={(e) => {
+                      e.stopPropagation(); // Prevent card click when clicking the button
+                      handleAddStudent(student.name);
+                    }}
                     disabled={addStudentMutation.isPending}
                     className="text-blue-500 hover:text-blue-600 hover:bg-blue-50 border-blue-200"
                   >
@@ -167,7 +203,10 @@ export const StudentMobileList = ({
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => handleDeleteStudent(student)}
+                onClick={(e) => {
+                  e.stopPropagation(); // Prevent card click when clicking the button
+                  handleDeleteStudent(student);
+                }}
                 className="text-red-500 hover:text-red-600 hover:bg-red-50 border-red-200"
               >
                 <Trash2 className="h-4 w-4 mr-1" />

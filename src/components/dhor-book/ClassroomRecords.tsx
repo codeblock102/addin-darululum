@@ -119,7 +119,7 @@ export function ClassroomRecords(
         if (teacherData?.madrassah_id && teacherData?.section) {
           query = query
             .eq("madrassah_id", teacherData.madrassah_id)
-            .eq("section", teacherData.section)
+            .ilike("section", teacherData.section)
             .order("name", { ascending: true });
         } else {
           // If teacher has no madrassah_id or section, they see no students.

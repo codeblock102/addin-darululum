@@ -173,3 +173,95 @@ export const updateAdminMadrassahId = async (madrassahId: string) => {
     return false;
   }
 };
+
+/**
+ * Fixes existing admin users who might be missing profile records
+ * This can happen if users were created before the profile creation fix
+ */
+export const fixAdminProfile = async (userId: string, email: string) => {
+  try {
+    console.log("fixAdminProfile: Starting profile fix for user", userId);
+    
+    // 1. Check if profile already exists
+    const { data: existingProfile, error: checkError } = await supabase
+      .from("profiles")
+      .select("id, role, email")
+      .eq("id", userId)
+      .single();
+
+    if (checkError && checkError.code !== 'PGRST116') {
+      console.error("fixAdminProfile: Error checking existing profile", checkError);
+      return false;
+    }
+
+    if (existingProfile) {
+      console.log("fixAdminProfile: Profile already exists", existingProfile);
+      
+      // Update role to admin if it's not already
+      if (existingProfile.role !== 'admin') {
+        const { error: updateError } = await supabase
+          .from("profiles")
+          .update({ role: 'admin' })
+          .eq("id", userId);
+        
+        if (updateError) {
+          console.error("fixAdminProfile: Error updating role to admin", updateError);
+          return false;
+        }
+        console.log("fixAdminProfile: Updated existing profile role to admin");
+      }
+      return true;
+    }
+
+    // 2. Create missing profile record
+    const profileData: any = {
+      id: userId,
+      email: email,
+      role: 'admin',
+      name: email.split("@")[0],
+    };
+
+    // Try to get current user's madrassah for assignment
+    const { data: { user: currentUser } } = await supabase.auth.getUser();
+    if (currentUser) {
+      const { data: currentProfile } = await supabase
+        .from("profiles")
+        .select("madrassah_id")
+        .eq("id", currentUser.id)
+        .single();
+      
+      if (currentProfile?.madrassah_id) {
+        profileData.madrassah_id = currentProfile.madrassah_id;
+        console.log("fixAdminProfile: Assigning to madrassah", currentProfile.madrassah_id);
+      }
+    }
+
+    const { error: createError } = await supabase
+      .from("profiles")
+      .insert(profileData);
+
+    if (createError) {
+      console.error("fixAdminProfile: Error creating profile", createError);
+      return false;
+    }
+
+    // 3. Update auth metadata to ensure admin role
+    const { error: updateUserError } = await supabase.auth.updateUser({
+      data: { role: "admin" }
+    });
+
+    if (updateUserError) {
+      console.error("fixAdminProfile: Error updating user metadata", updateUserError);
+      // Continue anyway as profile was created
+    }
+
+    // 4. Set local storage
+    localStorage.setItem("userRole", "admin");
+
+    console.log("fixAdminProfile: Profile fix completed successfully");
+    return true;
+  } catch (error) {
+    console.error("fixAdminProfile: Unexpected error", error);
+    return false;
+  }
+};

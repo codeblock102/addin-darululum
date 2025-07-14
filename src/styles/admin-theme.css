@@ -1,210 +1,374 @@
-/* Admin theme specific styles */
+/* === Admin Night Mode Theme === */
+
+:root {
+  /* Dark Background Hierarchy */
+  --admin-bg-base: #0f1419;           /* Deepest background */
+  --admin-bg-elevated: #1a1f2e;       /* Cards, panels, elevated surfaces */
+  --admin-bg-secondary: #252a3a;      /* Secondary panels, sidebars */
+  --admin-bg-tertiary: #2d3748;       /* Tertiary backgrounds, hover states */
+  --admin-bg-accent: #374151;         /* Accent backgrounds, borders */
+  
+  /* Text Colors */
+  --admin-text-primary: #f7fafc;      /* Primary text - bright white */
+  --admin-text-secondary: #e2e8f0;    /* Secondary text - light gray */
+  --admin-text-muted: #a0aec0;        /* Muted text - medium gray */
+  --admin-text-disabled: #718096;     /* Disabled text - darker gray */
+  
+  /* Accent Colors */
+  --admin-blue: #4299e1;              /* Primary blue */
+  --admin-blue-light: #63b3ed;        /* Light blue for hover */
+  --admin-blue-dark: #3182ce;         /* Dark blue for active */
+  
+  --admin-green: #48bb78;             /* Success green */
+  --admin-green-light: #68d391;       /* Light green */
+  
+  --admin-amber: #ed8936;             /* Warning amber */
+  --admin-amber-light: #f6ad55;       /* Light amber */
+  
+  --admin-red: #f56565;               /* Error red */
+  --admin-red-light: #fc8181;         /* Light red */
+  
+  --admin-purple: #9f7aea;            /* Accent purple */
+  --admin-purple-light: #b794f6;      /* Light purple */
+  
+  /* Border Colors */
+  --admin-border-primary: #4a5568;    /* Primary borders */
+  --admin-border-secondary: #374151;  /* Secondary borders */
+  --admin-border-accent: #63b3ed;     /* Accent borders (focus, active) */
+  
+  /* Shadow Colors */
+  --admin-shadow-sm: rgba(0, 0, 0, 0.3);
+  --admin-shadow-md: rgba(0, 0, 0, 0.4);
+  --admin-shadow-lg: rgba(0, 0, 0, 0.5);
+}
+
+/* Apply theme to admin interface */
 .admin-theme {
-  --admin-bg: 222 47% 11%;
-  --admin-card: 222 47% 14%;
-  --admin-border: 217 50% 16%;
-  --admin-primary: 45 93% 55%; /* Amber primary color */
-  --admin-accent: 217 50% 16%;
+  /* CSS Custom Properties for shadcn components */
+  --background: var(--admin-bg-base);
+  --foreground: var(--admin-text-primary);
+  
+  --card: var(--admin-bg-elevated);
+  --card-foreground: var(--admin-text-primary);
+  
+  --popover: var(--admin-bg-elevated);
+  --popover-foreground: var(--admin-text-primary);
+  
+  --primary: var(--admin-blue);
+  --primary-foreground: var(--admin-text-primary);
+  
+  --secondary: var(--admin-bg-secondary);
+  --secondary-foreground: var(--admin-text-primary);
+  
+  --muted: var(--admin-bg-tertiary);
+  --muted-foreground: var(--admin-text-muted);
+  
+  --accent: var(--admin-bg-accent);
+  --accent-foreground: var(--admin-text-primary);
+  
+  --destructive: var(--admin-red);
+  --destructive-foreground: var(--admin-text-primary);
+  
+  --border: var(--admin-border-secondary);
+  --input: var(--admin-border-primary);
+  --ring: var(--admin-border-accent);
+  
+  --radius: 0.5rem;
 
-  /* Apply admin theme to common elements */
-  background-color: hsl(222 47% 7%);
-  color: hsl(0 0% 95%);
+  background-color: var(--background);
+  color: var(--foreground);
 }
 
-/* Icon contrast improvements for admin theme */
-.admin-theme svg,
-.admin-theme .lucide {
-  @apply text-gray-300;
-}
-
-.admin-theme button svg,
-.admin-theme a svg {
-  @apply text-gray-200;
-}
-
-/* Active navigation icons */
-.admin-theme nav button.active svg,
-.admin-theme nav a.active svg {
-  @apply text-amber-400;
-}
-
-/* Hover state for icons */
-.admin-theme button:hover svg,
-.admin-theme a:hover svg {
-  @apply text-amber-400;
-}
-
-/* Sidebar icons */
-.admin-theme .sidebar svg {
-  @apply text-gray-300;
-}
-
-/* Glass card effect */
-.admin-theme .card,
-.admin-theme .stats-card {
-  @apply bg-opacity-40 backdrop-blur-xl border border-[#ffffff15] shadow-lg
-    transition-all duration-300;
-  background: linear-gradient(
-    to bottom right,
-    rgba(30, 41, 59, 0.8),
-    rgba(15, 23, 42, 0.9)
-  );
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-}
-
-.admin-theme .card:hover,
-.admin-theme .stats-card:hover {
-  @apply border-amber-500/30;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.25);
-  transform: translateY(-2px);
-}
-
-/* Table styling */
-.admin-theme .table {
-  @apply bg-[#ffffff08] backdrop-blur-md border border-[#ffffff15] rounded-lg
-    overflow-hidden;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-}
-
-.admin-theme .table th {
-  @apply bg-white/5 text-amber-500 font-medium border-b border-white/10 px-4
-    py-3;
-}
-
-.admin-theme .table td {
-  @apply px-4 py-3 border-b border-white/5 text-gray-300;
-}
-
-.admin-theme .table tr:hover {
-  @apply bg-white/5;
-}
-
-/* Dialog styling */
-.admin-theme .dialog-content {
-  @apply bg-opacity-95 backdrop-blur-2xl border border-[#ffffff15] shadow-xl
-    animate-scaleIn;
-  background: linear-gradient(
-    to bottom,
-    rgba(26, 31, 44, 0.95),
-    rgba(26, 31, 44, 0.98)
-  );
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
-}
-
-/* Form elements */
-.admin-theme input,
-.admin-theme select,
-.admin-theme textarea {
-  @apply bg-[#ffffff08] backdrop-blur-md border-[#ffffff15]
-    focus:border-amber-500/50 text-gray-200 transition-all duration-200;
-}
-
-/* Button styling */
-.admin-theme .button-primary,
-.admin-theme button[data-variant="default"] {
-  @apply bg-amber-500 hover:bg-amber-600 text-black font-medium;
-}
-
-.admin-theme .button-secondary,
-.admin-theme button[data-variant="outline"] {
-  @apply bg-transparent hover:bg-[#ffffff15] text-white border
-    border-[#ffffff15] hover:border-amber-500/50;
-}
-
-/* Text styling */
+/* Base Typography */
 .admin-theme h1,
 .admin-theme h2,
 .admin-theme h3,
-.admin-theme h4 {
-  @apply text-gray-100 font-bold;
+.admin-theme h4,
+.admin-theme h5,
+.admin-theme h6 {
+  color: var(--admin-text-primary);
+  font-weight: 600;
 }
 
 .admin-theme p,
 .admin-theme span,
 .admin-theme div {
-  @apply text-gray-300;
+  color: var(--admin-text-secondary);
 }
 
+.admin-theme label {
+  color: var(--admin-text-secondary);
+  font-weight: 500;
+}
+
+/* Cards and Panels */
+.admin-theme .bg-card,
+.admin-theme [data-state="open"] {
+  background-color: var(--admin-bg-elevated);
+  border: 1px solid var(--admin-border-secondary);
+  box-shadow: 0 4px 6px var(--admin-shadow-sm);
+}
+
+/* Buttons */
+.admin-theme .bg-primary {
+  background-color: var(--admin-blue);
+  color: var(--admin-text-primary);
+  border: none;
+}
+
+.admin-theme .bg-primary:hover {
+  background-color: var(--admin-blue-light);
+}
+
+.admin-theme .bg-destructive {
+  background-color: var(--admin-red);
+  color: var(--admin-text-primary);
+}
+
+.admin-theme .bg-destructive:hover {
+  background-color: var(--admin-red-light);
+}
+
+.admin-theme .bg-secondary {
+  background-color: var(--admin-bg-secondary);
+  color: var(--admin-text-primary);
+  border: 1px solid var(--admin-border-primary);
+}
+
+.admin-theme .bg-secondary:hover {
+  background-color: var(--admin-bg-tertiary);
+}
+
+/* Form Elements */
+.admin-theme input,
+.admin-theme textarea,
+.admin-theme select {
+  background-color: var(--admin-bg-secondary);
+  border: 1px solid var(--admin-border-primary);
+  color: var(--admin-text-primary);
+}
+
+.admin-theme input:focus,
+.admin-theme textarea:focus,
+.admin-theme select:focus {
+  border-color: var(--admin-blue);
+  box-shadow: 0 0 0 2px rgba(66, 153, 225, 0.3);
+}
+
+.admin-theme input::placeholder,
+.admin-theme textarea::placeholder {
+  color: var(--admin-text-muted);
+}
+
+/* Tables */
+.admin-theme table {
+  background-color: var(--admin-bg-elevated);
+  border: 1px solid var(--admin-border-secondary);
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+
+.admin-theme th {
+  background-color: var(--admin-bg-secondary);
+  color: var(--admin-text-primary);
+  font-weight: 600;
+  border-bottom: 1px solid var(--admin-border-primary);
+}
+
+.admin-theme td {
+  color: var(--admin-text-secondary);
+  border-bottom: 1px solid var(--admin-border-secondary);
+}
+
+.admin-theme tr:hover {
+  background-color: var(--admin-bg-tertiary);
+}
+
+/* Links */
+.admin-theme a {
+  color: var(--admin-blue);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.admin-theme a:hover {
+  color: var(--admin-blue-light);
+  text-decoration: underline;
+}
+
+/* Navigation */
+.admin-theme nav {
+  background-color: var(--admin-bg-secondary);
+  border-right: 1px solid var(--admin-border-secondary);
+}
+
+.admin-theme nav button,
+.admin-theme nav a {
+  color: var(--admin-text-secondary);
+  transition: all 0.2s ease;
+}
+
+.admin-theme nav button:hover,
+.admin-theme nav a:hover {
+  background-color: var(--admin-bg-tertiary);
+  color: var(--admin-text-primary);
+}
+
+.admin-theme nav button[data-state="active"],
+.admin-theme nav a[data-state="active"] {
+  background-color: var(--admin-blue);
+  color: var(--admin-text-primary);
+}
+
+/* Badges and Status Indicators */
+.admin-theme .bg-green-100 {
+  background-color: rgba(72, 187, 120, 0.2);
+  color: var(--admin-green-light);
+}
+
+.admin-theme .bg-red-100 {
+  background-color: rgba(245, 101, 101, 0.2);
+  color: var(--admin-red-light);
+}
+
+.admin-theme .bg-amber-100 {
+  background-color: rgba(237, 137, 54, 0.2);
+  color: var(--admin-amber-light);
+}
+
+.admin-theme .bg-blue-100 {
+  background-color: rgba(66, 153, 225, 0.2);
+  color: var(--admin-blue-light);
+}
+
+/* Dialogs and Modals */
+.admin-theme [data-state="open"]:not(table *) {
+  background-color: var(--admin-bg-elevated);
+  border: 1px solid var(--admin-border-primary);
+  box-shadow: 0 10px 25px var(--admin-shadow-lg);
+}
+
+/* Dropdown Menus */
+.admin-theme [role="menu"],
+.admin-theme [role="listbox"] {
+  background-color: var(--admin-bg-elevated);
+  border: 1px solid var(--admin-border-primary);
+  box-shadow: 0 4px 12px var(--admin-shadow-md);
+}
+
+.admin-theme [role="menuitem"]:hover,
+.admin-theme [role="option"]:hover {
+  background-color: var(--admin-bg-tertiary);
+}
+
+/* Tabs */
+.admin-theme [role="tablist"] {
+  background-color: var(--admin-bg-secondary);
+  border: 1px solid var(--admin-border-secondary);
+  border-radius: 0.5rem;
+}
+
+.admin-theme [role="tab"] {
+  color: var(--admin-text-muted);
+  transition: all 0.2s ease;
+}
+
+.admin-theme [role="tab"]:hover {
+  color: var(--admin-text-secondary);
+  background-color: var(--admin-bg-tertiary);
+}
+
+.admin-theme [role="tab"][data-state="active"] {
+  background-color: var(--admin-blue);
+  color: var(--admin-text-primary);
+}
+
+/* Icons */
+.admin-theme svg {
+  color: inherit;
+}
+
+/* Specific Component Overrides */
 .admin-theme .text-muted-foreground {
-  @apply text-gray-400;
+  color: var(--admin-text-muted);
 }
 
-/* Sidebar specific */
-.admin-theme .sidebar {
-  @apply bg-[#131724] border-r border-white/5;
+.admin-theme .text-destructive {
+  color: var(--admin-red);
 }
 
-/* Mobile optimizations */
-@media (max-width: 640px) {
-  .admin-theme .card {
-    @apply p-3 rounded-lg;
-  }
-
-  .admin-theme .table-wrapper {
-    @apply -mx-3 px-3 overflow-x-auto;
-  }
-
-  .admin-theme .form-grid {
-    @apply grid-cols-1 gap-3;
-  }
+.admin-theme .border {
+  border-color: var(--admin-border-secondary);
 }
 
-/* Status indicators */
-.admin-theme .status-active {
-  @apply bg-green-500/20 text-green-300 border border-green-500/30 px-2 py-0.5
-    rounded-full text-xs font-medium;
+.admin-theme .border-border {
+  border-color: var(--admin-border-secondary);
 }
 
-.admin-theme .status-inactive {
-  @apply bg-gray-500/20 text-gray-300 border border-gray-500/30 px-2 py-0.5
-    rounded-full text-xs font-medium;
+/* Settings Page Specific */
+.admin-theme .bg-gray-50\/50 {
+  background-color: var(--admin-bg-base);
 }
 
-.admin-theme .status-warning {
-  @apply bg-amber-500/20 text-amber-300 border border-amber-500/30 px-2 py-0.5
-    rounded-full text-xs font-medium;
+.admin-theme .bg-white {
+  background-color: var(--admin-bg-elevated);
 }
 
-.admin-theme .status-danger {
-  @apply bg-red-500/20 text-red-300 border border-red-500/30 px-2 py-0.5
-    rounded-full text-xs font-medium;
+.admin-theme .shadow-sm {
+  box-shadow: 0 2px 4px var(--admin-shadow-sm);
 }
 
-/* Mobile bottom navigation */
-.admin-theme .bottom-navigation {
-  @apply bg-[#131724] border-t border-white/10;
+.admin-theme .border-gray-200\/80 {
+  border-color: var(--admin-border-secondary);
 }
 
-.admin-theme .bottom-navigation button {
-  @apply text-gray-400 hover:bg-white/5;
+.admin-theme .border-gray-200 {
+  border-color: var(--admin-border-secondary);
 }
 
-.admin-theme .bottom-navigation button.active {
-  @apply text-amber-500 bg-white/5;
+.admin-theme .text-gray-600 {
+  color: var(--admin-text-secondary);
 }
 
-/* Navigation icons specifically */
-.admin-theme nav a svg,
-.admin-theme nav button svg {
-  @apply text-gray-300;
+.admin-theme .text-gray-900 {
+  color: var(--admin-text-primary);
 }
 
-.admin-theme nav a:hover svg,
-.admin-theme nav button:hover svg {
-  @apply text-amber-400;
+.admin-theme .text-gray-500 {
+  color: var(--admin-text-muted);
 }
 
-/* Card icons */
-.admin-theme .card svg {
-  @apply text-gray-300;
+.admin-theme .hover\:bg-gray-100:hover {
+  background-color: var(--admin-bg-tertiary);
 }
 
-/* Quick actions icons */
-.admin-theme .quick-actions svg {
-  @apply text-gray-300;
+.admin-theme .hover\:text-gray-900:hover {
+  color: var(--admin-text-primary);
 }
 
-/* Dashboard icons */
-.admin-theme .dashboard-overview svg {
-  @apply text-gray-300;
+.admin-theme .data-\[state\=active\]\:bg-blue-50[data-state="active"] {
+  background-color: rgba(66, 153, 225, 0.2);
+}
+
+.admin-theme .data-\[state\=active\]\:text-blue-700[data-state="active"] {
+  color: var(--admin-blue-light);
+}
+
+/* Scrollbars */
+.admin-theme ::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.admin-theme ::-webkit-scrollbar-track {
+  background: var(--admin-bg-secondary);
+}
+
+.admin-theme ::-webkit-scrollbar-thumb {
+  background: var(--admin-border-primary);
+  border-radius: 4px;
+}
+
+.admin-theme ::-webkit-scrollbar-thumb:hover {
+  background: var(--admin-border-accent);
 }

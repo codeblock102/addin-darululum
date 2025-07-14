@@ -2,9 +2,10 @@ import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client.ts";
 import { Card } from "@/components/ui/card.tsx";
-import { addWeeks, endOfWeek, format, startOfWeek, subWeeks } from "date-fns";
-import { Calendar, ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
+import { addWeeks, endOfWeek, format, startOfWeek, subWeeks, addMonths, subMonths, startOfMonth, endOfMonth } from "date-fns";
+import { Calendar, ChevronLeft, ChevronRight, Loader2, CalendarDays } from "lucide-react";
 import { Button } from "@/components/ui/button.tsx";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs.tsx";
 import { DhorBookGrid } from "./DhorBookGrid.tsx";
 import { DailyActivityEntry } from "@/types/dhor-book.ts";
 
@@ -24,15 +25,33 @@ export const DhorBook = ({
   isLoadingTeacher,
 }: DhorBookProps) => {
   const [currentWeek, setCurrentWeek] = useState(new Date());
+  const [currentMonth, setCurrentMonth] = useState(new Date());
+  const [viewMode, setViewMode] = useState<"weekly" | "monthly">("weekly");
   const [entries, setEntries] = useState<DailyActivityEntry[]>([]);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
-  // Format dates for display
-  const weekStart = startOfWeek(currentWeek);
-  const weekEnd = endOfWeek(currentWeek);
-  const formattedDateRange = `${format(weekStart, "MMM d")} - ${
-    format(weekEnd, "MMM d, yyyy")
-  }`;
+  // Format dates for display based on view mode
+  const getDateRange = () => {
+    if (viewMode === "weekly") {
+      const weekStart = startOfWeek(currentWeek);
+      const weekEnd = endOfWeek(currentWeek);
+      return {
+        start: weekStart,
+        end: weekEnd,
+        display: `${format(weekStart, "MMM d")} - ${format(weekEnd, "MMM d, yyyy")}`
+      };
+    } else {
+      const monthStart = startOfMonth(currentMonth);
+      const monthEnd = endOfMonth(currentMonth);
+      return {
+        start: monthStart,
+        end: monthEnd,
+        display: format(currentMonth, "MMMM yyyy")
+      };
+    }
+  };
+
+  const { start: rangeStart, end: rangeEnd, display: formattedDateRange } = getDateRange();
 
   const {
     data: students,
@@ -88,10 +107,39 @@ export const DhorBook = ({
 
   const showUnauthorized = !isAdmin && !studentsLoading && !isAuthorized;
 
-  // Previous and next week handlers
+  // Navigation handlers for both weekly and monthly views
   const goToPreviousWeek = () => setCurrentWeek((prev) => subWeeks(prev, 1));
   const goToNextWeek = () => setCurrentWeek((prev) => addWeeks(prev, 1));
   const goToCurrentWeek = () => setCurrentWeek(new Date());
+
+  const goToPreviousMonth = () => setCurrentMonth((prev) => subMonths(prev, 1));
+  const goToNextMonth = () => setCurrentMonth((prev) => addMonths(prev, 1));
+  const goToCurrentMonth = () => setCurrentMonth(new Date());
+
+  // Navigation handlers based on current view mode
+  const goToPrevious = () => {
+    if (viewMode === "weekly") {
+      goToPreviousWeek();
+    } else {
+      goToPreviousMonth();
+    }
+  };
+
+  const goToNext = () => {
+    if (viewMode === "weekly") {
+      goToNextWeek();
+    } else {
+      goToNextMonth();
+    }
+  };
+
+  const goToCurrent = () => {
+    if (viewMode === "weekly") {
+      goToCurrentWeek();
+    } else {
+      goToCurrentMonth();
+    }
+  };
 
   // Fetch main entries for the student
   const {
@@ -102,14 +150,15 @@ export const DhorBook = ({
     queryKey: [
       "dhor-book-entries",
       studentId,
-      format(weekStart, "yyyy-MM-dd"),
-      format(weekEnd, "yyyy-MM-dd"),
+      format(rangeStart, "yyyy-MM-dd"),
+      format(rangeEnd, "yyyy-MM-dd"),
+      viewMode,
     ],
     queryFn: async () => {
       console.log(
         `Fetching dhor book for student ${studentId} between ${
-          format(weekStart, "yyyy-MM-dd")
-        } and ${format(weekEnd, "yyyy-MM-dd")}`,
+          format(rangeStart, "yyyy-MM-dd")
+        } and ${format(rangeEnd, "yyyy-MM-dd")} (${viewMode} view)`,
       );
 
       // Fetch all data sources (excluding dhor_book_entries)
@@ -117,24 +166,24 @@ export const DhorBook = ({
         .from("juz_revisions")
         .select("*")
         .eq("student_id", studentId)
-        .gte("revision_date", format(weekStart, "yyyy-MM-dd"))
-        .lte("revision_date", format(weekEnd, "yyyy-MM-dd"));
+        .gte("revision_date", format(rangeStart, "yyyy-MM-dd"))
+        .lte("revision_date", format(rangeEnd, "yyyy-MM-dd"));
       if (juzError) console.error("Error fetching juz revisions:", juzError);
 
       const { data: sabaqPara, error: sabaqError } = await supabase
         .from("sabaq_para")
         .select("*")
         .eq("student_id", studentId)
-        .gte("revision_date", format(weekStart, "yyyy-MM-dd"))
-        .lte("revision_date", format(weekEnd, "yyyy-MM-dd"));
+        .gte("revision_date", format(rangeStart, "yyyy-MM-dd"))
+        .lte("revision_date", format(rangeEnd, "yyyy-MM-dd"));
       if (sabaqError) console.error("Error fetching sabaq para:", sabaqError);
 
       const { data: progressEntries, error: progressError } = await supabase
         .from("progress")
         .select("*")
         .eq("student_id", studentId)
-        .gte("date", format(weekStart, "yyyy-MM-dd"))
-        .lte("date", format(weekEnd, "yyyy-MM-dd"));
+        .gte("date", format(rangeStart, "yyyy-MM-dd"))
+        .lte("date", format(rangeEnd, "yyyy-MM-dd"));
       if (progressError) {
         console.error("Error fetching progress:", progressError);
       }
@@ -228,7 +277,7 @@ export const DhorBook = ({
       );
 
       console.log(
-        `Consolidated ${finalCombinedEntries.length} dhor book entries for the week`,
+        `Consolidated ${finalCombinedEntries.length} dhor book entries for the ${viewMode} view`,
       );
       return finalCombinedEntries;
     },
@@ -316,63 +365,141 @@ export const DhorBook = ({
 
   return (
     <Card className="p-4 sm:p-6">
-      {/* Week Navigation Controls */}
-      <div className="flex items-center justify-between mb-6">
-        <Button variant="outline" size="sm" onClick={goToPreviousWeek}>
-          <ChevronLeft className="h-4 w-4 mr-1" /> Previous
-        </Button>
+      {/* View Mode Tabs */}
+      <Tabs value={viewMode} onValueChange={(value) => setViewMode(value as "weekly" | "monthly")} className="w-full mb-6">
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="weekly" className="flex items-center gap-2">
+            <Calendar className="h-4 w-4" />
+            Weekly View
+          </TabsTrigger>
+          <TabsTrigger value="monthly" className="flex items-center gap-2">
+            <CalendarDays className="h-4 w-4" />
+            Monthly View
+          </TabsTrigger>
+        </TabsList>
 
-        <div className="flex items-center">
-          <Calendar className="h-4 w-4 mr-2 text-muted-foreground" />
-          <span className="font-medium text-sm sm:text-base">
-            {formattedDateRange}
-          </span>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="ml-2 h-8 px-2"
-            onClick={goToCurrentWeek}
-          >
-            Today
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="ml-1 h-8 px-2"
-            onClick={handleRefresh}
-            disabled={isRefreshing}
-          >
-            {isRefreshing ? <Loader2 className="h-4 w-4 animate-spin" /> : (
-              <svg
-                className="h-4 w-4"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
+        <TabsContent value="weekly" className="mt-0">
+          {/* Week Navigation Controls */}
+          <div className="flex items-center justify-between mb-6">
+            <Button variant="outline" size="sm" onClick={goToPrevious}>
+              <ChevronLeft className="h-4 w-4 mr-1" /> Previous
+            </Button>
+
+            <div className="flex items-center">
+              <Calendar className="h-4 w-4 mr-2 text-muted-foreground" />
+              <span className="font-medium text-sm sm:text-base">
+                {formattedDateRange}
+              </span>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="ml-2 h-8 px-2"
+                onClick={goToCurrent}
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-                />
-              </svg>
-            )}
-          </Button>
-        </div>
+                Today
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="ml-1 h-8 px-2"
+                onClick={handleRefresh}
+                disabled={isRefreshing}
+              >
+                {isRefreshing ? <Loader2 className="h-4 w-4 animate-spin" /> : (
+                  <svg
+                    className="h-4 w-4"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                    />
+                  </svg>
+                )}
+              </Button>
+            </div>
 
-        <Button variant="outline" size="sm" onClick={goToNextWeek}>
-          Next <ChevronRight className="h-4 w-4 ml-1" />
-        </Button>
-      </div>
+            <Button variant="outline" size="sm" onClick={goToNext}>
+              Next <ChevronRight className="h-4 w-4 ml-1" />
+            </Button>
+          </div>
 
-      {/* DhorBookGrid component displays entries in a weekly grid */}
-      <DhorBookGrid
-        entries={entries}
-        studentId={studentId}
-        teacherId={teacherId ?? "system-unknown"} // Ensure teacherId is always a string
-        currentWeek={currentWeek}
-        onRefresh={handleRefresh}
-      />
+          {/* DhorBookGrid component displays entries in a weekly grid */}
+          <DhorBookGrid
+            entries={entries}
+            studentId={studentId}
+            teacherId={teacherId ?? "system-unknown"}
+            currentWeek={currentWeek}
+            viewMode="weekly"
+            onRefresh={handleRefresh}
+          />
+        </TabsContent>
+
+        <TabsContent value="monthly" className="mt-0">
+          {/* Month Navigation Controls */}
+          <div className="flex items-center justify-between mb-6">
+            <Button variant="outline" size="sm" onClick={goToPrevious}>
+              <ChevronLeft className="h-4 w-4 mr-1" /> Previous
+            </Button>
+
+            <div className="flex items-center">
+              <CalendarDays className="h-4 w-4 mr-2 text-muted-foreground" />
+              <span className="font-medium text-sm sm:text-base">
+                {formattedDateRange}
+              </span>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="ml-2 h-8 px-2"
+                onClick={goToCurrent}
+              >
+                Current Month
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="ml-1 h-8 px-2"
+                onClick={handleRefresh}
+                disabled={isRefreshing}
+              >
+                {isRefreshing ? <Loader2 className="h-4 w-4 animate-spin" /> : (
+                  <svg
+                    className="h-4 w-4"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                    />
+                  </svg>
+                )}
+              </Button>
+            </div>
+
+            <Button variant="outline" size="sm" onClick={goToNext}>
+              Next <ChevronRight className="h-4 w-4 ml-1" />
+            </Button>
+          </div>
+
+          {/* DhorBookGrid component displays entries in a monthly grid */}
+          <DhorBookGrid
+            entries={entries}
+            studentId={studentId}
+            teacherId={teacherId ?? "system-unknown"}
+            currentMonth={currentMonth}
+            viewMode="monthly"
+            onRefresh={handleRefresh}
+          />
+        </TabsContent>
+      </Tabs>
     </Card>
   );
 };

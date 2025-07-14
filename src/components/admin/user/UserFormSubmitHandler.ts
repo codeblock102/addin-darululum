@@ -44,10 +44,47 @@ export const handleUserSubmit = async (
         throw error;
       }
 
-      // When user created successfully, create a user_role entry
+      // When user created successfully, create a user_role entry and profile record
       if (data.user) {
         try {
-          // Find the appropriate role ID
+          // 1. Create profile record for the user
+          const profileData: any = {
+            id: data.user.id,
+            email: formData.email,
+            role: userRole,
+            name: formData.username || formData.email.split("@")[0],
+          };
+
+          // For admin users, try to assign them to a madrassah if available
+          if (userRole === "admin") {
+            // Get current user's madrassah (if they're creating an admin)
+            const { data: { user: currentUser } } = await supabase.auth.getUser();
+            if (currentUser) {
+              const { data: currentProfile } = await supabase
+                .from("profiles")
+                .select("madrassah_id")
+                .eq("id", currentUser.id)
+                .single();
+              
+              if (currentProfile?.madrassah_id) {
+                profileData.madrassah_id = currentProfile.madrassah_id;
+                console.log(`Assigning admin to madrassah: ${currentProfile.madrassah_id}`);
+              }
+            }
+          }
+
+          const { error: profileError } = await supabase
+            .from("profiles")
+            .insert(profileData);
+
+          if (profileError) {
+            console.error("Error creating user profile:", profileError);
+            // Continue anyway, but log the error
+          } else {
+            console.log(`Profile created for ${userRole} user:`, data.user.id);
+          }
+
+          // 2. Find the appropriate role ID for user_roles table
           const { data: roleData, error: roleError } = await supabase
             .from("roles")
             .select("id")
@@ -75,7 +112,7 @@ export const handleUserSubmit = async (
             }
           }
         } catch (roleError) {
-          console.error("Error setting up user role:", roleError);
+          console.error("Error setting up user role and profile:", roleError);
           // Continue anyway, as the user account has been created
         }
       }

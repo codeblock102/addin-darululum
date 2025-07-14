@@ -18,6 +18,7 @@ import {
 import { Input } from "@/components/ui/input.tsx";
 import { DhorBook as DhorBookComponent } from "@/components/dhor-book/DhorBook.tsx";
 import { ClassroomRecords } from "@/components/dhor-book/ClassroomRecords.tsx";
+import { MonthlyProgress } from "@/components/progress/MonthlyProgress.tsx";
 import {
   Book,
   BookOpen,
@@ -41,7 +42,7 @@ const ProgressBookPage = () => {
   );
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState("all");
-  const [viewMode, setViewMode] = useState<"daily" | "classroom">("daily");
+  const [viewMode, setViewMode] = useState<"daily" | "classroom" | "monthly">("daily");
   const [selectedTeacherId, setSelectedTeacherId] = useState<
     string | undefined
   >(undefined);
@@ -116,25 +117,41 @@ const ProgressBookPage = () => {
 
       if (isAdmin) {
         if (selectedTeacherId && selectedTeacherId !== "all") {
-          const { data: studentIds, error: studentIdError } = await supabase
+          const { data: studentLinks, error: studentIdError } = await supabase
             .from("students_teachers")
-            .select("student_id")
+            .select("student_name")
             .eq("teacher_id", selectedTeacherId);
 
           if (studentIdError) {
             console.error(
-              "Error fetching student IDs for teacher",
+              "Error fetching student names for teacher",
               studentIdError,
             );
             return [];
           }
-          const ids = studentIds.map((s) => s.student_id);
+          const studentNames = studentLinks.map((s) => s.student_name);
+          if (studentNames.length === 0) return [];
+
+          const { data: studentIds, error: studentError } = await supabase
+            .from("students")
+            .select("id")
+            .in("name", studentNames);
+
+          if (studentError) {
+            console.error(
+              "Error fetching student IDs by name",
+              studentError,
+            );
+            return [];
+          }
+
+          const ids = studentIds.map((s) => s.id);
           query = query.in("id", ids);
         }
       } else if (currentTeacherId && userProfileData.section) {
         const { data: studentLinks, error: linkError } = await supabase
           .from("students_teachers")
-          .select("student_id")
+          .select("student_name")
           .eq("teacher_id", currentTeacherId);
 
         if (linkError) {
@@ -142,13 +159,29 @@ const ProgressBookPage = () => {
           return [];
         }
 
-        const studentIds = studentLinks.map((link) => link.student_id);
+        const studentNames = studentLinks.map((link) => link.student_name);
+        if (studentNames.length === 0) return [];
+        
+        const { data: studentIds, error: studentError } = await supabase
+            .from("students")
+            .select("id")
+            .in("name", studentNames);
 
-        if (studentIds.length === 0) {
+        if (studentError) {
+            console.error(
+              "Error fetching student IDs by name",
+              studentError,
+            );
+            return [];
+        }
+
+        const studentIdsResult = studentIds.map((s) => s.id);
+
+        if (studentIdsResult.length === 0) {
           return [];
         }
 
-        query = query.in("id", studentIds).eq("section", userProfileData.section);
+        query = query.in("id", studentIdsResult).ilike("section", userProfileData.section);
       } else {
         return [];
       }
@@ -193,9 +226,10 @@ const ProgressBookPage = () => {
         </div>
       </div>
 
-      <Tabs value={viewMode} onValueChange={(value) => setViewMode(value as "daily" | "classroom")} className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
+      <Tabs value={viewMode} onValueChange={(value) => setViewMode(value as "daily" | "classroom" | "monthly")} className="w-full">
+        <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="daily">Daily Records</TabsTrigger>
+          <TabsTrigger value="monthly">Monthly Progress</TabsTrigger>
           <TabsTrigger value="classroom">Leaderboard View</TabsTrigger>
         </TabsList>
         <TabsContent value="daily">
@@ -273,6 +307,19 @@ const ProgressBookPage = () => {
             </CardContent>
           </Card>
         </TabsContent>
+        
+        <TabsContent value="monthly">
+          <Card className="mt-4">
+            <CardContent className="p-4 sm:p-6">
+              <MonthlyProgress
+                isAdmin={isAdmin}
+                teacherId={selectedTeacherId ?? (currentTeacherId || undefined)}
+                userProfileData={userProfileData}
+              />
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
         <TabsContent value="classroom">
           <Card className="mt-4">
             <CardContent className="p-4 sm:p-6">
