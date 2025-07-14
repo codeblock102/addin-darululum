@@ -78,7 +78,7 @@ const Students = () => {
         .select("id, name, date_of_birth, enrollment_date, guardian_name, guardian_contact, status, madrassah_id, section, medical_condition")
         .eq("madrassah_id", userData.madrassah_id);
       if (userData.role === "teacher" && userData.section)
-        query.eq("section", userData.section);
+        query.ilike("section", userData.section);
       const { data: students } = await query;
       return { students: students || [], userData };
     },

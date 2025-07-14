@@ -90,7 +90,7 @@ export const MyStudents = ({ teacherId, isAdmin = false }: MyStudentsProps) => {
         .eq("madrassah_id", userData.madrassah_id);
 
       if (!isAdmin && userData.section) {
-        query = query.eq("section", userData.section);
+        query = query.ilike("section", userData.section);
       }
 
       const { data, error } = await query;

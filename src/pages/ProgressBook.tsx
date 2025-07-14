@@ -117,25 +117,41 @@ const ProgressBookPage = () => {
 
       if (isAdmin) {
         if (selectedTeacherId && selectedTeacherId !== "all") {
-          const { data: studentIds, error: studentIdError } = await supabase
+          const { data: studentLinks, error: studentIdError } = await supabase
             .from("students_teachers")
-            .select("student_id")
+            .select("student_name")
             .eq("teacher_id", selectedTeacherId);
 
           if (studentIdError) {
             console.error(
-              "Error fetching student IDs for teacher",
+              "Error fetching student names for teacher",
               studentIdError,
             );
             return [];
           }
-          const ids = studentIds.map((s) => s.student_id);
+          const studentNames = studentLinks.map((s) => s.student_name);
+          if (studentNames.length === 0) return [];
+
+          const { data: studentIds, error: studentError } = await supabase
+            .from("students")
+            .select("id")
+            .in("name", studentNames);
+
+          if (studentError) {
+            console.error(
+              "Error fetching student IDs by name",
+              studentError,
+            );
+            return [];
+          }
+
+          const ids = studentIds.map((s) => s.id);
           query = query.in("id", ids);
         }
       } else if (currentTeacherId && userProfileData.section) {
         const { data: studentLinks, error: linkError } = await supabase
           .from("students_teachers")
-          .select("student_id")
+          .select("student_name")
           .eq("teacher_id", currentTeacherId);
 
         if (linkError) {
@@ -143,13 +159,29 @@ const ProgressBookPage = () => {
           return [];
         }
 
-        const studentIds = studentLinks.map((link) => link.student_id);
+        const studentNames = studentLinks.map((link) => link.student_name);
+        if (studentNames.length === 0) return [];
+        
+        const { data: studentIds, error: studentError } = await supabase
+            .from("students")
+            .select("id")
+            .in("name", studentNames);
 
-        if (studentIds.length === 0) {
+        if (studentError) {
+            console.error(
+              "Error fetching student IDs by name",
+              studentError,
+            );
+            return [];
+        }
+
+        const studentIdsResult = studentIds.map((s) => s.id);
+
+        if (studentIdsResult.length === 0) {
           return [];
         }
 
-        query = query.in("id", studentIds).eq("section", userProfileData.section);
+        query = query.in("id", studentIdsResult).ilike("section", userProfileData.section);
       } else {
         return [];
       }

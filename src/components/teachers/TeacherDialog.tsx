@@ -267,6 +267,31 @@ export const TeacherDialog = (
           throw new Error("User creation did not return a user object.");
         }
 
+        // --- Explicitly upsert the profile to prevent race conditions with triggers ---
+        const { error: profileUpsertError } = await supabase
+          .from("profiles")
+          .upsert({
+            id: userData.user.id,
+            name: values.name,
+            email: values.email,
+            role: 'teacher',
+            phone: values.phone || null,
+            subject: values.subject || "",
+            bio: values.bio || null,
+            section: values.section,
+            madrassah_id: madrassahId,
+          });
+
+        if (profileUpsertError) {
+          console.error("Error upserting profile with madrassah info:", profileUpsertError);
+          toast({
+            title: "User created, but failed to save profile details",
+            description: "The teacher account was created, but their profile information might be incomplete. Please check and edit the teacher's profile.",
+            variant: "destructive",
+          });
+        }
+        // --- End of explicit upsert ---
+
         toast({
           title: "Success",
           description: values.generatePassword

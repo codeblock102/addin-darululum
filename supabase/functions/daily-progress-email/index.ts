@@ -156,6 +156,97 @@ serve(async (req: Request) => {
       day: 'numeric',
     });
 
+    // START of new code for principal's email
+    const PRINCIPAL_EMAIL = "mzbaig9@gmail.com";
+    let overallProgressHtml = `
+      <p>Overall student progress for ${reportDate}.</p>
+      <table border="0" cellpadding="0" cellspacing="0" style="width: 100%; border-collapse: collapse;">
+        <thead>
+          <tr>
+            <th style="padding: 8px; border-bottom: 1px solid #ddd; background-color: #f2f2f2; text-align: left;">Student</th>
+            <th style="padding: 8px; border-bottom: 1px solid #ddd; background-color: #f2f2f2; text-align: left;">Lesson</th>
+            <th style="padding: 8px; border-bottom: 1px solid #ddd; background-color: #f2f2f2; text-align: left;">Pages Memorized</th>
+            <th style="padding: 8px; border-bottom: 1px solid #ddd; background-color: #f2f2f2; text-align: left;">Quality</th>
+            <th style="padding: 8px; border-bottom: 1px solid #ddd; background-color: #f2f2f2; text-align: left;">Notes</th>
+          </tr>
+        </thead>
+        <tbody>
+    `;
+
+    for (const { student, progresses } of studentProgressMap.values()) {
+        for (const p of progresses) {
+            overallProgressHtml += `
+                <tr>
+                    <td style="padding: 8px; border-bottom: 1px solid #ddd;">${student.name}</td>
+                    <td style="padding: 8px; border-bottom: 1px solid #ddd;">Surah ${p.current_surah}:${p.start_ayat}-${p.end_ayat}</td>
+                    <td style="padding: 8px; border-bottom: 1px solid #ddd;">${p.pages_memorized}</td>
+                    <td style="padding: 8px; border-bottom: 1px solid #ddd;">${p.memorization_quality}</td>
+                    <td style="padding: 8px; border-bottom: 1px solid #ddd;">${p.teacher_notes || p.notes || 'N/A'}</td>
+                </tr>
+            `;
+        }
+    }
+
+    overallProgressHtml += `
+        </tbody>
+      </table>
+    `;
+
+    const principalEmailHtml = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+          <style>
+              body { font-family: Arial, sans-serif; margin: 0; padding: 0; background-color: #f4f4f4; }
+              .container { width: 100%; max-width: 800px; margin: 20px auto; background-color: #ffffff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+              .header { background-color: #004d40; color: #ffffff; padding: 10px 20px; text-align: center; border-top-left-radius: 8px; border-top-right-radius: 8px; }
+              .content { padding: 20px; }
+              .footer { text-align: center; margin-top: 20px; font-size: 12px; color: #888888; }
+              table { width: 100%; border-collapse: collapse; }
+              th { background-color: #f2f2f2; text-align: left; padding: 8px; }
+              .trigger-info { background-color: #f8f9fa; padding: 8px; border-radius: 4px; margin-bottom: 16px; font-size: 12px; }
+          </style>
+      </head>
+      <body>
+          <div class="container">
+              <div class="header">
+                  <h1>Daily Student Progress Summary</h1>
+              </div>
+              <div class="content">
+                  <p>Dear Principal,</p>
+                  <p>Here is the overall student progress report for ${reportDate}:</p>
+                  ${overallProgressHtml}
+                  <div class="trigger-info">
+                      Report generated ${triggerSource === 'scheduled' ? 'automatically' : 'manually'} at ${new Date(timestamp).toLocaleString()}
+                  </div>
+                  <p>Thank you,</p>
+                  <p><strong>Darul Uloom</strong></p>
+              </div>
+              <div class="footer">
+                  <p>This is an automated email.</p>
+              </div>
+          </div>
+      </body>
+      </html>
+    `;
+
+    try {
+        if (!RESEND_FROM_EMAIL) {
+            console.error("RESEND_FROM_EMAIL environment variable is not set.");
+        } else {
+            await resend.emails.send({
+                from: RESEND_FROM_EMAIL,
+                to: PRINCIPAL_EMAIL,
+                subject: `Daily Student Progress Report - ${reportDate}`,
+                html: principalEmailHtml,
+            });
+            console.log(`Principal's summary email sent to ${PRINCIPAL_EMAIL}`);
+        }
+    } catch (emailError) {
+        console.error(`Error sending principal's summary email:`, emailError);
+    }
+    // END of new code for principal's email
+
     let emailsSent = 0;
     let emailsSkipped = 0;
     const emailResults = [];
