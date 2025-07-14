@@ -202,7 +202,7 @@ const Auth = () => {
           <CardTitle className="text-3xl font-bold text-sky-400">
             Darul Uloom Login
           </CardTitle>
-          <CardDescription className="text-slate-400">
+          <CardDescription className="text-slate-200">
             Access your dashboard
           </CardDescription>
         </CardHeader>
@@ -219,34 +219,34 @@ const Auth = () => {
           )}
           <form onSubmit={handleSignIn} className="space-y-6">
             <div className="space-y-2">
-              <Label htmlFor="email" className="text-slate-300">Email</Label>
+              <Label htmlFor="email" className="text-slate-100">Email</Label>
               <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-500" />
+                                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-300" />
                 <Input
                   id="email"
                   type="email"
                   placeholder="you@example.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="pl-10 bg-slate-700 border-slate-600 text-white placeholder-slate-500 focus:ring-sky-500 focus:border-sky-500"
+                  className="pl-10 bg-slate-700 border-slate-600 text-white placeholder-slate-300 focus:ring-sky-500 focus:border-sky-500"
                   required
                   autoComplete="email"
                 />
               </div>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password" className="text-slate-300">
+              <Label htmlFor="password" className="text-slate-100">
                 Password
               </Label>
               <div className="relative">
-                <LockKeyhole className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-500" />
+                <LockKeyhole className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-300" />
                 <Input
                   id="password"
                   type={showPassword ? "text" : "password"}
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="pl-10 pr-10 bg-slate-700 border-slate-600 text-white placeholder-slate-500 focus:ring-sky-500 focus:border-sky-500"
+                  className="pl-10 pr-10 bg-slate-700 border-slate-600 text-white placeholder-slate-300 focus:ring-sky-500 focus:border-sky-500"
                   required
                   autoComplete="current-password"
                 />
@@ -254,7 +254,7 @@ const Auth = () => {
                   type="button"
                   variant="ghost"
                   size="sm"
-                  className="absolute right-1 top-1/2 -translate-y-1/2 h-7 px-3 text-slate-500 hover:text-sky-400"
+                  className="absolute right-1 top-1/2 -translate-y-1/2 h-7 px-3 text-slate-300 hover:text-sky-400"
                   onClick={() => setShowPassword(!showPassword)}
                   aria-label={showPassword ? "Hide password" : "Show password"}
                 >
@@ -283,14 +283,14 @@ const Auth = () => {
           </form>
         </CardContent>
         <CardFooter className="flex flex-col items-center space-y-2 pt-6">
-          <p className="text-xs text-slate-500">
+          <p className="text-xs text-slate-300">
             &copy; {new Date().getFullYear()} Darul Uloom. All rights reserved.
           </p>
-          <p className="text-xs text-slate-500">
+          <p className="text-xs text-slate-300">
             Need help?{" "}
             <a
               href="mailto:support@example.com"
-              className="text-sky-500 hover:underline"
+              className="text-sky-400 hover:underline"
             >
               Contact Support
             </a>

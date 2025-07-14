@@ -1,6 +1,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client.ts";
+import { useAuth } from "@/hooks/use-auth.ts";
 import {
   Card,
   CardContent,
@@ -10,28 +11,56 @@ import {
 import { CalendarClock, Loader2, School } from "lucide-react";
 
 export const TeacherManagement = () => {
+  const { session } = useAuth();
+
   // Get summary statistics for the dashboard
   const { data: teacherStats, isLoading } = useQuery({
-    queryKey: ["teacher-stats"],
+    queryKey: ["teacher-stats", session?.user?.id],
     queryFn: async () => {
+      if (!session?.user?.id) {
+        console.warn("No authenticated user found");
+        return { teacherCount: 0, scheduleCount: 0 };
+      }
+
+      // 1. Get current admin's madrassah_id
+      const { data: adminProfile, error: adminError } = await supabase
+        .from("profiles")
+        .select("madrassah_id")
+        .eq("id", session.user.id)
+        .single();
+
+      if (adminError || !adminProfile?.madrassah_id) {
+        console.warn("Admin madrassah_id not found:", adminError);
+        return { teacherCount: 0, scheduleCount: 0 };
+      }
+
+      const adminMadrassahId = adminProfile.madrassah_id;
+
+      // 2. Get teachers from the same madrassah
       const { data: teachersData, error: teachersError } = await supabase
         .from("profiles")
         .select("id")
-        .eq("role", "teacher");
+        .eq("role", "teacher")
+        .eq("madrassah_id", adminMadrassahId);
 
       if (teachersError) throw teachersError;
 
+      // 3. Get classes for the same madrassah (if classes table has madrassah_id)
       const { data: classesData, error: classesError } = await supabase
         .from("classes")
         .select("id");
+        // Note: Add .eq("madrassah_id", adminMadrassahId) when classes table has madrassah_id field
 
       if (classesError) throw classesError;
+
+      console.log(`Admin ${adminMadrassahId}: Found ${teachersData?.length || 0} teachers`);
 
       return {
         teacherCount: teachersData ? teachersData.length : 0,
         scheduleCount: classesData ? classesData.length : 0,
       };
     },
+    enabled: !!session?.user?.id,
   });
 
   return (

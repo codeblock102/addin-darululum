@@ -50,6 +50,17 @@ export const StudentDeleteDialog = ({
       });
       queryClient.invalidateQueries({ queryKey: ["teacher-students-details"] });
       queryClient.invalidateQueries({ queryKey: ["all-students-list"] });
+      
+      // Invalidate all student-related queries to ensure UI updates everywhere
+      queryClient.invalidateQueries({ queryKey: ["students-for-user"] });
+      queryClient.invalidateQueries({ queryKey: ["all-students-for-search"] });
+      queryClient.invalidateQueries({ queryKey: ["classroom-students"] });
+      queryClient.invalidateQueries({ queryKey: ["students"] });
+      queryClient.invalidateQueries({ queryKey: ["all-students"] });
+      queryClient.invalidateQueries({ queryKey: ["teacher-students"] });
+      queryClient.invalidateQueries({ queryKey: ["students-for-assignment"] });
+      queryClient.invalidateQueries({ queryKey: ["all-students-for-progress"] });
+      queryClient.invalidateQueries({ queryKey: ["students-search"] });
       setIsOpen(false);
     },
     onError: (error) => {
@@ -170,6 +181,15 @@ export const StudentDeleteDialog = ({
       queryClient.invalidateQueries({ queryKey: ["all-students-list"] });
       queryClient.invalidateQueries({ queryKey: ["students"] });
       queryClient.invalidateQueries({ queryKey: ["all-students"] });
+      
+      // Invalidate all student-related queries to ensure UI updates everywhere
+      queryClient.invalidateQueries({ queryKey: ["students-for-user"] });
+      queryClient.invalidateQueries({ queryKey: ["all-students-for-search"] });
+      queryClient.invalidateQueries({ queryKey: ["classroom-students"] });
+      queryClient.invalidateQueries({ queryKey: ["teacher-students"] });
+      queryClient.invalidateQueries({ queryKey: ["students-for-assignment"] });
+      queryClient.invalidateQueries({ queryKey: ["all-students-for-progress"] });
+      queryClient.invalidateQueries({ queryKey: ["students-search"] });
       setIsOpen(false);
     },
     onError: (error) => {

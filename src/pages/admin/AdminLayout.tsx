@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
-import { Shield, Database, UserPlus } from 'lucide-react';
+import { Shield, Database, UserPlus, Users } from 'lucide-react';
 
 const AdminLayout = () => {
   return (
@@ -48,6 +48,19 @@ const AdminLayout = () => {
           >
             <Database className="mr-3 h-5 w-5" />
             Database Seeder
+          </NavLink>
+          <NavLink
+            to="/admin/admin-creator"
+            className={({ isActive }) =>
+              `flex items-center px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                isActive
+                  ? 'bg-gray-700 text-white'
+                  : 'text-gray-300 hover:bg-gray-700 hover:text-white'
+              }`
+            }
+          >
+            <Users className="mr-3 h-5 w-5" />
+            Admin Creator
           </NavLink>
         </nav>
       </aside>
