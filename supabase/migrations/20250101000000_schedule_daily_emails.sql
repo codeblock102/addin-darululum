@@ -27,6 +27,7 @@ SELECT cron.schedule(
 
 -- Create a function to manually trigger the scheduled job for testing
 CREATE OR REPLACE FUNCTION trigger_daily_email_test()
+
 RETURNS json
 LANGUAGE plpgsql
 SECURITY DEFINER
