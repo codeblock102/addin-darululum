@@ -227,7 +227,7 @@ const ProgressBookPage = () => {
       </div>
 
       <Tabs value={viewMode} onValueChange={(value) => setViewMode(value as "daily" | "classroom" | "monthly")} className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-1 gap-2 sm:grid-cols-3">
           <TabsTrigger value="daily">Daily Records</TabsTrigger>
           <TabsTrigger value="monthly">Monthly Progress</TabsTrigger>
           <TabsTrigger value="classroom">Leaderboard View</TabsTrigger>
