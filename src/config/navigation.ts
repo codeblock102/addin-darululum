@@ -46,6 +46,12 @@ export const adminNavItems: NavItem[] = [
     description: "Manage teaching staff",
   },
   {
+    href: "/classes",
+    label: "Classes",
+    icon: School,
+    description: "Manage classes",
+  },
+  {
     href: "/progress-book",
     label: "Progress Book",
     icon: Book,

@@ -1,0 +1,1 @@
+-- Drop the class_teachers table\nDROP TABLE IF EXISTS public.class_teachers;\n\n-- Add teacher_ids array to classes table\nALTER TABLE public.classes ADD COLUMN IF NOT EXISTS teacher_ids UUID[];
