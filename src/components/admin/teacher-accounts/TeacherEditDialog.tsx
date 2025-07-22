@@ -35,12 +35,14 @@ export function TeacherEditDialog({
     phone: string | undefined;
     subject: string;
     bio: string | undefined;
+    grade: number | undefined;
   }>({
     name: teacher?.name || "",
     email: teacher?.email || "",
     phone: teacher?.phone || "",
     subject: teacher?.subject || "",
     bio: teacher?.bio || "",
+    grade: teacher?.grade || undefined,
   });
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -54,6 +56,7 @@ export function TeacherEditDialog({
         phone: teacher.phone || "",
         subject: teacher.subject || "",
         bio: teacher.bio || "",
+        grade: teacher.grade || undefined,
       });
     }
   }, [teacher]);
@@ -80,6 +83,7 @@ export function TeacherEditDialog({
           phone: formData.phone,
           subject: formData.subject,
           bio: formData.bio,
+          grade: formData.grade,
         })
         .eq("id", teacher.id);
 
@@ -190,6 +194,19 @@ export function TeacherEditDialog({
                 onChange={handleChange}
                 className="col-span-3"
                 required
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="grade" className="text-right">
+                Grade
+              </Label>
+              <Input
+                id="grade"
+                name="grade"
+                type="number"
+                value={formData.grade || ""}
+                onChange={handleChange}
+                className="col-span-3"
               />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">

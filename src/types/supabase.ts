@@ -369,6 +369,12 @@ export type Database = {
           role: string | null;
           updated_at: string | null;
           username: string | null;
+          phone: string | null;
+          subject: string | null;
+          bio: string | null;
+          section: string | null;
+          madrassah_id: string | null;
+          grade: number | null;
         };
         Insert: {
           avatar_url?: string | null;
@@ -378,6 +384,12 @@ export type Database = {
           role?: string | null;
           updated_at?: string | null;
           username?: string | null;
+          phone?: string | null;
+          subject?: string | null;
+          bio?: string | null;
+          section?: string | null;
+          madrassah_id?: string | null;
+          grade?: number | null;
         };
         Update: {
           avatar_url?: string | null;
@@ -387,6 +399,12 @@ export type Database = {
           role?: string | null;
           updated_at?: string | null;
           username?: string | null;
+          phone?: string | null;
+          subject?: string | null;
+          bio?: string | null;
+          section?: string | null;
+          madrassah_id?: string | null;
+          grade?: number | null;
         };
         Relationships: [];
       };
@@ -737,6 +755,7 @@ export type Database = {
           name: string;
           phone: string | null;
           subject: string;
+          grade: number | null;
         };
         Insert: {
           bio?: string | null;
@@ -747,6 +766,7 @@ export type Database = {
           name: string;
           phone?: string | null;
           subject: string;
+          grade?: number | null;
         };
         Update: {
           bio?: string | null;
@@ -757,6 +777,7 @@ export type Database = {
           name?: string;
           phone?: string | null;
           subject?: string;
+          grade?: number | null;
         };
         Relationships: [];
       };
