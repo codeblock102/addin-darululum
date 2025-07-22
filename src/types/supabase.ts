@@ -54,45 +54,6 @@ export type Database = {
           },
         ];
       };
-      class_enrollments: {
-        Row: {
-          class_id: string | null;
-          enrolled_date: string | null;
-          id: string;
-          status: string | null;
-          student_id: string | null;
-        };
-        Insert: {
-          class_id?: string | null;
-          enrolled_date?: string | null;
-          id?: string;
-          status?: string | null;
-          student_id?: string | null;
-        };
-        Update: {
-          class_id?: string | null;
-          enrolled_date?: string | null;
-          id?: string;
-          status?: string | null;
-          student_id?: string | null;
-        };
-        Relationships: [
-          {
-            foreignKeyName: "class_enrollments_class_id_fkey";
-            columns: ["class_id"];
-            isOneToOne: false;
-            referencedRelation: "classes";
-            referencedColumns: ["id"];
-          },
-          {
-            foreignKeyName: "class_enrollments_student_id_fkey";
-            columns: ["student_id"];
-            isOneToOne: false;
-            referencedRelation: "students";
-            referencedColumns: ["id"];
-          },
-        ];
-      };
       classes: {
         Row: {
           capacity: number;
@@ -102,10 +63,11 @@ export type Database = {
           description: string | null;
           id: string;
           name: string;
-          room: string | null;
           status: string | null;
-          teacher_id: string | null;
           time_slots: Json[] | null;
+          subject: string | null;
+          section: string | null;
+          teacher_ids: string[] | null;
         };
         Insert: {
           capacity?: number;
@@ -115,10 +77,11 @@ export type Database = {
           description?: string | null;
           id?: string;
           name: string;
-          room?: string | null;
           status?: string | null;
-          teacher_id?: string | null;
           time_slots?: Json[] | null;
+          subject?: string | null;
+          section?: string | null;
+          teacher_ids?: string[] | null;
         };
         Update: {
           capacity?: number;
@@ -128,20 +91,13 @@ export type Database = {
           description?: string | null;
           id?: string;
           name?: string;
-          room?: string | null;
           status?: string | null;
-          teacher_id?: string | null;
           time_slots?: Json[] | null;
+          subject?: string | null;
+          section?: string | null;
+          teacher_ids?: string[] | null;
         };
-        Relationships: [
-          {
-            foreignKeyName: "classes_teacher_id_fkey";
-            columns: ["teacher_id"];
-            isOneToOne: false;
-            referencedRelation: "teachers";
-            referencedColumns: ["id"];
-          },
-        ];
+        Relationships: [];
       };
       communications: {
         Row: {
@@ -636,6 +592,7 @@ export type Database = {
           name: string;
           medical_condition: string | null;
           status: Database["public"]["Enums"]["student_status"] | null;
+          class_ids: string[] | null;
         };
         Insert: {
           completed_juz?: number[] | null;
@@ -649,6 +606,7 @@ export type Database = {
           name: string;
           medical_condition?: string | null;
           status?: Database["public"]["Enums"]["student_status"] | null;
+          class_ids?: string[] | null;
         };
         Update: {
           completed_juz?: number[] | null;
@@ -662,6 +620,7 @@ export type Database = {
           name?: string;
           medical_condition?: string | null;
           status?: Database["public"]["Enums"]["student_status"] | null;
+          class_ids?: string[] | null;
         };
         Relationships: [];
       };
