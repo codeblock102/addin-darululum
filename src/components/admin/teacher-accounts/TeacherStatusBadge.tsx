@@ -1,7 +1,7 @@
 import { StatusBadge, StatusType } from "@/components/ui/status-badge.tsx";
 
 interface TeacherStatusBadgeProps {
-  status: "active" | "suspended";
+  status: "active" | "suspended" | "deleted";
 }
 
 export function TeacherStatusBadge({
