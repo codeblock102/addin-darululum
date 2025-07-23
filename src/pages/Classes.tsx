@@ -27,7 +27,8 @@ const fetchClasses = async () => {
       section,
       capacity,
       teacher_ids,
-      days_of_week
+      days_of_week,
+      time_slots
     `
     )
     .order("name", { ascending: true });
@@ -94,6 +95,7 @@ export default function Classes() {
         ? {
             ...classItem,
             teacher_ids: classItem.teachers?.map((t: { id: string }) => t.id),
+            time_slots: classItem.time_slots,
           }
         : null
     );
