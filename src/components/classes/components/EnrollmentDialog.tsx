@@ -21,11 +21,24 @@ interface EnrollmentDialogProps {
   onOpenChange: (open: boolean) => void;
 }
 
-const fetchEnrolledStudents = async (classId: string) => {
+const fetchClassData = async (classId: string) => {
+  const { data, error } = await supabase
+    .from("classes")
+    .select("current_students")
+    .eq("id", classId)
+    .single();
+
+  if (error) throw error;
+  return data;
+};
+
+const fetchStudentDetails = async (studentIds: string[]) => {
+  if (studentIds.length === 0) return [];
   const { data, error } = await supabase
     .from("students")
     .select("id, name")
-    .contains("class_ids", [classId]);
+    .in("id", studentIds);
+
   if (error) throw error;
   return data;
 };
@@ -45,10 +58,16 @@ export const EnrollmentDialog = ({
   const queryClient = useQueryClient();
   const [selectedStudentIds, setSelectedStudentIds] = useState<string[]>([]);
 
-  const { data: enrolledStudents, isLoading: isLoadingEnrolled } = useQuery({
-    queryKey: ["enrolledStudents", classId],
-    queryFn: () => fetchEnrolledStudents(classId),
+  const { data: classData, isLoading: isLoadingClass } = useQuery({
+    queryKey: ["classData", classId],
+    queryFn: () => fetchClassData(classId),
     enabled: !!classId,
+  });
+
+  const { data: enrolledStudents, isLoading: isLoadingEnrolled } = useQuery({
+    queryKey: ["enrolledStudents", classId, classData?.current_students],
+    queryFn: () => fetchStudentDetails(classData?.current_students || []),
+    enabled: !!classData,
   });
 
   const { data: allStudents, isLoading: isLoadingAllStudents } = useQuery({
@@ -56,53 +75,48 @@ export const EnrollmentDialog = ({
     queryFn: fetchAllStudents,
   });
 
-  const enrollStudent = useMutation({
-    mutationFn: async (studentIds: string[]) => {
-      const { error } = await supabase.rpc("append_class_to_students", {
-        student_ids_to_update: studentIds,
-        class_id_to_add: classId,
-      });
+  const updateEnrollments = useMutation({
+    mutationFn: async (updatedStudentIds: string[]) => {
+      const { error } = await supabase
+        .from("classes")
+        .update({ current_students: updatedStudentIds })
+        .eq("id", classId);
       if (error) throw error;
     },
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["classData", classId] });
       queryClient.invalidateQueries({
-        queryKey: ["enrolledStudents", classId],
+        queryKey: ["enrolledStudents", classId, classData?.current_students],
       });
-      queryClient.invalidateQueries({ queryKey: ["allStudents"] });
-      toast({ title: "Students enrolled successfully" });
+      queryClient.invalidateQueries({ queryKey: ["classes"] });
+      toast({ title: "Enrollment updated successfully" });
       setSelectedStudentIds([]);
     },
     onError: (error) => {
       const errorMessage =
         error instanceof Error ? error.message : "An unknown error occurred";
       toast({
-        title: "Error enrolling students",
+        title: "Error updating enrollment",
         description: errorMessage,
         variant: "destructive",
       });
-      console.error("Full student enrollment error:", error);
+      console.error("Full enrollment update error:", error);
     },
   });
 
-  const unenrollStudent = useMutation({
-    mutationFn: async (studentId: string) => {
-      const { error } = await supabase.rpc("remove_class_from_student", {
-        student_id_to_update: studentId,
-        class_id_to_remove: classId,
-      });
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ["enrolledStudents", classId],
-      });
-      queryClient.invalidateQueries({ queryKey: ["allStudents"] });
-      toast({ title: "Student unenrolled successfully" });
-    },
-    onError: () => {
-      toast({ title: "Error unenrolling student", variant: "destructive" });
-    },
-  });
+  const handleEnroll = () => {
+    const currentStudentIds = classData?.current_students || [];
+    const newStudentIds = [
+      ...new Set([...currentStudentIds, ...selectedStudentIds]),
+    ];
+    updateEnrollments.mutate(newStudentIds);
+  };
+
+  const handleUnenroll = (studentId: string) => {
+    const updatedStudentIds =
+      classData?.current_students?.filter((id) => id !== studentId) || [];
+    updateEnrollments.mutate(updatedStudentIds);
+  };
 
   const studentOptions =
     allStudents
@@ -129,7 +143,7 @@ export const EnrollmentDialog = ({
         <div className="space-y-4">
           <div>
             <h3 className="text-lg font-medium">Enrolled Students</h3>
-            {isLoadingEnrolled ? (
+            {isLoadingClass || isLoadingEnrolled ? (
               <Loader2 className="animate-spin" />
             ) : (
               <ul className="space-y-2 mt-2">
@@ -142,7 +156,7 @@ export const EnrollmentDialog = ({
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => unenrollStudent.mutate(student.id)}
+                      onClick={() => handleUnenroll(student.id)}
                       {...stripLovId({})}
                     >
                       <X className="h-4 w-4" />
@@ -163,16 +177,14 @@ export const EnrollmentDialog = ({
                 className="w-full"
               />
               <Button
-                onClick={() =>
-                  selectedStudentIds.length > 0 &&
-                  enrollStudent.mutate(selectedStudentIds)
-                }
+                onClick={handleEnroll}
                 disabled={
-                  selectedStudentIds.length === 0 || enrollStudent.isPending
+                  selectedStudentIds.length === 0 ||
+                  updateEnrollments.isPending
                 }
                 {...stripLovId({})}
               >
-                {enrollStudent.isPending ? (
+                {updateEnrollments.isPending ? (
                   <Loader2 className="animate-spin" />
                 ) : (
                   "Add Students"
