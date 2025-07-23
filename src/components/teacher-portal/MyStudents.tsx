@@ -79,49 +79,55 @@ export const MyStudents = ({ teacherId, isAdmin = false }: MyStudentsProps) => {
   });
 
   const { data: students, isLoading } = useQuery({
-    queryKey: ["students-for-user", userData, isAdmin],
+    queryKey: ["students-for-user", teacherId, isAdmin],
     queryFn: async () => {
-      if (!userData?.madrassah_id) return [];
+      if (isAdmin) {
+        if (!userData?.madrassah_id) return [];
+        const { data, error } = await supabase
+          .from("students")
+          .select(
+            "id, name, enrollment_date, status, date_of_birth, guardian_name, guardian_contact, madrassah_id, section, medical_condition",
+          )
+          .eq("status", "active")
+          .eq("madrassah_id", userData.madrassah_id);
+        if (error) {
+          console.error("Error fetching students for admin:", error);
+          return [];
+        }
+        return (data as Student[]) || [];
+      } else {
+        const { data: teacherClasses, error: classesError } = await supabase
+          .from("classes")
+          .select("current_students")
+          .contains("teacher_ids", `{${teacherId}}`);
 
-      let query = supabase
-        .from("students")
-        .select("id, name, enrollment_date, status, date_of_birth, guardian_name, guardian_contact, madrassah_id, section, medical_condition")
-        .eq("status", "active")
-        .eq("madrassah_id", userData.madrassah_id);
+        if (classesError) {
+          console.error("Error fetching teacher classes:", classesError);
+          return [];
+        }
 
-      if (!isAdmin && userData.section) {
-        query = query.ilike("section", userData.section);
+        const studentIds = (teacherClasses || [])
+          .flatMap((c) => c.current_students || [])
+          .filter((id, index, self) => id && self.indexOf(id) === index);
+
+        if (studentIds.length === 0) return [];
+
+        const { data, error } = await supabase
+          .from("students")
+          .select(
+            "id, name, enrollment_date, status, date_of_birth, guardian_name, guardian_contact, madrassah_id, section, medical_condition",
+          )
+          .in("id", studentIds);
+
+        if (error) {
+          console.error("Error fetching students for teacher:", error);
+          return [];
+        }
+
+        return (data as Student[]) || [];
       }
-
-      const { data, error } = await query;
-
-      if (error) {
-        console.error("Error fetching students:", error);
-        return [];
-      }
-
-      return (data as Student[]) || [];
     },
-    enabled: !isLoadingUser && !!userData,
-  });
-
-  const { data: assignedStudents } = useQuery({
-    queryKey: ["teacher-student-assignments", teacherId],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("students_teachers")
-        .select("id, student_name")
-        .eq("teacher_id", teacherId)
-        .eq("active", true);
-
-      if (error) {
-        console.error("Error fetching student assignments:", error);
-        return [];
-      }
-
-      return data as StudentAssignment[] || [];
-    },
-    enabled: !!teacherId && !isAdmin,
+    enabled: !isLoadingUser && !!teacherId,
   });
 
   const filteredStudents = students?.filter((student) =>
@@ -177,7 +183,6 @@ export const MyStudents = ({ teacherId, isAdmin = false }: MyStudentsProps) => {
                   ? (
                     <StudentMobileList
                       students={filteredStudents}
-                      assignedStudents={assignedStudents}
                       setStudentToDelete={setStudentToDelete}
                       setIsDeleteDialogOpen={setIsDeleteDialogOpen}
                       setIsDeleteType={setIsDeleteType}
@@ -187,7 +192,6 @@ export const MyStudents = ({ teacherId, isAdmin = false }: MyStudentsProps) => {
                   : (
                     <StudentTable
                       students={filteredStudents}
-                      assignedStudents={assignedStudents}
                       setStudentToDelete={setStudentToDelete}
                       setIsDeleteDialogOpen={setIsDeleteDialogOpen}
                       setIsDeleteType={setIsDeleteType}
