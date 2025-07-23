@@ -67,25 +67,62 @@ const Students = () => {
     queryKey: ["students", userId],
     queryFn: async () => {
       if (!userId) return { students: [], userData: null };
+
       const { data: userData } = await supabase
         .from("profiles")
-        .select("madrassah_id, section, role")
+        .select("madrassah_id, role")
         .eq("id", userId)
         .single();
-      if (!userData?.madrassah_id) return { students: [], userData };
-      const query = supabase
-        .from("students")
-        .select("id, name, date_of_birth, enrollment_date, guardian_name, guardian_contact, status, madrassah_id, section, medical_condition")
-        .eq("madrassah_id", userData.madrassah_id);
-      if (userData.role === "teacher" && userData.section)
-        query.ilike("section", userData.section);
-      const { data: students } = await query;
-      return { students: students || [], userData };
+
+      if (!userData?.madrassah_id) {
+        return { students: [], userData };
+      }
+
+      if (userData.role === "admin") {
+        const { data: students, error } = await supabase
+          .from("students")
+          .select(
+            "id, name, date_of_birth, enrollment_date, guardian_name, guardian_contact, status, madrassah_id, section, medical_condition",
+          )
+          .eq("madrassah_id", userData.madrassah_id);
+
+        if (error) throw error;
+        return { students: students || [], userData };
+      }
+
+      if (userData.role === "teacher") {
+        const { data: teacherClasses, error: classesError } = await supabase
+          .from("classes")
+          .select("current_students")
+          .contains("teacher_ids", `{${userId}}`);
+
+        if (classesError) throw classesError;
+        
+        const studentIds = (teacherClasses || [])
+          .flatMap(c => c.current_students || [])
+          .filter((id, index, self) => id && self.indexOf(id) === index);
+
+        if (studentIds.length === 0) {
+          return { students: [], userData };
+        }
+
+        const { data: students, error: studentsError } = await supabase
+          .from("students")
+          .select(
+            "id, name, date_of_birth, enrollment_date, guardian_name, guardian_contact, status, madrassah_id, section, medical_condition",
+          )
+          .in("id", studentIds);
+        
+        if (studentsError) throw studentsError;
+        return { students: students || [], userData };
+      }
+
+      return { students: [], userData };
     },
     enabled: !!userId,
   });
 
-  const isAdmin = data?.userData?.role === 'admin';
+  const isAdmin = data?.userData?.role === "admin";
   const students = data?.students || [];
   const totalStudents = students.length;
   const activeStudents = students.filter((s) => s.status === "active").length;
