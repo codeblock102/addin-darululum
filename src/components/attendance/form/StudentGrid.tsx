@@ -20,7 +20,7 @@ async function fetchStudentsForUser(user: User | null): Promise<Student[]> {
 
   const { data: userData, error: userError } = await supabase
     .from('profiles')
-    .select('madrassah_id, section, role')
+    .select('madrassah_id, role')
     .eq('id', user.id)
     .single();
 
@@ -34,18 +34,43 @@ async function fetchStudentsForUser(user: User | null): Promise<Student[]> {
     return [];
   }
 
-  const { madrassah_id, role, section } = userData;
+  if (userData.role === 'teacher') {
+    const { data: teacherClasses, error: classesError } = await supabase
+      .from('classes')
+      .select('current_students')
+      .contains('teacher_ids', `{${user.id}}`);
+    
+    if (classesError) {
+      console.error('Error fetching teacher classes:', classesError);
+      throw new Error('Failed to load classes for teacher.');
+    }
 
-  let query = supabase
+    const studentIds = (teacherClasses || [])
+      .flatMap(c => c.current_students || [])
+      .filter((id, index, self) => id && self.indexOf(id) === index);
+
+    if (studentIds.length === 0) {
+      return [];
+    }
+    
+    const { data, error } = await supabase
+      .from('students')
+      .select('id, name')
+      .in('id', studentIds);
+
+    if (error) {
+      console.error('Error fetching students for teacher:', error);
+      throw new Error('Failed to load students for teacher.');
+    }
+    return data as Student[];
+  }
+
+  // Admin or other roles logic
+  const { madrassah_id } = userData;
+  const { data, error } = await supabase
     .from('students')
     .select('id, name')
     .eq('madrassah_id', madrassah_id);
-
-  if (role === 'teacher' && section) {
-    query = query.eq('section', section);
-  }
-
-  const { data, error } = await query;
 
   if (error) {
     console.error('Error fetching students for user:', error);
