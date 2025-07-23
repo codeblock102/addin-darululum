@@ -14,6 +14,7 @@ interface ClassTableProps {
   classes: (Partial<ClassFormData> & {
     id: string;
     teachers?: { id: string; name: string }[];
+    studentCount?: number;
   })[];
   onEdit: (
     classItem: Partial<ClassFormData> & {
@@ -40,6 +41,7 @@ export const ClassTable = ({
             <TableHead>Teacher</TableHead>
             <TableHead>Subject</TableHead>
             <TableHead>Section</TableHead>
+            <TableHead>Students</TableHead>
             <TableHead>Capacity</TableHead>
             <TableHead>Actions</TableHead>
           </TableRow>
@@ -47,7 +49,7 @@ export const ClassTable = ({
         <TableBody>
           {classes.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={6} className="h-24 text-center">
+              <TableCell colSpan={7} className="h-24 text-center">
                 No classes found.
               </TableCell>
             </TableRow>
@@ -60,6 +62,7 @@ export const ClassTable = ({
                 </TableCell>
                 <TableCell>{classItem.subject || "N/A"}</TableCell>
                 <TableCell>{classItem.section || "N/A"}</TableCell>
+                <TableCell>{classItem.studentCount}</TableCell>
                 <TableCell>{classItem.capacity}</TableCell>
                 <TableCell>
                   <div className="flex gap-2">

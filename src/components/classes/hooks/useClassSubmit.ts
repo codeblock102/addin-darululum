@@ -45,7 +45,6 @@ export const useClassSubmit = (
           const { error } = await supabase.from("classes").insert([
             {
               ...classData,
-              current_students: 0,
               status: "active",
             },
           ]);

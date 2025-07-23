@@ -28,7 +28,8 @@ const fetchClasses = async () => {
       capacity,
       teacher_ids,
       days_of_week,
-      time_slots
+      time_slots,
+      current_students
     `
     )
     .order("name", { ascending: true });
@@ -42,6 +43,7 @@ const fetchClasses = async () => {
     return classes.map((c) => ({
       ...c,
       teachers: [],
+      studentCount: c.current_students?.length || 0,
     }));
   }
 
@@ -61,13 +63,14 @@ const fetchClasses = async () => {
         id,
         name: teacherMap.get(id) || "Unknown",
       })) || [],
+    studentCount: c.current_students?.length || 0,
   }));
 };
 
 export default function Classes() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedClass, setSelectedClass] = useState<
-    (Partial<ClassFormData> & { id: string; teacher_ids?: string[] }) | null
+    (Partial<ClassFormData> & { id: string; teacher_ids?: string[], time_slots?: any[], current_students?: string[] }) | null
   >(null);
   const [isClassDialogOpen, setIsClassDialogOpen] = useState(false);
   const [isEnrollmentDialogOpen, setIsEnrollmentDialogOpen] = useState(false);
@@ -88,6 +91,8 @@ export default function Classes() {
       id: string;
       teachers?: { id: string; name: string }[];
       days_of_week?: string[];
+      time_slots?: any[],
+      current_students?: string[]
     }
   ) => {
     setSelectedClass(
