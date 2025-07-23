@@ -37,6 +37,7 @@ import ManualRoleSetup from "@/pages/admin/ManualRoleSetup.tsx";
 import AdminLayout from "@/pages/admin/AdminLayout.tsx";
 import AdminAccessDiagnostic from "@/pages/admin/AdminAccessDiagnostic.tsx";
 import DevAdminManagement from "@/pages/DevAdminManagement.tsx";
+import TeacherSchedule from "@/pages/TeacherSchedule.tsx";
 
 /**
  * @component App
@@ -121,6 +122,7 @@ function App() {
             <Route path="/classes" element={<Classes />} />
             <Route path="/progress-book" element={<ProgressBook />} />
             <Route path="/attendance" element={<Attendance />} />
+            <Route path="/schedule" element={<TeacherSchedule />} />
             <Route
               path="/teacher-accounts"
               element={

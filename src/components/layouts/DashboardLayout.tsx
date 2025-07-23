@@ -77,18 +77,18 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
 
       <div
         className={cn(
-          "flex-1 overflow-x-hidden overflow-y-auto transition-all duration-300",
+          "flex-1 overflow-x-hidden transition-all duration-300",
           isMobile ? "pb-16" : "",
           !isMobile && (sidebarOpen ? `md:ml-64` : `md:ml-16`),
         )}
       >
         <BackgroundPattern isAdmin={isAdmin}>
-          <div className="p-3 sm:p-4 md:p-6">
-            <div className="max-w-7xl mx-auto">
+          <div className="p-3 sm:p-4 md:p-6 h-full">
+            <div className="max-w-7xl mx-auto h-full">
               {!isMobile && (
                 <RoleBadge isAdmin={isAdmin} isLoading={isLoading} />
               )}
-              <div className="animate-fadeIn mt-4 md:mt-0">
+              <div className="animate-fadeIn mt-4 md:mt-0 h-full">
                 {children || <Outlet />}
               </div>
             </div>
