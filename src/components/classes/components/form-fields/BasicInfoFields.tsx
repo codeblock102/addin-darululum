@@ -6,13 +6,7 @@ import {
   FormMessage,
 } from "@/components/ui/form.tsx";
 import { Input } from "@/components/ui/input.tsx";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select.tsx";
+import { MultiSelect, MultiSelectOption } from "@/components/ui/MultiSelect.tsx";
 import { Teacher } from "@/types/teacher.ts";
 import { useFormContext } from "react-hook-form";
 
@@ -21,7 +15,13 @@ interface BasicInfoFieldsProps {
 }
 
 export const BasicInfoFields = ({ teachers }: BasicInfoFieldsProps) => {
-  const { control } = useFormContext();
+  const { control, setValue } = useFormContext();
+
+  const teacherOptions: MultiSelectOption[] =
+    teachers?.map((teacher) => ({
+      value: teacher.id,
+      label: teacher.name,
+    })) || [];
 
   return (
     <div className="space-y-4">
@@ -41,28 +41,46 @@ export const BasicInfoFields = ({ teachers }: BasicInfoFieldsProps) => {
 
       <FormField
         control={control}
-        name="teacher_id"
+        name="teacher_ids"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Teacher (Optional)</FormLabel>
-            <Select
-              value={field.value || ""}
-              onValueChange={field.onChange}
-            >
-              <FormControl>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select teacher" />
-                </SelectTrigger>
-              </FormControl>
-              <SelectContent>
-                <SelectItem value="">None (Unassigned)</SelectItem>
-                {teachers?.map((teacher) => (
-                  <SelectItem key={teacher.id} value={teacher.id}>
-                    {teacher.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <FormLabel>Teachers</FormLabel>
+            <FormControl>
+              <MultiSelect
+                options={teacherOptions}
+                selected={field.value || []}
+                onChange={(selected) => setValue("teacher_ids", selected)}
+                placeholder="Select teachers"
+              />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+
+      <FormField
+        control={control}
+        name="subject"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Subject</FormLabel>
+            <FormControl>
+              <Input placeholder="Enter subject" {...field} />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+
+      <FormField
+        control={control}
+        name="section"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Section</FormLabel>
+            <FormControl>
+              <Input placeholder="Enter section" {...field} />
+            </FormControl>
             <FormMessage />
           </FormItem>
         )}
