@@ -24,7 +24,6 @@ export const TimeFields = () => {
                 type="time"
                 {...field}
                 required
-                defaultValue="09:00"
               />
             </FormControl>
             <FormMessage />
@@ -43,7 +42,6 @@ export const TimeFields = () => {
                 type="time"
                 {...field}
                 required
-                defaultValue="10:00"
               />
             </FormControl>
             <FormMessage />

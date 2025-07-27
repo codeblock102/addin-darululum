@@ -1,12 +1,16 @@
 import { Teacher } from "@/types/teacher.ts";
-import { BookOpen, Mail, Phone, User } from "lucide-react";
+import { BookOpen, Mail, Phone, User, Loader2 } from "lucide-react";
 import { Card } from "@/components/ui/card.tsx";
 
 interface DashboardHeaderProps {
   teacher: Teacher;
+  classes?: { id: string; name: string; subject: string }[];
+  isLoadingClasses: boolean;
 }
 
-export const DashboardHeader = ({ teacher }: DashboardHeaderProps) => {
+export const DashboardHeader = (
+  { teacher, classes, isLoadingClasses }: DashboardHeaderProps,
+) => {
   return (
     <div className="relative mb-6">
       {/* Enhanced gradient background with better mobile design */}
@@ -45,12 +49,32 @@ export const DashboardHeader = ({ teacher }: DashboardHeaderProps) => {
                   </p>
                 </div>
 
-                {/* Enhanced subject badge */}
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="inline-flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-purple-100 to-indigo-100 text-purple-700 rounded-full text-sm font-medium shadow-sm">
-                    <BookOpen className="h-4 w-4" />
-                    {teacher.subject}
-                  </span>
+                {/* Assigned Classes */}
+                <div className="pt-2">
+                  <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                    Assigned Classes
+                  </h3>
+                  {isLoadingClasses
+                    ? (
+                      <div className="flex items-center gap-2 mt-1">
+                        <Loader2 className="h-4 w-4 animate-spin text-gray-400" />
+                        <span className="text-sm text-gray-500">
+                          Loading classes...
+                        </span>
+                      </div>
+                    )
+                    : (
+                      <div className="flex flex-wrap items-center gap-2 mt-1">
+                        {classes?.map((c) => (
+                          <span
+                            key={c.id}
+                            className="px-2 py-1 bg-gray-100 text-gray-700 rounded-md text-xs font-medium"
+                          >
+                            {c.name}
+                          </span>
+                        ))}
+                      </div>
+                    )}
                 </div>
 
                 {/* Enhanced contact info for larger screens */}

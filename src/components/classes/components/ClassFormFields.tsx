@@ -1,7 +1,7 @@
 import { Teacher } from "@/types/teacher.ts";
 import { BasicInfoFields } from "./form-fields/BasicInfoFields.tsx";
 import { TimeFields } from "./form-fields/TimeFields.tsx";
-import { CapacityAndRoomFields } from "./form-fields/CapacityAndRoomFields.tsx";
+import { CapacityField } from "./form-fields/CapacityField.tsx";
 import { useFormContext } from "react-hook-form";
 import { DaysOfWeekField } from "./form-fields/DaysOfWeekField.tsx";
 
@@ -22,7 +22,7 @@ export const ClassFormFields = ({ teachers }: ClassFormFieldsProps) => {
     <>
       <BasicInfoFields teachers={teachers} />
       <TimeFields />
-      <CapacityAndRoomFields />
+      <CapacityField />
       <DaysOfWeekField />
     </>
   );

@@ -8,9 +8,8 @@ import { getErrorMessage } from "@/utils/stringUtils.ts";
 
 interface StudentMobileListProps {
   students: Student[];
-  assignedStudents?: StudentAssignment[];
   setStudentToDelete: (
-    student: { id: string; name: string; studentId: string } | null,
+    student: { id: string; name:string; studentId: string } | null,
   ) => void;
   setIsDeleteDialogOpen: (open: boolean) => void;
   setIsDeleteType: (type: "remove" | "delete") => void;
@@ -19,7 +18,6 @@ interface StudentMobileListProps {
 
 export const StudentMobileList = ({
   students,
-  assignedStudents = [],
   setStudentToDelete,
   setIsDeleteDialogOpen,
   setIsDeleteType,

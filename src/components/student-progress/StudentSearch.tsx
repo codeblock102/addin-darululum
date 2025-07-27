@@ -30,59 +30,63 @@ export const StudentSearch = ({
 }: StudentSearchProps) => {
   const [searchQuery, setSearchQuery] = useState("");
 
-  const { data: teacherData } = useQuery({
-    queryKey: ["teacherDataForSearch", teacherId],
-    queryFn: async () => {
-      if (!teacherId) return null;
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("madrassah_id, section")
-        .eq("id", teacherId)
-        .single();
-      if (error) {
-        console.error("Error fetching teacher data for search:", error);
-        return null;
-      }
-      return data;
-    },
-    enabled: !!teacherId && !showAllStudents,
-  });
-
   // Fetch students with optional teacher filter
   const {
     data: students,
     isLoading,
     error,
   } = useQuery({
-    queryKey: ["students-search", teacherId, showAllStudents, teacherData],
+    queryKey: ["students-search", teacherId, showAllStudents],
     queryFn: async () => {
-      let query = supabase
-        .from("students")
-        .select("id, name")
-        .eq("status", "active")
-        .not("madrassah_id", "is", null);
+      if (showAllStudents) {
+        const { data, error } = await supabase
+          .from("students")
+          .select("id, name")
+          .eq("status", "active")
+          .not("madrassah_id", "is", null)
+          .order("name");
+        if (error) {
+          console.error("Error fetching all students:", error);
+          throw error;
+        }
+        return data || [];
+      }
 
-      // Filter by teacher's section if a teacherId is provided and we are not showing all students
-      if (teacherId && !showAllStudents) {
-        if (teacherData) {
-          query = query
-            .eq("madrassah_id", teacherData.madrassah_id)
-            .eq("section", teacherData.section);
-        } else {
-          // If teacher data is still loading or failed, return no students for this context
+      if (teacherId) {
+        const { data: teacherClasses, error: classesError } = await supabase
+          .from("classes")
+          .select("current_students")
+          .contains("teacher_ids", `{${teacherId}}`);
+
+        if (classesError) {
+          console.error("Error fetching teacher classes:", classesError);
+          throw classesError;
+        }
+
+        const studentIds = (teacherClasses || [])
+          .flatMap((c) => c.current_students || [])
+          .filter((id, index, self) => id && self.indexOf(id) === index);
+
+        if (studentIds.length === 0) {
           return [];
         }
+
+        const { data: studentsData, error: studentsError } = await supabase
+          .from("students")
+          .select("id, name")
+          .in("id", studentIds)
+          .order("name");
+
+        if (studentsError) {
+          console.error("Error fetching students for teacher:", studentsError);
+          throw studentsError;
+        }
+        return studentsData || [];
       }
 
-      const { data, error } = await query.order("name");
-
-      if (error) {
-        console.error("Error fetching students:", error);
-        throw error;
-      }
-      return data || [];
+      return [];
     },
-    enabled: showAllStudents || (!!teacherId && !!teacherData),
+    enabled: showAllStudents || !!teacherId,
   });
 
   // Filter students based on search query
