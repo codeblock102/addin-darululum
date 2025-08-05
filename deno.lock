@@ -121,6 +121,10 @@
     "packageJson": {
       "dependencies": [
         "npm:@eslint/js@^9.9.0",
+        "npm:@fullcalendar/daygrid@^6.1.18",
+        "npm:@fullcalendar/interaction@^6.1.18",
+        "npm:@fullcalendar/react@^6.1.18",
+        "npm:@fullcalendar/timegrid@^6.1.18",
         "npm:@hookform/resolvers@^3.9.0",
         "npm:@radix-ui/react-accordion@^1.2.0",
         "npm:@radix-ui/react-alert-dialog@^1.1.1",
