@@ -88,7 +88,18 @@ export const useStudentSubmit = ({
               : Number(formData.currentJuz),
             completed_juz: completedJuz,
             madrassah_id: teacherProfile.madrassah_id,
-            section: teacherProfile.section,
+            section: formData.section || teacherProfile.section,
+            home_address: formData.home_address || null,
+            health_card_number: formData.health_card_number || null,
+            permanent_code: formData.permanent_code || null,
+            guardian_phone: formData.guardian_phone || null,
+            guardian_whatsapp: formData.guardian_whatsapp || null,
+            preferred_language: formData.preferred_language || null,
+            secondary_guardian_name: formData.secondary_guardian_name || null,
+            secondary_guardian_phone: formData.secondary_guardian_phone || null,
+            secondary_guardian_whatsapp: formData.secondary_guardian_whatsapp || null,
+            secondary_guardian_email: formData.secondary_guardian_email || null,
+            secondary_guardian_home_address: formData.secondary_guardian_home_address || null,
           });
 
         if (createError) throw createError;
@@ -108,7 +119,18 @@ export const useStudentSubmit = ({
               : Number(formData.currentJuz),
             completed_juz: completedJuz,
             madrassah_id: teacherProfile.madrassah_id,
-            section: teacherProfile.section,
+            section: formData.section || teacherProfile.section,
+            home_address: formData.home_address || null,
+            health_card_number: formData.health_card_number || null,
+            permanent_code: formData.permanent_code || null,
+            guardian_phone: formData.guardian_phone || null,
+            guardian_whatsapp: formData.guardian_whatsapp || null,
+            preferred_language: formData.preferred_language || null,
+            secondary_guardian_name: formData.secondary_guardian_name || null,
+            secondary_guardian_phone: formData.secondary_guardian_phone || null,
+            secondary_guardian_whatsapp: formData.secondary_guardian_whatsapp || null,
+            secondary_guardian_email: formData.secondary_guardian_email || null,
+            secondary_guardian_home_address: formData.secondary_guardian_home_address || null,
           })
           .eq("id", existingStudent.id);
 

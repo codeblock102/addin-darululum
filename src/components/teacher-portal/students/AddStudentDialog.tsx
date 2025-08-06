@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/button.tsx";
 import { UserPlus } from "lucide-react";
 import {
   Dialog,
@@ -9,11 +9,14 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
-import { useToast } from "@/hooks/use-toast";
-import { StudentForm } from "./StudentForm";
-import { useStudentSubmit } from "./useStudentSubmit";
-import { StudentFormData } from "./studentTypes";
+} from "@/components/ui/dialog.tsx";
+import { Input } from "@/components/ui/input.tsx";
+import { Label } from "@/components/ui/label.tsx";
+import { useToast } from "@/hooks/use-toast.ts";
+import { StudentForm } from "./StudentForm.tsx";
+import { useStudentSubmit } from "./useStudentSubmit.ts";
+import { StudentFormData } from "./studentTypes.ts";
+import { useUserRole } from "@/hooks/useUserRole.ts";
 
 interface AddStudentDialogProps {
   teacherId: string;
@@ -23,8 +26,9 @@ export const AddStudentDialog = ({ teacherId }: AddStudentDialogProps) => {
   const [open, setOpen] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { isAdmin } = useUserRole();
 
-  const initialFormData: StudentFormData = {
+  const [formData, setFormData] = useState<StudentFormData>({
     studentName: "",
     dateOfBirth: "",
     enrollmentDate: new Date().toISOString().split("T")[0],
@@ -37,7 +41,19 @@ export const AddStudentDialog = ({ teacherId }: AddStudentDialogProps) => {
     status: "active",
     completedJuz: [],
     currentJuz: "_none_",
-  };
+    home_address: "",
+    health_card_number: "",
+    permanent_code: "",
+    guardian_phone: "",
+    guardian_whatsapp: "",
+    preferred_language: "",
+    secondary_guardian_name: "",
+    secondary_guardian_phone: "",
+    secondary_guardian_whatsapp: "",
+    secondary_guardian_email: "",
+    secondary_guardian_home_address: "",
+    section: "",
+  });
 
   const { handleSubmit, isProcessing } = useStudentSubmit({
     teacherId,
@@ -97,11 +113,26 @@ export const AddStudentDialog = ({ teacherId }: AddStudentDialogProps) => {
           </DialogDescription>
         </DialogHeader>
 
+        {isAdmin && (
+          <div className="space-y-2">
+            <Label htmlFor="section">Section</Label>
+            <Input
+              id="section"
+              placeholder="Enter section"
+              value={formData.section}
+              onChange={(e) =>
+                setFormData((prev) => ({ ...prev, section: e.target.value }))
+              }
+            />
+          </div>
+        )}
+
         <StudentForm
-          initialFormData={initialFormData}
+          initialFormData={formData}
           onSubmit={handleSubmit}
           isProcessing={isProcessing}
           onCancel={() => setOpen(false)}
+          isAdmin={isAdmin}
         />
       </DialogContent>
     </Dialog>

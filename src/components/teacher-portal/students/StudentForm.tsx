@@ -20,6 +20,7 @@ interface StudentFormProps {
   onSubmit: (formData: StudentFormData) => void;
   isProcessing: boolean;
   onCancel: () => void;
+  isAdmin?: boolean;
 }
 
 export const StudentForm = ({
@@ -27,6 +28,7 @@ export const StudentForm = ({
   onSubmit,
   isProcessing,
   onCancel,
+  isAdmin,
 }: StudentFormProps) => {
   const [activeTab, setActiveTab] = useState("basic");
   const [formData, setFormData] = useState<StudentFormData>(initialFormData);
@@ -39,10 +41,11 @@ export const StudentForm = ({
   return (
     <form onSubmit={handleFormSubmit} className="space-y-4 pt-2">
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid grid-cols-4 mb-4">
+        <TabsList className="grid grid-cols-5 mb-4">
           <TabsTrigger value="basic">Student Info</TabsTrigger>
+          <TabsTrigger value="details">Student Details</TabsTrigger>
           <TabsTrigger value="guardian">Guardian</TabsTrigger>
-          <TabsTrigger value="emergency">Emergency</TabsTrigger>
+          <TabsTrigger value="secondary_guardian">Secondary Guardian</TabsTrigger>
           <TabsTrigger value="quran">Quran Progress</TabsTrigger>
         </TabsList>
 
@@ -114,6 +117,22 @@ export const StudentForm = ({
             </Select>
           </div>
 
+          {isAdmin && (
+            <div className="space-y-2">
+              <Label htmlFor="section">Section</Label>
+              <Input
+                id="section"
+                placeholder="Enter section"
+                value={formData.section || ""}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    section: e.target.value,
+                  }))}
+              />
+            </div>
+          )}
+
           <div className="space-y-2">
             <Label htmlFor="medicalConditions">Medical Conditions</Label>
             <Textarea
@@ -125,6 +144,39 @@ export const StudentForm = ({
                   ...prev,
                   medicalConditions: e.target.value,
                 }))}
+            />
+          </div>
+        </TabsContent>
+
+        <TabsContent value="details" className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="home_address">Home Address</Label>
+            <Input
+              id="home_address"
+              placeholder="Enter student's home address"
+              value={formData.home_address}
+              onChange={(e) =>
+                setFormData((prev) => ({ ...prev, home_address: e.target.value }))}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="health_card_number">Health Card Number</Label>
+            <Input
+              id="health_card_number"
+              placeholder="Enter health card number"
+              value={formData.health_card_number}
+              onChange={(e) =>
+                setFormData((prev) => ({ ...prev, health_card_number: e.target.value }))}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="permanent_code">Permanent Code</Label>
+            <Input
+              id="permanent_code"
+              placeholder="Enter permanent code"
+              value={formData.permanent_code}
+              onChange={(e) =>
+                setFormData((prev) => ({ ...prev, permanent_code: e.target.value }))}
             />
           </div>
         </TabsContent>
@@ -181,40 +233,87 @@ export const StudentForm = ({
               required
             />
           </div>
-        </TabsContent>
-
-        <TabsContent value="emergency" className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="emergencyContactName">
-              Emergency Contact Name <span className="text-red-500">*</span>
-            </Label>
+            <Label htmlFor="guardian_phone">Guardian Phone</Label>
             <Input
-              id="emergencyContactName"
-              placeholder="Enter emergency contact's name"
-              value={formData.emergencyContactName}
+              id="guardian_phone"
+              placeholder="Enter guardian's phone number"
+              value={formData.guardian_phone}
               onChange={(e) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  emergencyContactName: e.target.value,
-                }))}
-              required
+                setFormData((prev) => ({ ...prev, guardian_phone: e.target.value }))}
             />
           </div>
-
           <div className="space-y-2">
-            <Label htmlFor="emergencyContactPhone">
-              Emergency Contact Phone <span className="text-red-500">*</span>
-            </Label>
+            <Label htmlFor="guardian_whatsapp">Guardian WhatsApp</Label>
             <Input
-              id="emergencyContactPhone"
-              placeholder="Enter emergency contact's phone number"
-              value={formData.emergencyContactPhone}
+              id="guardian_whatsapp"
+              placeholder="Enter guardian's WhatsApp number"
+              value={formData.guardian_whatsapp}
               onChange={(e) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  emergencyContactPhone: e.target.value,
-                }))}
-              required
+                setFormData((prev) => ({ ...prev, guardian_whatsapp: e.target.value }))}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="preferred_language">Preferred Language</Label>
+            <Input
+              id="preferred_language"
+              placeholder="Enter preferred language"
+              value={formData.preferred_language}
+              onChange={(e) =>
+                setFormData((prev) => ({ ...prev, preferred_language: e.target.value }))}
+            />
+          </div>
+        </TabsContent>
+
+        <TabsContent value="secondary_guardian" className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="secondary_guardian_name">Secondary Guardian Name</Label>
+            <Input
+              id="secondary_guardian_name"
+              placeholder="Enter secondary guardian's name"
+              value={formData.secondary_guardian_name}
+              onChange={(e) =>
+                setFormData((prev) => ({ ...prev, secondary_guardian_name: e.target.value }))}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="secondary_guardian_phone">Secondary Guardian Phone</Label>
+            <Input
+              id="secondary_guardian_phone"
+              placeholder="Enter secondary guardian's phone number"
+              value={formData.secondary_guardian_phone}
+              onChange={(e) =>
+                setFormData((prev) => ({ ...prev, secondary_guardian_phone: e.target.value }))}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="secondary_guardian_whatsapp">Secondary Guardian WhatsApp</Label>
+            <Input
+              id="secondary_guardian_whatsapp"
+              placeholder="Enter secondary guardian's WhatsApp number"
+              value={formData.secondary_guardian_whatsapp}
+              onChange={(e) =>
+                setFormData((prev) => ({ ...prev, secondary_guardian_whatsapp: e.target.value }))}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="secondary_guardian_email">Secondary Guardian Email</Label>
+            <Input
+              id="secondary_guardian_email"
+              placeholder="Enter secondary guardian's email"
+              value={formData.secondary_guardian_email}
+              onChange={(e) =>
+                setFormData((prev) => ({ ...prev, secondary_guardian_email: e.target.value }))}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="secondary_guardian_home_address">Secondary Guardian Home Address</Label>
+            <Input
+              id="secondary_guardian_home_address"
+              placeholder="Enter secondary guardian's home address"
+              value={formData.secondary_guardian_home_address}
+              onChange={(e) =>
+                setFormData((prev) => ({ ...prev, secondary_guardian_home_address: e.target.value }))}
             />
           </div>
         </TabsContent>
@@ -262,7 +361,7 @@ export const StudentForm = ({
                           const updated = checked
                             ? [...current, juz].sort((a, b) => a - b)
                             : current.filter((j) => j !== juz);
-                          return { ...prev, completedJuz: updated };
+                          return { ...prev, completed_juz: updated };
                         });
                       }}
                       disabled={isCurrentJuz}

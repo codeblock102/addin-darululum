@@ -18,8 +18,13 @@ if (typeof window !== 'undefined') {
   // Wait for React to be fully loaded
   setTimeout(() => {
     try {
-      // Get a reference to React
-      const React = require('react');
+      // Get a reference to React from the window object
+      const React = (window as any).React;
+
+      if (!React) {
+        console.error("React not found on window object. Patch failed.");
+        return;
+      }
       
       // Store the original createElement
       const originalCreateElement = React.createElement;
