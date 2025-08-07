@@ -1,4 +1,4 @@
-import { Json } from "@/types/supabase";
+import { Json } from "@/types/supabase.ts";
 
 export interface TeacherFormValues {
   name: string;
@@ -7,6 +7,7 @@ export interface TeacherFormValues {
   phone?: string;
   subject?: string;
   preferences?: Json;
+  grade?: number;
   createAccount?: boolean;
   generatePassword?: boolean;
   password?: string;
@@ -26,6 +27,7 @@ export interface Teacher {
   bio?: string;
   phone?: string;
   preferences?: Json;
+  grade?: number;
 }
 
 export interface TeacherAccount extends Teacher {
