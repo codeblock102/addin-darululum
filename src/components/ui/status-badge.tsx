@@ -19,6 +19,7 @@ export type StatusType =
   | "active"
   | "suspended"
   | "pending"
+  | "deleted"
   // Progress statuses
   | "excellent"
   | "good"
@@ -88,6 +89,7 @@ export function StatusBadge({
       case "horrible":
       case "needsWork":
       case "error":
+      case "deleted":
         return <X className={cn("h-3 w-3", size === "lg" ? "h-4 w-4" : "")} />;
       case "warning":
       case "skipped":
@@ -122,6 +124,7 @@ export function StatusBadge({
       case "suspended":
       case "error":
       case "horrible":
+      case "deleted":
         return "bg-red-50 text-red-700 border-red-200 dark:bg-red-900/20 dark:text-red-400 dark:border-red-800";
 
       case "late":
@@ -158,6 +161,8 @@ export function StatusBadge({
         return "Suspended";
       case "pending":
         return "Pending";
+      case "deleted":
+        return "Deleted";
       case "excellent":
         return "Excellent";
       case "good":

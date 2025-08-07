@@ -56,6 +56,8 @@ export function TeacherAccountsTable({ teachers }: TeacherAccountsTableProps) {
             <TableRow>
               <TableHead className="w-[200px]">Full Name</TableHead>
               <TableHead className="w-[250px]">Email</TableHead>
+              <TableHead>Subject</TableHead>
+              <TableHead>Grade</TableHead>
               <TableHead>Last Activity</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Classes</TableHead>
@@ -79,6 +81,8 @@ export function TeacherAccountsTable({ teachers }: TeacherAccountsTableProps) {
                       {teacher.name}
                     </TableCell>
                     <TableCell>{teacher.email || "No email"}</TableCell>
+                    <TableCell>{teacher.subject || "N/A"}</TableCell>
+                    <TableCell>{teacher.grade || "N/A"}</TableCell>
                     <TableCell>
                       {teacher.lastLogin
                         ? formatDistanceToNow(new Date(teacher.lastLogin), {

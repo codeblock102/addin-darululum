@@ -15,6 +15,8 @@ import App from "./App.tsx";
 import "./index.css";
 import { AuthProvider } from "@/contexts/AuthContext.tsx";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+// Apply the React patch to filter out data-lov-id attributes
+import "@/lib/reactPatches.tsx";
 
 const queryClient = new QueryClient();
 

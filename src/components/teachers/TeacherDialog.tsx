@@ -46,6 +46,7 @@ const teacherSchema = z.object({
   subject: z.string().min(2, {
     message: "Subject must be at least 2 characters.",
   }).optional(),
+  grade: z.coerce.number().int().positive().optional().nullable(),
   section: z.string({
     required_error: "Please select a section for the teacher.",
   }),
@@ -130,6 +131,7 @@ export const TeacherDialog = (
       phone: null,
       subject: "",
       section: "",
+      grade: null,
       bio: null,
       createAccount: true,
       generatePassword: true,
@@ -149,6 +151,7 @@ export const TeacherDialog = (
         phone: selectedTeacher.phone || null,
         subject: selectedTeacher.subject || "",
         section: selectedTeacher.section || "",
+        grade: selectedTeacher.grade || null,
         bio: selectedTeacher.bio || null,
         createAccount: false, // Don't create account when editing
         generatePassword: true,
@@ -161,6 +164,7 @@ export const TeacherDialog = (
         phone: null,
         subject: "",
         section: "",
+        grade: null,
         bio: null,
         createAccount: true,
         generatePassword: true,
@@ -202,6 +206,7 @@ export const TeacherDialog = (
             subject: values.subject || "",
             bio: values.bio || null,
             section: values.section,
+            grade: values.grade || null,
           })
           .eq("id", selectedTeacher.id);
 
@@ -255,6 +260,7 @@ export const TeacherDialog = (
                 bio: values.bio || null,
                 section: values.section,
                 madrassah_id: madrassahId,
+                grade: values.grade || null,
               },
             },
           });
@@ -280,6 +286,7 @@ export const TeacherDialog = (
             bio: values.bio || null,
             section: values.section,
             madrassah_id: madrassahId,
+            grade: values.grade || null,
           });
 
         if (profileUpsertError) {
@@ -415,6 +422,25 @@ export const TeacherDialog = (
                   )}
                 />
               </div>
+
+              <FormField
+                control={form.control}
+                name="grade"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Grade</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="Teacher's Grade"
+                        type="number"
+                        {...field}
+                        value={field.value || ""}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
               <FormField
                 control={form.control}

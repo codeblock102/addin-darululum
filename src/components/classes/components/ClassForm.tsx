@@ -6,9 +6,10 @@ import { Loader2 } from "lucide-react";
 import { ClassFormData, classSchema } from "../validation/classFormSchema.ts";
 import { ClassFormFields } from "./ClassFormFields.tsx";
 import { Teacher } from "@/types/teacher.ts";
+import { useEffect } from "react";
 
 interface ClassFormProps {
-  selectedClass: Partial<ClassFormData> | null;
+  selectedClass: (Partial<ClassFormData> & { id?: string }) | null;
   onSubmit: (data: ClassFormData) => void;
   onCancel: () => void;
   isSubmitting: boolean;
@@ -26,14 +27,31 @@ export const ClassForm = ({
     resolver: zodResolver(classSchema),
     defaultValues: {
       name: selectedClass?.name || "",
-      teacher_id: selectedClass?.teacher_id || "",
-      room: selectedClass?.room || "",
+      teacher_ids: selectedClass?.teacher_ids || [],
       time_start: selectedClass?.time_start || "09:00",
       time_end: selectedClass?.time_end || "10:30",
       capacity: selectedClass?.capacity || 20,
       days_of_week: selectedClass?.days_of_week || [],
+      subject: selectedClass?.subject || "",
+      section: selectedClass?.section || "",
     },
   });
+
+  useEffect(() => {
+    if (selectedClass) {
+      const timeSlots = selectedClass.time_slots?.[0];
+      form.reset({
+        name: selectedClass.name || "",
+        teacher_ids: selectedClass.teacher_ids || [],
+        time_start: timeSlots?.start_time || "09:00",
+        time_end: timeSlots?.end_time || "10:30",
+        capacity: selectedClass.capacity || 20,
+        days_of_week: selectedClass.days_of_week || [],
+        subject: selectedClass.subject || "",
+        section: selectedClass.section || "",
+      });
+    }
+  }, [selectedClass, form.reset]);
 
   return (
     <FormProvider {...form}>

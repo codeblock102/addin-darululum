@@ -46,6 +46,12 @@ export const adminNavItems: NavItem[] = [
     description: "Manage teaching staff",
   },
   {
+    href: "/classes",
+    label: "Classes",
+    icon: School,
+    description: "Manage classes",
+  },
+  {
     href: "/progress-book",
     label: "Progress Book",
     icon: Book,
@@ -96,6 +102,12 @@ export const teacherNavItems: NavItem[] = [
     label: "Attendance",
     icon: Clock,
     description: "Track student attendance",
+  },
+  {
+    href: "/schedule",
+    label: "Schedule",
+    icon: Clock,
+    description: "View your class schedule",
   },
   {
     href: "/preferences",
