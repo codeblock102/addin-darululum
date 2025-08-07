@@ -85,23 +85,28 @@ export const DevAdminCreator = () => {
   const [isCreating, setIsCreating] = useState(false);
 
   // Fetch madrassahs
-  const { data: madrassahs, isLoading: madrassahsLoading } = useQuery({
+  const { 
+    data: madrassahs, 
+    isLoading: madrassahsLoading,
+    isError: madrassahsError,
+  } = useQuery<Madrassah[]>({
     queryKey: ["madrassahs-for-admin"],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("madrassahs")
-        .select("id, name, location")
-        .order("name");
-      
-      if (error) throw error;
-      return data as Madrassah[];
+      const { data, error } = await supabase.rpc("get_all_madrassahs");
+      if (error) {
+        console.error("Error fetching madrassahs:", error);
+        throw new Error(error.message);
+      }
+      return data || [];
     },
   });
 
   // Fetch existing admin users
   const { data: adminUsers, isLoading: usersLoading } = useQuery({
-    queryKey: ["admin-users"],
+    queryKey: ["admin-users", madrassahs],
     queryFn: async () => {
+      if (!madrassahs) return [];
+
       const { data, error } = await supabase
         .from("profiles")
         .select(`
@@ -109,77 +114,45 @@ export const DevAdminCreator = () => {
           name,
           role,
           created_at,
-          madrassah_id,
-          madrassahs (
-            name
-          )
+          madrassah_id
         `)
         .eq("role", "admin")
         .order("created_at", { ascending: false });
       
       if (error) throw error;
       
+      const madrassahMap = new Map(madrassahs.map(m => [m.id, m.name]));
+      
       return data.map(user => ({
         id: user.id,
-        email: '', // We'll need to get this separately if needed
+        email: '',
         name: user.name || '',
-        madrassah_name: user.madrassahs?.name || 'No Madrassah',
+        madrassah_name: madrassahMap.get(user.madrassah_id) || 'No Madrassah',
         madrassah_id: user.madrassah_id || '',
         created_at: user.created_at,
         role: user.role
       })) as AdminUser[];
     },
+    enabled: !!madrassahs && !madrassahsLoading,
   });
 
   // Create admin mutation
   const createAdminMutation = useMutation({
     mutationFn: async (adminData: AdminForm) => {
       setIsCreating(true);
-      
-      // Step 1: Create the user account
-      const { data: authData, error: authError } = await supabase.auth.admin.createUser({
-        email: adminData.email,
-        password: adminData.password,
-        email_confirm: true, // Auto-confirm email
-        user_metadata: {
-          name: adminData.name,
-          role: 'admin'
-        }
+      const { data, error } = await supabase.functions.invoke("create-admin", {
+        body: adminData,
       });
 
-      if (authError || !authData.user) {
-        throw new Error(authError?.message || 'Failed to create user account');
+      if (error) {
+        throw new Error(error.message);
       }
-
-      // Step 2: Create/update the profile
-      const { error: profileError } = await supabase
-        .from("profiles")
-        .upsert({
-          id: authData.user.id,
-          name: adminData.name,
-          role: 'admin',
-          madrassah_id: adminData.madrassah_id,
-          created_at: new Date().toISOString()
-        });
-
-      if (profileError) {
-        throw new Error(`Failed to create profile: ${profileError.message}`);
-      }
-
-      return {
-        user: authData.user,
-        profile: {
-          id: authData.user.id,
-          name: adminData.name,
-          role: 'admin',
-          madrassah_id: adminData.madrassah_id
-        }
-      };
+      return { data, adminData };
     },
-    onSuccess: (data) => {
+    onSuccess: ({ adminData }) => {
       toast({
         title: "Admin Created Successfully",
-        description: `Admin account for ${form.name} has been created and can be used immediately.`,
+        description: `Admin account for ${adminData.name} has been created and can be used immediately.`,
       });
       
       // Reset form
@@ -207,21 +180,12 @@ export const DevAdminCreator = () => {
   // Delete admin mutation
   const deleteAdminMutation = useMutation({
     mutationFn: async (userId: string) => {
-      // Delete from profiles first
-      const { error: profileError } = await supabase
-        .from("profiles")
-        .delete()
-        .eq("id", userId);
+      const { error } = await supabase.functions.invoke("delete-admin", {
+        body: { userId },
+      });
 
-      if (profileError) {
-        throw new Error(`Failed to delete profile: ${profileError.message}`);
-      }
-
-      // Delete the auth user
-      const { error: authError } = await supabase.auth.admin.deleteUser(userId);
-
-      if (authError) {
-        throw new Error(`Failed to delete auth user: ${authError.message}`);
+      if (error) {
+        throw new Error(`Failed to delete admin: ${error.message}`);
       }
 
       return userId;
@@ -245,6 +209,11 @@ export const DevAdminCreator = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
+    toast({
+      title: "Checking Madrassah ID before submit:",
+      description: `Madrassah ID is: '${form.madrassah_id || "EMPTY"}'`,
+    });
+
     if (!form.email || !form.password || !form.name || !form.madrassah_id) {
       toast({
         title: "Missing Information",
@@ -379,9 +348,15 @@ export const DevAdminCreator = () => {
                     {madrassahsLoading ? (
                       <div className="flex items-center justify-center p-4">
                         <Loader2 className="h-4 w-4 animate-spin" />
+                        <span className="ml-2">Loading madrassahs...</span>
                       </div>
-                    ) : (
-                      madrassahs?.map((madrassah) => (
+                    ) : madrassahsError ? (
+                      <div className="flex items-center justify-center p-4 text-red-600">
+                        <AlertCircle className="h-4 w-4 mr-2" />
+                        <span>Failed to load madrassahs</span>
+                      </div>
+                    ) : madrassahs && madrassahs.length > 0 ? (
+                      madrassahs.map((madrassah) => (
                         <SelectItem key={madrassah.id} value={madrassah.id}>
                           <div className="flex items-center gap-2">
                             <Building2 className="h-4 w-4" />
@@ -390,6 +365,10 @@ export const DevAdminCreator = () => {
                           </div>
                         </SelectItem>
                       ))
+                    ) : (
+                      <div className="flex items-center justify-center p-4 text-gray-500">
+                        <span>No madrassahs found</span>
+                      </div>
                     )}
                   </SelectContent>
                 </Select>
