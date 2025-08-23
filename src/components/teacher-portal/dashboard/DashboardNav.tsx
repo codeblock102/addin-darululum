@@ -24,6 +24,7 @@ export const useActiveTab = () => {
         "schedule",
         "performance",
         "messages",
+        "assignments",
       ].includes(tabParam)
     ) {
       setActiveTab(tabParam);
