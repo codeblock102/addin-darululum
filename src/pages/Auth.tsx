@@ -284,7 +284,7 @@ const Auth = () => {
         </CardContent>
         <CardFooter className="flex flex-col items-center space-y-2 pt-6">
           <p className="text-xs text-slate-300">
-            &copy; {new Date().getFullYear()} Darul Uloom. All rights reserved.
+            &copy; {new Date().getFullYear()} Dār Al-Ulūm Montréal. All rights reserved.
           </p>
           <p className="text-xs text-slate-300">
             Need help?{" "}
