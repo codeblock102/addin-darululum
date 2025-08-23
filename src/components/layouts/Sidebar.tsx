@@ -27,7 +27,7 @@ import {
   ShieldCheck,
   X,
 } from "lucide-react";
-import { adminNavItems, teacherNavItems } from "@/config/navigation.ts";
+import { adminNavItems, teacherNavItems, parentNavItems } from "@/config/navigation.ts";
 import { type NavItem } from "@/types/navigation.ts";
 import { useRBAC } from "@/hooks/useRBAC.ts";
 import { SidebarNav } from "./sidebar/SidebarNav.tsx";
@@ -76,13 +76,15 @@ export const Sidebar = (
   { onCloseSidebar, toggleSidebar, isOpen }: SidebarProps,
 ) => {
   const isMobile = useIsMobile();
-  const { isTeacher, isAdmin, isLoading: isRoleLoading } = useRBAC();
+  const { isTeacher, isAdmin, isParent, isLoading: isRoleLoading } = useRBAC();
 
   let navItems: NavItem[];
   if (isAdmin) {
     navItems = adminNavItems;
   } else if (isTeacher) {
     navItems = teacherNavItems;
+  } else if (isParent) {
+    navItems = parentNavItems;
   } else {
     navItems = [];
   }
@@ -161,7 +163,7 @@ export const Sidebar = (
                   isAdmin ? "text-white" : "text-gray-800",
                 )}
               >
-                {isAdmin ? "Admin Portal" : "Teacher Portal"}
+                {isAdmin ? "Admin Portal" : isParent ? "Parent Portal" : "Teacher Portal"}
               </span>
             </Link>
           )}
@@ -171,7 +173,7 @@ export const Sidebar = (
             <Link
               to="/dashboard"
               className="flex items-center justify-center w-full hover:bg-white/5 rounded-lg p-2 transition-all duration-200"
-              title={isAdmin ? "Admin Portal" : "Teacher Portal"}
+              title={isAdmin ? "Admin Portal" : isParent ? "Parent Portal" : "Teacher Portal"}
             >
               {isAdmin
                 ? (

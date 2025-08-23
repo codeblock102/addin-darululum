@@ -26,6 +26,8 @@ import { AccessDenied } from "@/components/teacher-portal/AccessDenied.tsx";
 import { ProfileNotFound } from "@/components/teacher-portal/ProfileNotFound.tsx";
 import { Teacher } from "@/types/teacher.ts";
 import { useRBAC } from "@/hooks/useRBAC.ts";
+import { Button } from "@/components/ui/button.tsx";
+import { Link } from "react-router-dom";
 
 /**
  * @component Dashboard
@@ -232,6 +234,15 @@ const Dashboard = () => {
 
     return (
       <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-red-50">
+        <div className="px-4 pt-4">
+          <div className="flex gap-3 flex-wrap">
+            <Link to="/admin/parent-accounts">
+              <Button className="bg-amber-500 hover:bg-amber-600 text-black">
+                Manage Parent Accounts
+              </Button>
+            </Link>
+          </div>
+        </div>
         <TeacherDashboard teacher={adminViewProfile} isAdmin={true} />
       </div>
     );

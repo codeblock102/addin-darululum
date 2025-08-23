@@ -10,7 +10,7 @@ export default function Index() {
   const [errorOccurred, setErrorOccurred] = useState(false);
   const { session } = useAuth();
 
-  // Function to check if the user's email is associated with a teacher profile
+  // Function to check if the user's email is associated with a teacher or parent profile
   const checkTeacherProfile = useCallback(async (email: string | undefined) => {
     if (!email) {
       setIsLoading(false);
@@ -31,8 +31,20 @@ export default function Index() {
         localStorage.setItem("userRole", "teacher");
         navigate("/teacher-portal");
       } else {
-        // No specific role found, show the dashboard navigation options
-        setIsLoading(false);
+        // Check for parent via parent_teachers by auth id (requires session)
+        const { data: auth } = await supabase.auth.getUser();
+        const uid = auth.user?.id;
+        const { data: parentData } = uid
+          ? await supabase.from("parent_teachers").select("id").eq("id", uid).maybeSingle()
+          : { data: null } as any;
+        if (parentData?.id) {
+          console.log("Found parent profile, redirecting");
+          localStorage.setItem("userRole", "parent");
+          navigate("/parent");
+        } else {
+          // No specific role found, show the dashboard navigation options
+          setIsLoading(false);
+        }
       }
     } catch (error) {
       console.error("Error checking teacher profile:", error);
@@ -81,6 +93,11 @@ export default function Index() {
       } else if (role === "teacher") {
         console.log("Found teacher role in localStorage, redirecting");
         navigate("/teacher-portal");
+        clearTimeout(timeoutId);
+        return;
+      } else if (role === "parent") {
+        console.log("Found parent role in localStorage, redirecting");
+        navigate("/parent");
         clearTimeout(timeoutId);
         return;
       } else {

@@ -15,6 +15,8 @@ interface DhorBookProps {
   teacherData?: { madrassah_id: string; section: string } | null;
   isAdmin: boolean;
   isLoadingTeacher: boolean;
+  readOnly?: boolean;
+  skipAuth?: boolean;
 }
 
 export const DhorBook = ({
@@ -23,6 +25,8 @@ export const DhorBook = ({
   teacherData,
   isAdmin,
   isLoadingTeacher,
+  readOnly = false,
+  skipAuth = false,
 }: DhorBookProps) => {
   const [currentWeek, setCurrentWeek] = useState(new Date());
   const [currentMonth, setCurrentMonth] = useState(new Date());
@@ -60,6 +64,11 @@ export const DhorBook = ({
   } = useQuery({
     queryKey: ["dhorbook-student-auth", studentId, isAdmin, teacherData],
     queryFn: async () => {
+      // Skip authorization checks if requested (e.g., for parent read-only view)
+      if (skipAuth) {
+        return [{ id: studentId }];
+      }
+
       // For teachers, if teacherData is not ready, don't fetch.
       if (!isAdmin && !teacherData) {
         return [];
@@ -102,7 +111,7 @@ export const DhorBook = ({
   });
 
   // Authorization is confirmed if user is admin OR if the studentId is in the fetched list
-  const isAuthorized = isAdmin ||
+  const isAuthorized = skipAuth || isAdmin ||
     (students?.some((s) => s.id === studentId) ?? false);
 
   const showUnauthorized = !isAdmin && !studentsLoading && !isAuthorized;
@@ -436,6 +445,7 @@ export const DhorBook = ({
             currentWeek={currentWeek}
             viewMode="weekly"
             onRefresh={handleRefresh}
+            readOnly={readOnly || !isAdmin}
           />
         </TabsContent>
 
@@ -497,6 +507,7 @@ export const DhorBook = ({
             currentMonth={currentMonth}
             viewMode="monthly"
             onRefresh={handleRefresh}
+            readOnly={readOnly || !isAdmin}
           />
         </TabsContent>
       </Tabs>

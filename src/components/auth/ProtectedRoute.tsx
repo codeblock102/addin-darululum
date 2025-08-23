@@ -11,6 +11,7 @@ interface ProtectedRouteProps {
   children: React.ReactNode;
   requireAdmin?: boolean;
   requireTeacher?: boolean;
+  requireParent?: boolean;
   requiredPermissions?: RolePermission[];
 }
 
@@ -18,12 +19,14 @@ export const ProtectedRoute = ({
   children,
   requireAdmin = false,
   requireTeacher = false,
+  requireParent = false,
   requiredPermissions = [],
 }: ProtectedRouteProps) => {
   const { session, isLoading: authLoading } = useAuth();
   const {
     isAdmin,
     isTeacher,
+    isParent,
     isLoading: rbacLoading,
     hasPermission,
   } = useRBAC();
@@ -82,6 +85,9 @@ export const ProtectedRoute = ({
     } else if (isTeacher) {
       localStorage.setItem("userRole", "teacher");
       setRedirectCount(0); // Reset redirect count on successful role determination
+    } else if (isParent) {
+      localStorage.setItem("userRole", "parent");
+      setRedirectCount(0);
     }
 
     // Check for required roles
@@ -105,6 +111,20 @@ export const ProtectedRoute = ({
       toast({
         title: "Access Denied",
         description: "This area requires teacher privileges",
+        variant: "destructive",
+      });
+      navigate("/");
+      return;
+    }
+
+    if (requireParent && !isParent && !isAdmin) {
+      console.log(
+        "Parent access required but not parent or admin, redirecting",
+      );
+      setRedirectCount((prev) => prev + 1);
+      toast({
+        title: "Access Denied",
+        description: "This area requires parent privileges",
         variant: "destructive",
       });
       navigate("/");
@@ -144,9 +164,11 @@ export const ProtectedRoute = ({
     isLoading,
     isAdmin,
     isTeacher,
+    isParent,
     rbacLoading,
     requireAdmin,
     requireTeacher,
+    requireParent,
     requiredPermissions,
     navigate,
     toast,
