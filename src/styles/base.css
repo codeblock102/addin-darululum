@@ -11,3 +11,10 @@
     @apply bg-background text-foreground;
   }
 }
+
+@layer utilities {
+  /* Increase readability: make pale paragraph text darker */
+  p.text-gray-200 {
+    @apply text-foreground;
+  }
+}

@@ -31,9 +31,9 @@ export const buttonVariants = cva(
         destructive:
           "bg-destructive/90 text-destructive-foreground hover:bg-destructive",
         outline:
-          "border border-[#ffffff15] bg-[#ffffff08] hover:bg-white/10 text-gray-200",
-        secondary: "bg-[#ffffff08] text-gray-200 hover:bg-white/10",
-        ghost: "hover:bg-white/10 text-gray-200",
+          "border border-[#ffffff15] bg-[#ffffff08] hover:bg-white/10 text-black-200",
+        secondary: "bg-[#ffffff08] black:bg-white/10",
+        ghost: "hover:bg-white/10 text-black-200",
         link: "text-primary/90 underline-offset-4 hover:underline",
       },
       size: {

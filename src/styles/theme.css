@@ -23,7 +23,7 @@
   --secondary: 210 40% 96.1%;
   --secondary-foreground: 222.2 47.4% 11.2%;
   --muted: 210 40% 96.1%;
-  --muted-foreground: 215.4 16.3% 35%; /* Darker for better contrast */
+  --muted-foreground: 215.4 16.3% 28%; /* Even darker for readability */
   --accent: 210 40% 96.1%;
   --accent-foreground: 222.2 47.4% 11.2%;
   --destructive: 0 100% 50%;
@@ -46,7 +46,7 @@
   --secondary: 222.2 47.4% 11.2%;
   --secondary-foreground: 210 40% 98%;
   --muted: 223 47% 11%;
-  --muted-foreground: 215.4 16.3% 65%; /* Improved dark mode contrast */
+  --muted-foreground: 215.4 16.3% 75%; /* Stronger contrast in dark mode */
   --accent: 216 34% 17%;
   --accent-foreground: 210 40% 98%;
   --destructive: 0 63% 31%;
@@ -94,7 +94,7 @@
   --card: 0 0% 100%;
   --card-foreground: 222.2 47.4% 11.2%;
   --muted: 210 40% 96.1%;
-  --muted-foreground: 215.4 16.3% 35%; /* Much darker for better readability */
+  --muted-foreground: 215.4 16.3% 28%; /* Much darker for better readability */
   --accent: 210 40% 98%;
   --accent-foreground: 222.2 47.4% 11.2%;
   --border: 214.3 31.8% 91.4%;

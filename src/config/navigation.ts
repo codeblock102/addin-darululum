@@ -12,6 +12,7 @@
 import {
   Book,
   Clock,
+  ClipboardList,
   FileText,
   Home,
   School,
@@ -96,6 +97,12 @@ export const teacherNavItems: NavItem[] = [
     label: "Progress Book",
     icon: Book,
     description: "Record student progress",
+  },
+  {
+    href: "/dashboard?tab=assignments",
+    label: "Assignments",
+    icon: ClipboardList,
+    description: "Create and track assignments",
   },
   {
     href: "/attendance",
