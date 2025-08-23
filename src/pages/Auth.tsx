@@ -166,6 +166,25 @@ const Auth = () => {
           navigate("/dashboard");
           return;
         }
+
+        // Check if the user is a parent via consolidated parents table keyed by auth id
+        const { data: parentRow, error: parentError } = await (supabase as any)
+          .from("parents")
+          .select("id")
+          .eq("id", refreshedUser.id)
+          .maybeSingle();
+
+        if (parentError) {
+          console.error("Error checking parents:", parentError.message);
+        } else if (parentRow?.id) {
+          localStorage.setItem("userRole", "parent");
+          toast({
+            title: "Login Successful",
+            description: "Welcome! Redirecting to Parent Portal...",
+          });
+          navigate("/parent");
+          return;
+        }
       }
 
       console.log("No role found, redirecting to role setup");

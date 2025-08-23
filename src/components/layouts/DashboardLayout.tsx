@@ -15,14 +15,14 @@ interface DashboardLayoutProps {
 }
 
 export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
-  const { isAdmin, isTeacher, isLoading } = useRBAC();
+  const { isAdmin, isTeacher, isParent, isLoading } = useRBAC();
   const { setTheme } = useTheme();
   const isMobile = useIsMobile();
   const [sidebarOpen, setSidebarOpen] = useState(!isMobile);
 
   useEffect(() => {
     const root = document.documentElement;
-    if (isTeacher && !isAdmin) {
+    if ((isTeacher || isParent) && !isAdmin) {
       root.classList.remove("dark");
       root.classList.add("teacher-theme");
       setTheme("light");
@@ -31,7 +31,7 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
       root.classList.add("dark");
       setTheme("dark");
     }
-  }, [isAdmin, isTeacher, setTheme]);
+  }, [isAdmin, isTeacher, isParent, setTheme]);
 
   useEffect(() => {
     if (isMobile) {
@@ -96,7 +96,7 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
         </BackgroundPattern>
       </div>
 
-      {isMobile && !isLoading && (isTeacher || isAdmin) && <BottomNavigation />}
+      {isMobile && !isLoading && (isTeacher || isAdmin || isParent) && <BottomNavigation />}
     </div>
   );
 };

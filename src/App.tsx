@@ -38,6 +38,11 @@ import AdminLayout from "@/pages/admin/AdminLayout.tsx";
 import AdminAccessDiagnostic from "@/pages/admin/AdminAccessDiagnostic.tsx";
 import DevAdminManagement from "@/pages/DevAdminManagement.tsx";
 import TeacherSchedule from "@/pages/TeacherSchedule.tsx";
+import Parent from "@/pages/Parent.tsx";
+import ParentProgress from "@/pages/ParentProgress.tsx";
+import ParentAcademics from "@/pages/ParentAcademics.tsx";
+import ParentAttendance from "@/pages/ParentAttendance.tsx";
+import ParentAccounts from "@/pages/admin/ParentAccounts.tsx";
 
 /**
  * @component App
@@ -85,6 +90,7 @@ function App() {
             <Route path="roles" element={<ManualRoleSetup />} />
             <Route path="seeder" element={<DatabaseSeeder />} />
             <Route path="admin-creator" element={<DevAdminManagement />} />
+            <Route path="parent-accounts" element={<ParentAccounts />} />
           </Route>
 
           <Route
@@ -96,6 +102,38 @@ function App() {
           >
             <Route path="/" element={<Index />} />
             <Route path="/dashboard" element={<Dashboard />} />
+            <Route
+              path="/parent"
+              element={
+                <ProtectedRoute requireParent>
+                  <Parent />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/parent/progress"
+              element={
+                <ProtectedRoute requireParent>
+                  <ParentProgress />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/parent/academics"
+              element={
+                <ProtectedRoute requireParent>
+                  <ParentAcademics />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/parent/attendance"
+              element={
+                <ProtectedRoute requireParent>
+                  <ParentAttendance />
+                </ProtectedRoute>
+              }
+            />
             {/* Redirect /teacher-portal to /dashboard for consistency */}
             <Route
               path="/teacher-portal"
