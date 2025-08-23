@@ -254,7 +254,7 @@ const Teachers = () => {
       </div>
 
       {/* Teacher Dialog Modal */}
-      {dialogOpen && (
+      {dialogOpen && adminData?.madrassah_id && (
         <TeacherDialog
           selectedTeacher={selectedTeacher}
           onClose={handleCloseDialog}

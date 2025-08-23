@@ -107,10 +107,11 @@ export const TeacherDialog = (
         .from("madrassahs")
         .select("section")
         .eq("id", madrassahId)
-        .single();
+        .maybeSingle();
 
       if (error) {
         console.error("Error fetching sections from madrassah:", error);
+        // For unexpected errors, notify; 0-rows are handled by maybeSingle() with data = null
         toast({
           title: "Error fetching sections",
           description: "Could not load the list of available sections.",
@@ -118,7 +119,8 @@ export const TeacherDialog = (
         });
         return [];
       }
-      return data?.section || [];
+      if (!data) return [];
+      return data.section || [];
     },
     enabled: !!madrassahId,
   });
@@ -307,10 +309,9 @@ export const TeacherDialog = (
         });
       }
 
-      // Invalidate queries to refresh data
-      queryClient.invalidateQueries({
-        queryKey: ["teacher-profiles", madrassahId],
-      });
+      // Invalidate queries so the new/updated teacher appears immediately
+      queryClient.invalidateQueries({ queryKey: ["profiles", madrassahId, "role", "teacher"] });
+      queryClient.invalidateQueries({ queryKey: ["profiles"] }); // safety net for any profiles lists
       queryClient.invalidateQueries({ queryKey: ["teacher-stats"] });
       onClose();
     } catch (error: unknown) {
