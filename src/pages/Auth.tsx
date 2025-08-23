@@ -200,7 +200,7 @@ const Auth = () => {
             className="w-20 h-20 mx-auto mb-4 rounded-full"
           />
           <CardTitle className="text-3xl font-bold text-sky-400">
-            Darul Uloom Login
+            Dār Al-Ulūm Montréal
           </CardTitle>
           <CardDescription className="text-slate-200">
             Access your dashboard
