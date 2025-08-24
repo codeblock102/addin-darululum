@@ -18,7 +18,7 @@ interface AttendanceSettingsRow {
 }
 
 export function AttendanceCutoffSettings() {
-  const { isAdmin } = useRBAC();
+  const { isAdmin, isTeacher, isParent } = useRBAC();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [madrassahId, setMadrassahId] = useState<string | null>(null);
@@ -63,7 +63,7 @@ export function AttendanceCutoffSettings() {
       if (error) throw error;
       return (data as AttendanceSettingsRow) || null;
     },
-    enabled: !!madrassahId && isAdmin,
+    enabled: !!madrassahId,
   });
 
   const saveMutation = useMutation({
@@ -89,8 +89,6 @@ export function AttendanceCutoffSettings() {
     },
   });
 
-  if (!isAdmin) return null;
-
   return (
     <Card className="mb-4">
       <CardHeader>
@@ -110,16 +108,20 @@ export function AttendanceCutoffSettings() {
               const enabled = (formData.get("enabled") as string) === "on";
               const cutoff_time = (formData.get("cutoff_time") as string) || "09:30";
               const timezone = (formData.get("timezone") as string) || "America/New_York";
+              if (!isAdmin) {
+                toast({ title: "Insufficient permissions", description: "Only admins can update these settings.", variant: "destructive" });
+                return;
+              }
               saveMutation.mutate({ enabled, cutoff_time, timezone });
             }}
           >
             <div className="flex items-center gap-2">
-              <Switch id="enabled" name="enabled" defaultChecked={settings?.enabled ?? true} />
+              <Switch id="enabled" name="enabled" defaultChecked={settings?.enabled ?? true} disabled={!isAdmin} />
               <Label htmlFor="enabled">Enable notifications</Label>
             </div>
             <div>
               <Label htmlFor="cutoff_time">Cutoff time</Label>
-              <Input id="cutoff_time" name="cutoff_time" type="time" defaultValue={settings?.cutoff_time ?? "09:30"} />
+              <Input id="cutoff_time" name="cutoff_time" type="time" defaultValue={settings?.cutoff_time ?? "09:30"} disabled={!isAdmin} />
             </div>
             <div className="sm:col-span-2">
               <Label htmlFor="timezone">Timezone</Label>
@@ -128,6 +130,7 @@ export function AttendanceCutoffSettings() {
                 name="timezone"
                 defaultValue={settings?.timezone ?? "America/New_York"}
                 className="w-full h-10 rounded-md border px-3 text-sm bg-background"
+                disabled={!isAdmin}
               >
                 {tzOptions.map((tz) => (
                   <option key={tz} value={tz}>{tz}</option>
@@ -135,10 +138,15 @@ export function AttendanceCutoffSettings() {
               </select>
             </div>
             <div>
-              <Button type="submit" disabled={saveMutation.isPending}>
+              <Button type="submit" disabled={saveMutation.isPending || !isAdmin}>
                 {saveMutation.isPending ? "Saving..." : "Save"}
               </Button>
             </div>
+            {!isAdmin && (
+              <div className="sm:col-span-5 text-xs text-muted-foreground">
+                You can view the current settings. Only admins can change these settings.
+              </div>
+            )}
             {settings?.last_sent_date && (
               <div className="sm:col-span-5 text-xs text-muted-foreground">
                 Last run (per madrassah local date): {settings.last_sent_date}
