@@ -95,7 +95,8 @@ export const StudentGrid = ({ user, selectedStudents, onStudentSelect, onSelectA
     enabled: !!user,
   });
 
-  const filteredStudents = (students || []).filter((student) =>
+  const studentList: Student[] = Array.isArray(students) ? students : [];
+  const filteredStudents = studentList.filter((student) =>
     student.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
@@ -121,7 +122,7 @@ export const StudentGrid = ({ user, selectedStudents, onStudentSelect, onSelectA
       <CardHeader>
         <div className="flex justify-between items-center mb-4">
           <CardTitle>Select Students</CardTitle>
-          <Button variant="outline" onClick={() => onSelectAll(filteredStudents)}>
+          <Button variant="outline" onClick={() => onSelectAll(studentList)}>
             {selectedStudents.size === filteredStudents.length && filteredStudents.length > 0 ? 'Deselect All' : 'Select All'}
           </Button>
         </div>
