@@ -12,7 +12,8 @@ const resend = RESEND_API_KEY ? new Resend(RESEND_API_KEY) : null;
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-  "Access-Control-Allow-Methods": "*",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+  "Access-Control-Max-Age": "86400",
 };
 
 type SettingRow = {
@@ -62,6 +63,10 @@ function htmlEscape(str: string): string {
   }[c] as string));
 }
 
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
@@ -71,6 +76,7 @@ serve(async (req: Request) => {
     let triggerSource = "manual";
     let timestamp = new Date().toISOString();
     let explicitMadrassahId: string | null = null;
+    let force: boolean = false;
     try {
       const bodyText = await req.text();
       if (bodyText) {
@@ -78,6 +84,7 @@ serve(async (req: Request) => {
         triggerSource = parsed.source || triggerSource;
         timestamp = parsed.timestamp || timestamp;
         explicitMadrassahId = parsed.madrassah_id || null;
+        force = Boolean(parsed.force);
       }
     } catch (_) {
       // ignore
@@ -155,11 +162,13 @@ serve(async (req: Request) => {
       const nowMins = hmToMinutes(localHm);
 
       // Only send once per local day per madrassah
-      if (setting.last_sent_date === localYmd) {
-        continue;
-      }
-      if (nowMins < cutoffMins) {
-        continue;
+      if (!force) {
+        if (setting.last_sent_date === localYmd) {
+          continue;
+        }
+        if (nowMins < cutoffMins) {
+          continue;
+        }
       }
 
       // Fetch students for this madrassah
@@ -201,8 +210,79 @@ serve(async (req: Request) => {
       let emailsSkipped = 0;
 
       for (const student of absentees) {
-        const guardianEmail: string | null = student.guardian_email ?? null;
-        if (!guardianEmail) {
+        // Build recipient emails from multiple sources and de-duplicate
+        const recipientSet = new Set<string>();
+        const addEmail = (email: string | null | undefined) => {
+          if (!email) return;
+          const trimmed = String(email).trim().toLowerCase();
+          if (trimmed && /.+@.+\..+/.test(trimmed)) recipientSet.add(trimmed);
+        };
+
+        // 1) Student's guardian email
+        addEmail(student.guardian_email);
+
+        // 2) parents table (array mapping)
+        try {
+          const { data: parentRows, error: parentsErr } = await supabaseService
+            .from("parents")
+            .select("email, student_ids")
+            .contains("student_ids", [student.id]);
+          if (parentsErr) {
+            console.log("parents query error for student", student.id, parentsErr);
+          } else {
+            for (const p of (parentRows || [])) addEmail(p?.email);
+          }
+        } catch (e) {
+          console.log("parents query exception for student", student.id, e);
+        }
+
+        // 3) parent_children → parent_teachers (new link)
+        try {
+          const { data: pcRows, error: pcErr } = await supabaseService
+            .from("parent_children")
+            .select("parent_id")
+            .eq("student_id", student.id);
+          if (!pcErr && pcRows && pcRows.length > 0) {
+            const parentIds = Array.from(new Set(pcRows.map((r: any) => r.parent_id))); 
+            if (parentIds.length > 0) {
+              const { data: ptRows, error: ptErr } = await supabaseService
+                .from("parent_teachers")
+                .select("email")
+                .in("id", parentIds);
+              if (!ptErr && ptRows) {
+                for (const p of ptRows) addEmail(p?.email);
+              }
+            }
+          }
+        } catch (e) {
+          console.log("parent_teachers join exception for student", student.id, e);
+        }
+
+        // 4) Legacy parent_children → profiles (older deployments)
+        try {
+          const { data: pcRows2, error: pcErr2 } = await supabaseService
+            .from("parent_children")
+            .select("parent_id")
+            .eq("student_id", student.id);
+          if (!pcErr2 && pcRows2 && pcRows2.length > 0) {
+            const parentIds2 = Array.from(new Set(pcRows2.map((r: any) => r.parent_id)));
+            if (parentIds2.length > 0) {
+              const { data: profRows, error: profErr } = await supabaseService
+                .from("profiles")
+                .select("email, role")
+                .in("id", parentIds2);
+              if (!profErr && profRows) {
+                for (const p of profRows) {
+                  if ((p as any)?.role === 'parent') addEmail((p as any)?.email);
+                }
+              }
+            }
+          }
+        } catch (e) {
+          console.log("profiles join exception for student", student.id, e);
+        }
+
+        if (recipientSet.size === 0) {
           emailsSkipped++;
           continue;
         }
@@ -247,30 +327,50 @@ body{font-family:Arial,Helvetica,sans-serif;background:#f6f7f9;margin:0;padding:
   </div>
 </body></html>`;
 
-        try {
-          await resend.emails.send({
-            from: RESEND_FROM_EMAIL!,
-            to: guardianEmail,
-            subject,
-            html,
-          });
-          emailsSent++;
-        } catch (e) {
-          // Roll back dedupe row so we can retry next run
+        let successfulForStudent = 0;
+        for (const toEmail of Array.from(recipientSet)) {
+          try {
+            await resend.emails.send({
+              from: RESEND_FROM_EMAIL!,
+              to: toEmail,
+              subject,
+              html,
+            });
+            successfulForStudent++;
+            emailsSent++;
+          } catch (e: any) {
+            const msg = String(e?.message || "");
+            const is429 = msg.includes("429") || (e?.statusCode === 429);
+            if (is429) {
+              await sleep(1500);
+              try {
+                await resend.emails.send({ from: RESEND_FROM_EMAIL!, to: toEmail, subject, html });
+                successfulForStudent++;
+                emailsSent++;
+                continue;
+              } catch (_) {}
+            }
+            emailsSkipped++;
+          }
+        }
+
+        // If none of the emails for this student succeeded, roll back dedupe row so we can retry later
+        if (successfulForStudent === 0) {
           await supabaseService
             .from("attendance_absence_notifications")
             .delete()
             .eq("student_id", student.id)
             .eq("date", localYmd);
-          emailsSkipped++;
         }
       }
 
       // Update last_sent_date so we do not run again today for this madrassah
-      await supabaseService
-        .from("attendance_settings")
-        .update({ last_sent_date: localYmd })
-        .eq("madrassah_id", setting.madrassah_id);
+      if (!force) {
+        await supabaseService
+          .from("attendance_settings")
+          .update({ last_sent_date: localYmd })
+          .eq("madrassah_id", setting.madrassah_id);
+      }
 
       totalEmailsSent += emailsSent;
       totalEmailsSkipped += emailsSkipped;

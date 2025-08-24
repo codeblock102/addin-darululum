@@ -22,6 +22,11 @@ export function AttendanceCutoffSettings() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [madrassahId, setMadrassahId] = useState<string | null>(null);
+  const [isTriggering, setIsTriggering] = useState(false);
+  
+  useEffect(() => {
+    console.log("[AttendanceCutoffSettings] Mounted. isAdmin=", isAdmin);
+  }, [isAdmin]);
 
   // Resolve current user's madrassah_id
   useEffect(() => {
@@ -55,7 +60,7 @@ export function AttendanceCutoffSettings() {
     queryKey: ["attendance-settings", madrassahId],
     queryFn: async () => {
       if (!madrassahId) return null;
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from("attendance_settings")
         .select("madrassah_id, enabled, cutoff_time, timezone, last_sent_date")
         .eq("madrassah_id", madrassahId)
@@ -75,7 +80,7 @@ export function AttendanceCutoffSettings() {
         cutoff_time: values.cutoff_time ?? settings?.cutoff_time ?? "09:30",
         timezone: values.timezone ?? settings?.timezone ?? "America/New_York",
       };
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from("attendance_settings")
         .upsert(payload, { onConflict: "madrassah_id" });
       if (error) throw error;
@@ -89,18 +94,58 @@ export function AttendanceCutoffSettings() {
     },
   });
 
+  const triggerEmailsNow = async () => {
+    if (!isAdmin) return;
+    try {
+      setIsTriggering(true);
+      const { data, error } = await (supabase as any).functions.invoke("attendance-absence-email", {
+        body: { source: "manual_test", timestamp: new Date().toISOString(), madrassah_id: madrassahId, force: true },
+      });
+      if (error) throw error;
+      toast({ title: "Absence emails triggered", description: `Result: ${data?.results?.length ?? 0} madrassah batch(es).` });
+    } catch (e: any) {
+      toast({ title: "Trigger failed", description: e.message || "Unable to trigger emails", variant: "destructive" });
+    } finally {
+      setIsTriggering(false);
+    }
+  };
+
+  // Parents shouldn't see this section at all
+  if (isParent && !isAdmin) return null;
+
+  const summary = (
+    <div className="text-sm text-muted-foreground">
+      <span>Cutoff time:&nbsp;</span>
+      <strong>{settings?.cutoff_time ?? "09:30"}</strong>
+      <span>&nbsp;({settings?.timezone ?? "America/New_York"})</span>
+      {settings?.last_sent_date ? (
+        <span>&nbsp;· Last emailed: {settings.last_sent_date}</span>
+      ) : (
+        <span>&nbsp;· No emails sent yet</span>
+      )}
+    </div>
+  );
+
   return (
     <Card className="mb-4">
       <CardHeader>
         <CardTitle>Attendance Cutoff</CardTitle>
         <CardDescription>
-          Configure the daily cutoff time to email guardians of students not marked present.
+          {isAdmin ? (
+            <>Configure the daily cutoff used to email guardians of students not marked present.</>
+          ) : (
+            <>Daily attendance cutoff</>
+          )}
         </CardDescription>
       </CardHeader>
       <CardContent>
         {isLoading ? (
           <div className="text-sm text-muted-foreground">Loading...</div>
+        ) : !isAdmin ? (
+          // Teacher view: summary only
+          summary
         ) : (
+          // Admin view: full form
           <form
             className="grid grid-cols-1 sm:grid-cols-5 gap-3 items-end"
             onSubmit={(e) => {
@@ -110,20 +155,16 @@ export function AttendanceCutoffSettings() {
               const enabled = (formData.get("enabled") as string) === "on";
               const cutoff_time = (formData.get("cutoff_time") as string) || "09:30";
               const timezone = (formData.get("timezone") as string) || "America/New_York";
-              if (!isAdmin) {
-                toast({ title: "Insufficient permissions", description: "Only admins can update these settings.", variant: "destructive" });
-                return;
-              }
               saveMutation.mutate({ enabled, cutoff_time, timezone });
             }}
           >
             <div className="flex items-center gap-2">
-              <Switch id="enabled" name="enabled" defaultChecked={settings?.enabled ?? true} disabled={!isAdmin} />
+              <Switch id="enabled" name="enabled" defaultChecked={settings?.enabled ?? true} />
               <Label htmlFor="enabled">Enable notifications</Label>
             </div>
             <div>
               <Label htmlFor="cutoff_time">Cutoff time</Label>
-              <Input id="cutoff_time" name="cutoff_time" type="time" defaultValue={settings?.cutoff_time ?? "09:30"} disabled={!isAdmin} />
+              <Input id="cutoff_time" name="cutoff_time" type="time" defaultValue={settings?.cutoff_time ?? "09:30"} />
             </div>
             <div className="sm:col-span-2">
               <Label htmlFor="timezone">Timezone</Label>
@@ -132,7 +173,6 @@ export function AttendanceCutoffSettings() {
                 name="timezone"
                 defaultValue={settings?.timezone ?? "America/New_York"}
                 className="w-full h-10 rounded-md border px-3 text-sm bg-background"
-                disabled={!isAdmin}
               >
                 {tzOptions.map((tz) => (
                   <option key={tz} value={tz}>{tz}</option>
@@ -140,23 +180,17 @@ export function AttendanceCutoffSettings() {
               </select>
             </div>
             <div>
-              <Button type="submit" disabled={saveMutation.isPending || !isAdmin}>
+              <Button type="submit" disabled={saveMutation.isPending}>
                 {saveMutation.isPending ? "Saving..." : "Save"}
               </Button>
             </div>
-            {!isAdmin && (
-              <div className="sm:col-span-5 text-xs text-muted-foreground">
-                You can view the current settings. Only admins can change these settings.
-              </div>
-            )}
-            <div className="sm:col-span-5 text-xs text-muted-foreground">
-              Current cutoff: <strong>{settings?.cutoff_time ?? "09:30"}</strong> in
-              &nbsp;<strong>{settings?.timezone ?? "America/New_York"}</strong>
-              {settings?.last_sent_date ? (
-                <> · Last emailed: {settings.last_sent_date}</>
-              ) : (
-                <> · No emails sent yet</>
-              )}
+            <div>
+              <Button type="button" variant="outline" disabled={isTriggering} onClick={triggerEmailsNow}>
+                {isTriggering ? "Sending..." : "Send absence emails now"}
+              </Button>
+            </div>
+            <div className="sm:col-span-5">
+              {summary}
             </div>
           </form>
         )}
