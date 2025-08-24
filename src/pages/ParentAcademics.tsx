@@ -86,22 +86,45 @@ const ParentAcademics = () => {
         console.log("[ParentAcademics] assignment", a.id, "student_ids:", arr, "includes selected:", includes);
       });
 
-      return (assigns || []).map((a: any) => ({
-        id: `${a.id}:${selectedStudentId}`,
-        status: "assigned",
-        submitted_at: null,
-        graded_at: null,
-        grade: null,
-        feedback: null,
-        assignment: {
-          id: a.id,
-          title: a.title,
-          description: a.description,
-          due_date: a.due_date,
-          attachment_name: a.attachment_name,
-          attachment_url: a.attachment_url,
-        },
-      }));
+      // Fetch submissions for this student for the returned assignments
+      let submissionsByAssignment = new Map<string, any>();
+      try {
+        const assignmentIds = Array.from(new Set((assigns || []).map((a: any) => a.id)));
+        if (assignmentIds.length > 0) {
+          const { data: subs, error: subsErr } = await supabase
+            .from("teacher_assignment_submissions")
+            .select("assignment_id, status, submitted_at, graded_at, grade, feedback")
+            .eq("student_id", selectedStudentId)
+            .in("assignment_id", assignmentIds);
+          if (subsErr) {
+            console.error("[ParentAcademics] submissions fetch error:", subsErr);
+          } else {
+            submissionsByAssignment = new Map((subs || []).map((s: any) => [s.assignment_id, s]));
+          }
+        }
+      } catch (e) {
+        console.warn("[ParentAcademics] submissions fetch exception:", e);
+      }
+
+      return (assigns || []).map((a: any) => {
+        const sub = submissionsByAssignment.get(a.id);
+        return {
+          id: `${a.id}:${selectedStudentId}`,
+          status: sub?.status || "assigned",
+          submitted_at: sub?.submitted_at || null,
+          graded_at: sub?.graded_at || null,
+          grade: sub?.grade ?? null,
+          feedback: sub?.feedback ?? null,
+          assignment: {
+            id: a.id,
+            title: a.title,
+            description: a.description,
+            due_date: a.due_date,
+            attachment_name: a.attachment_name,
+            attachment_url: a.attachment_url,
+          },
+        };
+      });
     },
     enabled: !!selectedStudentId,
     retry: false,
