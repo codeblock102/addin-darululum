@@ -168,6 +168,9 @@ const Attendance = () => {
           </CardHeader>
 
           <CardContent className="p-0">
+            <div className="p-3 sm:p-6 lg:p-8 pt-4">
+              <AttendanceCutoffSettings />
+            </div>
             <Tabs
               value={selectedTab}
               onValueChange={setSelectedTab}
@@ -199,7 +202,6 @@ const Attendance = () => {
                   className="mt-0 animate-fadeIn"
                 >
                   <div className="space-y-4 sm:space-y-6">
-                    <AttendanceCutoffSettings />
                     <div className="text-center space-y-1 sm:space-y-2">
                       <h3 className="text-lg sm:text-xl font-semibold text-slate-900 dark:text-slate-100">
                         Record Student Attendance
