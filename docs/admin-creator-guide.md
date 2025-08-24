@@ -2,7 +2,7 @@
 
 ## Overview
 
-The Developer Admin Creator is a powerful tool that allows developers to create admin accounts and assign them to specific madrassahs. This functionality is designed for developers to set up administrative access for different madrassahs in the system.
+The Developer Admin Creator is a powerful tool that allows developers to create admin accounts and assign them to specific Dār Al-Ulūm Montréal locations. This functionality is designed for developers to set up administrative access for different Dār Al-Ulūm Montréal locations in the system.
 
 ## Access
 
@@ -20,14 +20,14 @@ The Admin Creator is accessible through the admin panel at:
 - **Secure Passwords**: Generate secure passwords with the built-in generator
 - **Full Profile Setup**: Complete profile is created with proper role assignment
 
-### 2. Madrassah Assignment
-- **Select from Existing**: Choose from available madrassahs in the system
-- **Proper Linking**: Admin is properly linked to their assigned madrassah
+### 2. Dār Al-Ulūm Montréal Assignment
+- **Select from Existing**: Choose from available Dār Al-Ulūm Montréal locations in the system
+- **Proper Linking**: Admin is properly linked to their assigned Dār Al-Ulūm Montréal location
 - **Access Control**: Admin gets access only to their assigned madrassah's data
 
 ### 3. Account Management
 - **View Existing Admins**: See all currently created admin accounts
-- **Madrassah Information**: View which madrassah each admin is assigned to
+- **Dār Al-Ulūm Montréal Information**: View which Dār Al-Ulūm Montréal location each admin is assigned to
 - **Account Deletion**: Remove admin accounts when no longer needed
 - **Creation Tracking**: See when each admin account was created
 
@@ -43,7 +43,7 @@ The Admin Creator is accessible through the admin panel at:
    - **Full Name**: The admin's complete name
    - **Email Address**: Must be a valid email (will be the login username)
    - **Password**: Must be at least 6 characters (use the generator for security)
-   - **Madrassah Assignment**: Select from the dropdown list
+   - **Dār Al-Ulūm Montréal Assignment**: Select from the dropdown list
 
 2. Click "Create Admin Account"
 
@@ -55,17 +55,17 @@ The Admin Creator is accessible through the admin panel at:
 ### Step 4: First Login (for the new admin)
 - Go to the main application login page
 - Enter the provided email and password
-- The admin will have full access to their assigned madrassah's data
+- The admin will have full access to their assigned Dār Al-Ulūm Montréal location's data
 
 ## Database Setup
 
-### Ensure Madrassahs Exist
+### Ensure Dār Al-Ulūm Montréal Locations Exist
 Before creating admin accounts, make sure you have madrassahs in your database. You can use the sample data:
 
 ```sql
 -- Run this in your Supabase SQL editor
 INSERT INTO madrassahs (id, name, location, section, created_at) VALUES
-  (gen_random_uuid(), 'Jamia Darul Uloom', 'New York', ARRAY['Boys', 'Girls'], NOW()),
+  (gen_random_uuid(), 'Jamia Dār Al-Ulūm Montréal', 'Montréal', ARRAY['Boys', 'Girls'], NOW()),
   (gen_random_uuid(), 'Madrassa Al-Noor', 'Chicago', ARRAY['Boys'], NOW()),
   (gen_random_uuid(), 'Darul Hadith Institute', 'Los Angeles', ARRAY['Boys', 'Girls'], NOW()),
   (gen_random_uuid(), 'Al-Fatah Academy', 'Houston', ARRAY['Girls'], NOW()),
@@ -87,8 +87,8 @@ The admin creator requires:
 - Encourage admins to change their password after first login
 
 ### Access Control
-- Created admins only have access to their assigned madrassah
-- Admin accounts have full privileges within their madrassah
+- Created admins only have access to their assigned Dār Al-Ulūm Montréal location
+- Admin accounts have full privileges within their Dār Al-Ulūm Montréal location
 - Developers should only create accounts for trusted individuals
 
 ### Account Management
@@ -107,13 +107,13 @@ The admin creator requires:
 
 **2. "Failed to create profile"**
 - Check database connectivity
-- Ensure madrassah_id is valid
+- Ensure Dār Al-Ulūm Montréal location ID is valid
 - Verify profiles table permissions
 
-**3. "No madrassahs available"**
-- Run the sample madrassahs SQL script
-- Check if madrassahs table exists
-- Verify data in the madrassahs table
+**3. "No Dār Al-Ulūm Montréal locations available"**
+- Run the sample Dār Al-Ulūm Montréal locations SQL script
+- Check if Dār Al-Ulūm Montréal locations table exists
+- Verify data in the Dār Al-Ulūm Montréal locations table
 
 ### Getting Help
 - Check the browser console for detailed error messages
@@ -122,7 +122,7 @@ The admin creator requires:
 
 ## Best Practices
 
-1. **Plan Admin Structure**: Determine how many admins each madrassah needs
+1. **Plan Admin Structure**: Determine how many admins each Dār Al-Ulūm Montréal location needs
 2. **Use Strong Passwords**: Always use the password generator
 3. **Document Access**: Keep a record of created admin accounts
 4. **Regular Cleanup**: Remove unused admin accounts periodically
