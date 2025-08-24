@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { AttendanceForm } from "@/components/attendance/AttendanceForm.tsx";
 import { AttendanceTable } from "@/components/attendance/AttendanceTable.tsx";
+import { AttendanceCutoffSettings } from "@/components/attendance/AttendanceCutoffSettings.tsx";
 import {
   Tabs,
   TabsContent,
@@ -167,6 +168,9 @@ const Attendance = () => {
           </CardHeader>
 
           <CardContent className="p-0">
+            <div className="p-3 sm:p-6 lg:p-8 pt-4">
+              <AttendanceCutoffSettings />
+            </div>
             <Tabs
               value={selectedTab}
               onValueChange={setSelectedTab}

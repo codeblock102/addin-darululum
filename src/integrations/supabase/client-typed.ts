@@ -147,6 +147,152 @@ interface CustomDatabase extends Database {
           },
         ];
       };
+      teacher_assignments: {
+        Row: {
+          id: string;
+          teacher_id: string;
+          title: string;
+          description: string | null;
+          due_date: string | null;
+          status: "pending" | "completed" | "overdue";
+          attachment_name: string | null;
+          attachment_url: string | null;
+          class_ids: string[];
+          student_ids: string[];
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          teacher_id?: string;
+          title?: string;
+          description?: string | null;
+          due_date?: string | null;
+          status?: "pending" | "completed" | "overdue";
+          attachment_name?: string | null;
+          attachment_url?: string | null;
+          class_ids?: string[];
+          student_ids?: string[];
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          teacher_id?: string;
+          title?: string;
+          description?: string | null;
+          due_date?: string | null;
+          status?: "pending" | "completed" | "overdue";
+          attachment_name?: string | null;
+          attachment_url?: string | null;
+          class_ids?: string[];
+          student_ids?: string[];
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "teacher_assignments_teacher_id_fkey";
+            columns: ["teacher_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      teacher_assignment_submissions: {
+        Row: {
+          id: string;
+          assignment_id: string;
+          student_id: string;
+          status: "assigned" | "submitted" | "graded";
+          submitted_at: string | null;
+          graded_at: string | null;
+          grade: number | null;
+          feedback: string | null;
+          attachment_url: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          assignment_id?: string;
+          student_id?: string;
+          status?: "assigned" | "submitted" | "graded";
+          submitted_at?: string | null;
+          graded_at?: string | null;
+          grade?: number | null;
+          feedback?: string | null;
+          attachment_url?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          assignment_id?: string;
+          student_id?: string;
+          status?: "assigned" | "submitted" | "graded";
+          submitted_at?: string | null;
+          graded_at?: string | null;
+          grade?: number | null;
+          feedback?: string | null;
+          attachment_url?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "teacher_assignment_submissions_assignment_id_fkey";
+            columns: ["assignment_id"];
+            isOneToOne: false;
+            referencedRelation: "teacher_assignments";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "teacher_assignment_submissions_student_id_fkey";
+            columns: ["student_id"];
+            isOneToOne: false;
+            referencedRelation: "students";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      parents: {
+        Row: {
+          id: string;
+          name: string;
+          email: string;
+          phone: string | null;
+          address: string | null;
+          madrassah_id: string | null;
+          student_ids: string[];
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id: string;
+          name: string;
+          email: string;
+          phone?: string | null;
+          address?: string | null;
+          madrassah_id?: string | null;
+          student_ids?: string[];
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          name?: string;
+          email?: string;
+          phone?: string | null;
+          address?: string | null;
+          madrassah_id?: string | null;
+          student_ids?: string[];
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: Database["public"]["Views"];
     Functions: Database["public"]["Functions"];

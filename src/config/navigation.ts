@@ -12,11 +12,13 @@
 import {
   Book,
   Clock,
+  ClipboardList,
   FileText,
   Home,
   School,
   Settings,
   Users,
+  UserCircle2,
 } from "lucide-react"; // Simplified imports based on usage
 import { NavItem } from "@/types/navigation.ts";
 
@@ -98,6 +100,12 @@ export const teacherNavItems: NavItem[] = [
     description: "Record student progress",
   },
   {
+    href: "/dashboard?tab=assignments",
+    label: "Assignments",
+    icon: ClipboardList,
+    description: "Create and track assignments",
+  },
+  {
     href: "/attendance",
     label: "Attendance",
     icon: Clock,
@@ -114,5 +122,37 @@ export const teacherNavItems: NavItem[] = [
     label: "Preferences",
     icon: Settings,
     description: "Account preferences",
+  },
+];
+
+/**
+ * @const parentNavItems
+ * @description Navigation items for the parent sidebar.
+ */
+export const parentNavItems: NavItem[] = [
+  {
+    href: "/parent",
+    label: "Parent Dashboard",
+    icon: Home,
+    description: "Overview of your children",
+    exact: true,
+  },
+  {
+    href: "/parent/progress",
+    label: "Qur'an Progress",
+    icon: Book,
+    description: "View memorization and revision",
+  },
+  {
+    href: "/parent/academics",
+    label: "Academics",
+    icon: ClipboardList,
+    description: "Assessments and grades",
+  },
+  {
+    href: "/parent/attendance",
+    label: "Attendance",
+    icon: Clock,
+    description: "Attendance history",
   },
 ];

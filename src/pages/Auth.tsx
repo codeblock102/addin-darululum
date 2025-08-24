@@ -166,6 +166,25 @@ const Auth = () => {
           navigate("/dashboard");
           return;
         }
+
+        // Check if the user is a parent via consolidated parents table keyed by auth id
+        const { data: parentRow, error: parentError } = await (supabase as any)
+          .from("parents")
+          .select("id")
+          .eq("id", refreshedUser.id)
+          .maybeSingle();
+
+        if (parentError) {
+          console.error("Error checking parents:", parentError.message);
+        } else if (parentRow?.id) {
+          localStorage.setItem("userRole", "parent");
+          toast({
+            title: "Login Successful",
+            description: "Welcome! Redirecting to Parent Portal...",
+          });
+          navigate("/parent");
+          return;
+        }
       }
 
       console.log("No role found, redirecting to role setup");
@@ -200,7 +219,7 @@ const Auth = () => {
             className="w-20 h-20 mx-auto mb-4 rounded-full"
           />
           <CardTitle className="text-3xl font-bold text-sky-400">
-            Darul Uloom Login
+            Dār Al-Ulūm Montréal
           </CardTitle>
           <CardDescription className="text-slate-200">
             Access your dashboard
@@ -284,7 +303,7 @@ const Auth = () => {
         </CardContent>
         <CardFooter className="flex flex-col items-center space-y-2 pt-6">
           <p className="text-xs text-slate-300">
-            &copy; {new Date().getFullYear()} Darul Uloom. All rights reserved.
+            &copy; {new Date().getFullYear()} Dār Al-Ulūm Montréal. All rights reserved.
           </p>
           <p className="text-xs text-slate-300">
             Need help?{" "}
