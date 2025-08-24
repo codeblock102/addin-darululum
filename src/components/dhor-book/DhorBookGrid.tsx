@@ -20,10 +20,11 @@ interface DhorBookGridProps {
   currentMonth?: Date;
   viewMode: "weekly" | "monthly";
   onRefresh: () => void;
+  readOnly?: boolean;
 }
 
 export function DhorBookGrid(
-  { entries, studentId, teacherId, currentWeek, currentMonth, viewMode, onRefresh }: DhorBookGridProps,
+  { entries, studentId, teacherId, currentWeek, currentMonth, viewMode, onRefresh, readOnly = false }: DhorBookGridProps,
 ) {
   const [isNewEntryOpen, setIsNewEntryOpen] = useState(false);
 
@@ -59,7 +60,9 @@ export function DhorBookGrid(
         <h3 className="text-lg font-medium">
           {viewMode === "weekly" ? "Weekly Records" : "Monthly Records"}
         </h3>
-        <Button onClick={() => setIsNewEntryOpen(true)}>Add Entry</Button>
+        {!readOnly && (
+          <Button onClick={() => setIsNewEntryOpen(true)}>Add Entry</Button>
+        )}
       </div>
 
       <div className="rounded-md border">
@@ -67,12 +70,12 @@ export function DhorBookGrid(
           <TableHeader>
             <TableRow>
               <TableHead>Date</TableHead>
-              <TableHead>Sabaq (Main Lesson)</TableHead>
-              <TableHead>Sabaq Para (Reading)</TableHead>
-              <TableHead>Dhor 1</TableHead>
-              <TableHead>Dhor 2</TableHead>
-              <TableHead>Quality (Sabaq)</TableHead>
-              <TableHead>Comments</TableHead>
+              <TableHead>Main Lesson</TableHead>
+              <TableHead>Reading Practice</TableHead>
+              <TableHead>Revision 1</TableHead>
+              <TableHead>Revision 2</TableHead>
+              <TableHead>Quality</TableHead>
+              <TableHead>Notes</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -102,9 +105,7 @@ export function DhorBookGrid(
                     </TableCell>
                     <TableCell>
                       {entry?.sabaq_para_data
-                        ? `J${entry.sabaq_para_data.juz_number} (${
-                          entry.sabaq_para_data.quarters_revised || "N/A quarters"
-                        }) Q: ${entry.sabaq_para_data.quality_rating || "N/A"}`
+                        ? `Juz ${entry.sabaq_para_data.juz_number}, ${entry.sabaq_para_data.quarters_revised || "—"} quarters, Quality ${entry.sabaq_para_data.quality_rating || "—"}`
                         : "—"}
                     </TableCell>
                     {/* Dhor 1 Cell */}
@@ -187,9 +188,7 @@ export function DhorBookGrid(
                       </TableCell>
                       <TableCell>
                         {entry?.sabaq_para_data
-                          ? `J${entry.sabaq_para_data.juz_number} (${
-                            entry.sabaq_para_data.quarters_revised || "N/A quarters"
-                          }) Q: ${entry.sabaq_para_data.quality_rating || "N/A"}`
+                          ? `Juz ${entry.sabaq_para_data.juz_number}, ${entry.sabaq_para_data.quarters_revised || "—"} quarters, Quality ${entry.sabaq_para_data.quality_rating || "—"}`
                           : "—"}
                       </TableCell>
                       {/* Dhor 1 Cell */}
@@ -259,13 +258,15 @@ export function DhorBookGrid(
         </Table>
       </div>
 
-      <NewEntryDialog
-        open={isNewEntryOpen}
-        onOpenChange={setIsNewEntryOpen}
-        studentId={studentId}
-        teacherId={teacherId ?? "system-unknown"}
-        onSuccess={handleEntrySuccess}
-      />
+      {!readOnly && (
+        <NewEntryDialog
+          open={isNewEntryOpen}
+          onOpenChange={setIsNewEntryOpen}
+          studentId={studentId}
+          teacherId={teacherId ?? "system-unknown"}
+          onSuccess={handleEntrySuccess}
+        />
+      )}
     </div>
   );
 }

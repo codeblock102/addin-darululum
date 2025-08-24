@@ -62,6 +62,19 @@ const AdminLayout = () => {
             <Users className="mr-3 h-5 w-5" />
             Admin Creator
           </NavLink>
+          <NavLink
+            to="/admin/parent-accounts"
+            className={({ isActive }) =>
+              `flex items-center px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                isActive
+                  ? 'bg-gray-700 text-white'
+                  : 'text-gray-300 hover:bg-gray-700 hover:text-white'
+              }`
+            }
+          >
+            <Users className="mr-3 h-5 w-5" />
+            Parent Accounts
+          </NavLink>
         </nav>
       </aside>
       <main className="flex-1 p-8">

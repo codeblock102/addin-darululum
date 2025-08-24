@@ -257,6 +257,42 @@ interface CustomDatabase extends Database {
           },
         ];
       };
+      parents: {
+        Row: {
+          id: string;
+          name: string;
+          email: string;
+          phone: string | null;
+          address: string | null;
+          madrassah_id: string | null;
+          student_ids: string[];
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id: string;
+          name: string;
+          email: string;
+          phone?: string | null;
+          address?: string | null;
+          madrassah_id?: string | null;
+          student_ids?: string[];
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          name?: string;
+          email?: string;
+          phone?: string | null;
+          address?: string | null;
+          madrassah_id?: string | null;
+          student_ids?: string[];
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: Database["public"]["Views"];
     Functions: Database["public"]["Functions"];
