@@ -364,6 +364,39 @@ export type Database = {
         };
         Relationships: [];
       };
+      parent_teachers: {
+        Row: {
+          id: string;
+          name: string | null;
+          email: string | null;
+          phone: string | null;
+          address: string | null;
+          madrassah_id: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id: string;
+          name?: string | null;
+          email?: string | null;
+          phone?: string | null;
+          address?: string | null;
+          madrassah_id?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          name?: string | null;
+          email?: string | null;
+          phone?: string | null;
+          address?: string | null;
+          madrassah_id?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
       progress: {
         Row: {
           completed_juz: number[] | null;
@@ -623,6 +656,45 @@ export type Database = {
           class_ids?: string[] | null;
         };
         Relationships: [];
+      };
+      parent_children: {
+        Row: {
+          id: string;
+          parent_id: string;
+          student_id: string;
+          student_ids: string[];
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          parent_id: string;
+          student_id: string;
+          student_ids?: string[];
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          parent_id?: string;
+          student_id?: string;
+          student_ids?: string[];
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "parent_children_parent_id_fkey";
+            columns: ["parent_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "parent_children_student_id_fkey";
+            columns: ["student_id"];
+            isOneToOne: false;
+            referencedRelation: "students";
+            referencedColumns: ["id"];
+          }
+        ];
       };
       students_teachers: {
         Row: {

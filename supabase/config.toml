@@ -10,3 +10,5 @@ enabled = true
     verify_jwt = true
   [functions."daily-progress-email"]
     verify_jwt = false
+  [functions."create-parent"]
+    verify_jwt = false
