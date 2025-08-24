@@ -85,7 +85,6 @@ const Parent = () => {
           <Tabs defaultValue="quran" className="w-full">
             <TabsList>
               <TabsTrigger value="quran">Qur'an</TabsTrigger>
-              <TabsTrigger value="academics">Academics</TabsTrigger>
               <TabsTrigger value="attendance">Attendance</TabsTrigger>
               <TabsTrigger value="assignments">Current Work</TabsTrigger>
             </TabsList>
@@ -108,16 +107,7 @@ const Parent = () => {
                 </CardContent>
               </Card>
             </TabsContent>
-            <TabsContent value="academics">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Academic Summary</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-sm text-muted-foreground">Coming soon: grades and assessments.</div>
-                </CardContent>
-              </Card>
-            </TabsContent>
+            
             <TabsContent value="attendance">
               <Card>
                 <CardHeader>
