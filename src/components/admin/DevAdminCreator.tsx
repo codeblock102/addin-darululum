@@ -127,7 +127,7 @@ export const DevAdminCreator = () => {
         id: user.id,
         email: '',
         name: user.name || '',
-        madrassah_name: madrassahMap.get(user.madrassah_id) || 'No Madrassah',
+        madrassah_name: madrassahMap.get(user.madrassah_id) || 'No Dār Al-Ulūm Montréal',
         madrassah_id: user.madrassah_id || '',
         created_at: user.created_at,
         role: user.role
@@ -210,7 +210,7 @@ export const DevAdminCreator = () => {
     e.preventDefault();
     
     toast({
-      title: "Checking Madrassah ID before submit:",
+              title: "Checking Dār Al-Ulūm Montréal ID before submit:",
       description: `Madrassah ID is: '${form.madrassah_id || "EMPTY"}'`,
     });
 
@@ -336,7 +336,7 @@ export const DevAdminCreator = () => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="madrassah">Assign to Madrassah *</Label>
+                <Label htmlFor="madrassah">Assign to Dār Al-Ulūm Montréal *</Label>
                 <Select 
                   value={form.madrassah_id} 
                   onValueChange={(value) => setForm(prev => ({ ...prev, madrassah_id: value }))}
@@ -424,7 +424,7 @@ export const DevAdminCreator = () => {
                 <TableHeader>
                   <TableRow>
                     <TableHead>Name</TableHead>
-                    <TableHead>Madrassah</TableHead>
+                    <TableHead>Dār Al-Ulūm Montréal</TableHead>
                     <TableHead>Role</TableHead>
                     <TableHead>Created</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
