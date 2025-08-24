@@ -7,6 +7,32 @@ const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
 const RESEND_FROM_EMAIL = Deno.env.get("RESEND_FROM_EMAIL");
 const resend = new Resend(RESEND_API_KEY);
 
+// Timezone-aware formatting to avoid off-by-one day issues in emails
+const REPORT_TIME_ZONE = Deno.env.get("REPORT_TIMEZONE") ?? "America/Toronto";
+const fmtDate = (d: string | Date) =>
+  new Intl.DateTimeFormat("en-US", {
+    timeZone: REPORT_TIME_ZONE,
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(new Date(d));
+const fmtDay = (d: string | Date) =>
+  new Intl.DateTimeFormat("en-US", {
+    timeZone: REPORT_TIME_ZONE,
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  }).format(new Date(d));
+
+type EmailResult = {
+  student_name: string;
+  guardian_email: string;
+  status: 'sent' | 'failed';
+  error?: string;
+};
+
 interface ProgressRecord {
   date: string;
   student_id: string;
@@ -51,6 +77,13 @@ serve(async (req: Request) => {
     }
 
     console.log(`Function invoked. Trigger source: ${triggerSource}, Timestamp: ${timestamp}`);
+    if (!RESEND_API_KEY || !RESEND_FROM_EMAIL) {
+      console.error("Resend config missing", { hasKey: !!RESEND_API_KEY, from: RESEND_FROM_EMAIL });
+      return new Response(JSON.stringify({ error: "Email sender not configured" }), {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
     // Create two clients: one with service role for privileged DB access,
     // and one with the caller's JWT to identify who invoked the function
@@ -116,13 +149,14 @@ serve(async (req: Request) => {
       console.log("Could not log to email_logs table (table may not exist):", logError);
     }
 
-    const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-    console.log(`Querying progress records since: ${yesterday}`);
+    const yesterdayISO = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+    const yesterdayDate = yesterdayISO.slice(0, 10);
+    console.log(`Querying progress since: created_at>=${yesterdayISO} OR date>=${yesterdayDate}`);
 
     const { data: progressRecords, error: progressError } = await supabaseService
       .from("progress")
       .select("*")
-      .gte("created_at", yesterday);
+      .or(`created_at.gte.${yesterdayISO},date.gte.${yesterdayDate}`);
 
     if (progressError) {
       console.error("Error fetching progress records:", progressError);
@@ -135,7 +169,7 @@ serve(async (req: Request) => {
     const { data: subsDaily, error: subsErr } = await supabaseService
       .from("teacher_assignment_submissions")
       .select("assignment_id, student_id, status, submitted_at, graded_at, grade, feedback, created_at")
-      .or(`submitted_at.gte.${yesterday},graded_at.gte.${yesterday}`);
+      .or(`submitted_at.gte.${yesterdayISO},graded_at.gte.${yesterdayISO}`);
     if (subsErr) {
       console.error("Error fetching submissions:", subsErr);
     }
@@ -175,11 +209,8 @@ serve(async (req: Request) => {
         }
     }
 
-    const reportDate = new Date().toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    });
+    const now = new Date();
+    const reportDate = fmtDay(now);
 
     // Build academic activity per student
     const filteredSubs = (subsDaily || []).filter((s) => studentsMap.has(s.student_id));
@@ -305,7 +336,7 @@ serve(async (req: Request) => {
                             <td style="padding: 8px; border-bottom: 1px solid #ddd;">${r.assignmentTitle}</td>
                             <td style="padding: 8px; border-bottom: 1px solid #ddd; text-transform: capitalize;">${r.status}</td>
                             <td style="padding: 8px; border-bottom: 1px solid #ddd;">${r.grade ?? '-'}</td>
-                            <td style="padding: 8px; border-bottom: 1px solid #ddd;">${r.submitted_at ? `Submitted: ${new Date(r.submitted_at).toLocaleString()}` : ''} ${r.graded_at ? `<br/>Graded: ${new Date(r.graded_at).toLocaleString()}` : ''}</td>
+                            <td style="padding: 8px; border-bottom: 1px solid #ddd;">${r.submitted_at ? `Submitted: ${fmtDate(r.submitted_at)}` : ''} ${r.graded_at ? `<br/>Graded: ${fmtDate(r.graded_at)}` : ''}</td>
                           </tr>
                         `).join('');
                       }).join('')}
@@ -328,22 +359,16 @@ serve(async (req: Request) => {
     if (ADMIN_EMAILS.length === 0) {
       console.warn("No admin emails found for madrassah:", invokingMadrassahId);
     } else {
-      for (const adminEmail of ADMIN_EMAILS) {
-        try {
-          if (!RESEND_FROM_EMAIL) {
-            console.error("RESEND_FROM_EMAIL environment variable is not set.");
-            break;
-          }
-          await resend.emails.send({
-            from: RESEND_FROM_EMAIL,
-            to: adminEmail,
-            subject: `Daily Student Progress Report - ${reportDate}`,
-            html: principalEmailHtml,
-          });
-          console.log(`Admin summary email sent to ${adminEmail}`);
-        } catch (emailError) {
-          console.error(`Error sending admin summary email to ${adminEmail}:`, emailError);
-        }
+      try {
+        await resend.emails.send({
+          from: `Darul Uloom <${RESEND_FROM_EMAIL}>`,
+          to: ADMIN_EMAILS,
+          subject: `Daily Student Progress Report - ${reportDate}`,
+          html: principalEmailHtml,
+        });
+        console.log(`Admin summary email sent to:`, ADMIN_EMAILS);
+      } catch (emailError) {
+        console.error(`Error sending admin summary email:`, emailError);
       }
     }
     // END dynamic admin emails
@@ -405,7 +430,7 @@ serve(async (req: Request) => {
                         </tbody>
                     </table>
                     <div class="trigger-info">
-                        Report generated ${triggerSource === 'scheduled' ? 'automatically' : 'manually'} at ${new Date(timestamp).toLocaleString()}
+                        Report generated ${triggerSource === 'scheduled' ? 'automatically' : 'manually'} at ${fmtDate(timestamp)}
                     </div>
                     <p>Thank you,</p>
                     <p><strong>Darul Uloom</strong></p>
@@ -453,7 +478,7 @@ serve(async (req: Request) => {
 
     // Log completion
     try {
-      await supabase
+      await supabaseService
         .from("email_logs")
         .insert({
           trigger_source: triggerSource,
@@ -496,7 +521,7 @@ serve(async (req: Request) => {
         },
       );
       
-      await supabase
+      await supabaseService
         .from("email_logs")
         .insert({
           trigger_source: 'unknown',
