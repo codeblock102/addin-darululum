@@ -168,7 +168,7 @@ const Auth = () => {
         }
 
         // Check if the user is a parent via consolidated parents table keyed by auth id
-        const { data: parentRow, error: parentError } = await (supabase as any)
+        const { data: parentRow, error: parentError } = await supabase
           .from("parents")
           .select("id")
           .eq("id", refreshedUser.id)
@@ -204,6 +204,28 @@ const Auth = () => {
         description: errorMessage || message,
         variant: "destructive",
       });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleForgotPassword = async () => {
+    setErrorMessage(null);
+    if (!email) {
+      setErrorMessage("Please enter your email above, then click 'Forgot password?'");
+      return;
+    }
+    setIsLoading(true);
+    try {
+      const redirectTo = `${globalThis.location.origin}/reset-password`;
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo,
+      });
+      if (error) throw error;
+      toast({ title: "Reset link sent", description: "Check your email for the reset link." });
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Failed to send reset email.";
+      setErrorMessage(message);
     } finally {
       setIsLoading(false);
     }
@@ -299,6 +321,15 @@ const Auth = () => {
                   "Sign In"
                 )}
             </Button>
+            <div className="flex items-center justify-between">
+              <button
+                type="button"
+                className="text-sm text-sky-400 hover:underline"
+                onClick={handleForgotPassword}
+              >
+                Forgot password?
+              </button>
+            </div>
           </form>
         </CardContent>
         <CardFooter className="flex flex-col items-center space-y-2 pt-6">
