@@ -393,6 +393,69 @@ serve(async (req: Request) => {
             </tr>`
         ).join('');
 
+        // Build academic updates section for this student
+        let academicRows = '';
+        try {
+          // Fetch all submissions for this student
+          const { data: subs, error: subsErr } = await supabaseService
+            .from('teacher_assignment_submissions')
+            .select('assignment_id, status, grade, feedback, submitted_at, graded_at')
+            .eq('student_id', student.id)
+            .order('submitted_at', { ascending: false });
+          if (!subsErr && subs && subs.length > 0) {
+            const assignmentIds = Array.from(new Set(subs.map((s: any) => s.assignment_id).filter(Boolean)));
+            let idToAssignment = new Map<string, any>();
+            if (assignmentIds.length > 0) {
+              const { data: assigns } = await supabaseService
+                .from('teacher_assignments')
+                .select('id, title, due_date, attachment_name, attachment_url')
+                .in('id', assignmentIds);
+              (assigns || []).forEach((a: any) => idToAssignment.set(a.id, a));
+            }
+
+            // Limit to recent 5 items for brevity
+            const recent = subs.slice(0, 5);
+            academicRows = recent.map((s: any) => {
+              const a = idToAssignment.get(s.assignment_id) || {};
+              const title = a?.title || 'Assignment';
+              const due = a?.due_date || '';
+              const status = (s?.status || 'assigned');
+              const grade = (s?.grade ?? '') === '' ? '' : String(s.grade);
+              const feedback = s?.feedback ? String(s.feedback) : '';
+              return `
+                <tr>
+                  <td style="padding:6px 8px;border-bottom:1px solid #eee;word-break:break-word;">${title}</td>
+                  <td style="padding:6px 8px;border-bottom:1px solid #eee;text-transform:capitalize;">${status}</td>
+                  <td style="padding:6px 8px;border-bottom:1px solid #eee;">${due || '—'}</td>
+                  <td style="padding:6px 8px;border-bottom:1px solid #eee;">${grade || '—'}</td>
+                  <td style="padding:6px 8px;border-bottom:1px solid #eee;word-break:break-word;">${feedback || '—'}</td>
+                </tr>
+              `;
+            }).join('');
+          }
+        } catch (e) {
+          academicRows = '';
+        }
+
+        const academicSection = `
+          <h2 style="margin:24px 0 8px 0; font-size:18px;">Academic Updates</h2>
+          <p style="margin:0 0 10px 0; color:#374151; font-size:14px;">Recent assignment activity for ${student.name}${academicRows ? '' : ' (no recent updates)'}.</p>
+          <table border="0" cellpadding="0" cellspacing="0" style="width:100%; border-collapse:collapse;">
+            <thead>
+              <tr>
+                <th style="text-align:left; padding:8px; background:#f3f4f6; font-size:13px;">Assignment</th>
+                <th style="text-align:left; padding:8px; background:#f3f4f6; font-size:13px;">Status</th>
+                <th style="text-align:left; padding:8px; background:#f3f4f6; font-size:13px;">Due</th>
+                <th style="text-align:left; padding:8px; background:#f3f4f6; font-size:13px;">Grade</th>
+                <th style="text-align:left; padding:8px; background:#f3f4f6; font-size:13px;">Feedback</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${academicRows || '<tr><td colspan="5" style="padding:8px; color:#6b7280;">No recent academic activity.</td></tr>'}
+            </tbody>
+          </table>
+        `;
+
         const emailHtml = `
         <!DOCTYPE html>
         <html>
@@ -414,7 +477,7 @@ serve(async (req: Request) => {
                     <h1>Quran Progress for ${student.name}</h1>
                 </div>
                 <div class="content">
-                    <p>Dear ${student.guardian_name || 'Guardian'},</p>
+                    <p>Assalamu Alaikum ${student.guardian_name || 'Guardian'},</p>
                     <p>Here is the progress report for <strong>${student.name}</strong> for ${reportDate}:</p>
                     <table border="0" cellpadding="0" cellspacing="0">
                         <thead>
@@ -429,11 +492,12 @@ serve(async (req: Request) => {
                             ${progressSummary}
                         </tbody>
                     </table>
+                    ${academicSection}
                     <div class="trigger-info">
                         Report generated ${triggerSource === 'scheduled' ? 'automatically' : 'manually'} at ${fmtDate(timestamp)}
                     </div>
-                    <p>Thank you,</p>
-                    <p><strong>Darul Uloom</strong></p>
+                    <p>JazakAllah Khairan</p>
+                    <p><strong>Dār Al-Ulūm Montréal</strong></p>
                 </div>
                 <div class="footer">
                     <p>This is an automated email. Please do not reply.</p>
