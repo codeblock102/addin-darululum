@@ -93,7 +93,9 @@ export function AttendanceCutoffSettings() {
     <Card className="mb-4">
       <CardHeader>
         <CardTitle>Attendance Cutoff</CardTitle>
-        <CardDescription>Configure the daily cutoff time to email guardians of students not marked present.</CardDescription>
+        <CardDescription>
+          Configure the daily cutoff time to email guardians of students not marked present.
+        </CardDescription>
       </CardHeader>
       <CardContent>
         {isLoading ? (
@@ -147,11 +149,15 @@ export function AttendanceCutoffSettings() {
                 You can view the current settings. Only admins can change these settings.
               </div>
             )}
-            {settings?.last_sent_date && (
-              <div className="sm:col-span-5 text-xs text-muted-foreground">
-                Last run (per madrassah local date): {settings.last_sent_date}
-              </div>
-            )}
+            <div className="sm:col-span-5 text-xs text-muted-foreground">
+              Current cutoff: <strong>{settings?.cutoff_time ?? "09:30"}</strong> in
+              &nbsp;<strong>{settings?.timezone ?? "America/New_York"}</strong>
+              {settings?.last_sent_date ? (
+                <> · Last emailed: {settings.last_sent_date}</>
+              ) : (
+                <> · No emails sent yet</>
+              )}
+            </div>
           </form>
         )}
       </CardContent>
