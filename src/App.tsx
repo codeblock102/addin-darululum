@@ -88,6 +88,7 @@ function App() {
               </ProtectedRoute>
             }
           >
+            <Route index element={<Navigate to="setup" replace />} />
             <Route path="setup" element={<SetupAdmin />} />
             <Route path="roles" element={<ManualRoleSetup />} />
             <Route path="seeder" element={<DatabaseSeeder />} />
