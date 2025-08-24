@@ -43,6 +43,7 @@ import ParentProgress from "@/pages/ParentProgress.tsx";
 import ParentAcademics from "@/pages/ParentAcademics.tsx";
 import ParentAttendance from "@/pages/ParentAttendance.tsx";
 import ParentAccounts from "@/pages/admin/ParentAccounts.tsx";
+import ResetPassword from "@/pages/ResetPassword.tsx";
 
 /**
  * @component App
@@ -72,6 +73,7 @@ function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/auth" element={<Auth />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/create-demo-account" element={<CreateDemoAccount />} />
           <Route path="/create-teacher-profile" element={<CreateTeacherProfileForTestAccount />} />
           <Route path="/admin-diagnostic" element={<AdminAccessDiagnostic />} />
