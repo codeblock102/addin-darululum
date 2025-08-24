@@ -1,6 +1,6 @@
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute.tsx";
 import { useParentChildren } from "@/hooks/useParentChildren.ts";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card.tsx";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs.tsx";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table.tsx";
@@ -16,22 +16,97 @@ const ParentAcademics = () => {
   const [statusFilter, setStatusFilter] = useState<"all" | "assigned" | "submitted" | "graded">("all");
   const [search, setSearch] = useState("");
 
+  // Ensure a default child is selected once children load
+  useEffect(() => {
+    if (!selectedStudentId && children && children.length > 0) {
+      setSelectedStudentId(children[0].id);
+    }
+  }, [children, selectedStudentId]);
+
+  // Debug: compare parent children IDs and selected student
+  useEffect(() => {
+    try {
+      const childIds = (children || []).map((c) => c.id);
+      console.log("[ParentAcademics] Parent children IDs:", childIds);
+      console.log("[ParentAcademics] Selected student ID:", selectedStudentId);
+    } catch (e) {
+      console.warn("[ParentAcademics] Debug logging failed:", e);
+    }
+  }, [children, selectedStudentId]);
+
+  useEffect(() => {
+    console.log("hihihi");
+  }, []);
+
   // Assignments for selected child
   const { data: submissions, isLoading: loadingAssignments } = useQuery({
     queryKey: ["parent-academics-assignments", selectedStudentId],
     queryFn: async () => {
       if (!selectedStudentId) return [] as any[];
-      const { data, error } = await supabase
-        .from("teacher_assignment_submissions")
-        .select(
-          "id, status, submitted_at, graded_at, grade, feedback, assignment:teacher_assignments(id, title, description, due_date, attachment_name, attachment_url)"
-        )
-        .eq("student_id", selectedStudentId)
-        .order("created_at", { ascending: false });
-      if (error) throw error;
-      return data || [];
+      // DEV debug: can this user read any assignments at all (RLS check)?
+      if (import.meta.env.DEV) {
+        const { data: anyRow, error: anyErr } = await supabase
+          .from("teacher_assignments")
+          .select("id")
+          .limit(1);
+        console.log("[ParentAcademics] RLS probe — any assignment visible?", { anyCount: anyRow?.length || 0, anyErr });
+      }
+
+      // Fetch assignments directly targeting this child; avoid submissions endpoint to prevent 500s
+      console.log("[ParentAcademics] fetching assignments (overlaps) for:", selectedStudentId);
+      const { data: assignsOv, error: assignsOvError } = await supabase
+        .from("teacher_assignments")
+        .select("id, title, description, due_date, attachment_name, attachment_url, student_ids")
+        .overlaps("student_ids", [selectedStudentId])
+        .order("due_date", { ascending: false });
+      if (assignsOvError) {
+        console.error("[ParentAcademics] overlaps query error:", assignsOvError);
+      }
+      const pick = (assignsOv && assignsOv.length > 0) ? assignsOv : undefined;
+
+      let assigns = pick;
+      if (!assigns) {
+        console.log("[ParentAcademics] no results via overlaps; trying contains() for:", selectedStudentId);
+        const { data: assignsCs, error: assignsCsError } = await supabase
+          .from("teacher_assignments")
+          .select("id, title, description, due_date, attachment_name, attachment_url, student_ids")
+          .contains("student_ids", [selectedStudentId])
+          .order("due_date", { ascending: false });
+        if (assignsCsError) {
+          console.error("[ParentAcademics] contains query error:", assignsCsError);
+        }
+        assigns = assignsCs || [];
+      }
+
+      // Debug: verify array membership
+      console.log("[ParentAcademics] selected:", selectedStudentId, "assignments count:", assigns?.length ?? 0);
+      (assigns || []).forEach((a: any) => {
+        const arr = a?.student_ids || [];
+        const includes = Array.isArray(arr) ? arr.includes(selectedStudentId) : false;
+        console.log("[ParentAcademics] assignment", a.id, "student_ids:", arr, "includes selected:", includes);
+      });
+
+      return (assigns || []).map((a: any) => ({
+        id: `${a.id}:${selectedStudentId}`,
+        status: "assigned",
+        submitted_at: null,
+        graded_at: null,
+        grade: null,
+        feedback: null,
+        assignment: {
+          id: a.id,
+          title: a.title,
+          description: a.description,
+          due_date: a.due_date,
+          attachment_name: a.attachment_name,
+          attachment_url: a.attachment_url,
+        },
+      }));
     },
     enabled: !!selectedStudentId,
+    retry: false,
+    staleTime: 30_000,
+    refetchOnWindowFocus: false,
   });
 
   const filteredAssignments = useMemo(() => {
@@ -86,6 +161,11 @@ const ParentAcademics = () => {
               </TabsList>
 
               <TabsContent value="assignments" className="mt-4 space-y-3">
+                {import.meta.env.DEV && (
+                  <div className="text-xs text-foreground/70">
+                    Debug — children: {(children || []).map((c) => c.id).join(", ")} | selected: {selectedStudentId || "none"} | rows: {filteredAssignments?.length || 0}
+                  </div>
+                )}
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <Select onValueChange={(v) => setStatusFilter(v as any)} value={statusFilter}>
                     <SelectTrigger>
@@ -154,7 +234,7 @@ const ParentAcademics = () => {
                       )}
                     </TableBody>
                   </Table>
-                </div>
+            </div>
               </TabsContent>
 
               <TabsContent value="grades" className="mt-4">
