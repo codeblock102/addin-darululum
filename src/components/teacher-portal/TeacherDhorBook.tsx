@@ -111,13 +111,18 @@ export const TeacherDhorBook = ({ teacherId }: TeacherDhorBookProps) => {
       queryFn: async () => {
         if (!selectedStudentId || !teacherData) return null;
 
-        const { data, error } = await supabase
+        // Verify student belongs to same madrassah; only enforce section if teacher has one
+        let query = supabase
           .from("students")
           .select("id, name")
           .eq("id", selectedStudentId)
-          .eq("madrassah_id", teacherData.madrassah_id)
-          .eq("section", teacherData.section)
-          .single();
+          .eq("madrassah_id", teacherData.madrassah_id);
+
+        if (teacherData.section) {
+          query = query.eq("section", teacherData.section);
+        }
+
+        const { data, error } = await query.maybeSingle();
 
         if (error) {
           if (error.code !== "PGRST116") {

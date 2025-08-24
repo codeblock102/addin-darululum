@@ -18,25 +18,28 @@ if (typeof window !== 'undefined') {
   // Wait for React to be fully loaded
   setTimeout(() => {
     try {
-      // Get a reference to React
-      const React = require('react');
+      // Get a reference to React (ESM-safe)
+      import('react').then((React) => {
       
-      // Store the original createElement
-      const originalCreateElement = React.createElement;
+        // Store the original createElement
+        const originalCreateElement = (React as any).createElement;
       
-      // Override createElement with our filtered version
-      // @ts-ignore - We're intentionally monkey-patching React
-      React.createElement = function() {
-        // Filter props (second argument) if it exists
-        if (arguments.length > 1 && arguments[1] !== null && arguments[1] !== undefined) {
-          arguments[1] = filterLovId(arguments[1]);
-        }
-        return originalCreateElement.apply(this, arguments as any);
-      };
-      
-      console.log('React patch applied: data-lov-id attributes will be filtered');
+        // Override createElement with our filtered version
+        // @ts-ignore - We're intentionally monkey-patching React
+        ;(React as any).createElement = function() {
+          // Filter props (second argument) if it exists
+          if (arguments.length > 1 && arguments[1] !== null && arguments[1] !== undefined) {
+            arguments[1] = filterLovId(arguments[1]);
+          }
+          return originalCreateElement.apply(this, arguments as any);
+        };
+        
+        console.log('React patch applied: data-lov-id attributes will be filtered');
+      }).catch((e) => {
+        console.error('Failed to apply React patch:', e);
+      });
     } catch (e) {
-      console.error('Failed to apply React patch:', e);
+      console.error('Failed to initialize React patch:', e);
     }
   }, 0);
 }

@@ -7,6 +7,32 @@ const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
 const RESEND_FROM_EMAIL = Deno.env.get("RESEND_FROM_EMAIL");
 const resend = new Resend(RESEND_API_KEY);
 
+// Timezone-aware formatting to avoid off-by-one day issues in emails
+const REPORT_TIME_ZONE = Deno.env.get("REPORT_TIMEZONE") ?? "America/Toronto";
+const fmtDate = (d: string | Date) =>
+  new Intl.DateTimeFormat("en-US", {
+    timeZone: REPORT_TIME_ZONE,
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(new Date(d));
+const fmtDay = (d: string | Date) =>
+  new Intl.DateTimeFormat("en-US", {
+    timeZone: REPORT_TIME_ZONE,
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  }).format(new Date(d));
+
+type EmailResult = {
+  student_name: string;
+  guardian_email: string;
+  status: 'sent' | 'failed';
+  error?: string;
+};
+
 interface ProgressRecord {
   date: string;
   student_id: string;
@@ -51,8 +77,17 @@ serve(async (req: Request) => {
     }
 
     console.log(`Function invoked. Trigger source: ${triggerSource}, Timestamp: ${timestamp}`);
+    if (!RESEND_API_KEY || !RESEND_FROM_EMAIL) {
+      console.error("Resend config missing", { hasKey: !!RESEND_API_KEY, from: RESEND_FROM_EMAIL });
+      return new Response(JSON.stringify({ error: "Email sender not configured" }), {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
-    const supabase = createClient(
+    // Create two clients: one with service role for privileged DB access,
+    // and one with the caller's JWT to identify who invoked the function
+    const supabaseService = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_ANON_KEY") ?? "",
       {
@@ -62,26 +97,66 @@ serve(async (req: Request) => {
       },
     );
 
+    const authHeader = req.headers.get("Authorization") ?? "";
+    const supabaseUser = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_ANON_KEY") ?? "",
+      {
+        global: {
+          headers: { Authorization: authHeader },
+        },
+      },
+    );
+
+    // Identify invoking user and their madrassah
+    const { data: userData, error: userErr } = await supabaseUser.auth.getUser();
+    if (userErr || !userData?.user) {
+      console.error("Unable to resolve invoking user from token", userErr);
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const userId = userData.user.id;
+    const { data: teacherProfile, error: teacherProfileErr } = await supabaseService
+      .from("profiles")
+      .select("id, role, madrassah_id")
+      .eq("id", userId)
+      .maybeSingle();
+
+    if (teacherProfileErr || !teacherProfile?.madrassah_id) {
+      console.error("Invoking user's profile missing madrassah_id", teacherProfileErr);
+      return new Response(JSON.stringify({ error: "Profile missing madrassah_id" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const invokingMadrassahId = teacherProfile.madrassah_id as string;
+
     // Log the trigger event
     try {
-      await supabase
+      await supabaseService
         .from("email_logs")
         .insert({
           trigger_source: triggerSource,
           triggered_at: timestamp,
-          status: 'started'
+          status: 'started',
+          details: { userId, invokingMadrassahId },
         });
     } catch (logError) {
       console.log("Could not log to email_logs table (table may not exist):", logError);
     }
 
-    const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-    console.log(`Querying progress records since: ${yesterday}`);
+    const yesterdayISO = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+    const yesterdayDate = yesterdayISO.slice(0, 10);
+    console.log(`Querying progress since: created_at>=${yesterdayISO} OR date>=${yesterdayDate}`);
 
-    const { data: progressRecords, error: progressError } = await supabase
+    const { data: progressRecords, error: progressError } = await supabaseService
       .from("progress")
       .select("*")
-      .gte("created_at", yesterday);
+      .or(`created_at.gte.${yesterdayISO},date.gte.${yesterdayDate}`);
 
     if (progressError) {
       console.error("Error fetching progress records:", progressError);
@@ -89,40 +164,24 @@ serve(async (req: Request) => {
     }
 
     console.log(`Found ${progressRecords?.length || 0} progress records.`);
-
-    if (!progressRecords || progressRecords.length === 0) {
-      // Log completion even if no records
-      try {
-        await supabase
-          .from("email_logs")
-          .insert({
-            trigger_source: triggerSource,
-            triggered_at: timestamp,
-            status: 'completed',
-            emails_sent: 0,
-            message: 'No progress records for today'
-          });
-      } catch (logError) {
-        console.log("Could not log completion to email_logs table:", logError);
-      }
-
-      return new Response(JSON.stringify({ 
-        message: "No progress records for today.",
-        triggerSource,
-        timestamp,
-        emailsSent: 0
-      }), {
-        status: 200,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
     
-    const studentIds = [...new Set(progressRecords.map((r) => r.student_id))];
+    // Academic submissions in the last 24 hours (submitted or graded)
+    const { data: subsDaily, error: subsErr } = await supabaseService
+      .from("teacher_assignment_submissions")
+      .select("assignment_id, student_id, status, submitted_at, graded_at, grade, feedback, created_at")
+      .or(`submitted_at.gte.${yesterdayISO},graded_at.gte.${yesterdayISO}`);
+    if (subsErr) {
+      console.error("Error fetching submissions:", subsErr);
+    }
 
-    const { data: students, error: studentsError } = await supabase
+    const progressStudentIds = [...new Set((progressRecords || []).map((r) => r.student_id))];
+    const submissionStudentIds = [...new Set((subsDaily || []).map((s) => s.student_id))];
+    const allStudentIds = [...new Set([...progressStudentIds, ...submissionStudentIds])];
+
+    const { data: students, error: studentsError } = await supabaseService
       .from("students")
-      .select("id, name, guardian_contact, guardian_name, guardian_email")
-      .in("id", studentIds);
+      .select("id, name, guardian_contact, guardian_name, guardian_email, madrassah_id")
+      .in("id", allStudentIds.length > 0 ? allStudentIds : ["00000000-0000-0000-0000-000000000000"]); // include all students with activity
 
     if (studentsError) {
       throw studentsError;
@@ -133,7 +192,7 @@ serve(async (req: Request) => {
     // Using a Map to group progress records by student
     const studentProgressMap = new Map<string, { student: Student; progresses: ProgressRecord[] }>();
 
-    for (const record of progressRecords as ProgressRecord[]) {
+    for (const record of (progressRecords || []) as ProgressRecord[]) {
         const student = studentsMap.get(record.student_id);
         if (!student) {
             console.warn(`Student with ID ${record.student_id} not found for a progress record.`);
@@ -150,14 +209,55 @@ serve(async (req: Request) => {
         }
     }
 
-    const reportDate = new Date().toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    });
+    const now = new Date();
+    const reportDate = fmtDay(now);
 
-    // START of new code for principal's email
-    const PRINCIPAL_EMAIL = "mzbaig9@gmail.com";
+    // Build academic activity per student
+    const filteredSubs = (subsDaily || []).filter((s) => studentsMap.has(s.student_id));
+    const assignmentIds = [...new Set(filteredSubs.map((s) => s.assignment_id))];
+    let assignmentMap = new Map<string, { id: string; title: string; due_date: string | null }>();
+    if (assignmentIds.length > 0) {
+      const { data: assigns, error: assignsError } = await supabaseService
+        .from("teacher_assignments")
+        .select("id, title, due_date")
+        .in("id", assignmentIds);
+      if (assignsError) {
+        console.error("Error fetching assignments for academic section:", assignsError);
+      } else {
+        assignmentMap = new Map((assigns || []).map((a: any) => [a.id, { id: a.id, title: a.title, due_date: a.due_date }]));
+      }
+    }
+
+    const studentAcademicMap = new Map<string, Array<{ assignmentTitle: string; status: string; grade: number | null; submitted_at: string | null; graded_at: string | null; due_date: string | null; feedback: string | null }>>();
+    for (const sub of filteredSubs) {
+      const a = assignmentMap.get(sub.assignment_id);
+      const arr = studentAcademicMap.get(sub.student_id) || [];
+      arr.push({
+        assignmentTitle: a?.title || sub.assignment_id,
+        status: sub.status,
+        grade: sub.grade ?? null,
+        submitted_at: sub.submitted_at ?? null,
+        graded_at: sub.graded_at ?? null,
+        due_date: a?.due_date ?? null,
+        feedback: sub.feedback ?? null,
+      });
+      studentAcademicMap.set(sub.student_id, arr);
+    }
+
+    // START: Dynamic admin emails for this madrassah
+    const { data: adminRows, error: adminErr } = await supabaseService
+      .from("profiles")
+      .select("email")
+      .eq("role", "admin")
+      .not("email", "is", null);
+    if (adminErr) {
+      console.error("Failed to fetch admin emails:", adminErr);
+    }
+    const ADMIN_EMAILS: string[] = Array.from(new Set(
+      (adminRows || [])
+        .map((r: any) => (r.email || "").trim())
+        .filter((e: string) => !!e)
+    ));
     let overallProgressHtml = `
       <p>Overall student progress for ${reportDate}.</p>
       <table border="0" cellpadding="0" cellspacing="0" style="width: 100%; border-collapse: collapse;">
@@ -216,6 +316,32 @@ serve(async (req: Request) => {
                   <p>Dear Principal,</p>
                   <p>Here is the overall student progress report for ${reportDate}:</p>
                   ${overallProgressHtml}
+                  <h2 style="margin-top:24px;">Academic Work (Last 24h)</h2>
+                  <table border="0" cellpadding="0" cellspacing="0" style="width: 100%; border-collapse: collapse;">
+                    <thead>
+                      <tr>
+                        <th style="padding: 8px; border-bottom: 1px solid #ddd; background-color: #f2f2f2; text-align: left;">Student</th>
+                        <th style="padding: 8px; border-bottom: 1px solid #ddd; background-color: #f2f2f2; text-align: left;">Assignment</th>
+                        <th style="padding: 8px; border-bottom: 1px solid #ddd; background-color: #f2f2f2; text-align: left;">Status</th>
+                        <th style="padding: 8px; border-bottom: 1px solid #ddd; background-color: #f2f2f2; text-align: left;">Grade</th>
+                        <th style="padding: 8px; border-bottom: 1px solid #ddd; background-color: #f2f2f2; text-align: left;">Dates</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      ${Array.from(studentAcademicMap.entries()).map(([sid, rows]) => {
+                        const st = studentsMap.get(sid);
+                        return rows.map(r => `
+                          <tr>
+                            <td style="padding: 8px; border-bottom: 1px solid #ddd;">${st?.name || sid}</td>
+                            <td style="padding: 8px; border-bottom: 1px solid #ddd;">${r.assignmentTitle}</td>
+                            <td style="padding: 8px; border-bottom: 1px solid #ddd; text-transform: capitalize;">${r.status}</td>
+                            <td style="padding: 8px; border-bottom: 1px solid #ddd;">${r.grade ?? '-'}</td>
+                            <td style="padding: 8px; border-bottom: 1px solid #ddd;">${r.submitted_at ? `Submitted: ${fmtDate(r.submitted_at)}` : ''} ${r.graded_at ? `<br/>Graded: ${fmtDate(r.graded_at)}` : ''}</td>
+                          </tr>
+                        `).join('');
+                      }).join('')}
+                    </tbody>
+                  </table>
                   <div class="trigger-info">
                       Report generated ${triggerSource === 'scheduled' ? 'automatically' : 'manually'} at ${new Date(timestamp).toLocaleString()}
                   </div>
@@ -230,22 +356,22 @@ serve(async (req: Request) => {
       </html>
     `;
 
-    try {
-        if (!RESEND_FROM_EMAIL) {
-            console.error("RESEND_FROM_EMAIL environment variable is not set.");
-        } else {
-            await resend.emails.send({
-                from: RESEND_FROM_EMAIL,
-                to: PRINCIPAL_EMAIL,
-                subject: `Daily Student Progress Report - ${reportDate}`,
-                html: principalEmailHtml,
-            });
-            console.log(`Principal's summary email sent to ${PRINCIPAL_EMAIL}`);
-        }
-    } catch (emailError) {
-        console.error(`Error sending principal's summary email:`, emailError);
+    if (ADMIN_EMAILS.length === 0) {
+      console.warn("No admin emails found for madrassah:", invokingMadrassahId);
+    } else {
+      try {
+        await resend.emails.send({
+          from: `Darul Uloom <${RESEND_FROM_EMAIL}>`,
+          to: ADMIN_EMAILS,
+          subject: `Daily Student Progress Report - ${reportDate}`,
+          html: principalEmailHtml,
+        });
+        console.log(`Admin summary email sent to:`, ADMIN_EMAILS);
+      } catch (emailError) {
+        console.error(`Error sending admin summary email:`, emailError);
+      }
     }
-    // END of new code for principal's email
+    // END dynamic admin emails
 
     let emailsSent = 0;
     let emailsSkipped = 0;
@@ -304,7 +430,7 @@ serve(async (req: Request) => {
                         </tbody>
                     </table>
                     <div class="trigger-info">
-                        Report generated ${triggerSource === 'scheduled' ? 'automatically' : 'manually'} at ${new Date(timestamp).toLocaleString()}
+                        Report generated ${triggerSource === 'scheduled' ? 'automatically' : 'manually'} at ${fmtDate(timestamp)}
                     </div>
                     <p>Thank you,</p>
                     <p><strong>Darul Uloom</strong></p>
@@ -352,7 +478,7 @@ serve(async (req: Request) => {
 
     // Log completion
     try {
-      await supabase
+      await supabaseService
         .from("email_logs")
         .insert({
           trigger_source: triggerSource,
@@ -395,7 +521,7 @@ serve(async (req: Request) => {
         },
       );
       
-      await supabase
+      await supabaseService
         .from("email_logs")
         .insert({
           trigger_source: 'unknown',
