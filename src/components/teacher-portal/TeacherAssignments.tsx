@@ -437,25 +437,7 @@ const AssignmentSubmissions = ({ assignmentId, classIds, explicitStudentIds }: {
   const queryClient = useQueryClient();
   const [savingIds, setSavingIds] = useState<Set<string>>(new Set());
   const [recentlySavedIds, setRecentlySavedIds] = useState<Set<string>>(new Set());
-  const { data: students } = useQuery({
-    queryKey: ["assignment-submission-students", assignmentId, classIds, explicitStudentIds],
-    queryFn: async () => {
-      let unionIds: string[] = [];
-      if (classIds && classIds.length > 0) {
-        const { data: cls } = await supabase.from("classes").select("current_students").in("id", classIds);
-        const classIdsFlat = (cls || []).flatMap((c) => (c as any).current_students || []);
-        unionIds = unionIds.concat(classIdsFlat as string[]);
-      }
-      if (explicitStudentIds && explicitStudentIds.length > 0) {
-        unionIds = unionIds.concat(explicitStudentIds as string[]);
-      }
-      const uniqueIds = Array.from(new Set((unionIds as string[]).filter(Boolean)));
-      if (uniqueIds.length === 0) return [] as { id: string; name: string }[];
-      const { data: st } = await supabase.from("students").select("id, name").in("id", uniqueIds).order("name", { ascending: true });
-      return (st || []) as { id: string; name: string }[];
-    },
-  });
-
+  // Fetch submissions first to know exactly who this assignment targets
   const { data: submissions, isLoading } = useQuery({
     queryKey: ["teacher-assignment-submissions", assignmentId],
     queryFn: async () => {
@@ -467,6 +449,45 @@ const AssignmentSubmissions = ({ assignmentId, classIds, explicitStudentIds }: {
       const map = new Map<string, any>();
       (data || []).forEach((s) => map.set(s.student_id, s));
       return map; // Map studentId -> submission row
+    },
+  });
+
+  // Now fetch only the students that are actually targeted (explicit ids > submissions > classes)
+  const { data: students } = useQuery({
+    queryKey: ["assignment-submission-students", assignmentId, classIds, explicitStudentIds, submissions?.size || 0],
+    queryFn: async () => {
+      // Priority 1: explicit student IDs stored on the assignment
+      if (explicitStudentIds && explicitStudentIds.length > 0) {
+        const { data: st } = await supabase
+          .from("students")
+          .select("id, name")
+          .in("id", explicitStudentIds)
+          .order("name", { ascending: true });
+        return (st || []) as { id: string; name: string }[];
+      }
+
+      // Priority 2: any seeded submissions (authoritative list of who has the assignment)
+      const submissionIds = submissions ? Array.from(submissions.keys()) : [];
+      if (submissionIds.length > 0) {
+        const { data: st } = await supabase
+          .from("students")
+          .select("id, name")
+          .in("id", submissionIds)
+          .order("name", { ascending: true });
+        return (st || []) as { id: string; name: string }[];
+      }
+
+      // Fallback: full class rosters if nothing else available
+      let unionIds: string[] = [];
+      if (classIds && classIds.length > 0) {
+        const { data: cls } = await supabase.from("classes").select("current_students").in("id", classIds);
+        const classIdsFlat = (cls || []).flatMap((c) => (c as any).current_students || []);
+        unionIds = unionIds.concat(classIdsFlat as string[]);
+      }
+      const uniqueIds = Array.from(new Set((unionIds as string[]).filter(Boolean)));
+      if (uniqueIds.length === 0) return [] as { id: string; name: string }[];
+      const { data: st } = await supabase.from("students").select("id, name").in("id", uniqueIds).order("name", { ascending: true });
+      return (st || []) as { id: string; name: string }[];
     },
   });
 
