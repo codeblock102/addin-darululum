@@ -57,6 +57,7 @@ export const StudentDialog = (
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [isProcessing, setIsProcessing] = useState(false);
+  const [availableSections, setAvailableSections] = useState<string[]>([]);
   const [formData, setFormData] = useState({
     name: selectedStudent?.name || "",
     date_of_birth: selectedStudent?.date_of_birth || "",
@@ -107,11 +108,37 @@ export const StudentDialog = (
     }
   }, [selectedStudent, madrassahId]);
 
+  // Load available sections for this madrassah (admin view only)
+  useEffect(() => {
+    const loadSections = async () => {
+      try {
+        if (isTeacher) return; // Teachers cannot edit sections
+        const resolvedMadrassahId = formData.madrassah_id || madrassahId;
+        if (!resolvedMadrassahId) return;
+        const { data, error } = await supabase
+          .from("madrassahs")
+          .select("section")
+          .eq("id", resolvedMadrassahId)
+          .maybeSingle();
+        if (error) return;
+        const sections = (data?.section as string[] | null) || [];
+        setAvailableSections(Array.isArray(sections) ? sections.filter(Boolean) : []);
+      } catch (_) {}
+    };
+    loadSections();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [formData.madrassah_id, madrassahId, isTeacher]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsProcessing(true);
 
     try {
+      // Basic validation
+      if (!formData.name || !formData.name.trim()) {
+        throw new Error("Student name is required");
+      }
+
       const { medicalConditions, section, ...formDataWithoutMedical } = formData;
       const baseSubmissionData = {
         ...formDataWithoutMedical,
@@ -120,12 +147,41 @@ export const StudentDialog = (
           : Number(formData.current_juz),
         completed_juz: formData.completed_juz.map((juz) => Number(juz)),
         medical_condition: formData.medicalConditions || null,
+        // Normalize empty strings to null for optional fields
+        date_of_birth: formData.date_of_birth || null,
+        enrollment_date: formData.enrollment_date || new Date().toISOString().split("T")[0],
       };
 
       // Teachers cannot modify section assignments
-      const submissionData = isTeacher 
+      let submissionData: any = isTeacher 
         ? baseSubmissionData 
-        : { ...baseSubmissionData, section };
+        : { ...baseSubmissionData, section: section || null };
+
+      // Ensure madrassah_id is set; resolve from current user profile if missing/empty
+      try {
+        let effectiveMadrassahId = (formData.madrassah_id && formData.madrassah_id.trim()) ? formData.madrassah_id : null;
+        if (!effectiveMadrassahId) {
+          const { data: auth } = await supabase.auth.getUser();
+          const uid = auth.user?.id;
+          if (uid) {
+            const { data: profile } = await supabase
+              .from("profiles")
+              .select("madrassah_id")
+              .eq("id", uid)
+              .maybeSingle();
+            if (profile?.madrassah_id) {
+              effectiveMadrassahId = profile.madrassah_id as string;
+            }
+          }
+        }
+        if (!effectiveMadrassahId) {
+          throw new Error("Could not determine madrassah. Please try reloading or set it manually.");
+        }
+        submissionData = { ...submissionData, madrassah_id: effectiveMadrassahId };
+      } catch (resolveErr: any) {
+        console.error("Failed to resolve madrassah_id for student create/update:", resolveErr);
+        throw resolveErr instanceof Error ? resolveErr : new Error("Failed to resolve madrassah");
+      }
 
       if (selectedStudent) {
         const { error } = await supabase
@@ -236,18 +292,36 @@ export const StudentDialog = (
                     </span>
                   )}
                 </Label>
-                <Input
-                  id="section"
-                  placeholder={isTeacher ? "Managed by administrator" : "Enter section"}
-                  value={formData.section}
-                  onChange={(e) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      section: e.target.value,
-                    }))}
-                  disabled={isTeacher}
-                  className={isTeacher ? "bg-muted cursor-not-allowed" : ""}
-                />
+                {(!isTeacher && availableSections.length > 0) ? (
+                  <Select
+                    value={formData.section || ""}
+                    onValueChange={(value: string) =>
+                      setFormData((prev) => ({ ...prev, section: value }))
+                    }
+                  >
+                    <SelectTrigger id="section">
+                      <SelectValue placeholder="Select section" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {availableSections.map((sec) => (
+                        <SelectItem key={sec} value={sec}>{sec}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                ) : (
+                  <Input
+                    id="section"
+                    placeholder={isTeacher ? "Managed by administrator" : "Enter section"}
+                    value={formData.section}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        section: e.target.value,
+                      }))}
+                    disabled={isTeacher}
+                    className={isTeacher ? "bg-muted cursor-not-allowed" : ""}
+                  />
+                )}
                 {isTeacher && (
                   <p className="text-xs text-muted-foreground">
                     Section assignments are managed by administrators
