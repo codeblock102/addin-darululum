@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { AttendanceForm } from "@/components/attendance/AttendanceForm.tsx";
 import { AttendanceTable } from "@/components/attendance/AttendanceTable.tsx";
+import { AttendanceCutoffSettings } from "@/components/attendance/AttendanceCutoffSettings.tsx";
 import {
   Tabs,
   TabsContent,
@@ -198,6 +199,7 @@ const Attendance = () => {
                   className="mt-0 animate-fadeIn"
                 >
                   <div className="space-y-4 sm:space-y-6">
+                    <AttendanceCutoffSettings />
                     <div className="text-center space-y-1 sm:space-y-2">
                       <h3 className="text-lg sm:text-xl font-semibold text-slate-900 dark:text-slate-100">
                         Record Student Attendance
