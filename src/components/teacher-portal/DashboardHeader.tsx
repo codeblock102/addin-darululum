@@ -29,7 +29,9 @@ export const DashboardHeader = (
               <div className="relative">
                 <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center shadow-lg">
                   <span className="text-xl sm:text-2xl font-bold text-white">
-                    {teacher.name.substring(0, 2).toUpperCase()}
+                    {((teacher?.name && teacher.name.trim().length > 0)
+                      ? teacher.name
+                      : (teacher?.email || "??")).substring(0, 2).toUpperCase()}
                   </span>
                 </div>
                 <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-green-500 rounded-full border-3 border-white shadow-sm flex items-center justify-center">
@@ -41,7 +43,7 @@ export const DashboardHeader = (
               <div className="flex-1 space-y-3">
                 <div>
                   <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1 flex items-center gap-3">
-                    <span>Welcome back, {teacher.name}</span>
+                    <span>Welcome back, {teacher?.name || teacher?.email || "Teacher"}</span>
                     <BookOpen className="h-6 w-6 text-purple-600" />
                   </h1>
                   <p className="text-sm sm:text-base text-gray-600">
