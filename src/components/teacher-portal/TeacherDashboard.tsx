@@ -1,9 +1,8 @@
-import { TeacherDashboardProps } from "@/types/teacher.ts";
-import { useTeacherSummary } from "@/hooks/useTeacherSummary.ts";
-import { DashboardHeader } from "./DashboardHeader.tsx";
-import { DashboardContent } from "./dashboard/DashboardContent.tsx";
+import { Teacher } from "@/types/teacher.ts";
 import { useActiveTab } from "./dashboard/DashboardNav.tsx";
 import { useTeacherClasses } from "@/hooks/useTeacherClasses.ts";
+import { DashboardLayout } from "@/components/layouts/DashboardLayout.tsx";
+import { DashboardOverview } from "./dashboard/DashboardOverview.tsx";
 
 export const TeacherDashboard = (
   { teacher, isAdmin = false }: TeacherDashboardProps & { isAdmin?: boolean },
@@ -15,27 +14,16 @@ export const TeacherDashboard = (
   useTeacherSummary(teacher.id);
 
   return (
-    <div className="space-y-6 animate-fadeIn">
-      <DashboardHeader
-        teacher={teacher}
-        classes={classes}
-        isLoadingClasses={isLoadingClasses}
-      />
-
-      {
-        /* <TeacherTabs
-        teacher={teacher}
-        activeTab={activeTab}
-        onTabChange={setActiveTab}
-      /> */
-      }
-
-      <DashboardContent
-        activeTab={activeTab}
-        teacherId={teacher.id}
-        teacherName={teacher.name}
-        isAdmin={isAdmin}
-      />
-    </div>
+    <DashboardLayout>
+      <div className="space-y-6">
+        <DashboardHeader 
+          teacher={teacher} 
+          classes={classes} 
+          isLoadingClasses={isLoadingClasses}
+          isAdmin={isAdmin}
+        />
+        <DashboardOverview teacherId={teacher.id} isAdmin={isAdmin} />
+      </div>
+    </DashboardLayout>
   );
 };
