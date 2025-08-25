@@ -31,15 +31,20 @@ export const StudentSearch = (
   const { data: teacherData, isLoading: isLoadingTeacher } = useQuery({
     queryKey: ["teacherDataForDashboardSearch", teacherId, isAdmin],
     queryFn: async () => {
-      if (!teacherId) return null;
+      if (!teacherId && !isAdmin) return null;
+      
+      // For admin users, we can fetch all students without a specific teacher
+      if (isAdmin) {
+        // Return a mock profile for admin to allow fetching all students
+        return { madrassah_id: "admin", section: null };
+      }
+      
       let query = supabase
         .from("profiles")
         .select("madrassah_id, section")
         .eq("id", teacherId);
 
-      if (!isAdmin) {
-        query = query.eq("role", "teacher");
-      }
+      query = query.eq("role", "teacher");
 
       const { data, error } = await query.single();
 
@@ -52,7 +57,7 @@ export const StudentSearch = (
       }
       return data;
     },
-    enabled: !!teacherId,
+    enabled: !!teacherId || isAdmin,
     onSuccess: (data) => {
       console.log("StudentSearch: Fetched user profile for search:", data);
     },
@@ -69,11 +74,16 @@ export const StudentSearch = (
       let query = supabase
         .from("students")
         .select("id, name")
-        .eq("status", "active")
-        .eq("madrassah_id", teacherData.madrassah_id);
+        .eq("status", "active");
 
-      if (!isAdmin && teacherData.section) {
-        query = query.eq("section", teacherData.section);
+      // For admin users, fetch all students
+      if (isAdmin) {
+        // No madrassah_id filter for admin
+      } else {
+        query = query.eq("madrassah_id", teacherData.madrassah_id);
+        if (teacherData.section) {
+          query = query.eq("section", teacherData.section);
+        }
       }
 
       const { data, error } = await query;
@@ -131,7 +141,7 @@ export const StudentSearch = (
         </div>
 
         {isLoading && (
-          <div className="flex items-center gap-2 text-sm text-gray-600 p-3 bg-gray-50 rounded-lg border border-gray-200">
+          <div className="flex items-center gap-2 text-sm text-black p-3 bg-gray-50 rounded-lg border border-gray-200">
             <Loader2 className="h-4 w-4 animate-spin text-[hsl(142.8,64.2%,24.1%)]" />
             <span>Loading students...</span>
           </div>
@@ -141,7 +151,7 @@ export const StudentSearch = (
           <div className="space-y-2">
             {filteredStudents.length > 0 ? (
               <div className="space-y-2">
-                <div className="text-xs font-medium text-gray-600 uppercase tracking-wider">
+                <div className="text-xs font-medium text-black uppercase tracking-wider">
                   Found {filteredStudents.length} student{filteredStudents.length !== 1 ? 's' : ''}
                 </div>
                 {filteredStudents.map((student) => (
@@ -153,7 +163,7 @@ export const StudentSearch = (
                     <div className="p-2 bg-[hsl(142.8,64.2%,24.1%)]/10 rounded-lg group-hover:bg-[hsl(142.8,64.2%,24.1%)]/20 transition-colors duration-200">
                       <UserRound className="h-4 w-4 text-[hsl(142.8,64.2%,24.1%)]" />
                     </div>
-                    <span className="font-medium text-gray-700 group-hover:text-[hsl(142.8,64.2%,24.1%)] transition-colors duration-200">
+                    <span className="font-medium text-black group-hover:text-[hsl(142.8,64.2%,24.1%)] transition-colors duration-200">
                       {student.name}
                     </span>
                   </div>
@@ -162,10 +172,10 @@ export const StudentSearch = (
             ) : (
               <div className="text-center p-6 bg-gray-50 rounded-lg border border-gray-200">
                 <Users className="h-8 w-8 text-gray-400 mx-auto mb-2" />
-                <div className="text-sm text-gray-600">
+                <div className="text-sm text-black">
                   No students found for "<span className="font-medium">{searchQuery}</span>"
                 </div>
-                <div className="text-xs text-gray-500 mt-1">
+                <div className="text-xs text-black mt-1">
                   Try a different search term
                 </div>
               </div>
@@ -176,10 +186,10 @@ export const StudentSearch = (
         {!searchQuery && !isLoading && (
           <div className="text-center p-6 bg-gray-50 rounded-lg border border-gray-200">
             <Search className="h-8 w-8 text-gray-400 mx-auto mb-2" />
-            <div className="text-sm text-gray-600">
+            <div className="text-sm text-black">
               {isAdmin ? "Search for students to manage" : "Search for your students"}
             </div>
-            <div className="text-xs text-gray-500 mt-1">
+            <div className="text-xs text-black mt-1">
               Start typing a student's name above
             </div>
           </div>

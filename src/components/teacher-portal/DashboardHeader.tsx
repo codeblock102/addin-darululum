@@ -65,7 +65,7 @@ export const DashboardHeader = (
                       <BookOpen className="h-5 w-5 sm:h-6 sm:w-6 text-[hsl(142.8,64.2%,24.1%)] flex-shrink-0" />
                     )}
                   </h1>
-                  <p className="text-base text-gray-600">
+                  <p className="text-base text-black">
                     {isAdmin 
                       ? "Manage and oversee all aspects of the educational system"
                       : "Ready to inspire and guide your students today"
@@ -94,7 +94,7 @@ export const DashboardHeader = (
                     isLoadingClasses ? (
                       <div className="flex items-center gap-2">
                         <Loader2 className="h-4 w-4 animate-spin text-[hsl(142.8,64.2%,24.1%)]" />
-                        <span className="text-sm text-gray-600">
+                        <span className="text-sm text-black">
                           Loading classes...
                         </span>
                       </div>
@@ -109,7 +109,7 @@ export const DashboardHeader = (
                           </span>
                         ))}
                         {(!classes || classes.length === 0) && (
-                          <span className="text-sm text-gray-500 italic">
+                          <span className="text-sm text-black italic">
                             No classes assigned yet
                           </span>
                         )}
@@ -119,7 +119,7 @@ export const DashboardHeader = (
                 </div>
 
                 {/* Enhanced contact info for larger screens */}
-                <div className="hidden sm:flex items-center gap-4 text-sm text-gray-600">
+                <div className="hidden sm:flex items-center gap-4 text-sm text-black">
                   {teacher.email && (
                     <div className="flex items-center gap-2 bg-gray-50 px-3 py-2 rounded-lg border border-gray-200">
                       <Mail className="h-4 w-4 text-gray-500" />
@@ -139,13 +139,13 @@ export const DashboardHeader = (
             {/* Mobile contact info */}
             <div className="sm:hidden w-full space-y-2 mt-4">
               {teacher.email && (
-                <div className="flex items-center gap-2 text-sm text-gray-600 bg-gray-50 p-3 rounded-lg border border-gray-200">
+                <div className="flex items-center gap-2 text-sm text-black bg-gray-50 p-3 rounded-lg border border-gray-200">
                   <Mail className="h-4 w-4 text-gray-500 flex-shrink-0" />
                   <span className="truncate">{teacher.email}</span>
                 </div>
               )}
               {teacher.phone && (
-                <div className="flex items-center gap-2 text-sm text-gray-600 bg-gray-50 p-3 rounded-lg border border-gray-200">
+                <div className="flex items-center gap-2 text-sm text-black bg-gray-50 p-3 rounded-lg border border-gray-200">
                   <Phone className="h-4 w-4 text-gray-500 flex-shrink-0" />
                   <span>{teacher.phone}</span>
                 </div>
@@ -157,7 +157,7 @@ export const DashboardHeader = (
               <div className="mt-4 pt-4 border-t border-gray-200">
                 <div className="flex items-start gap-3">
                   <User className="h-4 w-4 text-gray-500 mt-0.5 flex-shrink-0" />
-                  <p className="text-sm text-gray-700 leading-relaxed">
+                  <p className="text-sm text-black leading-relaxed">
                     {teacher.bio}
                   </p>
                 </div>

@@ -38,8 +38,8 @@ export function DateSelector({ form }: DateSelectorProps) {
                 <Button
                   variant="outline"
                   className={cn(
-                    "w-full pl-3 text-left font-normal border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500",
-                    !field.value && "text-slate-500 dark:text-slate-400",
+                    "w-full pl-3 text-left font-normal border-gray-300 bg-white hover:bg-gray-50 focus:ring-2 focus:ring-[hsl(142.8,64.2%,24.1%)] focus:border-[hsl(142.8,64.2%,24.1%)] text-black",
+                    !field.value && "text-gray-500",
                   )}
                 >
                   {field.value
@@ -54,7 +54,7 @@ export function DateSelector({ form }: DateSelectorProps) {
               </FormControl>
             </PopoverTrigger>
             <PopoverContent
-              className="w-auto p-0 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-lg rounded-lg"
+              className="w-auto p-0 bg-white border border-gray-200 shadow-lg rounded-lg"
               align="start"
             >
               <Calendar

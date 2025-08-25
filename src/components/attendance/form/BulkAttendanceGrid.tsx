@@ -269,7 +269,7 @@ export function BulkAttendanceGrid({ form }: BulkAttendanceGridProps) {
                             </AvatarFallback>
                           </Avatar>
                           <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
+                            <p className="text-sm text-black">
                               {student.name}
                             </p>
                             <p className="text-xs text-gray-500 dark:text-gray-400">
