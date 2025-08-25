@@ -64,7 +64,7 @@ export function AttendanceFilters({
               variant="outline"
               className={cn(
                 "justify-start text-left sm:w-[180px] bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200 border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-600",
-                !dateFilter && "text-muted-foreground",
+                !dateFilter && "text-black",
               )}
             >
               <CalendarIcon className="mr-2 h-4 w-4" />

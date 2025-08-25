@@ -232,11 +232,7 @@ const Dashboard = () => {
       phone: "",
     };
 
-    return (
-      <div className="min-h-screen bg-gray-50">
-        <TeacherDashboard teacher={adminViewProfile} isAdmin={true} />
-      </div>
-    );
+    return <TeacherDashboard teacher={adminViewProfile} isAdmin={true} />;
   }
 
   // Show profile not found if teacher data is missing (for non-admin users)

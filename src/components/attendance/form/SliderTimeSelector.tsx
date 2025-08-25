@@ -52,8 +52,8 @@ export function SliderTimeSelector({ form }: SliderTimeSelectorProps) {
 
               {/* Hour Slider */}
               <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Hour: {currentHour}
+                <label className="text-sm font-medium text-black">
+                  Time of Day
                 </label>
                 <Slider
                   value={[currentHour]}
@@ -64,17 +64,16 @@ export function SliderTimeSelector({ form }: SliderTimeSelectorProps) {
                   step={1}
                   className="w-full"
                 />
-                <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400">
-                  <span>12 AM</span>
-                  <span>12 PM</span>
-                  <span>11 PM</span>
+                <div className="flex justify-between text-xs text-black">
+                  <span>Early</span>
+                  <span>Late</span>
                 </div>
               </div>
 
               {/* Minute Slider */}
               <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Minutes: {currentMinute}
+                <label className="text-sm font-medium text-black">
+                  Minutes
                 </label>
                 <Slider
                   value={[currentMinute]}
@@ -85,7 +84,7 @@ export function SliderTimeSelector({ form }: SliderTimeSelectorProps) {
                   step={1}
                   className="w-full"
                 />
-                <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400">
+                <div className="flex justify-between text-xs text-black">
                   <span>00</span>
                   <span>30</span>
                   <span>59</span>

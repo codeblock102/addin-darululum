@@ -171,7 +171,7 @@ export function BulkAttendanceGrid({ form }: BulkAttendanceGridProps) {
                 onCheckedChange={handleSelectAll}
                 className="data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600"
               />
-              <span className="text-sm font-medium text-gray-700">
+              <span className="text-sm font-medium text-black">
                 {selectedStudents.size > 0 
                   ? `${selectedStudents.size} student(s) selected` 
                   : "Select students for bulk attendance"}
@@ -272,7 +272,7 @@ export function BulkAttendanceGrid({ form }: BulkAttendanceGridProps) {
                             <p className="text-sm text-black">
                               {student.name}
                             </p>
-                            <p className="text-xs text-gray-500 dark:text-gray-400">
+                            <p className="text-xs text-black">
                               Active Student
                             </p>
                           </div>
@@ -282,7 +282,7 @@ export function BulkAttendanceGrid({ form }: BulkAttendanceGridProps) {
                   ))}
                 </div>
                 {(!students || students.length === 0) && (
-                  <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                  <div className="text-center py-8 text-black">
                     No students found
                   </div>
                 )}
@@ -303,7 +303,7 @@ export function BulkAttendanceGrid({ form }: BulkAttendanceGridProps) {
                   <CheckSquare className="h-3 w-3 mr-1" />
                   {selectedStudents.size} Selected
                 </Badge>
-                <span className="text-sm text-gray-600">
+                <span className="text-sm text-black">
                   Ready for bulk attendance recording
                 </span>
               </div>
@@ -311,7 +311,7 @@ export function BulkAttendanceGrid({ form }: BulkAttendanceGridProps) {
                 variant="outline"
                 size="sm"
                 onClick={() => setSelectedStudents(new Set())}
-                className="text-gray-600 hover:text-gray-800"
+                className="text-black hover:text-gray-800"
               >
                 Clear Selection
               </Button>

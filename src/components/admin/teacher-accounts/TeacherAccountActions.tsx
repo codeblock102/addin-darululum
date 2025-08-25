@@ -65,49 +65,53 @@ export function TeacherAccountActions({
     <>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="icon">
-            <MoreHorizontal className="h-4 w-4" />
+          <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-gray-100">
+            <MoreHorizontal className="h-4 w-4 text-gray-600" />
             <span className="sr-only">Open menu</span>
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
-          <DropdownMenuItem onClick={() => onView(teacher)}>
-            <Eye className="mr-2 h-4 w-4" />
-            View Details
+        <DropdownMenuContent align="end" className="w-48 shadow-lg border border-gray-200">
+          <DropdownMenuItem onClick={() => onView(teacher)} className="cursor-pointer">
+            <Eye className="mr-2 h-4 w-4 text-gray-600" />
+            <span className="text-gray-700">View Details</span>
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => onEdit(teacher)}>
-            <Edit className="mr-2 h-4 w-4" />
-            Edit Account
+          <DropdownMenuItem onClick={() => onEdit(teacher)} className="cursor-pointer">
+            <Edit className="mr-2 h-4 w-4 text-gray-600" />
+            <span className="text-gray-700">Edit Account</span>
           </DropdownMenuItem>
           
           {teacher.role !== 'admin' && (
             <>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => setIsPromoteDialogOpen(true)} className="text-blue-600">
+              <DropdownMenuSeparator className="bg-gray-200" />
+              <DropdownMenuItem onClick={() => setIsPromoteDialogOpen(true)} className="cursor-pointer text-blue-600 hover:text-blue-700 hover:bg-blue-50">
                 <ShieldCheck className="mr-2 h-4 w-4" />
-                Promote to Admin
+                <span>Promote to Admin</span>
               </DropdownMenuItem>
             </>
           )}
 
-          <DropdownMenuSeparator />
+          <DropdownMenuSeparator className="bg-gray-200" />
           <DropdownMenuItem
             onClick={() => onSuspend(teacher)}
-            className={teacher.status === "active"
-              ? "text-amber-600"
-              : "text-green-600"}
+            className={`cursor-pointer ${
+              teacher.status === "active"
+                ? "text-amber-600 hover:text-amber-700 hover:bg-amber-50"
+                : "text-green-600 hover:text-green-700 hover:bg-green-50"
+            }`}
           >
             <UserMinus className="mr-2 h-4 w-4" />
-            {teacher.status === "active"
-              ? "Suspend Account"
-              : "Reactivate Account"}
+            <span>
+              {teacher.status === "active"
+                ? "Suspend Account"
+                : "Reactivate Account"}
+            </span>
           </DropdownMenuItem>
           <DropdownMenuItem
             onClick={() => onDelete(teacher)}
-            className="text-red-600"
+            className="cursor-pointer text-red-600 hover:text-red-700 hover:bg-red-50"
           >
             <Trash2 className="mr-2 h-4 w-4" />
-            Delete Account
+            <span>Delete Account</span>
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

@@ -3,15 +3,16 @@ import { Calendar, Users } from "lucide-react";
 
 interface TodayStudentsProps {
   teacherId?: string;
+  isAdmin?: boolean;
 }
 
-export const TodayStudents = ({ teacherId }: TodayStudentsProps) => {
+export const TodayStudents = ({ teacherId, isAdmin = false }: TodayStudentsProps) => {
   return (
     <Card className="border border-gray-200 shadow-sm bg-white hover:shadow-md transition-all duration-200">
-      <CardHeader className="pb-3">
-        <CardTitle className="flex items-center gap-3 text-lg font-semibold text-gray-800">
-          <div className="p-2 bg-blue-100 rounded-lg">
-            <Calendar className="h-5 w-5 text-blue-600" />
+      <CardHeader className={`pb-3 ${isAdmin ? 'pb-2' : 'pb-3'}`}>
+        <CardTitle className={`flex items-center gap-3 font-semibold text-gray-800 ${isAdmin ? 'text-base' : 'text-lg'}`}>
+          <div className={`p-2 bg-blue-100 rounded-lg ${isAdmin ? 'p-1.5' : 'p-2'}`}>
+            <Calendar className={`text-blue-600 ${isAdmin ? 'h-4 w-4' : 'h-5 w-5'}`} />
           </div>
           Today's Students
         </CardTitle>

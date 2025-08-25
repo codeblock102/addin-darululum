@@ -16,7 +16,10 @@ export function AttendanceEmptyState(
       </div>
       <h3 className="text-lg font-semibold text-black mb-2">No attendance records found</h3>
       <p className="text-black text-center max-w-md">
-        {message || "There are no attendance records for the selected criteria. Try adjusting your filters or check back later."}
+        {hasFilters 
+          ? "No attendance records match your current filters. Try adjusting your search criteria."
+          : "There are no attendance records for the selected criteria. Try adjusting your filters or check back later."
+        }
       </p>
       {hasFilters && (
         <Button

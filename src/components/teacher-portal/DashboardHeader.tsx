@@ -17,9 +17,9 @@ export const DashboardHeader = (
   return (
     <div className="relative mb-6">
       {/* Clean white card with subtle border */}
-      <Card className="overflow-hidden border border-gray-200 shadow-sm bg-white rounded-xl">
+      <Card className={`overflow-hidden border border-gray-200 shadow-sm bg-white rounded-xl ${isAdmin ? 'shadow-lg border-gray-300' : 'shadow-sm border-gray-200'}`}>
         <div className="relative">
-          <div className="p-4 sm:p-6 lg:p-8">
+          <div className={`p-4 sm:p-6 lg:p-8 ${isAdmin ? 'p-6 sm:p-8 lg:p-10' : 'p-4 sm:p-6 lg:p-8'}`}>
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6">
               {/* Enhanced avatar section */}
               <div className="relative">
