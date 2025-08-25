@@ -223,12 +223,12 @@ export const TeacherDialog = (
       } else {
         // --- CREATE NEW TEACHER (triggers will handle profile creation) ---
 
-        // CRITICAL VALIDATION: Ensure we have a valid Madrassah UUID before proceeding.
+        // CRITICAL VALIDATION: Ensure we have a valid Dār Al-Ulūm Montréal UUID before proceeding.
         if (!isValidUUID(madrassahId)) {
           toast({
             title: "Cannot Create Teacher",
             description:
-              "A valid Madrassah ID is required. Please ensure a madrassah is selected.",
+              "A valid Dār Al-Ulūm Montréal ID is required. Please ensure a Dār Al-Ulūm Montréal is selected.",
             variant: "destructive",
           });
           setIsSubmitting(false);

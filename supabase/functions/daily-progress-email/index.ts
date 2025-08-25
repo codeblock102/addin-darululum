@@ -7,6 +7,16 @@ const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
 const RESEND_FROM_EMAIL = Deno.env.get("RESEND_FROM_EMAIL");
 const resend = new Resend(RESEND_API_KEY);
 
+// Guard long-running operations so the job can't hang indefinitely
+function withTimeout<T>(promise: Promise<T>, ms: number, label: string): Promise<T> {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error(`${label} timed out after ${ms}ms`)), ms);
+    promise
+      .then((value) => { clearTimeout(timer); resolve(value); })
+      .catch((err) => { clearTimeout(timer); reject(err); });
+  });
+}
+
 // Timezone-aware formatting to avoid off-by-one day issues in emails
 const REPORT_TIME_ZONE = Deno.env.get("REPORT_TIMEZONE") ?? "America/Toronto";
 const fmtDate = (d: string | Date) =>
@@ -89,12 +99,7 @@ serve(async (req: Request) => {
     // and one with the caller's JWT to identify who invoked the function
     const supabaseService = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_ANON_KEY") ?? "",
-      {
-        global: {
-          headers: { Authorization: `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}` },
-        },
-      },
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
     );
 
     const authHeader = req.headers.get("Authorization") ?? "";
@@ -108,32 +113,62 @@ serve(async (req: Request) => {
       },
     );
 
-    // Identify invoking user and their madrassah
-    const { data: userData, error: userErr } = await supabaseUser.auth.getUser();
-    if (userErr || !userData?.user) {
-      console.error("Unable to resolve invoking user from token", userErr);
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        status: 401,
+    // Load schedule settings
+    const { data: settingsRows } = await supabaseService
+      .from('app_settings')
+      .select('key, value')
+      .in('key', ['email_schedule_enabled','email_schedule_time','email_timezone']);
+    const settingsMap = new Map<string, string>((settingsRows || []).map((r: any) => [r.key, r.value]));
+    const scheduleEnabled = (settingsMap.get('email_schedule_enabled') ?? 'true') !== 'false';
+    const scheduleTime = settingsMap.get('email_schedule_time') || '21:30';
+    const scheduleTz = settingsMap.get('email_timezone') || 'America/New_York';
+
+    // If scheduled trigger and schedule is disabled, exit early
+    if (triggerSource === 'scheduled' && !scheduleEnabled) {
+      console.log('Scheduled run skipped: email schedule disabled');
+      return new Response(JSON.stringify({ skipped: true, reason: 'disabled' }), {
+        status: 200,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    const userId = userData.user.id;
-    const { data: teacherProfile, error: teacherProfileErr } = await supabaseService
-      .from("profiles")
-      .select("id, role, madrassah_id")
-      .eq("id", userId)
-      .maybeSingle();
+    // (Duplicate-run guard removed per request)
 
-    if (teacherProfileErr || !teacherProfile?.madrassah_id) {
-      console.error("Invoking user's profile missing madrassah_id", teacherProfileErr);
-      return new Response(JSON.stringify({ error: "Profile missing madrassah_id" }), {
-        status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+    // pg_cron fires at the configured minute; no extra time check needed beyond enabled flag
+
+    // Hard cap total runtime (default 120s)
+    const maxRuntimeMs = Number(Deno.env.get('DAILY_EMAIL_MAX_MS') ?? 120000);
+    const startedAtMs = Date.now();
+    const timeRemainingMs = () => Math.max(0, maxRuntimeMs - (Date.now() - startedAtMs));
+    let endedDueToTimeout = false;
+
+    // Identify invoking user and their madrassah for manual invocations. Skip for scheduled runs.
+    let invokingMadrassahId: string | null = null;
+    let userId: string | null = null;
+    if (triggerSource !== 'scheduled') {
+      const { data: userData, error: userErr } = await supabaseUser.auth.getUser();
+      if (userErr || !userData?.user) {
+        console.error("Unable to resolve invoking user from token", userErr);
+        return new Response(JSON.stringify({ error: "Unauthorized" }), {
+          status: 401,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      userId = userData.user.id;
+      const { data: teacherProfile, error: teacherProfileErr } = await supabaseService
+        .from("profiles")
+        .select("id, role, madrassah_id")
+        .eq("id", userId)
+        .maybeSingle();
+      if (teacherProfileErr || !teacherProfile?.madrassah_id) {
+        console.error("Invoking user's profile missing madrassah_id", teacherProfileErr);
+        return new Response(JSON.stringify({ error: "Profile missing madrassah_id" }), {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      invokingMadrassahId = teacherProfile.madrassah_id as string;
     }
-
-    const invokingMadrassahId = teacherProfile.madrassah_id as string;
 
     // Log the trigger event
     try {
@@ -143,20 +178,28 @@ serve(async (req: Request) => {
           trigger_source: triggerSource,
           triggered_at: timestamp,
           status: 'started',
-          details: { userId, invokingMadrassahId },
+          emails_sent: 0,
+          emails_skipped: 0,
+          message: userId ? `invoked by ${userId}${invokingMadrassahId ? ' (madrassah ' + invokingMadrassahId + ')' : ''}` : 'scheduled run',
         });
     } catch (logError) {
       console.log("Could not log to email_logs table (table may not exist):", logError);
     }
 
-    const yesterdayISO = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-    const yesterdayDate = yesterdayISO.slice(0, 10);
-    console.log(`Querying progress since: created_at>=${yesterdayISO} OR date>=${yesterdayDate}`);
+    // Compute today's local date string based on configured timezone
+    const tzForReport = scheduleTz || REPORT_TIME_ZONE;
+    const todayLocalDate = new Intl.DateTimeFormat('en-CA', {
+      timeZone: tzForReport,
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+    }).format(new Date());
+    console.log(`Querying progress for local day ${todayLocalDate} (${tzForReport})`);
 
     const { data: progressRecords, error: progressError } = await supabaseService
       .from("progress")
       .select("*")
-      .or(`created_at.gte.${yesterdayISO},date.gte.${yesterdayDate}`);
+      .eq('date', todayLocalDate);
 
     if (progressError) {
       console.error("Error fetching progress records:", progressError);
@@ -166,6 +209,7 @@ serve(async (req: Request) => {
     console.log(`Found ${progressRecords?.length || 0} progress records.`);
     
     // Academic submissions in the last 24 hours (submitted or graded)
+    const yesterdayISO = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
     const { data: subsDaily, error: subsErr } = await supabaseService
       .from("teacher_assignment_submissions")
       .select("assignment_id, student_id, status, submitted_at, graded_at, grade, feedback, created_at")
@@ -346,7 +390,7 @@ serve(async (req: Request) => {
                       Report generated ${triggerSource === 'scheduled' ? 'automatically' : 'manually'} at ${new Date(timestamp).toLocaleString()}
                   </div>
                   <p>Thank you,</p>
-                  <p><strong>Darul Uloom</strong></p>
+                  <p><strong>Dār Al-Ulūm Montréal</strong></p>
               </div>
               <div class="footer">
                   <p>This is an automated email.</p>
@@ -356,28 +400,19 @@ serve(async (req: Request) => {
       </html>
     `;
 
-    if (ADMIN_EMAILS.length === 0) {
-      console.warn("No admin emails found for madrassah:", invokingMadrassahId);
-    } else {
-      try {
-        await resend.emails.send({
-          from: `Darul Uloom <${RESEND_FROM_EMAIL}>`,
-          to: ADMIN_EMAILS,
-          subject: `Daily Student Progress Report - ${reportDate}`,
-          html: principalEmailHtml,
-        });
-        console.log(`Admin summary email sent to:`, ADMIN_EMAILS);
-      } catch (emailError) {
-        console.error(`Error sending admin summary email:`, emailError);
-      }
-    }
-    // END dynamic admin emails
+    // (Admin summary email will be sent after guardian emails if time remains)
+    // END dynamic admin emails (moved send to end)
 
     let emailsSent = 0;
     let emailsSkipped = 0;
     const emailResults = [];
 
     for (const { student, progresses } of studentProgressMap.values()) {
+        if (timeRemainingMs() < 7000) {
+            endedDueToTimeout = true;
+            console.log('Stopping sends due to runtime limit');
+            break;
+        }
         if (!student.guardian_email) {
             console.log(`Student ${student.name} has no guardian email. Skipping.`);
             emailsSkipped++;
@@ -514,12 +549,12 @@ serve(async (req: Request) => {
                 continue;
             }
 
-            await resend.emails.send({
+            await withTimeout(resend.emails.send({
                 from: RESEND_FROM_EMAIL,
                 to: student.guardian_email,
                 subject: `Quran Progress Report for ${student.name} - ${reportDate}`,
                 html: emailHtml,
-            });
+            }), 10000, `Guardian email to ${student.guardian_email}`);
             
             console.log(`Email sent to ${student.guardian_email} for student ${student.name}`);
             emailsSent++;
@@ -541,6 +576,26 @@ serve(async (req: Request) => {
     }
 
     // Log completion
+    // Send admin summary last if enough time remains
+    try {
+      if (ADMIN_EMAILS.length > 0 && timeRemainingMs() > 15000) {
+        await withTimeout(resend.emails.send({
+          from: `Dār Al-Ulūm Montréal <${RESEND_FROM_EMAIL}>`,
+          to: ADMIN_EMAILS,
+          subject: `Daily Student Progress Report - ${reportDate}`,
+          html: principalEmailHtml,
+        }), 20000, 'Admin summary email send (post-guardians)');
+        console.log(`Admin summary email sent to:`, ADMIN_EMAILS);
+      } else if (ADMIN_EMAILS.length === 0) {
+        console.log('No admin emails configured; skipping admin summary');
+      } else {
+        console.log('Skipping admin summary due to low remaining time');
+      }
+    } catch (emailError) {
+      console.error(`Error sending admin summary email:`, emailError);
+    }
+
+    // Log completion
     try {
       await supabaseService
         .from("email_logs")
@@ -550,7 +605,7 @@ serve(async (req: Request) => {
           status: 'completed',
           emails_sent: emailsSent,
           emails_skipped: emailsSkipped,
-          message: `Sent ${emailsSent} emails, skipped ${emailsSkipped}`
+          message: `Sent ${emailsSent} emails, skipped ${emailsSkipped}${endedDueToTimeout ? ' (timed out and ended early)' : ''}`
         });
     } catch (logError) {
       console.log("Could not log completion to email_logs table:", logError);
@@ -577,15 +632,10 @@ serve(async (req: Request) => {
     try {
       const supabase = createClient(
         Deno.env.get("SUPABASE_URL") ?? "",
-        Deno.env.get("SUPABASE_ANON_KEY") ?? "",
-        {
-          global: {
-            headers: { Authorization: `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}` },
-          },
-        },
+        Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
       );
       
-      await supabaseService
+      await supabase
         .from("email_logs")
         .insert({
           trigger_source: 'unknown',

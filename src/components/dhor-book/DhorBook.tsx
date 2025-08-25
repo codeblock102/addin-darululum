@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client.ts";
 import { Card } from "@/components/ui/card.tsx";
 import { addWeeks, endOfWeek, format, startOfWeek, subWeeks, addMonths, subMonths, startOfMonth, endOfMonth } from "date-fns";
-import { Calendar, ChevronLeft, ChevronRight, Loader2, CalendarDays } from "lucide-react";
+import { Calendar, ChevronLeft, ChevronRight, Loader2, CalendarDays, Info } from "lucide-react";
 import { Button } from "@/components/ui/button.tsx";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs.tsx";
 import { DhorBookGrid } from "./DhorBookGrid.tsx";
@@ -372,6 +372,31 @@ export const DhorBook = ({
     );
   }
 
+  function TeacherEmailScheduleNote() {
+    const { data: schedule } = useQuery({
+      queryKey: ["email-schedule-settings"],
+      queryFn: async () => {
+        const { data, error } = await supabase
+          .from("app_settings")
+          .select("key, value")
+          .in("key", ["email_schedule_time", "email_timezone", "email_schedule_enabled"]);
+        if (error) throw error;
+        const map: Record<string, string> = Object.fromEntries((data || []).map((r: any) => [r.key, r.value]));
+        return map;
+      },
+    });
+    const enabled = schedule?.email_schedule_enabled === "true";
+    const time = schedule?.email_schedule_time || "";
+    const tz = schedule?.email_timezone || "";
+    if (!enabled || !time || !tz) return null;
+    return (
+      <div className="mb-4 rounded-md border bg-blue-50 text-blue-900 px-3 py-2 text-xs sm:text-sm flex items-center gap-2">
+        <Info className="h-4 w-4" />
+        <span>Daily progress emails are sent at {time} ({tz}).</span>
+      </div>
+    );
+  }
+
   return (
     <Card className="p-4 sm:p-6">
       {/* View Mode Tabs */}
@@ -436,6 +461,11 @@ export const DhorBook = ({
               Next <ChevronRight className="h-4 w-4 ml-1" />
             </Button>
           </div>
+
+          {/* Info banner for teachers about daily email time (read-only) */}
+          {!isAdmin && (
+            <TeacherEmailScheduleNote />
+          )}
 
           {/* DhorBookGrid component displays entries in a weekly grid */}
           <DhorBookGrid

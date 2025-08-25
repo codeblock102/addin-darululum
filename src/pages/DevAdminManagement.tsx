@@ -14,7 +14,7 @@ export default function DevAdminManagement() {
           </div>
           <div>
             <h1 className="text-3xl font-bold text-gray-900">Developer Admin Management</h1>
-            <p className="text-gray-600">Create and manage admin accounts for madrassahs</p>
+            <p className="text-gray-600">Create and manage admin accounts for Dār Al-Ulūm Montréal</p>
           </div>
         </div>
       </div>
@@ -24,7 +24,7 @@ export default function DevAdminManagement() {
         <AlertTriangle className="h-4 w-4 text-amber-600" />
         <AlertDescription className="text-amber-800">
           <strong>Developer Access Only:</strong> This page is for creating admin accounts. 
-          Admin accounts have full access to their assigned madrassah's data.
+          Admin accounts have full access to their assigned Dār Al-Ulūm Montréal's data.
         </AlertDescription>
       </Alert>
 
@@ -48,12 +48,12 @@ export default function DevAdminManagement() {
           <CardHeader className="pb-3">
             <CardTitle className="text-lg flex items-center gap-2">
               <Settings className="h-5 w-5 text-green-600" />
-              Madrassah Assignment
+              Dār Al-Ulūm Montréal Assignment
             </CardTitle>
           </CardHeader>
           <CardContent>
             <CardDescription>
-              Assign admins to specific madrassahs for proper access control
+              Assign admins to specific Dār Al-Ulūm Montréal locations for proper access control
             </CardDescription>
           </CardContent>
         </Card>

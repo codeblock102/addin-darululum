@@ -210,7 +210,7 @@ export default function AdminAccessDiagnostic() {
         </div>
 
         <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-          <span className="font-medium">Madrassah Assignment:</span>
+          <span className="font-medium">Dār Al-Ulūm Montréal Assignment:</span>
           <span>{diagnosticInfo.madrassahId || 'Not assigned'}</span>
         </div>
       </div>
