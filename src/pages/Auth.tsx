@@ -130,61 +130,41 @@ const Auth = () => {
         throw new Error("Refreshed user is null after session refresh.");
       }
 
-      console.log("Checking user metadata:", refreshedUser.user_metadata);
-      if (refreshedUser.user_metadata?.role === "admin") {
-        localStorage.setItem("userRole", "admin");
-        toast({
-          title: "Login Successful",
-          description: "Welcome back, Admin! Redirecting...",
-        });
+      // Simplified, strict DB-first routing by auth id only
+      const userId = refreshedUser.id;
+
+      // 1) profiles.role by id
+      const { data: profileRow, error: profileError } = await supabase
+        .from("profiles")
+        .select("role")
+        .eq("id", userId)
+        .maybeSingle();
+
+      if (profileError) {
+        console.error("Error fetching profile role:", profileError.message);
+      } else if (profileRow?.role === "admin") {
+        toast({ title: "Login Successful", description: "Welcome back, Admin! Redirecting..." });
+        navigate("/admin");
+        return;
+      } else if (profileRow?.role === "teacher") {
+        toast({ title: "Login Successful", description: "Welcome back, Teacher! Redirecting..." });
         navigate("/dashboard");
         return;
       }
 
-      if (refreshedUser.email) {
-        console.log(
-          "Checking for teacher profile with email:",
-          refreshedUser.email,
-        );
-        const { data: teacherData, error: teacherError } = await supabase
-          .from("profiles")
-          .select("id")
-          .eq("email", refreshedUser.email)
-          .maybeSingle();
+      // 2) parents by id
+      const { data: parentRow, error: parentError } = await supabase
+        .from("parents")
+        .select("id")
+        .eq("id", userId)
+        .maybeSingle();
 
-        if (teacherError) {
-          console.error(
-            "Error checking teacher profile:",
-            teacherError.message,
-          );
-        } else if (teacherData) {
-          localStorage.setItem("userRole", "teacher");
-          toast({
-            title: "Login Successful",
-            description: "Welcome back, Teacher! Redirecting...",
-          });
-          navigate("/dashboard");
-          return;
-        }
-
-        // Check if the user is a parent via consolidated parents table keyed by auth id
-        const { data: parentRow, error: parentError } = await supabase
-          .from("parents")
-          .select("id")
-          .eq("id", refreshedUser.id)
-          .maybeSingle();
-
-        if (parentError) {
-          console.error("Error checking parents:", parentError.message);
-        } else if (parentRow?.id) {
-          localStorage.setItem("userRole", "parent");
-          toast({
-            title: "Login Successful",
-            description: "Welcome! Redirecting to Parent Portal...",
-          });
-          navigate("/parent");
-          return;
-        }
+      if (parentError) {
+        console.error("Error checking parents:", parentError.message);
+      } else if (parentRow?.id) {
+        toast({ title: "Login Successful", description: "Welcome! Redirecting to Parent Portal..." });
+        navigate("/parent");
+        return;
       }
 
       console.log("No role found, redirecting to role setup");
