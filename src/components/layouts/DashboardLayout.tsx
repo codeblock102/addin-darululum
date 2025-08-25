@@ -43,7 +43,7 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
 
   if (isLoading) {
     return (
-      <div className="flex h-screen w-full items-center justify-center">
+      <div className="flex h-screen w-full items-center justify-center bg-gradient-to-br from-[hsl(142.8,64.2%,24.1%)] via-[hsl(142.8,64.2%,20%)] to-[hsl(142.8,64.2%,16%)]">
         <LoadingSpinner />
       </div>
     );
@@ -55,13 +55,14 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   return (
     <div
       className={cn(
-        "flex min-h-screen w-full overflow-hidden",
+        "flex min-h-screen w-full overflow-hidden bg-gradient-to-br from-[hsl(142.8,64.2%,24.1%)] via-[hsl(142.8,64.2%,20%)] to-[hsl(142.8,64.2%,16%)]",
         isAdmin ? "admin-theme" : "teacher-theme",
       )}
     >
+      {/* Sidebar */}
       <div
         className={cn(
-          "fixed inset-y-0 left-0 z-40 bg-background border-r",
+          "fixed inset-y-0 left-0 z-40 bg-white/95 backdrop-blur-xl border-r border-white/20 shadow-2xl",
           isMobile ? `${sidebarWidthClass} -translate-x-full` : [
             sidebarOpen ? sidebarWidthClass : collapsedSidebarWidthClass,
             "transition-all duration-300 ease-in-out",
@@ -75,20 +76,24 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
         />
       </div>
 
+      {/* Main Content Area */}
       <div
         className={cn(
           "flex-1 overflow-x-hidden transition-all duration-300",
-          isMobile ? "pb-16" : "",
+          isMobile ? "pb-20" : "", // Increased bottom padding for mobile
           !isMobile && (sidebarOpen ? `md:ml-64` : `md:ml-16`),
         )}
       >
         <BackgroundPattern isAdmin={isAdmin}>
           <div className="p-3 sm:p-4 md:p-6 h-full">
             <div className="max-w-7xl mx-auto h-full">
+              {/* Role Badge - Hidden on mobile for cleaner look */}
               {!isMobile && (
                 <RoleBadge isAdmin={isAdmin} isLoading={isLoading} />
               )}
-              <div className="animate-fadeIn mt-4 md:mt-0 h-full">
+              
+              {/* Main Content with enhanced mobile spacing */}
+              <div className="animate-fadeIn mt-2 sm:mt-4 md:mt-0 h-full">
                 {children || <Outlet />}
               </div>
             </div>
@@ -96,7 +101,10 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
         </BackgroundPattern>
       </div>
 
-      {isMobile && !isLoading && (isTeacher || isAdmin || isParent) && <BottomNavigation />}
+      {/* Mobile Bottom Navigation */}
+      {isMobile && !isLoading && (isTeacher || isAdmin || isParent) && (
+        <BottomNavigation />
+      )}
     </div>
   );
 };
