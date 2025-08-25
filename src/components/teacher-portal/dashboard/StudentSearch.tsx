@@ -8,10 +8,10 @@ import {
   CardTitle,
 } from "@/components/ui/card.tsx";
 import { Input } from "@/components/ui/input.tsx";
-import { Button } from "@/components/ui/button.tsx";
+import { Button as _Button } from "@/components/ui/button.tsx";
 import { Loader2, Search, UserRound } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { AddStudentDialog } from "../students/AddStudentDialog.tsx";
+import { AddStudentDialog as _AddStudentDialog } from "../students/AddStudentDialog.tsx";
 
 interface StudentSearchProps {
   teacherId: string;
@@ -30,7 +30,7 @@ export const StudentSearch = (
 
   const { data: teacherData, isLoading: isLoadingTeacher } = useQuery({
     queryKey: ["teacherDataForDashboardSearch", teacherId, isAdmin],
-    queryFn: async () => {
+    queryFn: async (): Promise<{ madrassah_id: string; section?: string } | null> => {
       if (!teacherId) return null;
       let query = supabase
         .from("profiles")
@@ -41,29 +41,24 @@ export const StudentSearch = (
         query = query.eq("role", "teacher");
       }
 
-      const { data, error } = await query.single();
+      const { data, error } = await query.maybeSingle();
 
       if (error) {
         console.error(
           "Error fetching user data for dashboard search:",
           error,
         );
-        throw error;
+        return null;
       }
       return data;
     },
     enabled: !!teacherId,
-    onSuccess: (data) => {
-      console.log("StudentSearch: Fetched user profile for search:", data);
-    },
-    onError: (error) => {
-      console.error("StudentSearch: Error fetching user profile:", error);
-    },
+    retry: 1,
   });
 
   const { data: students, isLoading: isLoadingStudents } = useQuery({
     queryKey: ["all-students-for-search", teacherData, isAdmin],
-    queryFn: async () => {
+    queryFn: async (): Promise<{ id: string; name: string }[]> => {
       if (!teacherData?.madrassah_id) return [];
 
       let query = supabase
@@ -81,14 +76,7 @@ export const StudentSearch = (
       return data || [];
     },
     enabled: !!teacherData,
-    onSuccess: (data) => {
-      console.log(
-        `StudentSearch: Fetched ${data?.length || 0} students for search list.`,
-      );
-    },
-    onError: (error) => {
-      console.error("StudentSearch: Error fetching students:", error);
-    },
+    retry: 1,
   });
 
   useEffect(() => {

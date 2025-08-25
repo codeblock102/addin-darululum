@@ -78,16 +78,15 @@ export default function Index() {
       if (isAdmin) {
         console.log("User is admin based on metadata, redirecting");
         localStorage.setItem("userRole", "admin");
-        navigate("/admin");
+        navigate("/dashboard");
         clearTimeout(timeoutId);
         return;
       }
-
       // Try to redirect based on local storage role if available
       const role = localStorage.getItem("userRole");
       if (role === "admin") {
         console.log("Found admin role in localStorage, redirecting");
-        navigate("/admin");
+        navigate("/dashboard");
         clearTimeout(timeoutId);
         return;
       } else if (role === "teacher") {
