@@ -146,7 +146,7 @@ const Auth = () => {
         console.error("Error fetching profile role:", profileError.message);
       } else if (profileRow?.role === "admin") {
         toast({ title: "Login Successful", description: "Welcome back, Admin! Redirecting..." });
-        navigate("/admin");
+        navigate("/dashboard");
         return;
       } else if (profileRow?.role === "teacher") {
         toast({ title: "Login Successful", description: "Welcome back, Teacher! Redirecting..." });
