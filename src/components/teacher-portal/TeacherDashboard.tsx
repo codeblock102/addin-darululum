@@ -9,18 +9,25 @@ export const TeacherDashboard = (
   { teacher, isAdmin = false }: TeacherDashboardProps & { isAdmin?: boolean },
 ) => {
   const { activeTab } = useActiveTab();
+  const teacherId = teacher?.id;
   const { data: classes, isLoading: isLoadingClasses } = useTeacherClasses(
-    teacher.id,
+    teacherId || "",
   );
-  useTeacherSummary(teacher.id);
+  if (teacherId) {
+    useTeacherSummary(teacherId);
+  }
 
   return (
     <div className="space-y-6 animate-fadeIn">
-      <DashboardHeader
-        teacher={teacher}
-        classes={classes}
-        isLoadingClasses={isLoadingClasses}
-      />
+      {teacher ? (
+        <DashboardHeader
+          teacher={teacher}
+          classes={classes}
+          isLoadingClasses={isLoadingClasses}
+        />
+      ) : (
+        <div className="p-4 text-sm text-gray-600">Loading teacher...</div>
+      )}
 
       {
         /* <TeacherTabs
@@ -30,12 +37,14 @@ export const TeacherDashboard = (
       /> */
       }
 
-      <DashboardContent
-        activeTab={activeTab}
-        teacherId={teacher.id}
-        teacherName={teacher.name}
-        isAdmin={isAdmin}
-      />
+      {teacher ? (
+        <DashboardContent
+          activeTab={activeTab}
+          teacherId={teacher.id}
+          teacherName={teacher.name}
+          isAdmin={isAdmin}
+        />
+      ) : null}
     </div>
   );
 };
