@@ -15,7 +15,8 @@ import {
   seedStudentsTable,
 } from "@/utils/seedDatabase.ts";
 import { useToast } from "@/hooks/use-toast.ts";
-import { Loader2, Info, CheckCircle, XCircle } from "lucide-react";
+import { Loader2, Info, CheckCircle, XCircle, ArrowLeft } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 /**
  * @function DatabaseSeeder
@@ -27,6 +28,7 @@ export default function DatabaseSeeder() {
   const [isLoading, setIsLoading] = useState(false);
   const [teacherId] = useState(""); // Replace with actual teacher ID when available
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   /**
    * @function handleSeedDatabase
@@ -88,6 +90,18 @@ export default function DatabaseSeeder() {
 
   return (
     <div className="bg-white p-8 rounded-lg shadow-md max-w-2xl mx-auto">
+      {/* Back Button */}
+      <div className="flex items-center gap-4 mb-6">
+        <Button
+          variant="outline"
+          onClick={() => navigate("/dashboard")}
+          className="flex items-center gap-2 text-[hsl(142.8,64.2%,24.1%)] border-[hsl(142.8,64.2%,24.1%)] hover:bg-[hsl(142.8,64.2%,24.1%)] hover:text-white transition-all duration-200"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Back to Dashboard
+        </Button>
+      </div>
+
       <div className="flex items-center mb-6">
         <div className="bg-blue-500 text-white rounded-full p-3 mr-4">
           <Info className="h-6 w-6" />
