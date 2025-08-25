@@ -39,6 +39,8 @@ import {
   Loader2,
   LockKeyhole,
   Mail,
+  Sparkles,
+  Shield,
 } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth.ts";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert.tsx";
@@ -212,121 +214,171 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 to-slate-800 p-4">
-      <Card className="w-full max-w-md shadow-2xl bg-slate-800 border-slate-700 text-white">
-        <CardHeader className="text-center">
-          <img
-            src="/logo.png"
-            alt="Darul Uloom Logo"
-            className="w-20 h-20 mx-auto mb-4 rounded-full"
-          />
-          <CardTitle className="text-3xl font-bold text-sky-400">
-            Dār Al-Ulūm Montréal
-          </CardTitle>
-          <CardDescription className="text-slate-200">
-            Access your dashboard
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {errorMessage && (
-            <Alert
-              variant="destructive"
-              className="mb-4 bg-red-500/10 border-red-500/50 text-red-300"
-            >
-              <AlertTriangle className="h-4 w-4 !text-red-400" />
-              <AlertTitle>Login Failed</AlertTitle>
-              <AlertDescription>{errorMessage}</AlertDescription>
-            </Alert>
-          )}
-          <form onSubmit={handleSignIn} className="space-y-6">
-            <div className="space-y-2">
-              <Label htmlFor="email" className="text-slate-100">Email</Label>
-              <div className="relative">
-                                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-300" />
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="you@example.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="pl-10 bg-slate-700 border-slate-600 text-white placeholder-slate-300 focus:ring-sky-500 focus:border-sky-500"
-                  required
-                  autoComplete="email"
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[hsl(142.8,64.2%,24.1%)] via-[hsl(142.8,64.2%,20%)] to-[hsl(142.8,64.2%,16%)] p-4 relative overflow-hidden">
+      {/* Background Pattern */}
+      <div className="absolute inset-0 opacity-10">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_1px_1px,rgba(255,255,255,0.1)_1px,transparent_0)] bg-[length:20px_20px]"></div>
+      </div>
+      
+      {/* Floating Elements */}
+      <div className="absolute top-20 left-20 w-32 h-32 bg-gradient-to-br from-emerald-400/20 to-teal-400/20 rounded-full blur-3xl animate-pulse"></div>
+      <div className="absolute bottom-20 right-20 w-40 h-40 bg-gradient-to-br from-cyan-400/20 to-blue-400/20 rounded-full blur-3xl animate-pulse delay-1000"></div>
+      
+      <div className="relative z-10 w-full max-w-md">
+        {/* Premium Card */}
+        <Card className="backdrop-blur-xl bg-white/95 shadow-2xl border-0 rounded-3xl overflow-hidden">
+          {/* Header with gradient */}
+          <div className="bg-gradient-to-r from-[hsl(142.8,64.2%,24.1%)] to-[hsl(142.8,64.2%,28%)] p-8 text-center relative">
+            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-emerald-400 via-teal-400 to-cyan-400"></div>
+            
+            {/* Logo Container */}
+            <div className="relative mb-6">
+              <div className="w-24 h-24 mx-auto bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm border border-white/30">
+                <img
+                  src="/logo.png"
+                  alt="Dār Al-Ulūm Montréal Logo"
+                  className="w-16 h-16 rounded-full"
                 />
               </div>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="password" className="text-slate-100">
-                Password
-              </Label>
-              <div className="relative">
-                <LockKeyhole className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-300" />
-                <Input
-                  id="password"
-                  type={showPassword ? "text" : "password"}
-                  placeholder="••••••••"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="pl-10 pr-10 bg-slate-700 border-slate-600 text-white placeholder-slate-300 focus:ring-sky-500 focus:border-sky-500"
-                  required
-                  autoComplete="current-password"
-                />
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  className="absolute right-1 top-1/2 -translate-y-1/2 h-7 px-3 text-slate-300 hover:text-sky-400"
-                  onClick={() => setShowPassword(!showPassword)}
-                  aria-label={showPassword ? "Hide password" : "Show password"}
-                >
-                  {showPassword
-                    ? <EyeOff className="h-5 w-5" />
-                    : <Eye className="h-5 w-5" />}
-                </Button>
+              <div className="absolute -top-2 -right-2 w-8 h-8 bg-gradient-to-r from-emerald-400 to-teal-400 rounded-full flex items-center justify-center">
+                <Sparkles className="w-4 h-4 text-white" />
               </div>
             </div>
-            <Button
-              type="submit"
-              className="w-full bg-sky-500 hover:bg-sky-600 text-white font-semibold py-3 transition-colors duration-150 ease-in-out"
-              disabled={isLoading}
-            >
-              {isLoading
-                ? (
-                  <>
-                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                    Signing In...
-                  </>
-                )
-                : (
-                  "Sign In"
-                )}
-            </Button>
-            <div className="flex items-center justify-between">
-              <button
-                type="button"
-                className="text-sm text-sky-400 hover:underline"
-                onClick={handleForgotPassword}
+            
+            <CardTitle className="text-3xl font-bold text-white mb-2">
+              Dār Al-Ulūm Montréal
+            </CardTitle>
+            <CardDescription className="text-emerald-100/90 text-lg font-medium">
+              Welcome to Excellence
+            </CardDescription>
+            <p className="text-emerald-200/70 text-sm mt-2">
+              Secure access to your educational portal
+            </p>
+          </div>
+
+          <CardContent className="p-8">
+            {errorMessage && (
+              <Alert
+                variant="destructive"
+                className="mb-6 bg-red-50 border-red-200 text-red-800 rounded-xl"
               >
-                Forgot password?
-              </button>
+                <AlertTriangle className="h-4 w-4 text-red-600" />
+                <AlertTitle className="font-semibold">Authentication Error</AlertTitle>
+                <AlertDescription className="text-sm">{errorMessage}</AlertDescription>
+              </Alert>
+            )}
+            
+            <form onSubmit={handleSignIn} className="space-y-6">
+              <div className="space-y-3">
+                <Label htmlFor="email" className="text-gray-700 font-semibold text-sm">
+                  Email Address
+                </Label>
+                <div className="relative group">
+                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                    <Mail className="h-5 w-5 text-gray-400 group-focus-within:text-[hsl(142.8,64.2%,24.1%)] transition-colors duration-200" />
+                  </div>
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="Enter your email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="pl-12 pr-4 h-12 bg-gray-50 border-gray-200 text-gray-900 placeholder-gray-500 focus:ring-2 focus:ring-[hsl(142.8,64.2%,24.1%)] focus:border-[hsl(142.8,64.2%,24.1%)] transition-all duration-200 rounded-xl"
+                    required
+                    autoComplete="email"
+                  />
+                </div>
+              </div>
+              
+              <div className="space-y-3">
+                <Label htmlFor="password" className="text-gray-700 font-semibold text-sm">
+                  Password
+                </Label>
+                <div className="relative group">
+                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                    <LockKeyhole className="h-5 w-5 text-gray-400 group-focus-within:text-[hsl(142.8,64.2%,24.1%)] transition-colors duration-200" />
+                  </div>
+                  <Input
+                    id="password"
+                    type={showPassword ? "text" : "password"}
+                    placeholder="Enter your password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="pl-12 pr-12 h-12 bg-gray-50 border-gray-200 text-gray-900 placeholder-gray-500 focus:ring-2 focus:ring-[hsl(142.8,64.2%,24.1%)] focus:border-[hsl(142.8,64.2%,24.1%)] transition-all duration-200 rounded-xl"
+                    required
+                    autoComplete="current-password"
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8 p-0 text-gray-400 hover:text-[hsl(142.8,64.2%,24.1%)] hover:bg-gray-100 rounded-lg transition-all duration-200"
+                    onClick={() => setShowPassword(!showPassword)}
+                    aria-label={showPassword ? "Hide password" : "Show password"}
+                  >
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </Button>
+                </div>
+              </div>
+
+              {/* Forgot Password Link */}
+              <div className="flex justify-end">
+                <button
+                  type="button"
+                  className="text-sm text-[hsl(142.8,64.2%,24.1%)] hover:text-[hsl(142.8,64.2%,32%)] font-medium transition-colors duration-200"
+                  onClick={handleForgotPassword}
+                >
+                  Forgot your password?
+                </button>
+              </div>
+
+              {/* Sign In Button */}
+              <Button
+                type="submit"
+                className="w-full h-12 bg-gradient-to-r from-[hsl(142.8,64.2%,24.1%)] to-[hsl(142.8,64.2%,28%)] hover:from-[hsl(142.8,64.2%,28%)] hover:to-[hsl(142.8,64.2%,32%)] text-white font-semibold text-lg rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                disabled={isLoading}
+              >
+                {isLoading ? (
+                  <>
+                    <Loader2 className="mr-3 h-5 w-5 animate-spin" />
+                    Authenticating...
+                  </>
+                ) : (
+                  <>
+                    <Shield className="mr-3 h-5 w-5" />
+                    Sign In
+                  </>
+                )}
+              </Button>
+            </form>
+          </CardContent>
+
+          {/* Footer */}
+          <CardFooter className="p-6 bg-gray-50 border-t border-gray-100">
+            <div className="w-full text-center space-y-3">
+              <div className="flex items-center justify-center space-x-2 text-gray-500">
+                <div className="w-2 h-2 bg-emerald-400 rounded-full"></div>
+                <span className="text-xs font-medium">Secure Connection</span>
+                <div className="w-2 h-2 bg-emerald-400 rounded-full"></div>
+              </div>
+              
+              <p className="text-xs text-gray-500">
+                &copy; {new Date().getFullYear()} Dār Al-Ulūm Montréal. All rights reserved.
+              </p>
+              
+              <p className="text-xs text-gray-500">
+                Need assistance?{" "}
+                <a
+                  href="mailto:support@darululum-montreal.com"
+                  className="text-[hsl(142.8,64.2%,24.1%)] hover:text-[hsl(142.8,64.2%,32%)] font-medium transition-colors duration-200"
+                >
+                  Contact Support
+                </a>
+              </p>
             </div>
-          </form>
-        </CardContent>
-        <CardFooter className="flex flex-col items-center space-y-2 pt-6">
-          <p className="text-xs text-slate-300">
-            &copy; {new Date().getFullYear()} Dār Al-Ulūm Montréal. All rights reserved.
-          </p>
-          <p className="text-xs text-slate-300">
-            Need help?{" "}
-            <a
-              href="mailto:support@example.com"
-              className="text-sky-400 hover:underline"
-            >
-              Contact Support
-            </a>
-          </p>
-        </CardFooter>
-      </Card>
+          </CardFooter>
+        </Card>
+      </div>
     </div>
   );
 };

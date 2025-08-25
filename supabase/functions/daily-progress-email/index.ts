@@ -346,7 +346,7 @@ serve(async (req: Request) => {
                       Report generated ${triggerSource === 'scheduled' ? 'automatically' : 'manually'} at ${new Date(timestamp).toLocaleString()}
                   </div>
                   <p>Thank you,</p>
-                  <p><strong>Darul Uloom</strong></p>
+                  <p><strong>Dār Al-Ulūm Montréal</strong></p>
               </div>
               <div class="footer">
                   <p>This is an automated email.</p>
@@ -361,7 +361,7 @@ serve(async (req: Request) => {
     } else {
       try {
         await resend.emails.send({
-          from: `Darul Uloom <${RESEND_FROM_EMAIL}>`,
+          from: `Dār Al-Ulūm Montréal <${RESEND_FROM_EMAIL}>`,
           to: ADMIN_EMAILS,
           subject: `Daily Student Progress Report - ${reportDate}`,
           html: principalEmailHtml,
