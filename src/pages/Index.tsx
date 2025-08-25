@@ -82,7 +82,6 @@ export default function Index() {
         clearTimeout(timeoutId);
         return;
       }
-
       // Try to redirect based on local storage role if available
       const role = localStorage.getItem("userRole");
       if (role === "admin") {

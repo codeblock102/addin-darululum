@@ -31,7 +31,9 @@ export const DashboardHeader = (
               <div className="relative">
                 <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-gradient-to-br from-[hsl(142.8,64.2%,24.1%)] to-[hsl(142.8,64.2%,32%)] flex items-center justify-center shadow-lg border-2 border-white/20">
                   <span className="text-xl sm:text-2xl font-bold text-white">
-                    {teacher.name.substring(0, 2).toUpperCase()}
+                    {((teacher?.name && teacher.name.trim().length > 0)
+                      ? teacher.name
+                      : (teacher?.email || "??")).substring(0, 2).toUpperCase()}
                   </span>
                 </div>
                 <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-emerald-400 rounded-full border-2 border-white shadow-sm flex items-center justify-center">
