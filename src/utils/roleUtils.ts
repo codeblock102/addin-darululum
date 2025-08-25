@@ -21,21 +21,38 @@ export const hasPermission = async (
 ): Promise<boolean> => {
   try {
     const { data: { session } } = await supabase.auth.getSession();
-
     if (!session) return false;
 
-    // Call the Supabase RPC function to check permissions
-    const { data, error } = await supabase.rpc("has_permission", {
-      p_user_id: session.user.id,
-      required_permission: requiredPermission,
-    });
-
-    if (error) {
-      console.error("Permission check error:", error);
-      return false;
+    // Determine role using auth metadata first, then profiles.role
+    let role: string | null = session.user.user_metadata?.role ?? null;
+    if (!role) {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("role")
+        .eq("id", session.user.id)
+        .maybeSingle();
+      role = profile?.role ?? null;
     }
 
-    return !!data;
+    if (!role) return false;
+
+    // Admins have all permissions
+    if (role === "admin") return true;
+
+    // Define teacher permissions
+    const teacherPermissions: Set<RolePermission> = new Set([
+      "view_reports",
+      "manage_students",
+      "manage_schedules",
+      "manage_classes",
+    ]);
+
+    if (role === "teacher") {
+      return teacherPermissions.has(requiredPermission);
+    }
+
+    // Parents and others currently have no special permissions
+    return false;
   } catch (error) {
     console.error("Unexpected error checking permission:", error);
     return false;
@@ -50,64 +67,46 @@ export const getUserPermissions = async (
 ): Promise<RolePermission[]> => {
   try {
     const { data: { session } } = await supabase.auth.getSession();
-
     if (!session) return [];
 
-    // Use provided userId or get from session
     const userIdToUse = userId || session.user.id;
 
-    // First get the user's role ID
-    const { data: roleIdData, error: roleIdError } = await supabase.rpc(
-      "get_user_role_id",
-      { p_user_id: userIdToUse },
-    );
-
-    if (roleIdError) {
-      console.error("Error getting user role ID:", roleIdError);
-      return [];
+    // Determine role using auth metadata first, then profiles.role
+    let role: string | null = session.user.user_metadata?.role ?? null;
+    if (!role || userIdToUse !== session.user.id) {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("role")
+        .eq("id", userIdToUse)
+        .maybeSingle();
+      role = profile?.role ?? role;
     }
 
-    // If no role ID found, return empty permissions array
-    if (!roleIdData) {
-      console.log("No role assigned for user");
-      return [];
+    if (!role) return [];
+
+    if (role === "admin") {
+      return [
+        "view_reports",
+        "export_reports",
+        "manage_students",
+        "manage_teachers",
+        "manage_schedules",
+        "manage_roles",
+        "bulk_actions",
+        "manage_classes",
+      ];
     }
 
-    // Then use the role ID to get permissions
-    const { data, error } = await supabase
-      .from("roles")
-      .select(`
-        id, 
-        name,
-        role_permissions (
-          permission
-        )
-      `)
-      .eq("id", roleIdData);
-
-    if (error) {
-      console.error("Error fetching user permissions:", error);
-      return [];
+    if (role === "teacher") {
+      return [
+        "view_reports",
+        "manage_students",
+        "manage_schedules",
+        "manage_classes",
+      ];
     }
 
-    // Extract the permissions from the data
-    if (!data || data.length === 0) return [];
-
-    // Extract permissions from the nested query result
-    const permissions: RolePermission[] = [];
-    data.forEach((role) => {
-      if (role.role_permissions && Array.isArray(role.role_permissions)) {
-        role.role_permissions.forEach(
-          (rp: { permission: RolePermission | null }) => {
-            if (rp.permission) {
-              permissions.push(rp.permission);
-            }
-          },
-        );
-      }
-    });
-
-    return permissions;
+    return [];
   } catch (error) {
     console.error("Unexpected error fetching permissions:", error);
     return [];

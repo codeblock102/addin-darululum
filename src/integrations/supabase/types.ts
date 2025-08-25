@@ -613,35 +613,7 @@ export type Database = {
         }
         Relationships: []
       }
-      user_roles: {
-        Row: {
-          created_at: string | null
-          id: string
-          role_id: string
-          user_id: string
-        }
-        Insert: {
-          created_at?: string | null
-          id?: string
-          role_id: string
-          user_id: string
-        }
-        Update: {
-          created_at?: string | null
-          id?: string
-          role_id?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "user_roles_role_id_fkey"
-            columns: ["role_id"]
-            isOneToOne: false
-            referencedRelation: "roles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
+      
     }
     Views: {
       [_ in never]: never
@@ -650,23 +622,6 @@ export type Database = {
       call_edge_daily_report: {
         Args: Record<PropertyKey, never>
         Returns: undefined
-      }
-      create_user_role: {
-        Args: { p_user_id: string; p_role_id: string }
-        Returns: undefined
-      }
-      get_user_role_id: {
-        Args: { p_user_id: string }
-        Returns: string
-      }
-      has_permission: {
-        Args:
-          | { p_user_id: string; required_permission: string }
-          | {
-              user_id: string
-              required_permission: Database["public"]["Enums"]["role_permission"]
-            }
-        Returns: boolean
       }
     }
     Enums: {
