@@ -1,34 +1,14 @@
 import React from 'react';
-import { NavLink, Outlet, useNavigate } from 'react-router-dom';
-import { Shield, Database, UserPlus, Users, ArrowLeft, Home } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { NavLink, Outlet } from 'react-router-dom';
+import { Shield, Database, UserPlus, Users } from 'lucide-react';
 
 const AdminLayout = () => {
-  const navigate = useNavigate();
-
-  const handleBackToDashboard = () => {
-    navigate("/dashboard");
-  };
-
   return (
     <div className="flex min-h-screen bg-gray-100 font-sans">
       <aside className="w-64 bg-gray-800 text-white flex flex-col">
         <div className="h-16 flex items-center justify-center bg-gray-900">
           <h1 className="text-xl font-bold">Admin Panel</h1>
         </div>
-        
-        {/* Back to Dashboard Button */}
-        <div className="p-4 border-b border-gray-700">
-          <Button
-            variant="outline"
-            onClick={handleBackToDashboard}
-            className="w-full bg-gray-700 text-white border-gray-600 hover:bg-gray-600 hover:text-white transition-all duration-200"
-          >
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to Dashboard
-          </Button>
-        </div>
-        
         <nav className="flex-1 px-4 py-6 space-y-2">
           <NavLink
             to="/admin/setup"

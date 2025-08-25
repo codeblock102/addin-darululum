@@ -1,31 +1,13 @@
 import { DevAdminCreator } from "@/components/admin/DevAdminCreator.tsx";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card.tsx";
-import { Shield, Settings, AlertTriangle, ArrowLeft } from "lucide-react";
+import { Shield, Settings, AlertTriangle } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert.tsx";
-import { Button } from "@/components/ui/button.tsx";
-import { useNavigate } from "react-router-dom";
 
 export default function DevAdminManagement() {
-  const navigate = useNavigate();
-
-  const handleBackToDashboard = () => {
-    navigate("/dashboard");
-  };
-
   return (
     <div className="container mx-auto px-4 py-6 max-w-7xl">
       {/* Header */}
       <div className="mb-8">
-        <div className="flex items-center gap-4 mb-4">
-          <Button
-            variant="outline"
-            onClick={handleBackToDashboard}
-            className="flex items-center gap-2 text-[hsl(142.8,64.2%,24.1%)] border-[hsl(142.8,64.2%,24.1%)] hover:bg-[hsl(142.8,64.2%,24.1%)] hover:text-white transition-all duration-200"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Back to Dashboard
-          </Button>
-        </div>
         <div className="flex items-center gap-3 mb-2">
           <div className="p-2 bg-blue-100 rounded-lg">
             <Shield className="h-6 w-6 text-blue-600" />
