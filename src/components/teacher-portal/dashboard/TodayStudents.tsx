@@ -2,23 +2,32 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Calendar, Users } from "lucide-react";
 
 interface TodayStudentsProps {
-  teacherId: string;
+  teacherId?: string;
 }
 
 export const TodayStudents = ({ teacherId }: TodayStudentsProps) => {
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Calendar className="h-5 w-5" />
+    <Card className="border border-gray-200 shadow-sm bg-white hover:shadow-md transition-all duration-200">
+      <CardHeader className="pb-3">
+        <CardTitle className="flex items-center gap-3 text-lg font-semibold text-gray-800">
+          <div className="p-2 bg-blue-100 rounded-lg">
+            <Calendar className="h-5 w-5 text-blue-600" />
+          </div>
           Today's Students
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="flex items-center justify-center h-32 text-muted-foreground">
-          <div className="text-center">
-            <Users className="h-8 w-8 mx-auto mb-2 opacity-50" />
-            <p>No classes scheduled for today</p>
+        <div className="text-center p-6">
+          <div className="flex justify-center mb-3">
+            <div className="p-3 bg-gray-100 rounded-full">
+              <Users className="h-8 w-8 text-gray-500" />
+            </div>
+          </div>
+          <div className="text-sm text-gray-600 mb-1">
+            No classes scheduled for today
+          </div>
+          <div className="text-xs text-gray-500">
+            Check back tomorrow for updates
           </div>
         </div>
       </CardContent>

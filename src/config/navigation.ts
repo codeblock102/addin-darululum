@@ -19,6 +19,7 @@ import {
   Settings,
   Users,
   UserCircle2,
+  UserCheck,
 } from "lucide-react"; // Simplified imports based on usage
 import { NavItem } from "@/types/navigation.ts";
 
@@ -64,6 +65,12 @@ export const adminNavItems: NavItem[] = [
     label: "Attendance",
     icon: FileText,
     description: "Track attendance records",
+  },
+  {
+    href: "/admin/parent-accounts",
+    label: "Parent Accounts",
+    icon: UserCheck,
+    description: "Manage parent accounts",
   },
   {
     href: "/settings",

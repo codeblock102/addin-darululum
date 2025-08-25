@@ -1,42 +1,30 @@
-import { StudentSearch } from "./StudentSearch.tsx";
-import { QuickActions } from "./QuickActions.tsx";
-import { TodayStudents } from "./TodayStudents.tsx";
-import { RecentActivity } from "./RecentActivity.tsx";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { StudentSearch } from "./StudentSearch";
+import { QuickActions } from "./QuickActions";
+import { TodayStudents } from "./TodayStudents";
+import { RecentActivity } from "./RecentActivity";
 
 interface DashboardOverviewProps {
-  teacherId: string;
+  teacherId?: string;
   isAdmin?: boolean;
 }
 
-export const DashboardOverview = (
-  { teacherId, isAdmin }: DashboardOverviewProps,
-) => {
+export const DashboardOverview = ({ teacherId, isAdmin = false }: DashboardOverviewProps) => {
   return (
-    <div className="space-y-4 sm:space-y-6 px-1">
-      {/* Mobile-first grid layout */}
-      <div className="grid grid-cols-1 gap-4 sm:gap-6">
-        {/* Student Search - Full width on mobile, half on larger screens */}
-        <div className="order-1">
-          <StudentSearch teacherId={teacherId} isAdmin={isAdmin} />
-        </div>
+    <div className="space-y-6">
+      {/* Main content grid - mobile first */}
+      <div className="grid grid-cols-1 gap-6">
+        {/* Student Search - Full width on mobile */}
+        <StudentSearch teacherId={teacherId} isAdmin={isAdmin} />
         
-        {/* Quick Actions - Full width on mobile, half on larger screens */}
-        <div className="order-2">
-          <QuickActions teacherId={teacherId} />
-        </div>
+        {/* Quick Actions - Full width on mobile */}
+        <QuickActions teacherId={teacherId} isAdmin={isAdmin} />
       </div>
 
-      {/* Second row - Full width on mobile for better mobile experience */}
-      <div className="grid grid-cols-1 gap-4 sm:gap-6">
-        {/* Today's Students - Full width on mobile */}
-        <div className="order-3">
-          <TodayStudents teacherId={teacherId} />
-        </div>
-        
-        {/* Recent Activity - Full width on mobile */}
-        <div className="order-4">
-          <RecentActivity teacherId={teacherId} />
-        </div>
+      {/* Bottom section - Today's Students & Recent Activity */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+        <TodayStudents teacherId={teacherId} />
+        <RecentActivity teacherId={teacherId} />
       </div>
     </div>
   );
