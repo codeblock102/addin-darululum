@@ -18,9 +18,9 @@ export const BulkActions = ({ form, selectedStudents, onClear, isSubmitting, onS
   };
   
   return (
-    <div className="p-4 border rounded-lg bg-slate-50 dark:bg-slate-800 space-y-4">
+    <div className="p-4 border border-gray-200 rounded-lg bg-gray-50 space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="font-medium">{selectedStudents.size} students selected</h3>
+        <h3 className="font-medium text-black">{selectedStudents.size} students selected</h3>
         <Button variant="ghost" onClick={onClear} disabled={isSubmitting}>Clear selection</Button>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

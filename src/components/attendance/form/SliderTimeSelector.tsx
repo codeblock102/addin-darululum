@@ -45,16 +45,8 @@ export function SliderTimeSelector({ form }: SliderTimeSelectorProps) {
                   {currentHour.toString().padStart(2, "0")}:{currentMinute
                     .toString().padStart(2, "0")}
                 </div>
-                <div className="text-sm text-gray-600 dark:text-gray-400">
-                  {new Date(
-                    `2000-01-01T${currentHour.toString().padStart(2, "0")}:${
-                      currentMinute.toString().padStart(2, "0")
-                    }`,
-                  ).toLocaleTimeString("en-US", {
-                    hour: "numeric",
-                    minute: "2-digit",
-                    hour12: true,
-                  })}
+                <div className="text-sm text-black">
+                  Select the time for this attendance record
                 </div>
               </div>
 

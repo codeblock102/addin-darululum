@@ -10,6 +10,7 @@ import { Button } from '../../ui/button.tsx';
 import { Card, CardContent, CardHeader, CardTitle } from '../../ui/card.tsx';
 import { Checkbox } from '../../ui/checkbox.tsx';
 import { Input } from '../../ui/input.tsx';
+import { Label } from '../../ui/label.tsx';
 
 type Student = Database['public']['Tables']['students']['Row'];
 
@@ -106,13 +107,13 @@ export const StudentGrid = ({ user, selectedStudents, onStudentSelect, onSelectA
 
   if (isError) {
     console.error(error);
-    return <div className="flex justify-center items-center h-48 text-red-500"><AlertCircle className="mr-2"/> Error loading students. See console for details.</div>;
+    return <div className="flex justify-center items-center h-48 text-black"><AlertCircle className="mr-2"/> Error loading students. See console for details.</div>;
   }
 
   if (!user) {
     return (
       <Card className="flex items-center justify-center h-48">
-        <p className="text-slate-500">Could not identify user to fetch students.</p>
+        <p className="text-black">Could not identify user to fetch students.</p>
       </Card>
     );
   }
@@ -121,7 +122,7 @@ export const StudentGrid = ({ user, selectedStudents, onStudentSelect, onSelectA
     <Card>
       <CardHeader>
         <div className="flex justify-between items-center mb-4">
-          <CardTitle>Select Students</CardTitle>
+          <CardTitle className="text-black">Select Students</CardTitle>
           <Button variant="outline" onClick={() => onSelectAll(studentList)}>
             {selectedStudents.size === filteredStudents.length && filteredStudents.length > 0 ? 'Deselect All' : 'Select All'}
           </Button>
@@ -130,6 +131,7 @@ export const StudentGrid = ({ user, selectedStudents, onStudentSelect, onSelectA
           placeholder="Search students..."
           value={searchQuery}
           onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchQuery(e.target.value)}
+          className="text-black"
         />
       </CardHeader>
       <CardContent>
@@ -142,22 +144,31 @@ export const StudentGrid = ({ user, selectedStudents, onStudentSelect, onSelectA
                 className={`w-full p-3 border rounded-lg cursor-pointer transition-all flex items-center space-x-3 ${
                   selectedStudents.has(student.id)
                     ? 'bg-blue-100 dark:bg-blue-900 border-blue-400'
-                    : 'bg-slate-50 dark:bg-slate-800'
+                    : 'bg-slate-50 border-slate-200'
                 }`}
               >
-                <Checkbox
-                  checked={selectedStudents.has(student.id)}
-                  onCheckedChange={() => onStudentSelect(student.id)}
-                />
-                <span className="font-medium text-sm flex-1 min-w-0 break-words">
-                  {student.name}
-                </span>
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id={student.id}
+                    checked={selectedStudents.has(student.id)}
+                    onCheckedChange={(checked) => {
+                      if (checked) {
+                        onStudentSelect(student.id);
+                      } else {
+                        onStudentSelect(''); // Deselect all if unchecked
+                      }
+                    }}
+                  />
+                  <Label htmlFor={student.id} className="text-black font-medium cursor-pointer">
+                    {student.name}
+                  </Label>
+                </div>
               </div>
             ))}
           </div>
         ) : (
           <div className="flex items-center justify-center h-48">
-            <p className="text-slate-500">
+            <p className="text-black">
               {searchQuery ? `No students found for "${searchQuery}".` : 'No students found.'}
             </p>
           </div>

@@ -34,8 +34,8 @@ export function AttendanceFormHeader() {
           </TooltipProvider>
         </div>
       </div>
-      <CardDescription className="text-gray-600 dark:text-gray-300">
-        Record attendance for {format(today, "PPP")}
+      <CardDescription className="text-black">
+        Record attendance for selected students with custom timing and reasons
       </CardDescription>
     </CardHeader>
   );

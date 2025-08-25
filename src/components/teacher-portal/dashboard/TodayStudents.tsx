@@ -23,10 +23,10 @@ export const TodayStudents = ({ teacherId }: TodayStudentsProps) => {
               <Users className="h-8 w-8 text-gray-500" />
             </div>
           </div>
-          <div className="text-sm text-gray-600 mb-1">
+          <div className="text-sm text-black mb-1">
             No classes scheduled for today
           </div>
-          <div className="text-xs text-gray-500">
+          <div className="text-xs text-black">
             Check back tomorrow for updates
           </div>
         </div>

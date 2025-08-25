@@ -29,8 +29,8 @@ export function AttendanceTableHeader() {
           </Tooltip>
         </TooltipProvider>
       </div>
-      <CardDescription className="text-gray-600 dark:text-gray-300">
-        View and filter attendance records for individual students
+      <CardDescription className="text-black">
+        View and manage attendance records for all students
       </CardDescription>
     </CardHeader>
   );
