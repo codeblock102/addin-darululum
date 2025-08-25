@@ -3,15 +3,16 @@ import { TrendingUp, Activity } from "lucide-react";
 
 interface RecentActivityProps {
   teacherId?: string;
+  isAdmin?: boolean;
 }
 
-export const RecentActivity = ({ teacherId }: RecentActivityProps) => {
+export const RecentActivity = ({ teacherId, isAdmin = false }: RecentActivityProps) => {
   return (
     <Card className="border border-gray-200 shadow-sm bg-white hover:shadow-md transition-all duration-200">
-      <CardHeader className="pb-3">
-        <CardTitle className="flex items-center gap-3 text-lg font-semibold text-gray-800">
-          <div className="p-2 bg-green-100 rounded-lg">
-            <TrendingUp className="h-5 w-5 text-green-600" />
+      <CardHeader className={`pb-3 ${isAdmin ? 'pb-2' : 'pb-3'}`}>
+        <CardTitle className={`flex items-center gap-3 font-semibold text-gray-800 ${isAdmin ? 'text-base' : 'text-lg'}`}>
+          <div className={`p-2 bg-green-100 rounded-lg ${isAdmin ? 'p-1.5' : 'p-2'}`}>
+            <TrendingUp className={`text-green-600 ${isAdmin ? 'h-4 w-4' : 'h-5 w-5'}`} />
           </div>
           Recent Activity
         </CardTitle>

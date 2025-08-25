@@ -29,7 +29,7 @@ export function DateSelector({ form }: DateSelectorProps) {
       name="date"
       render={({ field }) => (
         <FormItem className="flex flex-col">
-          <FormLabel className="text-slate-700 dark:text-slate-300 font-medium">
+          <FormLabel className="text-black font-medium">
             Date
           </FormLabel>
           <Popover>
@@ -39,7 +39,7 @@ export function DateSelector({ form }: DateSelectorProps) {
                   variant="outline"
                   className={cn(
                     "w-full pl-3 text-left font-normal border-gray-300 bg-white hover:bg-gray-50 focus:ring-2 focus:ring-[hsl(142.8,64.2%,24.1%)] focus:border-[hsl(142.8,64.2%,24.1%)] text-black",
-                    !field.value && "text-gray-500",
+                    !field.value && "text-black",
                   )}
                 >
                   {field.value

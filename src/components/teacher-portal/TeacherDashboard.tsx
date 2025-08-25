@@ -20,6 +20,24 @@ export const TeacherDashboard = (
   );
   useTeacherSummary(teacher.id);
 
+  // For admin users, render without DashboardLayout to avoid duplication
+  if (isAdmin) {
+    return (
+      <div className="min-h-screen bg-gray-50 p-4 sm:p-6 md:p-8">
+        <div className="max-w-7xl mx-auto space-y-6">
+          <DashboardHeader 
+            teacher={teacher} 
+            classes={classes} 
+            isLoadingClasses={isLoadingClasses}
+            isAdmin={isAdmin}
+          />
+          <DashboardOverview teacherId={teacher.id} isAdmin={isAdmin} />
+        </div>
+      </div>
+    );
+  }
+
+  // For regular teachers, use the full DashboardLayout
   return (
     <DashboardLayout>
       <div className="space-y-6">

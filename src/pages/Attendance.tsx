@@ -196,10 +196,10 @@ const Attendance = () => {
                 >
                   <div className="space-y-4 sm:space-y-6">
                     <div className="text-center space-y-1 sm:space-y-2">
-                      <h3 className="text-lg sm:text-xl font-semibold text-slate-900 dark:text-slate-100">
+                      <h3 className="text-lg sm:text-xl font-semibold text-black">
                         Record Student Attendance
                       </h3>
-                      <p className="text-slate-600 dark:text-slate-400 text-sm sm:text-base">
+                      <p className="text-black text-sm sm:text-base">
                         Select students and set attendance with custom timing
 
                       </p>
@@ -214,10 +214,10 @@ const Attendance = () => {
                 >
                   <div className="space-y-4 sm:space-y-6">
                     <div className="text-center space-y-1 sm:space-y-2">
-                      <h3 className="text-lg sm:text-xl font-semibold text-slate-900 dark:text-slate-100">
+                      <h3 className="text-lg sm:text-xl font-semibold text-black">
                         Attendance History
                       </h3>
-                      <p className="text-slate-600 dark:text-slate-400 text-sm sm:text-base">
+                      <p className="text-black text-sm sm:text-base">
                         View and manage all attendance records
 
                       </p>

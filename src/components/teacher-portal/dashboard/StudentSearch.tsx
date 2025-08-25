@@ -58,12 +58,6 @@ export const StudentSearch = (
       return data;
     },
     enabled: !!teacherId || isAdmin,
-    onSuccess: (data) => {
-      console.log("StudentSearch: Fetched user profile for search:", data);
-    },
-    onError: (error) => {
-      console.error("StudentSearch: Error fetching user profile:", error);
-    },
   });
 
   const { data: students, isLoading: isLoadingStudents } = useQuery({
@@ -91,14 +85,6 @@ export const StudentSearch = (
       return data || [];
     },
     enabled: !!teacherData,
-    onSuccess: (data) => {
-      console.log(
-        `StudentSearch: Fetched ${data?.length || 0} students for search list.`,
-      );
-    },
-    onError: (error) => {
-      console.error("StudentSearch: Error fetching students:", error);
-    },
   });
 
   useEffect(() => {
@@ -120,10 +106,10 @@ export const StudentSearch = (
 
   return (
     <Card className="border border-gray-200 shadow-sm bg-white hover:shadow-md transition-all duration-200">
-      <CardHeader className="pb-3">
-        <CardTitle className="flex items-center gap-3 text-lg font-semibold text-gray-800">
-          <div className="p-2 bg-[hsl(142.8,64.2%,24.1%)]/10 rounded-lg">
-            <Search className="h-5 w-5 text-[hsl(142.8,64.2%,24.1%)]" />
+      <CardHeader className={`pb-3 ${isAdmin ? 'pb-2' : 'pb-3'}`}>
+        <CardTitle className={`flex items-center gap-3 font-semibold text-gray-800 ${isAdmin ? 'text-base' : 'text-lg'}`}>
+          <div className={`p-2 bg-[hsl(142.8,64.2%,24.1%)]/10 rounded-lg ${isAdmin ? 'p-1.5' : 'p-2'}`}>
+            <Search className={`text-[hsl(142.8,64.2%,24.1%)] ${isAdmin ? 'h-4 w-4' : 'h-5 w-5'}`} />
           </div>
           {isAdmin ? "Student Management" : "Student Search"}
         </CardTitle>

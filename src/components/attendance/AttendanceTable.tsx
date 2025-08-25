@@ -68,8 +68,8 @@ export function AttendanceTable() {
       <CardHeader>
         <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
           <div>
-            <CardTitle>Attendance History</CardTitle>
-            <CardDescription>
+            <CardTitle className="text-black">Attendance History</CardTitle>
+            <CardDescription className="text-black">
               View and search past attendance records.
             </CardDescription>
           </div>

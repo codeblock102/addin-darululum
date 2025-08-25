@@ -23,8 +23,8 @@ export const DashboardOverview = ({ teacherId, isAdmin = false }: DashboardOverv
 
       {/* Bottom section - Today's Students & Recent Activity */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-        <TodayStudents teacherId={teacherId} />
-        <RecentActivity teacherId={teacherId} />
+        <TodayStudents teacherId={teacherId} isAdmin={isAdmin} />
+        <RecentActivity teacherId={teacherId} isAdmin={isAdmin} />
       </div>
     </div>
   );
