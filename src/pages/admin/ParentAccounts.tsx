@@ -7,12 +7,9 @@ import { Input } from "@/components/ui/input.tsx";
 import { Label } from "@/components/ui/label.tsx";
 import { useToast } from "@/components/ui/use-toast.ts";
 import { createParentWithAccount, linkParentToStudents } from "@/utils/createParentAccount.ts";
-import { useNavigate } from "react-router-dom";
-import { ArrowLeft } from "lucide-react";
 
 const ParentAccounts = () => {
   const { toast } = useToast();
-  const navigate = useNavigate();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -69,24 +66,8 @@ const ParentAccounts = () => {
     }
   };
 
-  const handleBackToDashboard = () => {
-    navigate("/dashboard");
-  };
-
   return (
     <div className="space-y-6">
-      {/* Back Button */}
-      <div className="flex items-center gap-4">
-        <Button
-          variant="outline"
-          onClick={handleBackToDashboard}
-          className="flex items-center gap-2 text-[hsl(142.8,64.2%,24.1%)] border-[hsl(142.8,64.2%,24.1%)] hover:bg-[hsl(142.8,64.2%,24.1%)] hover:text-white transition-all duration-200"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Back to Dashboard
-        </Button>
-      </div>
-
       <Card>
         <CardHeader>
           <CardTitle>Create Parent Account</CardTitle>

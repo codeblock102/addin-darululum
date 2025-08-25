@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button.tsx";
 import { useToast } from "@/components/ui/use-toast.ts";
-import { Loader2, UserCog, CheckCircle, ArrowLeft } from "lucide-react";
+import { Loader2, UserCog, CheckCircle } from "lucide-react";
 import { setupAdminAccount } from "@/utils/adminUtils.ts";
 import { supabase } from "@/integrations/supabase/client.ts";
 
@@ -41,18 +41,6 @@ export default function SetupAdmin() {
 
   return (
     <div className="bg-white p-8 rounded-lg shadow-md max-w-2xl mx-auto">
-      {/* Back Button */}
-      <div className="flex items-center gap-4 mb-6">
-        <Button
-          variant="outline"
-          onClick={() => navigate("/dashboard")}
-          className="flex items-center gap-2 text-[hsl(142.8,64.2%,24.1%)] border-[hsl(142.8,64.2%,24.1%)] hover:bg-[hsl(142.8,64.2%,24.1%)] hover:text-white transition-all duration-200"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Back to Dashboard
-        </Button>
-      </div>
-
       <div className="flex items-center mb-6">
         <div className="bg-blue-500 text-white rounded-full p-3 mr-4">
           <UserCog className="h-6 w-6" />
