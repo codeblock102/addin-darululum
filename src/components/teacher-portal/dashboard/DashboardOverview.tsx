@@ -1,4 +1,3 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StudentSearch } from "./StudentSearch";
 import { QuickActions } from "./QuickActions";
 import { TodayStudents } from "./TodayStudents";
@@ -16,7 +15,7 @@ export const DashboardOverview = ({ teacherId, isAdmin = false }: DashboardOverv
       <div className="grid grid-cols-1 gap-6">
         {/* Student Search - Full width on mobile */}
         <StudentSearch teacherId={teacherId} isAdmin={isAdmin} />
-        
+
         {/* Quick Actions - Full width on mobile */}
         <QuickActions teacherId={teacherId} isAdmin={isAdmin} />
       </div>

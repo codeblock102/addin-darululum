@@ -197,7 +197,7 @@ const Teachers = () => {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
-        <Loader2 className="w-8 h-8 animate-spin text-amber-500" />
+        <Loader2 className="w-8 h-8 animate-spin text-emerald-600" />
       </div>
     );
   }
@@ -215,7 +215,7 @@ const Teachers = () => {
               </p>
             </div>
             <Button
-              className="bg-[hsl(142.8,64.2%,24.1%)] hover:bg-[hsl(142.8,64.2%,28%)] text-white px-6 py-3 text-base font-medium shadow-sm transition-all duration-200"
+              className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 text-base font-medium shadow-sm transition-all duration-200"
               onClick={handleCreateTeacher}
               disabled={isAdminDataLoading}
             >
@@ -237,10 +237,10 @@ const Teachers = () => {
             className="w-full"
           >
             <div className="border-b border-gray-200 px-8 pt-6">
-              <TabsList className="w-auto bg-gray-50 border border-gray-200 p-1 h-12">
+              <TabsList className="w-auto bg-gray-50 border border-gray-200 p-1 h-12 rounded-lg">
                 <TabsTrigger 
                   value="profiles" 
-                  className="data-[state=active]:bg-white data-[state=active]:text-[hsl(142.8,64.2%,24.1%)] data-[state=active]:shadow-sm transition-all duration-200 px-8"
+                  className="data-[state=active]:bg-white data-[state=active]:text-emerald-700 data-[state=active]:shadow-sm transition-all duration-200 px-8 rounded-md"
                 >
                   Teacher Profiles
                 </TabsTrigger>

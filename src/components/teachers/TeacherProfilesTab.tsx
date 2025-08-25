@@ -32,7 +32,7 @@ export function TeacherProfilesTab(
       </div>
 
       {/* Search Section */}
-      <Card className="border-0 shadow-sm bg-white">
+      <Card className="border border-gray-200 shadow-sm bg-white rounded-xl">
         <CardContent className="p-6">
           <div className="space-y-4">
             <label className="text-sm font-medium text-gray-700">
@@ -42,14 +42,14 @@ export function TeacherProfilesTab(
               placeholder="Search by name, subject, or email..."
               value={searchQuery}
               onChange={setSearchQuery}
-              className="w-full bg-white border-gray-300 focus:ring-2 focus:ring-[hsl(142.8,64.2%,24.1%)] focus:border-[hsl(142.8,64.2%,24.1%)] transition-all duration-200"
+              className="w-full bg-white border-gray-300 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-200"
             />
           </div>
         </CardContent>
       </Card>
 
       {/* Teacher List */}
-      <Card className="border-0 shadow-sm bg-white overflow-hidden">
+      <Card className="border border-gray-200 shadow-sm bg-white overflow-hidden rounded-xl">
         <CardHeader className="bg-gray-50 border-b border-gray-200 px-6 py-4">
           <CardTitle className="text-lg font-semibold text-gray-900 flex items-center gap-2">
             <Users className="h-5 w-5 text-gray-600" />
