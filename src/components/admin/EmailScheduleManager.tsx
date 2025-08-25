@@ -37,6 +37,9 @@ import {
   Loader2
 } from "lucide-react";
 import { format } from "date-fns";
+import { Input } from "@/components/ui/input.tsx";
+import { Label } from "@/components/ui/label.tsx";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select.tsx";
 
 interface EmailLog {
   id: number;
@@ -60,6 +63,9 @@ export const EmailScheduleManager = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [isTestingEmail, setIsTestingEmail] = useState(false);
+  const [time, setTime] = useState<string>("16:30");
+  const [timezone, setTimezone] = useState<string>("America/New_York");
+  const [enabled, setEnabled] = useState<boolean>(true);
 
   // Fetch email logs
   const { data: emailLogs, isLoading: logsLoading } = useQuery({
@@ -91,6 +97,42 @@ export const EmailScheduleManager = () => {
       return data as ScheduledJob[];
     },
     refetchInterval: 60000, // Refresh every minute
+  });
+
+  // Fetch current schedule settings
+  useQuery({
+    queryKey: ["email-schedule-settings"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("app_settings")
+        .select("key, value")
+        .in("key", ["email_schedule_time", "email_timezone", "email_schedule_enabled"]);
+      if (error) throw error;
+      const map = Object.fromEntries((data || []).map((r: any) => [r.key, r.value]));
+      if (map.email_schedule_time) setTime(map.email_schedule_time);
+      if (map.email_timezone) setTimezone(map.email_timezone);
+      if (map.email_schedule_enabled) setEnabled(map.email_schedule_enabled === "true");
+      return map;
+    },
+  });
+
+  const saveScheduleMutation = useMutation({
+    mutationFn: async (payload: { enabled: boolean; time: string; timezone: string }) => {
+      const { error } = await supabase.rpc("set_email_schedule", {
+        p_enabled: payload.enabled,
+        p_time: payload.time,
+        p_timezone: payload.timezone,
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast({ title: "Schedule updated", description: "Daily email time saved and rescheduled." });
+      queryClient.invalidateQueries({ queryKey: ["scheduled-jobs"] });
+      queryClient.invalidateQueries({ queryKey: ["email-schedule-settings"] });
+    },
+    onError: (e: any) => {
+      toast({ title: "Save failed", description: e.message || "Unable to save", variant: "destructive" });
+    },
   });
 
   // Test email function
@@ -171,6 +213,48 @@ export const EmailScheduleManager = () => {
           Refresh
         </Button>
       </div>
+
+      {/* Configure Schedule */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Clock className="h-5 w-5" />
+            Daily Email Time
+          </CardTitle>
+          <CardDescription>Choose the local time and timezone for sending progress emails daily.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 items-end">
+            <div className="space-y-2">
+              <Label htmlFor="email-time">Time (HH:MM)</Label>
+              <Input id="email-time" type="time" value={time} onChange={(e) => setTime(e.target.value)} />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="email-tz">Timezone</Label>
+              <Select value={timezone} onValueChange={setTimezone}>
+                <SelectTrigger id="email-tz"><SelectValue placeholder="Select timezone" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="America/New_York">America/New_York</SelectItem>
+                  <SelectItem value="America/Chicago">America/Chicago</SelectItem>
+                  <SelectItem value="America/Denver">America/Denver</SelectItem>
+                  <SelectItem value="America/Los_Angeles">America/Los_Angeles</SelectItem>
+                  <SelectItem value="Europe/London">Europe/London</SelectItem>
+                  <SelectItem value="Asia/Karachi">Asia/Karachi</SelectItem>
+                  <SelectItem value="Asia/Dubai">Asia/Dubai</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex gap-2">
+              <Button variant={enabled ? "default" : "secondary"} onClick={() => setEnabled((v) => !v)} className="w-32">
+                {enabled ? "Enabled" : "Disabled"}
+              </Button>
+              <Button onClick={() => saveScheduleMutation.mutate({ enabled, time, timezone })}>
+                Save
+              </Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Schedule Status */}
       <Card>

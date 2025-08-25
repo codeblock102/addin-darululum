@@ -108,32 +108,54 @@ serve(async (req: Request) => {
       },
     );
 
-    // Identify invoking user and their madrassah
-    const { data: userData, error: userErr } = await supabaseUser.auth.getUser();
-    if (userErr || !userData?.user) {
-      console.error("Unable to resolve invoking user from token", userErr);
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        status: 401,
+    // Load schedule settings
+    const { data: settingsRows } = await supabaseService
+      .from('app_settings')
+      .select('key, value')
+      .in('key', ['email_schedule_enabled','email_schedule_time','email_timezone']);
+    const settingsMap = new Map<string, string>((settingsRows || []).map((r: any) => [r.key, r.value]));
+    const scheduleEnabled = (settingsMap.get('email_schedule_enabled') ?? 'true') !== 'false';
+    const scheduleTime = settingsMap.get('email_schedule_time') || '21:30';
+    const scheduleTz = settingsMap.get('email_timezone') || 'America/New_York';
+
+    // If scheduled trigger and schedule is disabled, exit early
+    if (triggerSource === 'scheduled' && !scheduleEnabled) {
+      console.log('Scheduled run skipped: email schedule disabled');
+      return new Response(JSON.stringify({ skipped: true, reason: 'disabled' }), {
+        status: 200,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    const userId = userData.user.id;
-    const { data: teacherProfile, error: teacherProfileErr } = await supabaseService
-      .from("profiles")
-      .select("id, role, madrassah_id")
-      .eq("id", userId)
-      .maybeSingle();
+    // pg_cron fires at the configured minute; no extra time check needed beyond enabled flag
 
-    if (teacherProfileErr || !teacherProfile?.madrassah_id) {
-      console.error("Invoking user's profile missing madrassah_id", teacherProfileErr);
-      return new Response(JSON.stringify({ error: "Profile missing madrassah_id" }), {
-        status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+    // Identify invoking user and their madrassah for manual invocations. Skip for scheduled runs.
+    let invokingMadrassahId: string | null = null;
+    let userId: string | null = null;
+    if (triggerSource !== 'scheduled') {
+      const { data: userData, error: userErr } = await supabaseUser.auth.getUser();
+      if (userErr || !userData?.user) {
+        console.error("Unable to resolve invoking user from token", userErr);
+        return new Response(JSON.stringify({ error: "Unauthorized" }), {
+          status: 401,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      userId = userData.user.id;
+      const { data: teacherProfile, error: teacherProfileErr } = await supabaseService
+        .from("profiles")
+        .select("id, role, madrassah_id")
+        .eq("id", userId)
+        .maybeSingle();
+      if (teacherProfileErr || !teacherProfile?.madrassah_id) {
+        console.error("Invoking user's profile missing madrassah_id", teacherProfileErr);
+        return new Response(JSON.stringify({ error: "Profile missing madrassah_id" }), {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      invokingMadrassahId = teacherProfile.madrassah_id as string;
     }
-
-    const invokingMadrassahId = teacherProfile.madrassah_id as string;
 
     // Log the trigger event
     try {
@@ -143,7 +165,9 @@ serve(async (req: Request) => {
           trigger_source: triggerSource,
           triggered_at: timestamp,
           status: 'started',
-          details: { userId, invokingMadrassahId },
+          emails_sent: 0,
+          emails_skipped: 0,
+          message: userId ? `invoked by ${userId}${invokingMadrassahId ? ' (madrassah ' + invokingMadrassahId + ')' : ''}` : 'scheduled run',
         });
     } catch (logError) {
       console.log("Could not log to email_logs table (table may not exist):", logError);
