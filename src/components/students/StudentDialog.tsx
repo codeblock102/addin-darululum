@@ -34,6 +34,7 @@ interface Student {
   enrollment_date: string | null;
   guardian_name: string | null;
   guardian_contact: string | null;
+  guardian_email?: string | null;
   status: "active" | "inactive";
   completed_juz?: number[];
   current_juz?: number | null;
@@ -65,6 +66,7 @@ export const StudentDialog = (
       new Date().toISOString().split("T")[0],
     guardian_name: selectedStudent?.guardian_name || "",
     guardian_contact: selectedStudent?.guardian_contact || "",
+    guardian_email: selectedStudent?.guardian_email || "",
     status: selectedStudent?.status || "active",
     completed_juz: selectedStudent?.completed_juz || [],
     current_juz: selectedStudent?.current_juz?.toString() || "_none_",
@@ -83,6 +85,7 @@ export const StudentDialog = (
           new Date().toISOString().split("T")[0],
         guardian_name: selectedStudent.guardian_name || "",
         guardian_contact: selectedStudent.guardian_contact || "",
+        guardian_email: selectedStudent.guardian_email || "",
         status: selectedStudent.status || "active",
         completed_juz: selectedStudent.completed_juz || [],
         current_juz: selectedStudent.current_juz?.toString() || "_none_",
@@ -98,6 +101,7 @@ export const StudentDialog = (
         enrollment_date: new Date().toISOString().split("T")[0],
         guardian_name: "",
         guardian_contact: "",
+        guardian_email: "",
         status: "active",
         completed_juz: [],
         current_juz: "_none_", // Default to special "None" value
@@ -147,6 +151,7 @@ export const StudentDialog = (
           : Number(formData.current_juz),
         completed_juz: formData.completed_juz.map((juz) => Number(juz)),
         medical_condition: formData.medicalConditions || null,
+        guardian_email: formData.guardian_email || null,
         // Normalize empty strings to null for optional fields
         date_of_birth: formData.date_of_birth || null,
         enrollment_date: formData.enrollment_date || new Date().toISOString().split("T")[0],
@@ -384,6 +389,20 @@ export const StudentDialog = (
                     setFormData((prev) => ({
                       ...prev,
                       guardian_contact: e.target.value,
+                    }))}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="guardian_email">Guardian Email</Label>
+                <Input
+                  id="guardian_email"
+                  type="email"
+                  placeholder="Enter guardian's email address"
+                  value={formData.guardian_email || ""}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      guardian_email: e.target.value,
                     }))}
                 />
               </div>
