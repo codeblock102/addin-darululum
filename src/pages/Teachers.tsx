@@ -15,7 +15,6 @@ import { useToast } from "@/components/ui/use-toast.ts";
 import { useQuery } from "@tanstack/react-query";
 import { Teacher } from "@/types/teacher.ts";
 import { TeacherProfilesTab } from "@/components/teachers/TeacherProfilesTab.tsx";
-import { TeacherAccountsTab } from "@/components/teachers/TeacherAccountsTab.tsx";
 import { TeacherStatsSection } from "@/components/teachers/TeacherStatsSection.tsx";
 import { useAuth } from "@/contexts/AuthContext.tsx";
 
@@ -198,59 +197,65 @@ const Teachers = () => {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
-        <Loader2 className="w-8 h-8 animate-spin text-amber-500" />
+        <Loader2 className="w-8 h-8 animate-spin text-emerald-600" />
       </div>
     );
   }
 
   return (
-    <div>
-      <div className="space-y-6">
-        <AdminHeader
-          title="Teacher Management Center"
-          description="Comprehensive teacher profile and account management"
-        />
+    <div className="min-h-screen bg-gray-50">
+      <div className="max-w-7xl mx-auto p-6 space-y-8">
+        {/* Header Section */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">Teacher Management Center</h1>
+              <p className="text-gray-600 mt-2 text-lg">
+                Comprehensive teacher profile and account management
+              </p>
+            </div>
+            <Button
+              className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 text-base font-medium shadow-sm transition-all duration-200"
+              onClick={handleCreateTeacher}
+              disabled={isAdminDataLoading}
+            >
+              <UserPlus className="mr-2 h-5 w-5" />
+              Add Teacher
+            </Button>
+          </div>
+        </div>
 
         {/* Stats Cards */}
         <TeacherStatsSection stats={stats || undefined} />
 
-        {/* Action Button */}
-        <div className="flex justify-end">
-          <Button
-            className="bg-amber-500 hover:bg-amber-600 text-black"
-            onClick={handleCreateTeacher}
-            disabled={isAdminDataLoading}
-          >
-            <UserPlus className="mr-2 h-4 w-4" />
-            Add Teacher
-          </Button>
-        </div>
-
         {/* Tabs Navigation */}
-        <Tabs
-          defaultValue="profiles"
-          value={activeTab}
-          onValueChange={setActiveTab}
-          className="w-full"
-        >
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="profiles">Teacher Profiles</TabsTrigger>
-            <TabsTrigger value="accounts">Account Management</TabsTrigger>
-          </TabsList>
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+          <Tabs
+            defaultValue="profiles"
+            value={activeTab}
+            onValueChange={setActiveTab}
+            className="w-full"
+          >
+            <div className="border-b border-gray-200 px-8 pt-6">
+              <TabsList className="w-auto bg-gray-50 border border-gray-200 p-1 h-12 rounded-lg">
+                <TabsTrigger 
+                  value="profiles" 
+                  className="data-[state=active]:bg-white data-[state=active]:text-emerald-700 data-[state=active]:shadow-sm transition-all duration-200 px-8 rounded-md"
+                >
+                  Teacher Profiles
+                </TabsTrigger>
+              </TabsList>
+            </div>
 
-          {/* Profiles Tab */}
-          <TabsContent value="profiles">
-            <TeacherProfilesTab
-              onEditTeacher={handleEditTeacher}
-              madrassahId={adminData?.madrassah_id}
-            />
-          </TabsContent>
-
-          {/* Accounts Tab */}
-          <TabsContent value="accounts">
-            <TeacherAccountsTab />
-          </TabsContent>
-        </Tabs>
+            {/* Profiles Tab */}
+            <TabsContent value="profiles" className="p-8 pt-6">
+              <TeacherProfilesTab
+                onEditTeacher={handleEditTeacher}
+                madrassahId={adminData?.madrassah_id}
+              />
+            </TabsContent>
+          </Tabs>
+        </div>
       </div>
 
       {/* Teacher Dialog Modal */}

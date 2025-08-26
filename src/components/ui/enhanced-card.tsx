@@ -20,7 +20,7 @@ export const EnhancedCard: React.FC<EnhancedCardProps> = ({
         "modern-card",
         hover && "hover:shadow-xl hover:-translate-y-1",
         gradient &&
-          "bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900",
+          "bg-gradient-to-br from-white to-gray-50",
         className,
       )}
     >

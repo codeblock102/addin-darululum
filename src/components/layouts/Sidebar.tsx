@@ -132,14 +132,14 @@ export const Sidebar = (
       <div
         className={cn(
           "flex h-full w-full flex-col transition-all duration-300 ease-in-out",
-          isAdmin ? "bg-[#131724] text-white" : "bg-white text-gray-800",
-          !isMobile && isOpen === false && "shadow-lg border-r-2",
+          isAdmin ? "bg-white border-r border-gray-200" : "bg-white border-r border-gray-200",
+          !isMobile && isOpen === false && "shadow-sm",
         )}
       >
         <div
           className={cn(
             "flex h-14 sm:h-16 items-center transition-all duration-300 ease-in-out",
-            isAdmin ? "border-b border-white/10" : "border-b border-gray-100",
+            isAdmin ? "border-b border-gray-200" : "border-b border-gray-200",
             (!isMobile && isOpen === false)
               ? "justify-center px-2"
               : "justify-between px-4 sm:px-5",
@@ -152,15 +152,15 @@ export const Sidebar = (
             >
               {isAdmin
                 ? (
-                  <ShieldCheck className="h-5 w-5 sm:h-6 sm:w-6 text-amber-400 drop-shadow-sm" />
+                  <ShieldCheck className="h-5 w-5 sm:h-6 sm:w-6 text-amber-600 drop-shadow-sm" />
                 )
                 : (
-                  <BookOpen className="h-5 w-5 sm:h-6 sm:w-6 text-primary drop-shadow-sm" />
+                  <BookOpen className="h-5 w-5 sm:h-6 sm:w-6 text-[hsl(142.8,64.2%,24.1%)] drop-shadow-sm" />
                 )}
               <span
                 className={cn(
                   "text-sm sm:text-base transition-all duration-300 whitespace-nowrap font-medium",
-                  isAdmin ? "text-white" : "text-gray-800",
+                  isAdmin ? "text-gray-900" : "text-gray-900",
                 )}
               >
                 {isAdmin ? "Admin Portal" : isParent ? "Parent Portal" : "Teacher Portal"}
@@ -172,14 +172,13 @@ export const Sidebar = (
           {!isMobile && isOpen === false && (
             <Link
               to="/dashboard"
-              className="flex items-center justify-center w-full hover:bg-white/5 rounded-lg p-2 transition-all duration-200"
+              className="flex items-center justify-center w-full hover:bg-gray-100 rounded-lg p-2 transition-all duration-200"
               title={isAdmin ? "Admin Portal" : isParent ? "Parent Portal" : "Teacher Portal"}
             >
               {isAdmin
                 ? (
-                  <ShieldCheck className="h-6 w-6 text-amber-400 drop-shadow-sm" />
-                )
-                : <BookOpen className="h-6 w-6 text-primary drop-shadow-sm" />}
+                  <ShieldCheck className="h-6 w-6 text-amber-600 drop-shadow-sm" />
+                ) : <BookOpen className="h-6 w-6 text-[hsl(142.8,64.2%,24.1%)] drop-shadow-sm" />}
             </Link>
           )}
 
@@ -189,8 +188,8 @@ export const Sidebar = (
               size="icon"
               className={cn(
                 isAdmin
-                  ? "text-white hover:bg-white/10"
-                  : "text-slate-700 hover:bg-slate-100",
+                  ? "text-gray-700 hover:bg-gray-100 hover:text-amber-600"
+                  : "text-gray-700 hover:bg-gray-100 hover:text-[hsl(142.8,64.2%,24.1%)]",
                 "transition-all duration-300 hover:scale-105",
               )}
               onClick={toggleSidebar}
@@ -207,10 +206,10 @@ export const Sidebar = (
               variant="ghost"
               size="icon"
               className={cn(
-                "absolute -right-3 top-1/2 -translate-y-1/2 z-10 rounded-full shadow-lg border-2",
+                "absolute -right-3 top-1/2 -translate-y-1/2 z-10 rounded-full shadow-md border-2",
                 isAdmin
-                  ? "bg-[#131724] border-amber-400/20 text-amber-400 hover:bg-amber-400/10 hover:border-amber-400/40"
-                  : "bg-white border-primary/20 text-primary hover:bg-primary/5 hover:border-primary/40",
+                  ? "bg-white border-amber-200 text-amber-600 hover:bg-amber-50 hover:border-amber-300"
+                  : "bg-white border-[hsl(142.8,64.2%,24.1%)]/20 text-[hsl(142.8,64.2%,24.1%)] hover:bg-[hsl(142.8,64.2%,24.1%)]/5 hover:border-[hsl(142.8,64.2%,24.1%)]/40",
                 "transition-all duration-300 hover:scale-110",
               )}
               onClick={toggleSidebar}

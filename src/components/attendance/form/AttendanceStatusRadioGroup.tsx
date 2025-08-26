@@ -30,7 +30,7 @@ export function AttendanceStatusRadioGroup(
       name="status"
       render={({ field }) => (
         <FormItem className="space-y-3">
-          <FormLabel className="text-gray-700 dark:text-gray-300">
+          <FormLabel className="text-black">
             Attendance Status
           </FormLabel>
           <FormControl>
