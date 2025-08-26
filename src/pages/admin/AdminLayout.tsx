@@ -1,13 +1,21 @@
 import React from 'react';
-import { NavLink, Outlet } from 'react-router-dom';
-import { Shield, Database, UserPlus, Users } from 'lucide-react';
+import { NavLink, Outlet, Link } from 'react-router-dom';
+import { Shield, Database, UserPlus, Users, Home } from 'lucide-react';
 
 const AdminLayout = () => {
   return (
     <div className="flex min-h-screen bg-gray-100 font-sans">
       <aside className="w-64 bg-gray-800 text-white flex flex-col">
-        <div className="h-16 flex items-center justify-center bg-gray-900">
+        <div className="h-16 flex items-center justify-between bg-gray-900 px-4">
           <h1 className="text-xl font-bold">Admin Panel</h1>
+          <Link
+            to="/dashboard"
+            className="inline-flex items-center gap-2 text-xs bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded-md transition-colors"
+            title="Back to Dashboard"
+          >
+            <Home className="h-4 w-4" />
+            Dashboard
+          </Link>
         </div>
         <nav className="flex-1 px-4 py-6 space-y-2">
           <NavLink

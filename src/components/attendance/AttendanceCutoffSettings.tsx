@@ -114,7 +114,7 @@ export function AttendanceCutoffSettings() {
   if (isParent && !isAdmin) return null;
 
   const summary = (
-    <div className="text-sm text-muted-foreground">
+    <div className="text-sm text-black">
       <span>Cutoff time:&nbsp;</span>
       <strong>{settings?.cutoff_time ?? "09:30"}</strong>
       <span>&nbsp;({settings?.timezone ?? "America/New_York"})</span>
@@ -140,7 +140,7 @@ export function AttendanceCutoffSettings() {
       </CardHeader>
       <CardContent>
         {isLoading ? (
-          <div className="text-sm text-muted-foreground">Loading...</div>
+          <div className="text-sm text-black">Loading...</div>
         ) : !isAdmin ? (
           // Teacher view: summary only
           summary
@@ -160,19 +160,19 @@ export function AttendanceCutoffSettings() {
           >
             <div className="flex items-center gap-2">
               <Switch id="enabled" name="enabled" defaultChecked={settings?.enabled ?? true} />
-              <Label htmlFor="enabled">Enable notifications</Label>
+              <Label htmlFor="enabled" className="text-black">Enable notifications</Label>
             </div>
             <div>
-              <Label htmlFor="cutoff_time">Cutoff time</Label>
-              <Input id="cutoff_time" name="cutoff_time" type="time" defaultValue={settings?.cutoff_time ?? "09:30"} />
+              <Label htmlFor="cutoff_time" className="text-black">Cutoff time</Label>
+              <Input id="cutoff_time" name="cutoff_time" type="time" defaultValue={settings?.cutoff_time ?? "09:30"} className="text-black" />
             </div>
             <div className="sm:col-span-2">
-              <Label htmlFor="timezone">Timezone</Label>
+              <Label htmlFor="timezone" className="text-black">Timezone</Label>
               <select
                 id="timezone"
                 name="timezone"
                 defaultValue={settings?.timezone ?? "America/New_York"}
-                className="w-full h-10 rounded-md border px-3 text-sm bg-background"
+                className="w-full h-10 rounded-md border px-3 text-sm bg-white text-black"
               >
                 {tzOptions.map((tz) => (
                   <option key={tz} value={tz}>{tz}</option>

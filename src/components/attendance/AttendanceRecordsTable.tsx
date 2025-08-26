@@ -60,7 +60,7 @@ export function AttendanceRecordsTable({
   if (!records || records.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-12 text-center">
-        <p className="text-muted-foreground">No attendance records found.</p>
+        <p className="text-black">No attendance records found.</p>
         {(searchQuery || statusFilter || dateFilter) && (
           <Button
             variant="outline"

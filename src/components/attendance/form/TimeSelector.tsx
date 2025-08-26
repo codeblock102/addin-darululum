@@ -81,7 +81,9 @@ export function TimeSelector(
                       onTimeSelect?.(slot.value);
                     }}
                   >
-                    {slot.display}
+                    <div className="text-sm text-black">
+                      {slot.display}
+                    </div>
                   </Button>
                 ))}
               </div>
