@@ -13,7 +13,6 @@ interface DiagnosticInfo {
   authMetadataRole: string | null;
   profileExists: boolean;
   profileRole: string | null;
-  userRoleTableEntry: boolean;
   madrassahId: string | null;
 }
 
@@ -50,21 +49,12 @@ export default function AdminAccessDiagnostic() {
       const profileRole = profile?.role || null;
       const madrassahId = profile?.madrassah_id || null;
 
-      // Check user_roles table
-      const { data: userRoles, error: userRolesError } = await supabase
-        .from("user_roles")
-        .select("role_id, roles(name)")
-        .eq("user_id", userId);
-
-      const userRoleTableEntry = !userRolesError && userRoles && userRoles.length > 0;
-
       setDiagnosticInfo({
         userId,
         email,
         authMetadataRole,
         profileExists,
         profileRole,
-        userRoleTableEntry,
         madrassahId,
       });
     } catch (error) {
@@ -197,17 +187,7 @@ export default function AdminAccessDiagnostic() {
           </div>
         </div>
 
-        <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-          <span className="font-medium">User Roles Table:</span>
-          <div className="flex items-center">
-            {diagnosticInfo.userRoleTableEntry ? (
-              <CheckCircle className="h-5 w-5 text-green-500 mr-2" />
-            ) : (
-              <AlertTriangle className="h-5 w-5 text-red-500 mr-2" />
-            )}
-            <span>{diagnosticInfo.userRoleTableEntry ? 'Configured' : 'Missing'}</span>
-          </div>
-        </div>
+        {/* user_roles table removed; no longer checking this */}
 
         <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
           <span className="font-medium">Dār Al-Ulūm Montréal Assignment:</span>
