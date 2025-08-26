@@ -43,7 +43,7 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
 
   if (isLoading) {
     return (
-      <div className="flex h-screen w-full items-center justify-center bg-gradient-to-br from-[hsl(142.8,64.2%,24.1%)] via-[hsl(142.8,64.2%,20%)] to-[hsl(142.8,64.2%,16%)]">
+      <div className="flex h-screen w-full items-center justify-center bg-gray-50">
         <LoadingSpinner />
       </div>
     );
@@ -55,14 +55,14 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   return (
     <div
       className={cn(
-        "flex min-h-screen w-full overflow-hidden bg-gradient-to-br from-[hsl(142.8,64.2%,24.1%)] via-[hsl(142.8,64.2%,20%)] to-[hsl(142.8,64.2%,16%)]",
+        "flex min-h-screen w-full overflow-hidden bg-gray-50",
         isAdmin ? "admin-theme" : "teacher-theme",
       )}
     >
       {/* Sidebar */}
       <div
         className={cn(
-          "fixed inset-y-0 left-0 z-40 bg-white/95 backdrop-blur-xl border-r border-white/20 shadow-2xl",
+          "fixed inset-y-0 left-0 z-40 bg-white border-r border-gray-200 shadow-sm",
           isMobile ? `${sidebarWidthClass} -translate-x-full` : [
             sidebarOpen ? sidebarWidthClass : collapsedSidebarWidthClass,
             "transition-all duration-300 ease-in-out",

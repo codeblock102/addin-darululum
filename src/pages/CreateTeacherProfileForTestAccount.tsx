@@ -95,9 +95,8 @@ const CreateTeacherProfileForTestAccount = () => {
   };
 
   return (
-    <DashboardLayout>
-      <div className="container mx-auto py-8">
-        <Card className="shadow-lg">
+    <div className="container mx-auto py-8">
+      <Card className="shadow-lg">
           <CardHeader>
             <CardTitle className="text-2xl">
               Create Teacher Profile for Test Account
@@ -199,7 +198,6 @@ const CreateTeacherProfileForTestAccount = () => {
           </CardContent>
         </Card>
       </div>
-    </DashboardLayout>
   );
 };
 

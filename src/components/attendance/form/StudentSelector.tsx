@@ -67,8 +67,8 @@ export function StudentSelector({
       name="student_id"
       render={({ field }) => (
         <FormItem>
-          <FormLabel className="text-gray-700 dark:text-gray-300">
-            Student
+          <FormLabel className="text-black">
+            Select Students
           </FormLabel>
           <FormControl>
             <Select

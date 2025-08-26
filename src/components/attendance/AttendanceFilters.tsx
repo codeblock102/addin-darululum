@@ -35,23 +35,36 @@ export function AttendanceFilters({
   setDateFilter,
 }: AttendanceFiltersProps) {
   return (
-    <div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0 mb-4 bg-gray-50 dark:bg-gray-800 p-4 rounded-lg shadow-sm">
-      <div className="flex flex-1 items-center space-x-2">
+    <div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0 mb-4 bg-gray-50 p-4 rounded-lg shadow-sm border border-gray-200">
+      <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
         <Input
-          placeholder="Search students or classes..."
+          placeholder="Search students..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full sm:w-[300px] bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200 border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-primary/50"
+          className="w-full sm:w-[300px] bg-white text-black border-gray-300 focus:ring-2 focus:ring-[hsl(142.8,64.2%,24.1%)] focus:border-[hsl(142.8,64.2%,24.1%)]"
         />
+        <Select value={statusFilter || "all"} onValueChange={(value) => setStatusFilter(value === "all" ? null : value)}>
+          <SelectTrigger className="justify-start text-left sm:w-[180px] bg-white text-black border-gray-300 hover:bg-gray-100">
+            <SelectValue placeholder="All Statuses" />
+          </SelectTrigger>
+          <SelectContent className="bg-white text-black border-gray-200">
+            <SelectItem value="all">All Statuses</SelectItem>
+            <SelectItem value="present">Present</SelectItem>
+            <SelectItem value="absent">Absent</SelectItem>
+            <SelectItem value="late">Late</SelectItem>
+            <SelectItem value="excused">Excused</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
-      <div className="flex flex-col space-y-2 sm:flex-row sm:space-x-2 sm:space-y-0">
+      
+      <div className="flex items-center gap-2">
         <Popover>
           <PopoverTrigger asChild>
             <Button
               variant="outline"
               className={cn(
                 "justify-start text-left sm:w-[180px] bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200 border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-600",
-                !dateFilter && "text-muted-foreground",
+                !dateFilter && "text-black",
               )}
             >
               <CalendarIcon className="mr-2 h-4 w-4" />
@@ -80,41 +93,17 @@ export function AttendanceFilters({
           </PopoverContent>
         </Popover>
 
-        <Select
-          value={statusFilter || "all"}
-          onValueChange={(value) =>
-            setStatusFilter(value === "all" ? null : value)}
+        <Button
+          variant="outline"
+          onClick={() => {
+            setSearchQuery("");
+            setStatusFilter(null);
+            setDateFilter(null);
+          }}
+          className="bg-white text-black border-gray-200 hover:bg-gray-100"
         >
-          <SelectTrigger className="sm:w-[180px] bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200 border-gray-300 dark:border-gray-600">
-            <SelectValue placeholder="Filter by status" />
-          </SelectTrigger>
-          <SelectContent className="bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-200">
-            <SelectItem
-              value="all"
-              className="hover:bg-gray-100 dark:hover:bg-gray-700"
-            >
-              All Statuses
-            </SelectItem>
-            <SelectItem
-              value="present"
-              className="hover:bg-gray-100 dark:hover:bg-gray-700"
-            >
-              Present
-            </SelectItem>
-            <SelectItem
-              value="absent"
-              className="hover:bg-gray-100 dark:hover:bg-gray-700"
-            >
-              Absent
-            </SelectItem>
-            <SelectItem
-              value="late"
-              className="hover:bg-gray-100 dark:hover:bg-gray-700"
-            >
-              Late
-            </SelectItem>
-          </SelectContent>
-        </Select>
+          Clear Filters
+        </Button>
       </div>
     </div>
   );

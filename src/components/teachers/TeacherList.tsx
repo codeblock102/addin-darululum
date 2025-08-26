@@ -178,16 +178,16 @@ export const TeacherList = ({
               </TableRow>
             )
             : filteredTeachers?.map((teacher) => (
-              <TableRow key={teacher.id}>
+              <TableRow key={teacher.id} className="hover:bg-gray-50">
                 <TableCell className="font-medium">{teacher.name}</TableCell>
                 <TableCell>
-                  <Badge variant="outline" className="bg-green-900">
+                  <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200">
                     {teacher.subject}
                   </Badge>
                 </TableCell>
                 <TableCell>
                   <div className="flex items-center">
-                    <Users className="h-4 w-4 mr-1 text-slate-400" />
+                    <Users className="h-4 w-4 mr-1 text-gray-400" />
                     <span>{teacher.students}</span>
                   </div>
                 </TableCell>
@@ -196,7 +196,7 @@ export const TeacherList = ({
                     ? (
                       <a
                         href={`mailto:${teacher.email}`}
-                        className="text-blue-600 hover:underline"
+                        className="text-emerald-700 hover:text-emerald-800 hover:underline"
                       >
                         {teacher.email}
                       </a>
@@ -210,7 +210,7 @@ export const TeacherList = ({
                     size="sm"
                     onClick={() => onEdit(teacher)}
                     title="Edit teacher"
-                    className="bg-slate-950 hover:bg-slate-800"
+                    className="border-gray-300 hover:bg-gray-100"
                   >
                     <Pencil className="h-4 w-4" />
                   </Button>
@@ -224,7 +224,7 @@ export const TeacherList = ({
                       <Button
                         variant="outline"
                         size="sm"
-                        className="text-red-600 hover:text-red-700"
+                        className="text-red-600 border-gray-300 hover:bg-red-50"
                         onClick={() => setTeacherToDelete(teacher.id)}
                         title="Delete teacher"
                       >

@@ -13,8 +13,8 @@ export function TeacherAccountSearch(
       <SearchInput
         value={searchQuery}
         onChange={onSearchChange}
-        placeholder="Search teachers by name, email or subject..."
-        className="bg-white rounded-lg shadow-sm border border-gray-200"
+        placeholder="Search by name, email, or subject..."
+        className="w-full bg-white border-gray-300 focus:ring-2 focus:ring-[hsl(142.8,64.2%,24.1%)] focus:border-[hsl(142.8,64.2%,24.1%)] transition-all duration-200"
       />
     </div>
   );

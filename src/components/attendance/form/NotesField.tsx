@@ -20,8 +20,8 @@ export function NotesField({ form }: NotesFieldProps) {
       name="notes"
       render={({ field }) => (
         <FormItem>
-          <FormLabel className="text-gray-700 dark:text-gray-300">
-            Notes (Optional)
+          <FormLabel className="text-black">
+            Additional Notes
           </FormLabel>
           <FormControl>
             <Textarea
