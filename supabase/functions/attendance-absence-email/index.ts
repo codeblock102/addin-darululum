@@ -7,6 +7,7 @@ import { Resend } from "https://esm.sh/resend@2.0.0";
 
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
 const RESEND_FROM_EMAIL = Deno.env.get("RESEND_FROM_EMAIL");
+const DEFAULT_ORG_LOGO_URL = "https://depsfpodwaprzxffdcks.supabase.co/storage/v1/object/public/dum-logo/dum-logo.png";
 const resend = RESEND_API_KEY ? new Resend(RESEND_API_KEY) : null;
 
 const corsHeaders = {
@@ -322,6 +323,9 @@ body{font-family:Arial,Helvetica,sans-serif;background:#f6f7f9;margin:0;padding:
       <p>Assalamu alaikum ${htmlEscape(student.guardian_name || '')},</p>
       <p>This is to inform you that <strong>${htmlEscape(student.name)}</strong> has not been marked <strong>present</strong> for ${localYmd} by the attendance cutoff time (${setting.cutoff_time} ${htmlEscape(setting.timezone)}).</p>
       <p>If your child is attending late or there is an excused absence, please contact the office.</p>
+      <div style=\"text-align:center;margin-top:16px;\">
+        <img src=\"${Deno.env.get('ORG_LOGO_URL') || DEFAULT_ORG_LOGO_URL}\" alt=\"Dār Al-Ulūm Montréal\" style=\"max-width:180px;height:auto;\"/>
+      </div>
       <p class="muted">This email was generated automatically by the madrassah attendance system.</p>
     </div>
   </div>
