@@ -812,35 +812,7 @@ export type Database = {
         };
         Relationships: [];
       };
-      user_roles: {
-        Row: {
-          created_at: string;
-          id: string;
-          role_id: string;
-          user_id: string;
-        };
-        Insert: {
-          created_at?: string;
-          id?: string;
-          role_id: string;
-          user_id: string;
-        };
-        Update: {
-          created_at?: string;
-          id?: string;
-          role_id?: string;
-          user_id?: string;
-        };
-        Relationships: [
-          {
-            foreignKeyName: "user_roles_role_id_fkey";
-            columns: ["role_id"];
-            isOneToOne: false;
-            referencedRelation: "roles";
-            referencedColumns: ["id"];
-          },
-        ];
-      };
+      
       users: {
         Row: {
           created_at: string;
@@ -869,15 +841,7 @@ export type Database = {
     Views: {
       [_ in never]: never;
     };
-    Functions: {
-      has_permission: {
-        Args: {
-          user_id: string;
-          required_permission: Database["public"]["Enums"]["role_permission"];
-        };
-        Returns: boolean;
-      };
-    };
+    Functions: {};
     Enums: {
       attendance_status: "present" | "absent" | "late";
       mastery_level: "not_started" | "in_progress" | "memorized" | "mastered";

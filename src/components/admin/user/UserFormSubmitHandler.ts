@@ -84,33 +84,7 @@ export const handleUserSubmit = async (
             console.log(`Profile created for ${userRole} user:`, data.user.id);
           }
 
-          // 2. Find the appropriate role ID for user_roles table
-          const { data: roleData, error: roleError } = await supabase
-            .from("roles")
-            .select("id")
-            .eq("name", userRole)
-            .single();
-
-          if (roleError || !roleData) {
-            console.warn("Could not find role:", roleError);
-          } else {
-            console.log(
-              `Assigning ${userRole} role (${roleData.id}) to user ${data.user.id}`,
-            );
-
-            // Use the create_user_role RPC function to assign role
-            const { error: userRoleError } = await supabase.rpc(
-              "create_user_role",
-              {
-                p_user_id: data.user.id,
-                p_role_id: roleData.id,
-              },
-            );
-
-            if (userRoleError) {
-              console.error("Error assigning role to user:", userRoleError);
-            }
-          }
+          // user_roles table removed — role is sourced from profiles.role and auth metadata only
         } catch (roleError) {
           console.error("Error setting up user role and profile:", roleError);
           // Continue anyway, as the user account has been created

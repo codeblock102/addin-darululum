@@ -169,13 +169,12 @@ const Auth = () => {
         return;
       }
 
-      console.log("No role found, redirecting to role setup");
+      console.log("No role found, redirecting to dashboard fallback");
       toast({
-        title: "Role Setup Required",
-        description:
-          "Your account needs a role assignment. Please select your role.",
+        title: "Login Successful",
+        description: "Redirecting to dashboard...",
       });
-      navigate("/role-setup");
+      navigate("/dashboard");
     } catch (error) {
       const message = error instanceof Error
         ? error.message
