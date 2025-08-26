@@ -213,7 +213,7 @@ const Dashboard = () => {
   // Show loading state while checking roles or fetching teacher data
   if ((isLoading || isCheckingRole || isRoleLoading) && !isAdmin) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-[hsl(142.8,64.2%,24.1%)] via-[hsl(142.8,64.2%,20%)] to-[hsl(142.8,64.2%,16%)] flex items-center justify-center p-4">
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
         <div className="w-full max-w-md">
           <LoadingState />
         </div>
@@ -232,26 +232,13 @@ const Dashboard = () => {
       phone: "",
     };
 
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-[hsl(142.8,64.2%,24.1%)] via-[hsl(142.8,64.2%,20%)] to-[hsl(142.8,64.2%,16%)]">
-        <div className="px-4 pt-4">
-          <div className="flex gap-3 flex-wrap">
-            <Link to="/admin/parent-accounts">
-              <Button className="bg-white/20 hover:bg-white/30 text-white border border-white/30 backdrop-blur-sm transition-all duration-200">
-                Manage Parent Accounts
-              </Button>
-            </Link>
-          </div>
-        </div>
-        <TeacherDashboard teacher={adminViewProfile} isAdmin={true} />
-      </div>
-    );
+    return <TeacherDashboard teacher={adminViewProfile} isAdmin={true} />;
   }
 
   // Show profile not found if teacher data is missing (for non-admin users)
   if (!teacherData && !isLoading && !isCheckingRole) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-[hsl(142.8,64.2%,24.1%)] via-[hsl(142.8,64.2%,20%)] to-[hsl(142.8,64.2%,16%)] flex items-center justify-center p-4">
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
         <div className="w-full max-w-2xl">
           <ProfileNotFound
             email={session?.user?.email}
@@ -265,7 +252,7 @@ const Dashboard = () => {
 
   if (!isTeacher && !isAdmin && !isRoleLoading && !isCheckingRole) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-[hsl(142.8,64.2%,24.1%)] via-[hsl(142.8,64.2%,20%)] to-[hsl(142.8,64.2%,16%)] flex items-center justify-center p-4">
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
         <div className="w-full max-w-md">
           <AccessDenied />
         </div>
@@ -275,14 +262,14 @@ const Dashboard = () => {
 
   if (teacherData && isTeacher) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-[hsl(142.8,64.2%,24.1%)] via-[hsl(142.8,64.2%,20%)] to-[hsl(142.8,64.2%,16%)]">
+      <div className="min-h-screen bg-gray-50">
         <TeacherDashboard teacher={teacherData} />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[hsl(142.8,64.2%,24.1%)] via-[hsl(142.8,64.2%,20%)] to-[hsl(142.8,64.2%,16%)] flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         <LoadingState />
       </div>

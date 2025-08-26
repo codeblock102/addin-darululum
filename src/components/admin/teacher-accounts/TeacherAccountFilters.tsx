@@ -5,6 +5,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select.tsx";
+
 interface TeacherAccountFiltersProps {
   statusFilter: "all" | "active" | "suspended";
   activityFilter: "all" | "7days" | "30days" | "inactive";
@@ -13,6 +14,7 @@ interface TeacherAccountFiltersProps {
     value: "all" | "7days" | "30days" | "inactive",
   ) => void;
 }
+
 export function TeacherAccountFilters({
   statusFilter,
   activityFilter,
@@ -20,15 +22,18 @@ export function TeacherAccountFilters({
   onActivityFilterChange,
 }: TeacherAccountFiltersProps) {
   return (
-    <div className="flex gap-3 bg-slate-900">
+    <div className="space-y-4">
       {/* Status Filter */}
-      <div className="w-1/2">
+      <div>
+        <label className="text-sm font-medium text-gray-700 mb-2 block">
+          Account Status
+        </label>
         <Select
           value={statusFilter}
           onValueChange={(value) =>
             onStatusFilterChange(value as "all" | "active" | "suspended")}
         >
-          <SelectTrigger>
+          <SelectTrigger className="w-full bg-white border-gray-300 focus:ring-2 focus:ring-[hsl(142.8,64.2%,24.1%)] focus:border-[hsl(142.8,64.2%,24.1%)]">
             <SelectValue placeholder="Filter by status" />
           </SelectTrigger>
           <SelectContent>
@@ -40,7 +45,10 @@ export function TeacherAccountFilters({
       </div>
 
       {/* Activity Filter */}
-      <div className="w-1/2">
+      <div>
+        <label className="text-sm font-medium text-gray-700 mb-2 block">
+          Activity Level
+        </label>
         <Select
           value={activityFilter}
           onValueChange={(value) =>
@@ -48,7 +56,7 @@ export function TeacherAccountFilters({
               value as "all" | "7days" | "30days" | "inactive",
             )}
         >
-          <SelectTrigger>
+          <SelectTrigger className="w-full bg-white border-gray-300 focus:ring-2 focus:ring-[hsl(142.8,64.2%,24.1%)] focus:border-[hsl(142.8,64.2%,24.1%)]">
             <SelectValue placeholder="Filter by activity" />
           </SelectTrigger>
           <SelectContent>

@@ -22,11 +22,18 @@ export function SliderTimeSelector({ form }: SliderTimeSelectorProps) {
     : [8, 0];
 
   const handleTimeChange = (hour: number, minute: number) => {
-    const timeString = `${hour.toString().padStart(2, "0")}:${
-      minute.toString().padStart(2, "0")
-    }`;
-    form.setValue("time", timeString);
+    const safeTimeString = `${hour.toString().padStart(2, "0")}:${minute
+      .toString()
+      .padStart(2, "0")}`;
+    form.setValue("time", safeTimeString);
   };
+
+  // Localized preview respecting user locale (no functionality change)
+  const locale = globalThis?.navigator?.language || undefined;
+  const localizedTime = new Intl.DateTimeFormat(locale, {
+    hour: "numeric",
+    minute: "2-digit",
+  }).format(new Date(2000, 0, 1, currentHour, currentMinute));
 
   return (
     <FormField
@@ -34,66 +41,56 @@ export function SliderTimeSelector({ form }: SliderTimeSelectorProps) {
       name="time"
       render={({ field }) => (
         <FormItem>
-          <FormLabel className="text-gray-900 dark:text-gray-100 font-medium">
-            Attendance Time
-          </FormLabel>
+          <FormLabel className="text-gray-900 font-medium">Attendance Time</FormLabel>
           <FormControl>
-            <div className="space-y-6 p-4 bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 rounded-lg shadow-sm">
+            <div className="space-y-5 p-4 sm:p-5 bg-white border border-gray-200 rounded-xl shadow-sm">
               {/* Current Time Display */}
               <div className="text-center">
-                <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                  {currentHour.toString().padStart(2, "0")}:{currentMinute
-                    .toString().padStart(2, "0")}
+                <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-700">
+                  <span className="text-2xl font-bold tabular-nums">
+                    {currentHour.toString().padStart(2, "0")}:{currentMinute
+                      .toString()
+                      .padStart(2, "0")}
+                  </span>
+                  <span className="text-xs sm:text-sm">{localizedTime}</span>
                 </div>
-                <div className="text-sm text-gray-600 dark:text-gray-400">
-                  {new Date(
-                    `2000-01-01T${currentHour.toString().padStart(2, "0")}:${
-                      currentMinute.toString().padStart(2, "0")
-                    }`,
-                  ).toLocaleTimeString("en-US", {
-                    hour: "numeric",
-                    minute: "2-digit",
-                    hour12: true,
-                  })}
+                <div className="text-xs sm:text-sm text-gray-500 mt-2">
+                  Select the time for this attendance record
                 </div>
               </div>
 
               {/* Hour Slider */}
               <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Hour: {currentHour}
-                </label>
+                <label className="text-sm font-medium text-gray-700">Hour</label>
                 <Slider
                   value={[currentHour]}
-                  onValueChange={(value) =>
-                    handleTimeChange(value[0], currentMinute)}
+                  onValueChange={(value) => handleTimeChange(value[0], currentMinute)}
                   max={23}
                   min={0}
                   step={1}
                   className="w-full"
+                  aria-label="Select hour"
                 />
-                <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400">
-                  <span>12 AM</span>
-                  <span>12 PM</span>
-                  <span>11 PM</span>
+                <div className="flex justify-between text-xs text-gray-500">
+                  <span>00</span>
+                  <span>12</span>
+                  <span>23</span>
                 </div>
               </div>
 
               {/* Minute Slider */}
               <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Minutes: {currentMinute}
-                </label>
+                <label className="text-sm font-medium text-gray-700">Minutes</label>
                 <Slider
                   value={[currentMinute]}
-                  onValueChange={(value) =>
-                    handleTimeChange(currentHour, value[0])}
+                  onValueChange={(value) => handleTimeChange(currentHour, value[0])}
                   max={59}
                   min={0}
                   step={1}
                   className="w-full"
+                  aria-label="Select minutes"
                 />
-                <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400">
+                <div className="flex justify-between text-xs text-gray-500">
                   <span>00</span>
                   <span>30</span>
                   <span>59</span>

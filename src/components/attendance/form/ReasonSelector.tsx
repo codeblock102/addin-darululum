@@ -80,7 +80,9 @@ export function ReasonSelector(
                       onReasonSelect?.(reason);
                     }}
                   >
-                    {reason}
+                    <div className="text-sm text-black">
+                      {reason}
+                    </div>
                   </Button>
                 ))}
               </div>

@@ -117,11 +117,12 @@ serve(async (req: Request) => {
     const { data: settingsRows } = await supabaseService
       .from('app_settings')
       .select('key, value')
-      .in('key', ['email_schedule_enabled','email_schedule_time','email_timezone']);
+      .in('key', ['email_schedule_enabled','email_schedule_time','email_timezone','org_logo_url']);
     const settingsMap = new Map<string, string>((settingsRows || []).map((r: any) => [r.key, r.value]));
     const scheduleEnabled = (settingsMap.get('email_schedule_enabled') ?? 'true') !== 'false';
     const scheduleTime = settingsMap.get('email_schedule_time') || '21:30';
     const scheduleTz = settingsMap.get('email_timezone') || 'America/New_York';
+    const logoUrl = settingsMap.get('org_logo_url') || Deno.env.get('ORG_LOGO_URL') || '';
 
     // If scheduled trigger and schedule is disabled, exit early
     if (triggerSource === 'scheduled' && !scheduleEnabled) {
@@ -357,7 +358,7 @@ serve(async (req: Request) => {
                   <h1>Daily Student Progress Summary</h1>
               </div>
               <div class="content">
-                  <p>Dear Principal,</p>
+                  <p>Assalamu Alaikum Principal,</p>
                   <p>Here is the overall student progress report for ${reportDate}:</p>
                   ${overallProgressHtml}
                   <h2 style="margin-top:24px;">Academic Work (Last 24h)</h2>
@@ -389,8 +390,9 @@ serve(async (req: Request) => {
                   <div class="trigger-info">
                       Report generated ${triggerSource === 'scheduled' ? 'automatically' : 'manually'} at ${new Date(timestamp).toLocaleString()}
                   </div>
-                  <p>Thank you,</p>
+                  <p>JazakAllah Khairan,</p>
                   <p><strong>Dār Al-Ulūm Montréal</strong></p>
+                  ${logoUrl ? `<div style="text-align:center;margin-top:16px;"><img src="${logoUrl}" alt="Dār Al-Ulūm Montréal" style="max-width:200px;height:auto;"/></div>` : ''}
               </div>
               <div class="footer">
                   <p>This is an automated email.</p>
@@ -533,6 +535,7 @@ serve(async (req: Request) => {
                     </div>
                     <p>JazakAllah Khairan</p>
                     <p><strong>Dār Al-Ulūm Montréal</strong></p>
+                    ${logoUrl ? `<div style="text-align:center;margin-top:16px;"><img src="${logoUrl}" alt="Dār Al-Ulūm Montréal" style="max-width:200px;height:auto;"/></div>` : ''}
                 </div>
                 <div class="footer">
                     <p>This is an automated email. Please do not reply.</p>

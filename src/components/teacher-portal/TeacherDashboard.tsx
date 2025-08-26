@@ -1,50 +1,76 @@
-import { TeacherDashboardProps } from "@/types/teacher.ts";
-import { useTeacherSummary } from "@/hooks/useTeacherSummary.ts";
-import { DashboardHeader } from "./DashboardHeader.tsx";
-import { DashboardContent } from "./dashboard/DashboardContent.tsx";
+import { Teacher } from "@/types/teacher.ts";
 import { useActiveTab } from "./dashboard/DashboardNav.tsx";
 import { useTeacherClasses } from "@/hooks/useTeacherClasses.ts";
+import { useTeacherSummary } from "@/hooks/useTeacherSummary.ts";
+import { DashboardHeader } from "./DashboardHeader.tsx";
+import { DashboardOverview } from "./dashboard/DashboardOverview.tsx";
+import { MyStudents } from "./MyStudents.tsx";
+import { TeacherDhorBook } from "./TeacherDhorBook.tsx";
+import { TeacherAssignments } from "./TeacherAssignments.tsx";
+import { TeacherAnalytics } from "./TeacherAnalytics.tsx";
+import { TeacherAttendance } from "./TeacherAttendance.tsx";
+
+interface TeacherDashboardProps {
+  teacher: Teacher;
+  isAdmin?: boolean;
+}
 
 export const TeacherDashboard = (
-  { teacher, isAdmin = false }: TeacherDashboardProps & { isAdmin?: boolean },
+  { teacher, isAdmin = false }: TeacherDashboardProps,
 ) => {
   const { activeTab } = useActiveTab();
-  const teacherId = teacher?.id;
   const { data: classes, isLoading: isLoadingClasses } = useTeacherClasses(
-    teacherId || "",
+    teacher.id,
   );
-  if (teacherId) {
-    useTeacherSummary(teacherId);
+  useTeacherSummary(teacher.id);
+
+  // Render different content based on active tab
+  const renderTabContent = () => {
+    switch (activeTab) {
+      case "overview":
+        return <DashboardOverview teacherId={teacher.id} isAdmin={isAdmin} />;
+      case "students":
+        return <MyStudents teacherId={teacher.id} />;
+      case "progress-book":
+        return <TeacherDhorBook teacherId={teacher.id} />;
+      case "assignments":
+        return <TeacherAssignments teacherId={teacher.id} />;
+      case "attendance":
+        return <TeacherAttendance />;
+      case "performance":
+        return <TeacherAnalytics teacherId={teacher.id} />;
+      default:
+        return <DashboardOverview teacherId={teacher.id} isAdmin={isAdmin} />;
+    }
+  };
+
+  // For admin users, render without DashboardLayout to avoid duplication
+  if (isAdmin) {
+    return (
+      <div className="min-h-screen bg-gray-50 p-4 sm:p-6 md:p-8">
+        <div className="max-w-7xl mx-auto space-y-6">
+          <DashboardHeader
+            teacher={teacher}
+            classes={classes}
+            isLoadingClasses={isLoadingClasses}
+            isAdmin={isAdmin}
+          />
+          {renderTabContent()}
+        </div>
+      </div>
+    );
   }
 
+  // For regular teachers, render directly since DashboardLayout is already applied in App.tsx
   return (
-    <div className="space-y-6 animate-fadeIn">
-      {teacher ? (
-        <DashboardHeader
-          teacher={teacher}
-          classes={classes}
-          isLoadingClasses={isLoadingClasses}
-        />
-      ) : (
-        <div className="p-4 text-sm text-gray-600">Loading teacher...</div>
-      )}
-
-      {
-        /* <TeacherTabs
+    <div className="space-y-6">
+      <DashboardHeader
         teacher={teacher}
-        activeTab={activeTab}
-        onTabChange={setActiveTab}
-      /> */
-      }
-
-      {teacher ? (
-        <DashboardContent
-          activeTab={activeTab}
-          teacherId={teacher.id}
-          teacherName={teacher.name}
-          isAdmin={isAdmin}
-        />
-      ) : null}
+        classes={classes}
+        isLoadingClasses={isLoadingClasses}
+        isAdmin={isAdmin}
+      />
+      {renderTabContent()}
     </div>
   );
 };
