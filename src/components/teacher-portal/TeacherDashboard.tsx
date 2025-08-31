@@ -17,10 +17,11 @@ interface TeacherDashboardProps {
 }
 
 export const TeacherDashboard = (
-  { teacher, isAdmin = false }: TeacherDashboardProps,
+  { teacher, isAdmin: isAdminProp = false }: TeacherDashboardProps,
 ) => {
   const { activeTab } = useActiveTab();
-  const { isHifdhTeacher } = useRBAC();
+  const { isAdmin: isAdminRole, hasCapability } = useRBAC();
+  const isAdmin = isAdminProp || isAdminRole;
   const { data: classes, isLoading: isLoadingClasses } = useTeacherClasses(
     teacher.id,
   );
@@ -34,9 +35,9 @@ export const TeacherDashboard = (
       case "students":
         return <MyStudents teacherId={teacher.id} />;
       case "progress-book":
-        return isHifdhTeacher ? <TeacherDhorBook teacherId={teacher.id} /> : <DashboardOverview teacherId={teacher.id} isAdmin={isAdmin} />;
+        return isAdmin || hasCapability("progress_access") ? <TeacherDhorBook teacherId={teacher.id} /> : <DashboardOverview teacherId={teacher.id} isAdmin={isAdmin} />;
       case "assignments":
-        return !isHifdhTeacher ? <TeacherAssignments teacherId={teacher.id} /> : <DashboardOverview teacherId={teacher.id} isAdmin={isAdmin} />;
+        return isAdmin || hasCapability("assignments_access") ? <TeacherAssignments teacherId={teacher.id} /> : <DashboardOverview teacherId={teacher.id} isAdmin={isAdmin} />;
       case "attendance":
         return <TeacherAttendance />;
       case "performance":

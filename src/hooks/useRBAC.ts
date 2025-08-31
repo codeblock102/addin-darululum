@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client.ts";
 import { useAuth } from "@/hooks/use-auth.ts";
 import { useEffect } from "react";
@@ -6,12 +6,13 @@ import { useEffect } from "react";
 interface UserRole {
   role: string | null;
   teacher_id: string | null;
-  attendance_taker?: boolean | null;
   subject?: string | null;
+  capabilities?: Json | null;
 }
 
 export const useRBAC = () => {
   const { session } = useAuth();
+  const queryClient = useQueryClient();
 
   const { data: userRole, isLoading } = useQuery<UserRole | null>({
     queryKey: ["user-role", session?.user?.id],
@@ -20,10 +21,10 @@ export const useRBAC = () => {
         return null;
       }
 
-      // 1. Query the profiles table for role and attendance flag
+      // 1. Query the profiles table for role and capabilities
       const { data: profile, error } = await supabase
         .from("profiles")
-        .select("id, role, attendance_taker, subject")
+        .select("id, role, subject, capabilities")
         .eq("id", session.user.id)
         .single();
 
@@ -31,8 +32,8 @@ export const useRBAC = () => {
         return {
           role: profile.role,
           teacher_id: profile.id, // The profile ID is the teacher ID
-          attendance_taker: profile.attendance_taker,
           subject: profile.subject,
+          capabilities: profile.capabilities,
         };
       }
 
@@ -67,7 +68,12 @@ export const useRBAC = () => {
   const isTeacher = userRole?.role === "teacher";
   const isParent = userRole?.role === "parent";
   const teacherId = userRole?.teacher_id;
-  const isAttendanceTaker = !!userRole?.attendance_taker;
+  // Attendance access driven by capability
+  const capabilities: string[] = Array.isArray(userRole?.capabilities)
+    ? (userRole?.capabilities as unknown as string[])
+    : [];
+  const hasCapability = (cap: string) => capabilities.includes(cap);
+  const isAttendanceTaker = hasCapability("attendance_access");
   const isHifdhTeacher = (userRole?.subject || "").toLowerCase().includes("hifdh");
 
   console.log(
@@ -97,8 +103,8 @@ export const useRBAC = () => {
           filter: `id=eq.${teacherId}`,
         },
         () => {
-          // Refetch user-role on change
-          supabase.from("profiles"); // noop to keep client referenced
+          // Refetch RBAC when capabilities/role change
+          queryClient.invalidateQueries({ queryKey: ["user-role", session?.user?.id] });
         },
       )
       .subscribe();
@@ -115,6 +121,7 @@ export const useRBAC = () => {
     teacherId,
     isAttendanceTaker,
     isHifdhTeacher,
+    hasCapability,
     role: userRole?.role,
     isLoading,
   };
