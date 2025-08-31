@@ -9,6 +9,7 @@ import { TeacherDhorBook } from "./TeacherDhorBook.tsx";
 import { TeacherAssignments } from "./TeacherAssignments.tsx";
 import { TeacherAnalytics } from "./TeacherAnalytics.tsx";
 import { TeacherAttendance } from "./TeacherAttendance.tsx";
+import { useRBAC } from "@/hooks/useRBAC.ts";
 
 interface TeacherDashboardProps {
   teacher: Teacher;
@@ -19,6 +20,7 @@ export const TeacherDashboard = (
   { teacher, isAdmin = false }: TeacherDashboardProps,
 ) => {
   const { activeTab } = useActiveTab();
+  const { isHifdhTeacher } = useRBAC();
   const { data: classes, isLoading: isLoadingClasses } = useTeacherClasses(
     teacher.id,
   );
@@ -32,9 +34,9 @@ export const TeacherDashboard = (
       case "students":
         return <MyStudents teacherId={teacher.id} />;
       case "progress-book":
-        return <TeacherDhorBook teacherId={teacher.id} />;
+        return isHifdhTeacher ? <TeacherDhorBook teacherId={teacher.id} /> : <DashboardOverview teacherId={teacher.id} isAdmin={isAdmin} />;
       case "assignments":
-        return <TeacherAssignments teacherId={teacher.id} />;
+        return !isHifdhTeacher ? <TeacherAssignments teacherId={teacher.id} /> : <DashboardOverview teacherId={teacher.id} isAdmin={isAdmin} />;
       case "attendance":
         return <TeacherAttendance />;
       case "performance":

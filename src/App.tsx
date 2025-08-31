@@ -162,7 +162,14 @@ function App() {
             />
             <Route path="/classes" element={<Classes />} />
             <Route path="/progress-book" element={<ProgressBook />} />
-            <Route path="/attendance" element={<Attendance />} />
+            <Route
+              path="/attendance"
+              element={
+                <ProtectedRoute requireTeacher>
+                  <Attendance />
+                </ProtectedRoute>
+              }
+            />
             <Route path="/schedule" element={<TeacherSchedule />} />
             <Route
               path="/teacher-accounts"

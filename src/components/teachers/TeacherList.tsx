@@ -59,7 +59,7 @@ export const TeacherList = ({
     queryKey: ["profiles", madrassahId, "role", "teacher"],
     queryFn: async () => {
       let query = supabase.from("profiles").select(
-        "id, name, subject, email, phone, bio",
+        "id, name, subject, email, phone, bio, attendance_taker",
       ).eq("role", "teacher");
 
       if (madrassahId) {
