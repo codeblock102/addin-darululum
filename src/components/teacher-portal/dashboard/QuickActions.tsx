@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Calendar, MessageSquare, Plus, Users, Settings, BarChart3 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useRBAC } from "@/hooks/useRBAC.ts";
 
 interface QuickActionsProps {
   teacherId: string;
@@ -10,6 +11,7 @@ interface QuickActionsProps {
 
 export const QuickActions = ({ teacherId, isAdmin = false }: QuickActionsProps) => {
   const navigate = useNavigate();
+  const { isAttendanceTaker } = useRBAC();
 
   const teacherActions = [
     {
@@ -19,7 +21,7 @@ export const QuickActions = ({ teacherId, isAdmin = false }: QuickActionsProps) 
       color: "bg-blue-500 hover:bg-blue-600",
       description: "Register new students",
     },
-    {
+    isAttendanceTaker && {
       title: "Take Attendance",
       icon: Calendar,
       action: () => navigate("/attendance"),
@@ -73,7 +75,7 @@ export const QuickActions = ({ teacherId, isAdmin = false }: QuickActionsProps) 
     },
   ];
 
-  const actions = isAdmin ? adminActions : teacherActions;
+  const actions = (isAdmin ? adminActions : teacherActions).filter(Boolean) as typeof teacherActions;
 
   return (
     <Card className="border border-gray-200 shadow-sm bg-white hover:shadow-md transition-all duration-200">

@@ -12,6 +12,7 @@ interface ProtectedRouteProps {
   requireAdmin?: boolean;
   requireTeacher?: boolean;
   requireParent?: boolean;
+  requireAttendanceTaker?: boolean;
   requiredPermissions?: RolePermission[];
 }
 
@@ -20,12 +21,14 @@ export const ProtectedRoute = ({
   requireAdmin = false,
   requireTeacher = false,
   requireParent = false,
+  requireAttendanceTaker = false,
   requiredPermissions = [],
 }: ProtectedRouteProps) => {
   const { session, isLoading: authLoading } = useAuth();
   const {
     isAdmin,
     isTeacher,
+    isAttendanceTaker,
     isParent,
     isLoading: rbacLoading,
     hasPermission,
@@ -111,6 +114,20 @@ export const ProtectedRoute = ({
       toast({
         title: "Access Denied",
         description: "This area requires teacher privileges",
+        variant: "destructive",
+      });
+      navigate("/");
+      return;
+    }
+
+    if (requireAttendanceTaker && !isAttendanceTaker && !isAdmin) {
+      console.log(
+        "Attendance taker access required but not flagged and not admin, redirecting",
+      );
+      setRedirectCount((prev) => prev + 1);
+      toast({
+        title: "Access Denied",
+        description: "This area requires attendance taker privileges",
         variant: "destructive",
       });
       navigate("/");

@@ -8,6 +8,7 @@ import {
   Users,
 } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile.tsx";
+import { useRBAC } from "@/hooks/useRBAC.ts";
 
 interface TeacherTabsProps {
   activeTab: string;
@@ -17,6 +18,7 @@ interface TeacherTabsProps {
 export const TeacherTabs = ({ activeTab, onTabChange }: TeacherTabsProps) => {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
+  const { isAdmin, isAttendanceTaker, isHifdhTeacher } = useRBAC();
 
   // If on mobile, don't render the tabs as they're redundant with the bottom navigation
   if (isMobile) return null;
@@ -58,12 +60,20 @@ export const TeacherTabs = ({ activeTab, onTabChange }: TeacherTabsProps) => {
       label: "Messages",
       icon: <MessageSquare className="h-4 w-4" />,
     },
-  ];
+  ]
+    // Hide attendance unless admin or attendance taker
+    .filter((tab) => tab.id !== "attendance" || isAdmin || isAttendanceTaker)
+    // Hide progress-book for non-Hifdh teachers only? Requirement says: other teachers don't have access to progress
+    // So only Hifdh teachers can see progress-book; admins always can
+    .filter((tab) => tab.id !== "progress-book" || isAdmin || isHifdhTeacher)
+    // Hide assignments tab for Hifdh teachers if it exists
+    .filter((tab) => tab.id !== "assignments" || !isHifdhTeacher);
 
   const handleTabClick = (tab: any) => {
     if (tab.isExternalRoute) {
       // Navigate to external route (separate page)
       if (tab.id === "attendance") {
+        if (!isAdmin && !isAttendanceTaker) return;
         navigate("/attendance");
       }
     } else {

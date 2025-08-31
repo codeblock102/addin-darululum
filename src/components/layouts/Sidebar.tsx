@@ -76,13 +76,19 @@ export const Sidebar = (
   { onCloseSidebar, toggleSidebar, isOpen }: SidebarProps,
 ) => {
   const isMobile = useIsMobile();
-  const { isTeacher, isAdmin, isParent, isLoading: isRoleLoading } = useRBAC();
+  const { isTeacher, isAdmin, isParent, isAttendanceTaker, isHifdhTeacher, isLoading: isRoleLoading } = useRBAC();
 
   let navItems: NavItem[];
   if (isAdmin) {
     navItems = adminNavItems;
   } else if (isTeacher) {
-    navItems = teacherNavItems;
+    navItems = teacherNavItems
+      // Hide Attendance for non-takers
+      .filter((item) => isAttendanceTaker || item.href !== "/attendance")
+      // Hide Progress for non-Hifdh teachers
+      .filter((item) => isHifdhTeacher || item.href !== "/progress-book")
+      // Hide Assignments for Hifdh teachers
+      .filter((item) => !(isHifdhTeacher && item.href?.includes("assignments")));
   } else if (isParent) {
     navItems = parentNavItems;
   } else {
