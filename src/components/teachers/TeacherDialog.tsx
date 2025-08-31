@@ -52,6 +52,7 @@ const teacherSchema = z.object({
   }),
   bio: z.string().optional().nullable(),
   attendance_taker: z.boolean().default(false),
+  capabilities: z.array(z.string()).default([]),
   createAccount: z.boolean().default(true),
   generatePassword: z.boolean().default(true),
   password: z.string().optional(),
@@ -137,6 +138,7 @@ export const TeacherDialog = (
       grade: null,
       bio: null,
       attendance_taker: false,
+      capabilities: [],
       createAccount: true,
       generatePassword: true,
       password: "",
@@ -149,6 +151,8 @@ export const TeacherDialog = (
   // Set default values when selected teacher changes
   useEffect(() => {
     if (selectedTeacher) {
+      const existingCapabilities = (((selectedTeacher as any).capabilities as string[]) || []).slice();
+
       form.reset({
         name: selectedTeacher.name || "",
         email: selectedTeacher.email || null,
@@ -157,7 +161,8 @@ export const TeacherDialog = (
         section: selectedTeacher.section || "",
         grade: selectedTeacher.grade || null,
         bio: selectedTeacher.bio || null,
-        attendance_taker: (selectedTeacher as any).attendance_taker ?? false,
+        attendance_taker: false,
+        capabilities: existingCapabilities,
         createAccount: false, // Don't create account when editing
         generatePassword: true,
         password: "",
@@ -172,6 +177,7 @@ export const TeacherDialog = (
         grade: null,
         bio: null,
         attendance_taker: false,
+        capabilities: [],
         createAccount: true,
         generatePassword: true,
         password: "",
@@ -213,7 +219,7 @@ export const TeacherDialog = (
             bio: values.bio || null,
             section: values.section,
             grade: values.grade || null,
-            attendance_taker: values.attendance_taker,
+            capabilities: values.capabilities,
           })
           .eq("id", selectedTeacher.id);
 
@@ -268,7 +274,7 @@ export const TeacherDialog = (
                 section: values.section,
                 madrassah_id: madrassahId,
                 grade: values.grade || null,
-                attendance_taker: values.attendance_taker,
+                capabilities: values.capabilities,
               },
             },
           });
@@ -295,7 +301,7 @@ export const TeacherDialog = (
             section: values.section,
             madrassah_id: madrassahId,
             grade: values.grade || null,
-            attendance_taker: values.attendance_taker,
+            capabilities: values.capabilities,
           });
 
         if (profileUpsertError) {
@@ -510,22 +516,40 @@ export const TeacherDialog = (
                 )}
               />
 
+              {/* Attendance access is managed via capabilities (attendance_access) */}
+
               <FormField
                 control={form.control}
-                name="attendance_taker"
+                name="capabilities"
                 render={({ field }) => (
-                  <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
-                    <FormControl>
-                      <Checkbox
-                        checked={!!field.value}
-                        onCheckedChange={field.onChange}
-                      />
-                    </FormControl>
-                    <div className="space-y-1 leading-none">
-                      <FormLabel>Attendance taker</FormLabel>
-                      <FormDescription>
-                        Allow this teacher to take attendance and access attendance features.
-                      </FormDescription>
+                  <FormItem className="rounded-md border p-4">
+                    <FormLabel>Capabilities</FormLabel>
+                    <FormDescription>
+                      Enable specific features for this teacher
+                    </FormDescription>
+                    <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      {[
+                        { key: "attendance_access", label: "Attendance access" },
+                        { key: "progress_access", label: "Access Progress Book" },
+                        { key: "assignments_access", label: "Access Assignments" },
+                      ].map((cap) => {
+                        const checked = Array.isArray(field.value) && field.value.includes(cap.key);
+                        return (
+                          <label key={cap.key} className="flex items-center space-x-2">
+                            <Checkbox
+                              checked={checked}
+                              onCheckedChange={(val) => {
+                                const current = Array.isArray(field.value) ? field.value : [];
+                                const next = val
+                                  ? [...current.filter((c: string) => c !== cap.key), cap.key]
+                                  : current.filter((c: string) => c !== cap.key);
+                                field.onChange(next);
+                              }}
+                            />
+                            <span className="text-sm">{cap.label}</span>
+                          </label>
+                        );
+                      })}
                     </div>
                   </FormItem>
                 )}

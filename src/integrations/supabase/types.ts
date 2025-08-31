@@ -223,7 +223,7 @@ export type Database = {
           role: string | null
           section: string | null
           subject: string | null
-          attendance_taker: boolean
+          capabilities: Json
         }
         Insert: {
           bio?: string | null
@@ -236,7 +236,7 @@ export type Database = {
           role?: string | null
           section?: string | null
           subject?: string | null
-          attendance_taker?: boolean
+          capabilities?: Json
         }
         Update: {
           bio?: string | null
@@ -249,7 +249,7 @@ export type Database = {
           role?: string | null
           section?: string | null
           subject?: string | null
-          attendance_taker?: boolean
+          capabilities?: Json
         }
         Relationships: [
           {
