@@ -40,6 +40,7 @@ const StudentDetail = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  // Removed parent-invite UI from this page; sidebar entry is the source of truth now
 
   const { session } = useAuth();
   const { isAdmin } = useTeacherStatus();

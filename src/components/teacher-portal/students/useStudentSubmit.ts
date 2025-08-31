@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { supabase } from "@/integrations/supabase/client.ts";
+import { supabase, SUPABASE_URL } from "@/integrations/supabase/client.ts";
 import { StudentFormData } from "./studentTypes.ts";
 import { getErrorMessage } from "@/utils/stringUtils.ts";
 
@@ -70,9 +70,10 @@ export const useStudentSubmit = ({
       const completedJuz = formData.completedJuz.map((juz) => Number(juz));
 
       // If student doesn't exist, create them
+      let studentId: string | null = existingStudent?.id ?? null;
       if (!existingStudent) {
         // Create the student with all the form data
-        const { error: createError } = await supabase
+        const { data: created, error: createError } = await supabase
           .from("students")
           .insert({
             name: formData.studentName,
@@ -89,9 +90,12 @@ export const useStudentSubmit = ({
             completed_juz: completedJuz,
             madrassah_id: teacherProfile.madrassah_id,
             section: teacherProfile.section,
-          });
+          })
+          .select("id")
+          .single();
 
         if (createError) throw createError;
+        studentId = created?.id ?? null;
       } else {
         // Update existing student with new information
         const { error: updateError } = await supabase
@@ -113,6 +117,7 @@ export const useStudentSubmit = ({
           .eq("id", existingStudent.id);
 
         if (updateError) throw updateError;
+        studentId = existingStudent.id;
       }
 
       // Now assign student to teacher
@@ -125,6 +130,61 @@ export const useStudentSubmit = ({
         });
 
       if (assignmentError) throw assignmentError;
+
+      // Create or link parent account if guardian email is provided
+      try {
+        const guardianEmail = (formData.guardianEmail || "").trim();
+        if (guardianEmail && studentId) {
+          // Try standard invoke first
+          const { data: sessionData } = await supabase.auth.getSession();
+          const accessToken = sessionData.session?.access_token || "";
+          const { data, error } = await supabase.functions.invoke("create-parent", {
+            body: {
+              email: guardianEmail,
+              name: formData.guardianName || guardianEmail,
+              madrassah_id: teacherProfile.madrassah_id,
+              student_ids: [studentId],
+              phone: formData.guardianContact || null,
+            },
+            headers: {
+              Authorization: accessToken ? `Bearer ${accessToken}` : "",
+              apikey: (await import("@/integrations/supabase/client.ts")).SUPABASE_PUBLISHABLE_KEY,
+              "Content-Type": "application/json",
+            },
+          });
+          let result = data;
+          let err = error as unknown;
+          // Fallback: direct fetch to functions URL if invoke fails silently in some environments
+          if (!result && err) {
+            const token = accessToken;
+            const resp = await fetch(`${SUPABASE_URL}/functions/v1/create-parent`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+                apikey: (await import("@/integrations/supabase/client.ts")).SUPABASE_PUBLISHABLE_KEY,
+              },
+              body: JSON.stringify({
+                email: guardianEmail,
+                name: formData.guardianName || guardianEmail,
+                madrassah_id: teacherProfile.madrassah_id,
+                student_ids: [studentId],
+                phone: formData.guardianContact || null,
+              }),
+            });
+            result = resp.ok ? await resp.json() : null;
+            err = resp.ok ? null : await resp.text();
+          }
+          console.log("create-parent result:", { data: result, error: err });
+          if (result?.credentials) {
+            console.log(
+              `Parent credentials -> username: ${result.credentials.username}, password: ${result.credentials.password}`,
+            );
+          }
+        }
+      } catch (_e) {
+        // Non-fatal: parent creation issues should not block student creation
+      }
 
       onSuccess?.();
     } catch (error: unknown) {
