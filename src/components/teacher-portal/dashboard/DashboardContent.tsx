@@ -17,13 +17,13 @@ interface DashboardContentProps {
 export const DashboardContent = (
   { activeTab, teacherId, teacherName, isAdmin }: DashboardContentProps,
 ) => {
-  const { isHifdhTeacher } = useRBAC();
+  const { isAdmin, hasCapability } = useRBAC();
   switch (activeTab) {
     case "students":
       return <MyStudents teacherId={teacherId} isAdmin={isAdmin} />;
     case "progress-book":
-      // Only Hifdh teachers (or admins at container level) should access progress-book
-      return isHifdhTeacher || isAdmin ? <TeacherDhorBook teacherId={teacherId} /> : <DashboardOverview teacherId={teacherId} isAdmin={isAdmin} />;
+      // Progress by capability or admin
+      return isAdmin || hasCapability("progress_access") ? <TeacherDhorBook teacherId={teacherId} /> : <DashboardOverview teacherId={teacherId} isAdmin={isAdmin} />;
     case "attendance":
       return <TeacherAttendance />;
     case "performance":
@@ -36,8 +36,8 @@ export const DashboardContent = (
         />
       );
     case "assignments":
-      // Hide assignments tab for Hifdh teachers
-      return !isHifdhTeacher ? <TeacherAssignments teacherId={teacherId} /> : <DashboardOverview teacherId={teacherId} isAdmin={isAdmin} />;
+      // Assignments by capability or admin
+      return isAdmin || hasCapability("assignments_access") ? <TeacherAssignments teacherId={teacherId} /> : <DashboardOverview teacherId={teacherId} isAdmin={isAdmin} />;
     default:
       return <DashboardOverview teacherId={teacherId} isAdmin={isAdmin} />;
   }
