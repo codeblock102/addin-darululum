@@ -35,8 +35,19 @@ import { Checkbox } from "@/components/ui/checkbox.tsx";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { CalendarIcon, Loader2, MoreHorizontal, Search } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client.ts";
+import { supabase, SUPABASE_PUBLISHABLE_KEY, SUPABASE_URL } from "@/integrations/supabase/client.ts";
 import type { Database } from "@/integrations/supabase/types.ts";
+import { useToast } from "@/components/ui/use-toast.ts";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog.tsx";
 
 // Define the structure of a student as fetched for this component
 interface StudentData {
@@ -69,33 +80,39 @@ export const TeacherAttendance = () => {
   );
   const [bulkActionStatus, setBulkActionStatus] = useState<string>("");
   const queryClient = useQueryClient();
+  const { toast } = useToast();
+  const [isSending, setIsSending] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
 
-  // 1. Fetch ALL students from the 'students' table.
+  // 1. Fetch ONLY this teacher's students using students_teachers → names → students
   const {
     data: allStudents,
     isLoading: studentsLoading,
     error: studentsError,
   } = useQuery<StudentData[], Error>({
-    queryKey: ["all-students"],
+    queryKey: ["teacher-students-attendance"],
     queryFn: async () => {
-      console.log("[QueryFn all-students] Starting to fetch all students.");
-      const { data: studentDetails, error: studentDetailsError } =
-        await supabase
-          .from("students")
-          .select("id, name");
+      const { data: auth } = await supabase.auth.getUser();
+      const uid = auth.user?.id;
+      if (!uid) return [];
 
-      console.log(
-        "[QueryFn all-students] Fetched all studentDetails from students table:",
-        studentDetails,
-      );
-      if (studentDetailsError) {
-        console.error(
-          "[QueryFn all-students] Error fetching all studentDetails:",
-          studentDetailsError,
-        );
-        throw studentDetailsError;
-      }
-      return studentDetails || [];
+      // Get student names assigned to this teacher
+      const { data: assignRows, error: assignErr } = await supabase
+        .from("students_teachers")
+        .select("student_name")
+        .eq("teacher_id", uid)
+        .eq("active", true);
+      if (assignErr) throw assignErr;
+      const names = Array.from(new Set((assignRows || []).map((r: any) => r.student_name).filter(Boolean)));
+      if (names.length === 0) return [];
+
+      // Resolve to student IDs via names
+      const { data: studentsRows, error: stErr } = await supabase
+        .from("students")
+        .select("id, name")
+        .in("name", names);
+      if (stErr) throw stErr;
+      return (studentsRows || []) as StudentData[];
     },
   });
 
@@ -239,6 +256,70 @@ export const TeacherAttendance = () => {
     return matchesStatus && matchesSearch;
   });
 
+  const allMarked = (allStudents || []).length > 0 && (allStudents || []).every((s) => {
+    const rec = attendanceMap.get(s.id);
+    return Boolean(rec?.status);
+  });
+
+  const handleSendAttendanceEmails = async () => {
+    try {
+      if (!date) return;
+      if (!allMarked) {
+        toast({ title: "Incomplete", description: "Please mark attendance for all students first.", variant: "destructive" });
+        return;
+      }
+      const studentIds = (allStudents || []).map((s) => s.id);
+      if (studentIds.length === 0) return;
+      setIsSending(true);
+      const { data: sessionData } = await supabase.auth.getSession();
+      const accessToken = sessionData.session?.access_token || "";
+      const body = {
+        source: "manual-teacher",
+        student_ids: studentIds,
+        date: format(date, "yyyy-MM-dd"),
+        force: true,
+      };
+
+      // Try standard invoke first
+      const { data, error } = await supabase.functions.invoke("attendance-absence-email", {
+        body,
+        headers: {
+          Authorization: accessToken ? `Bearer ${accessToken}` : "",
+          apikey: SUPABASE_PUBLISHABLE_KEY,
+          "Content-Type": "application/json",
+        },
+      });
+      let result: any = data;
+      let err: unknown = error as unknown;
+
+      // Fallback to direct fetch
+      if (!result && err) {
+        const resp = await fetch(`${SUPABASE_URL}/functions/v1/attendance-absence-email`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: accessToken ? `Bearer ${accessToken}` : "",
+            apikey: SUPABASE_PUBLISHABLE_KEY,
+          },
+          body: JSON.stringify(body),
+        });
+        result = resp.ok ? await resp.json() : null;
+        err = resp.ok ? null : await resp.text();
+      }
+
+      if (result && !err) {
+        toast({ title: "Emails queued", description: "Attendance emails will be sent to parents for your class." });
+      } else {
+        throw new Error(typeof err === "string" ? err : "Failed to send emails");
+      }
+    } catch (e) {
+      toast({ title: "Error", description: e instanceof Error ? e.message : String(e), variant: "destructive" });
+    } finally {
+      setIsSending(false);
+      setConfirmOpen(false);
+    }
+  };
+
   const handleRowCheckboxChange = (
     studentId: string,
     checked: boolean | "indeterminate",
@@ -374,13 +455,41 @@ export const TeacherAttendance = () => {
   return (
     <div className="space-y-4">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
+        <div className="flex flex-col gap-2">
           <h2 className="text-2xl font-bold tracking-tight">
             Student Attendance
           </h2>
           <p className="text-muted-foreground">
             Record and monitor attendance for all students.
           </p>
+          <div className="flex gap-2">
+            <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+              <Button
+                size="sm"
+                onClick={() => setConfirmOpen(true)}
+                disabled={studentsLoading || attendanceLoading || !allMarked || isSending || (allStudents || []).length === 0}
+              >
+                {isSending ? "Sending..." : "Send attendance to parents"}
+              </Button>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Send attendance emails?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This will email the parents of your {allStudents?.length || 0} students based on todays attendance.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel disabled={isSending}>Cancel</AlertDialogCancel>
+                  <AlertDialogAction onClick={handleSendAttendanceEmails} disabled={isSending}>
+                    {isSending ? "Sending..." : "Confirm"}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+            {!allMarked && (
+              <span className="text-xs text-muted-foreground self-center">Mark everyone first to enable sending.</span>
+            )}
+          </div>
         </div>
       </div>
 

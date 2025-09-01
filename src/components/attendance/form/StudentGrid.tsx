@@ -14,7 +14,7 @@ import { Label } from '../../ui/label.tsx';
 
 type Student = Database['public']['Tables']['students']['Row'];
 
-async function fetchStudentsForUser(user: User | null): Promise<Student[]> {
+async function fetchStudentsForUser(user: User | null, classId?: string): Promise<Student[]> {
   if (!user) {
     return [];
   }
@@ -36,17 +36,27 @@ async function fetchStudentsForUser(user: User | null): Promise<Student[]> {
   }
 
   if (userData.role === 'teacher') {
-    const { data: teacherClasses, error: classesError } = await supabase
+    // If classId is provided, fetch only that class; otherwise all teacher classes
+    const query = supabase
       .from('classes')
-      .select('current_students')
-      .contains('teacher_ids', `{${user.id}}`);
+      .select('id, current_students, teacher_ids');
+    const { data: teacherClasses, error: classesError } = classId
+      ? await query.eq('id', classId)
+      : await query.contains('teacher_ids', [user.id]);
     
     if (classesError) {
       console.error('Error fetching teacher classes:', classesError);
       throw new Error('Failed to load classes for teacher.');
     }
 
-    const studentIds = (teacherClasses || [])
+    const teacherClassRows = (teacherClasses || []);
+    // Verify teacher actually teaches the requested class
+    if (classId) {
+      const cls = teacherClassRows.find((c: any) => c.id === classId);
+      if (!cls) return [];
+    }
+
+    const studentIds = teacherClassRows
       .flatMap(c => c.current_students || [])
       .filter((id, index, self) => id && self.indexOf(id) === index);
 
@@ -85,14 +95,16 @@ interface StudentGridProps {
   selectedStudents: Set<string>;
   onStudentSelect: (id: string) => void;
   onSelectAll: (students: Student[]) => void;
+  classId?: string;
+  stagedStatus?: string;
 }
 
-export const StudentGrid = ({ user, selectedStudents, onStudentSelect, onSelectAll }: StudentGridProps) => {
+export const StudentGrid = ({ user, selectedStudents, onStudentSelect, onSelectAll, classId, stagedStatus }: StudentGridProps) => {
   const [searchQuery, setSearchQuery] = useState('');
 
   const { data: students = [], isLoading, isError, error } = useQuery<Student[]>({
-    queryKey: ['students', user?.id],
-    queryFn: () => fetchStudentsForUser(user),
+    queryKey: ['students', user?.id, classId || null],
+    queryFn: () => fetchStudentsForUser(user, classId),
     enabled: !!user,
   });
 
@@ -140,7 +152,6 @@ export const StudentGrid = ({ user, selectedStudents, onStudentSelect, onSelectA
             {filteredStudents.map((student) => (
               <div
                 key={student.id}
-                onClick={() => onStudentSelect(student.id)}
                 className={`w-full p-3 border rounded-lg cursor-pointer transition-all flex items-center space-x-3 ${
                   selectedStudents.has(student.id)
                     ? 'bg-blue-100 dark:bg-blue-900 border-blue-400'
@@ -151,17 +162,18 @@ export const StudentGrid = ({ user, selectedStudents, onStudentSelect, onSelectA
                   <Checkbox
                     id={student.id}
                     checked={selectedStudents.has(student.id)}
-                    onCheckedChange={(checked) => {
-                      if (checked) {
-                        onStudentSelect(student.id);
-                      } else {
-                        onStudentSelect(''); // Deselect all if unchecked
-                      }
+                    onCheckedChange={() => {
+                      onStudentSelect(student.id);
                     }}
                   />
                   <Label htmlFor={student.id} className="text-black font-medium cursor-pointer">
                     {student.name}
                   </Label>
+                  {selectedStudents.has(student.id) && stagedStatus && (
+                    <span className="ml-2 text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 uppercase tracking-wide">
+                      {stagedStatus}
+                    </span>
+                  )}
                 </div>
               </div>
             ))}
