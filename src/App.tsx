@@ -163,7 +163,7 @@ function App() {
             />
             <Route path="/classes" element={<Classes />} />
             <Route path="/progress-book" element={<ProgressBook />} />
-            <Route path="/add-parent" element={<ProtectedRoute><TeacherAddParent /></ProtectedRoute>} />
+            <Route path="/add-parent" element={<ProtectedRoute requireParent><TeacherAddParent /></ProtectedRoute>} />
             <Route
               path="/attendance"
               element={
