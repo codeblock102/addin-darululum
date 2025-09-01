@@ -17,7 +17,7 @@ const TeacherAddParent = () => {
   const { isTeacher, isParent, isAdmin } = useRBAC();
   const { children } = useParentChildren();
   const [students, setStudents] = useState<StudentOption[]>([]);
-  const [selectedStudentId, setSelectedStudentId] = useState<string>("");
+  const [selectedStudentIds, setSelectedStudentIds] = useState<string[]>([]);
   const [form, setForm] = useState({ email: "", name: "", phone: "" });
   const [submitting, setSubmitting] = useState(false);
 
@@ -27,7 +27,7 @@ const TeacherAddParent = () => {
         if (isParent && !isTeacher && !isAdmin) {
           const opts = (children || []).map((c) => ({ id: c.id, name: c.name }));
           setStudents(opts);
-          if (opts[0]) setSelectedStudentId(opts[0].id);
+          if (opts[0]) setSelectedStudentIds([opts[0].id]);
           return;
         }
         // Teacher/admin: load via assignment table (teacher) or all students (admin minimal)
@@ -48,7 +48,7 @@ const TeacherAddParent = () => {
         if (sErr) throw sErr;
         const opts = (studs || []).map((s) => ({ id: s.id as string, name: s.name as string }));
         setStudents(opts);
-        if (opts[0]) setSelectedStudentId(opts[0].id);
+        if (opts[0]) setSelectedStudentIds([opts[0].id]);
       } catch (_e) {
         // non-fatal
       }
@@ -60,15 +60,15 @@ const TeacherAddParent = () => {
     const email = form.email.trim();
     const name = (form.name || email).trim();
     const phone = form.phone.trim() || null;
-    if (!email || !selectedStudentId) {
-      toast({ title: "Missing info", description: "Select a student and enter email.", variant: "destructive" });
+    if (!email || selectedStudentIds.length === 0) {
+      toast({ title: "Missing info", description: "Select at least one student and enter email.", variant: "destructive" });
       return;
     }
     setSubmitting(true);
     try {
       const { data: sessionData } = await supabase.auth.getSession();
       const accessToken = sessionData.session?.access_token || "";
-      const body = { email, name, phone, madrassah_id: null, student_ids: [selectedStudentId] };
+      const body = { email, name, phone, madrassah_id: null, student_ids: selectedStudentIds };
       const { data, error } = await supabase.functions.invoke("create-parent", {
         body,
         headers: {
@@ -93,7 +93,8 @@ const TeacherAddParent = () => {
         err = resp.ok ? null : await resp.text();
       }
       if (result && !err) {
-        toast({ title: "Parent added", description: `Linked ${email} to student.` });
+        const count = selectedStudentIds.length;
+        toast({ title: "Parent added", description: `Linked ${email} to ${count} student${count > 1 ? "s" : ""}.` });
         setForm({ email: "", name: "", phone: "" });
       } else {
         throw new Error(typeof err === "string" ? err : "Failed to add parent");
@@ -116,16 +117,44 @@ const TeacherAddParent = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {students.length > 1 && (
                 <div>
-                  <label className="text-sm block mb-1">Student</label>
-                  <select
-                    className="w-full border rounded px-3 py-2"
-                    value={selectedStudentId}
-                    onChange={(e) => setSelectedStudentId(e.target.value)}
-                  >
+                  <label className="text-sm block mb-1">Select children</label>
+                  <div className="w-full border rounded px-3 py-2 max-h-48 overflow-y-auto space-y-2">
                     {students.map((s) => (
-                      <option key={s.id} value={s.id}>{s.name}</option>
+                      <label key={s.id} className="flex items-center gap-2">
+                        <input
+                          type="checkbox"
+                          className="h-4 w-4"
+                          checked={selectedStudentIds.includes(s.id)}
+                          onChange={(e) =>
+                            setSelectedStudentIds((prev) =>
+                              e.target.checked
+                                ? Array.from(new Set([...prev, s.id]))
+                                : prev.filter((id) => id !== s.id)
+                            )
+                          }
+                        />
+                        <span>{s.name}</span>
+                      </label>
                     ))}
-                  </select>
+                  </div>
+                  <div className="flex items-center gap-2 mt-2">
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      onClick={() => setSelectedStudentIds(students.map((s) => s.id))}
+                    >
+                      Select all
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      onClick={() => setSelectedStudentIds([])}
+                    >
+                      Clear
+                    </Button>
+                    <span className="text-xs text-muted-foreground">{selectedStudentIds.length} selected</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1">Tip: You can select more than one child.</p>
                 </div>
               )}
               <div>
