@@ -36,12 +36,7 @@ export const adminNavItems: NavItem[] = [
     description: "Overview of all activities",
     exact: true,
   },
-  {
-    href: "/add-parent",
-    label: "Add Parent",
-    icon: Users,
-    description: "Link a parent to a student",
-  },
+  // Removed Add Parent from admin nav; only parents should invite other parents
   {
     href: "/students",
     label: "Students",
@@ -100,12 +95,7 @@ export const teacherNavItems: NavItem[] = [
     description: "Teacher dashboard",
     exact: true,
   },
-  {
-    href: "/add-parent",
-    label: "Add Parent",
-    icon: Users,
-    description: "Link a parent to a student",
-  },
+  // Removed Add Parent from teacher nav; only parents should invite other parents
   {
     href: "/dashboard?tab=students",
     label: "My Students",
