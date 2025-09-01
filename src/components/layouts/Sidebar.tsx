@@ -76,13 +76,19 @@ export const Sidebar = (
   { onCloseSidebar, toggleSidebar, isOpen }: SidebarProps,
 ) => {
   const isMobile = useIsMobile();
-  const { isTeacher, isAdmin, isParent, isLoading: isRoleLoading } = useRBAC();
+  const { isTeacher, isAdmin, isParent, isAttendanceTaker, hasCapability, isLoading: isRoleLoading } = useRBAC();
 
   let navItems: NavItem[];
   if (isAdmin) {
     navItems = adminNavItems;
   } else if (isTeacher) {
-    navItems = teacherNavItems;
+    navItems = teacherNavItems
+      // Attendance by capability
+      .filter((item) => isAttendanceTaker || hasCapability("attendance_access") || item.href !== "/attendance")
+      // Progress by capability (match both direct route and dashboard tab link)
+      .filter((item) => isAdmin || hasCapability("progress_access") || !item.href?.includes("progress-book"))
+      // Assignments by capability
+      .filter((item) => isAdmin || hasCapability("assignments_access") || !item.href?.includes("assignments"));
   } else if (isParent) {
     navItems = parentNavItems;
   } else {

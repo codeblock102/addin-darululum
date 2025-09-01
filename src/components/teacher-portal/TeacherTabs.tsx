@@ -8,6 +8,7 @@ import {
   Users,
 } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile.tsx";
+import { useRBAC } from "@/hooks/useRBAC.ts";
 
 interface TeacherTabsProps {
   activeTab: string;
@@ -17,6 +18,7 @@ interface TeacherTabsProps {
 export const TeacherTabs = ({ activeTab, onTabChange }: TeacherTabsProps) => {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
+  const { isAdmin, isAttendanceTaker, hasCapability } = useRBAC();
 
   // If on mobile, don't render the tabs as they're redundant with the bottom navigation
   if (isMobile) return null;
@@ -58,12 +60,19 @@ export const TeacherTabs = ({ activeTab, onTabChange }: TeacherTabsProps) => {
       label: "Messages",
       icon: <MessageSquare className="h-4 w-4" />,
     },
-  ];
+  ]
+    // Attendance: admin or capability
+    .filter((tab) => tab.id !== "attendance" || isAdmin || isAttendanceTaker || hasCapability("attendance_access"))
+    // Progress: admin or capability
+    .filter((tab) => tab.id !== "progress-book" || isAdmin || hasCapability("progress_access"))
+    // Assignments: admin or capability
+    .filter((tab) => tab.id !== "assignments" || isAdmin || hasCapability("assignments_access"));
 
   const handleTabClick = (tab: any) => {
     if (tab.isExternalRoute) {
       // Navigate to external route (separate page)
       if (tab.id === "attendance") {
+        if (!isAdmin && !isAttendanceTaker) return;
         navigate("/attendance");
       }
     } else {

@@ -1,9 +1,10 @@
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.8";
+import { Resend } from "https://esm.sh/resend@3.2.0";
 import { corsHeaders } from "../_shared/cors.ts";
 
-const supabaseUrl = Deno.env.get("API_URL");
-const serviceRoleKey = Deno.env.get("SERVICE_KEY");
+const supabaseUrl = Deno.env.get("SUPABASE_URL");
+const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 
 if (!supabaseUrl || !serviceRoleKey) {
   console.error("Missing env: API_URL or SERVICE_KEY");
@@ -14,10 +15,56 @@ serve(async (req: Request) => {
     return new Response("ok", { headers: corsHeaders });
   }
 
-  try {
-    const { email, password, name, madrassah_id: client_madrassah_id, phone, address, student_ids } = await req.json();
+  // Enforce POST; return a clear error for other methods
+  if (req.method !== "POST") {
+    return new Response(JSON.stringify({ error: "Method not allowed" }), {
+      status: 405,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
 
-    if (!email || !password || !name) {
+  try {
+    // Safely read and parse JSON body
+    const contentType = (req.headers.get("content-type") || "").toLowerCase();
+    let rawBody = "";
+    try {
+      rawBody = await req.text();
+    } catch (e) {
+      console.error("[create-parent] failed to read request body:", (e as Error)?.message || String(e));
+    }
+    if (!rawBody || rawBody.trim() === "") {
+      return new Response(JSON.stringify({ error: "Empty request body" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    let payload: any; // Using any here to accommodate dynamic fields from clients
+    try {
+      // Accept JSON only; if not JSON content-type, still try to parse as JSON
+      payload = JSON.parse(rawBody);
+    } catch (e) {
+      console.error("[create-parent] invalid JSON:", (e as Error)?.message || String(e));
+      return new Response(JSON.stringify({ error: "Invalid JSON body" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const { email, password, name, madrassah_id: client_madrassah_id, phone, address, student_ids } = payload || {};
+    const normalizedEmail = String(email || "").trim().toLowerCase();
+
+    try {
+      console.log("[create-parent] invoked", {
+        email: normalizedEmail,
+        hasPassword: Boolean(password),
+        hasName: Boolean(name),
+        providedMadrassah: Boolean(client_madrassah_id),
+        studentCount: Array.isArray(student_ids) ? student_ids.length : 0,
+        contentType,
+      });
+    } catch (_e) { /* best-effort logging */ }
+
+    if (!email || !name) {
       return new Response(JSON.stringify({ error: "Missing required fields" }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -30,9 +77,11 @@ serve(async (req: Request) => {
     let resolved_madrassah_id: string | null = client_madrassah_id ?? null;
     try {
       const authHeader = req.headers.get("Authorization") || "";
-      const token = authHeader.replace("Bearer ", "").trim();
-      if (token && token !== serviceRoleKey) {
-        const caller = createClient(supabaseUrl!, token);
+      const anonKey = Deno.env.get("SUPABASE_ANON_KEY") ?? "";
+      if (authHeader && anonKey) {
+        const caller = createClient(supabaseUrl!, anonKey, {
+          global: { headers: { Authorization: authHeader } },
+        });
         const { data: me } = await caller.auth.getUser();
         const callerId = me.user?.id;
         if (callerId) {
@@ -51,41 +100,70 @@ serve(async (req: Request) => {
     }
 
     let userId: string | null = null;
-    const { data: authData, error: authError } = await admin.auth.admin.createUser({
-      email,
-      password,
-      email_confirm: true,
-      user_metadata: { role: "parent", name, madrassah_id: resolved_madrassah_id },
-    });
+    let createdNewUser = false;
+    const defaultPassword = password || Deno.env.get("PARENT_DEFAULT_PASSWORD") || "Parent123!";
 
-    if (authError || !authData?.user) {
-      // If already registered, find user id
-      const duplicate = typeof authError?.message === "string" && authError.message.toLowerCase().includes("already registered");
-      if (duplicate) {
-        const { data: list, error: listErr } = await admin.auth.admin.listUsers();
-        if (listErr) {
-          return new Response(JSON.stringify({ error: listErr.message }), {
-            status: 500,
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-          });
-        }
-        const found = list.users?.find((u: any) => (u.email || "").toLowerCase() === (email || "").toLowerCase());
-        if (!found) {
-          return new Response(JSON.stringify({ error: authError?.message || "User exists but not found" }), {
-            status: 500,
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-          });
-        }
-        userId = found.id;
-      } else {
-        return new Response(JSON.stringify({ error: authError?.message || "Failed to create user" }), {
-          status: 500,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
+    // Prefer reusing existing parent by parents.email
+    let existingParentRow: { id: string; student_ids: string[] | null } | null = null;
+    try {
+      const { data: row } = await admin
+        .from("parents")
+        .select("id, student_ids")
+        .ilike("email", normalizedEmail)
+        .maybeSingle();
+      if (row?.id) existingParentRow = row as any;
+    } catch (_) {}
+
+    if (existingParentRow?.id) {
+      userId = existingParentRow.id;
     } else {
-      userId = authData.user.id;
+      // Try to find an existing auth user by email
+      try {
+        const { data: list } = await admin.auth.admin.listUsers();
+        const found = list?.users?.find((u: any) => (u.email || "").toLowerCase() === normalizedEmail);
+        if (found) {
+          userId = found.id;
+        }
+      } catch (_) {}
+
+      // If not found, create a new auth user
+      if (!userId) {
+        const { data: authData, error: authError } = await admin.auth.admin.createUser({
+          email: normalizedEmail,
+          password: defaultPassword,
+          email_confirm: true,
+          user_metadata: { role: "parent", name, madrassah_id: resolved_madrassah_id, username: normalizedEmail },
+        });
+        if (authError || !authData?.user) {
+          console.error("[create-parent] admin.createUser failed:", authError?.message);
+          return new Response(JSON.stringify({ error: authError?.message || "Failed to create user" }), {
+            status: 500,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+        userId = authData.user.id;
+        createdNewUser = true;
+      }
     }
+
+    // Merge existing student_ids if parent already exists
+    let mergedStudentIds: string[] = Array.isArray(student_ids) ? student_ids : [];
+    try {
+      if (existingParentRow?.student_ids && Array.isArray(existingParentRow.student_ids)) {
+        const set = new Set<string>([...existingParentRow.student_ids, ...mergedStudentIds]);
+        mergedStudentIds = Array.from(set);
+      } else {
+        const { data: existingParent } = await admin
+          .from("parents")
+          .select("student_ids")
+          .eq("id", userId!)
+          .maybeSingle();
+        if (existingParent?.student_ids && Array.isArray(existingParent.student_ids)) {
+          const set = new Set<string>([...existingParent.student_ids, ...mergedStudentIds]);
+          mergedStudentIds = Array.from(set);
+        }
+      }
+    } catch (_) {}
 
     // Upsert into consolidated parents table
     const { error: upsertError } = await admin
@@ -93,27 +171,74 @@ serve(async (req: Request) => {
       .upsert({
         id: userId!,
         name,
-        email,
+        email: normalizedEmail,
         madrassah_id: resolved_madrassah_id ?? null,
         phone: phone ?? null,
         address: address ?? null,
-        student_ids: Array.isArray(student_ids) ? student_ids : [],
+        student_ids: mergedStudentIds,
       });
     if (upsertError) {
-      await admin.auth.admin.deleteUser(userId!);
+      console.error("[create-parent] upsert parents error:", upsertError.message);
+      if (createdNewUser) {
+        try { await admin.auth.admin.deleteUser(userId!); } catch (_) {}
+      }
       return new Response(JSON.stringify({ error: upsertError.message }), {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
+    // Optionally fetch student names for email content
+    let studentNames: string[] = [];
+    try {
+      const ids = Array.isArray(student_ids) ? student_ids : [];
+      if (ids.length > 0) {
+        const { data: studs } = await admin
+          .from("students")
+          .select("name")
+          .in("id", ids);
+        studentNames = (studs || []).map((s: any) => String(s?.name || "student")).filter(Boolean);
+      }
+    } catch (_) {}
+
+    // Send notification email to the guardian
+    try {
+      const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
+      const RESEND_FROM_EMAIL = Deno.env.get("RESEND_FROM_EMAIL");
+      if (RESEND_API_KEY && RESEND_FROM_EMAIL) {
+        const resend = new Resend(RESEND_API_KEY);
+        const list = studentNames.length > 0 ? studentNames.join(", ") : "your student";
+        const html = `<!doctype html><html><body style="font-family:Arial,sans-serif;">
+          <h2>Welcome to Dār Al-Ulūm Montréal Parent Portal</h2>
+          <p>An account has been created and linked to <strong>${list}</strong>.</p>
+          <p>Login with:</p>
+          <ul>
+            <li>Username (email): <strong>${email}</strong></li>
+            <li>Temporary password: <strong>${defaultPassword}</strong></li>
+          </ul>
+          <p>Please log in and change your password. If you didn’t request this, contact the school.</p>
+        </body></html>`;
+        await resend.emails.send({ from: RESEND_FROM_EMAIL, to: normalizedEmail, subject: "Your Parent Portal Account", html });
+      }
+    } catch (_) {}
+
     // No need for a separate link table; student_ids are stored on parents
 
-    return new Response(JSON.stringify({ user: { id: userId } }), {
+    try {
+      console.log("[create-parent] success", { userId, email: normalizedEmail, linkedStudents: mergedStudentIds.length });
+    } catch (_e) {}
+
+    return new Response(JSON.stringify({
+      user: { id: userId },
+      credentials: { username: normalizedEmail, password: defaultPassword },
+    }), {
       status: 200,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (error) {
+    try {
+      console.error("[create-parent] unhandled error:", (error as Error)?.message || String(error));
+    } catch (_e) {}
     return new Response(JSON.stringify({ error: (error as Error).message }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },

@@ -5,6 +5,7 @@ import { TeacherPerformance } from "./TeacherPerformance.tsx";
 import { TeacherMessagesEnhanced } from "../messaging/TeacherMessagesEnhanced.tsx";
 import { DashboardOverview } from "./DashboardOverview.tsx";
 import { TeacherAssignments } from "../TeacherAssignments.tsx";
+import { useRBAC } from "@/hooks/useRBAC.ts";
 
 interface DashboardContentProps {
   activeTab: string;
@@ -16,11 +17,13 @@ interface DashboardContentProps {
 export const DashboardContent = (
   { activeTab, teacherId, teacherName, isAdmin }: DashboardContentProps,
 ) => {
+  const { isAdmin, hasCapability } = useRBAC();
   switch (activeTab) {
     case "students":
       return <MyStudents teacherId={teacherId} isAdmin={isAdmin} />;
     case "progress-book":
-      return <TeacherDhorBook teacherId={teacherId} />;
+      // Progress by capability or admin
+      return isAdmin || hasCapability("progress_access") ? <TeacherDhorBook teacherId={teacherId} /> : <DashboardOverview teacherId={teacherId} isAdmin={isAdmin} />;
     case "attendance":
       return <TeacherAttendance />;
     case "performance":
@@ -33,7 +36,8 @@ export const DashboardContent = (
         />
       );
     case "assignments":
-      return <TeacherAssignments teacherId={teacherId} />;
+      // Assignments by capability or admin
+      return isAdmin || hasCapability("assignments_access") ? <TeacherAssignments teacherId={teacherId} /> : <DashboardOverview teacherId={teacherId} isAdmin={isAdmin} />;
     default:
       return <DashboardOverview teacherId={teacherId} isAdmin={isAdmin} />;
   }

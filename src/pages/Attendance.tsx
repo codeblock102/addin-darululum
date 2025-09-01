@@ -1,4 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useRBAC } from "@/hooks/useRBAC.ts";
 import { AttendanceForm } from "@/components/attendance/AttendanceForm.tsx";
 import { AttendanceTable } from "@/components/attendance/AttendanceTable.tsx";
 import { AttendanceCutoffSettings } from "@/components/attendance/AttendanceCutoffSettings.tsx";
@@ -29,6 +31,15 @@ import { useIsMobile } from "@/hooks/use-mobile.tsx";
 const Attendance = () => {
   const [selectedTab, setSelectedTab] = useState("take-attendance");
   const isMobile = useIsMobile();
+  const navigate = useNavigate();
+  const { isAdmin, isAttendanceTaker, isLoading } = useRBAC();
+
+  useEffect(() => {
+    if (isLoading) return;
+    if (!isAdmin && !isAttendanceTaker) {
+      navigate("/");
+    }
+  }, [isLoading, isAdmin, isAttendanceTaker, navigate]);
 
   const statsCards = [
     {

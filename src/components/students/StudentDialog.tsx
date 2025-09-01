@@ -34,6 +34,7 @@ interface Student {
   enrollment_date: string | null;
   guardian_name: string | null;
   guardian_contact: string | null;
+  guardian_email?: string | null;
   status: "active" | "inactive";
   completed_juz?: number[];
   current_juz?: number | null;
@@ -65,6 +66,7 @@ export const StudentDialog = (
       new Date().toISOString().split("T")[0],
     guardian_name: selectedStudent?.guardian_name || "",
     guardian_contact: selectedStudent?.guardian_contact || "",
+    guardian_email: selectedStudent?.guardian_email || "",
     status: selectedStudent?.status || "active",
     completed_juz: selectedStudent?.completed_juz || [],
     current_juz: selectedStudent?.current_juz?.toString() || "_none_",
@@ -83,6 +85,7 @@ export const StudentDialog = (
           new Date().toISOString().split("T")[0],
         guardian_name: selectedStudent.guardian_name || "",
         guardian_contact: selectedStudent.guardian_contact || "",
+        guardian_email: selectedStudent.guardian_email || "",
         status: selectedStudent.status || "active",
         completed_juz: selectedStudent.completed_juz || [],
         current_juz: selectedStudent.current_juz?.toString() || "_none_",
@@ -98,6 +101,7 @@ export const StudentDialog = (
         enrollment_date: new Date().toISOString().split("T")[0],
         guardian_name: "",
         guardian_contact: "",
+        guardian_email: "",
         status: "active",
         completed_juz: [],
         current_juz: "_none_", // Default to special "None" value
@@ -139,7 +143,7 @@ export const StudentDialog = (
         throw new Error("Student name is required");
       }
 
-      const { medicalConditions, section, ...formDataWithoutMedical } = formData;
+      const { medicalConditions: _medicalConditions, section, ...formDataWithoutMedical } = formData;
       const baseSubmissionData = {
         ...formDataWithoutMedical,
         current_juz: formData.current_juz === "_none_"
@@ -147,6 +151,7 @@ export const StudentDialog = (
           : Number(formData.current_juz),
         completed_juz: formData.completed_juz.map((juz) => Number(juz)),
         medical_condition: formData.medicalConditions || null,
+        guardian_email: formData.guardian_email || null,
         // Normalize empty strings to null for optional fields
         date_of_birth: formData.date_of_birth || null,
         enrollment_date: formData.enrollment_date || new Date().toISOString().split("T")[0],
@@ -197,12 +202,68 @@ export const StudentDialog = (
           description: "Student updated successfully",
         });
       } else {
-        const { error } = await supabase
+        const { data: created, error } = await supabase
           .from("students")
           .insert([submissionData])
-          .select("id");
+          .select("id")
+          .single();
 
         if (error) throw error;
+
+        // Optionally create/link parent account if guardian email is provided
+        try {
+          const guardianEmail = (formData.guardian_email || "").trim();
+          const newStudentId = created?.id as string | undefined;
+          if (guardianEmail && newStudentId) {
+            const { data: sessionData } = await supabase.auth.getSession();
+            const accessToken = sessionData.session?.access_token || "";
+            const { data, error } = await supabase.functions.invoke("create-parent", {
+              body: {
+                email: guardianEmail,
+                name: formData.guardian_name || guardianEmail,
+                madrassah_id: submissionData.madrassah_id || null,
+                student_ids: [newStudentId],
+                phone: formData.guardian_contact || null,
+              },
+              headers: {
+                Authorization: accessToken ? `Bearer ${accessToken}` : "",
+                apikey: (await import("@/integrations/supabase/client.ts")).SUPABASE_PUBLISHABLE_KEY,
+                "Content-Type": "application/json",
+              },
+            });
+            let result = data;
+            let err = error as unknown;
+            if (!result && err) {
+              const token = accessToken;
+              const base = (await import("@/integrations/supabase/client.ts")).SUPABASE_URL;
+              const resp = await fetch(`${base}/functions/v1/create-parent`, {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  Authorization: `Bearer ${token}`,
+                  apikey: (await import("@/integrations/supabase/client.ts")).SUPABASE_PUBLISHABLE_KEY,
+                },
+                body: JSON.stringify({
+                  email: guardianEmail,
+                  name: formData.guardian_name || guardianEmail,
+                  madrassah_id: submissionData.madrassah_id || null,
+                  student_ids: [newStudentId],
+                  phone: formData.guardian_contact || null,
+                }),
+              });
+              result = resp.ok ? await resp.json() : null;
+              err = resp.ok ? null : await resp.text();
+            }
+            console.log("create-parent result:", { data: result, error: err });
+            if (result?.credentials) {
+              console.log(
+                `Parent credentials -> username: ${result.credentials.username}, password: ${result.credentials.password}`,
+              );
+            }
+          }
+        } catch (_e) {
+          // Non-fatal: ignore parent creation error here
+        }
 
         toast({
           title: "Success",
@@ -384,6 +445,20 @@ export const StudentDialog = (
                     setFormData((prev) => ({
                       ...prev,
                       guardian_contact: e.target.value,
+                    }))}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="guardian_email">Guardian Email</Label>
+                <Input
+                  id="guardian_email"
+                  type="email"
+                  placeholder="Enter guardian's email address"
+                  value={formData.guardian_email || ""}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      guardian_email: e.target.value,
                     }))}
                 />
               </div>

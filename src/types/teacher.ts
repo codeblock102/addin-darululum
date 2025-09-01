@@ -28,6 +28,7 @@ export interface Teacher {
   phone?: string;
   preferences?: Json;
   grade?: number;
+  capabilities?: string[];
 }
 
 export interface TeacherAccount extends Teacher {
