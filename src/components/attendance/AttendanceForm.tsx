@@ -362,6 +362,11 @@ export const AttendanceForm = () => {
               onSelectAll={handleSelectAll}
               classId={classId !== "all" ? classId : undefined}
               stagedStatus={pendingStatus || undefined}
+              dateYmd={(function() {
+                const d = form.getValues().date as Date | undefined;
+                const dd = d ? new Date(d) : new Date();
+                return `${dd.getFullYear()}-${String(dd.getMonth() + 1).padStart(2, '0')}-${String(dd.getDate()).padStart(2, '0')}`;
+              })()}
             />
           </CardContent>
         </Card>
