@@ -24,11 +24,11 @@ console.log("-------------------------");
 
 // --- Constants & Clients ---
 const DEFAULT_ORG_LOGO_URL = "https://depsfpodwaprzxffdcks.supabase.co/storage/v1/object/public/dum-logo/dum-logo.png";
-const resend = RESEND_API_KEY ? new Resend(RESEND_API_KEY) : null;
+// Note: Runtime secrets may change without a cold start. We'll re-read inside the handler as well.
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-student-ids",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
   "Access-Control-Max-Age": "86400",
 };
@@ -117,6 +117,13 @@ serve(async (req: Request) => {
     // =================================================================================
     // STEP 4: PARSE INCOMING REQUEST & DETERMINE SCOPE
     // =================================================================================
+    console.log("[Edge Fn] Starting request processing");
+    try {
+      const method = req.method;
+      const ct = (req.headers.get("content-type") || "").toLowerCase();
+      const hasAuth = !!req.headers.get("authorization");
+      console.log(`[Edge Fn] Request method=${method} content-type=${ct} hasAuth=${hasAuth}`);
+    } catch (_) {}
     let triggerSource = "manual";
     let timestamp = new Date().toISOString();
     let explicitMadrassahId: string | null = null;
@@ -127,20 +134,76 @@ serve(async (req: Request) => {
     let preview: boolean = false; // if true, return recipients without sending
 
     try {
-      const bodyText = await req.text();
-      if (bodyText) {
-        const parsed = JSON.parse(bodyText);
-        triggerSource = parsed.source || triggerSource;
-        timestamp = parsed.timestamp || timestamp;
-        explicitMadrassahId = parsed.madrassah_id || null;
-        explicitStudentIds = Array.isArray(parsed.student_ids) ? parsed.student_ids : null;
-        explicitClassId = typeof parsed.class_id === 'string' ? parsed.class_id : null;
-        const maybeDate = typeof parsed.date === 'string' ? String(parsed.date).trim() : '';
-        if (/^\d{4}-\d{2}-\d{2}$/.test(maybeDate)) {
-          explicitDate = maybeDate;
+      // Read body robustly: try clone().text() first, then fallback to req.json()
+      const ct = (req.headers.get("content-type") || "").toLowerCase();
+      const contentLength = req.headers.get("content-length") || "";
+      let bodyText = "";
+      try {
+        const clone = req.clone();
+        bodyText = await clone.text();
+      } catch (_) {}
+      if (!bodyText || bodyText.trim() === "") {
+        if (ct.includes("application/json")) {
+          try {
+            const asJson = await req.json();
+            bodyText = JSON.stringify(asJson);
+          } catch (_) {}
         }
-        force = Boolean(parsed.force);
-        preview = Boolean(parsed.preview);
+      }
+      console.log("[Edge Fn] Raw request body text:", bodyText);
+      console.log("[Edge Fn] content-length:", contentLength);
+      if (bodyText && bodyText.trim() !== "") {
+        let parsed: any = null;
+        try { parsed = JSON.parse(bodyText); } catch (_) {}
+        if (parsed && typeof parsed === 'object') {
+          console.log("[Edge Fn] Parsed request body:", parsed);
+          console.log("[Edge Fn] parsed.student_ids specifically:", parsed.student_ids);
+          console.log("[Edge Fn] typeof parsed.student_ids:", typeof parsed.student_ids);
+          console.log("[Edge Fn] Array.isArray(parsed.student_ids):", Array.isArray(parsed.student_ids));
+          triggerSource = parsed.source || triggerSource;
+          timestamp = parsed.timestamp || timestamp;
+          explicitMadrassahId = parsed.madrassah_id || null;
+          explicitStudentIds = Array.isArray(parsed.student_ids) ? parsed.student_ids : null;
+          console.log("[Edge Fn] explicitStudentIds after assignment:", explicitStudentIds);
+          explicitClassId = typeof parsed.class_id === 'string' ? parsed.class_id : null;
+          const maybeDate = typeof parsed.date === 'string' ? String(parsed.date).trim() : '';
+          if (/^\d{4}-\d{2}-\d{2}$/.test(maybeDate)) {
+            explicitDate = maybeDate;
+          }
+          force = Boolean(parsed.force);
+          preview = Boolean(parsed.preview);
+        }
+      }
+
+      // Header-based fallback: x-student-ids: csv
+      if (!explicitStudentIds || explicitStudentIds.length === 0) {
+        const csv = req.headers.get("x-student-ids") || "";
+        if (csv.trim() !== "") {
+          const ids = csv.split(',').map(s => s.trim()).filter(Boolean);
+          if (ids.length > 0) {
+            explicitStudentIds = ids;
+            console.log("[Edge Fn] Parsed student_ids from header x-student-ids:", explicitStudentIds);
+          }
+        }
+      }
+
+      // URL query fallback: ?student_ids=a,b,c&date=YYYY-MM-DD
+      if (!explicitStudentIds || explicitStudentIds.length === 0) {
+        try {
+          const url = new URL(req.url);
+          const q = url.searchParams.get("student_ids");
+          if (q) {
+            const ids = q.split(',').map(s => s.trim()).filter(Boolean);
+            if (ids.length > 0) {
+              explicitStudentIds = ids;
+              console.log("[Edge Fn] Parsed student_ids from query string:", explicitStudentIds);
+            }
+          }
+          const qd = url.searchParams.get("date");
+          if (!explicitDate && qd && /^\d{4}-\d{2}-\d{2}$/.test(qd)) {
+            explicitDate = qd;
+          }
+        } catch (_) {}
       }
     } catch (_) {
       // Ignore parsing errors; proceed with defaults.
@@ -151,24 +214,35 @@ serve(async (req: Request) => {
     if (explicitClassId && !isUuid(explicitClassId)) {
       explicitClassId = null;
     }
+    console.log("[Edge Fn] student_ids before validation:", explicitStudentIds);
     if (explicitStudentIds && explicitStudentIds.length > 0) {
       explicitStudentIds = explicitStudentIds.filter((id: any) => typeof id === 'string' && isUuid(id));
       if (explicitStudentIds.length === 0) {
         explicitStudentIds = null;
       }
     }
+    console.log("[Edge Fn] student_ids after validation:", explicitStudentIds);
 
-    // --- Check Email Configuration ---
-    let emailSendingEnabled = Boolean(RESEND_API_KEY && FROM_EMAIL && resend);
+    // --- Check Email Configuration (runtime) ---
+    const RUNTIME_RESEND_API_KEY = Deno.env.get("RESEND_API_KEY") || "";
+    const RUNTIME_FROM_EMAIL =
+      Deno.env.get("RESEND_FROM_EMAIL") ||
+      Deno.env.get("RESEND_FROM") ||
+      Deno.env.get("EMAIL_FROM") ||
+      "";
+    const resendClient = RUNTIME_RESEND_API_KEY ? new Resend(RUNTIME_RESEND_API_KEY) : null;
+    const emailSendingEnabled = Boolean(RUNTIME_RESEND_API_KEY && RUNTIME_FROM_EMAIL && resendClient);
     let emailConfigMessage = "Email service configured correctly.";
-
-    if (!RESEND_API_KEY && !FROM_EMAIL) {
-        emailConfigMessage = "RESEND_API_KEY and RESEND_FROM_EMAIL secrets are not set.";
-    } else if (!RESEND_API_KEY) {
-        emailConfigMessage = "RESEND_API_KEY secret is not set.";
-    } else if (!FROM_EMAIL) {
-        emailConfigMessage = "RESEND_FROM_EMAIL secret is not set.";
+    if (!RUNTIME_RESEND_API_KEY && !RUNTIME_FROM_EMAIL) {
+      emailConfigMessage = "RESEND_API_KEY and RESEND_FROM_EMAIL secrets are not set (runtime).";
+    } else if (!RUNTIME_RESEND_API_KEY) {
+      emailConfigMessage = "RESEND_API_KEY secret is not set (runtime).";
+    } else if (!RUNTIME_FROM_EMAIL) {
+      emailConfigMessage = "RESEND_FROM_EMAIL secret is not set (runtime).";
     }
+    try {
+      console.log(`[email-config] enabled=${emailSendingEnabled} hasKey=${!!RUNTIME_RESEND_API_KEY} hasFrom=${!!RUNTIME_FROM_EMAIL}`);
+    } catch (_) {}
 
     // --- Initialize Supabase Clients ---
     // Service role client for admin-level operations.
@@ -282,91 +356,52 @@ serve(async (req: Request) => {
         console.log(`[DEBUG] Checking source 1 (students.guardian_email) for student ${student.id}`);
         addEmail(student.guardian_email);
 
-        // Source 2: `parents` table where student_ids array contains the student's ID
+        // Source 2: `parents` table (student_ids array) -> fetch parent IDs, then emails from profiles
         try {
           console.log(`[DEBUG] Checking source 2 (parents table) for student ${student.id}`);
-          const { data: parentRows, error: parentsError } = await supabaseService
+          const studentUuid = student.id; // Keep as UUID, don't convert to string
+
+          const { data: parents, error: parentsError } = await supabaseService
             .from("parents")
-            .select("email, student_ids")
-            .contains("student_ids", [student.id]);
-          
+            .select("id, student_ids")
+            .contains("student_ids", [studentUuid]);
+
           if (parentsError) {
-            console.error(`[DEBUG] Error querying parents table for student ${student.id}:`, parentsError.message);
+            console.error(`[DEBUG] Error fetching parents for student ${studentUuid}:`, parentsError.message);
           } else {
-            console.log(`[DEBUG] Found ${parentRows?.length || 0} rows in 'parents' table for student ${student.id}.`);
-            for (const p of (parentRows || [])) addEmail(p?.email);
+            console.log(`[DEBUG] Found ${(parents || []).length} parent rows for student ${studentUuid}`);
+            console.log(`[DEBUG] Parent rows data:`, parents);
           }
-        } catch (e) {
-          console.error(`[DEBUG] Exception in parents table query for student ${student.id}:`, (e as Error).message);
-        }
 
-        // Source 3: `parent_children` -> `parent_teachers` join
-        try {
-          console.log(`[DEBUG] Checking source 3 (parent_children -> parent_teachers) for student ${student.id}`);
-          const { data: pcRows, error: pcError } = await supabaseService
-            .from("parent_children")
-            .select("parent_id")
-            .eq("student_id", student.id);
+          const parentIds = (parents || []).map((p: any) => p.id);
+          console.log(`[DEBUG] Extracted parent IDs:`, parentIds);
 
-          if (pcError) {
-             console.error(`[DEBUG] Error querying parent_children for student ${student.id}:`, pcError.message);
-          } else if (pcRows && pcRows.length > 0) {
-            const parentIds = Array.from(new Set(pcRows.map((r: any) => r.parent_id)));
-            console.log(`[DEBUG] Found parent_ids from parent_children: ${parentIds.join(', ')}`);
-            if (parentIds.length > 0) {
-              const { data: ptRows, error: ptError } = await supabaseService
-                .from("parent_teachers")
-                .select("email")
-                .in("id", parentIds);
-              
-              if (ptError) {
-                console.error(`[DEBUG] Error querying parent_teachers for parent_ids ${parentIds.join(', ')}:`, ptError.message);
-              } else {
-                 console.log(`[DEBUG] Found ${ptRows?.length || 0} rows in 'parent_teachers' table.`);
-                 for (const p of (ptRows || [])) addEmail(p?.email);
-              }
+          if (parentIds.length > 0) {
+            const { data: profiles, error: profilesError } = await supabaseService
+              .from("profiles")
+              .select("email, role")
+              .in("id", parentIds)
+              .eq("role", "parent");
+            
+            if (profilesError) {
+              console.error(`[DEBUG] Error fetching profiles:`, profilesError.message);
+            } else {
+              console.log(`[DEBUG] Found ${(profiles || []).length} profile rows`);
+              console.log(`[DEBUG] Profile rows data:`, profiles);
             }
-          } else {
-            console.log(`[DEBUG] No rows found in 'parent_children' for student ${student.id}.`);
-          }
-        } catch (e) {
-             console.error(`[DEBUG] Exception in parent_teachers join for student ${student.id}:`, (e as Error).message);
-        }
 
-        // Source 4: Legacy `parent_children` -> `profiles` join
-        try {
-          console.log(`[DEBUG] Checking source 4 (parent_children -> profiles) for student ${student.id}`);
-           const { data: pcRows2, error: pcError2 } = await supabaseService
-            .from("parent_children")
-            .select("parent_id")
-            .eq("student_id", student.id);
-
-          if (pcError2) {
-            console.error(`[DEBUG] Error querying parent_children (legacy) for student ${student.id}:`, pcError2.message);
-          } else if (pcRows2 && pcRows2.length > 0) {
-            const parentIds2 = Array.from(new Set(pcRows2.map((r: any) => r.parent_id)));
-             console.log(`[DEBUG] Found parent_ids from parent_children (legacy): ${parentIds2.join(', ')}`);
-            if (parentIds2.length > 0) {
-              const { data: profRows, error: profError } = await supabaseService
-                .from("profiles")
-                .select("email, role")
-                .in("id", parentIds2);
-              
-              if(profError) {
-                  console.error(`[DEBUG] Error querying profiles for parent_ids ${parentIds2.join(', ')}:`, profError.message);
-              } else {
-                console.log(`[DEBUG] Found ${profRows?.length || 0} rows in 'profiles' table.`);
-                for (const p of (profRows || [])) {
-                  if ((p as any)?.role === 'parent') addEmail((p as any)?.email);
-                }
-              }
+            const parentEmails = (profiles || []).map((p: any) => p.email).filter(Boolean);
+            console.log(`[DEBUG] Final parent emails for student ${studentUuid}:`, parentEmails);
+            
+            for (const email of parentEmails) {
+              addEmail(email);
             }
-          } else {
-             console.log(`[DEBUG] No rows found in 'parent_children' (legacy) for student ${student.id}.`);
           }
         } catch (e) {
-          console.error(`[DEBUG] Exception in profiles join for student ${student.id}:`, (e as Error).message);
+          console.error(`[DEBUG] Exception in parent email lookup for student ${student.id}:`, (e as Error).message);
         }
+
+        // Note: Only using consolidated parents table for parent emails.
 
         const recipients = Array.from(recipientSet);
 
@@ -387,8 +422,8 @@ serve(async (req: Request) => {
 
         // Send the email.
         try {
-          await resend!.emails.send({
-            from: FROM_EMAIL!,
+          await resendClient!.emails.send({
+            from: RUNTIME_FROM_EMAIL!,
             to: recipients,
             subject: `Attendance Status - ${student.name} (${effectiveYmd})`,
             html: `<p>${student.name} was marked <strong>${status}</strong> on ${effectiveYmd}.</p>`,
@@ -514,31 +549,25 @@ serve(async (req: Request) => {
         };
         addEmail(student.guardian_email);
         try {
-          const { data: parentRows } = await supabaseService.from("parents").select("email, student_ids").contains("student_ids", [student.id]);
-          for (const p of (parentRows || [])) addEmail(p?.email);
-        } catch (e) {}
-        try {
-          const { data: pcRows } = await supabaseService.from("parent_children").select("parent_id").eq("student_id", student.id);
-          if (pcRows && pcRows.length > 0) {
-            const parentIds = Array.from(new Set(pcRows.map((r: any) => r.parent_id)));
-            if (parentIds.length > 0) {
-              const { data: ptRows } = await supabaseService.from("parent_teachers").select("email").in("id", parentIds);
-              for (const p of (ptRows || [])) addEmail(p?.email);
+          const studentUuid = student.id; // Keep as UUID
+          const { data: parents } = await supabaseService
+            .from("parents")
+            .select("id, student_ids")
+            .contains("student_ids", [studentUuid]);
+          
+          const parentIds = (parents || []).map((p: any) => p.id);
+          if (parentIds.length > 0) {
+            const { data: profiles } = await supabaseService
+              .from("profiles")
+              .select("email, role")
+              .in("id", parentIds)
+              .eq("role", "parent");
+
+            for (const p of (profiles || [])) {
+              addEmail(p.email);
             }
           }
-        } catch (e) {}
-        try {
-          const { data: pcRows2 } = await supabaseService.from("parent_children").select("parent_id").eq("student_id", student.id);
-          if (pcRows2 && pcRows2.length > 0) {
-            const parentIds2 = Array.from(new Set(pcRows2.map((r: any) => r.parent_id)));
-            if (parentIds2.length > 0) {
-              const { data: profRows } = await supabaseService.from("profiles").select("email, role").in("id", parentIds2);
-              for (const p of (profRows || [])) {
-                if ((p as any)?.role === 'parent') addEmail((p as any)?.email);
-              }
-            }
-          }
-        } catch (e) {}
+        } catch (_) {}
 
         if (recipientSet.size === 0) {
           emailsSkipped++;
@@ -594,8 +623,8 @@ body{font-family:Arial,Helvetica,sans-serif;background:#f6f7f9;margin:0;padding:
         let successfulForStudent = 0;
         for (const toEmail of Array.from(recipientSet)) {
           try {
-            await resend.emails.send({
-              from: FROM_EMAIL!,
+            await resendClient.emails.send({
+              from: RUNTIME_FROM_EMAIL!,
               to: toEmail,
               subject,
               html,
@@ -609,7 +638,7 @@ body{font-family:Arial,Helvetica,sans-serif;background:#f6f7f9;margin:0;padding:
             if (is429) {
               await sleep(1500);
               try {
-                await resend.emails.send({ from: FROM_EMAIL!, to: toEmail, subject, html });
+                await resendClient.emails.send({ from: RUNTIME_FROM_EMAIL!, to: toEmail, subject, html });
                 successfulForStudent++;
                 emailsSent++;
                 continue;
