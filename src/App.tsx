@@ -44,6 +44,7 @@ import ParentAcademics from "@/pages/ParentAcademics.tsx";
 import ParentAttendance from "@/pages/ParentAttendance.tsx";
 import ParentAccounts from "@/pages/admin/ParentAccounts.tsx";
 import ResetPassword from "@/pages/ResetPassword.tsx";
+import TeacherAddParent from "@/pages/TeacherAddParent.tsx";
 
 /**
  * @component App
@@ -162,6 +163,7 @@ function App() {
             />
             <Route path="/classes" element={<Classes />} />
             <Route path="/progress-book" element={<ProgressBook />} />
+            <Route path="/add-parent" element={<ProtectedRoute requireParent><TeacherAddParent /></ProtectedRoute>} />
             <Route
               path="/attendance"
               element={
