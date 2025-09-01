@@ -145,8 +145,8 @@ export const TeacherList = ({
   }
   return (
     <>
-      {/* Mobile cards */}
-      <div className="md:hidden space-y-3">
+      {/* Cards for mobile and tablets */}
+      <div className="lg:hidden space-y-3">
         {isLoading ? (
           <div className="flex justify-center items-center py-6">
             <Loader2 className="h-6 w-6 animate-spin mr-2" />
@@ -230,8 +230,8 @@ export const TeacherList = ({
         )}
       </div>
 
-      {/* Desktop table */}
-      <div className="hidden md:block overflow-x-auto">
+      {/* Desktop table (large screens only) */}
+      <div className="hidden lg:block overflow-x-auto">
         <Table className="min-w-[720px]">
         <TableHeader>
           <TableRow>

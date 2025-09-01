@@ -1,9 +1,9 @@
 import { useState } from "react";
-import { TeacherList } from "@/components/teachers/TeacherList";
-import { SearchInput } from "@/components/table/SearchInput";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Teacher } from "@/types/teacher";
-import { Users, Search } from "lucide-react";
+import { TeacherList } from "@/components/teachers/TeacherList.tsx";
+import { SearchInput } from "@/components/table/SearchInput.tsx";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card.tsx";
+import { Teacher } from "@/types/teacher.ts";
+import { Users } from "lucide-react";
 
 interface TeacherProfilesTabProps {
   onEditTeacher: (teacher: Teacher) => void;
@@ -16,9 +16,9 @@ export function TeacherProfilesTab(
   const [searchQuery, setSearchQuery] = useState("");
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Header Section */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col gap-2 sm:gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h2 className="text-2xl font-bold text-gray-900">Teacher Profiles</h2>
           <p className="text-gray-600 mt-1">
@@ -33,7 +33,7 @@ export function TeacherProfilesTab(
 
       {/* Search Section */}
       <Card className="border border-gray-200 shadow-sm bg-white rounded-xl">
-        <CardContent className="p-6">
+        <CardContent className="p-4 sm:p-6">
           <div className="space-y-4">
             <label className="text-sm font-medium text-gray-700">
               Search Teachers
@@ -50,9 +50,9 @@ export function TeacherProfilesTab(
 
       {/* Teacher List */}
       <Card className="border border-gray-200 shadow-sm bg-white overflow-hidden rounded-xl">
-        <CardHeader className="bg-gray-50 border-b border-gray-200 px-6 py-4">
-          <CardTitle className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-            <Users className="h-5 w-5 text-gray-600" />
+        <CardHeader className="bg-gray-50 border-b border-gray-200 px-4 sm:px-6 py-3 sm:py-4">
+          <CardTitle className="text-base sm:text-lg font-semibold text-gray-900 flex items-center gap-2">
+            <Users className="h-4 w-4 sm:h-5 sm:w-5 text-gray-600" />
             Teacher Directory
           </CardTitle>
         </CardHeader>

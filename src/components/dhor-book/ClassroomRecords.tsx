@@ -358,7 +358,7 @@ export function ClassroomRecords(
       {/* Leaderboard section */}
       <Card className="bg-gradient-to-r from-indigo-500/10 via-purple-500/10 to-pink-500/10">
         <CardHeader>
-          <CardTitle className="flex items-center text-center justify-center">
+          <CardTitle className="flex items-center text-center justify-center text-base sm:text-lg">
             <Trophy className="h-6 w-6 mr-2 text-yellow-500" />
             <span>Today's Leaderboard</span>
             <Trophy className="h-6 w-6 ml-2 text-yellow-500" />
@@ -373,11 +373,11 @@ export function ClassroomRecords(
             )
             : topStudents.length > 0
             ? (
-              <div className="flex flex-wrap justify-center gap-4 md:gap-8">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
                 {topStudents.slice(0, 3).map((student, index) => (
                   <Card
                     key={student.id}
-                    className={`w-full sm:w-[250px] md:w-64 ${
+                    className={`${
                       index === 0 ? "border-yellow-500/50 shadow-lg" : ""
                     }`}
                   >
@@ -385,7 +385,7 @@ export function ClassroomRecords(
                       <div className="mb-4">
                         {LeaderboardRankIcons[index]}
                       </div>
-                      <h3 className="text-xl font-bold mb-2">{student.name}</h3>
+                      <h3 className="text-lg sm:text-xl font-bold mb-2">{student.name}</h3>
                       <div className="space-y-1 w-full mt-2">
                         <div className="flex justify-between text-sm">
                           <span>Sabaq:</span>
@@ -475,21 +475,21 @@ export function ClassroomRecords(
             )
             : (
               <>
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
                   <Card className="bg-muted/40">
-                    <CardContent className="pt-6">
+                    <CardContent className="p-4 sm:p-6">
                       <div className="text-sm text-muted-foreground">
                         Total Students
                       </div>
-                      <div className="text-2xl font-bold">{stats.total}</div>
+                      <div className="text-xl sm:text-2xl font-bold">{stats.total}</div>
                     </CardContent>
                   </Card>
                   <Card className="bg-muted/40">
-                    <CardContent className="pt-6">
+                    <CardContent className="p-4 sm:p-6">
                       <div className="text-sm text-muted-foreground">
                         Sabaq Completed
                       </div>
-                      <div className="text-2xl font-bold">
+                      <div className="text-xl sm:text-2xl font-bold">
                         {stats.sabaq}{" "}
                         <span className="text-sm text-muted-foreground">
                           / {stats.total}
@@ -498,11 +498,11 @@ export function ClassroomRecords(
                     </CardContent>
                   </Card>
                   <Card className="bg-muted/40">
-                    <CardContent className="pt-6">
+                    <CardContent className="p-4 sm:p-6">
                       <div className="text-sm text-muted-foreground">
                         Sabaq Para Completed
                       </div>
-                      <div className="text-2xl font-bold">
+                      <div className="text-xl sm:text-2xl font-bold">
                         {stats.sabaqPara}{" "}
                         <span className="text-sm text-muted-foreground">
                           / {stats.total}
@@ -511,11 +511,11 @@ export function ClassroomRecords(
                     </CardContent>
                   </Card>
                   <Card className="bg-muted/40">
-                    <CardContent className="pt-6">
+                    <CardContent className="p-4 sm:p-6">
                       <div className="text-sm text-muted-foreground">
                         Dhor Completed
                       </div>
-                      <div className="text-2xl font-bold">
+                      <div className="text-xl sm:text-2xl font-bold">
                         {stats.dhor}{" "}
                         <span className="text-sm text-muted-foreground">
                           / {stats.total}
@@ -558,102 +558,148 @@ export function ClassroomRecords(
 
                 {filteredRecords && filteredRecords.length > 0
                   ? (
-                    <div className="overflow-x-auto border rounded-md">
-                      <Table>
-                        <TableHeader>
-                          <TableRow>
-                            <TableHead>Rank</TableHead>
-                            <TableHead>Student</TableHead>
-                            <TableHead className="text-center">Sabaq</TableHead>
-                            <TableHead className="text-center">
-                              Sabaq Para
-                            </TableHead>
-                            <TableHead className="text-center">Dhor</TableHead>
-                            <TableHead className="text-right">
-                              Actions
-                            </TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {filteredRecords.map((record, index) => (
-                            <TableRow key={record.id}>
-                              <TableCell>
-                                {index < 3
-                                  ? (
-                                    <div className="flex items-center justify-center w-8 h-8 rounded-full bg-muted">
-                                      {index === 0 && (
-                                        <Trophy className="h-4 w-4 text-yellow-500" />
-                                      )}
-                                      {index === 1 && (
-                                        <Medal className="h-4 w-4 text-zinc-400" />
-                                      )}
-                                      {index === 2 && (
-                                        <Award className="h-4 w-4 text-amber-700" />
+                    <>
+                      {/* Mobile cards */}
+                      <div className="md:hidden space-y-3">
+                        {filteredRecords.map((record, index) => (
+                          <Card key={record.id} className="border">
+                            <CardContent className="p-4">
+                              <div className="flex items-start justify-between gap-3">
+                                <div className="min-w-0">
+                                  <div className="flex items-center gap-2">
+                                    {index < 3 ? (
+                                      <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-muted">
+                                        {index === 0 && <Trophy className="h-4 w-4 text-yellow-500" />}
+                                        {index === 1 && <Medal className="h-4 w-4 text-zinc-400" />}
+                                        {index === 2 && <Award className="h-4 w-4 text-amber-700" />}
+                                      </span>
+                                    ) : (
+                                      <span className="text-sm font-semibold">#{index + 1}</span>
+                                    )}
+                                    <span className="font-semibold truncate">{record.name}</span>
+                                  </div>
+                                  <div className="mt-2 grid grid-cols-3 gap-2 text-xs">
+                                    <div className="flex flex-col items-center border rounded-md py-2">
+                                      <span className="text-muted-foreground">Sabaq</span>
+                                      {record.sabaq.done ? (
+                                        <>
+                                          <Check className="h-4 w-4 text-green-500 mt-1" />
+                                          <div className="mt-1">{getQualityBadge(record.sabaq.quality)}</div>
+                                        </>
+                                      ) : (
+                                        <X className="h-4 w-4 text-red-500 mt-1" />
                                       )}
                                     </div>
-                                  )
-                                  : (
-                                    <span className="font-medium">
-                                      {index + 1}
-                                    </span>
+                                    <div className="flex flex-col items-center border rounded-md py-2">
+                                      <span className="text-muted-foreground">Sabaq Para</span>
+                                      {record.sabaqPara.done ? (
+                                        <>
+                                          <Check className="h-4 w-4 text-green-500 mt-1" />
+                                          <div className="mt-1">{getQualityBadge(record.sabaqPara.quality)}</div>
+                                        </>
+                                      ) : (
+                                        <X className="h-4 w-4 text-red-500 mt-1" />
+                                      )}
+                                    </div>
+                                    <div className="flex flex-col items-center border rounded-md py-2">
+                                      <span className="text-muted-foreground">Dhor</span>
+                                      {record.dhor.done ? (
+                                        <>
+                                          <Check className="h-4 w-4 text-green-500 mt-1" />
+                                          <div className="mt-1">{getQualityBadge(record.dhor.quality)}</div>
+                                        </>
+                                      ) : (
+                                        <X className="h-4 w-4 text-red-500 mt-1" />
+                                      )}
+                                    </div>
+                                  </div>
+                                </div>
+                                <div className="shrink-0">
+                                  <Button variant="outline" size="sm" onClick={() => navigate(`/students/${record.id}`)}>
+                                    View
+                                  </Button>
+                                </div>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        ))}
+                      </div>
+
+                      {/* Desktop table */}
+                      <div className="hidden md:block overflow-x-auto border rounded-md">
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead>Rank</TableHead>
+                              <TableHead>Student</TableHead>
+                              <TableHead className="text-center">Sabaq</TableHead>
+                              <TableHead className="text-center">Sabaq Para</TableHead>
+                              <TableHead className="text-center">Dhor</TableHead>
+                              <TableHead className="text-right">Actions</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {filteredRecords.map((record, index) => (
+                              <TableRow key={record.id}>
+                                <TableCell>
+                                  {index < 3 ? (
+                                    <div className="flex items-center justify-center w-8 h-8 rounded-full bg-muted">
+                                      {index === 0 && <Trophy className="h-4 w-4 text-yellow-500" />}
+                                      {index === 1 && <Medal className="h-4 w-4 text-zinc-400" />}
+                                      {index === 2 && <Award className="h-4 w-4 text-amber-700" />}
+                                    </div>
+                                  ) : (
+                                    <span className="font-medium">{index + 1}</span>
                                   )}
-                              </TableCell>
-                              <TableCell className="font-medium">
-                                {record.name}
-                              </TableCell>
-                              <TableCell className="text-center">
-                                <div className="flex flex-col items-center gap-1">
-                                  {record.sabaq.done
-                                    ? (
+                                </TableCell>
+                                <TableCell className="font-medium">{record.name}</TableCell>
+                                <TableCell className="text-center">
+                                  <div className="flex flex-col items-center gap-1">
+                                    {record.sabaq.done ? (
                                       <>
                                         <Check className="h-5 w-5 text-green-500" />
                                         {getQualityBadge(record.sabaq.quality)}
                                       </>
-                                    )
-                                    : <X className="h-5 w-5 text-red-500" />}
-                                </div>
-                              </TableCell>
-                              <TableCell className="text-center">
-                                <div className="flex flex-col items-center gap-1">
-                                  {record.sabaqPara.done
-                                    ? (
+                                    ) : (
+                                      <X className="h-5 w-5 text-red-500" />
+                                    )}
+                                  </div>
+                                </TableCell>
+                                <TableCell className="text-center">
+                                  <div className="flex flex-col items-center gap-1">
+                                    {record.sabaqPara.done ? (
                                       <>
                                         <Check className="h-5 w-5 text-green-500" />
-                                        {getQualityBadge(
-                                          record.sabaqPara.quality,
-                                        )}
+                                        {getQualityBadge(record.sabaqPara.quality)}
                                       </>
-                                    )
-                                    : <X className="h-5 w-5 text-red-500" />}
-                                </div>
-                              </TableCell>
-                              <TableCell className="text-center">
-                                <div className="flex flex-col items-center gap-1">
-                                  {record.dhor.done
-                                    ? (
+                                    ) : (
+                                      <X className="h-5 w-5 text-red-500" />
+                                    )}
+                                  </div>
+                                </TableCell>
+                                <TableCell className="text-center">
+                                  <div className="flex flex-col items-center gap-1">
+                                    {record.dhor.done ? (
                                       <>
                                         <Check className="h-5 w-5 text-green-500" />
                                         {getQualityBadge(record.dhor.quality)}
                                       </>
-                                    )
-                                    : <X className="h-5 w-5 text-red-500" />}
-                                </div>
-                              </TableCell>
-                              <TableCell className="text-right">
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() =>
-                                    navigate(`/students/${record.id}`)}
-                                >
-                                  View Details
-                                </Button>
-                              </TableCell>
-                            </TableRow>
-                          ))}
-                        </TableBody>
-                      </Table>
-                    </div>
+                                    ) : (
+                                      <X className="h-5 w-5 text-red-500" />
+                                    )}
+                                  </div>
+                                </TableCell>
+                                <TableCell className="text-right">
+                                  <Button variant="ghost" size="sm" onClick={() => navigate(`/students/${record.id}`)}>
+                                    View Details
+                                  </Button>
+                                </TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                      </div>
+                    </>
                   )
                   : (
                     <div className="text-center py-12 border rounded-md bg-muted/20">
