@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import TeacherDialog from "@/components/teachers/TeacherDialog.tsx";
-import { AdminHeader } from "@/components/admin/AdminHeader.tsx";
+// import { AdminHeader } from "@/components/admin/AdminHeader.tsx";
 import { Button } from "@/components/ui/button.tsx";
 import {
   Tabs,
@@ -204,22 +204,22 @@ const Teachers = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto p-6 space-y-8">
+      <div className="max-w-7xl mx-auto p-4 sm:p-6 space-y-6 sm:space-y-8">
         {/* Header Section */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
-          <div className="flex items-center justify-between">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6 lg:p-8">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Teacher Management Center</h1>
-              <p className="text-gray-600 mt-2 text-lg">
+              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Teacher Management Center</h1>
+              <p className="text-gray-600 mt-1 sm:mt-2 text-base sm:text-lg">
                 Comprehensive teacher profile and account management
               </p>
             </div>
             <Button
-              className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 text-base font-medium shadow-sm transition-all duration-200"
+              className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 sm:px-6 sm:py-3 text-sm sm:text-base font-medium shadow-sm transition-all duration-200 self-start"
               onClick={handleCreateTeacher}
               disabled={isAdminDataLoading}
             >
-              <UserPlus className="mr-2 h-5 w-5" />
+              <UserPlus className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
               Add Teacher
             </Button>
           </div>
@@ -236,11 +236,11 @@ const Teachers = () => {
             onValueChange={setActiveTab}
             className="w-full"
           >
-            <div className="border-b border-gray-200 px-8 pt-6">
-              <TabsList className="w-auto bg-gray-50 border border-gray-200 p-1 h-12 rounded-lg">
+            <div className="border-b border-gray-200 px-4 sm:px-6 pt-4 sm:pt-6">
+              <TabsList className="w-full sm:w-auto bg-gray-50 border border-gray-200 p-1 h-10 sm:h-12 rounded-lg overflow-x-auto">
                 <TabsTrigger 
                   value="profiles" 
-                  className="data-[state=active]:bg-white data-[state=active]:text-emerald-700 data-[state=active]:shadow-sm transition-all duration-200 px-8 rounded-md"
+                  className="data-[state=active]:bg-white data-[state=active]:text-emerald-700 data-[state=active]:shadow-sm transition-all duration-200 px-4 sm:px-8 rounded-md text-sm sm:text-base"
                 >
                   Teacher Profiles
                 </TabsTrigger>
@@ -248,7 +248,7 @@ const Teachers = () => {
             </div>
 
             {/* Profiles Tab */}
-            <TabsContent value="profiles" className="p-8 pt-6">
+            <TabsContent value="profiles" className="p-4 sm:p-6 lg:p-8 pt-4 sm:pt-6">
               <TeacherProfilesTab
                 onEditTeacher={handleEditTeacher}
                 madrassahId={adminData?.madrassah_id}

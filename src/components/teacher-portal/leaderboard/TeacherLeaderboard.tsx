@@ -4,8 +4,8 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { LeaderboardCard } from "./LeaderboardCard";
+} from "@/components/ui/card.tsx";
+import { LeaderboardCard } from "./LeaderboardCard.tsx";
 import { CheckSquare } from "lucide-react";
 
 interface TeacherLeaderboardProps {
@@ -16,10 +16,10 @@ export const TeacherLeaderboard = ({ teacherId }: TeacherLeaderboardProps) => {
   return (
     <div className="space-y-6">
       <div className="flex flex-col">
-        <h2 className="text-2xl font-bold tracking-tight">
+        <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">
           Student Leaderboard
         </h2>
-        <p className="text-muted-foreground">
+        <p className="text-sm sm:text-base text-muted-foreground">
           Track student performance in Sabaq, Sabaq Para, and Dhor activities.
         </p>
       </div>
