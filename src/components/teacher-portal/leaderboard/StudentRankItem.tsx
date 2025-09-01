@@ -2,8 +2,8 @@ import { motion } from "framer-motion";
 import {
   StudentCompletionStatus,
   StudentLeaderboardData,
-} from "@/types/leaderboard";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+} from "@/types/leaderboard.ts";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar.tsx";
 import { Award, CheckCircle, Circle, Clock, Medal, Trophy } from "lucide-react";
 import { format } from "date-fns";
 import { useNavigate } from "react-router-dom";
@@ -103,24 +103,24 @@ export const StudentRankItem = ({
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.95 }}
       transition={{ duration: 0.2 }}
-      className={`relative flex items-center space-x-4 rounded-md border p-3 ${getRankBgColor()} ${
+      className={`relative flex items-center space-x-3 sm:space-x-4 rounded-md border p-2 sm:p-3 ${getRankBgColor()} ${
         isTopRank ? "border-amber-300 dark:border-amber-700" : "border-border"
       } cursor-pointer hover:shadow-md`}
       onClick={handleNavigateToStudent}
     >
-      <div className="flex items-center justify-center w-8">
+      <div className="flex items-center justify-center w-6 sm:w-8">
         {getRankIcon()}
       </div>
 
-      <Avatar className="h-10 w-10 border-2 border-amber-100 dark:border-amber-800">
+      <Avatar className="h-8 w-8 sm:h-10 sm:w-10 border-2 border-amber-100 dark:border-amber-800">
         <AvatarFallback className="bg-primary-foreground text-primary">
           {getInitials(student.name)}
         </AvatarFallback>
       </Avatar>
 
       <div className="flex-1 space-y-1">
-        <p className="text-sm font-medium leading-none">{student.name}</p>
-        <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
+        <p className="text-sm sm:text-base font-medium leading-none">{student.name}</p>
+        <div className="flex flex-wrap gap-2 text-[11px] sm:text-xs text-muted-foreground">
           <div className="flex items-center gap-1">
             {getCompletionIcon(
               completionStatus.sabaq,
@@ -140,11 +140,11 @@ export const StudentRankItem = ({
       </div>
 
       <div className="text-right">
-        <p className="text-sm font-medium leading-none">
+        <p className="text-xs sm:text-sm font-medium leading-none">
           {student.totalPoints} pts
         </p>
         {student.lastActivity && (
-          <p className="text-xs text-muted-foreground flex items-center gap-1 justify-end mt-1">
+          <p className="text-[10px] sm:text-xs text-muted-foreground flex items-center gap-1 justify-end mt-1">
             <Clock className="h-3 w-3" />
             {getLastActivityDate()}
           </p>

@@ -1,9 +1,9 @@
-import { useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { supabase } from "@/integrations/supabase/client";
+import { useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card.tsx";
+import { Badge } from "@/components/ui/badge.tsx";
+import { Input } from "@/components/ui/input.tsx";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select.tsx";
+import { supabase } from "@/integrations/supabase/client.ts";
 import { useQuery } from "@tanstack/react-query";
 import {
   BookOpen,
@@ -15,19 +15,18 @@ import {
   CheckCircle,
   Calendar,
   Award,
-  TrendingDown,
   ArrowUp,
   ArrowDown,
   Star,
   Trophy,
   Lightbulb,
-  AlertTriangle,
 } from "lucide-react";
 
+interface UserProfileData { madrassah_id?: string; section?: string }
 interface MonthlyProgressProps {
   isAdmin?: boolean;
   teacherId?: string;
-  userProfileData?: any;
+  userProfileData?: UserProfileData;
 }
 
 interface ProgressEntry {
@@ -55,7 +54,9 @@ export const MonthlyProgress = ({ isAdmin, teacherId, userProfileData }: Monthly
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedMonths, setSelectedMonths] = useState(6);
 
-  const { data: students, isLoading: studentsLoading } = useQuery({
+  type StudentRow = { id: string; name: string; status: string };
+
+  const { data: students, isLoading: studentsLoading } = useQuery<StudentRow[]>({
     queryKey: [
       "students-for-monthly-progress",
       {
@@ -75,22 +76,34 @@ export const MonthlyProgress = ({ isAdmin, teacherId, userProfileData }: Monthly
 
       if (isAdmin) {
         if (teacherId && teacherId !== "all") {
-          const { data: studentIds, error: studentIdError } = await supabase
+          const { data: links, error: linkError } = await supabase
             .from("students_teachers")
-            .select("student_id")
+            .select("student_name")
             .eq("teacher_id", teacherId);
 
-          if (studentIdError) {
-            console.error("Error fetching student IDs for teacher", studentIdError);
+          if (linkError) {
+            console.error("Error fetching teacher's students", linkError);
             return [];
           }
-          const ids = studentIds.map((s) => s.student_id);
+
+          const names = Array.from(new Set(((links || []) as Array<{ student_name: string | null }>).map((l) => l.student_name).filter(Boolean))) as string[];
+          if (names.length === 0) return [];
+
+          const { data: studs, error: sErr } = await supabase
+            .from("students")
+            .select("id, name")
+            .in("name", names);
+          if (sErr) {
+            console.error("Error resolving student IDs", sErr);
+            return [];
+          }
+          const ids = ((studs || []) as Array<{ id: string; name: string }>).map((s) => s.id);
           query = query.in("id", ids);
         }
       } else if (teacherId && userProfileData.section) {
-        const { data: studentLinks, error: linkError } = await supabase
+        const { data: links, error: linkError } = await supabase
           .from("students_teachers")
-          .select("student_id")
+          .select("student_name")
           .eq("teacher_id", teacherId);
 
         if (linkError) {
@@ -98,13 +111,20 @@ export const MonthlyProgress = ({ isAdmin, teacherId, userProfileData }: Monthly
           return [];
         }
 
-        const studentIds = studentLinks.map((link) => link.student_id);
+        const names = Array.from(new Set(((links || []) as Array<{ student_name: string | null }>).map((l) => l.student_name).filter(Boolean))) as string[];
+        if (names.length === 0) return [];
 
-        if (studentIds.length === 0) {
+        const { data: studs, error: sErr } = await supabase
+          .from("students")
+          .select("id, name")
+          .in("name", names);
+        if (sErr) {
+          console.error("Error resolving student IDs", sErr);
           return [];
         }
-
-        query = query.in("id", studentIds).eq("section", userProfileData.section);
+        const ids = ((studs || []) as Array<{ id: string; name: string }>).map((s) => s.id);
+        if (ids.length === 0) return [];
+        query = query.in("id", ids).eq("section", userProfileData.section);
       } else {
         return [];
       }
@@ -115,12 +135,12 @@ export const MonthlyProgress = ({ isAdmin, teacherId, userProfileData }: Monthly
         console.error("Error fetching students:", error);
         return [];
       }
-      return data || [];
+      return (data || []) as StudentRow[];
     },
     enabled: !!userProfileData,
   });
 
-  const { data: progressData, isLoading: progressLoading } = useQuery({
+  const { data: progressData, isLoading: progressLoading } = useQuery<ProgressEntry[]>({
     queryKey: ["monthly-progress-data", selectedStudentId, selectedMonths],
     queryFn: async () => {
       if (!selectedStudentId) return [];
@@ -140,13 +160,13 @@ export const MonthlyProgress = ({ isAdmin, teacherId, userProfileData }: Monthly
         return [];
       }
 
-      return data || [];
+      return (data || []) as ProgressEntry[];
     },
     enabled: !!selectedStudentId,
   });
 
-  const selectedStudent = students?.find((s) => s.id === selectedStudentId);
-  const filteredStudents = students?.filter((student) =>
+  const selectedStudent = students?.find((s: StudentRow) => s.id === selectedStudentId);
+  const filteredStudents = students?.filter((student: StudentRow) =>
     student.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
@@ -174,7 +194,7 @@ export const MonthlyProgress = ({ isAdmin, teacherId, userProfileData }: Monthly
 
     // Group data by month
     const monthlyData: Record<string, ProgressEntry[]> = {};
-    progressData.forEach((entry) => {
+    progressData.forEach((entry: ProgressEntry) => {
       const date = new Date(entry.date);
       const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
       if (!monthlyData[monthKey]) monthlyData[monthKey] = [];
@@ -199,9 +219,9 @@ export const MonthlyProgress = ({ isAdmin, teacherId, userProfileData }: Monthly
       return "stable";
     };
 
-    const totalPages = progressData.reduce((sum, entry) => sum + entry.pages_memorized, 0);
-    const totalRevisions = progressData.filter(entry => entry.pages_memorized === 0).length;
-    const averageQuality = progressData.reduce((sum, entry) => sum + getQualityScore(entry.memorization_quality), 0) / progressData.length;
+    const totalPages = progressData.reduce((sum: number, entry: ProgressEntry) => sum + entry.pages_memorized, 0);
+    const totalRevisions = progressData.filter((entry: ProgressEntry) => entry.pages_memorized === 0).length;
+    const averageQuality = progressData.reduce((sum: number, entry: ProgressEntry) => sum + getQualityScore(entry.memorization_quality), 0) / progressData.length;
     const monthCount = Object.keys(monthlyData).length;
 
     const insights = [];
@@ -261,7 +281,7 @@ export const MonthlyProgress = ({ isAdmin, teacherId, userProfileData }: Monthly
   // Process monthly data for display
   const monthlyData: MonthlyStats[] = progressData ? (() => {
     const monthlyMap: Record<string, ProgressEntry[]> = {};
-    progressData.forEach((entry) => {
+    progressData.forEach((entry: ProgressEntry) => {
       const date = new Date(entry.date);
       const monthKey = date.toLocaleDateString('en-US', { year: 'numeric', month: 'long' });
       if (!monthlyMap[monthKey]) monthlyMap[monthKey] = [];
@@ -270,7 +290,7 @@ export const MonthlyProgress = ({ isAdmin, teacherId, userProfileData }: Monthly
 
     return Object.entries(monthlyMap).map(([month, entries]) => {
       const qualityDistribution: Record<string, number> = {};
-      entries.forEach((entry) => {
+      entries.forEach((entry: ProgressEntry) => {
         const quality = entry.memorization_quality;
         qualityDistribution[quality] = (qualityDistribution[quality] || 0) + 1;
       });
@@ -325,7 +345,7 @@ export const MonthlyProgress = ({ isAdmin, teacherId, userProfileData }: Monthly
                   placeholder="Search students..."
                   className="pl-10"
                   value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchQuery(e.target.value)}
                 />
               </div>
               {studentsLoading ? (
@@ -335,9 +355,10 @@ export const MonthlyProgress = ({ isAdmin, teacherId, userProfileData }: Monthly
                 </div>
               ) : (
                 <ul className="space-y-2 max-h-96 overflow-y-auto">
-                  {filteredStudents?.map((student) => (
+                  {filteredStudents?.map((student: StudentRow) => (
                     <li key={student.id}>
                       <button
+                        type="button"
                         onClick={() => setSelectedStudentId(student.id)}
                         className={`w-full text-left p-2 rounded-md text-sm transition-colors ${
                           selectedStudentId === student.id
@@ -358,7 +379,7 @@ export const MonthlyProgress = ({ isAdmin, teacherId, userProfileData }: Monthly
           <Card>
             <CardContent className="p-4">
               <h3 className="font-semibold text-gray-900 mb-3">Time Range</h3>
-              <Select value={selectedMonths.toString()} onValueChange={(value) => setSelectedMonths(parseInt(value))}>
+              <Select value={selectedMonths.toString()} onValueChange={(value: string) => setSelectedMonths(parseInt(value))}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select time range" />
                 </SelectTrigger>

@@ -46,7 +46,7 @@ export const LeaderboardCard = (
   const [subjectTab, setSubjectTab] = useState("all");
 
   const { leaderboardData, isLoading, topStudent, refreshData } =
-    useLeaderboardData(teacherId, filters);
+    useLeaderboardData(teacherId || "", filters);
 
   // Set up real-time updates
   useRealtimeLeaderboard(teacherId, refreshData);
@@ -130,7 +130,7 @@ export const LeaderboardCard = (
   return (
     <Card className={`${className}`}>
       <CardHeader className="pb-3">
-        <div className="flex items-center justify-between">
+        <div className="flex items-start sm:items-center justify-between gap-3 sm:gap-0 flex-col sm:flex-row">
           <div className="flex flex-col">
             <CardTitle className="flex items-center gap-2">
               <Trophy className="h-5 w-5 text-amber-500" />
@@ -141,7 +141,7 @@ export const LeaderboardCard = (
             </CardDescription>
           </div>
 
-          <div className="flex gap-2">
+          <div className="flex gap-2 self-end sm:self-auto">
             <button
               type="button"
               onClick={handleRefresh}
@@ -167,13 +167,13 @@ export const LeaderboardCard = (
         </div>
 
         {showFilters && (
-          <div className="mt-4 space-y-3 p-4 bg-muted/50 rounded-lg animate-fade-in">
+          <div className="mt-4 space-y-3 p-3 sm:p-4 bg-muted/50 rounded-lg animate-fade-in">
             <div className="flex flex-wrap gap-3 justify-between">
               <Select
                 defaultValue={filters.timeRange}
                 onValueChange={handleTimeRangeChange}
               >
-                <SelectTrigger className="w-[120px]">
+                <SelectTrigger className="w-[140px] h-9">
                   <SelectValue placeholder="Time Range" />
                 </SelectTrigger>
                 <SelectContent>
@@ -188,7 +188,7 @@ export const LeaderboardCard = (
                 defaultValue={filters.metricPriority}
                 onValueChange={handleMetricChange}
               >
-                <SelectTrigger className="w-[120px]">
+                <SelectTrigger className="w-[140px] h-9">
                   <SelectValue placeholder="Metric" />
                 </SelectTrigger>
                 <SelectContent>
@@ -204,7 +204,7 @@ export const LeaderboardCard = (
                 defaultValue={filters.participationFilter}
                 onValueChange={handleParticipationFilterChange}
               >
-                <SelectTrigger className="w-[120px]">
+                <SelectTrigger className="w-[160px] h-9">
                   <SelectValue placeholder="Participation" />
                 </SelectTrigger>
                 <SelectContent>
@@ -218,7 +218,7 @@ export const LeaderboardCard = (
                 defaultValue={filters.completionStatus}
                 onValueChange={handleCompletionStatusChange}
               >
-                <SelectTrigger className="w-[120px]">
+                <SelectTrigger className="w-[160px] h-9">
                   <SelectValue placeholder="Completion" />
                 </SelectTrigger>
                 <SelectContent>

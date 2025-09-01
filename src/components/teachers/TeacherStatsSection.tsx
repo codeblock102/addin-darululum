@@ -1,10 +1,5 @@
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card.tsx";
-import { BookOpen, Calendar, School, Users } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card.tsx";
+import { BookOpen, School, Users } from "lucide-react";
 
 interface TeacherStatsProps {
   stats: {
@@ -67,17 +62,17 @@ export function TeacherStatsSection({ stats }: TeacherStatsProps) {
   ];
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
       {statItems.map((stat, index) => (
         <Card key={index} className="border border-gray-200 shadow-sm bg-white hover:shadow-md transition-all duration-200 overflow-hidden rounded-xl">
-          <CardContent className="p-6">
+          <CardContent className="p-4 sm:p-6">
             <div className="flex items-start justify-between mb-4">
               <div className={`p-3 rounded-lg ${stat.color} ${stat.borderColor} border`}>
                 {stat.icon}
               </div>
             </div>
             <div className="space-y-2">
-              <p className="text-3xl font-bold text-gray-900">{stat.value}</p>
+              <p className="text-2xl sm:text-3xl font-bold text-gray-900">{stat.value}</p>
               <p className="text-sm font-medium text-gray-700">{stat.title}</p>
               <p className="text-xs text-gray-500">{stat.description}</p>
             </div>
