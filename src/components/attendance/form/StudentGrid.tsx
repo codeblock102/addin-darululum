@@ -97,9 +97,10 @@ export interface StudentGridProps {
   onSelectAll: (students: Student[]) => void;
   classId?: string;
   stagedStatus?: string;
+  dateYmd?: string; // YYYY-MM-DD selected date
 }
 
-export const StudentGrid = ({ user, selectedStudents, onStudentSelect, onSelectAll, classId, stagedStatus }: StudentGridProps) => {
+export const StudentGrid = ({ user, selectedStudents, onStudentSelect, onSelectAll, classId, stagedStatus, dateYmd }: StudentGridProps) => {
   const [searchQuery, setSearchQuery] = useState('');
 
   const { data: students = [], isLoading, isError, error } = useQuery<Student[]>({
@@ -112,6 +113,95 @@ export const StudentGrid = ({ user, selectedStudents, onStudentSelect, onSelectA
   const filteredStudents = studentList.filter((student) =>
     student.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  // Fetch attendance records for the selected date to indicate taken attendance
+  const ymd = dateYmd || new Date().toISOString().split('T')[0];
+  const { data: attendanceRows = [] } = useQuery<any[]>({
+    queryKey: ['attendance-day', ymd, classId || null, user?.id],
+    enabled: !!user && studentList.length > 0 && !!ymd,
+    queryFn: async () => {
+      // Limit to the displayed students only
+      const ids = studentList.map(s => s.id);
+      if (ids.length === 0) return [] as any[];
+      const q = supabase
+        .from('attendance')
+        .select('student_id, status, late_reason, time')
+        .eq('date', ymd)
+        .in('student_id', ids);
+      if (classId) q.eq('class_id', classId);
+      const { data, error } = await q;
+      if (error) {
+        console.error('Error fetching attendance for grid indicators:', error);
+        return [] as any[];
+      }
+      return data || [];
+    }
+  });
+
+  // Build maps of student_id -> status and -> time
+  const statusMap: Record<string, string> = {};
+  const timeMap: Record<string, string> = {};
+  for (const r of (attendanceRows || [])) {
+    if (r && r.student_id) {
+      statusMap[r.student_id] = String(r.status || '').toLowerCase();
+      if (r.time) timeMap[r.student_id] = String(r.time);
+    }
+  }
+
+  // If a class is selected, fetch its start_time to compute lateness
+  const { data: classRow } = useQuery<any>({
+    queryKey: ['class-start', classId || null],
+    enabled: !!classId,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from('classes')
+        .select('id, time_slots')
+        .eq('id', classId!)
+        .maybeSingle();
+      return data || null;
+    }
+  });
+
+  function parseStartTimeFromClass(row: any): string | null {
+    try {
+      const slots = Array.isArray(row?.time_slots) ? row.time_slots : [];
+      const first = slots?.[0];
+      const hm = typeof first?.start_time === 'string' ? first.start_time : null;
+      return hm && /\d{2}:\d{2}/.test(hm) ? hm : null;
+    } catch {
+      return null;
+    }
+  }
+
+  function hmToMinutes(hm: string): number {
+    const [h, m] = hm.split(':').map((v: string) => parseInt(v, 10));
+    return (h || 0) * 60 + (m || 0);
+  }
+
+  function computeLateMinutes(attHm?: string, classHm?: string): number | null {
+    if (!attHm || !classHm) return null;
+    if (!/\d{2}:\d{2}/.test(attHm) || !/\d{2}:\d{2}/.test(classHm)) return null;
+    const diff = hmToMinutes(attHm) - hmToMinutes(classHm);
+    return diff > 0 ? diff : 0;
+  }
+
+  const classStartHm = classRow ? parseStartTimeFromClass(classRow) : null;
+
+  function statusBadgeClasses(status?: string): string {
+    switch ((status || '').toLowerCase()) {
+      case 'present':
+        return 'bg-emerald-100 text-emerald-700';
+      case 'absent':
+        return 'bg-red-100 text-red-700';
+      case 'late':
+        return 'bg-amber-100 text-amber-700';
+      case 'not_marked':
+      case 'not-marked':
+        return 'bg-slate-100 text-slate-700';
+      default:
+        return 'bg-slate-100 text-slate-700';
+    }
+  }
 
   if (isLoading) {
     return <div className="flex justify-center items-center h-48"><Loader2 className="animate-spin h-8 w-8 text-blue-500" /></div>;
@@ -169,6 +259,20 @@ export const StudentGrid = ({ user, selectedStudents, onStudentSelect, onSelectA
                   <Label htmlFor={student.id} className="text-black font-medium cursor-pointer">
                     {student.name}
                   </Label>
+                  {statusMap[student.id] && (
+                    <span className={`ml-2 text-[10px] px-2 py-0.5 rounded-full uppercase tracking-wide ${statusBadgeClasses(statusMap[student.id])}`}>
+                      {statusMap[student.id]}
+                      {statusMap[student.id] === 'late' && (
+                        (() => {
+                          const mins = computeLateMinutes(timeMap[student.id], classStartHm || undefined);
+                          const parts: string[] = [];
+                          if (typeof mins === 'number' && mins > 0) parts.push(`${mins}m`);
+                          if (timeMap[student.id]) parts.push(`${timeMap[student.id]}`);
+                          return parts.length ? ` · ${parts.join(' · ')}` : '';
+                        })()
+                      )}
+                    </span>
+                  )}
                   {selectedStudents.has(student.id) && stagedStatus && (
                     <span className="ml-2 text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 uppercase tracking-wide">
                       {stagedStatus}
