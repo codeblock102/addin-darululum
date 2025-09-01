@@ -1,7 +1,7 @@
 {
   "name": "Dār Al-Ulūm Montréal",
   "short_name": "Dar Al-Ulum",
-  "start_url": "/auth",
+  "start_url": "/",
   "scope": "/",
   "display": "standalone",
   "background_color": "#0f766e",
