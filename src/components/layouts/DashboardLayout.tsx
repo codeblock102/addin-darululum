@@ -9,7 +9,6 @@ import { BottomNavigation } from "@/components/mobile/BottomNavigation.tsx";
 import { Outlet } from "react-router-dom";
 import { cn } from "@/lib/utils.ts";
 import { useTheme } from "@/hooks/use-theme.ts";
-
 interface DashboardLayoutProps {
   children?: React.ReactNode;
 }

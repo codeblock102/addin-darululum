@@ -18,7 +18,7 @@ import {
   School,
   Settings,
   Users,
-  UserCircle2,
+  UserCircle2 as _UserCircle2,
   UserCheck,
 } from "lucide-react"; // Simplified imports based on usage
 import { NavItem } from "@/types/navigation.ts";
@@ -36,6 +36,7 @@ export const adminNavItems: NavItem[] = [
     description: "Overview of all activities",
     exact: true,
   },
+  // Removed Add Parent from admin nav; only parents should invite other parents
   {
     href: "/students",
     label: "Students",
@@ -94,6 +95,7 @@ export const teacherNavItems: NavItem[] = [
     description: "Teacher dashboard",
     exact: true,
   },
+  // Removed Add Parent from teacher nav; only parents should invite other parents
   {
     href: "/dashboard?tab=students",
     label: "My Students",
@@ -143,6 +145,12 @@ export const parentNavItems: NavItem[] = [
     icon: Home,
     description: "Overview of your children",
     exact: true,
+  },
+  {
+    href: "/add-parent",
+    label: "Add Parent",
+    icon: Users,
+    description: "Add another guardian for your child",
   },
   {
     href: "/parent/progress",

@@ -6,10 +6,13 @@ import { supabase } from "@/integrations/supabase/client.ts";
 import { useQuery } from "@tanstack/react-query";
 import { Tables } from "@/types/supabase.ts";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute.tsx";
+// Removed Add Parent tab from parent dashboard; sidebar page is the source of truth
+import { useToast } from "@/hooks/use-toast.ts";
 
 const Parent = () => {
   const { children, isLoading } = useParentChildren();
   const [selectedStudentId, setSelectedStudentId] = useState<string | null>(children[0]?.id ?? null);
+  const { toast: _toast } = useToast();
 
   const { data: progressEntries } = useQuery({
     queryKey: ["parent-student-progress", selectedStudentId],
@@ -27,7 +30,7 @@ const Parent = () => {
     enabled: !!selectedStudentId,
   });
 
-  const { data: attendance } = useQuery<Tables["attendance"][] | null>({
+  const { data: attendance } = useQuery<Tables<"attendance">[] | null>({
     queryKey: ["parent-student-attendance", selectedStudentId],
     queryFn: async () => {
       if (!selectedStudentId) return [];
@@ -57,6 +60,8 @@ const Parent = () => {
     enabled: !!selectedStudentId,
   });
 
+  // Add Parent flow removed from parent dashboard
+
   return (
     <ProtectedRoute requireParent>
       <div className="space-y-6 animate-fadeIn">
@@ -71,6 +76,7 @@ const Parent = () => {
               {children.map((child) => (
                 <button
                   key={child.id}
+                  type="button"
                   className={`px-3 py-2 rounded border ${selectedStudentId === child.id ? "bg-primary text-primary-foreground" : "bg-background"}`}
                   onClick={() => setSelectedStudentId(child.id)}
                 >
@@ -95,7 +101,7 @@ const Parent = () => {
                 </CardHeader>
                 <CardContent>
                   <ul className="space-y-2">
-                    {(progressEntries || []).map((p: any) => (
+                    {(progressEntries || []).map((p: Tables<"progress">) => (
                       <li key={p.id} className="p-3 rounded border">
                         <div className="text-sm text-muted-foreground">{new Date(p.created_at).toLocaleString()}</div>
                         <div>Surah {p.current_surah ?? "-"}, Juz {p.current_juz ?? "-"}, Verses {p.start_ayat ?? "-"}-{p.end_ayat ?? "-"}</div>
@@ -115,7 +121,7 @@ const Parent = () => {
                 </CardHeader>
                 <CardContent>
                   <ul className="space-y-2">
-                    {(attendance || []).map((a: any) => (
+                    {(attendance || []).map((a: Tables<"attendance">) => (
                       <li key={a.id} className="p-3 rounded border flex justify-between">
                         <span>{a.date}</span>
                         <span className="uppercase">{a.status}</span>
@@ -132,7 +138,7 @@ const Parent = () => {
                 </CardHeader>
                 <CardContent>
                   <ul className="space-y-2">
-                    {(assignments || []).map((as: any) => (
+                    {(assignments || []).map((as: { id: string; title: string; description: string | null; due_date: string | null; status: string }) => (
                       <li key={as.id} className="p-3 rounded border">
                         <div className="font-medium">{as.title}</div>
                         {as.description && <div className="text-sm text-muted-foreground">{as.description}</div>}
