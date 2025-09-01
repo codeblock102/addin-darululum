@@ -1,4 +1,4 @@
-import { Fragment, useState } from "react";
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client.ts";
 import { ClassDialog } from "@/components/classes/ClassDialog.tsx";
@@ -70,7 +70,7 @@ const fetchClasses = async () => {
 export default function Classes() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedClass, setSelectedClass] = useState<
-    (Partial<ClassFormData> & { id: string; teacher_ids?: string[], time_slots?: any[], current_students?: string[] }) | null
+    (Partial<ClassFormData> & { id: string; teacher_ids?: string[], time_slots?: { start_time?: string; end_time?: string }[], current_students?: string[] }) | null
   >(null);
   const [isClassDialogOpen, setIsClassDialogOpen] = useState(false);
   const [isEnrollmentDialogOpen, setIsEnrollmentDialogOpen] = useState(false);
@@ -91,7 +91,7 @@ export default function Classes() {
       id: string;
       teachers?: { id: string; name: string }[];
       days_of_week?: string[];
-      time_slots?: any[],
+      time_slots?: { start_time?: string; end_time?: string }[],
       current_students?: string[]
     }
   ) => {
@@ -119,7 +119,7 @@ export default function Classes() {
     setIsEnrollmentDialogOpen(true);
   };
 
-  const handleCloseEnrollmentDialog = () => {
+  const _handleCloseEnrollmentDialog = () => {
     setSelectedClass(null);
     setIsEnrollmentDialogOpen(false);
   };
@@ -131,7 +131,7 @@ export default function Classes() {
     setIsDeleteDialogOpen(true);
   };
 
-  const handleCloseDeleteDialog = () => {
+  const _handleCloseDeleteDialog = () => {
     setSelectedClass(null);
     setIsDeleteDialogOpen(false);
   };
@@ -141,8 +141,7 @@ export default function Classes() {
   );
 
   return (
-    <Fragment>
-      <div className="space-y-6">
+    <div className="space-y-6 px-4 sm:px-6">
         <AdminHeader
           title="Class Management"
           description="Create and manage class schedules and assignments"
@@ -152,10 +151,10 @@ export default function Classes() {
           <div className="flex justify-end mb-4">
             <DialogTrigger asChild>
               <Button
-                className="bg-amber-500 hover:bg-amber-600 text-black"
+                className="bg-amber-500 hover:bg-amber-600 text-black px-4 py-2 sm:px-6 sm:py-3 text-sm sm:text-base"
                 onClick={() => handleOpenClassDialog()}
               >
-                <Plus className="mr-2 h-4 w-4" />
+                <Plus className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
                 Add Class
               </Button>
             </DialogTrigger>
@@ -191,7 +190,7 @@ export default function Classes() {
             onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
               setSearchQuery(e.target.value)
             }
-            className="border-gray-700/30 bg-white/5"
+            className="border-gray-700/30 bg-white/5 p-3 sm:p-4"
           />
           {isLoading && <p className="p-4">Loading classes...</p>}
           {isError && (
@@ -209,6 +208,5 @@ export default function Classes() {
           )}
         </div>
       </div>
-    </Fragment>
   );
 }
