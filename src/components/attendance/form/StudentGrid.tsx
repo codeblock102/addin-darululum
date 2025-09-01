@@ -90,7 +90,7 @@ async function fetchStudentsForUser(user: User | null, classId?: string): Promis
   return data as Student[];
 }
 
-interface StudentGridProps {
+export interface StudentGridProps {
   user: User | null;
   selectedStudents: Set<string>;
   onStudentSelect: (id: string) => void;

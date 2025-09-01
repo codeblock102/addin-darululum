@@ -108,18 +108,22 @@ export const AttendanceForm = () => {
         preview: true
       };
 
-      const { data: previewData, error: previewError } = await (supabase as any).functions.invoke("attendance-absence-email", {
-        body,
+      // Use direct fetch to avoid any client invoke quirks
+      const previewResp = await fetch(`${SUPABASE_URL}/functions/v1/attendance-absence-email`, {
+        method: "POST",
         headers: {
-          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+          Authorization: accessToken ? `Bearer ${accessToken}` : "",
           apikey: SUPABASE_PUBLISHABLE_KEY,
-          'Content-Type': 'application/json',
-        }
+          // Provide student IDs also via header as a fallback for body parsing issues
+          "x-student-ids": student_ids.join(','),
+        },
+        body: JSON.stringify(body),
       });
-
-      if (previewError) throw previewError;
-
-      const recipients = previewData.recipients || {};
+      const previewText = await previewResp.text();
+      let previewJson: any = {};
+      try { previewJson = JSON.parse(previewText || '{}'); } catch { previewJson = {}; }
+      const recipients = previewJson.recipients || {};
 
       // 3. Log the combined information to the console.
       console.log("%c--- Student Queue Details ---", 'color: blue; font-weight: bold;');
@@ -127,7 +131,7 @@ export const AttendanceForm = () => {
         console.log({
           studentId: id,
           studentName: studentNameMap.get(id) || "Unknown Name",
-          parentEmails: recipients[id] && recipients[id].length > 0 ? recipients[id] : ["No emails found"],
+          parentEmails: recipients[id] || [], // Show the actual empty array if no emails are found
         });
       });
       console.log("%c--------------------------", 'color: blue; font-weight: bold;');
@@ -175,34 +179,30 @@ export const AttendanceForm = () => {
       const accessToken = sessionData.session?.access_token || "";
       const body = { source: "manual-teacher", student_ids: studentIds, date: ymd, class_id: classId !== "all" ? classId : undefined, force: true };
 
-      // Try invoking the function directly.
-      const { data, error } = await (supabase as any).functions.invoke("attendance-absence-email", {
-        body,
+      // Use direct fetch to ensure body reaches the Edge Function
+      console.log("[Attendance UI] Sending via fetch with body:", body);
+      let result: any = null;
+      const resp = await fetch(`${SUPABASE_URL}/functions/v1/attendance-absence-email`, {
+        method: "POST",
         headers: {
+          "Content-Type": "application/json",
           Authorization: accessToken ? `Bearer ${accessToken}` : "",
           apikey: SUPABASE_PUBLISHABLE_KEY,
-          "Content-Type": "application/json",
+          // Provide student IDs also via header as a fallback for body parsing issues
+          "x-student-ids": studentIds.join(','),
         },
+        body: JSON.stringify(body),
       });
-
-      let result: any = data;
-      // If invoke fails (e.g., network issue), fallback to a direct fetch call.
-      if (!result || error) {
-        const resp = await fetch(`${SUPABASE_URL}/functions/v1/attendance-absence-email`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: accessToken ? `Bearer ${accessToken}` : "",
-            apikey: SUPABASE_PUBLISHABLE_KEY,
-          },
-          body: JSON.stringify(body),
-        });
-        try {
-          result = resp.ok ? await resp.json() : null;
-        } catch (_) {
-          result = null;
-        }
+      console.log("[Attendance UI] Fetch response status:", resp.status);
+      try {
+        const rawText = await resp.text();
+        console.log("[Attendance UI] Fetch response text:", rawText);
+        result = resp.ok ? JSON.parse(rawText) : null;
+      } catch (e) {
+        console.error("[Attendance UI] Fetch failed to parse JSON:", e);
+        result = null;
       }
+      console.log("[Attendance UI] Final result object being processed:", result);
       
       // --- Handle Function Response ---
       const sent = Number(result?.emails_sent || 0);
@@ -247,26 +247,17 @@ export const AttendanceForm = () => {
       const accessToken = sessionData.session?.access_token || "";
       const body = { source: "manual-teacher", student_ids: studentIds, date: ymd, class_id: classId !== "all" ? classId : undefined, force: true };
 
-      const { data, error } = await (supabase as any).functions.invoke("attendance-absence-email", {
-        body,
+      await fetch(`${SUPABASE_URL}/functions/v1/attendance-absence-email`, {
+        method: "POST",
         headers: {
+          "Content-Type": "application/json",
           Authorization: accessToken ? `Bearer ${accessToken}` : "",
           apikey: SUPABASE_PUBLISHABLE_KEY,
-          "Content-Type": "application/json",
+          // Provide student IDs also via header as a fallback for body parsing issues
+          "x-student-ids": studentIds.join(','),
         },
+        body: JSON.stringify(body),
       });
-
-      if (!data || error) {
-        await fetch(`${SUPABASE_URL}/functions/v1/attendance-absence-email`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: accessToken ? `Bearer ${accessToken}` : "",
-            apikey: SUPABASE_PUBLISHABLE_KEY,
-          },
-          body: JSON.stringify(body),
-        });
-      }
       toast({ title: "Emails Queued", description: "Attendance emails are being sent to parents." });
     } catch (e: any) {
       toast({ title: "Error", description: e?.message || "Failed to send emails", variant: "destructive" });
@@ -396,6 +387,7 @@ export const AttendanceForm = () => {
                 {/* The main button to send emails */}
                 <button
                   className="inline-flex items-center rounded-md bg-emerald-600 px-3 py-2 text-sm font-medium text-white shadow hover:bg-emerald-700 disabled:opacity-50"
+                  type="button"
                   onClick={handleSendAttendanceEmails}
                   disabled={selectedStudents.size === 0 || isProcessing || isSavingBeforePreview}
                 >
