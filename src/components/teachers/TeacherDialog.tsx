@@ -51,6 +51,8 @@ const teacherSchema = z.object({
     required_error: "Please select a section for the teacher.",
   }),
   bio: z.string().optional().nullable(),
+  attendance_taker: z.boolean().default(false),
+  capabilities: z.array(z.string()).default([]),
   createAccount: z.boolean().default(true),
   generatePassword: z.boolean().default(true),
   password: z.string().optional(),
@@ -135,6 +137,8 @@ export const TeacherDialog = (
       section: "",
       grade: null,
       bio: null,
+      attendance_taker: false,
+      capabilities: [],
       createAccount: true,
       generatePassword: true,
       password: "",
@@ -147,6 +151,8 @@ export const TeacherDialog = (
   // Set default values when selected teacher changes
   useEffect(() => {
     if (selectedTeacher) {
+      const existingCapabilities = (((selectedTeacher as any).capabilities as string[]) || []).slice();
+
       form.reset({
         name: selectedTeacher.name || "",
         email: selectedTeacher.email || null,
@@ -155,6 +161,8 @@ export const TeacherDialog = (
         section: selectedTeacher.section || "",
         grade: selectedTeacher.grade || null,
         bio: selectedTeacher.bio || null,
+        attendance_taker: false,
+        capabilities: existingCapabilities,
         createAccount: false, // Don't create account when editing
         generatePassword: true,
         password: "",
@@ -168,6 +176,8 @@ export const TeacherDialog = (
         section: "",
         grade: null,
         bio: null,
+        attendance_taker: false,
+        capabilities: [],
         createAccount: true,
         generatePassword: true,
         password: "",
@@ -209,6 +219,7 @@ export const TeacherDialog = (
             bio: values.bio || null,
             section: values.section,
             grade: values.grade || null,
+            capabilities: values.capabilities,
           })
           .eq("id", selectedTeacher.id);
 
@@ -263,6 +274,7 @@ export const TeacherDialog = (
                 section: values.section,
                 madrassah_id: madrassahId,
                 grade: values.grade || null,
+                capabilities: values.capabilities,
               },
             },
           });
@@ -289,6 +301,7 @@ export const TeacherDialog = (
             section: values.section,
             madrassah_id: madrassahId,
             grade: values.grade || null,
+            capabilities: values.capabilities,
           });
 
         if (profileUpsertError) {
@@ -499,6 +512,45 @@ export const TeacherDialog = (
                       />
                     </FormControl>
                     <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {/* Attendance access is managed via capabilities (attendance_access) */}
+
+              <FormField
+                control={form.control}
+                name="capabilities"
+                render={({ field }) => (
+                  <FormItem className="rounded-md border p-4">
+                    <FormLabel>Capabilities</FormLabel>
+                    <FormDescription>
+                      Enable specific features for this teacher
+                    </FormDescription>
+                    <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      {[
+                        { key: "attendance_access", label: "Attendance access" },
+                        { key: "progress_access", label: "Access Progress Book" },
+                        { key: "assignments_access", label: "Access Assignments" },
+                      ].map((cap) => {
+                        const checked = Array.isArray(field.value) && field.value.includes(cap.key);
+                        return (
+                          <label key={cap.key} className="flex items-center space-x-2">
+                            <Checkbox
+                              checked={checked}
+                              onCheckedChange={(val) => {
+                                const current = Array.isArray(field.value) ? field.value : [];
+                                const next = val
+                                  ? [...current.filter((c: string) => c !== cap.key), cap.key]
+                                  : current.filter((c: string) => c !== cap.key);
+                                field.onChange(next);
+                              }}
+                            />
+                            <span className="text-sm">{cap.label}</span>
+                          </label>
+                        );
+                      })}
+                    </div>
                   </FormItem>
                 )}
               />

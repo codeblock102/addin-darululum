@@ -7,7 +7,7 @@ import { useAuth } from "@/hooks/use-auth.ts";
 export const BottomNavigation = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { isAdmin } = useRBAC();
+  const { isAdmin, isAttendanceTaker, hasCapability } = useRBAC();
   const { signOut } = useAuth();
 
   // Different navigation items for admin and teacher roles
@@ -23,11 +23,14 @@ export const BottomNavigation = () => {
     { icon: Home, label: "Dashboard", href: "/dashboard" },
     { icon: Users, label: "Students", href: "/students" },
     { icon: ClipboardList, label: "Attendance", href: "/attendance" },
-    { icon: Book, label: "Progress", href: "/progress-book" },
+    hasCapability("progress_access") && { icon: Book, label: "Progress", href: "/progress-book" },
     { icon: LogOut, label: "Logout", action: signOut },
-  ];
+  ].filter(Boolean) as { icon: any; label: string; href?: string; action?: () => Promise<void> }[];
 
-  const navItems = isAdmin ? adminNavItems : teacherNavItems;
+  const navItems = (isAdmin ? adminNavItems : teacherNavItems).filter((item) =>
+    // Attendance only for admins or attendance takers
+    (isAdmin || isAttendanceTaker || hasCapability("attendance_access") || item.href !== "/attendance")
+  );
 
   const isActive = (item: { href?: string; label?: string }) => {
     if (!item.href) return false;

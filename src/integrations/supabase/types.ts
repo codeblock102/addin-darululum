@@ -223,6 +223,7 @@ export type Database = {
           role: string | null
           section: string | null
           subject: string | null
+          capabilities: Json
         }
         Insert: {
           bio?: string | null
@@ -235,6 +236,7 @@ export type Database = {
           role?: string | null
           section?: string | null
           subject?: string | null
+          capabilities?: Json
         }
         Update: {
           bio?: string | null
@@ -247,6 +249,7 @@ export type Database = {
           role?: string | null
           section?: string | null
           subject?: string | null
+          capabilities?: Json
         }
         Relationships: [
           {

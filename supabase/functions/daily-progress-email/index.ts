@@ -5,6 +5,8 @@ import { corsHeaders } from "../_shared/cors.ts";
 
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
 const RESEND_FROM_EMAIL = Deno.env.get("RESEND_FROM_EMAIL");
+// Hardcoded fallback logo URL (public and absolute)
+const DEFAULT_ORG_LOGO_URL = "https://depsfpodwaprzxffdcks.supabase.co/storage/v1/object/public/dum-logo/dum-logo.png";
 const resend = new Resend(RESEND_API_KEY);
 
 // Guard long-running operations so the job can't hang indefinitely
@@ -117,11 +119,29 @@ serve(async (req: Request) => {
     const { data: settingsRows } = await supabaseService
       .from('app_settings')
       .select('key, value')
-      .in('key', ['email_schedule_enabled','email_schedule_time','email_timezone']);
+      .in('key', ['email_schedule_enabled','email_schedule_time','email_timezone','org_logo_url']);
     const settingsMap = new Map<string, string>((settingsRows || []).map((r: any) => [r.key, r.value]));
     const scheduleEnabled = (settingsMap.get('email_schedule_enabled') ?? 'true') !== 'false';
     const scheduleTime = settingsMap.get('email_schedule_time') || '21:30';
     const scheduleTz = settingsMap.get('email_timezone') || 'America/New_York';
+    // Force using the Supabase Storage public logo URL
+    const logoUrl = DEFAULT_ORG_LOGO_URL;
+    let logoImgHtml = '';
+    try {
+      const resp = await fetch(logoUrl);
+      if (resp.ok) {
+        const contentType = resp.headers.get('content-type') || 'image/png';
+        const bytes = new Uint8Array(await resp.arrayBuffer());
+        let binary = '';
+        for (let i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i]);
+        const base64 = btoa(binary);
+        logoImgHtml = `<div style="text-align:center;margin-top:16px;"><img src="data:${contentType};base64,${base64}" alt="Dār Al-Ulūm Montréal" style="max-width:200px;height:auto;"/></div>`;
+      } else {
+        logoImgHtml = `<div style=\"text-align:center;margin-top:16px;\"><img src=\"${logoUrl}\" alt=\"Dār Al-Ulūm Montréal\" style=\"max-width:200px;height:auto;\"/></div>`;
+      }
+    } catch (_e) {
+      logoImgHtml = `<div style=\"text-align:center;margin-top:16px;\"><img src=\"${logoUrl}\" alt=\"Dār Al-Ulūm Montréal\" style=\"max-width:200px;height:auto;\"/></div>`;
+    }
 
     // If scheduled trigger and schedule is disabled, exit early
     if (triggerSource === 'scheduled' && !scheduleEnabled) {
@@ -357,7 +377,7 @@ serve(async (req: Request) => {
                   <h1>Daily Student Progress Summary</h1>
               </div>
               <div class="content">
-                  <p>Dear Principal,</p>
+                  <p>Assalamu Alaikum Principal,</p>
                   <p>Here is the overall student progress report for ${reportDate}:</p>
                   ${overallProgressHtml}
                   <h2 style="margin-top:24px;">Academic Work (Last 24h)</h2>
@@ -389,8 +409,9 @@ serve(async (req: Request) => {
                   <div class="trigger-info">
                       Report generated ${triggerSource === 'scheduled' ? 'automatically' : 'manually'} at ${new Date(timestamp).toLocaleString()}
                   </div>
-                  <p>Thank you,</p>
+                  <p>JazakAllah Khairan,</p>
                   <p><strong>Dār Al-Ulūm Montréal</strong></p>
+                  ${logoImgHtml}
               </div>
               <div class="footer">
                   <p>This is an automated email.</p>
@@ -533,6 +554,7 @@ serve(async (req: Request) => {
                     </div>
                     <p>JazakAllah Khairan</p>
                     <p><strong>Dār Al-Ulūm Montréal</strong></p>
+                    ${logoImgHtml}
                 </div>
                 <div class="footer">
                     <p>This is an automated email. Please do not reply.</p>
@@ -564,13 +586,14 @@ serve(async (req: Request) => {
                 status: 'sent'
             });
         } catch (emailError) {
-            console.error(`Failed to send email to ${student.guardian_email} for student ${student.name}:`, emailError);
+            const errMsg = emailError instanceof Error ? emailError.message : String(emailError);
+            console.error(`Failed to send email to ${student.guardian_email} for student ${student.name}:`, errMsg);
             emailsSkipped++;
             emailResults.push({
                 student_name: student.name,
                 guardian_email: student.guardian_email,
                 status: 'failed',
-                error: emailError.message
+                error: errMsg
             });
         }
     }
