@@ -104,14 +104,42 @@ export const TeacherDhorBook = ({ teacherId }: TeacherDhorBookProps) => {
     }
   }, [location.search]);
 
-  // Verify student exists and belongs to teacher's classroom
+  // Verify student exists and belongs to teacher's classroom (class-based auth)
   const { data: studentVerification, isLoading: studentVerifyLoading } =
     useQuery({
       queryKey: ["verify-student-for-teacher", selectedStudentId, teacherId],
       queryFn: async () => {
         if (!selectedStudentId || !teacherData) return null;
 
-        // Verify student belongs to same madrassah; only enforce section if teacher has one
+        // 1) Prefer class-based membership: class contains student and teacher
+        try {
+          const { data: classes, error: classErr } = await supabase
+            .from("classes")
+            .select("id, current_students, teacher_ids")
+            .contains("current_students", `{${selectedStudentId}}`)
+            .contains("teacher_ids", `{${teacherId}}`);
+          if (classErr) {
+            console.error("Error verifying class membership:", classErr);
+          } else if ((classes || []).length > 0) {
+            // Student is in a class with this teacher; fetch student for display name
+            const { data: studentRow, error: studentErr } = await supabase
+              .from("students")
+              .select("id, name")
+              .eq("id", selectedStudentId)
+              .maybeSingle();
+            if (studentErr) {
+              if (studentErr.code !== "PGRST116") {
+                console.error("Error fetching student after class check:", studentErr);
+              }
+              return null;
+            }
+            return studentRow;
+          }
+        } catch (_) {
+          // fall through to section/madrassah check
+        }
+
+        // 2) Fallback to madrassah/section match (case-insensitive section)
         let query = supabase
           .from("students")
           .select("id, name")
@@ -119,14 +147,13 @@ export const TeacherDhorBook = ({ teacherId }: TeacherDhorBookProps) => {
           .eq("madrassah_id", teacherData.madrassah_id);
 
         if (teacherData.section) {
-          query = query.eq("section", teacherData.section);
+          query = query.ilike("section", teacherData.section);
         }
 
         const { data, error } = await query.maybeSingle();
 
         if (error) {
           if (error.code !== "PGRST116") {
-            // PGRST116 is "exact one row not found", which is expected
             console.error("Error verifying student:", error);
           }
           return null;
