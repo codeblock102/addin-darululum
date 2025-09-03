@@ -74,33 +74,55 @@ export const DhorBook = ({
         return [];
       }
 
-      let query = supabase
+      // Admins: verify student exists within same madrassah
+      if (isAdmin) {
+        if (!teacherData?.madrassah_id) return [];
+        const { data, error } = await supabase
+          .from("students")
+          .select("id")
+          .eq("id", studentId)
+          .eq("madrassah_id", teacherData.madrassah_id)
+          .limit(1);
+        if (error) {
+          console.error("Error fetching student for authorization:", error);
+          throw error;
+        }
+        return data || [];
+      }
+
+      // Teachers: authorize if teacher shares a class with the student OR matches madrassah/section
+      if (!teacherData?.madrassah_id) return [];
+
+      // 1) Class-based authorization: does a class exist where student in current_students and teacher in teacher_ids?
+      try {
+        const { data: classes, error: classErr } = await supabase
+          .from("classes")
+          .select("id, current_students, teacher_ids")
+          .contains("current_students", `{${studentId}}`)
+          .contains("teacher_ids", `{${teacherId}}`);
+        if (classErr) {
+          console.error("Error verifying class membership for teacher/student:", classErr);
+        } else if ((classes || []).length > 0) {
+          // Authorized via class membership
+          return [{ id: studentId }];
+        }
+      } catch (e) {
+        console.warn("Class membership check failed, falling back to section check.", e);
+      }
+
+      // 2) Fallback: section-based check (case-insensitive section match if provided)
+      let studentQuery = supabase
         .from("students")
         .select("id")
         .eq("id", studentId)
+        .eq("madrassah_id", teacherData.madrassah_id)
         .limit(1);
 
-      // If not an admin, must be a teacher. Apply teacher filters for authorization.
-      if (!isAdmin) {
-        if (teacherData?.madrassah_id && teacherData?.section) {
-          query = query
-            .eq("madrassah_id", teacherData.madrassah_id)
-            .eq("section", teacherData.section);
-        } else {
-          // Teacher has no section/madrassah, so they are not authorized to see any student.
-          return [];
-        }
-      } else {
-        // For Admins, check if student is in their madrassah
-        if (teacherData?.madrassah_id) {
-          query = query.eq("madrassah_id", teacherData.madrassah_id);
-        } else {
-          return [];
-        }
+      if (teacherData.section) {
+        studentQuery = studentQuery.ilike("section", teacherData.section);
       }
-      // For Admins, query remains as a check for student existence by ID.
 
-      const { data, error } = await query;
+      const { data, error } = await studentQuery;
       if (error) {
         console.error("Error fetching student for authorization:", error);
         throw error;
@@ -475,7 +497,7 @@ export const DhorBook = ({
             currentWeek={currentWeek}
             viewMode="weekly"
             onRefresh={handleRefresh}
-            readOnly={readOnly || !isAdmin}
+            readOnly={readOnly || (!isAdmin && !isAuthorized)}
           />
         </TabsContent>
 
@@ -537,7 +559,7 @@ export const DhorBook = ({
             currentMonth={currentMonth}
             viewMode="monthly"
             onRefresh={handleRefresh}
-            readOnly={readOnly || !isAdmin}
+            readOnly={readOnly || (!isAdmin && !isAuthorized)}
           />
         </TabsContent>
       </Tabs>
