@@ -38,6 +38,7 @@ import {
 } from "lucide-react";
 import { format } from "date-fns";
 import { useNavigate } from "react-router-dom";
+import { useI18n } from "@/contexts/I18nContext.tsx";
 
 interface ClassroomRecordsProps {
   teacherId?: string;
@@ -68,6 +69,7 @@ interface StudentRecordSummary {
 export function ClassroomRecords(
   { teacherId, isAdmin }: ClassroomRecordsProps,
 ) {
+  const { t } = useI18n();
   const navigate = useNavigate();
   const [selectedDate, setSelectedDate] = useState<string>(
     format(new Date(), "yyyy-MM-dd"),
@@ -349,7 +351,7 @@ export function ClassroomRecords(
         <Card className="border-red-300 bg-red-50 dark:bg-red-900/10">
           <CardContent className="p-4">
             <p className="text-red-600 dark:text-red-400">
-              Error loading classroom data. Please try refreshing the page.
+              {t("pages.teacherPortal.classroom.error", "Error loading classroom data. Please try refreshing the page.")}
             </p>
           </CardContent>
         </Card>
@@ -360,7 +362,7 @@ export function ClassroomRecords(
         <CardHeader>
           <CardTitle className="flex items-center text-center justify-center text-base sm:text-lg">
             <Trophy className="h-6 w-6 mr-2 text-yellow-500" />
-            <span>Today's Leaderboard</span>
+            <span>{t("pages.teacherPortal.classroom.leaderboard", "Today's Leaderboard")}</span>
             <Trophy className="h-6 w-6 ml-2 text-yellow-500" />
           </CardTitle>
         </CardHeader>
@@ -430,7 +432,7 @@ export function ClassroomRecords(
                             className="w-full mt-2"
                             onClick={() => navigate(`/students/${student.id}`)}
                           >
-                            View Details
+                            {t("pages.teacherPortal.classroom.viewDetails", "View Details")}
                           </Button>
                         </div>
                       </div>
@@ -442,7 +444,7 @@ export function ClassroomRecords(
             : (
               <div className="text-center py-6">
                 <p className="text-muted-foreground">
-                  No student records available for today's leaderboard.
+                  {t("pages.teacherPortal.classroom.noLeaderboard", "No student records available for today's leaderboard.")}
                 </p>
               </div>
             )}
@@ -454,7 +456,7 @@ export function ClassroomRecords(
           <CardTitle className="flex items-center justify-between flex-wrap gap-3">
             <div className="flex items-center gap-2">
               <Calendar className="h-5 w-5" />
-              <span>Classroom Records</span>
+              <span>{t("pages.teacherPortal.classroom.title", "Classroom Records")}</span>
             </div>
             <div className="flex items-center gap-2">
               <Input
@@ -479,7 +481,7 @@ export function ClassroomRecords(
                   <Card className="bg-muted/40">
                     <CardContent className="p-4 sm:p-6">
                       <div className="text-sm text-muted-foreground">
-                        Total Students
+                        {t("pages.teacherPortal.classroom.metrics.totalStudents", "Total Students")}
                       </div>
                       <div className="text-xl sm:text-2xl font-bold">{stats.total}</div>
                     </CardContent>
@@ -487,7 +489,7 @@ export function ClassroomRecords(
                   <Card className="bg-muted/40">
                     <CardContent className="p-4 sm:p-6">
                       <div className="text-sm text-muted-foreground">
-                        Sabaq Completed
+                        {t("pages.teacherPortal.classroom.metrics.sabaqCompleted", "Sabaq Completed")}
                       </div>
                       <div className="text-xl sm:text-2xl font-bold">
                         {stats.sabaq}{" "}
@@ -500,7 +502,7 @@ export function ClassroomRecords(
                   <Card className="bg-muted/40">
                     <CardContent className="p-4 sm:p-6">
                       <div className="text-sm text-muted-foreground">
-                        Sabaq Para Completed
+                        {t("pages.teacherPortal.classroom.metrics.sabaqParaCompleted", "Sabaq Para Completed")}
                       </div>
                       <div className="text-xl sm:text-2xl font-bold">
                         {stats.sabaqPara}{" "}
@@ -513,7 +515,7 @@ export function ClassroomRecords(
                   <Card className="bg-muted/40">
                     <CardContent className="p-4 sm:p-6">
                       <div className="text-sm text-muted-foreground">
-                        Dhor Completed
+                        {t("pages.teacherPortal.classroom.metrics.dhorCompleted", "Dhor Completed")}
                       </div>
                       <div className="text-xl sm:text-2xl font-bold">
                         {stats.dhor}{" "}
@@ -529,7 +531,7 @@ export function ClassroomRecords(
                   <div className="flex items-center gap-2 w-full max-w-xs">
                     <Search className="h-4 w-4 text-muted-foreground" />
                     <Input
-                      placeholder="Search students..."
+                      placeholder={t("pages.teacherPortal.classroom.searchPlaceholder", "Search students...")}
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                       className="w-full"
@@ -542,15 +544,15 @@ export function ClassroomRecords(
                       setRecordType(value as "all" | "incomplete" | "complete")}
                   >
                     <SelectTrigger className="w-[180px]">
-                      <SelectValue placeholder="Show all records" />
+                      <SelectValue placeholder={t("pages.teacherPortal.classroom.filterPlaceholder", "Show all records")} />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="all">All records</SelectItem>
+                      <SelectItem value="all">{t("pages.teacherPortal.classroom.filters.all", "All records")}</SelectItem>
                       <SelectItem value="complete">
-                        Completed records
+                        {t("pages.teacherPortal.classroom.filters.completed", "Completed records")}
                       </SelectItem>
                       <SelectItem value="incomplete">
-                        Incomplete records
+                        {t("pages.teacherPortal.classroom.filters.incomplete", "Incomplete records")}
                       </SelectItem>
                     </SelectContent>
                   </Select>
@@ -616,7 +618,7 @@ export function ClassroomRecords(
                                 </div>
                                 <div className="shrink-0">
                                   <Button variant="outline" size="sm" onClick={() => navigate(`/students/${record.id}`)}>
-                                    View
+                                    {t("pages.teacherPortal.classroom.view", "View")}
                                   </Button>
                                 </div>
                               </div>
@@ -630,12 +632,12 @@ export function ClassroomRecords(
                         <Table>
                           <TableHeader>
                             <TableRow>
-                              <TableHead>Rank</TableHead>
-                              <TableHead>Student</TableHead>
+                              <TableHead>{t("pages.teacherPortal.classroom.table.rank", "Rank")}</TableHead>
+                              <TableHead>{t("pages.teacherPortal.classroom.table.student", "Student")}</TableHead>
                               <TableHead className="text-center">Sabaq</TableHead>
                               <TableHead className="text-center">Sabaq Para</TableHead>
                               <TableHead className="text-center">Dhor</TableHead>
-                              <TableHead className="text-right">Actions</TableHead>
+                              <TableHead className="text-right">{t("pages.teacherPortal.classroom.table.actions", "Actions")}</TableHead>
                             </TableRow>
                           </TableHeader>
                           <TableBody>
@@ -691,7 +693,7 @@ export function ClassroomRecords(
                                 </TableCell>
                                 <TableCell className="text-right">
                                   <Button variant="ghost" size="sm" onClick={() => navigate(`/students/${record.id}`)}>
-                                    View Details
+                                    {t("pages.teacherPortal.classroom.viewDetails", "View Details")}
                                   </Button>
                                 </TableCell>
                               </TableRow>
@@ -708,22 +710,20 @@ export function ClassroomRecords(
                         ? (
                           <>
                             <h3 className="text-lg font-medium mb-1">
-                              No records found
+                              {t("pages.teacherPortal.classroom.noRecords.title", "No records found")}
                             </h3>
                             <p className="text-muted-foreground">
-                              No student records found for the selected date or
-                              filter criteria.
+                              {t("pages.teacherPortal.classroom.noRecords.desc", "No student records found for the selected date or filter criteria.")}
                             </p>
                           </>
                         )
                         : (
                           <>
                             <h3 className="text-lg font-medium mb-1">
-                              No students assigned
+                              {t("pages.teacherPortal.classroom.noStudents.title", "No students assigned")}
                             </h3>
                             <p className="text-muted-foreground">
-                              You don't have any students assigned to you.
-                              Please contact an administrator.
+                              {t("pages.teacherPortal.classroom.noStudents.desc", "You don't have any students assigned to you. Please contact an administrator.")}
                             </p>
                           </>
                         )}

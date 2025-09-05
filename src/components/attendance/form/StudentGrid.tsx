@@ -11,6 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '../../ui/card.tsx';
 import { Checkbox } from '../../ui/checkbox.tsx';
 import { Input } from '../../ui/input.tsx';
 import { Label } from '../../ui/label.tsx';
+import { useI18n } from '@/contexts/I18nContext.tsx';
 
 type Student = Database['public']['Tables']['students']['Row'];
 
@@ -52,7 +53,8 @@ async function fetchStudentsForUser(user: User | null, classId?: string): Promis
     const teacherClassRows = (teacherClasses || []);
     // Verify teacher actually teaches the requested class
     if (classId) {
-      const cls = teacherClassRows.find((c: any) => c.id === classId);
+      type TeacherClass = { id: string };
+      const cls = (teacherClassRows as TeacherClass[]).find((c) => c.id === classId);
       if (!cls) return [];
     }
 
@@ -102,6 +104,7 @@ export interface StudentGridProps {
 
 export const StudentGrid = ({ user, selectedStudents, onStudentSelect, onSelectAll, classId, stagedStatus, dateYmd }: StudentGridProps) => {
   const [searchQuery, setSearchQuery] = useState('');
+  const { t } = useI18n();
 
   const { data: students = [], isLoading, isError, error } = useQuery<Student[]>({
     queryKey: ['students', user?.id, classId || null],
@@ -116,13 +119,13 @@ export const StudentGrid = ({ user, selectedStudents, onStudentSelect, onSelectA
 
   // Fetch attendance records for the selected date to indicate taken attendance
   const ymd = dateYmd || new Date().toISOString().split('T')[0];
-  const { data: attendanceRows = [] } = useQuery<any[]>({
+  const { data: attendanceRows = [] } = useQuery<{ student_id: string; status?: string; late_reason?: string | null; time?: string | null }[]>({
     queryKey: ['attendance-day', ymd, classId || null, user?.id],
     enabled: !!user && studentList.length > 0 && !!ymd,
     queryFn: async () => {
       // Limit to the displayed students only
       const ids = studentList.map(s => s.id);
-      if (ids.length === 0) return [] as any[];
+      if (ids.length === 0) return [] as { student_id: string; status?: string; late_reason?: string | null; time?: string | null }[];
       const q = supabase
         .from('attendance')
         .select('student_id, status, late_reason, time')
@@ -132,9 +135,9 @@ export const StudentGrid = ({ user, selectedStudents, onStudentSelect, onSelectA
       const { data, error } = await q;
       if (error) {
         console.error('Error fetching attendance for grid indicators:', error);
-        return [] as any[];
+        return [] as { student_id: string; status?: string; late_reason?: string | null; time?: string | null }[];
       }
-      return data || [];
+      return (data || []) as { student_id: string; status?: string; late_reason?: string | null; time?: string | null }[];
     }
   });
 
@@ -149,7 +152,7 @@ export const StudentGrid = ({ user, selectedStudents, onStudentSelect, onSelectA
   }
 
   // If a class is selected, fetch its start_time to compute lateness
-  const { data: classRow } = useQuery<any>({
+  const { data: classRow } = useQuery<{ id: string; time_slots?: { start_time?: string | null }[] } | null>({
     queryKey: ['class-start', classId || null],
     enabled: !!classId,
     queryFn: async () => {
@@ -158,13 +161,13 @@ export const StudentGrid = ({ user, selectedStudents, onStudentSelect, onSelectA
         .select('id, time_slots')
         .eq('id', classId!)
         .maybeSingle();
-      return data || null;
+      return (data || null) as { id: string; time_slots?: { start_time?: string | null }[] } | null;
     }
   });
 
-  function parseStartTimeFromClass(row: any): string | null {
+  function parseStartTimeFromClass(row: { id: string; time_slots?: { start_time?: string | null }[] } | null): string | null {
     try {
-      const slots = Array.isArray(row?.time_slots) ? row.time_slots : [];
+      const slots = Array.isArray(row?.time_slots) ? row!.time_slots! : [];
       const first = slots?.[0];
       const hm = typeof first?.start_time === 'string' ? first.start_time : null;
       return hm && /\d{2}:\d{2}/.test(hm) ? hm : null;
@@ -209,13 +212,13 @@ export const StudentGrid = ({ user, selectedStudents, onStudentSelect, onSelectA
 
   if (isError) {
     console.error(error);
-    return <div className="flex justify-center items-center h-48 text-black"><AlertCircle className="mr-2"/> Error loading students. See console for details.</div>;
+    return <div className="flex justify-center items-center h-48 text-black"><AlertCircle className="mr-2"/> {t('pages.attendance.grid.error', 'Error loading students. See console for details.')}</div>;
   }
 
   if (!user) {
     return (
       <Card className="flex items-center justify-center h-48">
-        <p className="text-black">Could not identify user to fetch students.</p>
+        <p className="text-black">{t('pages.attendance.grid.noUser', 'Could not identify user to fetch students.')}</p>
       </Card>
     );
   }
@@ -224,13 +227,13 @@ export const StudentGrid = ({ user, selectedStudents, onStudentSelect, onSelectA
     <Card>
       <CardHeader>
         <div className="flex justify-between items-center mb-4">
-          <CardTitle className="text-black">Select Students</CardTitle>
+          <CardTitle className="text-black">{t('pages.attendance.grid.selectStudents', 'Select Students')}</CardTitle>
           <Button variant="outline" onClick={() => onSelectAll(studentList)}>
-            {selectedStudents.size === filteredStudents.length && filteredStudents.length > 0 ? 'Deselect All' : 'Select All'}
+            {selectedStudents.size === filteredStudents.length && filteredStudents.length > 0 ? t('pages.attendance.grid.deselectAll', 'Deselect All') : t('pages.attendance.grid.selectAll', 'Select All')}
           </Button>
         </div>
         <Input
-          placeholder="Search students..."
+          placeholder={t('pages.attendance.grid.searchPlaceholder', 'Search students...')}
           value={searchQuery}
           onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchQuery(e.target.value)}
           className="text-black"
@@ -285,7 +288,7 @@ export const StudentGrid = ({ user, selectedStudents, onStudentSelect, onSelectA
         ) : (
           <div className="flex items-center justify-center h-48">
             <p className="text-black">
-              {searchQuery ? `No students found for "${searchQuery}".` : 'No students found.'}
+              {searchQuery ? t('pages.attendance.grid.noSearchResults', 'No students found for "{query}".').replace('{query}', searchQuery) : t('pages.attendance.grid.noStudents', 'No students found.')}
             </p>
           </div>
         )}

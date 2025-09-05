@@ -7,12 +7,13 @@ import {
   TableRow,
 } from "@/components/ui/table.tsx";
 import { Button } from "@/components/ui/button.tsx";
-import { Trash2, UserMinus, UserPlus, Edit } from "lucide-react";
-import { Student, StudentAssignment } from "../MyStudents.tsx";
+import { Trash2, UserMinus as _UserMinus, UserPlus as _UserPlus, Edit } from "lucide-react";
+import { Student, StudentAssignment as _StudentAssignment } from "../MyStudents.tsx";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client.ts";
 import { useToast } from "@/hooks/use-toast.ts";
 import { getErrorMessage } from "@/utils/stringUtils.ts";
+import { useI18n } from "@/contexts/I18nContext.tsx";
 
 interface StudentTableProps {
   students: Student[];
@@ -33,8 +34,9 @@ export const StudentTable = ({
 }: StudentTableProps) => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { t } = useI18n();
 
-  const addStudentMutation = useMutation({
+  const _addStudentMutation = useMutation({
     mutationFn: async (
       { teacherId, studentName }: { teacherId: string; studentName: string },
     ) => {
@@ -50,9 +52,8 @@ export const StudentTable = ({
     },
     onSuccess: (_, variables) => {
       toast({
-        title: "Student added",
-        description:
-          `${variables.studentName} has been added to your students.`,
+        title: t("pages.teacherPortal.students.addToastTitle"),
+        description: t("pages.teacherPortal.students.addToastDesc").replace("{name}", variables.studentName),
       });
       queryClient.invalidateQueries({
         queryKey: ["teacher-student-assignments"],
@@ -71,9 +72,9 @@ export const StudentTable = ({
       queryClient.invalidateQueries({ queryKey: ["students-search"] });
     },
     onError: (error) => {
-      const errorMessage = getErrorMessage(error, "Failed to add student");
+      const errorMessage = getErrorMessage(error, t("pages.teacherPortal.students.errorAddDefault"));
       toast({
-        title: "Error",
+        title: t("common.error"),
         description: errorMessage,
         variant: "destructive",
       });
@@ -96,16 +97,16 @@ export const StudentTable = ({
         <TableHeader>
           <TableRow className="bg-gray-50">
             <TableHead className="font-semibold text-gray-700">
-              Student
+              {t("pages.teacherPortal.students.table.student")}
             </TableHead>
             <TableHead className="font-semibold text-gray-700">
-              Enrollment Date
+              {t("pages.teacherPortal.students.table.enrollmentDate")}
             </TableHead>
             <TableHead className="font-semibold text-gray-700">
-              Status
+              {t("pages.teacherPortal.students.table.status")}
             </TableHead>
             <TableHead className="text-right font-semibold text-gray-700">
-              Actions
+              {t("pages.teacherPortal.students.table.actions")}
             </TableHead>
           </TableRow>
         </TableHeader>
@@ -144,7 +145,7 @@ export const StudentTable = ({
                         : "bg-red-100 text-red-800"
                     }`}
                   >
-                    {student.status}
+                    {student.status === "active" ? t("pages.teacherPortal.students.statusActive") : t("pages.teacherPortal.students.statusInactive")}
                   </span>
                 </TableCell>
                 <TableCell className="text-right">
@@ -160,7 +161,7 @@ export const StudentTable = ({
                         className="text-blue-500 hover:text-blue-600 hover:bg-blue-50"
                       >
                         <Edit className="h-4 w-4 mr-1" />
-                        Edit
+                        {t("pages.teacherPortal.students.table.edit")}
                       </Button>
                     )}
                     <Button
@@ -173,7 +174,7 @@ export const StudentTable = ({
                       className="text-red-500 hover:text-red-600 hover:bg-red-50"
                     >
                       <Trash2 className="h-4 w-4 mr-1" />
-                      Delete
+                      {t("pages.teacherPortal.students.table.delete")}
                     </Button>
                   </div>
                 </TableCell>

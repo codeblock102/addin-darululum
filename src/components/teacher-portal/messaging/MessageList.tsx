@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { Message, MessageType } from "@/types/progress.ts";
 import { Alert, AlertDescription } from "@/components/ui/alert.tsx";
+import { useI18n } from "@/contexts/I18nContext.tsx";
 
 interface MessageListProps {
   messages: Message[] | undefined;
@@ -28,6 +29,7 @@ export const MessageList = ({
   onMessageClick,
   showRecipient = false,
 }: MessageListProps) => {
+  const { t } = useI18n();
   const [expandedMessageId, setExpandedMessageId] = useState<string | null>(
     null,
   );
@@ -72,8 +74,7 @@ export const MessageList = ({
     <ScrollArea className="h-[400px]">
       <Alert className="mb-4">
         <AlertDescription>
-          Messaging functionality is currently disabled. Please contact the
-          system administrator to enable this feature.
+          {t("pages.teacherPortal.messages.disabled", "Messaging functionality is currently disabled. Please contact the system administrator to enable this feature.")}
         </AlertDescription>
       </Alert>
       <div className="text-center p-6 text-muted-foreground">

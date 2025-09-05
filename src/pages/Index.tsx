@@ -3,8 +3,10 @@ import { useNavigate } from "react-router-dom";
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button.tsx";
 import { useAuth } from "@/hooks/use-auth.ts";
+import { useI18n } from "@/contexts/I18nContext.tsx";
 
 export default function Index() {
+  const { t } = useI18n();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(true);
   const [errorOccurred, setErrorOccurred] = useState(false);
@@ -36,7 +38,7 @@ export default function Index() {
         const uid = auth.user?.id;
         const { data: parentData } = uid
           ? await supabase.from("parent_teachers").select("id").eq("id", uid).maybeSingle()
-          : { data: null } as any;
+          : ({ data: null } as { data: { id?: string } | null });
         if (parentData?.id) {
           console.log("Found parent profile, redirecting");
           localStorage.setItem("userRole", "parent");
@@ -140,80 +142,43 @@ export default function Index() {
         ? (
           <>
             <Loader2 className="h-8 w-8 animate-spin text-primary mb-4" />
-            <h1 className="text-2xl font-medium mb-2">
-              Loading your dashboard...
-            </h1>
-            <p className="text-muted-foreground">
-              Please wait while we determine your role.
-            </p>
+            <h1 className="text-2xl font-medium mb-2">{t("pages.index.loadingTitle")}</h1>
+            <p className="text-muted-foreground">{t("pages.index.loadingSub")}</p>
             <Button
               variant="link"
               onClick={handleGoToAuth}
               className="mt-4 text-primary font-medium hover:underline"
             >
-              Click here to login
+              {t("pages.index.loginLink")}
             </Button>
           </>
         )
         : (
           <div className="max-w-md w-full space-y-6 p-6 bg-card border rounded-lg shadow-md">
-            <h1 className="text-2xl font-bold text-center">
-              Dashboard Navigation
-            </h1>
+            <h1 className="text-2xl font-bold text-center">{t("pages.index.navTitle")}</h1>
 
             {errorOccurred && (
               <div className="bg-amber-50 border border-amber-200 p-4 rounded-md mb-4 dark:bg-amber-900/20 dark:border-amber-800">
-                <h2 className="font-semibold text-amber-800 dark:text-amber-300">
-                  System Notice
-                </h2>
-                <p className="text-sm text-amber-700 dark:text-amber-400 mt-1">
-                  We're experiencing issues with role determination. Please use
-                  one of the options below to continue.
-                </p>
+                <h2 className="font-semibold text-amber-800 dark:text-amber-300">{t("pages.index.systemNotice")}</h2>
+                <p className="text-sm text-amber-700 dark:text-amber-400 mt-1">{t("pages.index.systemNoticeText")}</p>
               </div>
             )}
 
             <div className="space-y-3">
-              <Button
-                onClick={handleGoToAuth}
-                className="w-full bg-primary text-primary-foreground"
-              >
-                Go to Login Page
-              </Button>
+              <Button onClick={handleGoToAuth} className="w-full bg-primary text-primary-foreground">{t("pages.index.goLogin")}</Button>
 
               <div className="relative">
                 <div className="absolute inset-0 flex items-center">
                   <span className="w-full border-t border-muted" />
                 </div>
-                <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-background px-2 text-muted-foreground">
-                    Or access portal directly
-                  </span>
-                </div>
+                <div className="relative flex justify-center text-xs uppercase"><span className="bg-background px-2 text-muted-foreground">{t("pages.index.orAccess")}</span></div>
               </div>
 
-              <Button
-                onClick={handleGoToAdmin}
-                className="w-full"
-              >
-                Go to Admin Dashboard
-              </Button>
+              <Button onClick={handleGoToAdmin} className="w-full">{t("pages.index.goAdmin")}</Button>
 
-              <Button
-                onClick={handleGoToTeacher}
-                variant="secondary"
-                className="w-full"
-              >
-                Go to Teacher Portal
-              </Button>
+              <Button onClick={handleGoToTeacher} variant="secondary" className="w-full">{t("pages.index.goTeacher")}</Button>
 
-              <Button
-                onClick={handleRefresh}
-                variant="ghost"
-                className="w-full"
-              >
-                Refresh Page
-              </Button>
+              <Button onClick={handleRefresh} variant="ghost" className="w-full">{t("pages.index.refresh")}</Button>
             </div>
           </div>
         )}

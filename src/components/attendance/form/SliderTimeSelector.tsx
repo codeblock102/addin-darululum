@@ -8,12 +8,14 @@ import {
 } from "@/components/ui/form.tsx";
 import { UseFormReturn } from "react-hook-form";
 import { AttendanceFormValues } from "@/types/attendance-form.ts";
+import { useI18n } from "@/contexts/I18nContext.tsx";
 
 interface SliderTimeSelectorProps {
   form: UseFormReturn<AttendanceFormValues>;
 }
 
 export function SliderTimeSelector({ form }: SliderTimeSelectorProps) {
+  const { t } = useI18n();
   const timeValue = form.watch("time");
 
   // Parse current time value or default to 8:00
@@ -41,7 +43,7 @@ export function SliderTimeSelector({ form }: SliderTimeSelectorProps) {
       name="time"
       render={({ field }) => (
         <FormItem>
-          <FormLabel className="text-gray-900 font-medium">Attendance Time</FormLabel>
+          <FormLabel className="text-gray-900 font-medium">{t("pages.attendance.time.label", "Attendance Time")}</FormLabel>
           <FormControl>
             <div className="space-y-5 p-4 sm:p-5 bg-white border border-gray-200 rounded-xl shadow-sm">
               {/* Current Time Display */}
@@ -55,13 +57,13 @@ export function SliderTimeSelector({ form }: SliderTimeSelectorProps) {
                   <span className="text-xs sm:text-sm">{localizedTime}</span>
                 </div>
                 <div className="text-xs sm:text-sm text-gray-500 mt-2">
-                  Select the time for this attendance record
+                  {t("pages.attendance.time.help", "Select the time for this attendance record")}
                 </div>
               </div>
 
               {/* Hour Slider */}
               <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700">Hour</label>
+                <label className="text-sm font-medium text-gray-700">{t("pages.attendance.time.hour", "Hour")}</label>
                 <Slider
                   value={[currentHour]}
                   onValueChange={(value) => handleTimeChange(value[0], currentMinute)}
@@ -69,7 +71,7 @@ export function SliderTimeSelector({ form }: SliderTimeSelectorProps) {
                   min={0}
                   step={1}
                   className="w-full"
-                  aria-label="Select hour"
+                  aria-label={t("pages.attendance.time.ariaHour", "Select hour")}
                 />
                 <div className="flex justify-between text-xs text-gray-500">
                   <span>00</span>
@@ -80,7 +82,7 @@ export function SliderTimeSelector({ form }: SliderTimeSelectorProps) {
 
               {/* Minute Slider */}
               <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700">Minutes</label>
+                <label className="text-sm font-medium text-gray-700">{t("pages.attendance.time.minutes", "Minutes")}</label>
                 <Slider
                   value={[currentMinute]}
                   onValueChange={(value) => handleTimeChange(currentHour, value[0])}
@@ -88,7 +90,7 @@ export function SliderTimeSelector({ form }: SliderTimeSelectorProps) {
                   min={0}
                   step={1}
                   className="w-full"
-                  aria-label="Select minutes"
+                  aria-label={t("pages.attendance.time.ariaMinutes", "Select minutes")}
                 />
                 <div className="flex justify-between text-xs text-gray-500">
                   <span>00</span>
