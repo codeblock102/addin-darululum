@@ -7,6 +7,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client.ts";
 import { useToast } from "@/hooks/use-toast.ts";
 import { AttendanceFormValues } from "@/types/attendance-form.ts";
+import { useI18n } from "@/contexts/I18nContext.tsx";
 
 const attendanceSchema = z.object({
   class_id: z.string().optional(),
@@ -39,13 +40,17 @@ export function useAttendanceSubmit(
   { onSuccess, onError }: UseAttendanceSubmitProps = {},
 ) {
   const [selectedStudent, setSelectedStudent] = useState<string>("");
-  const [selectedReason, setSelectedReason] = useState<string>("");
+  const [_selectedReason, setSelectedReason] = useState<string>("");
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const today = new Date();
+  const { t } = useI18n();
 
   const form = useForm<AttendanceFormValues>({
-    resolver: zodResolver(attendanceSchema),
+    resolver: zodResolver(attendanceSchema.refine((v) => !!v.time, {
+      message: t("pages.attendance.validation.timeRequired", "Time is required"),
+      path: ["time"],
+    })),
     defaultValues: {
       class_id: "",
       student_id: "",
@@ -69,7 +74,7 @@ export function useAttendanceSubmit(
     }
   }, [watchedStudentId, selectedStudent]);
 
-  const { data: existingAttendance, refetch: refetchAttendance } = useQuery({
+  const { data: existingAttendance, refetch: _refetchAttendance } = useQuery({
     queryKey: ["attendance", selectedStudent, formattedDate],
     queryFn: async (): Promise<AttendanceRecord | null> => {
       if (!selectedStudent) return null;
@@ -89,7 +94,7 @@ export function useAttendanceSubmit(
 
   useEffect(() => {
     if (existingAttendance) {
-      form.setValue("status", existingAttendance.status as any);
+      form.setValue("status", existingAttendance.status as unknown as "present" | "absent" | "late" | "excused");
       form.setValue("notes", existingAttendance.notes || "");
       if (existingAttendance.time) {
         form.setValue("time", existingAttendance.time);
@@ -135,15 +140,15 @@ export function useAttendanceSubmit(
     },
     onSuccess: (data) => {
       toast({
-        title: "Success",
-        description: `Attendance recorded for ${data.count} students.`,
+        title: t("pages.attendance.save.successTitle", "Success"),
+        description: t("pages.attendance.save.successDesc", "Attendance recorded for {count} students.").replace("{count}", String(data.count)),
       });
       queryClient.invalidateQueries({ queryKey: ["attendance"] });
       onSuccess?.();
     },
     onError: (error) => {
       toast({
-        title: "Error",
+        title: t("common.error", "Error"),
         description: error.message,
         variant: "destructive",
       });

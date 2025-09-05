@@ -3,9 +3,11 @@ import { StatsCard } from "./StatsCard.tsx";
 import { BookOpen, Clock, GraduationCap, Users } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client.ts";
 import { useUserRole } from "@/hooks/useUserRole.ts";
+import { useI18n } from "@/contexts/I18nContext.tsx";
 
 export const DashboardStats = () => {
   const { isAdmin } = useUserRole();
+  const { t } = useI18n();
 
   const { data: studentsCount } = useQuery({
     queryKey: ["studentsCount"],
@@ -58,25 +60,25 @@ export const DashboardStats = () => {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
       <StatsCard
-        title="Total Students"
+        title={t("pages.dashboard.stats.totalStudents")}
         value={studentsCount?.toString() || "0"}
         icon={<Users className={iconClass} size={24} />}
         trend={{ value: 12, isPositive: true }}
       />
       <StatsCard
-        title="Average Attendance"
+        title={t("pages.dashboard.stats.averageAttendance")}
         value={`${attendanceRate}%`}
         icon={<Clock className={iconClass} size={24} />}
         trend={{ value: 3, isPositive: true }}
       />
       <StatsCard
-        title="Completion Rate"
+        title={t("pages.dashboard.stats.completionRate")}
         value={`${progressStats || 0}%`}
         icon={<GraduationCap className={iconClass} size={24} />}
         trend={{ value: 5, isPositive: true }}
       />
       <StatsCard
-        title="Active Classes"
+        title={t("pages.dashboard.stats.activeClasses")}
         value={activeClasses?.toString() || "0"}
         icon={<BookOpen className={iconClass} size={24} />}
       />

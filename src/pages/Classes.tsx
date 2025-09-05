@@ -12,6 +12,7 @@ import { AdminHeader } from "@/components/admin/AdminHeader.tsx";
 import { ClassFormData } from "@/components/classes/validation/classFormSchema.ts";
 import { withoutLovId } from "@/lib/stripLovId.tsx";
 import { DeleteClassDialog } from "@/components/classes/components/DeleteClassDialog.tsx";
+import { useI18n } from "@/contexts/I18nContext.tsx";
 
 // Wrap the Dialog component with our HOC to strip out data-lov-id
 const SafeDialog = withoutLovId(Dialog);
@@ -68,6 +69,7 @@ const fetchClasses = async () => {
 };
 
 export default function Classes() {
+  const { t } = useI18n();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedClass, setSelectedClass] = useState<
     (Partial<ClassFormData> & { id: string; teacher_ids?: string[], time_slots?: { start_time?: string; end_time?: string }[], current_students?: string[] }) | null
@@ -143,8 +145,8 @@ export default function Classes() {
   return (
     <div className="space-y-6 px-4 sm:px-6">
         <AdminHeader
-          title="Class Management"
-          description="Create and manage class schedules and assignments"
+          title={t("pages.classes.headerTitle")}
+          description={t("pages.classes.headerDesc")}
         />
 
         <SafeDialog open={isClassDialogOpen} onOpenChange={setIsClassDialogOpen}>
@@ -155,7 +157,7 @@ export default function Classes() {
                 onClick={() => handleOpenClassDialog()}
               >
                 <Plus className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
-                Add Class
+                {t("pages.classes.addClass")}
               </Button>
             </DialogTrigger>
           </div>
@@ -185,18 +187,16 @@ export default function Classes() {
 
         <div className="glass-effect rounded-lg shadow-lg overflow-hidden">
           <SearchInput
-            placeholder="Search classes by name, teacher, or room..."
+            placeholder={t("pages.classes.searchPlaceholder")}
             value={searchQuery}
             onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
               setSearchQuery(e.target.value)
             }
             className="border-gray-700/30 bg-white/5 p-3 sm:p-4"
           />
-          {isLoading && <p className="p-4">Loading classes...</p>}
+          {isLoading && <p className="p-4">{t("pages.classes.loading")}</p>}
           {isError && (
-            <p className="p-4 text-red-500">
-              Error loading classes: {error.message}
-            </p>
+            <p className="p-4 text-red-500">{t("pages.classes.errorPrefix")}{(error as Error).message}</p>
           )}
           {!isLoading && !isError && (
             <ClassTable

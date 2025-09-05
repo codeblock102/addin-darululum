@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client.ts";
 import { Card, CardContent } from "@/components/ui/card.tsx";
 import { Loader2 } from "lucide-react";
 import type { Tables } from "@/integrations/supabase/types.ts";
+import { useI18n } from "@/contexts/I18nContext.tsx";
 
 interface StudentPerformanceMetricsProps {
   studentId: string;
@@ -11,6 +12,7 @@ interface StudentPerformanceMetricsProps {
 export const StudentPerformanceMetrics = (
   { studentId }: StudentPerformanceMetricsProps,
 ) => {
+  const { t } = useI18n();
   const { data: attendanceRecords, isLoading: attendanceLoading } = useQuery<
     Tables<"attendance">[]
   >({
@@ -126,11 +128,13 @@ export const StudentPerformanceMetrics = (
       <Card>
         <CardContent className="p-4">
           <div className="text-sm font-medium text-muted-foreground">
-            Attendance Rate
+            {t("pages.teacherPortal.metrics.attendanceRate", "Attendance Rate")}
           </div>
           <div className="text-2xl font-bold mt-1">{attendanceRate}%</div>
           <div className="mt-1 text-xs text-muted-foreground">
-            {totalPresent} of {attendanceRecords?.length || 0} days present
+            {t("pages.teacherPortal.metrics.daysPresent", "{present} of {total} days present")
+              .replace("{present}", String(totalPresent))
+              .replace("{total}", String(attendanceRecords?.length || 0))}
           </div>
         </CardContent>
       </Card>
@@ -138,13 +142,13 @@ export const StudentPerformanceMetrics = (
       <Card>
         <CardContent className="p-4">
           <div className="text-sm font-medium text-muted-foreground">
-            Total Memorized Juz
+            {t("pages.teacherPortal.metrics.totalMemorizedJuz", "Total Memorized Juz")}
           </div>
           <div className="text-2xl font-bold mt-1">
             {totalMemorizedJuzCount} / 30
           </div>
           <div className="mt-1 text-xs text-muted-foreground">
-            Currently on Juz {currentJuz || "N/A"}
+            {t("pages.teacherPortal.metrics.currentJuz", "Currently on Juz {juz}").replace("{juz}", String(currentJuz || t("common.na", "N/A")))}
           </div>
         </CardContent>
       </Card>
@@ -152,11 +156,11 @@ export const StudentPerformanceMetrics = (
       <Card>
         <CardContent className="p-4">
           <div className="text-sm font-medium text-muted-foreground">
-            Sabaq Para Entries
+            {t("pages.teacherPortal.metrics.sabaqParaEntries", "Sabaq Para Entries")}
           </div>
           <div className="text-2xl font-bold mt-1">{totalSabaqParaEntries}</div>
           <div className="mt-1 text-xs text-muted-foreground">
-            Total recorded Sabaq Para sessions.
+            {t("pages.teacherPortal.metrics.sabaqParaHint", "Total recorded Sabaq Para sessions.")}
           </div>
         </CardContent>
       </Card>
@@ -164,13 +168,13 @@ export const StudentPerformanceMetrics = (
       <Card>
         <CardContent className="p-4">
           <div className="text-sm font-medium text-muted-foreground">
-            Dhor Revision Entries
+            {t("pages.teacherPortal.metrics.dhorRevisionEntries", "Dhor Revision Entries")}
           </div>
           <div className="text-2xl font-bold mt-1">
             {totalJuzRevisionsEntries}
           </div>
           <div className="mt-1 text-xs text-muted-foreground">
-            Total recorded Dhor (Juz Revision) sessions.
+            {t("pages.teacherPortal.metrics.dhorHint", "Total recorded Dhor (Juz Revision) sessions.")}
           </div>
         </CardContent>
       </Card>

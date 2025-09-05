@@ -2,6 +2,7 @@ import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils.ts";
 import { NavItem } from "@/types/navigation.ts";
 import { useIsMobile } from "@/hooks/use-mobile.tsx";
+import { useI18n } from "@/contexts/I18nContext.tsx";
 
 interface SidebarNavProps {
   items: NavItem[];
@@ -12,6 +13,7 @@ interface SidebarNavProps {
 export const SidebarNav = ({ items, isAdmin, isOpen }: SidebarNavProps) => {
   const location = useLocation();
   const isMobile = useIsMobile();
+  const { t } = useI18n();
 
   const isNavItemActive = (item: NavItem) => {
     if (item.exact) {
@@ -63,7 +65,7 @@ export const SidebarNav = ({ items, isAdmin, isOpen }: SidebarNavProps) => {
               "hover:scale-[1.02] active:scale-[0.98]",
             )}
             title={(!isMobile && isOpen === false)
-              ? item.label
+              ? t(item.label)
               : item.description}
           >
             <item.icon
@@ -81,7 +83,7 @@ export const SidebarNav = ({ items, isAdmin, isOpen }: SidebarNavProps) => {
             />
             {(isOpen !== false || isMobile) && (
               <span className="truncate transition-all duration-300 font-medium">
-                {item.label}
+                {t(item.label)}
               </span>
             )}
 
@@ -93,7 +95,7 @@ export const SidebarNav = ({ items, isAdmin, isOpen }: SidebarNavProps) => {
                   "before:content-[''] before:absolute before:right-full before:top-1/2 before:-translate-y-1/2 before:border-4 before:border-transparent before:border-r-gray-900",
                 )}
               >
-                {item.label}
+                {t(item.label)}
               </div>
             )}
           </Link>

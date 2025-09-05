@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/card.tsx";
 import { useAuth } from "@/hooks/use-auth.ts";
 import { Skeleton } from "@/components/ui/skeleton.tsx";
+import { useI18n } from "@/contexts/I18nContext.tsx";
 
 interface Student {
   id: string;
@@ -29,7 +30,16 @@ interface Student {
   medical_condition?: string | null;
 }
 
-const StatCard = ({ title, value, icon, description, isLoading, isAdmin }: any) => (
+interface StatCardProps {
+  title: string;
+  value: number | string;
+  icon: React.ReactNode;
+  description: string;
+  isLoading: boolean;
+  isAdmin: boolean;
+}
+
+const StatCard = ({ title, value, icon, description, isLoading, isAdmin }: StatCardProps) => (
   <Card>
     <CardHeader
       className={`flex flex-row items-center justify-between space-y-0 ${
@@ -56,6 +66,7 @@ const StatCard = ({ title, value, icon, description, isLoading, isAdmin }: any) 
 );
 
 const Students = () => {
+  const { t } = useI18n();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -154,38 +165,36 @@ const Students = () => {
     <div className="p-4 sm:p-6 lg:p-8 space-y-6">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Students</h1>
-          <p className="text-muted-foreground">
-            Manage student records and view their details.
-          </p>
+          <h1 className="text-2xl font-bold tracking-tight">{t("pages.students.title")}</h1>
+          <p className="text-muted-foreground">{t("pages.students.subtitle")}</p>
         </div>
         <Button onClick={handleAddStudent} className="w-full sm:w-auto">
           <PlusCircle className="mr-2 h-4 w-4" />
-          Add New Student
+          {t("pages.students.add")}
         </Button>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         <StatCard
-          title="Total Students"
+          title={t("pages.students.statsTotal")}
           value={totalStudents}
-          description={`${activeStudents} active`}
+          description={`${activeStudents} ${t("pages.students.statsActive").toLowerCase()}`}
           icon={<Users className="h-4 w-4 text-muted-foreground" />}
           isLoading={isLoading}
           isAdmin={isAdmin}
         />
         <StatCard
-          title="Active"
+          title={t("pages.students.statsActive")}
           value={activeStudents}
-          description={`${((activeStudents / totalStudents) * 100 || 0).toFixed(0)}% of students`}
+          description={`${((activeStudents / totalStudents) * 100 || 0).toFixed(0)}${t("pages.students.ofStudents")}`}
           icon={<CheckCircle className="h-4 w-4 text-muted-foreground" />}
           isLoading={isLoading}
           isAdmin={isAdmin}
         />
         <StatCard
-          title="Inactive"
+          title={t("pages.students.statsInactive")}
           value={inactiveStudents}
-          description={`${((inactiveStudents / totalStudents) * 100 || 0).toFixed(0)}% of students`}
+          description={`${((inactiveStudents / totalStudents) * 100 || 0).toFixed(0)}${t("pages.students.ofStudents")}`}
           icon={<Activity className="h-4 w-4 text-muted-foreground" />}
           isLoading={isLoading}
           isAdmin={isAdmin}
@@ -196,14 +205,12 @@ const Students = () => {
         <CardHeader
           className={isAdmin ? "border-b border-primary/30" : ""}
         >
-          <CardTitle>All Students</CardTitle>
-          <CardDescription>
-            A list of all students in the system.
-          </CardDescription>
+          <CardTitle>{t("pages.students.allStudents")}</CardTitle>
+          <CardDescription>{t("pages.students.allStudentsDesc")}</CardDescription>
           <div className="relative pt-4">
             <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Search by name or guardian..."
+              placeholder={t("pages.students.searchPlaceholder")}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-8 w-full"

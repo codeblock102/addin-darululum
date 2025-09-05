@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button.tsx";
 import { Loader2 } from "lucide-react";
+import { useI18n } from "@/contexts/I18nContext.tsx";
 
 interface SubmitButtonProps {
   isPending: boolean;
@@ -7,6 +8,7 @@ interface SubmitButtonProps {
 }
 
 export function SubmitButton({ isPending, isUpdate }: SubmitButtonProps) {
+  const { t } = useI18n();
   return (
     <Button
       type="submit"
@@ -17,11 +19,11 @@ export function SubmitButton({ isPending, isUpdate }: SubmitButtonProps) {
         ? (
           <span className="flex items-center gap-2">
             <Loader2 className="h-4 w-4 animate-spin" />
-            Saving...
+            {t("common.saving", "Saving...")}
           </span>
         )
         : (
-          isUpdate ? "Update Attendance" : "Save Attendance"
+          isUpdate ? t("pages.attendance.update", "Update Attendance") : t("pages.attendance.save.label", "Save Attendance")
         )}
     </Button>
   );

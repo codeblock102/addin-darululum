@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile.tsx";
 import { useRBAC } from "@/hooks/useRBAC.ts";
+import { useI18n } from "@/contexts/I18nContext.tsx";
 
 interface TeacherTabsProps {
   activeTab: string;
@@ -19,6 +20,7 @@ export const TeacherTabs = ({ activeTab, onTabChange }: TeacherTabsProps) => {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const { isAdmin, isAttendanceTaker, hasCapability } = useRBAC();
+  const { t } = useI18n();
 
   // If on mobile, don't render the tabs as they're redundant with the bottom navigation
   if (isMobile) return null;
@@ -26,38 +28,38 @@ export const TeacherTabs = ({ activeTab, onTabChange }: TeacherTabsProps) => {
   const tabs = [
     {
       id: "overview",
-      label: "Overview",
+      label: t("pages.teacherPortal.tabs.overview", "Overview"),
       icon: <BookOpen className="h-4 w-4" />,
     },
     {
       id: "students",
-      label: "My Students",
+      label: t("pages.teacherPortal.tabs.myStudents", "My Students"),
       icon: <Users className="h-4 w-4" />,
     },
     {
       id: "progress-book",
-      label: "Progress Book",
+      label: t("pages.teacherPortal.tabs.progressBook", "Progress Book"),
       icon: <BookOpen className="h-4 w-4" />,
     },
     {
       id: "attendance",
-      label: "Attendance",
+      label: t("pages.teacherPortal.tabs.attendance", "Attendance"),
       icon: <ClipboardList className="h-4 w-4" />,
       isExternalRoute: true, // Flag for routes that go to separate pages
     },
     {
       id: "schedule",
-      label: "Schedule",
+      label: t("pages.teacherPortal.tabs.schedule", "Schedule"),
       icon: <CalendarDays className="h-4 w-4" />,
     },
     {
       id: "performance",
-      label: "Performance",
+      label: t("pages.teacherPortal.tabs.performance", "Performance"),
       icon: <LineChart className="h-4 w-4" />,
     },
     {
       id: "messages",
-      label: "Messages",
+      label: t("pages.teacherPortal.tabs.messages", "Messages"),
       icon: <MessageSquare className="h-4 w-4" />,
     },
   ]
@@ -68,7 +70,8 @@ export const TeacherTabs = ({ activeTab, onTabChange }: TeacherTabsProps) => {
     // Assignments: admin or capability
     .filter((tab) => tab.id !== "assignments" || isAdmin || hasCapability("assignments_access"));
 
-  const handleTabClick = (tab: any) => {
+  type Tab = { id: string; label: string; icon: JSX.Element; isExternalRoute?: boolean };
+  const handleTabClick = (tab: Tab) => {
     if (tab.isExternalRoute) {
       // Navigate to external route (separate page)
       if (tab.id === "attendance") {
