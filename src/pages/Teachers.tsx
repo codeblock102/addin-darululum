@@ -17,6 +17,7 @@ import { Teacher } from "@/types/teacher.ts";
 import { TeacherProfilesTab } from "@/components/teachers/TeacherProfilesTab.tsx";
 import { TeacherStatsSection } from "@/components/teachers/TeacherStatsSection.tsx";
 import { useAuth } from "@/contexts/AuthContext.tsx";
+import { useI18n } from "@/contexts/I18nContext.tsx";
 
 /**
  * @file Teachers.tsx
@@ -37,6 +38,7 @@ import { useAuth } from "@/contexts/AuthContext.tsx";
  * @returns {JSX.Element} The rendered teacher management page.
  */
 const Teachers = () => {
+  const { t } = useI18n();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(true);
@@ -209,10 +211,8 @@ const Teachers = () => {
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6 lg:p-8">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
             <div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Teacher Management Center</h1>
-              <p className="text-gray-600 mt-1 sm:mt-2 text-base sm:text-lg">
-                Comprehensive teacher profile and account management
-              </p>
+              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">{t("pages.teachers.headerTitle")}</h1>
+              <p className="text-gray-600 mt-1 sm:mt-2 text-base sm:text-lg">{t("pages.teachers.headerDesc")}</p>
             </div>
             <Button
               className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 sm:px-6 sm:py-3 text-sm sm:text-base font-medium shadow-sm transition-all duration-200 self-start"
@@ -220,7 +220,7 @@ const Teachers = () => {
               disabled={isAdminDataLoading}
             >
               <UserPlus className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
-              Add Teacher
+              {t("pages.teachers.addTeacher")}
             </Button>
           </div>
         </div>
@@ -242,7 +242,7 @@ const Teachers = () => {
                   value="profiles" 
                   className="data-[state=active]:bg-white data-[state=active]:text-emerald-700 data-[state=active]:shadow-sm transition-all duration-200 px-4 sm:px-8 rounded-md text-sm sm:text-base"
                 >
-                  Teacher Profiles
+                  {t("pages.teachers.tabProfiles")}
                 </TabsTrigger>
               </TabsList>
             </div>

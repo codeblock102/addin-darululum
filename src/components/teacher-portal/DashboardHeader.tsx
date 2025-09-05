@@ -1,7 +1,8 @@
 import { Teacher } from "@/types/teacher.ts";
 import { BookOpen, Mail, Phone, User, Loader2, Sparkles, Shield, Crown } from "lucide-react";
 import { Card } from "@/components/ui/card.tsx";
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/utils.ts";
+import { useI18n } from "@/contexts/I18nContext.tsx";
 
 interface DashboardHeaderProps {
   teacher: Teacher;
@@ -12,6 +13,7 @@ interface DashboardHeaderProps {
 export const DashboardHeader = (
   { teacher, classes, isLoadingClasses }: DashboardHeaderProps,
 ) => {
+  const { t } = useI18n();
   const isAdmin = teacher.subject === "Administration";
   
   return (
@@ -57,7 +59,7 @@ export const DashboardHeader = (
                 <div>
                   <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 mb-2 flex items-center gap-2 sm:gap-3">
                     <span className="truncate">
-                      {isAdmin ? "Administrator Dashboard" : `Welcome back, ${teacher.name}`}
+                      {isAdmin ? t("pages.teacherPortal.header.adminTitle") : `${t("pages.teacherPortal.header.teacherWelcomePrefix")}, ${teacher.name}`}
                     </span>
                     {isAdmin ? (
                       <Shield className="h-5 w-5 sm:h-6 sm:w-6 text-amber-600 flex-shrink-0" />
@@ -65,38 +67,23 @@ export const DashboardHeader = (
                       <BookOpen className="h-5 w-5 sm:h-6 sm:w-6 text-[hsl(142.8,64.2%,24.1%)] flex-shrink-0" />
                     )}
                   </h1>
-                  <p className="text-base text-black">
-                    {isAdmin 
-                      ? "Manage and oversee all aspects of the educational system"
-                      : "Ready to inspire and guide your students today"
-                    }
-                  </p>
+                  <p className="text-base text-black">{isAdmin ? t("pages.teacherPortal.header.adminSubtitle") : t("pages.teacherPortal.header.teacherSubtitle")}</p>
                 </div>
 
                 {/* Assigned Classes */}
                 <div className="pt-2">
-                  <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wider mb-3">
-                    {isAdmin ? "System Overview" : "Assigned Classes"}
-                  </h3>
+                  <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wider mb-3">{isAdmin ? t("pages.teacherPortal.header.systemOverview") : t("pages.teacherPortal.header.assignedClasses")}</h3>
                   {isAdmin ? (
                     <div className="flex flex-wrap items-center gap-2">
-                      <span className="px-3 py-1.5 bg-amber-100 text-amber-800 rounded-lg text-xs font-medium border border-amber-200">
-                        Full System Access
-                      </span>
-                      <span className="px-3 py-1.5 bg-blue-100 text-blue-800 rounded-lg text-xs font-medium border border-blue-200">
-                        User Management
-                      </span>
-                      <span className="px-3 py-1.5 bg-green-100 text-green-800 rounded-lg text-xs font-medium border border-green-200">
-                        Data Analytics
-                      </span>
+                      <span className="px-3 py-1.5 bg-amber-100 text-amber-800 rounded-lg text-xs font-medium border border-amber-200">{t("pages.teacherPortal.header.adminBadges.fullAccess")}</span>
+                      <span className="px-3 py-1.5 bg-blue-100 text-blue-800 rounded-lg text-xs font-medium border border-blue-200">{t("pages.teacherPortal.header.adminBadges.userManagement")}</span>
+                      <span className="px-3 py-1.5 bg-green-100 text-green-800 rounded-lg text-xs font-medium border border-green-200">{t("pages.teacherPortal.header.adminBadges.dataAnalytics")}</span>
                     </div>
                   ) : (
                     isLoadingClasses ? (
                       <div className="flex items-center gap-2">
                         <Loader2 className="h-4 w-4 animate-spin text-[hsl(142.8,64.2%,24.1%)]" />
-                        <span className="text-sm text-black">
-                          Loading classes...
-                        </span>
+                        <span className="text-sm text-black">{t("pages.teacherPortal.header.loadingClasses")}</span>
                       </div>
                     ) : (
                       <div className="flex flex-wrap items-center gap-2">
@@ -109,9 +96,7 @@ export const DashboardHeader = (
                           </span>
                         ))}
                         {(!classes || classes.length === 0) && (
-                          <span className="text-sm text-black italic">
-                            No classes assigned yet
-                          </span>
+                          <span className="text-sm text-black italic">{t("pages.teacherPortal.header.noClasses")}</span>
                         )}
                       </div>
                     )

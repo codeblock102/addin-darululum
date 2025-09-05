@@ -23,7 +23,7 @@ import {
   BookOpen,
   ChevronLeft,
   ChevronRight,
-  Menu,
+  Menu as _Menu,
   ShieldCheck,
   X,
 } from "lucide-react";
@@ -33,6 +33,7 @@ import { useRBAC } from "@/hooks/useRBAC.ts";
 import { SidebarNav } from "./sidebar/SidebarNav.tsx";
 import { SidebarUser } from "./sidebar/SidebarUser.tsx";
 import { cn } from "@/lib/utils.ts";
+import { useI18n } from "@/contexts/I18nContext.tsx";
 
 interface SidebarProps {
   /** Optional callback function to be invoked when the sidebar should be closed, typically on mobile. */
@@ -77,6 +78,7 @@ export const Sidebar = (
 ) => {
   const isMobile = useIsMobile();
   const { isTeacher, isAdmin, isParent, isAttendanceTaker, hasCapability, isLoading: isRoleLoading } = useRBAC();
+  const { t } = useI18n();
 
   let navItems: NavItem[];
   if (isAdmin) {
@@ -169,7 +171,7 @@ export const Sidebar = (
                   isAdmin ? "text-gray-900" : "text-gray-900",
                 )}
               >
-                {isAdmin ? "Admin Portal" : isParent ? "Parent Portal" : "Teacher Portal"}
+                {isAdmin ? t("portal.admin") : isParent ? t("portal.parent") : t("portal.teacher")}
               </span>
             </Link>
           )}
@@ -179,7 +181,7 @@ export const Sidebar = (
             <Link
               to="/dashboard"
               className="flex items-center justify-center w-full hover:bg-gray-100 rounded-lg p-2 transition-all duration-200"
-              title={isAdmin ? "Admin Portal" : isParent ? "Parent Portal" : "Teacher Portal"}
+              title={isAdmin ? t("portal.admin") : isParent ? t("portal.parent") : t("portal.teacher")}
             >
               {isAdmin
                 ? (

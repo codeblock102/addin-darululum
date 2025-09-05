@@ -29,6 +29,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { FormProvider, useForm } from "react-hook-form";
 import * as z from "zod";
 import { Loader2, Save } from "lucide-react";
+import { useI18n } from "@/contexts/I18nContext.tsx";
 
 interface ProgressRecordingProps {
   teacherId: string;
@@ -39,6 +40,7 @@ export const ProgressRecording = ({
 }: ProgressRecordingProps) => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { t } = useI18n();
 
   // Fetch teacher details for contributor info
   const { data: teacherData } = useQuery({
@@ -77,7 +79,7 @@ export const ProgressRecording = ({
   // Progress entry form schema
   const formSchema = z.object({
     student_id: z.string({
-      required_error: "Please select a student",
+      required_error: t("pages.teacherPortal.progress.selectStudentError", "Please select a student"),
     }),
     current_surah: z.coerce.number().min(1).max(114),
     current_juz: z.coerce.number().min(1).max(30),
@@ -149,14 +151,14 @@ export const ProgressRecording = ({
         queryKey: ["teacher-summary", teacherId],
       });
       toast({
-        title: "Progress Recorded",
-        description: "Student progress has been successfully saved.",
+        title: t("pages.teacherPortal.progress.toastSavedTitle", "Progress Recorded"),
+        description: t("pages.teacherPortal.progress.toastSavedDesc", "Student progress has been successfully saved."),
       });
       form.reset();
     },
     onError: (error: Error) => {
       toast({
-        title: "Error Saving Progress",
+        title: t("pages.teacherPortal.progress.toastErrorTitle", "Error Saving Progress"),
         description: error.message,
         variant: "destructive",
       });
@@ -170,10 +172,8 @@ export const ProgressRecording = ({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Record Student Sabaq Progress</CardTitle>
-        <CardDescription>
-          Document a student's Quran memorization progress
-        </CardDescription>
+        <CardTitle>{t("pages.teacherPortal.progress.title", "Record Student Sabaq Progress")}</CardTitle>
+        <CardDescription>{t("pages.teacherPortal.progress.subtitle", "Document a student's Quran memorization progress")}</CardDescription>
       </CardHeader>
       <CardContent>
         <FormProvider {...form}>
@@ -183,7 +183,7 @@ export const ProgressRecording = ({
               name="student_id"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Student</FormLabel>
+                  <FormLabel>{t("pages.teacherPortal.progress.student", "Student")}</FormLabel>
                   <Select
                     onValueChange={field.onChange}
                     defaultValue={field.value}
@@ -191,7 +191,7 @@ export const ProgressRecording = ({
                   >
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Select a student" />
+                        <SelectValue placeholder={t("pages.teacherPortal.progress.selectStudent", "Select a student")} />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
@@ -213,7 +213,7 @@ export const ProgressRecording = ({
                 name="current_surah"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Surah Number</FormLabel>
+                    <FormLabel>{t("pages.teacherPortal.progress.surah", "Surah Number")}</FormLabel>
                     <FormControl>
                       <Input type="number" min={1} max={114} {...field} />
                     </FormControl>
@@ -227,7 +227,7 @@ export const ProgressRecording = ({
                 name="current_juz"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Current Juz</FormLabel>
+                    <FormLabel>{t("pages.teacherPortal.progress.currentJuz", "Current Juz")}</FormLabel>
                     <FormControl>
                       <Input type="number" min={1} max={30} {...field} />
                     </FormControl>
@@ -243,7 +243,7 @@ export const ProgressRecording = ({
                 name="start_ayat"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Starting Ayat</FormLabel>
+                    <FormLabel>{t("pages.teacherPortal.progress.startAyat", "Starting Ayat")}</FormLabel>
                     <FormControl>
                       <Input type="number" min={1} {...field} />
                     </FormControl>
@@ -257,7 +257,7 @@ export const ProgressRecording = ({
                 name="end_ayat"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Ending Ayat</FormLabel>
+                    <FormLabel>{t("pages.teacherPortal.progress.endAyat", "Ending Ayat")}</FormLabel>
                     <FormControl>
                       <Input type="number" min={1} {...field} />
                     </FormControl>
@@ -273,22 +273,22 @@ export const ProgressRecording = ({
                 name="memorization_quality"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Memorization Quality</FormLabel>
+                    <FormLabel>{t("pages.teacherPortal.progress.quality", "Memorization Quality")}</FormLabel>
                     <Select
                       onValueChange={field.onChange}
                       defaultValue={field.value}
                     >
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="Select quality" />
+                          <SelectValue placeholder={t("pages.teacherPortal.progress.selectQuality", "Select quality")} />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="excellent">Excellent</SelectItem>
-                        <SelectItem value="good">Good</SelectItem>
-                        <SelectItem value="average">Average</SelectItem>
-                        <SelectItem value="needsWork">Needs Work</SelectItem>
-                        <SelectItem value="horrible">Incomplete</SelectItem>
+                        <SelectItem value="excellent">{t("pages.teacherPortal.progress.qualityOptions.excellent", "Excellent")}</SelectItem>
+                        <SelectItem value="good">{t("pages.teacherPortal.progress.qualityOptions.good", "Good")}</SelectItem>
+                        <SelectItem value="average">{t("pages.teacherPortal.progress.qualityOptions.average", "Average")}</SelectItem>
+                        <SelectItem value="needsWork">{t("pages.teacherPortal.progress.qualityOptions.needsWork", "Needs Work")}</SelectItem>
+                        <SelectItem value="horrible">{t("pages.teacherPortal.progress.qualityOptions.incomplete", "Incomplete")}</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -301,12 +301,9 @@ export const ProgressRecording = ({
                 name="tajweed_level"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Tajweed Level</FormLabel>
+                    <FormLabel>{t("pages.teacherPortal.progress.tajweed", "Tajweed Level")}</FormLabel>
                     <FormControl>
-                      <Input
-                        placeholder="e.g., Excellent, Good, Needs Practice"
-                        {...field}
-                      />
+                      <Input placeholder={t("pages.teacherPortal.progress.tajweedPlaceholder", "e.g., Excellent, Good, Needs Practice")} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -319,13 +316,9 @@ export const ProgressRecording = ({
               name="notes"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Teacher Notes</FormLabel>
+                  <FormLabel>{t("pages.teacherPortal.progress.notes", "Teacher Notes")}</FormLabel>
                   <FormControl>
-                    <Textarea
-                      placeholder="Additional notes about the student's progress, areas for improvement, or specific achievements"
-                      className="min-h-[120px]"
-                      {...field}
-                    />
+                    <Textarea placeholder={t("pages.teacherPortal.progress.notesPlaceholder", "Additional notes about the student's progress, areas for improvement, or specific achievements")} className="min-h-[120px]" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -341,22 +334,19 @@ export const ProgressRecording = ({
                 ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Saving...
+                    {t("pages.teacherPortal.progress.saving", "Saving...")}
                   </>
                 )
                 : (
                   <>
                     <Save className="mr-2 h-4 w-4" />
-                    Record Progress
+                    {t("pages.teacherPortal.progress.save", "Record Progress")}
                   </>
                 )}
             </Button>
 
             {teacherData && (
-              <p className="text-xs text-center text-muted-foreground mt-2">
-                Entry will be recorded as submitted by Teacher{" "}
-                {teacherData.name}
-              </p>
+              <p className="text-xs text-center text-muted-foreground mt-2">{t("pages.teacherPortal.progress.submittedBy", "Entry will be recorded as submitted by Teacher")} {teacherData.name}</p>
             )}
           </form>
         </FormProvider>

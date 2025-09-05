@@ -17,12 +17,14 @@ import {
 } from "@/components/ui/popover";
 import { UseFormReturn } from "react-hook-form";
 import { AttendanceFormValues } from "@/types/attendance-form";
+import { useI18n } from "@/contexts/I18nContext.tsx";
 
 interface DateSelectorProps {
   form: UseFormReturn<AttendanceFormValues>;
 }
 
 export function DateSelector({ form }: DateSelectorProps) {
+  const { t } = useI18n();
   return (
     <FormField
       control={form.control}
@@ -30,7 +32,7 @@ export function DateSelector({ form }: DateSelectorProps) {
       render={({ field }) => (
         <FormItem className="flex flex-col">
           <FormLabel className="text-black font-medium">
-            Date
+            {t("pages.attendance.form.date", "Date")}
           </FormLabel>
           <Popover>
             <PopoverTrigger asChild>
@@ -48,7 +50,7 @@ export function DateSelector({ form }: DateSelectorProps) {
                         {format(field.value, "PPP")}
                       </span>
                     )
-                    : <span>Pick a date</span>}
+                    : <span>{t("pages.attendance.form.pickDate", "Pick a date")}</span>}
                   <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                 </Button>
               </FormControl>

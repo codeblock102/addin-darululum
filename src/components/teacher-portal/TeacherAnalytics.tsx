@@ -17,6 +17,7 @@ import { ProgressDistributionChart } from "./analytics/ProgressDistributionChart
 import { StudentProgressChart } from "./analytics/StudentProgressChart.tsx";
 import { TimeProgressChart } from "./analytics/TimeProgressChart.tsx";
 import { ContributorActivityChart } from "./analytics/ContributorActivityChart.tsx";
+import { useI18n } from "@/contexts/I18nContext.tsx";
 
 interface AnalyticsHeaderProps {
   stats: {
@@ -67,6 +68,7 @@ interface TeacherAnalyticsProps {
 export const TeacherAnalytics = ({ teacherId }: TeacherAnalyticsProps) => {
   const { data, isLoading, error } = useAnalyticsData(teacherId);
   const [currentView, setCurrentView] = useState("week");
+  const { t } = useI18n();
 
   // Transform the data for the charts if available
   const timeProgress = data?.timeProgress?.map((item) => ({
@@ -76,27 +78,27 @@ export const TeacherAnalytics = ({ teacherId }: TeacherAnalyticsProps) => {
 
   const stats = [
     {
-      title: "Total Students",
+      title: t("pages.teacherPortal.analytics.stats.totalStudents"),
       value: data?.studentProgress?.length || 0,
-      description: "Students assigned to you",
+      description: t("pages.teacherPortal.analytics.stats.studentsAssigned"),
       trend: "+2.5%",
     },
     {
-      title: "Avg. Quality",
+      title: t("pages.teacherPortal.analytics.stats.avgQuality"),
       value: (data?.qualityDistribution?.length ?? 0) > 0 ? "Good" : "N/A",
-      description: "Average memorization quality",
+      description: t("pages.teacherPortal.analytics.stats.avgQualityDesc"),
       trend: "+0.3",
     },
     {
-      title: "Active Tasks",
+      title: t("pages.teacherPortal.analytics.stats.activeTasks"),
       value: data?.contributorActivity?.length || 0,
-      description: "Pending assignments",
+      description: t("pages.teacherPortal.analytics.stats.pendingAssignments"),
       trend: "-2",
     },
     {
-      title: "Revisions This Month",
+      title: t("pages.teacherPortal.analytics.stats.revisionsMonth"),
       value: timeProgress.reduce((sum, item) => sum + item.count, 0),
-      description: "Completed revisions",
+      description: t("pages.teacherPortal.analytics.stats.revisionsCompleted"),
       trend: "+15.2%",
     },
   ];
@@ -109,7 +111,7 @@ export const TeacherAnalytics = ({ teacherId }: TeacherAnalyticsProps) => {
           <div className="h-8 w-8 animate-spin rounded-full border-2 border-emerald-600 border-t-transparent">
           </div>
           <p className="text-sm text-muted-foreground">
-            Loading analytics data...
+            {t("pages.teacherPortal.analytics.loading")}
           </p>
         </div>
       </div>
@@ -122,7 +124,7 @@ export const TeacherAnalytics = ({ teacherId }: TeacherAnalyticsProps) => {
       <Card className="border-destructive/50">
         <CardContent className="pt-6">
           <p className="text-center text-destructive">
-            Error loading analytics data
+            {t("pages.teacherPortal.analytics.error")}
           </p>
         </CardContent>
       </Card>
@@ -141,19 +143,17 @@ export const TeacherAnalytics = ({ teacherId }: TeacherAnalyticsProps) => {
 
       <Tabs defaultValue="progress" className="space-y-4">
         <TabsList>
-          <TabsTrigger value="progress">Progress Overview</TabsTrigger>
-          <TabsTrigger value="students">Student Performance</TabsTrigger>
-          <TabsTrigger value="trends">Trends Analysis</TabsTrigger>
+          <TabsTrigger value="progress">{t("pages.teacherPortal.analytics.tabs.progress")}</TabsTrigger>
+          <TabsTrigger value="students">{t("pages.teacherPortal.analytics.tabs.students")}</TabsTrigger>
+          <TabsTrigger value="trends">{t("pages.teacherPortal.analytics.tabs.trends")}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="progress" className="space-y-4">
           <div className="grid gap-4 md:grid-cols-2">
             <Card>
               <CardHeader>
-                <CardTitle>Progress Distribution</CardTitle>
-                <CardDescription>
-                  Memorization quality assessment
-                </CardDescription>
+                <CardTitle>{t("pages.teacherPortal.analytics.progressDistribution.title")}</CardTitle>
+                <CardDescription>{t("pages.teacherPortal.analytics.progressDistribution.desc")}</CardDescription>
               </CardHeader>
               <CardContent>
                 <ProgressDistributionChart data={formattedQualityData} />
@@ -162,10 +162,10 @@ export const TeacherAnalytics = ({ teacherId }: TeacherAnalyticsProps) => {
 
             <Card>
               <CardHeader>
-                <CardTitle>Progress Over Time</CardTitle>
+                <CardTitle>{t("pages.teacherPortal.analytics.progressOverTime.title")}</CardTitle>
                 <CardDescription>
                   <div className="flex items-center gap-4">
-                    <span>Measured in completed ayahs</span>
+                    <span>{t("pages.teacherPortal.analytics.progressOverTime.desc.unit")}</span>
                     <div className="flex items-center gap-2 ml-auto">
                       <button
                         type="button"
@@ -176,7 +176,7 @@ export const TeacherAnalytics = ({ teacherId }: TeacherAnalyticsProps) => {
                             : "text-muted-foreground"
                         }`}
                       >
-                        Week
+                        {t("pages.teacherPortal.analytics.progressOverTime.desc.week")}
                       </button>
                       <button
                         type="button"
@@ -187,7 +187,7 @@ export const TeacherAnalytics = ({ teacherId }: TeacherAnalyticsProps) => {
                             : "text-muted-foreground"
                         }`}
                       >
-                        Month
+                        {t("pages.teacherPortal.analytics.progressOverTime.desc.month")}
                       </button>
                       <button
                         type="button"
@@ -198,7 +198,7 @@ export const TeacherAnalytics = ({ teacherId }: TeacherAnalyticsProps) => {
                             : "text-muted-foreground"
                         }`}
                       >
-                        Year
+                        {t("pages.teacherPortal.analytics.progressOverTime.desc.year")}
                       </button>
                     </div>
                   </div>
@@ -214,10 +214,8 @@ export const TeacherAnalytics = ({ teacherId }: TeacherAnalyticsProps) => {
         <TabsContent value="students" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Student Progress Comparison</CardTitle>
-              <CardDescription>
-                Top performing students this month
-              </CardDescription>
+              <CardTitle>{t("pages.teacherPortal.analytics.comparison.title")}</CardTitle>
+              <CardDescription>{t("pages.teacherPortal.analytics.comparison.desc")}</CardDescription>
             </CardHeader>
             <CardContent className="pt-2">
               <StudentProgressChart data={data?.studentProgress || []} />
@@ -228,8 +226,8 @@ export const TeacherAnalytics = ({ teacherId }: TeacherAnalyticsProps) => {
         <TabsContent value="trends" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Activity Patterns</CardTitle>
-              <CardDescription>When students are most active</CardDescription>
+              <CardTitle>{t("pages.teacherPortal.analytics.activity.title")}</CardTitle>
+              <CardDescription>{t("pages.teacherPortal.analytics.activity.desc")}</CardDescription>
             </CardHeader>
             <CardContent>
               <ContributorActivityChart

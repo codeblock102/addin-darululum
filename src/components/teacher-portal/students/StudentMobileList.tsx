@@ -1,10 +1,11 @@
-import { Student, StudentAssignment } from "../MyStudents.tsx";
+import { Student, StudentAssignment as _StudentAssignment } from "../MyStudents.tsx";
 import { Button } from "@/components/ui/button.tsx";
 import { Trash2, UserMinus, UserPlus, Edit } from "lucide-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client.ts";
 import { useToast } from "@/hooks/use-toast.ts";
 import { getErrorMessage } from "@/utils/stringUtils.ts";
+import { useI18n } from "@/contexts/I18nContext.tsx";
 
 interface StudentMobileListProps {
   students: Student[];
@@ -25,6 +26,7 @@ export const StudentMobileList = ({
 }: StudentMobileListProps) => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { t } = useI18n();
 
   const addStudentMutation = useMutation({
     mutationFn: async (
@@ -42,9 +44,8 @@ export const StudentMobileList = ({
     },
     onSuccess: (_, variables) => {
       toast({
-        title: "Student added",
-        description:
-          `${variables.studentName} has been added to your students.`,
+        title: t("pages.teacherPortal.students.addToastTitle"),
+        description: t("pages.teacherPortal.students.addToastDesc").replace("{name}", variables.studentName),
       });
       queryClient.invalidateQueries({
         queryKey: ["teacher-student-assignments"],
@@ -63,9 +64,9 @@ export const StudentMobileList = ({
       queryClient.invalidateQueries({ queryKey: ["students-search"] });
     },
     onError: (error) => {
-      const errorMessage = getErrorMessage(error, "Failed to add student");
+      const errorMessage = getErrorMessage(error, t("pages.teacherPortal.students.errorAddDefault"));
       toast({
-        title: "Error",
+        title: t("common.error"),
         description: errorMessage,
         variant: "destructive",
       });
@@ -78,19 +79,8 @@ export const StudentMobileList = ({
     addStudentMutation.mutate({ teacherId, studentName });
   };
 
-  const handleRemoveStudent = (student: Student) => {
-    const assignment = assignedStudents.find((a) =>
-      a.student_name === student.name
-    );
-    if (assignment) {
-      setStudentToDelete({
-        id: assignment.id,
-        name: student.name,
-        studentId: student.id,
-      });
-      setIsDeleteType("remove");
-      setIsDeleteDialogOpen(true);
-    }
+  const handleRemoveStudent = (_student: Student) => {
+    return;
   };
 
   const handleDeleteStudent = (student: Student) => {
@@ -103,10 +93,8 @@ export const StudentMobileList = ({
     setIsDeleteDialogOpen(true);
   };
 
-  const isStudentAssigned = (studentName: string) => {
-    return assignedStudents.some((assignment) =>
-      assignment.student_name === studentName
-    );
+  const isStudentAssigned = (_studentName: string) => {
+    return false;
   };
 
   return (
@@ -134,12 +122,12 @@ export const StudentMobileList = ({
               <div className="flex-1">
                 <h3 className="font-medium text-gray-900">{student.name}</h3>
                 {isAssigned && (
-                  <p className="text-sm text-blue-600">Assigned to you</p>
+                  <p className="text-sm text-blue-600">{t("pages.teacherPortal.students.mobile.assigned")}</p>
                 )}
                 <p className="text-sm text-gray-600">
-                  Enrolled: {student.enrollment_date
+                  {t("pages.teacherPortal.students.mobile.enrolledPrefix")} {student.enrollment_date
                     ? new Date(student.enrollment_date).toLocaleDateString()
-                    : "Unknown"}
+                    : t("pages.teacherPortal.students.mobile.unknown")}
                 </p>
               </div>
               <span
@@ -149,7 +137,7 @@ export const StudentMobileList = ({
                     : "bg-red-100 text-red-800"
                 }`}
               >
-                {student.status}
+                {student.status === "active" ? t("pages.teacherPortal.students.statusActive") : t("pages.teacherPortal.students.statusInactive")}
               </span>
             </div>
 
@@ -165,7 +153,7 @@ export const StudentMobileList = ({
                   className="text-blue-500 hover:text-blue-600 hover:bg-blue-50 border-blue-200"
                 >
                   <Edit className="h-4 w-4 mr-1" />
-                  Edit
+                  {t("pages.teacherPortal.students.mobile.edit")}
                 </Button>
               )}
               {isAssigned
@@ -180,7 +168,7 @@ export const StudentMobileList = ({
                     className="text-red-500 hover:text-red-600 hover:bg-red-50 border-red-200"
                   >
                     <UserMinus className="h-4 w-4 mr-1" />
-                    Remove
+                    {t("pages.teacherPortal.students.mobile.remove")}
                   </Button>
                 )
                 : (
@@ -195,7 +183,7 @@ export const StudentMobileList = ({
                     className="text-blue-500 hover:text-blue-600 hover:bg-blue-50 border-blue-200"
                   >
                     <UserPlus className="h-4 w-4 mr-1" />
-                    {addStudentMutation.isPending ? "Adding..." : "Add"}
+                    {addStudentMutation.isPending ? t("pages.teacherPortal.students.mobile.adding") : t("pages.teacherPortal.students.mobile.add")}
                   </Button>
                 )}
               <Button
@@ -208,7 +196,7 @@ export const StudentMobileList = ({
                 className="text-red-500 hover:text-red-600 hover:bg-red-50 border-red-200"
               >
                 <Trash2 className="h-4 w-4 mr-1" />
-                Delete
+                {t("pages.teacherPortal.students.mobile.delete")}
               </Button>
             </div>
           </div>

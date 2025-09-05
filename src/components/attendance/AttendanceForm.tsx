@@ -27,6 +27,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog.tsx";
+import { useI18n } from "@/contexts/I18nContext.tsx";
 
 // =================================================================================
 // STEP 1: COMPONENT DEFINITION & STATE MANAGEMENT
@@ -35,6 +36,7 @@ export const AttendanceForm = () => {
   // --- React Hooks ---
   const { session } = useAuth(); // Authentication context to get the current user.
   const { toast } = useToast(); // Hook for displaying toast notifications.
+  const { t } = useI18n();
 
   // --- Component State ---
   const [selectedStudents, setSelectedStudents] = useState<Set<string>>(new Set()); // Tracks which students are selected via checkboxes.
@@ -59,7 +61,7 @@ export const AttendanceForm = () => {
   const { form, isProcessing } = useAttendanceSubmit({
     onError: (error: Error) =>
       toast({
-        title: "Error",
+        title: t("common.error", "Error"),
         description: error.message,
         variant: "destructive",
       }),
@@ -121,9 +123,10 @@ export const AttendanceForm = () => {
         body: JSON.stringify(body),
       });
       const previewText = await previewResp.text();
-      let previewJson: any = {};
+      let previewJson: unknown = {};
       try { previewJson = JSON.parse(previewText || '{}'); } catch { previewJson = {}; }
-      const recipients = previewJson.recipients || {};
+      type PreviewResponse = { recipients?: Record<string, string[]> };
+      const recipients = (previewJson as PreviewResponse).recipients || {};
 
       // 3. Log the combined information to the console.
       console.log("%c--- Student Queue Details ---", 'color: blue; font-weight: bold;');
@@ -131,13 +134,15 @@ export const AttendanceForm = () => {
         console.log({
           studentId: id,
           studentName: studentNameMap.get(id) || "Unknown Name",
-          parentEmails: recipients[id] || [], // Show the actual empty array if no emails are found
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+          parentEmails: (recipients as Record<string, string[]>)[id] || [],
         });
       });
       console.log("%c--------------------------", 'color: blue; font-weight: bold;');
 
-    } catch (e: any) {
-      console.error("[Attendance Queue] Error fetching debug info:", e.message);
+    } catch (e) {
+      const message = e instanceof Error ? e.message : String(e);
+      console.error("[Attendance Queue] Error fetching debug info:", message);
     }
   };
 
@@ -159,7 +164,7 @@ export const AttendanceForm = () => {
       // This ensures the emails reflect the most recent changes.
       setIsSavingBeforePreview(true);
       if (pendingStatus) {
-        const formVals: any = form.getValues();
+        const formVals = form.getValues() as { time?: string; notes?: string; late_reason?: string };
         const records = studentIds.map((sid) => ({
           student_id: sid,
           date: ymd,
@@ -181,7 +186,7 @@ export const AttendanceForm = () => {
 
       // Use direct fetch to ensure body reaches the Edge Function
       console.log("[Attendance UI] Sending via fetch with body:", body);
-      let result: any = null;
+      let result: unknown = null;
       const resp = await fetch(`${SUPABASE_URL}/functions/v1/attendance-absence-email`, {
         method: "POST",
         headers: {
@@ -205,19 +210,21 @@ export const AttendanceForm = () => {
       console.log("[Attendance UI] Final result object being processed:", result);
       
       // --- Handle Function Response ---
-      const sent = Number(result?.emails_sent || 0);
-      const sendingEnabled = Boolean(result?.email_sending_enabled);
-      const configMessage = result?.email_config_message || "Email service is not configured. Please check secrets.";
+      type EmailResult = { emails_sent?: number; email_sending_enabled?: boolean; email_config_message?: string };
+      const emailResult = (result as EmailResult) || {};
+      const sent = Number(emailResult.emails_sent || 0);
+      const sendingEnabled = Boolean(emailResult.email_sending_enabled);
+      const configMessage = emailResult.email_config_message || t("pages.attendance.email.notConfigured", "Email service is not configured. Please check secrets.");
       
       if (!sendingEnabled) {
-        toast({ title: "Email Service Disabled", description: configMessage, variant: "destructive" });
+        toast({ title: t("pages.attendance.email.disabled", "Email Service Disabled"), description: configMessage, variant: "destructive" });
         return;
       }
       
       if (sent > 0) {
-        toast({ title: "Emails Sent", description: `${sent} email(s) were successfully sent to parents.` });
+        toast({ title: t("pages.attendance.email.sent", "Emails Sent"), description: t("pages.attendance.email.sentDesc", "{count} email(s) were successfully sent to parents.").replace("{count}", String(sent)) });
       } else {
-        toast({ title: "No Emails Sent", description: "No valid parent emails were found for the selected students.", variant: "destructive" });
+        toast({ title: t("pages.attendance.email.none", "No Emails Sent"), description: t("pages.attendance.email.noneDesc", "No valid parent emails were found for the selected students."), variant: "destructive" });
       }
 
       // --- Cleanup ---
@@ -225,8 +232,9 @@ export const AttendanceForm = () => {
       setSelectedStudents(new Set());
       setPendingStatus("");
 
-    } catch (e: any) {
-      toast({ title: "Error", description: e?.message || "Failed to trigger emails", variant: "destructive" });
+    } catch (e) {
+      const message = e instanceof Error ? e.message : String(e);
+      toast({ title: t("common.error", "Error"), description: message || t("pages.attendance.email.failed", "Failed to trigger emails"), variant: "destructive" });
     }
   };
 
@@ -258,9 +266,10 @@ export const AttendanceForm = () => {
         },
         body: JSON.stringify(body),
       });
-      toast({ title: "Emails Queued", description: "Attendance emails are being sent to parents." });
-    } catch (e: any) {
-      toast({ title: "Error", description: e?.message || "Failed to send emails", variant: "destructive" });
+      toast({ title: t("pages.attendance.email.queued", "Emails Queued"), description: t("pages.attendance.email.queuedDesc", "Attendance emails are being sent to parents.") });
+    } catch (e) {
+      const message = e instanceof Error ? e.message : String(e);
+      toast({ title: t("common.error", "Error"), description: message || t("pages.attendance.email.sendFailed", "Failed to send emails"), variant: "destructive" });
     } finally {
       setIsSending(false);
       setConfirmOpen(false);
@@ -294,17 +303,18 @@ export const AttendanceForm = () => {
   
   // Fetches the list of classes assigned to the current teacher.
   // This is used to populate the class filter dropdown.
-  const { data: teacherClasses = [] } = useQuery<any[]>({
+  interface TeacherClassRow { id: string; name?: string; teacher_ids?: string[] }
+  const { data: teacherClasses = [] } = useQuery<TeacherClassRow[]>({
     queryKey: ["teacher-classes", session?.user?.id],
     queryFn: async () => {
       const uid = session?.user?.id;
-      if (!uid) return [];
+      if (!uid) return [] as TeacherClassRow[];
       const { data, error } = await supabase
         .from("classes")
         .select("id, name, teacher_ids")
         .contains("teacher_ids", [uid]);
       if (error) throw error;
-      return data || [];
+      return (data || []) as TeacherClassRow[];
     },
     enabled: !!session?.user?.id, // Only run the query if the user session is available.
   });
@@ -319,9 +329,9 @@ export const AttendanceForm = () => {
         {/* --- Date and Time Selection Card --- */}
         <Card>
           <CardHeader>
-            <CardTitle>Date and Time</CardTitle>
+            <CardTitle>{t("pages.attendance.form.dateTime.title", "Date and Time")}</CardTitle>
             <CardDescription>
-              Select the date and time for the attendance records.
+              {t("pages.attendance.form.dateTime.desc", "Select the date and time for the attendance records.")}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -332,9 +342,9 @@ export const AttendanceForm = () => {
         {/* --- Student Selection Card --- */}
         <Card>
           <CardHeader>
-            <CardTitle>Select Students</CardTitle>
+            <CardTitle>{t("pages.attendance.form.students.title", "Select Students")}</CardTitle>
             <CardDescription>
-              Choose the students to mark attendance for.
+              {t("pages.attendance.form.students.desc", "Choose the students to mark attendance for.")}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -343,11 +353,11 @@ export const AttendanceForm = () => {
               <div className="mb-4">
                 <Select value={classId} onValueChange={setClassId}>
                   <SelectTrigger className="w-[280px]">
-                    <SelectValue placeholder="Filter by class (optional)" />
+                    <SelectValue placeholder={t("pages.attendance.form.students.filterPlaceholder", "Filter by class (optional)")} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">All my classes</SelectItem>
-                    {teacherClasses.map((c: any) => (
+                    <SelectItem value="all">{t("pages.attendance.form.students.allClasses", "All my classes")}</SelectItem>
+                    {teacherClasses.map((c: { id: string; name?: string }) => (
                       <SelectItem key={c.id} value={c.id}>{c.name || c.id}</SelectItem>
                     ))}
                   </SelectContent>
@@ -375,9 +385,9 @@ export const AttendanceForm = () => {
         {selectedStudents.size > 0 && (
           <Card>
             <CardHeader>
-              <CardTitle>Bulk Actions</CardTitle>
+              <CardTitle>{t("pages.attendance.form.bulk.title", "Bulk Actions")}</CardTitle>
               <CardDescription>
-                Apply the same attendance status to all selected students.
+                {t("pages.attendance.form.bulk.desc", "Apply the same attendance status to all selected students.")}
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -396,7 +406,7 @@ export const AttendanceForm = () => {
                   onClick={handleSendAttendanceEmails}
                   disabled={selectedStudents.size === 0 || isProcessing || isSavingBeforePreview}
                 >
-                  Send attendance emails
+                  {t("pages.attendance.form.bulk.sendEmails", "Send attendance emails")}
                 </button>
               </div>
             </CardContent>
@@ -406,9 +416,9 @@ export const AttendanceForm = () => {
         {/* --- Additional Notes Card --- */}
         <Card>
           <CardHeader>
-            <CardTitle>Additional Notes</CardTitle>
+            <CardTitle>{t("pages.attendance.form.notes.title", "Additional Notes")}</CardTitle>
             <CardDescription>
-              Add any relevant notes for this attendance record.
+              {t("pages.attendance.form.notes.desc", "Add any relevant notes for this attendance record.")}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -422,14 +432,14 @@ export const AttendanceForm = () => {
     <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Confirm recipients</AlertDialogTitle>
+          <AlertDialogTitle>{t("pages.attendance.dialog.title", "Confirm recipients")}</AlertDialogTitle>
           <AlertDialogDescription>
-            The following parents will receive attendance emails:
+            {t("pages.attendance.dialog.desc", "The following parents will receive attendance emails:")}
           </AlertDialogDescription>
         </AlertDialogHeader>
         <div className="max-h-64 overflow-auto text-sm text-black">
           {Object.entries(previewMap).length === 0 ? (
-            <p>No recipients found.</p>
+            <p>{t("pages.attendance.dialog.none", "No recipients found.")}</p>
           ) : (
             <ul className="list-disc pl-5 space-y-2">
               {Object.entries(previewMap).map(([studentId, emails]) => (
@@ -441,9 +451,9 @@ export const AttendanceForm = () => {
           )}
         </div>
         <AlertDialogFooter>
-          <AlertDialogCancel disabled={isSending}>Cancel</AlertDialogCancel>
+          <AlertDialogCancel disabled={isSending}>{t("common.cancel", "Cancel")}</AlertDialogCancel>
           <AlertDialogAction onClick={handleConfirmSend} disabled={isSending}>
-            {isSending ? 'Sending...' : 'Send now'}
+            {isSending ? t("pages.attendance.dialog.sending", "Sending...") : t("pages.attendance.dialog.sendNow", "Send now")}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
