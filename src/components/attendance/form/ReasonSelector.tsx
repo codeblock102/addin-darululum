@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/form.tsx";
 import { UseFormReturn } from "react-hook-form";
 import { AttendanceStatus } from "@/types/attendance.ts";
+import { useI18n } from "@/contexts/I18nContext.tsx";
 
 type AttendanceFormValues = {
   student_id: string;
@@ -30,17 +31,18 @@ export function ReasonSelector(
   { form, selectedReason, onReasonSelect, showOnlyForLate = true }:
     ReasonSelectorProps,
 ) {
+  const { t } = useI18n();
   const predefinedReasons = [
-    "Sick",
-    "Family Emergency",
-    "Transit Delay",
-    "Medical Appointment",
-    "Traffic",
-    "Overslept",
-    "Personal Issue",
-    "Weather Conditions",
-    "Car Trouble",
-    "Other",
+    t("pages.attendance.reason.sick", "Sick"),
+    t("pages.attendance.reason.family", "Family Emergency"),
+    t("pages.attendance.reason.transit", "Transit Delay"),
+    t("pages.attendance.reason.medical", "Medical Appointment"),
+    t("pages.attendance.reason.traffic", "Traffic"),
+    t("pages.attendance.reason.overslept", "Overslept"),
+    t("pages.attendance.reason.personal", "Personal Issue"),
+    t("pages.attendance.reason.weather", "Weather Conditions"),
+    t("pages.attendance.reason.car", "Car Trouble"),
+    t("pages.attendance.reason.other", "Other"),
   ];
 
   const currentStatus = form.watch("status");
@@ -57,7 +59,7 @@ export function ReasonSelector(
       render={({ field }) => (
         <FormItem>
           <FormLabel className="text-gray-900 dark:text-gray-100 font-medium">
-            Reason for Lateness
+            {t("pages.attendance.reason.label", "Reason for Lateness")}
           </FormLabel>
           <FormControl>
             <ScrollArea className="h-40 w-full rounded-lg border-2 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm p-4">

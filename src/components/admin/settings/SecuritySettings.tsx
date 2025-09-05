@@ -5,6 +5,7 @@ import { SecuritySettings } from "@/types/settings.ts";
 import { Shield } from "lucide-react";
 import { SettingsCard } from "./SettingsCard.tsx";
 import { Input } from "@/components/ui/input.tsx";
+import { useI18n } from "@/contexts/I18nContext.tsx";
 
 interface SecuritySettingsSectionProps {
   settings: SecuritySettings;
@@ -14,6 +15,7 @@ interface SecuritySettingsSectionProps {
 export function SecuritySettingsSection(
   { settings, onUpdate }: SecuritySettingsSectionProps,
 ) {
+  const { t } = useI18n();
   const handleChange = <K extends keyof SecuritySettings>(
     key: K,
     value: SecuritySettings[K],
@@ -23,19 +25,15 @@ export function SecuritySettingsSection(
 
   return (
     <SettingsCard
-      title="Security"
-      description="Configure security and privacy settings"
+      title={t("settings.security.title")}
+      description={t("settings.security.description")}
       icon={<Shield className="h-5 w-5" />}
     >
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <Label htmlFor="2fa" className="font-medium">
-              Two-Factor Authentication
-            </Label>
-            <p className="text-sm text-muted-foreground">
-              Require two-factor authentication for all admin users
-            </p>
+            <Label htmlFor="2fa" className="font-medium">{t("settings.security.twoFactor.title")}</Label>
+            <p className="text-sm text-muted-foreground">{t("settings.security.twoFactor.desc")}</p>
           </div>
           <Switch
             id="2fa"
@@ -47,12 +45,8 @@ export function SecuritySettingsSection(
 
         <div className="space-y-2">
           <div className="flex justify-between">
-            <Label htmlFor="session-timeout" className="font-medium">
-              Session Timeout
-            </Label>
-            <span className="text-sm text-muted-foreground">
-              {settings.sessionTimeout} minutes
-            </span>
+            <Label htmlFor="session-timeout" className="font-medium">{t("settings.security.sessionTimeout.label")}</Label>
+            <span className="text-sm text-muted-foreground">{settings.sessionTimeout} {t("settings.security.sessionTimeout.suffixMinutes")}</span>
           </div>
           <Slider
             id="session-timeout"
@@ -62,15 +56,11 @@ export function SecuritySettingsSection(
             value={[settings.sessionTimeout]}
             onValueChange={(value) => handleChange("sessionTimeout", value[0])}
           />
-          <p className="text-xs text-muted-foreground">
-            Automatically log out users after period of inactivity
-          </p>
+          <p className="text-xs text-muted-foreground">{t("settings.security.sessionTimeout.help")}</p>
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="password-expiry" className="font-medium">
-            Password Expiry
-          </Label>
+          <Label htmlFor="password-expiry" className="font-medium">{t("settings.security.passwordExpiry.label")}</Label>
           <div className="flex items-center gap-2">
             <Input
               id="password-expiry"
@@ -82,17 +72,13 @@ export function SecuritySettingsSection(
                 handleChange("passwordExpiry", parseInt(e.target.value, 10))}
               className="w-24"
             />
-            <span className="text-sm text-muted-foreground">days</span>
+            <span className="text-sm text-muted-foreground">{t("settings.security.passwordExpiry.suffixDays")}</span>
           </div>
-          <p className="text-xs text-muted-foreground">
-            Require password change after specified number of days
-          </p>
+          <p className="text-xs text-muted-foreground">{t("settings.security.passwordExpiry.help")}</p>
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="login-attempts" className="font-medium">
-            Maximum Login Attempts
-          </Label>
+          <Label htmlFor="login-attempts" className="font-medium">{t("settings.security.loginAttempts.label")}</Label>
           <div className="flex items-center gap-2">
             <Input
               id="login-attempts"
@@ -104,11 +90,9 @@ export function SecuritySettingsSection(
                 handleChange("loginAttempts", parseInt(e.target.value, 10))}
               className="w-24"
             />
-            <span className="text-sm text-muted-foreground">attempts</span>
+            <span className="text-sm text-muted-foreground">{t("settings.security.loginAttempts.suffixAttempts")}</span>
           </div>
-          <p className="text-xs text-muted-foreground">
-            Lock account after specified number of failed login attempts
-          </p>
+          <p className="text-xs text-muted-foreground">{t("settings.security.loginAttempts.help")}</p>
         </div>
       </div>
     </SettingsCard>

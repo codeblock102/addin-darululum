@@ -1,19 +1,13 @@
 import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/button.tsx";
 import { UserPlus } from "lucide-react";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { useToast } from "@/hooks/use-toast";
-import { StudentForm } from "./StudentForm";
-import { useStudentSubmit } from "./useStudentSubmit";
-import { StudentFormData } from "./studentTypes";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog.tsx";
+import { useToast } from "@/hooks/use-toast.ts";
+import { StudentForm } from "./StudentForm.tsx";
+import { useStudentSubmit } from "./useStudentSubmit.ts";
+import { StudentFormData } from "./studentTypes.ts";
+import { useI18n } from "@/contexts/I18nContext.tsx";
 
 interface AddStudentDialogProps {
   teacherId: string;
@@ -23,6 +17,7 @@ export const AddStudentDialog = ({ teacherId }: AddStudentDialogProps) => {
   const [open, setOpen] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { t } = useI18n();
 
   const initialFormData: StudentFormData = {
     studentName: "",
@@ -43,8 +38,8 @@ export const AddStudentDialog = ({ teacherId }: AddStudentDialogProps) => {
     teacherId,
     onSuccess: () => {
       toast({
-        title: "Student Added",
-        description: `The student has been added to your students.`,
+        title: t("pages.teacherPortal.students.addToastTitle"),
+        description: t("pages.teacherPortal.students.addToastDesc").replace("{name}", ""),
       });
       setOpen(false);
 
@@ -73,7 +68,7 @@ export const AddStudentDialog = ({ teacherId }: AddStudentDialogProps) => {
     },
     onError: (error: Error) => {
       toast({
-        title: "Error",
+        title: t("common.error"),
         description: error.message,
         variant: "destructive",
       });
@@ -85,16 +80,13 @@ export const AddStudentDialog = ({ teacherId }: AddStudentDialogProps) => {
       <DialogTrigger asChild>
         <Button>
           <UserPlus className="mr-2 h-4 w-4" />
-          Add Student
+          {t("pages.teacherPortal.students.table.add", "Add Student")}
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Add New Student</DialogTitle>
-          <DialogDescription>
-            Enter student details below. You can add more information in the
-            different tabs.
-          </DialogDescription>
+          <DialogTitle>{t("pages.teacherPortal.students.addDialog.title", "Add New Student")}</DialogTitle>
+          <DialogDescription>{t("pages.teacherPortal.students.addDialog.description", "Enter student details below. You can add more information in the different tabs.")}</DialogDescription>
         </DialogHeader>
 
         <StudentForm

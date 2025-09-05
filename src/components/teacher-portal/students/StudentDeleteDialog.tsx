@@ -11,6 +11,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog.tsx";
+import { useI18n } from "@/contexts/I18nContext.tsx";
 
 interface StudentDeleteDialogProps {
   isOpen: boolean;
@@ -27,6 +28,7 @@ export const StudentDeleteDialog = ({
 }: StudentDeleteDialogProps) => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { t } = useI18n();
 
   const removeStudentMutation = useMutation({
     mutationFn: async ({ assignmentId }: { assignmentId: string }) => {
@@ -40,9 +42,8 @@ export const StudentDeleteDialog = ({
     },
     onSuccess: () => {
       toast({
-        title: "Student removed",
-        description:
-          `${studentToDelete?.name} has been removed from your students.`,
+        title: t("pages.teacherPortal.students.deleteDialog.toastRemovedTitle"),
+        description: t("pages.teacherPortal.students.deleteDialog.toastRemovedDesc").replace("{name}", studentToDelete?.name || ""),
       });
 
       queryClient.invalidateQueries({
@@ -65,8 +66,8 @@ export const StudentDeleteDialog = ({
     },
     onError: (error) => {
       toast({
-        title: "Error",
-        description: `Failed to remove student: ${error.message}`,
+        title: t("pages.teacherPortal.students.deleteDialog.errorTitle"),
+        description: `${t("pages.teacherPortal.students.deleteDialog.errorRemovePrefix")} ${error.message}`,
         variant: "destructive",
       });
     },
@@ -169,9 +170,8 @@ export const StudentDeleteDialog = ({
     },
     onSuccess: () => {
       toast({
-        title: "Student deleted",
-        description:
-          `${studentToDelete?.name} has been permanently deleted from the system.`,
+        title: t("pages.teacherPortal.students.deleteDialog.toastDeletedTitle"),
+        description: t("pages.teacherPortal.students.deleteDialog.toastDeletedDesc").replace("{name}", studentToDelete?.name || ""),
       });
 
       queryClient.invalidateQueries({
@@ -195,8 +195,8 @@ export const StudentDeleteDialog = ({
     onError: (error) => {
       console.error("Delete student mutation error:", error);
       toast({
-        title: "Error",
-        description: `Failed to delete student: ${error.message}`,
+        title: t("pages.teacherPortal.students.deleteDialog.errorTitle"),
+        description: `${t("pages.teacherPortal.students.deleteDialog.errorDeletePrefix")} ${error.message}`,
         variant: "destructive",
       });
     },
@@ -223,23 +223,23 @@ export const StudentDeleteDialog = ({
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>
-            {isDeleteType === "remove" ? "Remove Student" : "Delete Student"}
+            {isDeleteType === "remove" ? t("pages.teacherPortal.students.deleteDialog.removeTitle") : t("pages.teacherPortal.students.deleteDialog.deleteTitle")}
           </AlertDialogTitle>
           <AlertDialogDescription>
             {isDeleteType === "remove"
-              ? `Are you sure you want to remove ${studentToDelete?.name} from your students? This will only remove the assignment, not delete the student from the system.`
-              : `Are you sure you want to permanently delete ${studentToDelete?.name} from the system? This action cannot be undone and will remove all associated data including attendance records, progress, and revisions.`}
+              ? t("pages.teacherPortal.students.deleteDialog.removeDesc").replace("{name}", studentToDelete?.name || "")
+              : t("pages.teacherPortal.students.deleteDialog.deleteDesc").replace("{name}", studentToDelete?.name || "")}
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogCancel>{t("pages.teacherPortal.students.deleteDialog.cancel")}</AlertDialogCancel>
           <AlertDialogAction
             onClick={handleConfirmDelete}
             className="bg-red-600 text-white hover:bg-red-700"
           >
             {isLoading
-              ? (isDeleteType === "remove" ? "Removing..." : "Deleting...")
-              : (isDeleteType === "remove" ? "Remove" : "Delete")}
+              ? (isDeleteType === "remove" ? t("pages.teacherPortal.students.deleteDialog.removing") : t("pages.teacherPortal.students.deleteDialog.deleting"))
+              : (isDeleteType === "remove" ? t("pages.teacherPortal.students.deleteDialog.remove") : t("pages.teacherPortal.students.deleteDialog.delete"))}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

@@ -16,7 +16,7 @@ import {
   TabsTrigger,
 } from "@/components/ui/tabs.tsx";
 import { Button } from "@/components/ui/button.tsx";
-import { Badge } from "@/components/ui/badge.tsx";
+import { Badge as _Badge } from "@/components/ui/badge.tsx";
 import { DhorBook } from "@/components/dhor-book/DhorBook.tsx";
 import { ClassroomRecords } from "@/components/dhor-book/ClassroomRecords.tsx";
 import {
@@ -25,7 +25,7 @@ import {
   Calendar,
   Loader2,
   Mail,
-  Plus,
+  Plus as _Plus,
   Search,
   Users,
   TrendingUp,
@@ -41,7 +41,8 @@ import { StudentPerformanceMetrics } from "@/components/student-progress/Student
 import { useRealtimeLeaderboard } from "@/hooks/useRealtimeLeaderboard.ts";
 import { useIsMobile } from "@/hooks/use-mobile.tsx";
 import { useToast } from "@/hooks/use-toast.ts";
-import { format, startOfMonth, endOfMonth, subMonths, parseISO } from "date-fns";
+import { useI18n } from "@/contexts/I18nContext.tsx";
+import { format, startOfMonth as _startOfMonth, endOfMonth as _endOfMonth, subMonths, parseISO } from "date-fns";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -61,6 +62,7 @@ interface TeacherDhorBookProps {
 export const TeacherDhorBook = ({ teacherId }: TeacherDhorBookProps) => {
   const location = useLocation();
   const { toast } = useToast();
+  const { t } = useI18n();
   const [selectedStudentId, setSelectedStudentId] = useState<string | null>(
     null,
   );
@@ -68,7 +70,7 @@ export const TeacherDhorBook = ({ teacherId }: TeacherDhorBookProps) => {
   const [viewMode, setViewMode] = useState<"daily" | "classroom">("daily");
   const [isSendingEmails, setIsSendingEmails] = useState(false);
   const [showEmailConfirmDialog, setShowEmailConfirmDialog] = useState(false);
-  const isMobile = useIsMobile();
+  const _isMobile = useIsMobile();
 
   const { data: teacherData, isLoading: isLoadingTeacher } = useQuery({
     queryKey: ["teacherData", teacherId],
@@ -348,23 +350,24 @@ export const TeacherDhorBook = ({ teacherId }: TeacherDhorBookProps) => {
     setIsSendingEmails(true);
     setShowEmailConfirmDialog(false);
     toast({
-      title: "Sending Emails",
-      description: "Triggering the daily progress emails. This may take a moment.",
+      title: t("pages.teacherPortal.dhor.sendingEmails", "Sending Emails"),
+      description: t("pages.teacherPortal.dhor.sendingEmailsDesc", "Triggering the daily progress emails. This may take a moment."),
     });
     try {
       const { error } = await supabase.functions.invoke("daily-progress-email");
       if (error) {
-        throw error;
+        throw error as Error;
       }
       toast({
-        title: "Success",
-        description: "Successfully triggered the daily progress emails.",
+        title: t("common.success", "Success"),
+        description: t("pages.teacherPortal.dhor.sendingEmailsSuccess", "Successfully triggered the daily progress emails."),
       });
-    } catch (error: any) {
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
       console.error("Failed to invoke daily-progress-email function:", error);
       toast({
-        title: "Error Sending Emails",
-        description: error.message || "An unexpected error occurred.",
+        title: t("pages.teacherPortal.dhor.sendingEmailsErrorTitle", "Error Sending Emails"),
+        description: message || t("pages.teacherPortal.dhor.sendingEmailsErrorDesc", "An unexpected error occurred."),
         variant: "destructive",
       });
     } finally {
@@ -377,10 +380,10 @@ export const TeacherDhorBook = ({ teacherId }: TeacherDhorBookProps) => {
       <div className="flex justify-between items-center text-center sm:text-left">
         <div>
           <h2 className="text-lg sm:text-xl md:text-2xl font-bold tracking-tight">
-            Dhor Book
+            {t("pages.teacherPortal.dhor.title", "Dhor Book")}
           </h2>
           <p className="text-xs sm:text-sm text-muted-foreground">
-            Record and track student progress
+            {t("pages.teacherPortal.dhor.subtitle", "Record and track student progress")}
           </p>
         </div>
         
@@ -392,23 +395,23 @@ export const TeacherDhorBook = ({ teacherId }: TeacherDhorBookProps) => {
               ) : (
                 <Mail className="mr-2 h-4 w-4" />
               )}
-              <span className="hidden sm:inline">Send Daily Emails</span>
+              <span className="hidden sm:inline">{t("pages.teacherPortal.dhor.sendEmails", "Send Daily Emails")}</span>
             </Button>
           </AlertDialogTrigger>
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle>Confirm Email Send</AlertDialogTitle>
+              <AlertDialogTitle>{t("pages.teacherPortal.dhor.confirm.title", "Confirm Email Send")}</AlertDialogTitle>
               <AlertDialogDescription>
-                Are you sure you want to send daily progress emails to all guardian email addresses? 
-                This action will send progress reports for all students who have progress entries from the last 24 hours.
+                {t("pages.teacherPortal.dhor.confirm.desc1", "Are you sure you want to send daily progress emails to all guardian email addresses?")} 
+                {t("pages.teacherPortal.dhor.confirm.desc2", "This action will send progress reports for all students who have progress entries from the last 24 hours.")}
                 <br /><br />
-                <strong>This action cannot be undone.</strong>
+                <strong>{t("pages.teacherPortal.dhor.confirm.cannotUndo", "This action cannot be undone.")}</strong>
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogCancel>{t("common.cancel", "Cancel")}</AlertDialogCancel>
               <AlertDialogAction onClick={handleSendEmails} className="bg-blue-600 hover:bg-blue-700">
-                Yes, Send Emails
+                {t("pages.teacherPortal.dhor.confirm.send", "Yes, Send Emails")}
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
@@ -429,14 +432,14 @@ export const TeacherDhorBook = ({ teacherId }: TeacherDhorBookProps) => {
                 className="flex items-center gap-1 sm:gap-2 text-xs py-1.5"
               >
                 <BookOpen className="h-3 w-3 sm:h-4 sm:w-4" />
-                <span>Daily Records</span>
+                <span>{t("pages.teacherPortal.dhor.tabs.daily", "Daily Records")}</span>
               </TabsTrigger>
               <TabsTrigger
                 value="classroom"
                 className="flex items-center gap-1 sm:gap-2 text-xs py-1.5"
               >
                 <Users className="h-3 w-3 sm:h-4 sm:w-4" />
-                <span>Classroom</span>
+                <span>{t("pages.teacherPortal.dhor.tabs.classroom", "Classroom")}</span>
               </TabsTrigger>
             </TabsList>
           </div>
@@ -454,7 +457,7 @@ export const TeacherDhorBook = ({ teacherId }: TeacherDhorBookProps) => {
                 {studentVerifyLoading && selectedStudentId && (
                   <div className="flex justify-center py-8">
                     <Loader2 className="h-6 w-6 animate-spin text-primary" />
-                    <span className="ml-2">Verifying student...</span>
+                    <span className="ml-2">{t("pages.teacherPortal.dhor.verifying", "Verifying student...")}</span>
                   </div>
                 )}
 
@@ -462,10 +465,9 @@ export const TeacherDhorBook = ({ teacherId }: TeacherDhorBookProps) => {
                   !studentVerification && (
                   <div className="flex flex-col items-center justify-center p-6 text-center space-y-3 mt-4 border rounded-lg bg-muted/20">
                     <AlertCircle className="h-8 w-8 text-yellow-500" />
-                    <h3 className="text-base font-medium">Student Not Found</h3>
+                    <h3 className="text-base font-medium">{t("pages.teacherPortal.dhor.studentNotFound", "Student Not Found")}</h3>
                     <p className="text-sm text-muted-foreground max-w-md">
-                      The student with ID {selectedStudentId}{" "}
-                      could not be found. Please select a different student.
+                      {t("pages.teacherPortal.dhor.studentNotFoundDesc", "The student with ID {id} could not be found. Please select a different student.").replace("{id}", selectedStudentId)}
                     </p>
                   </div>
                 )}
@@ -474,7 +476,7 @@ export const TeacherDhorBook = ({ teacherId }: TeacherDhorBookProps) => {
                   <div className="space-y-4 mt-3">
                     <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-2">
                       <h3 className="text-base sm:text-lg md:text-xl font-semibold truncate text-foreground">
-                        {studentVerification.name}'s Progress
+                        {t("pages.teacherPortal.dhor.progressFor", "{name}'s Progress").replace("{name}", studentVerification.name)}
                       </h3>
                     </div>
 
@@ -485,16 +487,16 @@ export const TeacherDhorBook = ({ teacherId }: TeacherDhorBookProps) => {
                       <div className="overflow-x-auto -mx-2 px-2">
                         <TabsList className="w-full flex-nowrap min-w-max">
                           <TabsTrigger value="entries" className="text-xs">
-                            Dhor Book
+                            {t("pages.teacherPortal.dhor.tabs.entries", "Dhor Book")}
                           </TabsTrigger>
                           <TabsTrigger value="attendance" className="text-xs">
-                            Attendance
+                            {t("pages.teacherPortal.dhor.tabs.attendance", "Attendance")}
                           </TabsTrigger>
                           <TabsTrigger value="summary" className="text-xs">
-                            Summary
+                            {t("pages.teacherPortal.dhor.tabs.summary", "Summary")}
                           </TabsTrigger>
                           <TabsTrigger value="analytics" className="text-xs">
-                            Analytics
+                            {t("pages.teacherPortal.dhor.tabs.analytics", "Analytics")}
                           </TabsTrigger>
                         </TabsList>
                       </div>
@@ -513,11 +515,10 @@ export const TeacherDhorBook = ({ teacherId }: TeacherDhorBookProps) => {
                         <Card>
                           <CardHeader className="p-3 sm:p-4 md:p-6">
                             <CardTitle className="text-sm sm:text-base">
-                              Attendance Records
+                              {t("pages.teacherPortal.dhor.attendance.title", "Attendance Records")}
                             </CardTitle>
                             <CardDescription className="text-xs">
-                              View and track attendance for{" "}
-                              {studentVerification.name}
+                              {t("pages.teacherPortal.dhor.attendance.desc", "View and track attendance for {name}").replace("{name}", studentVerification.name)}
                             </CardDescription>
                           </CardHeader>
                           <CardContent className="p-3 sm:p-4 md:p-6 pt-0">
@@ -536,15 +537,14 @@ export const TeacherDhorBook = ({ teacherId }: TeacherDhorBookProps) => {
                               : (
                                 <div className="text-center py-6 sm:py-8">
                                   <p className="text-xs sm:text-sm text-muted-foreground">
-                                    No attendance records found for this
-                                    student.
+                                    {t("pages.teacherPortal.dhor.attendance.empty", "No attendance records found for this student.")}
                                   </p>
                                   <Button
                                     className="mt-3 sm:mt-4"
                                     variant="outline"
                                     size="sm"
                                   >
-                                    Record Attendance
+                                    {t("pages.teacherPortal.dhor.attendance.record", "Record Attendance")}
                                   </Button>
                                 </div>
                               )}
@@ -557,17 +557,17 @@ export const TeacherDhorBook = ({ teacherId }: TeacherDhorBookProps) => {
                           <CardHeader className="p-3 sm:p-4 md:p-6">
                             <CardTitle className="text-sm sm:text-base flex items-center gap-2">
                               <BarChart3 className="h-4 w-4" />
-                              Progress Summary & Analysis
+                              {t("pages.teacherPortal.dhor.summary.title", "Progress Summary & Analysis")}
                             </CardTitle>
                             <CardDescription className="text-xs">
-                              Detailed insights into {studentVerification?.name}'s learning progress
+                              {t("pages.teacherPortal.dhor.summary.desc", "Detailed insights into {name}'s learning progress").replace("{name}", studentVerification?.name || "")}
                             </CardDescription>
                           </CardHeader>
                           <CardContent className="p-3 sm:p-4 md:p-6 pt-0 space-y-4">
                             {progressLoading ? (
                               <div className="flex items-center justify-center py-8">
                                 <Loader2 className="h-6 w-6 animate-spin text-primary" />
-                                <span className="ml-2 text-sm">Analyzing progress data...</span>
+                                <span className="ml-2 text-sm">{t("pages.teacherPortal.dhor.summary.analyzing", "Analyzing progress data...")}</span>
                               </div>
                             ) : analysis ? (
                               <div className="space-y-6">
@@ -575,19 +575,19 @@ export const TeacherDhorBook = ({ teacherId }: TeacherDhorBookProps) => {
                                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                                   <div className="text-center p-3 bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg border">
                                     <div className="text-lg font-bold text-blue-700">{analysis.totalPages}</div>
-                                    <div className="text-xs text-blue-600">Total Pages</div>
+                                    <div className="text-xs text-blue-600">{t("pages.teacherPortal.dhor.summary.totalPages", "Total Pages")}</div>
                                   </div>
                                   <div className="text-center p-3 bg-gradient-to-br from-green-50 to-green-100 rounded-lg border">
                                     <div className="text-lg font-bold text-green-700">{analysis.totalRevisions}</div>
-                                    <div className="text-xs text-green-600">Total Revisions</div>
+                                    <div className="text-xs text-green-600">{t("pages.teacherPortal.dhor.summary.totalRevisions", "Total Revisions")}</div>
                                   </div>
                                   <div className="text-center p-3 bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg border">
                                     <div className="text-lg font-bold text-purple-700">{analysis.averageQuality.toFixed(1)}</div>
-                                    <div className="text-xs text-purple-600">Avg Quality</div>
+                                    <div className="text-xs text-purple-600">{t("pages.teacherPortal.dhor.summary.avgQuality", "Avg Quality")}</div>
                                   </div>
                                   <div className="text-center p-3 bg-gradient-to-br from-orange-50 to-orange-100 rounded-lg border">
                                     <div className="text-lg font-bold text-orange-700">{analysis.totalEntries}</div>
-                                    <div className="text-xs text-orange-600">Study Sessions</div>
+                                    <div className="text-xs text-orange-600">{t("pages.teacherPortal.dhor.summary.studySessions", "Study Sessions")}</div>
                                   </div>
                                 </div>
 
@@ -595,23 +595,23 @@ export const TeacherDhorBook = ({ teacherId }: TeacherDhorBookProps) => {
                                 <div className="p-4 border rounded-lg bg-gradient-to-r from-gray-50 to-gray-100">
                                   <div className="flex items-center gap-2 mb-2">
                                     <TrendingUp className="h-4 w-4 text-blue-600" />
-                                    <h3 className="font-semibold text-gray-800 text-sm">Recent Performance (Last 30 Days)</h3>
+                                    <h3 className="font-semibold text-gray-800 text-sm">{t("pages.teacherPortal.dhor.recent.title", "Recent Performance (Last 30 Days)")}</h3>
                                   </div>
                                   <div className="grid grid-cols-2 gap-4 text-sm">
                                     <div className="flex justify-between">
-                                      <span>Pages Memorized:</span>
+                                      <span>{t("pages.teacherPortal.dhor.recent.pages", "Pages Memorized:")}</span>
                                       <span className="font-medium text-blue-600">{analysis.recentPages}</span>
                                     </div>
                                     <div className="flex justify-between">
-                                      <span>Study Sessions:</span>
+                                      <span>{t("pages.teacherPortal.dhor.recent.sessions", "Study Sessions:")}</span>
                                       <span className="font-medium text-green-600">{analysis.recentEntries}</span>
                                     </div>
                                     <div className="flex justify-between">
-                                      <span>Recent Quality:</span>
+                                      <span>{t("pages.teacherPortal.dhor.recent.quality", "Recent Quality:")}</span>
                                       <span className="font-medium text-purple-600">{analysis.recentQuality.toFixed(1)}/5</span>
                                     </div>
                                     <div className="flex justify-between">
-                                      <span>Avg Juz/Session:</span>
+                                      <span>{t("pages.teacherPortal.dhor.recent.avgJuz", "Avg Juz/Session:")}</span>
                                       <span className="font-medium text-orange-600">{analysis.recentAverageJuzPerDay.toFixed(1)}</span>
                                     </div>
                                   </div>
@@ -621,15 +621,15 @@ export const TeacherDhorBook = ({ teacherId }: TeacherDhorBookProps) => {
                                 <div className="p-4 border rounded-lg bg-gradient-to-r from-blue-50 to-indigo-50">
                                   <h3 className="font-semibold text-blue-800 mb-3 text-sm flex items-center gap-2">
                                     <BarChart3 className="h-4 w-4" />
-                                    Progress Trend Visualization
+                                    {t("pages.teacherPortal.dhor.trend.title", "Progress Trend Visualization")}
                                   </h3>
                                   
                                   {/* Monthly Progress Bars */}
                                   <div className="space-y-3">
                                     <div>
                                       <div className="flex justify-between text-xs mb-1">
-                                        <span>Pages Progress</span>
-                                        <span>{analysis.recentPages} pages (Recent)</span>
+                                        <span>{t("pages.teacherPortal.dhor.trend.pagesProgress", "Pages Progress")}</span>
+                                        <span>{analysis.recentPages} {t("pages.teacherPortal.dhor.common.pages", "pages")} ({t("pages.teacherPortal.dhor.common.recent", "Recent")})</span>
                                       </div>
                                       <div className="w-full bg-gray-200 rounded-full h-2">
                                         <div 
@@ -641,7 +641,7 @@ export const TeacherDhorBook = ({ teacherId }: TeacherDhorBookProps) => {
                                     
                                     <div>
                                       <div className="flex justify-between text-xs mb-1">
-                                        <span>Quality Rating</span>
+                                        <span>{t("pages.teacherPortal.dhor.trend.qualityRating", "Quality Rating")}</span>
                                         <span>{analysis.recentQuality.toFixed(1)}/5</span>
                                       </div>
                                       <div className="w-full bg-gray-200 rounded-full h-2">
@@ -657,8 +657,8 @@ export const TeacherDhorBook = ({ teacherId }: TeacherDhorBookProps) => {
                                     
                                     <div>
                                       <div className="flex justify-between text-xs mb-1">
-                                        <span>Study Consistency</span>
-                                        <span>{analysis.recentEntries} sessions</span>
+                                        <span>{t("pages.teacherPortal.dhor.trend.consistency", "Study Consistency")}</span>
+                                        <span>{analysis.recentEntries} {t("pages.teacherPortal.dhor.common.sessions", "sessions")}</span>
                                       </div>
                                       <div className="w-full bg-gray-200 rounded-full h-2">
                                         <div 
@@ -670,8 +670,8 @@ export const TeacherDhorBook = ({ teacherId }: TeacherDhorBookProps) => {
                                     
                                     <div>
                                       <div className="flex justify-between text-xs mb-1">
-                                        <span>Juz Progress Rate</span>
-                                        <span>{analysis.recentAverageJuzPerDay.toFixed(1)} per session</span>
+                                        <span>{t("pages.teacherPortal.dhor.trend.juzRate", "Juz Progress Rate")}</span>
+                                        <span>{analysis.recentAverageJuzPerDay.toFixed(1)} {t("pages.teacherPortal.dhor.common.perSession", "per session")}</span>
                                       </div>
                                       <div className="w-full bg-gray-200 rounded-full h-2">
                                         <div 
@@ -692,7 +692,7 @@ export const TeacherDhorBook = ({ teacherId }: TeacherDhorBookProps) => {
                                         {analysis.recentPages >= 15 ? '🏆 Excellent' :
                                          analysis.recentPages >= 8 ? '✅ Good' : '⚠️ Needs Work'}
                                       </div>
-                                      <div className="text-xs text-gray-600">Memorization</div>
+                                      <div className="text-xs text-gray-600">{t("pages.teacherPortal.dhor.indicators.memorization", "Memorization")}</div>
                                     </div>
                                     <div className="text-center p-2 bg-white/60 rounded">
                                       <div className={`text-xs font-medium ${
@@ -702,100 +702,29 @@ export const TeacherDhorBook = ({ teacherId }: TeacherDhorBookProps) => {
                                         {analysis.recentQuality >= 4 ? '🏆 Excellent' :
                                          analysis.recentQuality >= 3 ? '✅ Good' : '⚠️ Needs Work'}
                                       </div>
-                                      <div className="text-xs text-gray-600">Quality</div>
+                                      <div className="text-xs text-gray-600">{t("pages.teacherPortal.dhor.indicators.quality", "Quality")}</div>
                                     </div>
                                   </div>
                                 </div>
 
-                                {/* Key Insights */}
-                                <div>
-                                  <h3 className="font-semibold text-gray-800 mb-3 flex items-center gap-2 text-sm">
-                                    <Target className="h-4 w-4" />
-                                    Key Insights & Recommendations
-                                  </h3>
-                                  <div className="grid gap-3">
-                                    {analysis.insights.map((insight, index) => (
-                                      <div 
-                                        key={index}
-                                        className={`p-3 rounded-lg border-l-4 ${
-                                          insight.type === 'achievement' 
-                                            ? 'bg-green-50 border-green-400' 
-                                            : insight.type === 'good'
-                                            ? 'bg-blue-50 border-blue-400'
-                                            : 'bg-orange-50 border-orange-400'
-                                        }`}
-                                      >
-                                        <div className="flex items-start gap-2">
-                                          <div className={`mt-0.5 ${
-                                            insight.type === 'achievement' 
-                                              ? 'text-green-600' 
-                                              : insight.type === 'good'
-                                              ? 'text-blue-600'
-                                              : 'text-orange-600'
-                                          }`}>
-                                            {getInsightIcon(insight.icon)}
-                                          </div>
-                                          <div>
-                                            <h4 className={`font-medium text-sm ${
-                                              insight.type === 'achievement' 
-                                                ? 'text-green-800' 
-                                                : insight.type === 'good'
-                                                ? 'text-blue-800'
-                                                : 'text-orange-800'
-                                            }`}>
-                                              {insight.title}
-                                            </h4>
-                                            <p className={`text-xs ${
-                                              insight.type === 'achievement' 
-                                                ? 'text-green-700' 
-                                                : insight.type === 'good'
-                                                ? 'text-blue-700'
-                                                : 'text-orange-700'
-                                            }`}>
-                                              {insight.description}
-                                            </p>
-                                          </div>
+                                {/* Insights */}
+                                <div className="space-y-3">
+                                  <h3 className="font-semibold text-sm">{t("pages.teacherPortal.dhor.insights.title", "Insights")}</h3>
+                                  <div className="grid gap-2">
+                                    {analysis.insights.map((ins, idx) => (
+                                      <div key={idx} className="flex items-start gap-2 p-2 rounded border bg-white/70">
+                                        <div className="mt-0.5">{getInsightIcon(ins.icon)}</div>
+                                        <div className="text-xs">
+                                          <div className="font-medium">{ins.title}</div>
+                                          <div className="text-muted-foreground">{ins.description}</div>
                                         </div>
                                       </div>
                                     ))}
                                   </div>
                                 </div>
-
-                                {/* Action Plan */}
-                                <div className="p-4 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-lg border border-indigo-200">
-                                  <h3 className="font-semibold text-indigo-800 mb-2 flex items-center gap-2 text-sm">
-                                    <CheckCircle className="h-4 w-4" />
-                                    Teacher Action Plan
-                                  </h3>
-                                  <div className="text-xs text-indigo-700 space-y-1">
-                                    {analysis.averageQuality < 3.5 && (
-                                      <p>• Schedule additional revision sessions to improve quality</p>
-                                    )}
-                                    {analysis.recentEntries < 10 && (
-                                      <p>• Encourage more frequent practice - aim for daily sessions</p>
-                                    )}
-                                    {analysis.recentPages < 8 && (
-                                      <p>• Set weekly memorization targets to maintain momentum</p>
-                                    )}
-                                    {analysis.recentAverageJuzPerDay < 1 && (
-                                      <p>• Increase daily study sessions to cover more Juz content</p>
-                                    )}
-                                    {analysis.insights.filter(i => i.type === 'achievement').length > 0 && (
-                                      <p>• Acknowledge and celebrate excellent progress to maintain motivation</p>
-                                    )}
-                                    <p>• Monitor progress weekly and adjust teaching strategies as needed</p>
-                                  </div>
-                                </div>
                               </div>
                             ) : (
-                              <div className="text-center py-8">
-                                <BookOpen className="h-12 w-12 mx-auto text-gray-400 mb-4" />
-                                <h3 className="text-lg font-semibold text-gray-800 mb-2">No Progress Data</h3>
-                                <p className="text-sm text-gray-600">
-                                  No Dhor Book entries found for {studentVerification?.name} in the last 6 months.
-                                  Start recording daily progress to see detailed analysis here.
-                                </p>
-                              </div>
+                              <div className="text-center py-8 text-sm text-muted-foreground">{t("pages.teacherPortal.dhor.summary.noData", "No progress data available yet.")}</div>
                             )}
                           </CardContent>
                         </Card>

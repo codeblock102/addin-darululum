@@ -7,6 +7,7 @@ import { Skeleton } from "@/components/ui/skeleton.tsx";
 import { RefreshCcw, User, UserCheck, UserX } from "lucide-react";
 import { StudentAssignment } from "@/types/user.ts";
 import { useToast } from "@/hooks/use-toast.ts";
+import { useI18n } from "@/contexts/I18nContext.tsx";
 
 interface StudentStatusListProps {
   teacherId: string;
@@ -14,6 +15,7 @@ interface StudentStatusListProps {
 
 export const StudentStatusList = ({ teacherId }: StudentStatusListProps) => {
   const { toast } = useToast();
+  const { t } = useI18n();
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   const {
@@ -49,17 +51,10 @@ export const StudentStatusList = ({ teacherId }: StudentStatusListProps) => {
     setIsRefreshing(true);
     try {
       await refetch();
-      toast({
-        title: "Refreshed",
-        description: "Student list has been updated.",
-      });
+      toast({ title: t("pages.teacherPortal.status.refreshed"), description: t("pages.teacherPortal.status.updated") });
     } catch (error) {
       console.error("Error refreshing student list:", error);
-      toast({
-        title: "Refresh failed",
-        description: "Could not refresh student list. Please try again.",
-        variant: "destructive",
-      });
+      toast({ title: t("pages.teacherPortal.status.refreshFailed"), description: t("pages.teacherPortal.status.refreshFailedDesc"), variant: "destructive" });
     } finally {
       setIsRefreshing(false);
     }
@@ -74,7 +69,7 @@ export const StudentStatusList = ({ teacherId }: StudentStatusListProps) => {
     return (
       <div className="space-y-4">
         <div className="flex justify-between items-center">
-          <h3 className="text-lg font-semibold">My Students</h3>
+          <h3 className="text-lg font-semibold">{t("pages.teacherPortal.status.title")}</h3>
         </div>
         <div className="space-y-4">
           {[1, 2, 3].map((i) => (
@@ -94,7 +89,7 @@ export const StudentStatusList = ({ teacherId }: StudentStatusListProps) => {
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
-        <h3 className="text-lg font-semibold">My Students</h3>
+        <h3 className="text-lg font-semibold">{t("pages.teacherPortal.status.title")}</h3>
         <Button
           variant="outline"
           size="sm"
@@ -104,85 +99,74 @@ export const StudentStatusList = ({ teacherId }: StudentStatusListProps) => {
           <RefreshCcw
             className={`h-4 w-4 mr-2 ${isRefreshing ? "animate-spin" : ""}`}
           />
-          {isRefreshing ? "Refreshing..." : "Refresh"}
+          {isRefreshing ? t("pages.teacherPortal.status.refreshing") : t("pages.teacherPortal.status.refresh")}
         </Button>
       </div>
 
-      {activeStudents.length === 0 && inactiveStudents.length === 0
-        ? (
-          <div className="text-center py-8 text-muted-foreground">
-            <User className="h-12 w-12 mx-auto mb-2 opacity-20" />
-            <p>No students assigned yet</p>
-          </div>
-        )
-        : (
-          <>
-            {activeStudents.length > 0 && (
-              <div className="space-y-2">
-                <div className="flex items-center space-x-2">
-                  <UserCheck className="h-5 w-5 text-green-500" />
-                  <span className="font-medium">Active Students</span>
-                  <Badge variant="outline">{activeStudents.length}</Badge>
-                </div>
-                <div className="grid gap-2">
-                  {activeStudents.map((student) => (
-                    <div
-                      key={student.id}
-                      className="p-3 border rounded-lg flex justify-between items-center"
-                    >
-                      <div>
-                        <div className="font-medium">
-                          {student.student_name}
-                        </div>
-                        <div className="text-sm text-muted-foreground">
-                          Assigned:{" "}
-                          {new Date(student.assigned_date).toLocaleDateString()}
-                        </div>
-                      </div>
-                      <Badge className="bg-green-500 hover:bg-green-600">
-                        Active
-                      </Badge>
-                    </div>
-                  ))}
-                </div>
+      {activeStudents.length === 0 && inactiveStudents.length === 0 ? (
+        <div className="text-center py-8 text-muted-foreground">
+          <User className="h-12 w-12 mx-auto mb-2 opacity-20" />
+          <p>{t("pages.teacherPortal.status.none")}</p>
+        </div>
+      ) : (
+        <>
+          {activeStudents.length > 0 && (
+            <div className="space-y-2">
+              <div className="flex items-center space-x-2">
+                <UserCheck className="h-5 w-5 text-green-500" />
+                <span className="font-medium">{t("pages.teacherPortal.status.active")}</span>
+                <Badge variant="outline">{activeStudents.length}</Badge>
               </div>
-            )}
+              <div className="grid gap-2">
+                {activeStudents.map((student) => (
+                  <div
+                    key={student.id}
+                    className="p-3 border rounded-lg flex justify-between items-center"
+                  >
+                    <div>
+                      <div className="font-medium">{student.student_name}</div>
+                      <div className="text-sm text-muted-foreground">
+                        {t("pages.teacherPortal.status.assigned")} {new Date(student.assigned_date).toLocaleDateString()}
+                      </div>
+                    </div>
+                    <Badge className="bg-green-500 hover:bg-green-600">
+                      {t("pages.teacherPortal.status.activeBadge")}
+                    </Badge>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
-            {inactiveStudents.length > 0 && (
-              <div className="space-y-2 mt-4">
-                <div className="flex items-center space-x-2">
-                  <UserX className="h-5 w-5 text-red-500" />
-                  <span className="font-medium">Inactive Students</span>
-                  <Badge variant="outline">{inactiveStudents.length}</Badge>
-                </div>
-                <div className="grid gap-2">
-                  {inactiveStudents.map((student) => (
-                    <div
-                      key={student.id}
-                      className="p-3 border rounded-lg flex justify-between items-center bg-muted/30"
-                    >
-                      <div>
-                        <div className="font-medium">
-                          {student.student_name}
-                        </div>
-                        <div className="text-sm text-muted-foreground">
-                          Assigned:{" "}
-                          {new Date(student.assigned_date).toLocaleDateString()}
-                        </div>
-                      </div>
-                      <Badge
-                        variant="outline"
-                        className="text-muted-foreground"
-                      >
-                        Inactive
-                      </Badge>
-                    </div>
-                  ))}
-                </div>
+          {inactiveStudents.length > 0 && (
+            <div className="space-y-2 mt-4">
+              <div className="flex items-center space-x-2">
+                <UserX className="h-5 w-5 text-red-500" />
+                <span className="font-medium">{t("pages.teacherPortal.status.inactive")}</span>
+                <Badge variant="outline">{inactiveStudents.length}</Badge>
               </div>
-            )}
-          </>
-        )}
+              <div className="grid gap-2">
+                {inactiveStudents.map((student) => (
+                  <div
+                    key={student.id}
+                    className="p-3 border rounded-lg flex justify-between items-center bg-muted/30"
+                  >
+                    <div>
+                      <div className="font-medium">{student.student_name}</div>
+                      <div className="text-sm text-muted-foreground">
+                        {t("pages.teacherPortal.status.assigned")} {new Date(student.assigned_date).toLocaleDateString()}
+                      </div>
+                    </div>
+                    <Badge variant="outline" className="text-muted-foreground">
+                      {t("pages.teacherPortal.status.inactiveBadge")}
+                    </Badge>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </>
+      )}
     </div>
   );
 };

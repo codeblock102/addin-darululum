@@ -31,7 +31,7 @@ import { NavItem } from "@/types/navigation.ts";
 export const adminNavItems: NavItem[] = [
   {
     href: "/dashboard",
-    label: "Dashboard",
+    label: "nav.dashboard",
     icon: Home,
     description: "Overview of all activities",
     exact: true,
@@ -39,43 +39,43 @@ export const adminNavItems: NavItem[] = [
   // Removed Add Parent from admin nav; only parents should invite other parents
   {
     href: "/students",
-    label: "Students",
+    label: "nav.students",
     icon: Users,
     description: "Manage student profiles",
   },
   {
     href: "/teachers",
-    label: "Teachers",
+    label: "nav.teachers",
     icon: School,
     description: "Manage teaching staff",
   },
   {
     href: "/classes",
-    label: "Classes",
+    label: "nav.classes",
     icon: School,
     description: "Manage classes",
   },
   {
     href: "/progress-book",
-    label: "Progress Book",
+    label: "nav.progressBook",
     icon: Book,
     description: "Student progress tracker",
   },
   {
     href: "/attendance",
-    label: "Attendance",
+    label: "nav.attendance",
     icon: FileText,
     description: "Track attendance records",
   },
   {
     href: "/admin/parent-accounts",
-    label: "Parent Accounts",
+    label: "nav.parentAccounts",
     icon: UserCheck,
     description: "Manage parent accounts",
   },
   {
     href: "/settings",
-    label: "Settings",
+    label: "nav.settings",
     icon: Settings,
     description: "System configuration",
   },
@@ -90,7 +90,7 @@ export const adminNavItems: NavItem[] = [
 export const teacherNavItems: NavItem[] = [
   {
     href: "/dashboard",
-    label: "Dashboard",
+    label: "nav.dashboard",
     icon: Home,
     description: "Teacher dashboard",
     exact: true,
@@ -98,37 +98,37 @@ export const teacherNavItems: NavItem[] = [
   // Removed Add Parent from teacher nav; only parents should invite other parents
   {
     href: "/dashboard?tab=students",
-    label: "My Students",
+    label: "nav.myStudents",
     icon: Users,
     description: "Manage your students",
   },
   {
     href: "/dashboard?tab=progress-book",
-    label: "Progress Book",
+    label: "nav.progressBook",
     icon: Book,
     description: "Record student progress",
   },
   {
     href: "/dashboard?tab=assignments",
-    label: "Assignments",
+    label: "nav.assignments",
     icon: ClipboardList,
     description: "Create and track assignments",
   },
   {
     href: "/attendance",
-    label: "Attendance",
+    label: "nav.attendance",
     icon: Clock,
     description: "Track student attendance",
   },
   {
     href: "/schedule",
-    label: "Schedule",
+    label: "nav.schedule",
     icon: Clock,
     description: "View your class schedule",
   },
   {
     href: "/preferences",
-    label: "Preferences",
+    label: "nav.preferences",
     icon: Settings,
     description: "Account preferences",
   },
@@ -141,32 +141,32 @@ export const teacherNavItems: NavItem[] = [
 export const parentNavItems: NavItem[] = [
   {
     href: "/parent",
-    label: "Parent Dashboard",
+    label: "nav.parentDashboard",
     icon: Home,
     description: "Overview of your children",
     exact: true,
   },
   {
     href: "/add-parent",
-    label: "Add Parent",
+    label: "nav.addParent",
     icon: Users,
     description: "Add another guardian for your child",
   },
   {
     href: "/parent/progress",
-    label: "Qur'an Progress",
+    label: "nav.quranProgress",
     icon: Book,
     description: "View memorization and revision",
   },
   {
     href: "/parent/academics",
-    label: "Academics",
+    label: "nav.academics",
     icon: ClipboardList,
     description: "Assessments and grades",
   },
   {
     href: "/parent/attendance",
-    label: "Attendance",
+    label: "nav.attendance",
     icon: Clock,
     description: "Attendance history",
   },
