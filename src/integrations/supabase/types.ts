@@ -480,6 +480,14 @@ export type Database = {
           name: string
           section: string | null
           status: Database["public"]["Enums"]["student_status"] | null
+          gender: string | null
+          grade: string | null
+          health_card: string | null
+          permanent_code: string | null
+          street: string | null
+          city: string | null
+          province: string | null
+          postal_code: string | null
         }
         Insert: {
           completed_juz?: number[] | null
@@ -495,6 +503,14 @@ export type Database = {
           name: string
           section?: string | null
           status?: Database["public"]["Enums"]["student_status"] | null
+          gender?: string | null
+          grade?: string | null
+          health_card?: string | null
+          permanent_code?: string | null
+          street?: string | null
+          city?: string | null
+          province?: string | null
+          postal_code?: string | null
         }
         Update: {
           completed_juz?: number[] | null
@@ -510,6 +526,14 @@ export type Database = {
           name?: string
           section?: string | null
           status?: Database["public"]["Enums"]["student_status"] | null
+          gender?: string | null
+          grade?: string | null
+          health_card?: string | null
+          permanent_code?: string | null
+          street?: string | null
+          city?: string | null
+          province?: string | null
+          postal_code?: string | null
         }
         Relationships: [
           {
