@@ -41,10 +41,11 @@ export const StudentForm = ({
   return (
     <form onSubmit={handleFormSubmit} className="space-y-4 pt-2">
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid grid-cols-4 mb-4">
+        <TabsList className="grid grid-cols-5 mb-4">
           <TabsTrigger value="basic">{t("pages.teacherPortal.students.form.tabs.basic", "Student Info")}</TabsTrigger>
           <TabsTrigger value="guardian">{t("pages.teacherPortal.students.form.tabs.guardian", "Guardian")}</TabsTrigger>
           <TabsTrigger value="emergency">{t("pages.teacherPortal.students.form.tabs.emergency", "Emergency")}</TabsTrigger>
+          <TabsTrigger value="address">{t("pages.teacherPortal.students.form.tabs.address", "Address")}</TabsTrigger>
           <TabsTrigger value="quran">{t("pages.teacherPortal.students.form.tabs.quran", "Quran Progress")}</TabsTrigger>
         </TabsList>
 
@@ -95,6 +96,39 @@ export const StudentForm = ({
             </div>
           </div>
 
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="gender">{t("pages.teacherPortal.students.form.gender", "Gender")}</Label>
+              <Select
+                value={formData.gender}
+                onValueChange={(value) => setFormData((prev) => ({ ...prev, gender: value }))}
+              >
+                <SelectTrigger id="gender">
+                  <SelectValue placeholder={t("pages.teacherPortal.students.form.genderPlaceholder", "Select gender")} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="male">{t("common.male", "Male")}</SelectItem>
+                  <SelectItem value="female">{t("common.female", "Female")}</SelectItem>
+                  <SelectItem value="other">{t("common.other", "Other")}</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="grade">{t("pages.teacherPortal.students.form.grade", "Grade")}</Label>
+              <Input
+                id="grade"
+                placeholder={t("pages.teacherPortal.students.form.gradePlaceholder", "Enter grade")}
+                value={formData.grade}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    grade: e.target.value,
+                  }))}
+              />
+            </div>
+          </div>
+
           <div className="space-y-2">
             <Label htmlFor="status">{t("pages.teacherPortal.students.table.status")}</Label>
             <Select
@@ -112,6 +146,35 @@ export const StudentForm = ({
             </Select>
           </div>
 
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="healthCard">{t("pages.teacherPortal.students.form.healthCard", "Health Card")}</Label>
+              <Input
+                id="healthCard"
+                placeholder={t("pages.teacherPortal.students.form.healthCardPlaceholder", "Enter health card number")}
+                value={formData.healthCard}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    healthCard: e.target.value,
+                  }))}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="permanentCode">{t("pages.teacherPortal.students.form.permanentCode", "Permanent Code")}</Label>
+              <Input
+                id="permanentCode"
+                placeholder={t("pages.teacherPortal.students.form.permanentCodePlaceholder", "Enter permanent code")}
+                value={formData.permanentCode}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    permanentCode: e.target.value,
+                  }))}
+              />
+            </div>
+          </div>
           <div className="space-y-2">
             <Label htmlFor="medicalConditions">{t("pages.teacherPortal.students.form.medical", "Medical Conditions")}</Label>
             <Textarea
@@ -172,6 +235,49 @@ export const StudentForm = ({
                 }))}
               required
             />
+          </div>
+        </TabsContent>
+
+        <TabsContent value="address" className="space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="street">{t("pages.teacherPortal.students.form.street", "Street")}</Label>
+              <Input
+                id="street"
+                placeholder={t("pages.teacherPortal.students.form.streetPlaceholder", "Enter street address")}
+                value={formData.street}
+                onChange={(e) => setFormData((prev) => ({ ...prev, street: e.target.value }))}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="city">{t("pages.teacherPortal.students.form.city", "City")}</Label>
+              <Input
+                id="city"
+                placeholder={t("pages.teacherPortal.students.form.cityPlaceholder", "Enter city")}
+                value={formData.city}
+                onChange={(e) => setFormData((prev) => ({ ...prev, city: e.target.value }))}
+              />
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="province">{t("pages.teacherPortal.students.form.province", "Province")}</Label>
+              <Input
+                id="province"
+                placeholder={t("pages.teacherPortal.students.form.provincePlaceholder", "Enter province/state")}
+                value={formData.province}
+                onChange={(e) => setFormData((prev) => ({ ...prev, province: e.target.value }))}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="postalCode">{t("pages.teacherPortal.students.form.postalCode", "Postal Code")}</Label>
+              <Input
+                id="postalCode"
+                placeholder={t("pages.teacherPortal.students.form.postalCodePlaceholder", "Enter postal code")}
+                value={formData.postalCode}
+                onChange={(e) => setFormData((prev) => ({ ...prev, postalCode: e.target.value }))}
+              />
+            </div>
           </div>
         </TabsContent>
 
