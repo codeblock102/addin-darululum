@@ -134,6 +134,7 @@ const Students = () => {
   });
 
   const isAdmin = data?.userData?.role === "admin";
+  const isTeacher = data?.userData?.role === "teacher";
   const students = data?.students || [];
   const totalStudents = students.length;
   const activeStudents = students.filter((s) => s.status === "active").length;
@@ -168,10 +169,12 @@ const Students = () => {
           <h1 className="text-2xl font-bold tracking-tight">{t("pages.students.title")}</h1>
           <p className="text-muted-foreground">{t("pages.students.subtitle")}</p>
         </div>
-        <Button onClick={handleAddStudent} className="w-full sm:w-auto">
-          <PlusCircle className="mr-2 h-4 w-4" />
-          {t("pages.students.add")}
-        </Button>
+        {(isAdmin || isTeacher) && (
+          <Button onClick={handleAddStudent} className="w-full sm:w-auto">
+            <PlusCircle className="mr-2 h-4 w-4" />
+            {t("pages.students.add")}
+          </Button>
+        )}
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
