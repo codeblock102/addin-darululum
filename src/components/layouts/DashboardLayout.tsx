@@ -79,7 +79,7 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
       <div
         className={cn(
           "flex-1 overflow-x-hidden transition-all duration-300",
-          isMobile ? "pb-20" : "", // Increased bottom padding for mobile
+          isMobile ? "h-[calc(100vh-4rem)] overflow-y-auto" : "",
           !isMobile && (sidebarOpen ? `md:ml-64` : `md:ml-16`),
         )}
       >

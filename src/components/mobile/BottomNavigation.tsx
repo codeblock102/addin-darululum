@@ -74,6 +74,7 @@ export const BottomNavigation = () => {
                   ? "text-amber-500 bg-black/5 dark:bg-white/10"
                   : "text-primary bg-primary/5"),
               )}
+              aria-label={t(item.label)}
             >
               <Icon
                 className={cn(
@@ -83,7 +84,7 @@ export const BottomNavigation = () => {
                     : "text-gray-500 dark:text-gray-400",
                 )}
               />
-              <span className="text-xs whitespace-nowrap truncate max-w-[5rem]">
+              <span className="hidden min-[400px]:inline text-[11px] whitespace-nowrap truncate max-w-[5rem]">
                 {t(item.label)}
               </span>
             </button>
