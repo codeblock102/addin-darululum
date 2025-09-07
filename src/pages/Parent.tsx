@@ -1,7 +1,7 @@
 import { useParentChildren } from "@/hooks/useParentChildren.ts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card.tsx";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs.tsx";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client.ts";
 import { useQuery } from "@tanstack/react-query";
 import { Tables } from "@/types/supabase.ts";
@@ -13,6 +13,13 @@ const Parent = () => {
   const { children, isLoading } = useParentChildren();
   const [selectedStudentId, setSelectedStudentId] = useState<string | null>(children[0]?.id ?? null);
   const { toast: _toast } = useToast();
+
+  // Ensure a default child is selected once children load
+  useEffect(() => {
+    if (!selectedStudentId && children && children.length > 0) {
+      setSelectedStudentId(children[0].id);
+    }
+  }, [children, selectedStudentId]);
 
   const { data: progressEntries } = useQuery({
     queryKey: ["parent-student-progress", selectedStudentId],
@@ -70,19 +77,21 @@ const Parent = () => {
             <CardTitle>Parent Dashboard</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="flex gap-3 flex-wrap">
+            <div className="-mx-1">
+              <div className="flex gap-2 overflow-x-auto whitespace-nowrap px-1 py-1">
               {isLoading && <span>Loading children...</span>}
               {!isLoading && children.length === 0 && <span>No linked children found.</span>}
               {children.map((child) => (
                 <button
                   key={child.id}
                   type="button"
-                  className={`px-3 py-2 rounded border ${selectedStudentId === child.id ? "bg-primary text-primary-foreground" : "bg-background"}`}
+                  className={`px-3 py-2 rounded border shrink-0 ${selectedStudentId === child.id ? "bg-primary text-primary-foreground" : "bg-background"}`}
                   onClick={() => setSelectedStudentId(child.id)}
                 >
                   {child.name}
                 </button>
               ))}
+              </div>
             </div>
           </CardContent>
         </Card>

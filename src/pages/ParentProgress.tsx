@@ -1,6 +1,6 @@
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute.tsx";
 import { useParentChildren } from "@/hooks/useParentChildren.ts";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card.tsx";
 import { DhorBook } from "@/components/dhor-book/DhorBook.tsx";
 import { subDays, startOfWeek, endOfWeek, format } from "date-fns";
@@ -10,6 +10,13 @@ import { useQuery } from "@tanstack/react-query";
 const ParentProgress = () => {
   const { children } = useParentChildren();
   const [selectedStudentId, setSelectedStudentId] = useState<string | null>(children[0]?.id ?? null);
+
+  // Ensure a default child is selected once children load
+  useEffect(() => {
+    if (!selectedStudentId && children && children.length > 0) {
+      setSelectedStudentId(children[0].id);
+    }
+  }, [children, selectedStudentId]);
 
   const { data: weekly } = useQuery({
     queryKey: ["parent-student-progress-weekly", selectedStudentId],
@@ -53,16 +60,18 @@ const ParentProgress = () => {
             <CardTitle>Qur'an Progress</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="flex gap-2 flex-wrap mb-4">
-              {children.map((child) => (
-                <button
-                  key={child.id}
-                  className={`px-3 py-2 rounded border ${selectedStudentId === child.id ? "bg-primary text-primary-foreground" : "bg-background"}`}
-                  onClick={() => setSelectedStudentId(child.id)}
-                >
-                  {child.name}
-                </button>
-              ))}
+            <div className="-mx-1 mb-4">
+              <div className="flex gap-2 overflow-x-auto whitespace-nowrap px-1 py-1">
+                {children.map((child) => (
+                  <button
+                    key={child.id}
+                    className={`px-3 py-2 rounded border shrink-0 ${selectedStudentId === child.id ? "bg-primary text-primary-foreground" : "bg-background"}`}
+                    onClick={() => setSelectedStudentId(child.id)}
+                  >
+                    {child.name}
+                  </button>
+                ))}
+              </div>
             </div>
             {selectedStudentId && (
               <DhorBook
