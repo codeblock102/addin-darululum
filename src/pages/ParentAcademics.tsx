@@ -34,9 +34,7 @@ const ParentAcademics = () => {
     }
   }, [children, selectedStudentId]);
 
-  useEffect(() => {
-    console.log("hihihi");
-  }, []);
+  // Remove stray debug log
 
   // Assignments for selected child
   const { data: submissions, isLoading: loadingAssignments } = useQuery({
@@ -156,16 +154,18 @@ const ParentAcademics = () => {
             <CardTitle>Academics</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="flex gap-2 flex-wrap mb-4">
-              {children.map((child) => (
-                <button
-                  key={child.id}
-                  className={`px-3 py-2 rounded border ${selectedStudentId === child.id ? "bg-primary text-primary-foreground" : "bg-background"}`}
-                  onClick={() => setSelectedStudentId(child.id)}
-                >
-                  {child.name}
-                </button>
-              ))}
+            <div className="-mx-1 mb-4">
+              <div className="flex gap-2 overflow-x-auto whitespace-nowrap px-1 py-1">
+                {children.map((child) => (
+                  <button
+                    key={child.id}
+                    className={`px-3 py-2 rounded border shrink-0 ${selectedStudentId === child.id ? "bg-primary text-primary-foreground" : "bg-background"}`}
+                    onClick={() => setSelectedStudentId(child.id)}
+                  >
+                    {child.name}
+                  </button>
+                ))}
+              </div>
             </div>
             <Tabs defaultValue="assignments" className="w-full">
               <TabsList className="grid grid-cols-2 sm:grid-cols-3 w-full">
@@ -257,7 +257,7 @@ const ParentAcademics = () => {
                       )}
                     </TableBody>
                   </Table>
-            </div>
+                </div>
               </TabsContent>
 
               <TabsContent value="grades" className="mt-4">
