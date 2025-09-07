@@ -1,81 +1,84 @@
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button.tsx";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card.tsx";
 import { Calendar, MessageSquare, Plus, Users, Settings, BarChart3 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useRBAC } from "@/hooks/useRBAC.ts";
+import { useI18n } from "@/contexts/I18nContext.tsx";
 
 interface QuickActionsProps {
   teacherId: string;
   isAdmin?: boolean;
 }
 
-export const QuickActions = ({ teacherId, isAdmin = false }: QuickActionsProps) => {
+export const QuickActions = ({ teacherId: _teacherId, isAdmin = false }: QuickActionsProps) => {
   const navigate = useNavigate();
   const { isAttendanceTaker } = useRBAC();
+  const { t } = useI18n();
 
   const teacherActions = [
     {
-      title: "Add Student",
+      title: t("pages.teacherPortal.quickActions.addStudent", "Add Student"),
       icon: Plus,
       action: () => navigate("/dashboard?tab=students"),
       color: "bg-blue-500 hover:bg-blue-600",
-      description: "Register new students",
+      description: t("pages.teacherPortal.quickActions.addStudentDesc", "Register new students"),
     },
     isAttendanceTaker && {
-      title: "Take Attendance",
+      title: t("pages.teacherPortal.quickActions.takeAttendance", "Take Attendance"),
       icon: Calendar,
       action: () => navigate("/attendance"),
       color: "bg-green-500 hover:bg-green-600",
-      description: "Mark daily attendance",
+      description: t("pages.teacherPortal.quickActions.takeAttendanceDesc", "Mark daily attendance"),
     },
     {
-      title: "View Students",
+      title: t("pages.teacherPortal.quickActions.viewStudents", "View Students"),
       icon: Users,
       action: () => navigate("/dashboard?tab=students"),
       color: "bg-purple-500 hover:bg-purple-600",
-      description: "Browse student list",
+      description: t("pages.teacherPortal.quickActions.viewStudentsDesc", "Browse student list"),
     },
     {
-      title: "Messages",
+      title: t("pages.teacherPortal.quickActions.messages", "Messages"),
       icon: MessageSquare,
       action: () => navigate("/dashboard?tab=messages"),
       color: "bg-orange-500 hover:bg-orange-600",
-      description: "Send messages",
+      description: t("pages.teacherPortal.quickActions.messagesDesc", "Send messages"),
     },
   ];
 
   const adminActions = [
     {
-      title: "User Management",
+      title: t("pages.teacherPortal.quickActions.userManagement", "User Management"),
       icon: Users,
       action: () => navigate("/teachers"),
       color: "bg-[hsl(142.8,64.2%,24.1%)] hover:bg-[hsl(142.8,64.2%,28%)]",
-      description: "Manage teachers & students",
+      description: t("pages.teacherPortal.quickActions.userManagementDesc", "Manage teachers & students"),
     },
     {
-      title: "System Analytics",
+      title: t("pages.teacherPortal.quickActions.systemAnalytics", "System Analytics"),
       icon: BarChart3,
       action: () => navigate("/admin"),
       color: "bg-blue-500 hover:bg-blue-600",
-      description: "View system statistics",
+      description: t("pages.teacherPortal.quickActions.systemAnalyticsDesc", "View system statistics"),
     },
     {
-      title: "Parent Accounts",
+      title: t("pages.teacherPortal.quickActions.parentAccounts", "Parent Accounts"),
       icon: MessageSquare,
       action: () => navigate("/admin/parent-accounts"),
       color: "bg-green-500 hover:bg-green-600",
-      description: "Manage parent access",
+      description: t("pages.teacherPortal.quickActions.parentAccountsDesc", "Manage parent access"),
     },
     {
-      title: "Settings",
+      title: t("pages.teacherPortal.quickActions.settings", "Settings"),
       icon: Settings,
       action: () => navigate("/settings"),
       color: "bg-purple-500 hover:bg-purple-600",
-      description: "System configuration",
+      description: t("pages.teacherPortal.quickActions.settingsDesc", "System configuration"),
     },
   ];
 
-  const actions = (isAdmin ? adminActions : teacherActions).filter(Boolean) as typeof teacherActions;
+  type Action = { title: string; icon: typeof Users; action: () => void; color: string; description: string };
+  const actions: Action[] = (isAdmin ? adminActions : teacherActions).filter((a): a is Action => Boolean(a));
 
   return (
     <Card className="border border-gray-200 shadow-sm bg-white hover:shadow-md transition-all duration-200">
@@ -84,7 +87,7 @@ export const QuickActions = ({ teacherId, isAdmin = false }: QuickActionsProps) 
           <div className={`p-2 bg-[hsl(142.8,64.2%,24.1%)]/10 rounded-lg ${isAdmin ? 'p-1.5' : 'p-2'}`}>
             <Calendar className={`text-[hsl(142.8,64.2%,24.1%)] ${isAdmin ? 'h-4 w-4' : 'h-5 w-5'}`} />
           </div>
-          {isAdmin ? "System Actions" : "Quick Actions"}
+          {isAdmin ? t("pages.teacherPortal.quickActions.systemActions", "System Actions") : t("pages.teacherPortal.quickActions.quickActions", "Quick Actions")}
         </CardTitle>
       </CardHeader>
       <CardContent>

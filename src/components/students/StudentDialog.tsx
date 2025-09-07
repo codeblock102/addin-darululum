@@ -41,6 +41,14 @@ interface Student {
   madrassah_id?: string;
   section?: string;
   medical_condition?: string | null;
+  gender?: string | null;
+  grade?: string | null;
+  health_card?: string | null;
+  permanent_code?: string | null;
+  street?: string | null;
+  city?: string | null;
+  province?: string | null;
+  postal_code?: string | null;
 }
 
 interface StudentDialogProps {
@@ -64,6 +72,14 @@ export const StudentDialog = (
     date_of_birth: selectedStudent?.date_of_birth || "",
     enrollment_date: selectedStudent?.enrollment_date ||
       new Date().toISOString().split("T")[0],
+    gender: selectedStudent?.gender || "",
+    grade: selectedStudent?.grade || "",
+    health_card: selectedStudent?.health_card || "",
+    permanent_code: selectedStudent?.permanent_code || "",
+    street: selectedStudent?.street || "",
+    city: selectedStudent?.city || "",
+    province: selectedStudent?.province || "",
+    postal_code: selectedStudent?.postal_code || "",
     guardian_name: selectedStudent?.guardian_name || "",
     guardian_contact: selectedStudent?.guardian_contact || "",
     guardian_email: selectedStudent?.guardian_email || "",
@@ -83,6 +99,14 @@ export const StudentDialog = (
         date_of_birth: selectedStudent.date_of_birth || "",
         enrollment_date: selectedStudent.enrollment_date ||
           new Date().toISOString().split("T")[0],
+        gender: selectedStudent.gender || "",
+        grade: selectedStudent.grade || "",
+        health_card: selectedStudent.health_card || "",
+        permanent_code: selectedStudent.permanent_code || "",
+        street: selectedStudent.street || "",
+        city: selectedStudent.city || "",
+        province: selectedStudent.province || "",
+        postal_code: selectedStudent.postal_code || "",
         guardian_name: selectedStudent.guardian_name || "",
         guardian_contact: selectedStudent.guardian_contact || "",
         guardian_email: selectedStudent.guardian_email || "",
@@ -99,6 +123,14 @@ export const StudentDialog = (
         name: "",
         date_of_birth: "",
         enrollment_date: new Date().toISOString().split("T")[0],
+        gender: "",
+        grade: "",
+        health_card: "",
+        permanent_code: "",
+        street: "",
+        city: "",
+        province: "",
+        postal_code: "",
         guardian_name: "",
         guardian_contact: "",
         guardian_email: "",
@@ -155,6 +187,14 @@ export const StudentDialog = (
         // Normalize empty strings to null for optional fields
         date_of_birth: formData.date_of_birth || null,
         enrollment_date: formData.enrollment_date || new Date().toISOString().split("T")[0],
+        gender: (formData as any).gender || null,
+        grade: (formData as any).grade || null,
+        health_card: (formData as any).health_card || null,
+        permanent_code: (formData as any).permanent_code || null,
+        street: (formData as any).street || null,
+        city: (formData as any).city || null,
+        province: (formData as any).province || null,
+        postal_code: (formData as any).postal_code || null,
       };
 
       // Teachers cannot modify section assignments
@@ -297,9 +337,10 @@ export const StudentDialog = (
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4 pt-4">
           <Tabs defaultValue="info" className="w-full">
-            <TabsList className="grid w-full grid-cols-3 mb-4">
+            <TabsList className="grid w-full grid-cols-4 mb-4">
               <TabsTrigger value="info">Student Info</TabsTrigger>
               <TabsTrigger value="guardian">Guardian</TabsTrigger>
+              <TabsTrigger value="address">Address</TabsTrigger>
               <TabsTrigger value="quran">Quran Progress</TabsTrigger>
             </TabsList>
 
@@ -314,6 +355,58 @@ export const StudentDialog = (
                     setFormData((prev) => ({ ...prev, name: e.target.value }))}
                   required
                 />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="gender">Gender</Label>
+                  <Select
+                    value={formData.gender || ""}
+                    onValueChange={(value) =>
+                      setFormData((prev) => ({ ...prev, gender: value }))
+                    }
+                  >
+                    <SelectTrigger id="gender">
+                      <SelectValue placeholder="Select gender" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="male">Male</SelectItem>
+                      <SelectItem value="female">Female</SelectItem>
+                      <SelectItem value="other">Other</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="grade">Grade</Label>
+                  <Input
+                    id="grade"
+                    placeholder="Enter grade"
+                    value={formData.grade || ""}
+                    onChange={(e) =>
+                      setFormData((prev) => ({ ...prev, grade: e.target.value }))}
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="health_card">Health Card</Label>
+                  <Input
+                    id="health_card"
+                    placeholder="Enter health card number"
+                    value={formData.health_card || ""}
+                    onChange={(e) =>
+                      setFormData((prev) => ({ ...prev, health_card: e.target.value }))}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="permanent_code">Permanent Code</Label>
+                  <Input
+                    id="permanent_code"
+                    placeholder="Enter permanent code"
+                    value={formData.permanent_code || ""}
+                    onChange={(e) =>
+                      setFormData((prev) => ({ ...prev, permanent_code: e.target.value }))}
+                  />
+                </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
@@ -418,6 +511,49 @@ export const StudentDialog = (
                     <SelectItem value="inactive">Inactive</SelectItem>
                   </SelectContent>
                 </Select>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="address" className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="street">Street</Label>
+                  <Input
+                    id="street"
+                    placeholder="Enter street address"
+                    value={formData.street || ""}
+                    onChange={(e) => setFormData((prev) => ({ ...prev, street: e.target.value }))}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="city">City</Label>
+                  <Input
+                    id="city"
+                    placeholder="Enter city"
+                    value={formData.city || ""}
+                    onChange={(e) => setFormData((prev) => ({ ...prev, city: e.target.value }))}
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="province">Province</Label>
+                  <Input
+                    id="province"
+                    placeholder="Enter province/state"
+                    value={formData.province || ""}
+                    onChange={(e) => setFormData((prev) => ({ ...prev, province: e.target.value }))}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="postal_code">Postal Code</Label>
+                  <Input
+                    id="postal_code"
+                    placeholder="Enter postal code"
+                    value={formData.postal_code || ""}
+                    onChange={(e) => setFormData((prev) => ({ ...prev, postal_code: e.target.value }))}
+                  />
+                </div>
               </div>
             </TabsContent>
 

@@ -27,8 +27,10 @@ import {
 } from "@/components/ui/card.tsx";
 import { Badge } from "@/components/ui/badge.tsx";
 import { useIsMobile } from "@/hooks/use-mobile.tsx";
+import { useI18n } from "@/contexts/I18nContext.tsx";
 
 const Attendance = () => {
+  const { t } = useI18n();
   const [selectedTab, setSelectedTab] = useState("take-attendance");
   const isMobile = useIsMobile();
   const navigate = useNavigate();
@@ -43,7 +45,7 @@ const Attendance = () => {
 
   const statsCards = [
     {
-      title: "Today's Attendance",
+      title: t("pages.attendance.statToday"),
       value: "28/32",
       percentage: "87.5%",
       icon: Users,
@@ -52,7 +54,7 @@ const Attendance = () => {
       borderColor: "border-green-200 dark:border-green-800",
     },
     {
-      title: "This Week",
+      title: t("pages.attendance.statWeek"),
       value: "142/160",
       percentage: "88.7%",
       icon: TrendingUp,
@@ -61,7 +63,7 @@ const Attendance = () => {
       borderColor: "border-blue-200 dark:border-blue-800",
     },
     {
-      title: "Pending Reviews",
+      title: t("pages.attendance.statPending"),
       value: "3",
       percentage: "Low",
       icon: AlertCircle,
@@ -85,12 +87,8 @@ const Attendance = () => {
                     <BookOpen className="h-4 w-4 sm:h-6 sm:w-6" />
                   </div>
                   <div>
-                    <h1 className="text-xl sm:text-3xl lg:text-4xl font-bold text-black">
-                      Attendance Management
-                    </h1>
-                    <p className="text-black text-sm sm:text-lg">
-                      Track and manage student attendance with ease
-                    </p>
+                    <h1 className="text-xl sm:text-3xl lg:text-4xl font-bold text-black">{t("pages.attendance.headerTitle")}</h1>
+                    <p className="text-black text-sm sm:text-lg">{t("pages.attendance.headerDesc")}</p>
                   </div>
                 </div>
               </div>
@@ -163,11 +161,9 @@ const Attendance = () => {
                   <div className="p-1.5 sm:p-2 bg-gradient-to-br from-[hsl(142.8,64.2%,24.1%)] to-[hsl(142.8,64.2%,32%)] rounded-md sm:rounded-lg text-white">
                     <Users className="h-4 w-4 sm:h-5 sm:w-5" />
                   </div>
-                  Attendance Dashboard
+                  {t("pages.attendance.dashboardTitle")}
                 </CardTitle>
-                <CardDescription className="text-black mt-1 sm:mt-2 text-sm sm:text-base">
-                  Select students directly and record attendance with flexible timing and reasons
-                </CardDescription>
+                <CardDescription className="text-black mt-1 sm:mt-2 text-sm sm:text-base">{t("pages.attendance.dashboardDesc")}</CardDescription>
               </div>
             </div>
           </CardHeader>
@@ -188,14 +184,14 @@ const Attendance = () => {
                     className="flex items-center justify-center gap-1.5 sm:gap-3 py-3 sm:py-4 px-3 sm:px-6 text-sm sm:text-base font-medium transition-all duration-300 rounded-none border-b-2 border-transparent data-[state=active]:border-[hsl(142.8,64.2%,24.1%)] data-[state=active]:bg-[hsl(142.8,64.2%,24.1%)]/10 data-[state=active]:text-[hsl(142.8,64.2%,24.1%)] hover:bg-gray-100 text-black"
                   >
                     <CalendarCheck className="h-4 w-4 sm:h-5 sm:w-5" />
-                    <span className="text-xs sm:text-base">Take Attendance</span>
+                    <span className="text-xs sm:text-base">{t("pages.attendance.tabs.take")}</span>
                   </TabsTrigger>
                   <TabsTrigger
                     value="records"
                     className="flex items-center justify-center gap-1.5 sm:gap-3 py-3 sm:py-4 px-3 sm:px-6 text-sm sm:text-base font-medium transition-all duration-300 rounded-none border-b-2 border-transparent data-[state=active]:border-purple-500 data-[state=active]:bg-purple-50 data-[state=active]:text-purple-700 hover:bg-gray-100 text-black"
                   >
                     <Users className="h-4 w-4 sm:h-5 sm:w-5" />
-                    <span className="text-xs sm:text-base">Records</span>
+                    <span className="text-xs sm:text-base">{t("pages.attendance.tabs.records")}</span>
                   </TabsTrigger>
                 </TabsList>
               </div>
@@ -207,13 +203,8 @@ const Attendance = () => {
                 >
                   <div className="space-y-4 sm:space-y-6">
                     <div className="text-center space-y-1 sm:space-y-2">
-                      <h3 className="text-lg sm:text-xl font-semibold text-black">
-                        Record Student Attendance
-                      </h3>
-                      <p className="text-black text-sm sm:text-base">
-                        Select students and set attendance with custom timing
-
-                      </p>
+                      <h3 className="text-lg sm:text-xl font-semibold text-black">{t("pages.attendance.recordTitle")}</h3>
+                      <p className="text-black text-sm sm:text-base">{t("pages.attendance.recordDesc")}</p>
                     </div>
                     <AttendanceForm />
                   </div>
@@ -225,13 +216,8 @@ const Attendance = () => {
                 >
                   <div className="space-y-4 sm:space-y-6">
                     <div className="text-center space-y-1 sm:space-y-2">
-                      <h3 className="text-lg sm:text-xl font-semibold text-black">
-                        Attendance History
-                      </h3>
-                      <p className="text-black text-sm sm:text-base">
-                        View and manage all attendance records
-
-                      </p>
+                      <h3 className="text-lg sm:text-xl font-semibold text-black">{t("pages.attendance.historyTitle")}</h3>
+                      <p className="text-black text-sm sm:text-base">{t("pages.attendance.historyDesc")}</p>
                     </div>
                     <AttendanceTable />
                   </div>

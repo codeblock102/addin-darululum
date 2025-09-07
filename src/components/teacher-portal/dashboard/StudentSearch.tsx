@@ -8,10 +8,11 @@ import {
   CardTitle,
 } from "@/components/ui/card.tsx";
 import { Input } from "@/components/ui/input.tsx";
-import { Button } from "@/components/ui/button.tsx";
+import { Button as _Button } from "@/components/ui/button.tsx";
 import { Loader2, Search, UserRound, Users } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { AddStudentDialog } from "../students/AddStudentDialog.tsx";
+import { AddStudentDialog as _AddStudentDialog } from "../students/AddStudentDialog.tsx";
+import { useI18n } from "@/contexts/I18nContext.tsx";
 
 interface StudentSearchProps {
   teacherId: string;
@@ -21,6 +22,7 @@ interface StudentSearchProps {
 export const StudentSearch = (
   { teacherId, isAdmin = false }: StudentSearchProps,
 ) => {
+  const { t } = useI18n();
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredStudents, setFilteredStudents] = useState<
     { id: string; name: string }[]
@@ -111,14 +113,14 @@ export const StudentSearch = (
           <div className={`p-2 bg-[hsl(142.8,64.2%,24.1%)]/10 rounded-lg ${isAdmin ? 'p-1.5' : 'p-2'}`}>
             <Search className={`text-[hsl(142.8,64.2%,24.1%)] ${isAdmin ? 'h-4 w-4' : 'h-5 w-5'}`} />
           </div>
-          {isAdmin ? "Student Management" : "Student Search"}
+          {isAdmin ? t("pages.teacherPortal.studentSearch.titleAdmin", "Student Management") : t("pages.teacherPortal.studentSearch.title", "Student Search")}
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
           <Input
-            placeholder="Search students by name..."
+            placeholder={t("pages.teacherPortal.studentSearch.placeholder", "Search students by name...")}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             disabled={isLoading}
@@ -129,7 +131,7 @@ export const StudentSearch = (
         {isLoading && (
           <div className="flex items-center gap-2 text-sm text-black p-3 bg-gray-50 rounded-lg border border-gray-200">
             <Loader2 className="h-4 w-4 animate-spin text-[hsl(142.8,64.2%,24.1%)]" />
-            <span>Loading students...</span>
+            <span>{t("pages.teacherPortal.studentSearch.loading", "Loading students...")}</span>
           </div>
         )}
         
@@ -137,9 +139,7 @@ export const StudentSearch = (
           <div className="space-y-2">
             {filteredStudents.length > 0 ? (
               <div className="space-y-2">
-                <div className="text-xs font-medium text-black uppercase tracking-wider">
-                  Found {filteredStudents.length} student{filteredStudents.length !== 1 ? 's' : ''}
-                </div>
+                <div className="text-xs font-medium text-black uppercase tracking-wider">{t("pages.teacherPortal.studentSearch.foundPrefix", "Found")} {filteredStudents.length} {filteredStudents.length !== 1 ? t("pages.teacherPortal.studentSearch.studentsPlural", "students") : t("pages.teacherPortal.studentSearch.studentSingular", "student")}</div>
                 {filteredStudents.map((student) => (
                   <div
                     key={student.id}
@@ -158,12 +158,8 @@ export const StudentSearch = (
             ) : (
               <div className="text-center p-6 bg-gray-50 rounded-lg border border-gray-200">
                 <Users className="h-8 w-8 text-gray-400 mx-auto mb-2" />
-                <div className="text-sm text-black">
-                  No students found for "<span className="font-medium">{searchQuery}</span>"
-                </div>
-                <div className="text-xs text-black mt-1">
-                  Try a different search term
-                </div>
+                <div className="text-sm text-black">{t("pages.teacherPortal.studentSearch.nonePrefix", "No students found for")} "<span className="font-medium">{searchQuery}</span>"</div>
+                <div className="text-xs text-black mt-1">{t("pages.teacherPortal.studentSearch.noneHint", "Try a different search term")}</div>
               </div>
             )}
           </div>
@@ -172,12 +168,8 @@ export const StudentSearch = (
         {!searchQuery && !isLoading && (
           <div className="text-center p-6 bg-gray-50 rounded-lg border border-gray-200">
             <Search className="h-8 w-8 text-gray-400 mx-auto mb-2" />
-            <div className="text-sm text-black">
-              {isAdmin ? "Search for students to manage" : "Search for your students"}
-            </div>
-            <div className="text-xs text-black mt-1">
-              Start typing a student's name above
-            </div>
+            <div className="text-sm text-black">{isAdmin ? t("pages.teacherPortal.studentSearch.emptyAdmin", "Search for students to manage") : t("pages.teacherPortal.studentSearch.empty", "Search for your students")}</div>
+            <div className="text-xs text-black mt-1">{t("pages.teacherPortal.studentSearch.emptyHint", "Start typing a student's name above")}</div>
           </div>
         )}
       </CardContent>

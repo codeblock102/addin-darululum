@@ -16,6 +16,7 @@ import { StudentDeleteDialog } from "./students/StudentDeleteDialog.tsx";
 import { AddStudentDialog } from "./students/AddStudentDialog.tsx";
 import { StudentDialog } from "@/components/students/StudentDialog.tsx";
 import { useIsMobile } from "@/hooks/use-mobile.tsx";
+import { useI18n } from "@/contexts/I18nContext.tsx";
 
 interface MyStudentsProps {
   teacherId: string;
@@ -41,6 +42,7 @@ export interface StudentAssignment {
 }
 
 export const MyStudents = ({ teacherId, isAdmin = false }: MyStudentsProps) => {
+  const { t } = useI18n();
   const [searchQuery, setSearchQuery] = useState("");
   const [studentToDelete, setStudentToDelete] = useState<
     { id: string; name: string; studentId: string } | null
@@ -157,10 +159,8 @@ export const MyStudents = ({ teacherId, isAdmin = false }: MyStudentsProps) => {
       <CardHeader>
         <div className="flex items-center justify-between">
           <div>
-            <CardTitle className="text-xl">Students</CardTitle>
-            <CardDescription>
-              All active students in the system
-            </CardDescription>
+            <CardTitle className="text-xl">{t("pages.teacherPortal.students.title", "Students")}</CardTitle>
+            <CardDescription>{t("pages.teacherPortal.students.subtitle", "All active students in the system")}</CardDescription>
           </div>
           <AddStudentDialog teacherId={teacherId} />
         </div>
@@ -170,7 +170,7 @@ export const MyStudents = ({ teacherId, isAdmin = false }: MyStudentsProps) => {
         />
         {filteredStudents && filteredStudents.length > 0 && (
           <div className="px-4 py-2 text-xs text-muted-foreground bg-muted/30 border rounded-md">
-            💡 Click on any student row/card to edit their details
+            💡 {t("pages.teacherPortal.students.hint", "Click on any student row/card to edit their details")}
           </div>
         )}
       </CardHeader>
@@ -200,11 +200,7 @@ export const MyStudents = ({ teacherId, isAdmin = false }: MyStudentsProps) => {
                   )
               )
               : (
-                <div className="text-center py-8 text-muted-foreground">
-                  {searchQuery
-                    ? "No students found matching your search."
-                    : "No active students found in the system."}
-                </div>
+                <div className="text-center py-8 text-muted-foreground">{searchQuery ? t("pages.teacherPortal.students.noneSearch", "No students found matching your search.") : t("pages.teacherPortal.students.none", "No active students found in the system.")}</div>
               )}
           </>
         )}
@@ -223,7 +219,7 @@ export const MyStudents = ({ teacherId, isAdmin = false }: MyStudentsProps) => {
         selectedStudent={selectedStudent}
         onClose={handleCloseEditDialog}
         madrassahId={userData?.madrassah_id}
-        isTeacher={true}
+        isTeacher
       />
     </Card>
   );

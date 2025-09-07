@@ -3,6 +3,7 @@ import { Switch } from "@/components/ui/switch.tsx";
 import { NotificationSettings } from "@/types/settings.ts";
 import { Bell } from "lucide-react";
 import { SettingsCard } from "./SettingsCard.tsx";
+import { useI18n } from "@/contexts/I18nContext.tsx";
 
 interface NotificationSettingsSectionProps {
   settings: NotificationSettings;
@@ -12,25 +13,22 @@ interface NotificationSettingsSectionProps {
 export function NotificationSettingsSection(
   { settings, onUpdate }: NotificationSettingsSectionProps,
 ) {
+  const { t } = useI18n();
   const handleChange = (key: keyof NotificationSettings, value: boolean) => {
     onUpdate({ ...settings, [key]: value });
   };
 
   return (
     <SettingsCard
-      title="Notifications"
-      description="Configure notification preferences"
+      title={t("settings.notifications.title")}
+      description={t("settings.notifications.description")}
       icon={<Bell className="h-5 w-5" />}
     >
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <div>
-            <Label htmlFor="email-notifications" className="font-medium">
-              Email Notifications
-            </Label>
-            <p className="text-sm text-muted-foreground">
-              Receive important updates via email
-            </p>
+            <Label htmlFor="email-notifications" className="font-medium">{t("settings.notifications.email.title")}</Label>
+            <p className="text-sm text-muted-foreground">{t("settings.notifications.email.desc")}</p>
           </div>
           <Switch
             id="email-notifications"
@@ -42,12 +40,8 @@ export function NotificationSettingsSection(
 
         <div className="flex items-center justify-between">
           <div>
-            <Label htmlFor="progress-alerts" className="font-medium">
-              Progress Alerts
-            </Label>
-            <p className="text-sm text-muted-foreground">
-              Get notified about student progress
-            </p>
+            <Label htmlFor="progress-alerts" className="font-medium">{t("settings.notifications.progress.title")}</Label>
+            <p className="text-sm text-muted-foreground">{t("settings.notifications.progress.desc")}</p>
           </div>
           <Switch
             id="progress-alerts"
@@ -59,12 +53,8 @@ export function NotificationSettingsSection(
 
         <div className="flex items-center justify-between">
           <div>
-            <Label htmlFor="attendance-reminders" className="font-medium">
-              Attendance Reminders
-            </Label>
-            <p className="text-sm text-muted-foreground">
-              Send reminders about recording attendance
-            </p>
+            <Label htmlFor="attendance-reminders" className="font-medium">{t("settings.notifications.attendance.title")}</Label>
+            <p className="text-sm text-muted-foreground">{t("settings.notifications.attendance.desc")}</p>
           </div>
           <Switch
             id="attendance-reminders"
@@ -76,12 +66,8 @@ export function NotificationSettingsSection(
 
         <div className="flex items-center justify-between">
           <div>
-            <Label htmlFor="system-announcements" className="font-medium">
-              System Announcements
-            </Label>
-            <p className="text-sm text-muted-foreground">
-              Receive updates about system changes
-            </p>
+            <Label htmlFor="system-announcements" className="font-medium">{t("settings.notifications.system.title")}</Label>
+            <p className="text-sm text-muted-foreground">{t("settings.notifications.system.desc")}</p>
           </div>
           <Switch
             id="system-announcements"

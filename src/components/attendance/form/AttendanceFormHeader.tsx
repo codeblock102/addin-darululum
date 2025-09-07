@@ -11,8 +11,10 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip.tsx";
+import { useI18n } from "@/contexts/I18nContext.tsx";
 
 export function AttendanceFormHeader() {
+  const { t } = useI18n();
   const today = new Date();
 
   return (
@@ -20,7 +22,7 @@ export function AttendanceFormHeader() {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <CardTitle className="text-purple-700 dark:text-purple-300">
-            Mark Attendance
+            {t("pages.attendance.recordTitle", "Mark Attendance")}
           </CardTitle>
           <TooltipProvider>
             <Tooltip>
@@ -28,14 +30,14 @@ export function AttendanceFormHeader() {
                 <CalendarCheck className="h-4 w-4 text-purple-500 dark:text-purple-400 cursor-help" />
               </TooltipTrigger>
               <TooltipContent className="bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200 border border-purple-200 dark:border-purple-700">
-                <p>Record today's attendance</p>
+                <p>{t("pages.attendance.recordTooltip", "Record today's attendance")}</p>
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
         </div>
       </div>
       <CardDescription className="text-black">
-        Record attendance for selected students with custom timing and reasons
+        {t("pages.attendance.recordDesc", "Record attendance for selected students with custom timing and reasons")}
       </CardDescription>
     </CardHeader>
   );

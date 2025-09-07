@@ -17,6 +17,7 @@ import { UseFormReturn } from "react-hook-form";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client.ts";
 import { AttendanceFormValues } from "@/types/attendance-form.ts";
+import { useI18n } from "@/contexts/I18nContext.tsx";
 
 interface StudentSelectorProps {
   students?: { id: string; name: string }[];
@@ -33,11 +34,11 @@ export function StudentSelector({
   selectedStudent,
   setSelectedStudent,
 }: StudentSelectorProps) {
+  const { t } = useI18n();
   // Fetch all active students without teacher filtering
   const { data: students, isLoading } = useQuery({
     queryKey: ["all-students-selector"],
     queryFn: async () => {
-      console.log("Fetching all students for selector");
       const { data, error } = await supabase
         .from("students")
         .select("id, name, status")
@@ -49,7 +50,6 @@ export function StudentSelector({
         throw error;
       }
 
-      console.log(`Found ${data?.length || 0} students for selector`);
       return data || [];
     },
   });
@@ -68,7 +68,7 @@ export function StudentSelector({
       render={({ field }) => (
         <FormItem>
           <FormLabel className="text-black">
-            Select Students
+            {t("pages.attendance.form.students.title", "Select Students")}
           </FormLabel>
           <FormControl>
             <Select
@@ -87,10 +87,10 @@ export function StudentSelector({
                   ? (
                     <div className="flex items-center">
                       <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      Loading...
+                      {t("pages.attendance.loading", "Loading...")}
                     </div>
                   )
-                  : <SelectValue placeholder="Select a student" />}
+                  : <SelectValue placeholder={t("pages.attendance.form.students.placeholder", "Select a student")} />}
               </SelectTrigger>
               <SelectContent>
                 {students?.length
@@ -105,7 +105,7 @@ export function StudentSelector({
                   )
                   : (
                     <SelectItem value="no-students" disabled>
-                      No students available
+                      {t("pages.attendance.form.students.none", "No students available")}
                     </SelectItem>
                   )}
               </SelectContent>

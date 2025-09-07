@@ -1,23 +1,23 @@
 
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { Card, CardContent } from "@/components/ui/card";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import { Loader2, Users, Clock, CheckSquare } from "lucide-react";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client.ts";
+import { Card, CardContent } from "@/components/ui/card.tsx";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar.tsx";
+import { Checkbox } from "@/components/ui/checkbox.tsx";
+import { Button } from "@/components/ui/button.tsx";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select.tsx";
+import { Input } from "@/components/ui/input.tsx";
+import { Badge } from "@/components/ui/badge.tsx";
+import { Loader2, Users, CheckSquare } from "lucide-react";
+import { ScrollArea } from "@/components/ui/scroll-area.tsx";
+import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form.tsx";
 import { UseFormReturn } from "react-hook-form";
-import { getInitials } from "@/utils/stringUtils";
-import { AttendanceFormValues } from "@/types/attendance-form";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { getInitials } from "@/utils/stringUtils.ts";
+import { AttendanceFormValues } from "@/types/attendance-form.ts";
 import { format } from "date-fns";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/hooks/use-toast.ts";
+import { useI18n } from "@/contexts/I18nContext.tsx";
 
 interface BulkAttendanceGridProps {
   form: UseFormReturn<AttendanceFormValues>;
@@ -40,11 +40,11 @@ export function BulkAttendanceGrid({ form }: BulkAttendanceGridProps) {
   const [bulkLateReason, setBulkLateReason] = useState<string>("");
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { t } = useI18n();
 
-  const { data: students, isLoading } = useQuery({
+  const { data: students, isLoading } = useQuery<{ id: string; name: string; status: string }[]>({
     queryKey: ["all-students-bulk"],
     queryFn: async () => {
-      console.log("Fetching all students for bulk attendance");
       const { data, error } = await supabase
         .from("students")
         .select("id, name, status")
@@ -55,9 +55,7 @@ export function BulkAttendanceGrid({ form }: BulkAttendanceGridProps) {
         console.error("Error fetching students for bulk attendance:", error);
         throw error;
       }
-
-      console.log(`Found ${data?.length || 0} students for bulk attendance`);
-      return data || [];
+      return (data || []) as { id: string; name: string; status: string }[];
     },
   });
 
@@ -79,10 +77,10 @@ export function BulkAttendanceGrid({ form }: BulkAttendanceGridProps) {
       if (error) throw error;
       return attendanceRecords.length;
     },
-    onSuccess: (count) => {
+    onSuccess: (count: number) => {
       toast({
-        title: "Success",
-        description: `Attendance recorded for ${count} students`,
+        title: t("pages.attendance.bulk.successTitle", "Success"),
+        description: t("pages.attendance.bulk.successDesc", "Attendance recorded for {count} students").replace("{count}", String(count)),
       });
       setSelectedStudents(new Set());
       setBulkStatus("");
@@ -90,9 +88,9 @@ export function BulkAttendanceGrid({ form }: BulkAttendanceGridProps) {
       setBulkLateReason("");
       queryClient.invalidateQueries({ queryKey: ["attendance"] });
     },
-    onError: (error) => {
+    onError: (error: Error) => {
       toast({
-        title: "Error",
+        title: t("common.error", "Error"),
         description: error.message,
         variant: "destructive",
       });
@@ -109,9 +107,9 @@ export function BulkAttendanceGrid({ form }: BulkAttendanceGridProps) {
     setSelectedStudents(newSelected);
   };
 
-  const handleSelectAll = (checked: boolean) => {
-    if (checked && students) {
-      setSelectedStudents(new Set(students.map(s => s.id)));
+  const handleSelectAll = (checked: boolean | string) => {
+    if (checked === true && students) {
+      setSelectedStudents(new Set(students.map((s: { id: string }) => s.id)));
     } else {
       setSelectedStudents(new Set());
     }
@@ -120,8 +118,8 @@ export function BulkAttendanceGrid({ form }: BulkAttendanceGridProps) {
   const handleBulkSubmit = () => {
     if (selectedStudents.size === 0) {
       toast({
-        title: "No students selected",
-        description: "Please select at least one student",
+        title: t("pages.attendance.bulk.noneSelectedTitle", "No students selected"),
+        description: t("pages.attendance.bulk.noneSelectedDesc", "Please select at least one student"),
         variant: "destructive",
       });
       return;
@@ -129,14 +127,14 @@ export function BulkAttendanceGrid({ form }: BulkAttendanceGridProps) {
 
     if (!bulkStatus) {
       toast({
-        title: "Status required",
-        description: "Please select an attendance status",
+        title: t("pages.attendance.bulk.statusRequiredTitle", "Status required"),
+        description: t("pages.attendance.bulk.statusRequiredDesc", "Please select an attendance status"),
         variant: "destructive",
       });
       return;
     }
 
-    const currentDate = form.getValues("date");
+    const currentDate = form.getValues("date") as Date;
     bulkAttendanceMutation.mutate({
       student_ids: Array.from(selectedStudents),
       status: bulkStatus,
@@ -151,7 +149,7 @@ export function BulkAttendanceGrid({ form }: BulkAttendanceGridProps) {
     return (
       <div className="flex items-center justify-center p-8">
         <Loader2 className="h-6 w-6 animate-spin mr-2" />
-        Loading students...
+        {t("pages.attendance.bulk.loading", "Loading students...")}
       </div>
     );
   }
@@ -173,8 +171,8 @@ export function BulkAttendanceGrid({ form }: BulkAttendanceGridProps) {
               />
               <span className="text-sm font-medium text-black">
                 {selectedStudents.size > 0 
-                  ? `${selectedStudents.size} student(s) selected` 
-                  : "Select students for bulk attendance"}
+                  ? t("pages.attendance.bulk.selectedCount", "{count} students selected").replace("{count}", String(selectedStudents.size))
+                  : t("pages.attendance.bulk.selectPrompt", "Select students for bulk attendance")}
               </span>
             </div>
 
@@ -182,36 +180,36 @@ export function BulkAttendanceGrid({ form }: BulkAttendanceGridProps) {
               <div className="flex flex-wrap gap-3 items-center">
                 <Select value={bulkStatus} onValueChange={setBulkStatus}>
                   <SelectTrigger className="w-[140px] h-9">
-                    <SelectValue placeholder="Status" />
+                    <SelectValue placeholder={t("pages.attendance.bulk.statusPlaceholder", "Status")} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="present">Present</SelectItem>
-                    <SelectItem value="absent">Absent</SelectItem>
-                    <SelectItem value="late">Late</SelectItem>
-                    <SelectItem value="excused">Excused</SelectItem>
+                    <SelectItem value="present">{t("pages.attendance.status.present", "Present")}</SelectItem>
+                    <SelectItem value="absent">{t("pages.attendance.status.absent", "Absent")}</SelectItem>
+                    <SelectItem value="late">{t("pages.attendance.status.late", "Late")}</SelectItem>
+                    <SelectItem value="excused">{t("pages.attendance.status.excused", "Excused")}</SelectItem>
                   </SelectContent>
                 </Select>
 
                 <Input
                   type="time"
                   value={bulkTime}
-                  onChange={(e) => setBulkTime(e.target.value)}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setBulkTime(e.target.value)}
                   className="w-[120px] h-9"
                 />
 
                 {bulkStatus === "late" && (
                   <Input
-                    placeholder="Late reason"
+                    placeholder={t("pages.attendance.bulk.lateReason", "Late reason")}
                     value={bulkLateReason}
-                    onChange={(e) => setBulkLateReason(e.target.value)}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setBulkLateReason(e.target.value)}
                     className="w-[140px] h-9"
                   />
                 )}
 
                 <Input
-                  placeholder="Notes"
+                  placeholder={t("pages.attendance.bulk.notes", "Notes")}
                   value={bulkNotes}
-                  onChange={(e) => setBulkNotes(e.target.value)}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setBulkNotes(e.target.value)}
                   className="w-[140px] h-9"
                 />
 
@@ -225,7 +223,7 @@ export function BulkAttendanceGrid({ form }: BulkAttendanceGridProps) {
                   ) : (
                     <CheckSquare className="h-4 w-4 mr-2" />
                   )}
-                  Apply to Selected
+                  {t("pages.attendance.bulk.apply", "Apply to Selected")}
                 </Button>
               </div>
             )}
@@ -237,16 +235,16 @@ export function BulkAttendanceGrid({ form }: BulkAttendanceGridProps) {
       <FormField
         control={form.control}
         name="student_id"
-        render={({ field }) => (
+        render={({ field: _field }) => (
           <FormItem>
             <FormLabel className="text-gray-900 dark:text-gray-100 font-medium flex items-center gap-2">
               <Users className="h-4 w-4" />
-              Select Students for Bulk Attendance
+              {t("pages.attendance.bulk.gridLabel", "Select Students for Bulk Attendance")}
             </FormLabel>
             <FormControl>
               <ScrollArea className="h-96 w-full rounded-lg border-2 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm p-4">
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                  {students?.map((student) => (
+                  {students?.map((student: { id: string; name: string }) => (
                     <Card
                       key={student.id}
                       className={`cursor-pointer transition-all duration-200 hover:shadow-lg border-2 ${
@@ -273,7 +271,7 @@ export function BulkAttendanceGrid({ form }: BulkAttendanceGridProps) {
                               {student.name}
                             </p>
                             <p className="text-xs text-black">
-                              Active Student
+                              {t("pages.attendance.bulk.activeStudent", "Active Student")}
                             </p>
                           </div>
                         </div>
@@ -283,7 +281,7 @@ export function BulkAttendanceGrid({ form }: BulkAttendanceGridProps) {
                 </div>
                 {(!students || students.length === 0) && (
                   <div className="text-center py-8 text-black">
-                    No students found
+                    {t("pages.attendance.bulk.none", "No students found")}
                   </div>
                 )}
               </ScrollArea>
@@ -301,10 +299,10 @@ export function BulkAttendanceGrid({ form }: BulkAttendanceGridProps) {
               <div className="flex items-center space-x-2">
                 <Badge variant="secondary" className="bg-green-100 text-green-800">
                   <CheckSquare className="h-3 w-3 mr-1" />
-                  {selectedStudents.size} Selected
+                  {t("pages.attendance.bulk.badgeSelected", "{count} Selected").replace("{count}", String(selectedStudents.size))}
                 </Badge>
                 <span className="text-sm text-black">
-                  Ready for bulk attendance recording
+                  {t("pages.attendance.bulk.ready", "Ready for bulk attendance recording")}
                 </span>
               </div>
               <Button
@@ -313,7 +311,7 @@ export function BulkAttendanceGrid({ form }: BulkAttendanceGridProps) {
                 onClick={() => setSelectedStudents(new Set())}
                 className="text-black hover:text-gray-800"
               >
-                Clear Selection
+                {t("pages.attendance.bulk.clear", "Clear Selection")}
               </Button>
             </div>
           </CardContent>

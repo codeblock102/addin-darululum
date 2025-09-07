@@ -11,6 +11,7 @@ import { useAuth } from "@/hooks/use-auth.ts";
 import { LogOut, Settings, User } from "lucide-react";
 import { cn } from "@/lib/utils.ts";
 import { useIsMobile } from "@/hooks/use-mobile.tsx";
+import { useI18n } from "@/contexts/I18nContext.tsx";
 
 interface SidebarUserProps {
   isAdmin: boolean;
@@ -20,6 +21,7 @@ interface SidebarUserProps {
 export const SidebarUser = ({ isAdmin, isOpen }: SidebarUserProps) => {
   const { session, signOut } = useAuth();
   const isMobile = useIsMobile();
+  const { t } = useI18n();
 
   if (!session?.user) return null;
 
@@ -90,11 +92,11 @@ export const SidebarUser = ({ isAdmin, isOpen }: SidebarUserProps) => {
             <DropdownMenuSeparator />
             <DropdownMenuItem className="cursor-pointer">
               <User className="mr-2 h-4 w-4" />
-              <span>Profile</span>
+              <span>{t("nav.profile", "Profile")}</span>
             </DropdownMenuItem>
             <DropdownMenuItem className="cursor-pointer">
               <Settings className="mr-2 h-4 w-4" />
-              <span>Settings</span>
+              <span>{t("nav.settings")}</span>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem
@@ -102,7 +104,7 @@ export const SidebarUser = ({ isAdmin, isOpen }: SidebarUserProps) => {
               onClick={() => signOut()}
             >
               <LogOut className="mr-2 h-4 w-4" />
-              <span>Log out</span>
+              <span>{t("auth.logout", "Log out")}</span>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -167,11 +169,11 @@ export const SidebarUser = ({ isAdmin, isOpen }: SidebarUserProps) => {
         <DropdownMenuContent side="top" align="end" className="w-56">
           <DropdownMenuItem className="cursor-pointer">
             <User className="mr-2 h-4 w-4" />
-            <span>Profile</span>
+            <span>{t("nav.profile", "Profile")}</span>
           </DropdownMenuItem>
           <DropdownMenuItem className="cursor-pointer">
             <Settings className="mr-2 h-4 w-4" />
-            <span>Settings</span>
+            <span>{t("nav.settings")}</span>
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem
@@ -179,7 +181,7 @@ export const SidebarUser = ({ isAdmin, isOpen }: SidebarUserProps) => {
             onClick={() => signOut()}
           >
             <LogOut className="mr-2 h-4 w-4" />
-            <span>Log out</span>
+            <span>{t("auth.logout", "Log out")}</span>
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

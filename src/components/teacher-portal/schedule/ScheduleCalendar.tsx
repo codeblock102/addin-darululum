@@ -2,10 +2,12 @@ import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction";
-import { useIsMobile } from "@/hooks/use-mobile.tsx";
+import { useBreakpoint } from "@/hooks/use-mobile.tsx";
 import { useRef } from "react";
 import { Button } from "@/components/ui/button.tsx";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useI18n } from "@/contexts/I18nContext.tsx";
+import frLocale from "@fullcalendar/core/locales/fr";
 
 interface Class {
   id: string;
@@ -36,8 +38,9 @@ const dayNameToNumber = (dayName: string) => {
 };
 
 export const ScheduleCalendar = ({ classes }: ScheduleCalendarProps) => {
-  const isMobile = useIsMobile();
+  const { isMobile, isTablet } = useBreakpoint();
   const calendarRef = useRef<FullCalendar>(null);
+  const { t, language } = useI18n();
 
   const events = classes.flatMap((c) =>
     (c.time_slots || []).flatMap((slot) =>
@@ -65,6 +68,25 @@ export const ScheduleCalendar = ({ classes }: ScheduleCalendarProps) => {
     }
   };
 
+  const initialView = isMobile ? "timeGridDay" : isTablet ? "timeGridWeek" : "timeGridWeek";
+  const headerToolbar = isMobile
+    ? {
+        left: "",
+        center: "title",
+        right: "timeGridDay",
+      }
+    : isTablet
+    ? {
+        left: "prev,next today",
+        center: "title",
+        right: "timeGridWeek,timeGridDay",
+      }
+    : {
+        left: "prev,next today",
+        center: "title",
+        right: "dayGridMonth,timeGridWeek,timeGridDay",
+      };
+
   return (
     <div className="bg-white p-4 rounded-lg shadow-md h-full relative">
       {isMobile && (
@@ -90,23 +112,29 @@ export const ScheduleCalendar = ({ classes }: ScheduleCalendarProps) => {
       <FullCalendar
         ref={calendarRef}
         plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
-        initialView="timeGridWeek"
-        headerToolbar={isMobile ? {
-          left: "",
-          center: "title",
-          right: "timeGridWeek,timeGridDay",
-        } : {
-          left: "prev,next today",
-          center: "title",
-          right: "dayGridMonth,timeGridWeek,timeGridDay",
+        locales={[frLocale]}
+        locale={language === "fr" ? "fr" : "en"}
+        buttonText={{
+          today: t("pages.teacherPortal.schedule.today", "Today"),
+          month: t("pages.teacherPortal.schedule.month", "Month"),
+          week: t("pages.teacherPortal.schedule.week", "Week"),
+          day: t("pages.teacherPortal.schedule.day", "Day"),
         }}
+        initialView={initialView}
+        headerToolbar={headerToolbar}
         events={events}
         height="100%"
+        expandRows
+        stickyHeaderDates
+        nowIndicator
+        slotDuration={isMobile ? "00:30:00" : "01:00:00"}
         slotMinTime="08:00:00"
         slotMaxTime="17:00:00"
-        dayHeaderFormat={isMobile ? { weekday: 'short' } : { weekday: 'long' }}
+        dayHeaderFormat={isMobile ? { weekday: 'short' } : isTablet ? { weekday: 'short' } : { weekday: 'long' }}
+        allDaySlot={false}
+        slotLabelFormat={{ hour: 'numeric', minute: '2-digit', hour12: language !== 'fr' }}
         eventContent={(arg) => (
-          <div className={`p-1 ${isMobile ? 'text-xs' : ''}`}>
+          <div className={`p-1 ${isMobile ? 'text-xs' : isTablet ? 'text-sm' : ''}`}>
             <b>{arg.timeText}</b>
             <i className="ml-2">{arg.event.title}</i>
           </div>

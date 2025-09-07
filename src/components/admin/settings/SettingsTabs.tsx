@@ -11,19 +11,21 @@ import {
   Shield,
   UserCheck,
 } from "lucide-react";
+import { useI18n } from "@/contexts/I18nContext.tsx";
 
 export function SettingsTabs() {
+  const { t } = useI18n();
   const tabs = [
-    { value: "appearance", label: "Appearance", icon: <LayoutDashboard className="h-5 w-5" /> },
-    { value: "notifications", label: "Notifications", icon: <Bell className="h-5 w-5" /> },
-    { value: "security", label: "Security", icon: <Shield className="h-5 w-5" /> },
-    { value: "academic", label: "Academic", icon: <BookOpen className="h-5 w-5" /> },
-    { value: "localization", label: "Localization", icon: <Globe className="h-5 w-5" /> },
-    { value: "integrations", label: "Integrations", icon: <Network className="h-5 w-5" /> },
-    { value: "email-schedule", label: "Email Schedule", icon: <Mail className="h-5 w-5" /> },
-    { value: "data-management", label: "Data", icon: <Database className="h-5 w-5" /> },
-    { value: "user-experience", label: "UX", icon: <UserCheck className="h-5 w-5" /> },
-    { value: "advanced", label: "Advanced", icon: <Bug className="h-5 w-5" /> },
+    { value: "appearance", label: t("settings.tabs.appearance"), icon: <LayoutDashboard className="h-5 w-5" /> },
+    { value: "notifications", label: t("settings.tabs.notifications"), icon: <Bell className="h-5 w-5" /> },
+    { value: "security", label: t("settings.tabs.security"), icon: <Shield className="h-5 w-5" /> },
+    { value: "academic", label: t("settings.tabs.academic"), icon: <BookOpen className="h-5 w-5" /> },
+    { value: "localization", label: t("settings.tabs.localization"), icon: <Globe className="h-5 w-5" /> },
+    { value: "integrations", label: t("settings.tabs.integrations"), icon: <Network className="h-5 w-5" /> },
+    { value: "email-schedule", label: t("settings.tabs.emailSchedule"), icon: <Mail className="h-5 w-5" /> },
+    { value: "data-management", label: t("settings.tabs.dataManagement"), icon: <Database className="h-5 w-5" /> },
+    { value: "user-experience", label: t("settings.tabs.userExperience"), icon: <UserCheck className="h-5 w-5" /> },
+    { value: "advanced", label: t("settings.tabs.advanced"), icon: <Bug className="h-5 w-5" /> },
   ];
 
   return (
