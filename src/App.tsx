@@ -43,6 +43,7 @@ import ParentProgress from "@/pages/ParentProgress.tsx";
 import ParentAcademics from "@/pages/ParentAcademics.tsx";
 import ParentAttendance from "@/pages/ParentAttendance.tsx";
 import ParentAccounts from "@/pages/admin/ParentAccounts.tsx";
+import BulkStudentImport from "@/pages/admin/BulkStudentImport.tsx";
 import ResetPassword from "@/pages/ResetPassword.tsx";
 import TeacherAddParent from "@/pages/TeacherAddParent.tsx";
 
@@ -95,6 +96,7 @@ function App() {
             <Route path="seeder" element={<DatabaseSeeder />} />
             <Route path="admin-creator" element={<DevAdminManagement />} />
             <Route path="parent-accounts" element={<ParentAccounts />} />
+            <Route path="bulk-student-import" element={<BulkStudentImport />} />
           </Route>
 
           <Route
