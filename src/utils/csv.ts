@@ -50,11 +50,44 @@ function parseWithDelimiter(input: string, delimiter: string): { headers: string
 }
 
 export function parseCsvOrTsv(input: string): ParsedCsv {
-  const preferTab = input.includes("\t");
-  const delimiter = preferTab ? "\t" : ",";
-  const parsed = parseWithDelimiter(input, delimiter);
-  const headers = parsed.headers;
-  const rows = parsed.rows.map((cols) => {
+  // Strip UTF-8 BOM if present to avoid contaminating first header
+  if (input && input.charCodeAt(0) === 0xfeff) {
+    input = input.slice(1);
+  }
+
+  // Try multiple common delimiters and choose the one producing the most columns
+  const candidateDelimiters = ["\t", ",", ";", "|"] as const;
+  let best = { delimiter: ",", parsed: parseWithDelimiter(input, ",") } as {
+    delimiter: string;
+    parsed: { headers: string[]; rows: string[][] };
+  };
+
+  for (const d of candidateDelimiters) {
+    const parsed = parseWithDelimiter(input, d);
+    // Heuristic: prefer the delimiter yielding the most header columns
+    // Break ties by choosing the one with the highest median row length
+    const currentHeaderCount = parsed.headers.length;
+    const bestHeaderCount = best.parsed.headers.length;
+    if (currentHeaderCount > bestHeaderCount) {
+      best = { delimiter: d, parsed };
+      continue;
+    }
+    if (currentHeaderCount === bestHeaderCount && currentHeaderCount > 1) {
+      const medianLen = (arr: number[]) => {
+        const s = [...arr].sort((a, b) => a - b);
+        const mid = Math.floor(s.length / 2);
+        return s.length % 2 === 0 ? (s[mid - 1] + s[mid]) / 2 : s[mid];
+      };
+      const candidateMedian = medianLen(parsed.rows.map((r) => r.length));
+      const bestMedian = medianLen(best.parsed.rows.map((r) => r.length));
+      if (candidateMedian > bestMedian) {
+        best = { delimiter: d, parsed };
+      }
+    }
+  }
+
+  const headers = best.parsed.headers;
+  const rows = best.parsed.rows.map((cols) => {
     const obj: Record<string, string> = {};
     headers.forEach((h, idx) => {
       obj[h] = (cols[idx] ?? "").trim();

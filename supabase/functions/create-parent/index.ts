@@ -51,7 +51,7 @@ serve(async (req: Request) => {
     }
 
     const { email, password, name, madrassah_id: client_madrassah_id, phone, address, student_ids } = payload || {};
-    const normalizedEmail = String(email || "").trim().toLowerCase();
+    const normalizedEmail = String(email || "").replace(/\s+/g, "").trim().toLowerCase();
 
     try {
       console.log("[create-parent] invoked", {
@@ -101,6 +101,8 @@ serve(async (req: Request) => {
 
     let userId: string | null = null;
     let createdNewUser = false;
+    let reusedAuthUser = false;
+    let reusedParentByEmail = false;
     const defaultPassword = password || Deno.env.get("PARENT_DEFAULT_PASSWORD") || "Parent123!";
 
     // Prefer reusing existing parent by parents.email
@@ -116,13 +118,15 @@ serve(async (req: Request) => {
 
     if (existingParentRow?.id) {
       userId = existingParentRow.id;
+      reusedParentByEmail = true;
     } else {
       // Try to find an existing auth user by email
       try {
         const { data: list } = await admin.auth.admin.listUsers();
-        const found = list?.users?.find((u: any) => (u.email || "").toLowerCase() === normalizedEmail);
+        const found = list?.users?.find((u: any) => (String(u.email || "").replace(/\s+/g, "").toLowerCase()) === normalizedEmail);
         if (found) {
           userId = found.id;
+          reusedAuthUser = true;
         }
       } catch (_) {}
 
@@ -145,6 +149,19 @@ serve(async (req: Request) => {
         createdNewUser = true;
       }
     }
+
+    // Check if a parents row exists already for this user id (for reporting)
+    let parentRowExisted = false;
+    try {
+      if (userId) {
+        const { data: preParent } = await admin
+          .from("parents")
+          .select("id")
+          .eq("id", userId)
+          .maybeSingle();
+        parentRowExisted = Boolean(preParent?.id);
+      }
+    } catch (_) {}
 
     // Merge existing student_ids if parent already exists
     let mergedStudentIds: string[] = Array.isArray(student_ids) ? student_ids : [];
@@ -228,9 +245,20 @@ serve(async (req: Request) => {
       console.log("[create-parent] success", { userId, email: normalizedEmail, linkedStudents: mergedStudentIds.length });
     } catch (_e) {}
 
+    const parentRowCreated = !parentRowExisted;
+    const parentRowUpdated = parentRowExisted;
+
     return new Response(JSON.stringify({
       user: { id: userId },
+      email: normalizedEmail,
       credentials: { username: normalizedEmail, password: defaultPassword },
+      metrics: {
+        parentRowCreated,
+        parentRowUpdated,
+        createdNewAuthUser: createdNewUser,
+        reusedAuthUser,
+        reusedParentByEmail,
+      },
     }), {
       status: 200,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
