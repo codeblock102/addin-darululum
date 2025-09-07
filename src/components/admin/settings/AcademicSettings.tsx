@@ -10,6 +10,7 @@ import {
 import { AcademicSettings } from "@/types/settings.ts";
 import { BookOpen } from "lucide-react";
 import { SettingsCard } from "./SettingsCard.tsx";
+import { useI18n } from "@/contexts/I18nContext.tsx";
 
 interface AcademicSettingsSectionProps {
   settings: AcademicSettings;
@@ -19,6 +20,7 @@ interface AcademicSettingsSectionProps {
 export function AcademicSettingsSection(
   { settings, onUpdate }: AcademicSettingsSectionProps,
 ) {
+  const { t } = useI18n();
   const handleChange = <K extends keyof AcademicSettings>(
     key: K,
     value: AcademicSettings[K],
@@ -28,15 +30,13 @@ export function AcademicSettingsSection(
 
   return (
     <SettingsCard
-      title="Academic Settings"
-      description="Configure academic parameters and thresholds"
+      title={t("settings.academic.title")}
+      description={t("settings.academic.description")}
       icon={<BookOpen className="h-5 w-5" />}
     >
       <div className="space-y-6">
         <div className="space-y-2">
-          <Label htmlFor="default-juz" className="font-medium">
-            Default Juz Per Week
-          </Label>
+          <Label htmlFor="default-juz" className="font-medium">{t("settings.academic.defaultJuzPerWeek.label")}</Label>
           <Input
             id="default-juz"
             type="number"
@@ -47,15 +47,11 @@ export function AcademicSettingsSection(
             onChange={(e) =>
               handleChange("defaultJuzPerWeek", parseFloat(e.target.value))}
           />
-          <p className="text-xs text-muted-foreground">
-            Default expected progress rate for students
-          </p>
+          <p className="text-xs text-muted-foreground">{t("settings.academic.defaultJuzPerWeek.help")}</p>
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="attendance-threshold" className="font-medium">
-            Attendance Threshold (%)
-          </Label>
+          <Label htmlFor="attendance-threshold" className="font-medium">{t("settings.academic.attendanceThreshold.label")}</Label>
           <Input
             id="attendance-threshold"
             type="number"
@@ -65,63 +61,53 @@ export function AcademicSettingsSection(
             onChange={(e) =>
               handleChange("attendanceThreshold", parseInt(e.target.value, 10))}
           />
-          <p className="text-xs text-muted-foreground">
-            Minimum attendance percentage required
-          </p>
+          <p className="text-xs text-muted-foreground">{t("settings.academic.attendanceThreshold.help")}</p>
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="report-frequency" className="font-medium">
-            Progress Report Frequency
-          </Label>
+          <Label htmlFor="report-frequency" className="font-medium">{t("settings.academic.reportFrequency.label")}</Label>
           <Select
             value={settings.progressReportFrequency}
             onValueChange={(value: "daily" | "weekly" | "monthly") =>
               handleChange("progressReportFrequency", value)}
           >
             <SelectTrigger id="report-frequency">
-              <SelectValue placeholder="Select frequency" />
+              <SelectValue placeholder={t("settings.academic.reportFrequency.placeholder")} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="daily">Daily</SelectItem>
-              <SelectItem value="weekly">Weekly</SelectItem>
-              <SelectItem value="monthly">Monthly</SelectItem>
+              <SelectItem value="daily">{t("settings.academic.reportFrequency.options.daily")}</SelectItem>
+              <SelectItem value="weekly">{t("settings.academic.reportFrequency.options.weekly")}</SelectItem>
+              <SelectItem value="monthly">{t("settings.academic.reportFrequency.options.monthly")}</SelectItem>
             </SelectContent>
           </Select>
-          <p className="text-xs text-muted-foreground">
-            How often to generate progress reports
-          </p>
+          <p className="text-xs text-muted-foreground">{t("settings.academic.reportFrequency.help")}</p>
         </div>
 
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="academic-year-start" className="font-medium">
-              Academic Year Start
-            </Label>
+            <Label htmlFor="academic-year-start" className="font-medium">{t("settings.academic.yearStart.label")}</Label>
             <Input
               id="academic-year-start"
               type="text"
               pattern="\d{2}-\d{2}"
-              placeholder="MM-DD"
+              placeholder={t("settings.academic.yearStart.placeholder")}
               value={settings.academicYearStart}
               onChange={(e) =>
                 handleChange("academicYearStart", e.target.value)}
             />
-            <p className="text-xs text-muted-foreground">Format: MM-DD</p>
+            <p className="text-xs text-muted-foreground">{t("settings.academic.yearStart.help")}</p>
           </div>
           <div className="space-y-2">
-            <Label htmlFor="academic-year-end" className="font-medium">
-              Academic Year End
-            </Label>
+            <Label htmlFor="academic-year-end" className="font-medium">{t("settings.academic.yearEnd.label")}</Label>
             <Input
               id="academic-year-end"
               type="text"
               pattern="\d{2}-\d{2}"
-              placeholder="MM-DD"
+              placeholder={t("settings.academic.yearEnd.placeholder")}
               value={settings.academicYearEnd}
               onChange={(e) => handleChange("academicYearEnd", e.target.value)}
             />
-            <p className="text-xs text-muted-foreground">Format: MM-DD</p>
+            <p className="text-xs text-muted-foreground">{t("settings.academic.yearEnd.help")}</p>
           </div>
         </div>
       </div>

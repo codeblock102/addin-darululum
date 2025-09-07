@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/form.tsx";
 import { UseFormReturn } from "react-hook-form";
 import { AttendanceStatus } from "@/types/attendance.ts";
+import { useI18n } from "@/contexts/I18nContext.tsx";
 
 type AttendanceFormValues = {
   student_id: string;
@@ -28,19 +29,20 @@ interface TimeSelectorProps {
 export function TimeSelector(
   { form, selectedTime, onTimeSelect }: TimeSelectorProps,
 ) {
+  const { t, language } = useI18n();
   // Generate time slots from 6:00 AM to 10:00 PM in 15-minute intervals
   const generateTimeSlots = () => {
-    const slots = [];
+    const slots: { value: string; display: string }[] = [];
     for (let hour = 6; hour < 22; hour++) {
       for (let minute = 0; minute < 60; minute += 15) {
         const timeString = `${hour.toString().padStart(2, "0")}:${
           minute.toString().padStart(2, "0")
         }`;
         const displayTime = new Date(`2000-01-01T${timeString}`)
-          .toLocaleTimeString("en-US", {
+          .toLocaleTimeString(language === "fr" ? "fr-FR" : "en-US", {
             hour: "numeric",
             minute: "2-digit",
-            hour12: true,
+            hour12: language !== "fr",
           });
         slots.push({ value: timeString, display: displayTime });
       }
@@ -57,7 +59,7 @@ export function TimeSelector(
       render={({ field }) => (
         <FormItem>
           <FormLabel className="text-gray-900 dark:text-gray-100 font-medium">
-            Attendance Time
+            {t("pages.attendance.time.label", "Attendance Time")}
           </FormLabel>
           <FormControl>
             <ScrollArea className="w-full whitespace-nowrap rounded-lg border-2 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm">

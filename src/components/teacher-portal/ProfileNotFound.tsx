@@ -6,6 +6,7 @@ import { ArrowLeft, RefreshCcw, UserPlus } from "lucide-react";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client.ts";
 import { useToast } from "@/hooks/use-toast.ts";
+import { useI18n } from "@/contexts/I18nContext.tsx";
 
 interface ProfileNotFoundProps {
   email?: string;
@@ -20,14 +21,11 @@ export const ProfileNotFound = (
   const [isChecking, setIsChecking] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
   const { toast } = useToast();
+  const { t } = useI18n();
 
   const handleManualCheck = async () => {
     if (!email) {
-      toast({
-        title: "No email provided",
-        description: "Cannot check for a profile without an email address.",
-        variant: "destructive",
-      });
+      toast({ title: t("pages.teacherPortal.profileNotFound.noEmailTitle", "No email provided"), description: t("pages.teacherPortal.profileNotFound.noEmailDesc", "Cannot check for a profile without an email address."), variant: "destructive" });
       return;
     }
 
@@ -46,11 +44,7 @@ export const ProfileNotFound = (
 
       if (data && data.id) {
         // Profile exists, refresh the page to show it
-        toast({
-          title: "Profile found!",
-          description: "Your teacher profile has been found. Refreshing...",
-          variant: "default",
-        });
+        toast({ title: t("pages.teacherPortal.profileNotFound.foundTitle", "Profile found!"), description: t("pages.teacherPortal.profileNotFound.foundDesc", "Your teacher profile has been found. Refreshing..."), variant: "default" });
 
         if (onRefresh) {
           onRefresh();
@@ -59,21 +53,11 @@ export const ProfileNotFound = (
         }
       } else {
         // Profile doesn't exist, show message
-        toast({
-          title: "No profile found",
-          description:
-            "No teacher profile was found with your email. Please create one.",
-          variant: "default",
-        });
+        toast({ title: t("pages.teacherPortal.profileNotFound.noneTitle", "No profile found"), description: t("pages.teacherPortal.profileNotFound.noneDesc", "No teacher profile was found with your email. Please create one."), variant: "default" });
       }
     } catch (error) {
       console.error("Error checking for profile:", error);
-      toast({
-        title: "Error checking profile",
-        description:
-          "There was a problem checking for your teacher profile. Please try again.",
-        variant: "destructive",
-      });
+      toast({ title: t("pages.teacherPortal.profileNotFound.errorTitle", "Error checking profile"), description: t("pages.teacherPortal.profileNotFound.errorDesc", "There was a problem checking for your teacher profile. Please try again."), variant: "destructive" });
     } finally {
       setIsChecking(false);
     }
@@ -86,32 +70,18 @@ export const ProfileNotFound = (
 
   return (
     <Card className="p-6 flex flex-col items-center justify-center text-center">
-      <h2 className="text-2xl font-bold mb-4">Teacher Profile Not Found</h2>
-      <p className="text-gray-600 mb-6">
-        {email
-          ? `We couldn't find a teacher profile associated with your email (${email}). You need to create a teacher profile to access the teacher portal.`
-          : "We couldn't find a teacher profile associated with your account. This portal is only for registered teachers."}
-      </p>
+      <h2 className="text-2xl font-bold mb-4">{t("pages.teacherPortal.profileNotFound.title", "Teacher Profile Not Found")}</h2>
+      <p className="text-gray-600 mb-6">{email ? t("pages.teacherPortal.profileNotFound.withEmail", "We couldn't find a teacher profile associated with your email ({email}). You need to create a teacher profile to access the teacher portal.").replace("{email}", email) : t("pages.teacherPortal.profileNotFound.noEmail", "We couldn't find a teacher profile associated with your account. This portal is only for registered teachers.")}</p>
 
       {isAdmin
         ? (
           <div className="bg-blue-50 border border-blue-200 rounded-md p-4 mb-6 w-full max-w-md">
-            <p className="text-blue-800 text-sm">
-              <strong>Admin Note:</strong>{" "}
-              As an administrator, you can create a teacher profile for yourself
-              to test the teacher portal features, or you can go back to the
-              admin dashboard where you can access all system features.
-            </p>
+            <p className="text-blue-800 text-sm">{t("pages.teacherPortal.profileNotFound.adminNote", "As an administrator, you can create a teacher profile for yourself to test the teacher portal features, or you can go back to the admin dashboard where you can access all system features.")}</p>
           </div>
         )
         : (
           <div className="bg-amber-50 border border-amber-200 rounded-md p-4 mb-6 w-full max-w-md">
-            <p className="text-amber-800 text-sm">
-              <strong>Note:</strong>{" "}
-              Your user account has the teacher role, but requires a matching
-              teacher profile in our database. Please create a teacher profile
-              or contact an administrator for assistance.
-            </p>
+            <p className="text-amber-800 text-sm">{t("pages.teacherPortal.profileNotFound.note", "Your user account has the teacher role, but requires a matching teacher profile in our database. Please create a teacher profile or contact an administrator for assistance.")}</p>
           </div>
         )}
 
@@ -125,7 +95,7 @@ export const ProfileNotFound = (
           <RefreshCcw
             className={`h-4 w-4 mr-2 ${isChecking ? "animate-spin" : ""}`}
           />
-          {isChecking ? "Checking..." : "Check for Profile"}
+          {isChecking ? t("pages.teacherPortal.profileNotFound.checking", "Checking...") : t("pages.teacherPortal.profileNotFound.check", "Check for Profile")}
         </Button>
 
         <Button
@@ -135,7 +105,7 @@ export const ProfileNotFound = (
           disabled={isCreating}
         >
           <UserPlus className="h-4 w-4 mr-2" />
-          {isCreating ? "Redirecting..." : "Create Teacher Profile"}
+          {isCreating ? t("pages.teacherPortal.profileNotFound.redirecting", "Redirecting...") : t("pages.teacherPortal.profileNotFound.create", "Create Teacher Profile")}
         </Button>
 
         <Button
@@ -145,7 +115,7 @@ export const ProfileNotFound = (
           className="w-full"
         >
           <RefreshCcw className="h-4 w-4 mr-2" />
-          Refresh Page
+          {t("pages.teacherPortal.profileNotFound.refresh", "Refresh Page")}
         </Button>
 
         <Button
@@ -154,7 +124,7 @@ export const ProfileNotFound = (
           className="w-full"
         >
           <ArrowLeft className="h-4 w-4 mr-2" />
-          {isAdmin ? "Return to Admin Dashboard" : "Return to Dashboard"}
+          {isAdmin ? t("pages.teacherPortal.profileNotFound.returnAdmin", "Return to Admin Dashboard") : t("pages.teacherPortal.profileNotFound.returnDashboard", "Return to Dashboard")}
         </Button>
       </div>
     </Card>

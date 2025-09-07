@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/form.tsx";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group.tsx";
 import { UseFormReturn } from "react-hook-form";
+import { useI18n } from "@/contexts/I18nContext.tsx";
 
 type AttendanceFormValues = {
   class_id: string;
@@ -24,6 +25,7 @@ interface AttendanceStatusRadioGroupProps {
 export function AttendanceStatusRadioGroup(
   { form }: AttendanceStatusRadioGroupProps,
 ) {
+  const { t } = useI18n();
   return (
     <FormField
       control={form.control}
@@ -31,7 +33,7 @@ export function AttendanceStatusRadioGroup(
       render={({ field }) => (
         <FormItem className="space-y-3">
           <FormLabel className="text-black">
-            Attendance Status
+            {t("pages.attendance.form.status", "Attendance Status")}
           </FormLabel>
           <FormControl>
             <RadioGroup
@@ -51,7 +53,7 @@ export function AttendanceStatusRadioGroup(
                   className="flex items-center text-gray-900 dark:text-gray-100 font-medium cursor-pointer"
                 >
                   <CalendarCheck className="h-4 w-4 mr-2 text-green-600" />
-                  Present
+                  {t("pages.attendance.status.present", "Present")}
                 </label>
               </div>
               <div className="flex items-center space-x-2 p-2 rounded-md  transition-colors">
@@ -65,7 +67,7 @@ export function AttendanceStatusRadioGroup(
                   className="flex items-center text-gray-900 dark:text-gray-100 font-medium cursor-pointer"
                 >
                   <CalendarX className="h-4 w-4 mr-2 text-red-600" />
-                  Absent
+                  {t("pages.attendance.status.absent", "Absent")}
                 </label>
               </div>
               <div className="flex items-center space-x-2 p-2 rounded-md  transition-colors">
@@ -79,7 +81,7 @@ export function AttendanceStatusRadioGroup(
                   className="flex items-center text-gray-900 dark:text-gray-100 font-medium cursor-pointer"
                 >
                   <Clock className="h-4 w-4 mr-2 text-amber-600" />
-                  Late
+                  {t("pages.attendance.status.late", "Late")}
                 </label>
               </div>
             </RadioGroup>

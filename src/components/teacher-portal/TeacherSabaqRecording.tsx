@@ -30,6 +30,7 @@ import * as z from "zod";
 import { supabase } from "@/integrations/supabase/client.ts";
 import { useToast } from "@/hooks/use-toast.ts";
 import { StudentStatusList } from "./StudentStatusList.tsx";
+import { useI18n } from "@/contexts/I18nContext.tsx";
 
 // Define the form schema
 const formSchema = z.object({
@@ -73,6 +74,7 @@ export const TeacherSabaqRecording: React.FC<TeacherSabaqRecordingProps> = (
   const [students, setStudents] = useState<Student[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const { t } = useI18n();
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -167,8 +169,8 @@ export const TeacherSabaqRecording: React.FC<TeacherSabaqRecordingProps> = (
       if (error) throw error;
 
       toast({
-        title: "Progress recorded successfully",
-        description: "The student's progress has been saved.",
+        title: t("pages.teacherPortal.sabaq.toastSuccessTitle", "Progress recorded successfully"),
+        description: t("pages.teacherPortal.sabaq.toastSuccessDesc", "The student's progress has been saved."),
       });
 
       form.reset();
@@ -176,8 +178,8 @@ export const TeacherSabaqRecording: React.FC<TeacherSabaqRecordingProps> = (
       console.error("Error saving progress:", error);
       toast({
         variant: "destructive",
-        title: "Failed to record progress",
-        description: "There was an error saving the data. Please try again.",
+        title: t("pages.teacherPortal.sabaq.toastErrorTitle", "Failed to record progress"),
+        description: t("pages.teacherPortal.sabaq.toastErrorDesc", "There was an error saving the data. Please try again."),
       });
     } finally {
       setIsLoading(false);
@@ -188,19 +190,19 @@ export const TeacherSabaqRecording: React.FC<TeacherSabaqRecordingProps> = (
     <div className="space-y-6">
       <div>
         <h2 className="text-2xl font-bold tracking-tight">
-          Record Student Progress
+          {t("pages.teacherPortal.sabaq.title", "Record Student Progress")}
         </h2>
         <p className="text-muted-foreground">
-          Track daily sabaq and lessons for your students
+          {t("pages.teacherPortal.sabaq.subtitle", "Track daily sabaq and lessons for your students")}
         </p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
           <CardHeader>
-            <CardTitle>Record New Lesson</CardTitle>
+            <CardTitle>{t("pages.teacherPortal.sabaq.form.title", "Record New Lesson")}</CardTitle>
             <CardDescription>
-              Record a student's daily sabaq and learning progress
+              {t("pages.teacherPortal.sabaq.form.description", "Record a student's daily sabaq and learning progress")}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -214,14 +216,14 @@ export const TeacherSabaqRecording: React.FC<TeacherSabaqRecordingProps> = (
                   name="student_id"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Student</FormLabel>
+                      <FormLabel>{t("pages.teacherPortal.sabaq.fields.student", "Student")}</FormLabel>
                       <Select
                         onValueChange={field.onChange}
                         defaultValue={field.value}
                       >
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue placeholder="Select a student" />
+                            <SelectValue placeholder={t("pages.teacherPortal.sabaq.placeholders.selectStudent", "Select a student")} />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
@@ -242,20 +244,20 @@ export const TeacherSabaqRecording: React.FC<TeacherSabaqRecordingProps> = (
                   name="lesson_type"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Lesson Type</FormLabel>
+                      <FormLabel>{t("pages.teacherPortal.sabaq.fields.lessonType", "Lesson Type")}</FormLabel>
                       <Select
                         onValueChange={field.onChange}
                         defaultValue={field.value}
                       >
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue placeholder="Select lesson type" />
+                            <SelectValue placeholder={t("pages.teacherPortal.sabaq.placeholders.selectLessonType", "Select lesson type")} />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value="hifz">Hifz</SelectItem>
-                          <SelectItem value="nazirah">Nazirah</SelectItem>
-                          <SelectItem value="qaida">Qaida</SelectItem>
+                          <SelectItem value="hifz">{t("pages.teacherPortal.sabaq.options.hifz", "Hifz")}</SelectItem>
+                          <SelectItem value="nazirah">{t("pages.teacherPortal.sabaq.options.nazirah", "Nazirah")}</SelectItem>
+                          <SelectItem value="qaida">{t("pages.teacherPortal.sabaq.options.qaida", "Qaida")}</SelectItem>
                         </SelectContent>
                       </Select>
                       <FormMessage />
@@ -269,9 +271,9 @@ export const TeacherSabaqRecording: React.FC<TeacherSabaqRecordingProps> = (
                     name="current_surah"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Surah</FormLabel>
+                        <FormLabel>{t("pages.teacherPortal.sabaq.fields.surah", "Surah")}</FormLabel>
                         <FormControl>
-                          <Input type="number" placeholder="e.g. 2" {...field} />
+                          <Input type="number" placeholder={t("pages.teacherPortal.sabaq.placeholders.example2", "e.g. 2")} {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -282,9 +284,9 @@ export const TeacherSabaqRecording: React.FC<TeacherSabaqRecordingProps> = (
                     name="start_ayat"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Start Ayat</FormLabel>
+                        <FormLabel>{t("pages.teacherPortal.sabaq.fields.startAyat", "Start Ayat")}</FormLabel>
                         <FormControl>
-                          <Input type="number" placeholder="e.g. 1" {...field} />
+                          <Input type="number" placeholder={t("pages.teacherPortal.sabaq.placeholders.example1", "e.g. 1")} {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -295,9 +297,9 @@ export const TeacherSabaqRecording: React.FC<TeacherSabaqRecordingProps> = (
                     name="end_ayat"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>End Ayat</FormLabel>
+                        <FormLabel>{t("pages.teacherPortal.sabaq.fields.endAyat", "End Ayat")}</FormLabel>
                         <FormControl>
-                          <Input type="number" placeholder="e.g. 5" {...field} />
+                          <Input type="number" placeholder={t("pages.teacherPortal.sabaq.placeholders.example5", "e.g. 5")} {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -311,9 +313,9 @@ export const TeacherSabaqRecording: React.FC<TeacherSabaqRecordingProps> = (
                     name="page_start"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Start Page</FormLabel>
+                        <FormLabel>{t("pages.teacherPortal.sabaq.fields.startPage", "Start Page")}</FormLabel>
                         <FormControl>
-                          <Input type="number" placeholder="e.g. 120" {...field} />
+                          <Input type="number" placeholder={t("pages.teacherPortal.sabaq.placeholders.example120", "e.g. 120")} {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -324,9 +326,9 @@ export const TeacherSabaqRecording: React.FC<TeacherSabaqRecordingProps> = (
                     name="page_end"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>End Page</FormLabel>
+                        <FormLabel>{t("pages.teacherPortal.sabaq.fields.endPage", "End Page")}</FormLabel>
                         <FormControl>
-                          <Input type="number" placeholder="e.g. 121" {...field} />
+                          <Input type="number" placeholder={t("pages.teacherPortal.sabaq.placeholders.example121", "e.g. 121")} {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -340,9 +342,9 @@ export const TeacherSabaqRecording: React.FC<TeacherSabaqRecordingProps> = (
                     name="verses_memorized"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Total Verses</FormLabel>
+                        <FormLabel>{t("pages.teacherPortal.sabaq.fields.totalVerses", "Total Verses")}</FormLabel>
                         <FormControl>
-                          <Input type="number" placeholder="e.g. 5" {...field} />
+                          <Input type="number" placeholder={t("pages.teacherPortal.sabaq.placeholders.example5", "e.g. 5")} {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -353,9 +355,9 @@ export const TeacherSabaqRecording: React.FC<TeacherSabaqRecordingProps> = (
                     name="pages_memorized"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Pages (if no range)</FormLabel>
+                        <FormLabel>{t("pages.teacherPortal.sabaq.fields.pagesIfNoRange", "Pages (if no range)")}</FormLabel>
                         <FormControl>
-                          <Input type="number" placeholder="e.g. 1" {...field} />
+                          <Input type="number" placeholder={t("pages.teacherPortal.sabaq.placeholders.example1", "e.g. 1")} {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -368,22 +370,22 @@ export const TeacherSabaqRecording: React.FC<TeacherSabaqRecordingProps> = (
                   name="memorization_quality"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Teacher Rating</FormLabel>
+                      <FormLabel>{t("pages.teacherPortal.sabaq.fields.teacherRating", "Teacher Rating")}</FormLabel>
                       <Select
                         onValueChange={field.onChange}
                         defaultValue={field.value}
                       >
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue placeholder="Select quality" />
+                            <SelectValue placeholder={t("pages.teacherPortal.sabaq.placeholders.selectQuality", "Select quality")} />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value="excellent">Excellent</SelectItem>
-                          <SelectItem value="good">Good</SelectItem>
-                          <SelectItem value="average">Average</SelectItem>
-                          <SelectItem value="needsWork">Needs Work</SelectItem>
-                          <SelectItem value="horrible">Horrible</SelectItem>
+                          <SelectItem value="excellent">{t("pages.teacherPortal.sabaq.quality.excellent", "Excellent")}</SelectItem>
+                          <SelectItem value="good">{t("pages.teacherPortal.sabaq.quality.good", "Good")}</SelectItem>
+                          <SelectItem value="average">{t("pages.teacherPortal.sabaq.quality.average", "Average")}</SelectItem>
+                          <SelectItem value="needsWork">{t("pages.teacherPortal.sabaq.quality.needsWork", "Needs Work")}</SelectItem>
+                          <SelectItem value="horrible">{t("pages.teacherPortal.sabaq.quality.horrible", "Horrible")}</SelectItem>
                         </SelectContent>
                       </Select>
                       <FormMessage />
@@ -396,7 +398,7 @@ export const TeacherSabaqRecording: React.FC<TeacherSabaqRecordingProps> = (
                   name="mistake_count"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Number of Mistakes</FormLabel>
+                      <FormLabel>{t("pages.teacherPortal.sabaq.fields.mistakeCount", "Number of Mistakes")}</FormLabel>
                       <FormControl>
                         <Input type="number" {...field} />
                       </FormControl>
@@ -410,10 +412,10 @@ export const TeacherSabaqRecording: React.FC<TeacherSabaqRecordingProps> = (
                   name="notes"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Notes</FormLabel>
+                      <FormLabel>{t("pages.teacherPortal.sabaq.fields.notes", "Notes")}</FormLabel>
                       <FormControl>
                         <Textarea
-                          placeholder="Any comments on the student's performance..."
+                          placeholder={t("pages.teacherPortal.sabaq.placeholders.notes", "Any comments on the student's performance...")}
                           {...field}
                         />
                       </FormControl>
@@ -423,7 +425,7 @@ export const TeacherSabaqRecording: React.FC<TeacherSabaqRecordingProps> = (
                 />
 
                 <Button type="submit" disabled={isLoading}>
-                  {isLoading ? "Saving..." : "Record Progress"}
+                  {isLoading ? t("common.saving", "Saving...") : t("pages.teacherPortal.sabaq.actions.record", "Record Progress")}
                 </Button>
               </form>
             </Form>
@@ -432,9 +434,9 @@ export const TeacherSabaqRecording: React.FC<TeacherSabaqRecordingProps> = (
         <div className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle>Daily Status</CardTitle>
+              <CardTitle>{t("pages.teacherPortal.sabaq.dailyStatus.title", "Daily Status")}</CardTitle>
               <CardDescription>
-                Live overview of student lesson statuses for today
+                {t("pages.teacherPortal.sabaq.dailyStatus.description", "Live overview of student lesson statuses for today")}
               </CardDescription>
             </CardHeader>
             <CardContent>
