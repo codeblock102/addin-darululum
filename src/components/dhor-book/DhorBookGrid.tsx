@@ -54,6 +54,19 @@ export function DhorBookGrid(
 
   console.log("Entries received in DhorBookGrid:", entries);
 
+  // Determine if weekly view has any data at all; if not, show compact empty state on mobile
+  const isWeekly = viewMode === "weekly";
+  const weeklyHasAnyData = isWeekly && daysToShow.some((date) => {
+    const dateString = format(date, "yyyy-MM-dd");
+    const entry = entries.find((e) => e.entry_date === dateString);
+    if (!entry) return false;
+    const hasProgress = Boolean(entry.current_juz && entry.current_surah && entry.start_ayat && entry.end_ayat);
+    const hasSabaq = Boolean(entry.sabaq_para_data);
+    const hasRevisions = Boolean(entry.juz_revisions_data && entry.juz_revisions_data.length > 0);
+    const hasQualityOrNotes = Boolean(entry.memorization_quality || entry.comments);
+    return hasProgress || hasSabaq || hasRevisions || hasQualityOrNotes;
+  });
+
   return (
     <div className="mt-6">
       <div className="flex justify-between items-center mb-4">
@@ -65,17 +78,22 @@ export function DhorBookGrid(
         )}
       </div>
 
-      <div className="rounded-md border">
+      {isWeekly && !weeklyHasAnyData ? (
+        <div className="rounded-md border p-3 text-sm text-muted-foreground">
+          No records for this week.
+        </div>
+      ) : (
+      <div className="rounded-md border overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow>
               <TableHead>Date</TableHead>
-              <TableHead>Main Lesson</TableHead>
-              <TableHead>Reading Practice</TableHead>
+              <TableHead className="hidden xs:table-cell">Main Lesson</TableHead>
+              <TableHead className="hidden sm:table-cell">Reading Practice</TableHead>
               <TableHead>Revision 1</TableHead>
-              <TableHead>Revision 2</TableHead>
-              <TableHead>Quality</TableHead>
-              <TableHead>Notes</TableHead>
+              <TableHead className="hidden md:table-cell">Revision 2</TableHead>
+              <TableHead className="hidden md:table-cell">Quality</TableHead>
+              <TableHead className="hidden lg:table-cell">Notes</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -97,13 +115,13 @@ export function DhorBookGrid(
                     <TableCell className="font-medium">
                       {format(date, "E, MMM d")}
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="hidden xs:table-cell">
                       {entry?.current_juz && entry.current_surah &&
                           entry.start_ayat && entry.end_ayat
                         ? `J${entry.current_juz} S${entry.current_surah}:${entry.start_ayat}-${entry.end_ayat}`
                         : "—"}
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="hidden sm:table-cell">
                       {entry?.sabaq_para_data
                         ? `Juz ${entry.sabaq_para_data.juz_number}, ${entry.sabaq_para_data.quarters_revised || "—"} quarters, Quality ${entry.sabaq_para_data.quality_rating || "—"}`
                         : "—"}
@@ -133,7 +151,7 @@ export function DhorBookGrid(
                         : "—"}
                     </TableCell>
                     {/* Dhor 2 Cell */}
-                    <TableCell>
+                    <TableCell className="hidden md:table-cell">
                       {dhor2Entry
                         ? `${
                           dhor2Entry.juz_number
@@ -156,10 +174,10 @@ export function DhorBookGrid(
                           `Q: ${dhor2Entry.memorization_quality || "N/A"}`
                         : "—"}
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="hidden md:table-cell">
                       {entry?.memorization_quality || "—"}
                     </TableCell>
-                    <TableCell>{entry?.comments || "—"}</TableCell>
+                    <TableCell className="hidden lg:table-cell">{entry?.comments || "—"}</TableCell>
                   </TableRow>
                 );
               })
@@ -180,13 +198,13 @@ export function DhorBookGrid(
                       <TableCell className="font-medium">
                         {format(entryDate, "E, MMM d")}
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="hidden xs:table-cell">
                         {entry?.current_juz && entry.current_surah &&
                             entry.start_ayat && entry.end_ayat
                           ? `J${entry.current_juz} S${entry.current_surah}:${entry.start_ayat}-${entry.end_ayat}`
                           : "—"}
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="hidden sm:table-cell">
                         {entry?.sabaq_para_data
                           ? `Juz ${entry.sabaq_para_data.juz_number}, ${entry.sabaq_para_data.quarters_revised || "—"} quarters, Quality ${entry.sabaq_para_data.quality_rating || "—"}`
                           : "—"}
@@ -216,7 +234,7 @@ export function DhorBookGrid(
                           : "—"}
                       </TableCell>
                       {/* Dhor 2 Cell */}
-                      <TableCell>
+                      <TableCell className="hidden md:table-cell">
                         {dhor2Entry
                           ? `${
                             dhor2Entry.juz_number
@@ -239,10 +257,10 @@ export function DhorBookGrid(
                             `Q: ${dhor2Entry.memorization_quality || "N/A"}`
                           : "—"}
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="hidden md:table-cell">
                         {entry?.memorization_quality || "—"}
                       </TableCell>
-                      <TableCell>{entry?.comments || "—"}</TableCell>
+                      <TableCell className="hidden lg:table-cell">{entry?.comments || "—"}</TableCell>
                     </TableRow>
                   );
                 })
@@ -257,6 +275,7 @@ export function DhorBookGrid(
           </TableBody>
         </Table>
       </div>
+      )}
 
       {!readOnly && (
         <NewEntryDialog
