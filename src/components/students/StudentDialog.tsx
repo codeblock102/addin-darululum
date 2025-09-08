@@ -26,6 +26,7 @@ import {
   TabsList,
   TabsTrigger,
 } from "@/components/ui/tabs.tsx";
+import { getErrorMessage } from "@/utils/stringUtils.ts";
 
 interface Student {
   id: string;
@@ -216,9 +217,10 @@ export const StudentDialog = (
         completed_juz: formData.completed_juz.map((juz) => Number(juz)),
         medical_condition: formData.medicalConditions || null,
         guardian_email: formData.guardian_email || null,
-        guardian2_name: formData.guardian2_name || null,
-        guardian2_contact: formData.guardian2_contact || null,
-        guardian2_email: formData.guardian2_email || null,
+        // Map secondary guardian fields to actual DB columns
+        secondary_guardian_name: formData.guardian2_name || null,
+        secondary_guardian_phone: formData.guardian2_contact || null,
+        secondary_guardian_whatsapp: formData.guardian2_email || null,
         // Normalize empty strings to null for optional fields
         date_of_birth: formData.date_of_birth || null,
         enrollment_date: formData.enrollment_date || new Date().toISOString().split("T")[0],
@@ -230,7 +232,7 @@ export const StudentDialog = (
         city: (formData as any).city || null,
         province: (formData as any).province || null,
         postal_code: (formData as any).postal_code || null,
-      };
+      } as Record<string, unknown>;
 
       // Teachers cannot modify section assignments
       let submissionData: Record<string, unknown> = isTeacher 
@@ -264,26 +266,61 @@ export const StudentDialog = (
       }
 
       if (selectedStudent) {
-        const { error } = await supabase
-          .from("students")
-          .update(submissionData)
-          .eq("id", selectedStudent.id)
-          .select("id");
-
-        if (error) throw error;
+        // Update with graceful fallback if guardian2_* columns are missing in DB
+        let updateError: unknown | null = null;
+        try {
+          const { error } = await supabase
+            .from("students")
+            .update(submissionData)
+            .eq("id", selectedStudent.id)
+            .select("id");
+          updateError = error;
+          if (error) throw error;
+        } catch (err) {
+          const msg = getErrorMessage(err, "");
+          if (/guardian2_/i.test(msg) || /secondary_guardian_/i.test(msg) || /column .* does not exist/i.test(msg)) {
+            const { guardian2_name: _gn, guardian2_contact: _gc, guardian2_email: _ge, secondary_guardian_name: _sgn, secondary_guardian_phone: _sgp, secondary_guardian_whatsapp: _sgw, ...cleaned } = submissionData as Record<string, unknown>;
+            const { error: retryError } = await supabase
+              .from("students")
+              .update(cleaned)
+              .eq("id", selectedStudent.id)
+              .select("id");
+            if (retryError) throw retryError;
+          } else {
+            throw err;
+          }
+        }
 
         toast({
           title: "Success",
           description: "Student updated successfully",
         });
       } else {
-        const { data: created, error } = await supabase
-          .from("students")
-          .insert([submissionData])
-          .select("id")
-          .single();
-
-        if (error) throw error;
+        // Insert with graceful fallback if guardian2_* columns are missing in DB
+        let created: { id: string } | null = null;
+        try {
+          const { data, error } = await supabase
+            .from("students")
+            .insert([submissionData])
+            .select("id")
+            .single();
+          if (error) throw error;
+          created = data as { id: string } | null;
+        } catch (err) {
+          const msg = getErrorMessage(err, "");
+          if (/guardian2_/i.test(msg) || /secondary_guardian_/i.test(msg) || /column .* does not exist/i.test(msg)) {
+            const { guardian2_name: _gn, guardian2_contact: _gc, guardian2_email: _ge, secondary_guardian_name: _sgn, secondary_guardian_phone: _sgp, secondary_guardian_whatsapp: _sgw, ...cleaned } = submissionData as Record<string, unknown>;
+            const { data, error: retryError } = await supabase
+              .from("students")
+              .insert([cleaned])
+              .select("id")
+              .single();
+            if (retryError) throw retryError;
+            created = data as { id: string } | null;
+          } else {
+            throw err;
+          }
+        }
 
         // Optionally create/link parent account if guardian email is provided
         try {
@@ -349,9 +386,8 @@ export const StudentDialog = (
       queryClient.invalidateQueries({ queryKey: ["students"] });
       onClose();
     } catch (error) {
-      const message = error instanceof Error
-        ? error.message
-        : "An unknown error occurred";
+      const message = getErrorMessage(error, "Failed to save student");
+      console.error("Student create/update failed:", error);
       toast({
         title: "Error",
         description: message,
@@ -546,48 +582,6 @@ export const StudentDialog = (
                     <SelectItem value="inactive">Inactive</SelectItem>
                   </SelectContent>
                 </Select>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
-                <div className="space-y-2">
-                  <Label htmlFor="guardian2_name">Secondary Guardian Name</Label>
-                  <Input
-                    id="guardian2_name"
-                    placeholder="Enter secondary guardian's name"
-                    value={formData.guardian2_name || ""}
-                    onChange={(e) =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        guardian2_name: e.target.value,
-                      }))}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="guardian2_contact">Secondary Guardian Contact</Label>
-                  <Input
-                    id="guardian2_contact"
-                    placeholder="Enter secondary guardian's contact number"
-                    value={formData.guardian2_contact || ""}
-                    onChange={(e) =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        guardian2_contact: e.target.value,
-                      }))}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="guardian2_email">Secondary Guardian Email</Label>
-                  <Input
-                    id="guardian2_email"
-                    type="email"
-                    placeholder="Enter secondary guardian's email address"
-                    value={formData.guardian2_email || ""}
-                    onChange={(e) =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        guardian2_email: e.target.value,
-                      }))}
-                  />
-                </div>
               </div>
             </TabsContent>
 
