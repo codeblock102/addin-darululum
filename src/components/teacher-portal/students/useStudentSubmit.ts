@@ -72,86 +72,120 @@ export const useStudentSubmit = ({
       // If student doesn't exist, create them
       let studentId: string | null = existingStudent?.id ?? null;
       if (!existingStudent) {
-        // Create the student with all the form data
-        const { data: created, error: createError } = await supabase
-          .from("students")
-          .insert({
-            name: formData.studentName,
-            enrollment_date: formData.enrollmentDate,
-            date_of_birth: formData.dateOfBirth || null,
-            gender: formData.gender || null,
-            grade: formData.grade || null,
-            health_card: formData.healthCard || null,
-            permanent_code: formData.permanentCode || null,
-            street: formData.street || null,
-            city: formData.city || null,
-            province: formData.province || null,
-            postal_code: formData.postalCode || null,
-            guardian_name: formData.guardianName || null,
-            guardian_contact: formData.guardianContact || null,
-            guardian_email: formData.guardianEmail || null,
-            guardian2_name: formData.guardian2Name || null,
-            guardian2_contact: formData.guardian2Contact || null,
-            guardian2_email: formData.guardian2Email || null,
-            status: formData.status,
-            medical_condition: formData.medicalConditions || null,
-            current_juz: formData.currentJuz === "_none_"
-              ? null
-              : Number(formData.currentJuz),
-            completed_juz: completedJuz,
-            madrassah_id: teacherProfile.madrassah_id,
-            section: teacherProfile.section,
-          })
-          .select("id")
-          .single();
+        // Create the student with all the form data; retry without guardian2_* if schema is missing
+        const submission: Record<string, unknown> = {
+          name: formData.studentName,
+          enrollment_date: formData.enrollmentDate,
+          date_of_birth: formData.dateOfBirth || null,
+          gender: formData.gender || null,
+          grade: formData.grade || null,
+          health_card: formData.healthCard || null,
+          permanent_code: formData.permanentCode || null,
+          street: formData.street || null,
+          city: formData.city || null,
+          province: formData.province || null,
+          postal_code: formData.postalCode || null,
+          guardian_name: formData.guardianName || null,
+          guardian_contact: formData.guardianContact || null,
+          guardian_email: formData.guardianEmail || null,
+          secondary_guardian_name: formData.guardian2Name || null,
+          secondary_guardian_phone: formData.guardian2Contact || null,
+          secondary_guardian_whatsapp: formData.guardian2Email || null,
+          status: formData.status,
+          medical_condition: formData.medicalConditions || null,
+          current_juz: formData.currentJuz === "_none_" ? null : Number(formData.currentJuz),
+          completed_juz: completedJuz,
+          madrassah_id: teacherProfile.madrassah_id,
+          section: teacherProfile.section,
+        };
 
-        if (createError) throw createError;
-        studentId = created?.id ?? null;
+        try {
+          const { data: created, error: createError } = await supabase
+            .from("students")
+            .insert(submission)
+            .select("id")
+            .single();
+          if (createError) throw createError;
+          studentId = created?.id ?? null;
+        } catch (err) {
+          const msg = getErrorMessage(err, "");
+          if (/guardian2_/i.test(msg) || /secondary_guardian_/i.test(msg) || /column .* does not exist/i.test(msg)) {
+            const { secondary_guardian_name: _gn, secondary_guardian_phone: _gp, secondary_guardian_whatsapp: _gw, ...cleaned } = submission;
+            const { data: created2, error: retryError } = await supabase
+              .from("students")
+              .insert(cleaned)
+              .select("id")
+              .single();
+            if (retryError) throw retryError;
+            studentId = created2?.id ?? null;
+          } else {
+            throw err as Error;
+          }
+        }
       } else {
-        // Update existing student with new information
-        const { error: updateError } = await supabase
-          .from("students")
-          .update({
-            date_of_birth: formData.dateOfBirth || null,
-            gender: formData.gender || null,
-            grade: formData.grade || null,
-            health_card: formData.healthCard || null,
-            permanent_code: formData.permanentCode || null,
-            street: formData.street || null,
-            city: formData.city || null,
-            province: formData.province || null,
-            postal_code: formData.postalCode || null,
-            guardian_name: formData.guardianName || null,
-            guardian_contact: formData.guardianContact || null,
-            guardian_email: formData.guardianEmail || null,
-            guardian2_name: formData.guardian2Name || null,
-            guardian2_contact: formData.guardian2Contact || null,
-            guardian2_email: formData.guardian2Email || null,
-            status: formData.status,
-            medical_condition: formData.medicalConditions || null,
-            current_juz: formData.currentJuz === "_none_"
-              ? null
-              : Number(formData.currentJuz),
-            completed_juz: completedJuz,
-            madrassah_id: teacherProfile.madrassah_id,
-            section: teacherProfile.section,
-          })
-          .eq("id", existingStudent.id);
+        // Update existing student with new information; retry without guardian2_* if needed
+        const updateSubmission: Record<string, unknown> = {
+          date_of_birth: formData.dateOfBirth || null,
+          gender: formData.gender || null,
+          grade: formData.grade || null,
+          health_card: formData.healthCard || null,
+          permanent_code: formData.permanentCode || null,
+          street: formData.street || null,
+          city: formData.city || null,
+          province: formData.province || null,
+          postal_code: formData.postalCode || null,
+          guardian_name: formData.guardianName || null,
+          guardian_contact: formData.guardianContact || null,
+          guardian_email: formData.guardianEmail || null,
+          secondary_guardian_name: formData.guardian2Name || null,
+          secondary_guardian_phone: formData.guardian2Contact || null,
+          secondary_guardian_whatsapp: formData.guardian2Email || null,
+          status: formData.status,
+          medical_condition: formData.medicalConditions || null,
+          current_juz: formData.currentJuz === "_none_" ? null : Number(formData.currentJuz),
+          completed_juz: completedJuz,
+          madrassah_id: teacherProfile.madrassah_id,
+          section: teacherProfile.section,
+        };
 
-        if (updateError) throw updateError;
-        studentId = existingStudent.id;
+        try {
+          const { error: updateError } = await supabase
+            .from("students")
+            .update(updateSubmission)
+            .eq("id", existingStudent.id);
+          if (updateError) throw updateError;
+          studentId = existingStudent.id;
+        } catch (err) {
+          const msg = getErrorMessage(err, "");
+          if (/guardian2_/i.test(msg) || /secondary_guardian_/i.test(msg) || /column .* does not exist/i.test(msg)) {
+            const { secondary_guardian_name: _gn, secondary_guardian_phone: _gp, secondary_guardian_whatsapp: _gw, ...cleanedUpdate } = updateSubmission;
+            const { error: retryUpdateError } = await supabase
+              .from("students")
+              .update(cleanedUpdate)
+              .eq("id", existingStudent.id);
+            if (retryUpdateError) throw retryUpdateError;
+            studentId = existingStudent.id;
+          } else {
+            throw err as Error;
+          }
+        }
       }
 
-      // Now assign student to teacher
-      const { error: assignmentError } = await supabase
-        .from("students_teachers")
-        .insert({
-          teacher_id: teacherId,
-          student_name: formData.studentName,
-          active: true,
-        });
-
-      if (assignmentError) throw assignmentError;
+      // Now assign student to teacher (non-blocking if this linkage fails)
+      try {
+        const { error: assignmentError } = await supabase
+          .from("students_teachers")
+          .insert({
+            teacher_id: teacherId,
+            student_name: formData.studentName,
+            active: true,
+          });
+        if (assignmentError) {
+          console.warn("Teacher-student assignment failed:", assignmentError);
+        }
+      } catch (assignErr) {
+        console.warn("Teacher-student assignment threw:", assignErr);
+      }
 
       // Create or link parent account if guardian email is provided
       try {
