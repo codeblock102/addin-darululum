@@ -236,6 +236,51 @@ export const StudentForm = ({
               required
             />
           </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
+            <div className="space-y-2">
+              <Label htmlFor="guardian2Name">{t("pages.teacherPortal.students.form.guardian2Name", "Secondary Guardian Name")}</Label>
+              <Input
+                id="guardian2Name"
+                placeholder={t("pages.teacherPortal.students.form.guardian2NamePlaceholder", "Enter secondary guardian's name")}
+                value={formData.guardian2Name}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    guardian2Name: e.target.value,
+                  }))}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="guardian2Contact">{t("pages.teacherPortal.students.form.guardian2Phone", "Secondary Guardian Phone")}</Label>
+              <Input
+                id="guardian2Contact"
+                placeholder={t("pages.teacherPortal.students.form.guardian2PhonePlaceholder", "Enter secondary guardian's phone number")}
+                value={formData.guardian2Contact}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    guardian2Contact: e.target.value,
+                  }))}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="guardian2Email">{t("pages.teacherPortal.students.form.guardian2Email", "Secondary Guardian Email")}</Label>
+              <Input
+                id="guardian2Email"
+                type="email"
+                placeholder={t("pages.teacherPortal.students.form.guardian2EmailPlaceholder", "Enter secondary guardian's email address")}
+                value={formData.guardian2Email}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    guardian2Email: e.target.value,
+                  }))}
+              />
+            </div>
+          </div>
         </TabsContent>
 
         <TabsContent value="address" className="space-y-4">

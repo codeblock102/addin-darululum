@@ -90,6 +90,9 @@ export const useStudentSubmit = ({
             guardian_name: formData.guardianName || null,
             guardian_contact: formData.guardianContact || null,
             guardian_email: formData.guardianEmail || null,
+            guardian2_name: formData.guardian2Name || null,
+            guardian2_contact: formData.guardian2Contact || null,
+            guardian2_email: formData.guardian2Email || null,
             status: formData.status,
             medical_condition: formData.medicalConditions || null,
             current_juz: formData.currentJuz === "_none_"
@@ -121,6 +124,9 @@ export const useStudentSubmit = ({
             guardian_name: formData.guardianName || null,
             guardian_contact: formData.guardianContact || null,
             guardian_email: formData.guardianEmail || null,
+            guardian2_name: formData.guardian2Name || null,
+            guardian2_contact: formData.guardian2Contact || null,
+            guardian2_email: formData.guardian2Email || null,
             status: formData.status,
             medical_condition: formData.medicalConditions || null,
             current_juz: formData.currentJuz === "_none_"

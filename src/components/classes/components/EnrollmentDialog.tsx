@@ -70,7 +70,7 @@ export const EnrollmentDialog = ({
     enabled: !!classData,
   });
 
-  const { data: allStudents, isLoading: isLoadingAllStudents } = useQuery({
+  const { data: allStudents, isLoading: _isLoadingAllStudents } = useQuery({
     queryKey: ["allStudents"],
     queryFn: fetchAllStudents,
   });
@@ -114,7 +114,7 @@ export const EnrollmentDialog = ({
 
   const handleUnenroll = (studentId: string) => {
     const updatedStudentIds =
-      classData?.current_students?.filter((id) => id !== studentId) || [];
+      classData?.current_students?.filter((id: string) => id !== studentId) || [];
     updateEnrollments.mutate(updatedStudentIds);
   };
 
@@ -133,14 +133,14 @@ export const EnrollmentDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
+      <DialogContent className="max-h-[90vh] flex flex-col">
         <DialogHeader>
           <DialogTitle>Manage Student Enrollment</DialogTitle>
           <DialogDescription>
             Add or remove students from this class.
           </DialogDescription>
         </DialogHeader>
-        <div className="space-y-4">
+        <div className="flex-1 overflow-y-auto space-y-4 pr-1">
           <div>
             <h3 className="text-lg font-medium">Enrolled Students</h3>
             {isLoadingClass || isLoadingEnrolled ? (
@@ -166,7 +166,7 @@ export const EnrollmentDialog = ({
               </ul>
             )}
           </div>
-          <div>
+          <div className="sticky bottom-0 bg-background pt-2">
             <h3 className="text-lg font-medium">Add Students</h3>
             <div className="flex items-center space-x-2 mt-2">
               <MultiSelect
