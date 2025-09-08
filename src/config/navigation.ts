@@ -74,6 +74,12 @@ export const adminNavItems: NavItem[] = [
     description: "Manage parent accounts",
   },
   {
+    href: "/admin/bulk-student-import",
+    label: "Bulk Student Import",
+    icon: Users,
+    description: "Upload CSV to add students",
+  },
+  {
     href: "/settings",
     label: "nav.settings",
     icon: Settings,
