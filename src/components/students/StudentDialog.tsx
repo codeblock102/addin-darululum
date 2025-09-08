@@ -35,6 +35,9 @@ interface Student {
   guardian_name: string | null;
   guardian_contact: string | null;
   guardian_email?: string | null;
+  guardian2_name?: string | null;
+  guardian2_contact?: string | null;
+  guardian2_email?: string | null;
   status: "active" | "inactive";
   completed_juz?: number[];
   current_juz?: number | null;
@@ -59,7 +62,25 @@ export const StudentDialog = (
   const queryClient = useQueryClient();
   const [isProcessing, setIsProcessing] = useState(false);
   const [availableSections, setAvailableSections] = useState<string[]>([]);
-  const [formData, setFormData] = useState({
+  type FormState = {
+    name: string;
+    date_of_birth: string | null;
+    enrollment_date: string | null;
+    guardian_name: string | null;
+    guardian_contact: string | null;
+    guardian_email: string | null;
+    guardian2_name: string | null;
+    guardian2_contact: string | null;
+    guardian2_email: string | null;
+    status: "active" | "inactive";
+    completed_juz: number[];
+    current_juz: string;
+    madrassah_id: string;
+    section: string;
+    medicalConditions: string | null;
+  };
+
+  const [formData, setFormData] = useState<FormState>({
     name: selectedStudent?.name || "",
     date_of_birth: selectedStudent?.date_of_birth || "",
     enrollment_date: selectedStudent?.enrollment_date ||
@@ -67,6 +88,9 @@ export const StudentDialog = (
     guardian_name: selectedStudent?.guardian_name || "",
     guardian_contact: selectedStudent?.guardian_contact || "",
     guardian_email: selectedStudent?.guardian_email || "",
+    guardian2_name: selectedStudent?.guardian2_name || "",
+    guardian2_contact: selectedStudent?.guardian2_contact || "",
+    guardian2_email: selectedStudent?.guardian2_email || "",
     status: selectedStudent?.status || "active",
     completed_juz: selectedStudent?.completed_juz || [],
     current_juz: selectedStudent?.current_juz?.toString() || "_none_",
@@ -86,6 +110,9 @@ export const StudentDialog = (
         guardian_name: selectedStudent.guardian_name || "",
         guardian_contact: selectedStudent.guardian_contact || "",
         guardian_email: selectedStudent.guardian_email || "",
+        guardian2_name: selectedStudent.guardian2_name || "",
+        guardian2_contact: selectedStudent.guardian2_contact || "",
+        guardian2_email: selectedStudent.guardian2_email || "",
         status: selectedStudent.status || "active",
         completed_juz: selectedStudent.completed_juz || [],
         current_juz: selectedStudent.current_juz?.toString() || "_none_",
@@ -102,6 +129,9 @@ export const StudentDialog = (
         guardian_name: "",
         guardian_contact: "",
         guardian_email: "",
+        guardian2_name: "",
+        guardian2_contact: "",
+        guardian2_email: "",
         status: "active",
         completed_juz: [],
         current_juz: "_none_", // Default to special "None" value
@@ -127,7 +157,9 @@ export const StudentDialog = (
         if (error) return;
         const sections = (data?.section as string[] | null) || [];
         setAvailableSections(Array.isArray(sections) ? sections.filter(Boolean) : []);
-      } catch (_) {}
+      } catch (_err) {
+        // Non-fatal; leave sections empty on error
+      }
     };
     loadSections();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -152,13 +184,16 @@ export const StudentDialog = (
         completed_juz: formData.completed_juz.map((juz) => Number(juz)),
         medical_condition: formData.medicalConditions || null,
         guardian_email: formData.guardian_email || null,
+        guardian2_name: formData.guardian2_name || null,
+        guardian2_contact: formData.guardian2_contact || null,
+        guardian2_email: formData.guardian2_email || null,
         // Normalize empty strings to null for optional fields
         date_of_birth: formData.date_of_birth || null,
         enrollment_date: formData.enrollment_date || new Date().toISOString().split("T")[0],
       };
 
       // Teachers cannot modify section assignments
-      let submissionData: any = isTeacher 
+      let submissionData: Record<string, unknown> = isTeacher 
         ? baseSubmissionData 
         : { ...baseSubmissionData, section: section || null };
 
@@ -183,7 +218,7 @@ export const StudentDialog = (
           throw new Error("Could not determine madrassah. Please try reloading or set it manually.");
         }
         submissionData = { ...submissionData, madrassah_id: effectiveMadrassahId };
-      } catch (resolveErr: any) {
+      } catch (resolveErr: unknown) {
         console.error("Failed to resolve madrassah_id for student create/update:", resolveErr);
         throw resolveErr instanceof Error ? resolveErr : new Error("Failed to resolve madrassah");
       }
@@ -232,7 +267,7 @@ export const StudentDialog = (
               },
             });
             let result = data;
-            let err = error as unknown;
+            let err: unknown = error;
             if (!result && err) {
               const token = accessToken;
               const base = (await import("@/integrations/supabase/client.ts")).SUPABASE_URL;
@@ -394,7 +429,7 @@ export const StudentDialog = (
                 <Textarea
                   id="medicalConditions"
                   placeholder="Any medical conditions or allergies that teachers should know about"
-                  value={formData.medicalConditions}
+                  value={formData.medicalConditions || ""}
                   onChange={(e) =>
                     setFormData((prev) => ({
                       ...prev,
@@ -418,6 +453,48 @@ export const StudentDialog = (
                     <SelectItem value="inactive">Inactive</SelectItem>
                   </SelectContent>
                 </Select>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
+                <div className="space-y-2">
+                  <Label htmlFor="guardian2_name">Secondary Guardian Name</Label>
+                  <Input
+                    id="guardian2_name"
+                    placeholder="Enter secondary guardian's name"
+                    value={formData.guardian2_name || ""}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        guardian2_name: e.target.value,
+                      }))}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="guardian2_contact">Secondary Guardian Contact</Label>
+                  <Input
+                    id="guardian2_contact"
+                    placeholder="Enter secondary guardian's contact number"
+                    value={formData.guardian2_contact || ""}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        guardian2_contact: e.target.value,
+                      }))}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="guardian2_email">Secondary Guardian Email</Label>
+                  <Input
+                    id="guardian2_email"
+                    type="email"
+                    placeholder="Enter secondary guardian's email address"
+                    value={formData.guardian2_email || ""}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        guardian2_email: e.target.value,
+                      }))}
+                  />
+                </div>
               </div>
             </TabsContent>
 
@@ -461,6 +538,48 @@ export const StudentDialog = (
                       guardian_email: e.target.value,
                     }))}
                 />
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
+                <div className="space-y-2">
+                  <Label htmlFor="guardian2_name">Secondary Guardian Name</Label>
+                  <Input
+                    id="guardian2_name"
+                    placeholder="Enter secondary guardian's name"
+                    value={formData.guardian2_name || ""}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        guardian2_name: e.target.value,
+                      }))}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="guardian2_contact">Secondary Guardian Contact</Label>
+                  <Input
+                    id="guardian2_contact"
+                    placeholder="Enter secondary guardian's contact number"
+                    value={formData.guardian2_contact || ""}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        guardian2_contact: e.target.value,
+                      }))}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="guardian2_email">Secondary Guardian Email</Label>
+                  <Input
+                    id="guardian2_email"
+                    type="email"
+                    placeholder="Enter secondary guardian's email address"
+                    value={formData.guardian2_email || ""}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        guardian2_email: e.target.value,
+                      }))}
+                  />
+                </div>
               </div>
             </TabsContent>
 
