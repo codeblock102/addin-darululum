@@ -6,11 +6,12 @@ import { Loader2 } from "lucide-react";
 
 const TeacherSchedule = () => {
   const { session } = useAuth();
+  const teacherId = session?.user?.id || "";
   const {
     data: classes,
     isLoading,
     error,
-  } = useTeacherClasses(session?.user?.id || "");
+  } = useTeacherClasses(teacherId);
 
   return (
     <div className="p-4 sm:p-6 lg:p-8 space-y-6 flex flex-col h-full">
@@ -28,7 +29,7 @@ const TeacherSchedule = () => {
             Error loading schedule: {error.message}
           </div>
         ) : (
-          <ScheduleCalendar classes={classes || []} />
+          <ScheduleCalendar classes={classes || []} teacherId={teacherId} />
         )}
       </div>
     </div>
