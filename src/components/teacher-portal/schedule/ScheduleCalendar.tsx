@@ -42,6 +42,20 @@ export const ScheduleCalendar = ({ classes }: ScheduleCalendarProps) => {
   const calendarRef = useRef<FullCalendar>(null);
   const { t, language } = useI18n();
 
+  const toMinutes = (time: string | undefined): number | null => {
+    if (!time) return null;
+    const [h, m] = time.split(":").map((v) => parseInt(v, 10));
+    if (Number.isNaN(h) || Number.isNaN(m)) return null;
+    return h * 60 + m;
+  };
+
+  const pad = (n: number) => (n < 10 ? `0${n}` : `${n}`);
+  const toHHMMSS = (minutes: number) => {
+    const h = Math.max(0, Math.floor(minutes / 60));
+    const m = Math.max(0, minutes % 60);
+    return `${pad(h)}:${pad(m)}:00`;
+  };
+
   const events = classes.flatMap((c) =>
     (c.time_slots || []).flatMap((slot) =>
       (slot.days || []).map((day) => ({
@@ -53,6 +67,22 @@ export const ScheduleCalendar = ({ classes }: ScheduleCalendarProps) => {
       }))
     )
   );
+
+  // Determine min and max times across all slots so late classes are visible
+  const allStartMins = classes
+    .flatMap((c) => (c.time_slots || []).map((s) => toMinutes(s.start_time)))
+    .filter((v): v is number => v !== null);
+  const allEndMins = classes
+    .flatMap((c) => (c.time_slots || []).map((s) => toMinutes(s.end_time)))
+    .filter((v): v is number => v !== null);
+
+  const defaultMin = 8 * 60; // 08:00
+  const defaultMax = 17 * 60; // 17:00
+  const minMinutes = allStartMins.length > 0 ? Math.min(...allStartMins) : defaultMin;
+  const maxMinutes = allEndMins.length > 0 ? Math.max(...allEndMins) : defaultMax;
+  // Add a small buffer to the end of day
+  const slotMinTime = toHHMMSS(Math.max(0, minMinutes - 30));
+  const slotMaxTime = toHHMMSS(Math.min(24 * 60, maxMinutes + 30));
 
   const handlePrevClick = () => {
     const calendarApi = calendarRef.current?.getApi();
@@ -128,8 +158,8 @@ export const ScheduleCalendar = ({ classes }: ScheduleCalendarProps) => {
         stickyHeaderDates
         nowIndicator
         slotDuration={isMobile ? "00:30:00" : "01:00:00"}
-        slotMinTime="08:00:00"
-        slotMaxTime="17:00:00"
+        slotMinTime={slotMinTime}
+        slotMaxTime={slotMaxTime}
         dayHeaderFormat={isMobile ? { weekday: 'short' } : isTablet ? { weekday: 'short' } : { weekday: 'long' }}
         allDaySlot={false}
         slotLabelFormat={{ hour: 'numeric', minute: '2-digit', hour12: language !== 'fr' }}

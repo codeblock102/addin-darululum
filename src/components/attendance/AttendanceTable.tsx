@@ -56,8 +56,8 @@ export function AttendanceTable() {
         (record.classes?.name?.toLowerCase() || "").includes(searchQuery.toLowerCase()),
     ) || [];
 
-  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchQuery(e.target.value);
+  const handleSearchChange = (value: string) => {
+    setSearchQuery(value);
   };
 
   const resetFilters = () => setSearchQuery("");

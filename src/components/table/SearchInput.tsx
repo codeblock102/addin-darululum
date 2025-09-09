@@ -3,9 +3,7 @@ import { Input } from "@/components/ui/input";
 
 interface SearchInputProps {
   value: string;
-  onChange:
-    | ((e: React.ChangeEvent<HTMLInputElement>) => void)
-    | ((value: string) => void);
+  onChange: (value: string) => void;
   placeholder?: string;
   className?: string;
 }
@@ -14,16 +12,8 @@ export function SearchInput(
   { value, onChange, placeholder = "Search...", className = "" }:
     SearchInputProps,
 ) {
-  // Handle both function signatures (direct value and event)
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (typeof onChange === "function") {
-      // Check if the onChange expects an event or direct value
-      if (onChange.length === 1) {
-        (onChange as (value: string) => void)(e.target.value);
-      } else {
-        (onChange as (e: React.ChangeEvent<HTMLInputElement>) => void)(e);
-      }
-    }
+    onChange(e.target.value);
   };
 
   return (

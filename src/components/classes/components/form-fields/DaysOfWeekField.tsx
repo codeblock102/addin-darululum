@@ -20,6 +20,7 @@ const DAYS_OF_WEEK = [
 export const DaysOfWeekField = () => {
   const { control, watch, setValue } = useFormContext();
   const selectedDays = watch("days_of_week") || [];
+  const scheduleByDay = watch("schedule_by_day") || [];
 
   return (
     <FormField
@@ -42,6 +43,19 @@ export const DaysOfWeekField = () => {
                           d !== day
                         ),
                     );
+                    // If granular schedule exists, keep it as source of truth.
+                    // Otherwise, ensure schedule_by_day mirrors the general selection with default times.
+                    const hasGranular = Array.isArray(scheduleByDay) && scheduleByDay.length > 0;
+                    if (!hasGranular) {
+                      if (checked) {
+                        setValue("schedule_by_day", [
+                          ...scheduleByDay,
+                          { day, start_time: "09:00", end_time: "10:30" },
+                        ]);
+                      } else {
+                        setValue("schedule_by_day", scheduleByDay.filter((e: any) => e.day !== day));
+                      }
+                    }
                   }}
                 />
                 <span>{day}</span>
