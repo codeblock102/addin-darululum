@@ -138,9 +138,16 @@ export default function Classes() {
     setIsDeleteDialogOpen(false);
   };
 
-  const filteredClasses = classes?.filter((c) =>
-    c.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredClasses = classes?.filter((c) => {
+    const query = searchQuery.toLowerCase();
+    const teacherNames = c.teachers.map((t) => t.name.toLowerCase()).join(" ");
+    return (
+      c.name.toLowerCase().includes(query) ||
+      (c.subject && c.subject.toLowerCase().includes(query)) ||
+      (c.section && c.section.toLowerCase().includes(query)) ||
+      teacherNames.includes(query)
+    );
+  });
 
   return (
     <div className="space-y-6 px-4 sm:px-6">
@@ -189,9 +196,7 @@ export default function Classes() {
           <SearchInput
             placeholder={t("pages.classes.searchPlaceholder")}
             value={searchQuery}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-              setSearchQuery(e.target.value)
-            }
+            onChange={setSearchQuery}
             className="border-gray-700/30 bg-white/5 p-3 sm:p-4"
           />
           {isLoading && <p className="p-4">{t("pages.classes.loading")}</p>}
