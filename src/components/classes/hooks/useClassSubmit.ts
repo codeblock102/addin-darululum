@@ -21,6 +21,30 @@ export const useClassSubmit = (
           ? values.days_of_week
           : [];
 
+        // Build time_slots. If granular schedule_by_day provided, group by identical times.
+        let time_slots: { days: string[]; start_time: string; end_time: string }[] = [];
+
+        if (Array.isArray((values as any).schedule_by_day) && (values as any).schedule_by_day.length > 0) {
+          const entries: { day: string; start_time: string; end_time: string }[] = (values as any).schedule_by_day;
+          const groups = new Map<string, string[]>();
+          for (const { day, start_time, end_time } of entries) {
+            const key = `${start_time}__${end_time}`;
+            const arr = groups.get(key) || [];
+            arr.push(day);
+            groups.set(key, arr);
+          }
+          time_slots = Array.from(groups.entries()).map(([key, days]) => {
+            const [start_time, end_time] = key.split("__");
+            return { days, start_time, end_time };
+          });
+        } else {
+          time_slots = [{
+            days: daysOfWeek,
+            start_time: values.time_start,
+            end_time: values.time_end,
+          }];
+        }
+
         const classData = {
           name: values.name,
           capacity: values.capacity || 20,
@@ -28,11 +52,7 @@ export const useClassSubmit = (
           subject: values.subject,
           section: values.section,
           teacher_ids: values.teacher_ids || [],
-          time_slots: [{
-            days: daysOfWeek,
-            start_time: values.time_start,
-            end_time: values.time_end,
-          }],
+          time_slots,
         };
 
         if (selectedClass) {

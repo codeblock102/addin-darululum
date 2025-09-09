@@ -9,6 +9,15 @@ export const classSchema = z.object({
   days_of_week: z.array(z.string()).min(1, "Select at least one day"),
   subject: z.string().optional(),
   section: z.string().optional(),
+  schedule_by_day: z
+    .array(
+      z.object({
+        day: z.string(),
+        start_time: z.string().min(1),
+        end_time: z.string().min(1),
+      }),
+    )
+    .optional(),
 });
 
 export type ClassFormData = z.infer<typeof classSchema>;
