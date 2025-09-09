@@ -41,12 +41,13 @@ export const ClassForm = ({
   useEffect(() => {
     if (selectedClass) {
       const timeSlots = selectedClass.time_slots || [];
-      // Convert time_slots into schedule_by_day entries
+      // Convert time_slots into schedule_by_day entries, preserve per-slot teacher_ids if present
       const scheduleByDay = timeSlots.flatMap((slot: any) =>
         (slot?.days || []).map((day: string) => ({
           day,
           start_time: slot?.start_time || "09:00",
           end_time: slot?.end_time || "10:30",
+          teacher_ids: Array.isArray(slot?.teacher_ids) ? slot.teacher_ids : undefined,
         }))
       );
       form.reset({

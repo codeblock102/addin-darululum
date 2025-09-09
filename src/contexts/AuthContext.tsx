@@ -122,17 +122,29 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       console.log("Signing out...");
       const { error } = await supabase.auth.signOut();
       if (error) {
-        console.error("Error signing out:", error);
-        setError("Failed to sign out");
-        toast({
-          title: "Sign out failed",
-          description: "There was a problem signing you out. Please try again.",
-          variant: "destructive",
-        });
-        return;
+        // Handle missing-session case with a local sign-out fallback
+        const message = (error as Error).message || "";
+        const isSessionMissing =
+          message.includes("Auth session missing") ||
+          (error as any)?.name === "AuthSessionMissingError";
+
+        if (isSessionMissing) {
+          console.warn("Auth session missing on signOut - performing local sign-out fallback");
+          await supabase.auth.signOut({ scope: "local" });
+        } else {
+          console.error("Error signing out:", error);
+          setError("Failed to sign out");
+          toast({
+            title: "Sign out failed",
+            description: "There was a problem signing you out. Please try again.",
+            variant: "destructive",
+          });
+          // Proceed with local cleanup anyway to unblock the user
+        }
       }
 
-      console.log("Signed out successfully");
+      // Local cleanup to ensure UI updates even if remote sign-out failed
+      localStorage.removeItem("userRole");
       setSession(null);
       setError(null);
       toast({

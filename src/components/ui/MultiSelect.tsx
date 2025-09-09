@@ -32,6 +32,7 @@ interface MultiSelectProps {
   onChange: React.Dispatch<React.SetStateAction<string[]>>;
   className?: string;
   placeholder?: string;
+  triggerClassName?: string;
 }
 
 function MultiSelect({
@@ -40,6 +41,7 @@ function MultiSelect({
   onChange,
   className,
   placeholder = "Select options",
+  triggerClassName,
   ...props
 }: MultiSelectProps) {
   const [open, setOpen] = React.useState(false);
@@ -57,7 +59,7 @@ function MultiSelect({
           aria-expanded={open}
           className={`w-full justify-between ${
             selected.length > 0 ? "h-full" : "h-10"
-          }`}
+          } ${triggerClassName || ""}`}
           onClick={() => setOpen(!open)}
         >
           <div className="flex flex-wrap items-center gap-1">

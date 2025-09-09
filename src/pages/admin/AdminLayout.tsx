@@ -1,21 +1,45 @@
 import React from 'react';
-import { NavLink, Outlet, Link } from 'react-router-dom';
-import { Shield, Database, UserPlus, Users, Home } from 'lucide-react';
+import { NavLink, Outlet, Link, useNavigate } from 'react-router-dom';
+import { Shield, Database, UserPlus, Users, Home, LogOut } from 'lucide-react';
+import { useAuth } from '@/hooks/use-auth.ts';
 
 const AdminLayout = () => {
+  const { signOut } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    try {
+      await signOut();
+      navigate('/auth');
+    } catch (err) {
+      // fallback navigate even if toast already handled
+      navigate('/auth');
+    }
+  };
+
   return (
     <div className="flex min-h-screen bg-gray-100 font-sans">
       <aside className="w-64 bg-gray-800 text-white flex flex-col">
         <div className="h-16 flex items-center justify-between bg-gray-900 px-4">
           <h1 className="text-xl font-bold">Admin Panel</h1>
-          <Link
-            to="/dashboard"
-            className="inline-flex items-center gap-2 text-xs bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded-md transition-colors"
-            title="Back to Dashboard"
-          >
-            <Home className="h-4 w-4" />
-            Dashboard
-          </Link>
+          <div className="flex items-center gap-2">
+            <Link
+              to="/dashboard"
+              className="inline-flex items-center gap-2 text-xs bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded-md transition-colors"
+              title="Back to Dashboard"
+            >
+              <Home className="h-4 w-4" />
+              Dashboard
+            </Link>
+            <button
+              onClick={handleLogout}
+              className="inline-flex items-center gap-2 text-xs bg-red-600 hover:bg-red-700 text-white px-3 py-1.5 rounded-md transition-colors"
+              title="Log out"
+            >
+              <LogOut className="h-4 w-4" />
+              Logout
+            </button>
+          </div>
         </div>
         <nav className="flex-1 px-4 py-6 space-y-2">
           <NavLink
