@@ -4,8 +4,8 @@ import { supabase } from "@/integrations/supabase/client.ts";
 const fetchTeacherClasses = async (teacherId: string) => {
   const { data, error } = await supabase
     .from("classes")
-    .select("id, name, subject, time_slots")
-    .contains("teacher_ids", `{${teacherId}}`);
+    .select("id, name, subject, days_of_week, teacher_ids, time_slots")
+    .contains("teacher_ids", [teacherId]);
 
   if (error) {
     console.error("Error fetching teacher classes:", error);
