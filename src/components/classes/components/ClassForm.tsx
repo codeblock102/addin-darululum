@@ -34,21 +34,31 @@ export const ClassForm = ({
       days_of_week: selectedClass?.days_of_week || [],
       subject: selectedClass?.subject || "",
       section: selectedClass?.section || "",
+      schedule_by_day: [],
     },
   });
 
   useEffect(() => {
     if (selectedClass) {
-      const timeSlots = selectedClass.time_slots?.[0];
+      const timeSlots = selectedClass.time_slots || [];
+      // Convert time_slots into schedule_by_day entries
+      const scheduleByDay = timeSlots.flatMap((slot: any) =>
+        (slot?.days || []).map((day: string) => ({
+          day,
+          start_time: slot?.start_time || "09:00",
+          end_time: slot?.end_time || "10:30",
+        }))
+      );
       form.reset({
         name: selectedClass.name || "",
         teacher_ids: selectedClass.teacher_ids || [],
-        time_start: timeSlots?.start_time || "09:00",
-        time_end: timeSlots?.end_time || "10:30",
+        time_start: (timeSlots[0]?.start_time as string) || "09:00",
+        time_end: (timeSlots[0]?.end_time as string) || "10:30",
         capacity: selectedClass.capacity || 20,
         days_of_week: selectedClass.days_of_week || [],
         subject: selectedClass.subject || "",
         section: selectedClass.section || "",
+        schedule_by_day: scheduleByDay,
       });
     }
   }, [selectedClass, form.reset]);
@@ -56,10 +66,10 @@ export const ClassForm = ({
   return (
     <FormProvider {...form}>
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3 sm:space-y-4">
           <ClassFormFields teachers={teachers} />
 
-          <div className="flex justify-end gap-2">
+          <div className="flex justify-end gap-2 pt-1">
             <Button
               type="button"
               variant="outline"
