@@ -102,8 +102,8 @@ export const ScheduleCalendar = ({ classes, teacherId }: ScheduleCalendarProps) 
 
   type BaseItem = {
     dayNum: number;
-    startTime: string;
-    endTime: string;
+    startMin: number;
+    endMin: number;
     title: string;
     color: string;
   };
@@ -128,42 +128,48 @@ export const ScheduleCalendar = ({ classes, teacherId }: ScheduleCalendarProps) 
 
       const startRaw = (slot as any)?.start_time as string | undefined;
       const endRaw = (slot as any)?.end_time as string | undefined;
-      const startMins = toMinutes(startRaw) ?? toMinutes("09:00");
-      const endMins = toMinutes(endRaw) ?? toMinutes("10:30");
-      const startTime = toHHMMSS(startMins ?? 9 * 60);
-      const endTime = toHHMMSS(endMins ?? 10 * 60 + 30);
+      const startMin = toMinutes(startRaw) ?? 9 * 60;
+      const endMin = toMinutes(endRaw) ?? 10 * 60 + 30;
 
       const color = CLASS_COLORS[hashStringToIndex(c.name, CLASS_COLORS.length)];
 
       return validDays.map((dayNum) => ({
         dayNum,
-        startTime,
-        endTime,
+        startMin,
+        endMin,
         title: c.name,
         color,
       }));
     })
   );
 
-  type Group = { dayNum: number; startTime: string; endTime: string; items: { title: string; color: string }[] };
+  const TOLERANCE = 15;
+  type Group = { dayNum: number; startMin: number; endMin: number; items: { title: string; color: string }[] };
   const groupsMap = new Map<string, Group>();
   for (const item of baseItems) {
-    const key = `${item.dayNum}|${item.startTime}|${item.endTime}`;
+    const startBucket = Math.round(item.startMin / TOLERANCE) * TOLERANCE;
+    const endBucket = Math.round(item.endMin / TOLERANCE) * TOLERANCE;
+    const key = `${item.dayNum}|${startBucket}|${endBucket}`;
     const existing = groupsMap.get(key);
     const entry = { title: item.title, color: item.color };
-    if (existing) existing.items.push(entry);
-    else groupsMap.set(key, { dayNum: item.dayNum, startTime: item.startTime, endTime: item.endTime, items: [entry] });
+    if (existing) {
+      existing.items.push(entry);
+      existing.startMin = Math.min(existing.startMin, item.startMin);
+      existing.endMin = Math.max(existing.endMin, item.endMin);
+    } else {
+      groupsMap.set(key, { dayNum: item.dayNum, startMin: item.startMin, endMin: item.endMin, items: [entry] });
+    }
   }
 
   const events = Array.from(groupsMap.values()).map((g) => ({
     title: g.items.length > 1 ? `${g.items.length} classes` : g.items[0].title,
-    startTime: g.startTime,
-    endTime: g.endTime,
+    startTime: toHHMMSS(g.startMin),
+    endTime: toHHMMSS(g.endMin),
     daysOfWeek: [g.dayNum],
     backgroundColor: "#ffffff",
     borderColor: "#cbd5e1",
     textColor: "#0f172a",
-    extendedProps: { items: g.items, timeRange: `${g.startTime.slice(0,5)}–${g.endTime.slice(0,5)}` },
+    extendedProps: { items: g.items, timeRange: `${pad(Math.floor(g.startMin/60))}:${pad(g.startMin%60)}–${pad(Math.floor(g.endMin/60))}:${pad(g.endMin%60)}` },
   }));
 
   const allStartMins = classes
@@ -261,6 +267,7 @@ export const ScheduleCalendar = ({ classes, teacherId }: ScheduleCalendarProps) 
         eventOrder={(a, b) => (a.title || "").localeCompare(b.title || "")}
         slotMinTime={slotMinTime}
         slotMaxTime={slotMaxTime}
+        hiddenDays={[0, 6]}
         dayHeaderFormat={isMobile ? { weekday: 'short' } : isTablet ? { weekday: 'short' } : { weekday: 'long' }}
         allDaySlot={false}
         slotLabelFormat={{ hour: 'numeric', minute: '2-digit', hour12: language !== 'fr' }}
