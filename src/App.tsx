@@ -32,6 +32,7 @@ import Preferences from "@/pages/Preferences.tsx";
 import CreateDemoAccount from "@/pages/CreateDemoAccount.tsx";
 import CreateTeacherProfileForTestAccount from "@/pages/CreateTeacherProfileForTestAccount.tsx";
 import DatabaseSeeder from "@/pages/admin/DatabaseSeeder.tsx";
+import TeacherSchedules from "@/pages/admin/TeacherSchedules.tsx";
 import SetupAdmin from "@/pages/admin/SetupAdmin.tsx";
 import ManualRoleSetup from "@/pages/admin/ManualRoleSetup.tsx";
 import AdminLayout from "@/pages/admin/AdminLayout.tsx";
@@ -97,6 +98,7 @@ function App() {
             <Route path="admin-creator" element={<DevAdminManagement />} />
             <Route path="parent-accounts" element={<ParentAccounts />} />
             <Route path="bulk-student-import" element={<BulkStudentImport />} />
+            <Route path="teacher-schedules" element={<TeacherSchedules />} />
           </Route>
 
           <Route

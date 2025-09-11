@@ -36,7 +36,7 @@ const fetchStudentDetails = async (studentIds: string[]) => {
   if (studentIds.length === 0) return [];
   const { data, error } = await supabase
     .from("students")
-    .select("id, name")
+    .select("id, name, grade, section")
     .in("id", studentIds);
 
   if (error) throw error;
@@ -44,7 +44,7 @@ const fetchStudentDetails = async (studentIds: string[]) => {
 };
 
 const fetchAllStudents = async () => {
-  const { data, error } = await supabase.from("students").select("id, name");
+  const { data, error } = await supabase.from("students").select("id, name, grade, section");
   if (error) throw error;
   return data;
 };
@@ -128,7 +128,7 @@ export const EnrollmentDialog = ({
       )
       .map((student) => ({
         value: student.id,
-        label: student.name,
+        label: `${student.name} — Grade ${student.grade && String(student.grade).trim() ? student.grade : "-"} • ${student.section && String(student.section).trim() ? student.section : "-"}`,
       })) || [];
 
   return (
@@ -152,7 +152,12 @@ export const EnrollmentDialog = ({
                     key={student.id}
                     className="flex items-center justify-between"
                   >
-                    <span>{student.name}</span>
+                    <div className="min-w-0">
+                      <div className="truncate">{student.name}</div>
+                      <div className="text-xs text-muted-foreground">
+                        {`Grade ${student.grade && String(student.grade).trim() ? student.grade : "-"} • ${student.section && String(student.section).trim() ? student.section : "-"}`}
+                      </div>
+                    </div>
                     <Button
                       variant="ghost"
                       size="sm"
