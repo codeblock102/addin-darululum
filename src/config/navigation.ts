@@ -80,6 +80,12 @@ export const adminNavItems: NavItem[] = [
     description: "Upload CSV to add students",
   },
   {
+    href: "/admin/teacher-schedules",
+    label: "Teacher Schedules",
+    icon: Clock,
+    description: "View teachers' weekly schedules",
+  },
+  {
     href: "/settings",
     label: "nav.settings",
     icon: Settings,
