@@ -250,8 +250,8 @@ export default function BulkStudentImport() {
         const hasName = nameAliases.some((v) => incoming.has(v));
         if (!hasName) {
           toast({ title: "Missing header", description: "The file must include a student name column.", variant: "destructive" });
-        } else {
-          toast({ title: "File loaded", description: `${parsed.rows.length} rows ready.` });
+      } else {
+        toast({ title: "File loaded", description: `${parsed.rows.length} rows ready.` });
         }
       }
     } catch (e) {
@@ -457,7 +457,7 @@ export default function BulkStudentImport() {
         let studentDuplicate = false;
 
         if (!existingStudentId) {
-          // Create student
+        // Create student
           const newStudentRow: TablesInsert<"students"> = {
             name: studentName,
             enrollment_date,
@@ -482,9 +482,9 @@ export default function BulkStudentImport() {
           const { data: created, error: createError } = await supabase
             .from("students")
             .insert(newStudentRow)
-            .select("id")
-            .single();
-          if (createError) throw createError;
+          .select("id")
+          .single();
+        if (createError) throw createError;
           usingStudentId = created?.id as string | undefined;
           studentCreated = true;
         } else {
