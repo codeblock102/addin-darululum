@@ -9,9 +9,9 @@
   "description": "Comprehensive Islamic education management system for Dār Al-Ulūm Montréal",
   "icons": [
     {
-      "src": "/favicon.ico",
-      "sizes": "48x48",
-      "type": "image/x-icon"
+      "src": "/assets/Logo-01.jpg",
+      "sizes": "192x192",
+      "type": "image/jpeg"
     },
     {
       "src": "/og-image.png",
