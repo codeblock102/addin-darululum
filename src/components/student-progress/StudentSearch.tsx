@@ -104,9 +104,12 @@ export const StudentSearch = ({
   const accentText = accent === "amber" ? "text-amber-600" : accent === "emerald" ? "text-emerald-600" : "text-primary";
   const hoverBg = accent === "amber" ? "hover:bg-amber-50" : accent === "emerald" ? "hover:bg-emerald-50" : "hover:bg-primary/5";
   const selectedBg = accent === "amber" ? "bg-amber-100 text-amber-900" : accent === "emerald" ? "bg-emerald-100 text-emerald-900" : "bg-primary/10 text-primary";
+  const cardBorder = accent === "amber" ? "border-amber-100" : accent === "emerald" ? "border-emerald-100" : "border-gray-200";
+  const listBorder = cardBorder;
+  const inputBorder = accent === "amber" ? "border-amber-200 focus:ring-amber-500 focus:border-amber-500" : accent === "emerald" ? "border-emerald-200 focus:ring-emerald-500 focus:border-emerald-500" : "border-gray-300 focus:ring-primary focus:border-primary";
 
   return (
-    <Card className={`${!showHeader ? "border-0 shadow-none" : ""}`}>
+    <Card className={`${!showHeader ? "border-0 shadow-none" : ""} bg-white text-gray-900 border ${cardBorder} shadow-md`}>
       {showHeader && (
         <CardHeader>
           <CardTitle>Student Search</CardTitle>
@@ -123,23 +126,23 @@ export const StudentSearch = ({
             <Input
               type="search"
               placeholder="Search students by name..."
-              className="pl-8"
+              className={`pl-8 bg-white text-gray-900 placeholder:text-gray-400 ${inputBorder}`}
               value={searchQuery}
               onChange={handleSearchChange}
             />
           </div>
 
-          <div className="border rounded-md overflow-hidden">
+          <div className={`border ${listBorder} rounded-md overflow-hidden bg-white`}>
             {isLoading
               ? (
-                <div className="flex justify-center items-center p-4">
+                <div className="flex justify-center items-center p-4 text-gray-700">
                   <Loader2 className="h-4 w-4 animate-spin mr-2" />
                   <span>Loading students...</span>
                 </div>
               )
               : error
               ? (
-                <div className="flex items-center justify-center p-4 text-red-500">
+                <div className="flex items-center justify-center p-4 text-red-600">
                   <AlertCircle className="h-4 w-4 mr-2" />
                   <span>Error loading students</span>
                 </div>
@@ -151,7 +154,7 @@ export const StudentSearch = ({
                     <Button
                       key={student.id}
                       variant={selectedStudentId === student.id ? "secondary" : "ghost"}
-                      className={`w-full justify-start text-left px-3 py-2 h-auto ${selectedStudentId === student.id ? selectedBg : hoverBg} text-foreground`}
+                      className={`w-full justify-start text-left px-3 py-2 h-auto ${selectedStudentId === student.id ? selectedBg : hoverBg} text-gray-900`}
                       onClick={() => onStudentSelect(student.id, student.name)}
                     >
                       {student.name}
@@ -160,7 +163,7 @@ export const StudentSearch = ({
                 </div>
               )
               : (
-                <div className="p-4 text-center text-muted-foreground">
+                <div className="p-4 text-center text-gray-500">
                   {searchQuery
                     ? "No students matching your search"
                     : "No students found"}
