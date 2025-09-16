@@ -75,7 +75,7 @@ export const SidebarNav = ({ items, isAdmin, isOpen }: SidebarNavProps) => {
             <item.icon
               className={cn(
                 "min-w-5 transition-all duration-200",
-                (!isMobile && isOpen === false) ? "h-6 w-6" : "h-5 w-5",
+                (!isMobile && isOpen === false) ? "h-5 w-5" : "h-4.5 w-4.5 sm:h-5 sm:w-5",
                 isAdmin
                   ? (isActive
                     ? "text-amber-400 drop-shadow-sm"

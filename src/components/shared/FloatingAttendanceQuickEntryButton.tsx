@@ -109,7 +109,7 @@ export const FloatingAttendanceQuickEntryButton = () => {
             </div>
           )}
 
-          {/* Step 2: Attendance Form */}
+          {/* Step 2: Attendance Form (no external tabs; form is self-contained) */}
           {selectedStudentId && (
             <Form {...form}>
               <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
