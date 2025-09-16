@@ -52,23 +52,22 @@ export const FloatingQuickEntryButton = () => {
       <div className={"fixed right-4 z-[60]" + (isMobile ? " bottom-20" : " bottom-6")}>
         <button
           onClick={handleOpen}
-          className="group relative h-14 px-6 rounded-full shadow-xl bg-gradient-to-tr from-primary to-purple-500 text-white transition-all hover:shadow-2xl focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary flex items-center gap-2"
+          className="relative h-14 px-6 rounded-full shadow-xl bg-gradient-to-tr from-emerald-600 to-emerald-500 text-white transition-all hover:shadow-2xl focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 border border-emerald-500/40 flex items-center gap-2"
           aria-label="Quick student entry"
           type="button"
         >
-          <span className="absolute -inset-1 rounded-full bg-primary/30 blur opacity-0 group-hover:opacity-100 transition-opacity"></span>
           <span className="relative flex items-center justify-center">
-            <Sparkles className="h-6 w-6" />
+            <Sparkles className="h-6 w-6 text-amber-300" />
           </span>
           <span className="relative font-medium">Quick Entry</span>
         </button>
       </div>
 
       <Dialog open={open} onOpenChange={(v) => (v ? handleOpen() : handleClose())}>
-        <DialogContent className="sm:max-w-[520px] max-h-[90vh] overflow-y-auto">
+        <DialogContent className="sm:max-w-[560px] max-h-[90vh] overflow-y-auto bg-white text-gray-900 border border-emerald-100 shadow-2xl">
           <DialogHeader>
-            <DialogTitle>Quick Student Entry</DialogTitle>
-            <DialogDescription>
+            <DialogTitle className="text-emerald-700">Quick Student Entry</DialogTitle>
+            <DialogDescription className="text-gray-600">
               Select a student and record a new progress entry.
             </DialogDescription>
           </DialogHeader>
@@ -83,6 +82,7 @@ export const FloatingQuickEntryButton = () => {
                 }}
                 showHeader={false}
                 showAllStudents
+                accent="emerald"
               />
             </div>
           )}

@@ -35,14 +35,17 @@ export const BottomNavigation = () => {
 
   const isNavItemActive = (item: NavItem) => {
     if (!item.href) return false;
+    const normalize = (p?: string) => (p || "").replace(/\/+$/, "");
+    const currentPath = normalize(location.pathname);
+    const targetHref = normalize(item.href);
     if (item.exact) {
-      return location.pathname === item.href && !location.search;
+      return currentPath === targetHref && !location.search;
     }
     if (item.href.includes("?tab=")) {
       const [path, search] = item.href.split("?");
-      return location.pathname === path && location.search.includes(search);
+      return currentPath === normalize(path) && location.search.includes(search);
     }
-    return location.pathname === item.href;
+    return currentPath === targetHref || currentPath.startsWith(targetHref + "/");
   };
 
   const handleNavigation = (href?: string) => {
@@ -78,10 +81,10 @@ export const BottomNavigation = () => {
               onClick={() => handleNavigation(item.href)}
               type="button"
               className={cn(
-                "inline-flex flex-col items-center justify-center px-1 hover:bg-gray-50 dark:hover:bg-gray-800 group",
+                "inline-flex flex-col items-center justify-center px-1 hover:bg-primary/5 group",
                 active && (isAdmin
                   ? "text-amber-500 bg-black/5 dark:bg-white/10"
-                  : "text-primary bg-primary/5"),
+                  : "text-primary bg-primary/10"),
               )}
               aria-label={t(item.label)}
             >
@@ -90,7 +93,7 @@ export const BottomNavigation = () => {
                   "w-5 h-5 mb-1 group-hover:text-primary",
                   active
                     ? isAdmin ? "text-amber-500" : "text-primary"
-                    : "text-gray-500 dark:text-gray-400",
+                    : "text-muted-foreground",
                 )}
               />
               <span className="hidden min-[400px]:inline text-[11px] whitespace-nowrap truncate max-w-[5rem]">
