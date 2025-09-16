@@ -4,12 +4,15 @@ import { useRBAC } from "@/hooks/useRBAC.ts";
 import { adminNavItems, teacherNavItems, parentNavItems } from "@/config/navigation.ts";
 import { NavItem } from "@/types/navigation.ts";
 import { useI18n } from "@/contexts/I18nContext.tsx";
+import { useAuth } from "@/contexts/AuthContext.tsx";
+import { LogOut } from "lucide-react";
 
 export const BottomNavigation = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { t } = useI18n();
   const { isAdmin, isTeacher, isParent, isAttendanceTaker, hasCapability } = useRBAC();
+  const { signOut } = useAuth();
 
   // Build role-based items exactly like Sidebar
   let items: NavItem[] = [];
@@ -27,8 +30,8 @@ export const BottomNavigation = () => {
     items = parentNavItems;
   }
 
-  // Limit to 5 items to fit the bottom bar
-  const navItems = items.slice(0, 5);
+  // Reserve one slot for Logout; show up to 4 nav items
+  const navItems = items.slice(0, 4);
 
   const isNavItemActive = (item: NavItem) => {
     if (!item.href) return false;
@@ -47,13 +50,19 @@ export const BottomNavigation = () => {
     navigate(href);
   };
 
-  const gridColsClass = navItems.length === 5
+  const handleLogout = async () => {
+    await signOut();
+    navigate("/auth");
+  };
+
+  const totalCols = navItems.length + 1; // +1 for Logout
+  const gridColsClass = totalCols === 5
     ? "grid-cols-5"
-    : navItems.length === 4
+    : totalCols === 4
       ? "grid-cols-4"
-      : navItems.length === 3
+      : totalCols === 3
         ? "grid-cols-3"
-        : navItems.length === 2
+        : totalCols === 2
           ? "grid-cols-2"
           : "grid-cols-1";
 
@@ -90,6 +99,20 @@ export const BottomNavigation = () => {
             </button>
           );
         })}
+        {/* Logout button */}
+        <button
+          onClick={handleLogout}
+          type="button"
+          className={cn(
+            "inline-flex flex-col items-center justify-center px-1 hover:bg-gray-50 dark:hover:bg-gray-800 group text-gray-500 dark:text-gray-400"
+          )}
+          aria-label={t("auth.logout", "Log out")}
+        >
+          <LogOut className="w-5 h-5 mb-1" />
+          <span className="hidden min-[400px]:inline text-[11px] whitespace-nowrap truncate max-w-[5rem]">
+            {t("auth.logout", "Log out")}
+          </span>
+        </button>
       </div>
     </div>
   );
