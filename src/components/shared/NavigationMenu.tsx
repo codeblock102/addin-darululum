@@ -18,16 +18,17 @@ export const NavigationMenu = ({ items }: NavigationMenuProps) => {
   const isMobile = useIsMobile();
 
   const isNavItemActive = (item: NavItem) => {
+    const normalize = (p?: string) => (p || "").replace(/\/+$/, "");
+    const currentPath = normalize(location.pathname);
+    const targetHref = normalize(item.href);
     if (item.exact) {
-      return location.pathname === item.href && !location.search;
+      return currentPath === targetHref && !location.search;
     }
-
     if (item.href.includes("?tab=")) {
       const [path, search] = item.href.split("?");
-      return location.pathname === path && location.search.includes(search);
+      return currentPath === normalize(path) && location.search.includes(search);
     }
-
-    return location.pathname === item.href;
+    return currentPath === targetHref || currentPath.startsWith(targetHref + "/");
   };
 
   const handleNavigation = (href: string) => {
@@ -50,12 +51,7 @@ export const NavigationMenu = ({ items }: NavigationMenuProps) => {
               isActive={isActive}
               onClick={() => handleNavigation(item.href)}
               tooltip={!isMobile ? item.description : undefined}
-              className={`transition-all duration-200 hover:bg-white/10 py-3 sm:py-3
-                ${
-                isActive
-                  ? "bg-white/20 text-white"
-                  : "text-white/80 hover:text-white"
-              }`}
+              className={`transition-all duration-200 py-3 sm:py-3 ${isActive ? "bg-primary/20 text-primary" : "text-foreground/70 hover:bg-primary/5 hover:text-primary"}`}
             >
               <item.icon className="h-4 w-4 sm:h-5 sm:w-5 min-w-5" />
               <span className="text-xs sm:text-sm font-medium truncate">

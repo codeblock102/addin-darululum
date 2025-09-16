@@ -231,9 +231,10 @@ export const Sidebar = (
 
         <div
           className={cn(
-            "flex-1 overflow-auto transition-all duration-300",
+            "flex-1 transition-all duration-300 overflow-x-hidden",
             (!isMobile && isOpen === false) ? "py-2" : "py-2 sm:py-4",
           )}
+          style={{ overflowY: isMobile ? "auto" : "hidden" }}
         >
           {/* DEBUG: Log navItems for admin */}
           {isAdmin && (() => {
