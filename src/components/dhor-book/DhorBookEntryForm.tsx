@@ -50,13 +50,15 @@ interface DhorBookEntryFormProps {
   onSubmit: (data: DhorBookCombinedFormData) => void;
   isPending: boolean;
   onCancel: () => void;
+  /** Which tab to show initially: 'sabaq' | 'sabaq-para' | 'revision' | 'general' */
+  initialTab?: "sabaq" | "sabaq-para" | "revision" | "general";
 }
 
 export function DhorBookEntryForm(
-  { onSubmit, isPending, onCancel }: DhorBookEntryFormProps,
+  { onSubmit, isPending, onCancel, initialTab = "sabaq" }: DhorBookEntryFormProps,
 ) {
   const [date, setDate] = useState<Date | undefined>(new Date());
-  const [activeTab, setActiveTab] = useState("sabaq");
+  const [activeTab, setActiveTab] = useState(initialTab);
   const [ayatOptions, setAyatOptions] = useState<number[]>([]);
   const [calculatedPages, setCalculatedPages] = useState<number>(0);
 
@@ -146,10 +148,9 @@ export function DhorBookEntryForm(
         endAyah,
       );
       setCalculatedPages(pages);
-      form.setValue("pages_memorized", pages);
+      // pages_memorized is not part of the RHF schema; keep it local only
     } else {
       setCalculatedPages(0);
-      form.setValue("pages_memorized", 0);
     }
   }, [startAyah, endAyah, quranFormat, form]);
 
@@ -220,7 +221,11 @@ export function DhorBookEntryForm(
           )}
         />
 
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <Tabs
+          value={activeTab}
+          onValueChange={(v: string) => setActiveTab(v as "sabaq" | "sabaq-para" | "revision" | "general")}
+          className="w-full"
+        >
           <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="sabaq">Sabaq</TabsTrigger>
             <TabsTrigger value="sabaq-para">Sabaq Para</TabsTrigger>

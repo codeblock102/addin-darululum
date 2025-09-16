@@ -6,6 +6,7 @@ import { BackgroundPattern } from "./dashboard/BackgroundPattern.tsx";
 import { RoleBadge } from "./dashboard/RoleBadge.tsx";
 import { useIsMobile } from "@/hooks/use-mobile.tsx";
 import { BottomNavigation } from "@/components/mobile/BottomNavigation.tsx";
+import { FloatingQuickEntryButton } from "@/components/shared/FloatingQuickEntryButton.tsx";
 import { Outlet } from "react-router-dom";
 import { cn } from "@/lib/utils.ts";
 import { useTheme } from "@/hooks/use-theme.ts";
@@ -103,6 +104,11 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
       {/* Mobile Bottom Navigation */}
       {isMobile && !isLoading && (isTeacher || isAdmin || isParent) && (
         <BottomNavigation />
+      )}
+
+      {/* Floating Quick Entry Action */}
+      {!isLoading && (isTeacher || isAdmin) && (
+        <FloatingQuickEntryButton />
       )}
     </div>
   );
