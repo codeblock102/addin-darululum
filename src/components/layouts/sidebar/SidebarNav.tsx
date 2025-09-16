@@ -16,16 +16,20 @@ export const SidebarNav = ({ items, isAdmin, isOpen }: SidebarNavProps) => {
   const { t } = useI18n();
 
   const isNavItemActive = (item: NavItem) => {
+    const normalize = (p?: string) => (p || "").replace(/\/+$/, "");
+    const currentPath = normalize(location.pathname);
+    const targetHref = normalize(item.href);
+
     if (item.exact) {
-      return location.pathname === item.href && !location.search;
+      return currentPath === targetHref && !location.search;
     }
 
-    if (item.href.includes("?tab=")) {
+    if (item.href?.includes("?tab=")) {
       const [path, search] = item.href.split("?");
-      return location.pathname === path && location.search.includes(search);
+      return currentPath === normalize(path) && location.search.includes(search);
     }
 
-    return location.pathname === item.href;
+    return currentPath === targetHref || currentPath.startsWith(targetHref + "/");
   };
 
   const handleNavigation = (_event: React.MouseEvent<HTMLAnchorElement>) => {
@@ -60,8 +64,8 @@ export const SidebarNav = ({ items, isAdmin, isOpen }: SidebarNavProps) => {
                   ? "bg-white/15 text-amber-400 font-medium backdrop-blur-sm border-l-2 border-amber-500 shadow-sm"
                   : "text-gray-300 hover:bg-white/10 hover:text-amber-400 border-l-2 border-transparent hover:shadow-sm")
                 : (isActive
-                  ? "bg-blue-50 text-blue-600 font-medium border-l-2 border-blue-500 shadow-sm"
-                  : "text-gray-700 hover:bg-gray-100/60 hover:text-blue-600 border-l-2 border-transparent hover:shadow-sm"),
+                  ? "bg-primary/10 text-primary font-medium border-l-2 border-primary shadow-sm"
+                  : "text-gray-700 hover:bg-primary/5 hover:text-primary border-l-2 border-transparent hover:shadow-sm"),
               "hover:scale-[1.02] active:scale-[0.98]",
             )}
             title={(!isMobile && isOpen === false)
@@ -77,8 +81,8 @@ export const SidebarNav = ({ items, isAdmin, isOpen }: SidebarNavProps) => {
                     ? "text-amber-400 drop-shadow-sm"
                     : "text-gray-400 group-hover:text-amber-400")
                   : (isActive
-                    ? "text-blue-600 drop-shadow-sm"
-                    : "text-gray-500 group-hover:text-blue-600"),
+                    ? "text-primary drop-shadow-sm"
+                    : "text-gray-500 group-hover:text-primary"),
               )}
             />
             {(isOpen !== false || isMobile) && (

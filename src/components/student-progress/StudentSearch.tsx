@@ -19,6 +19,7 @@ interface StudentSearchProps {
   teacherId?: string;
   showHeader?: boolean;
   showAllStudents?: boolean; // Add a prop to explicitly show all students
+  accent?: "emerald" | "amber" | "primary";
 }
 
 export const StudentSearch = ({
@@ -27,6 +28,7 @@ export const StudentSearch = ({
   teacherId,
   showHeader = true,
   showAllStudents = false,
+  accent = "primary",
 }: StudentSearchProps) => {
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -99,6 +101,10 @@ export const StudentSearch = ({
     setSearchQuery(e.target.value);
   };
 
+  const accentText = accent === "amber" ? "text-amber-600" : accent === "emerald" ? "text-emerald-600" : "text-primary";
+  const hoverBg = accent === "amber" ? "hover:bg-amber-50" : accent === "emerald" ? "hover:bg-emerald-50" : "hover:bg-primary/5";
+  const selectedBg = accent === "amber" ? "bg-amber-100 text-amber-900" : accent === "emerald" ? "bg-emerald-100 text-emerald-900" : "bg-primary/10 text-primary";
+
   return (
     <Card className={`${!showHeader ? "border-0 shadow-none" : ""}`}>
       {showHeader && (
@@ -113,7 +119,7 @@ export const StudentSearch = ({
       <CardContent className={!showHeader ? "p-0" : undefined}>
         <div className="flex flex-col gap-4">
           <div className="relative">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Search className={`absolute left-2.5 top-2.5 h-4 w-4 ${accentText}`} />
             <Input
               type="search"
               placeholder="Search students by name..."
@@ -145,7 +151,7 @@ export const StudentSearch = ({
                     <Button
                       key={student.id}
                       variant={selectedStudentId === student.id ? "secondary" : "ghost"}
-                      className={`w-full justify-start text-left px-3 py-2 h-auto ${selectedStudentId === student.id ? "bg-secondary" : "hover:bg-accent"} text-foreground`}
+                      className={`w-full justify-start text-left px-3 py-2 h-auto ${selectedStudentId === student.id ? selectedBg : hoverBg} text-foreground`}
                       onClick={() => onStudentSelect(student.id, student.name)}
                     >
                       {student.name}
