@@ -10,6 +10,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group.tsx";
 import { Button } from "@/components/ui/button.tsx";
 import { useToast } from "@/hooks/use-toast.ts";
 import { useQueryClient } from "@tanstack/react-query";
+import { useAuth } from "@/contexts/AuthContext.tsx";
 import { supabase } from "@/integrations/supabase/client.ts";
 import { format } from "date-fns";
 
@@ -27,6 +28,8 @@ export const FloatingAttendanceQuickEntryButton = () => {
   const [selectedStudentId, setSelectedStudentId] = useState<string>("");
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { session } = useAuth();
+  const teacherId = session?.user?.id || "";
 
   const now = useMemo(() => new Date(), []);
 
@@ -79,14 +82,11 @@ export const FloatingAttendanceQuickEntryButton = () => {
       <div className={"fixed right-4 z-[60] " + (isMobile ? "bottom-36" : "bottom-24")}>
         <button
           onClick={handleOpen}
-          className="relative h-14 px-6 rounded-full shadow-xl bg-gradient-to-tr from-amber-500 to-amber-400 text-amber-950 transition-all hover:shadow-2xl focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500 border border-amber-500/40 flex items-center gap-2"
+          className="relative h-14 w-14 rounded-full shadow-xl bg-gradient-to-tr from-amber-500 to-amber-400 text-amber-950 transition-all hover:shadow-2xl focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500 border border-amber-500/40 flex items-center justify-center"
           aria-label="Quick attendance entry"
           type="button"
         >
-          <span className="relative flex items-center justify-center">
-            <CheckCircle2 className="h-6 w-6 text-amber-900" />
-          </span>
-          <span className="relative font-medium">Quick Attendance</span>
+          <CheckCircle2 className="h-6 w-6 text-amber-900" />
         </button>
       </div>
 
@@ -103,7 +103,7 @@ export const FloatingAttendanceQuickEntryButton = () => {
               <StudentSearch
                 onStudentSelect={(id) => setSelectedStudentId(id)}
                 showHeader={false}
-                showAllStudents
+                teacherId={teacherId}
                 accent="amber"
               />
             </div>

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Sparkles } from "lucide-react";
+import { BookOpen } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -45,14 +45,11 @@ export const FloatingQuickEntryButton = () => {
       <div className={"fixed right-4 z-[60]" + (isMobile ? " bottom-20" : " bottom-6")}>
         <button
           onClick={handleOpen}
-          className="relative h-14 px-6 rounded-full shadow-xl bg-gradient-to-tr from-emerald-600 to-emerald-500 text-white transition-all hover:shadow-2xl focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 border border-emerald-500/40 flex items-center gap-2"
+          className="relative h-14 w-14 rounded-full shadow-xl bg-gradient-to-tr from-emerald-600 to-emerald-500 text-white transition-all hover:shadow-2xl focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 border border-emerald-500/40 flex items-center justify-center"
           aria-label="Quick student entry"
           type="button"
         >
-          <span className="relative flex items-center justify-center">
-            <Sparkles className="h-6 w-6 text-amber-300" />
-          </span>
-          <span className="relative font-medium">Quick Entry</span>
+          <BookOpen className="h-6 w-6 text-amber-300" />
         </button>
       </div>
 
@@ -74,7 +71,7 @@ export const FloatingQuickEntryButton = () => {
                   setSelectedStudentName(name);
                 }}
                 showHeader={false}
-                showAllStudents
+                teacherId={teacherId}
                 accent="emerald"
               />
             </div>
