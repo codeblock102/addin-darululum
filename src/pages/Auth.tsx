@@ -28,7 +28,7 @@ import {
   CardContent,
   CardDescription,
   CardFooter,
-  CardHeader,
+  CardHeader as _CardHeader,
   CardTitle,
 } from "@/components/ui/card.tsx";
 import { Label } from "@/components/ui/label.tsx";
@@ -44,6 +44,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth.ts";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert.tsx";
+import DumLogo from "@/assets/Logo-01.jpg";
 
 /**
  * @component Auth
@@ -231,15 +232,15 @@ const Auth = () => {
             <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-emerald-400 via-teal-400 to-cyan-400"></div>
             
             {/* Logo Container */}
-            <div className="relative mb-6">
-              <div className="w-24 h-24 mx-auto bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm border border-white/30">
+            <div className="relative mb-6 flex justify-center">
+              <div className="bg-white/95 rounded-xl p-3 shadow-md border border-white/50 w-[220px] sm:w-[260px]">
                 <img
-                  src="/logo.png"
+                  src={DumLogo}
                   alt="Dār Al-Ulūm Montréal Logo"
-                  className="w-16 h-16 rounded-full"
+                  className="w-full h-auto object-contain"
                 />
               </div>
-              <div className="absolute -top-2 -right-2 w-8 h-8 bg-gradient-to-r from-emerald-400 to-teal-400 rounded-full flex items-center justify-center">
+              <div className="absolute -top-3 left-1/2 -translate-x-1/2 w-8 h-8 bg-gradient-to-r from-emerald-400 to-teal-400 rounded-full flex items-center justify-center">
                 <Sparkles className="w-4 h-4 text-white" />
               </div>
             </div>
