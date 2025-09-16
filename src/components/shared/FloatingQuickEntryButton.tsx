@@ -13,19 +13,12 @@ import { StudentSearch } from "@/components/student-progress/StudentSearch.tsx";
 import { DhorBookEntryForm } from "@/components/dhor-book/DhorBookEntryForm.tsx";
 import { useDhorEntryMutation } from "@/components/dhor-book/useDhorEntryMutation.ts";
 import { useAuth } from "@/contexts/AuthContext.tsx";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@/components/ui/tabs.tsx";
 
 export const FloatingQuickEntryButton = () => {
   const isMobile = useIsMobile();
   const [open, setOpen] = useState(false);
   const [selectedStudentId, setSelectedStudentId] = useState<string>("");
   const [_selectedStudentName, setSelectedStudentName] = useState<string>("");
-  const [entryKind, setEntryKind] = useState<"sabaq" | "sabaq-para" | "revision">("sabaq");
   const { session } = useAuth();
   const teacherId = session?.user?.id || "";
 
@@ -87,40 +80,15 @@ export const FloatingQuickEntryButton = () => {
             </div>
           )}
 
-          {/* Step 2: Entry kind tabs and form */}
+          {/* Step 2: Single entry form with internal tabs (Sabaq / Sabaq Para / Dhor) */}
           {selectedStudentId && (
             <div className="space-y-3">
-              <Tabs value={entryKind} onValueChange={(v) => setEntryKind(v as "sabaq" | "sabaq-para" | "revision")}>
-                <TabsList className="grid w-full grid-cols-3">
-                  <TabsTrigger value="sabaq">Sabaq</TabsTrigger>
-                  <TabsTrigger value="sabaq-para">Sabaq Para</TabsTrigger>
-                  <TabsTrigger value="revision">Dhor</TabsTrigger>
-                </TabsList>
-                <TabsContent value="sabaq">
-                  <DhorBookEntryForm
-                    initialTab="sabaq"
-                    onSubmit={(payload) => mutate(payload)}
-                    isPending={isPending}
-                    onCancel={handleClose}
-                  />
-                </TabsContent>
-                <TabsContent value="sabaq-para">
-                  <DhorBookEntryForm
-                    initialTab="sabaq-para"
-                    onSubmit={(payload) => mutate(payload)}
-                    isPending={isPending}
-                    onCancel={handleClose}
-                  />
-                </TabsContent>
-                <TabsContent value="revision">
-                  <DhorBookEntryForm
-                    initialTab="revision"
-                    onSubmit={(payload) => mutate(payload)}
-                    isPending={isPending}
-                    onCancel={handleClose}
-                  />
-                </TabsContent>
-              </Tabs>
+              <DhorBookEntryForm
+                initialTab="sabaq"
+                onSubmit={(payload) => mutate(payload)}
+                isPending={isPending}
+                onCancel={handleClose}
+              />
             </div>
           )}
         </DialogContent>
