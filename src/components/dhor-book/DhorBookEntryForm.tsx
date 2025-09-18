@@ -71,6 +71,7 @@ export function DhorBookEntryForm(
     setSelectedJuz,
     selectedSurah,
     setSelectedSurah,
+    allSurahsData,
   } = useQuranData();
 
   const form = useForm<DailyActivityFormValues>({
@@ -109,22 +110,49 @@ export function DhorBookEntryForm(
         );
 
         const ayahRange = getAyahRangeForSurahInJuz(selectedJuz, selectedSurah);
+        let start = 1;
+        let end = 0;
+
         if (ayahRange) {
-          console.log(
-            `Ayah range found: ${ayahRange.startAyah}-${ayahRange.endAyah}`,
+          // If the mapping returns exactly 20 ayahs, it's likely the placeholder fallback.
+          const isPlaceholder = (ayahRange.endAyah - ayahRange.startAyah + 1) === 20;
+          if (isPlaceholder) {
+            const surahMeta = allSurahsData?.find(
+              (s) => s.surah_number === selectedSurah,
+            );
+            if (surahMeta?.total_ayat) {
+              start = 1;
+              end = surahMeta.total_ayat;
+            } else {
+              start = ayahRange.startAyah;
+              end = ayahRange.endAyah;
+            }
+          } else {
+            start = ayahRange.startAyah;
+            end = ayahRange.endAyah;
+          }
+        } else {
+          // No mapping found: fallback to full surah if we know total_ayat
+          const surahMeta = allSurahsData?.find(
+            (s) => s.surah_number === selectedSurah,
           );
-          const ayatArray = Array.from(
-            { length: ayahRange.endAyah - ayahRange.startAyah + 1 },
-            (_, i) => ayahRange.startAyah + i,
-          );
+          if (surahMeta?.total_ayat) {
+            start = 1;
+            end = surahMeta.total_ayat;
+          }
+        }
+
+        if (end > 0) {
+          console.log(`Ayah range resolved: ${start}-${end}`);
+          const ayatArray = Array.from({ length: end - start + 1 }, (_, i) => start + i);
           setAyatOptions(ayatArray);
           // Reset ayat selections when surah changes
-          form.setValue("start_ayat", ayahRange.startAyah);
+          form.setValue("start_ayat", start);
           form.setValue("end_ayat", undefined);
           setCalculatedPages(0);
         } else {
           console.warn(
-            `No ayah range found for Juz ${selectedJuz}, Surah ${selectedSurah}`,
+            `Unable to resolve ayah range for Juz ${selectedJuz}, Surah ${selectedSurah}`,
           );
           setAyatOptions([]);
         }
