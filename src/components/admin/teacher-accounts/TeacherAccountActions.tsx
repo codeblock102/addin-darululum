@@ -17,7 +17,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog.tsx";
-import { Edit, Eye, MoreHorizontal, ShieldCheck, Trash2, UserMinus } from "lucide-react";
+import { Edit, Eye, KeyRound, MoreHorizontal, ShieldCheck, Trash2, UserMinus } from "lucide-react";
 import { TeacherAccount } from "@/types/teacher.ts";
 import { promoteToAdmin } from "@/utils/promoteToAdmin.ts";
 import { useToast } from "@/hooks/use-toast.ts";
@@ -39,6 +39,8 @@ export function TeacherAccountActions({
   onDelete,
 }: TeacherAccountActionsProps) {
   const [isPromoteDialogOpen, setIsPromoteDialogOpen] = useState(false);
+  const [isResetOpen, setIsResetOpen] = useState(false);
+  const [newPassword, setNewPassword] = useState("");
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -78,6 +80,10 @@ export function TeacherAccountActions({
           <DropdownMenuItem onClick={() => onEdit(teacher)} className="cursor-pointer">
             <Edit className="mr-2 h-4 w-4 text-gray-600" />
             <span className="text-gray-700">Edit Account</span>
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => setIsResetOpen(true)} className="cursor-pointer text-amber-700 hover:text-amber-800 hover:bg-amber-50">
+            <KeyRound className="mr-2 h-4 w-4" />
+            <span>Change Password</span>
           </DropdownMenuItem>
           
           {teacher.role !== 'admin' && (
@@ -131,6 +137,59 @@ export function TeacherAccountActions({
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction onClick={handlePromote} className="bg-blue-600 hover:bg-blue-700">
               Promote
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Change Password Dialog */}
+      <AlertDialog open={isResetOpen} onOpenChange={setIsResetOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Change Password</AlertDialogTitle>
+            <AlertDialogDescription>
+              Set a new password for {teacher.name}. The user will be able to log in immediately with the new password.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="space-y-2 py-2">
+            <input
+              type="password"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              placeholder="Enter new password (min 6 chars)"
+              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
+            />
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setNewPassword("")}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={async () => {
+                if (!newPassword || newPassword.length < 6) return;
+                try {
+                  const { error } = await fetch("/functions/v1/admin-update-password", {
+                    method: "POST",
+                    headers: {
+                      "Content-Type": "application/json",
+                      Authorization: `Bearer ${localStorage.getItem("sb-access-token") || ""}`,
+                    },
+                    body: JSON.stringify({ userId: teacher.id, newPassword }),
+                  }).then(async (r) => ({ error: r.ok ? null : new Error(await r.text()) }));
+
+                  if (error) {
+                    toast({ title: "Password update failed", description: (error as Error).message, variant: "destructive" });
+                  } else {
+                    toast({ title: "Password updated", description: `Password changed for ${teacher.name}` });
+                    setIsResetOpen(false);
+                    setNewPassword("");
+                  }
+                } catch (e: unknown) {
+                  const message = e instanceof Error ? e.message : "Unknown error";
+                  toast({ title: "Password update failed", description: message, variant: "destructive" });
+                }
+              }}
+              className="bg-amber-600 hover:bg-amber-700"
+            >
+              Save
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
