@@ -109,7 +109,6 @@ export const StudentForm = ({
                 <SelectContent>
                   <SelectItem value="male">{t("common.male", "Male")}</SelectItem>
                   <SelectItem value="female">{t("common.female", "Female")}</SelectItem>
-                  <SelectItem value="other">{t("common.other", "Other")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
