@@ -129,6 +129,8 @@ export function useDhorEntryMutation({
               juz_number: formData.sabaq_para_juz,
               quality_rating: formData.sabaq_para_memorization_quality,
               quarters_revised: formData.quarters_revised,
+            // If user leaves pages blank in the form, persist 0 by default
+            sabaq_para_pages: formData.sabaq_para_pages ?? 0,
             };
           // if (formData.comments) sabaqParaRecord.teacher_notes = formData.comments;
 
