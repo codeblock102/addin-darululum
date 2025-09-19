@@ -85,7 +85,7 @@ export function DhorBookEntryForm(
       memorization_quality: "average",
       quran_format: "13",
       sabaq_para_juz: undefined,
-      sabaq_para_pages: 0,
+      sabaq_para_pages: undefined,
       sabaq_para_memorization_quality: undefined,
       quarters_revised: undefined,
       dhor_juz: undefined,
@@ -578,9 +578,17 @@ export function DhorBookEntryForm(
                     <Input
                       type="number"
                       placeholder="Enter number of pages"
-                      {...field}
-                      onChange={(e) =>
-                        field.onChange(parseInt(e.target.value) || 0)}
+                      value={field.value ?? ""}
+                      onChange={(e) => {
+                        const raw = e.target.value;
+                        if (raw === "") {
+                          field.onChange(undefined);
+                          return;
+                        }
+                        const parsed = parseInt(raw, 10);
+                        field.onChange(Number.isNaN(parsed) ? 0 : Math.max(0, parsed));
+                      }}
+                      inputMode="numeric"
                     />
                   </FormControl>
                   <FormMessage />
