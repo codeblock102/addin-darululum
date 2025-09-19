@@ -83,7 +83,7 @@ export function DhorBookEntryForm(
       start_ayat: undefined,
       end_ayat: undefined,
       memorization_quality: "average",
-      quran_format: "15",
+      quran_format: "13",
       sabaq_para_juz: undefined,
       sabaq_para_pages: 0,
       sabaq_para_memorization_quality: undefined,
@@ -311,7 +311,7 @@ export function DhorBookEntryForm(
                           <SelectValue placeholder="Select Juz" />
                         </SelectTrigger>
                       </FormControl>
-                      <SelectContent>
+                      <SelectContent className="max-h-[320px] overflow-y-auto touch-pan-y" style={{ WebkitOverflowScrolling: "touch" }}>
                         {juzData?.map((juz) => (
                           <SelectItem
                             key={juz.id}
@@ -360,7 +360,7 @@ export function DhorBookEntryForm(
                           />
                         </SelectTrigger>
                       </FormControl>
-                      <SelectContent className="max-h-[300px]">
+                      <SelectContent className="max-h-[300px] overflow-y-auto touch-pan-y" style={{ WebkitOverflowScrolling: "touch" }}>
                         {juzLoading || isLoadingSurahs
                           ? (
                             <SelectItem disabled value="loading">

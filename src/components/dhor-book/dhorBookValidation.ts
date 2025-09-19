@@ -16,7 +16,7 @@ export const DailyActivityFormSchema = z.object({
     "needsWork",
     "horrible",
   ]).optional(), // For Sabaq quality
-  quran_format: z.enum(["13", "15"]).default("15"), // Usually tied to Sabaq
+  quran_format: z.enum(["13", "15"]).default("13"), // Usually tied to Sabaq
 
   // Sabaq Para (Additional Reading) - from sabaq_para table
   sabaq_para_juz: z.number().min(1).max(30).optional(),
