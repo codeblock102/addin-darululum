@@ -88,10 +88,10 @@ export function DhorBookGrid(
           <TableHeader>
             <TableRow>
               <TableHead>Date</TableHead>
-              <TableHead className="hidden xs:table-cell">Main Lesson</TableHead>
-              <TableHead className="hidden sm:table-cell">Reading Practice</TableHead>
-              <TableHead>Revision 1</TableHead>
-              <TableHead className="hidden md:table-cell">Revision 2</TableHead>
+              <TableHead>Sabaq</TableHead>
+              <TableHead className="hidden sm:table-cell">Sabaq Para</TableHead>
+              <TableHead>Dhor 1</TableHead>
+              <TableHead className="hidden md:table-cell">Dhor 2</TableHead>
               <TableHead className="hidden md:table-cell">Quality</TableHead>
               <TableHead className="hidden lg:table-cell">Notes</TableHead>
             </TableRow>
@@ -115,7 +115,7 @@ export function DhorBookGrid(
                     <TableCell className="font-medium">
                       {format(date, "E, MMM d")}
                     </TableCell>
-                    <TableCell className="hidden xs:table-cell">
+                    <TableCell>
                       {entry?.current_juz && entry.current_surah &&
                           entry.start_ayat && entry.end_ayat
                         ? `J${entry.current_juz} S${entry.current_surah}:${entry.start_ayat}-${entry.end_ayat}`

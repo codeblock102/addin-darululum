@@ -241,39 +241,33 @@ export const useQuranData = () => {
       return;
     }
 
-    console.log(
-      `Fetching surah_list for Juz ${juzNumber} and previous...`,
-    );
+    console.log(`Fetching surah_list for Juz ${juzNumber}...`);
     setIsLoadingSurahList(true);
     setErrorFetchingSurahList(null);
     setSurahListForSelectedJuz(null); // Clear previous list
     setParsedSurahNumbers(null); // Clear parsed numbers before new fetch
 
     try {
-      // Fetch surah_list for the selected and previous juz
-      const juzNumbersToFetch = juzNumber > 1
-        ? [juzNumber - 1, juzNumber]
-        : [juzNumber];
-
+      // Fetch only the selected juz's surah_list (do not merge with previous juz)
       const { data, error } = await supabase
         .from("juz")
         .select("surah_list")
-        .in("juz_number", juzNumbersToFetch);
+        .eq("juz_number", juzNumber)
+        .single();
 
       if (error) {
         console.error(
-          `Error fetching surah_lists for Juz ${juzNumbersToFetch.join(", ")}:`,
+          `Error fetching surah_list for Juz ${juzNumber}:`,
           error,
         );
         setErrorFetchingSurahList(error.message);
         setSurahListForSelectedJuz(null);
-      } else {
-        const surahLists = data.map((d) => d.surah_list);
-        console.log("Fetched surah lists:", surahLists);
-        // We set a temporary state to indicate success, but the main logic
-        // now relies on the parsed numbers.
-        setSurahListForSelectedJuz(surahLists.join(", ")); // Store combined list for debug
-        parseSurahListToNumbers(surahLists, allSurahsData);
+      } else if (data) {
+        console.log("Fetched surah list:", data.surah_list);
+        // Store the exact list for the selected juz only
+        setSurahListForSelectedJuz(data.surah_list);
+        // Parse only this juz's list
+        parseSurahListToNumbers([data.surah_list], allSurahsData);
       }
     } catch (err) {
       const errorMessage = err instanceof Error

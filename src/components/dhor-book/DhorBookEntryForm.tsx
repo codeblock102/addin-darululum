@@ -71,6 +71,7 @@ export function DhorBookEntryForm(
     setSelectedJuz,
     selectedSurah,
     setSelectedSurah,
+    allSurahsData,
   } = useQuranData();
 
   const form = useForm<DailyActivityFormValues>({
@@ -82,9 +83,9 @@ export function DhorBookEntryForm(
       start_ayat: undefined,
       end_ayat: undefined,
       memorization_quality: "average",
-      quran_format: "15",
+      quran_format: "13",
       sabaq_para_juz: undefined,
-      sabaq_para_pages: 0,
+      sabaq_para_pages: undefined,
       sabaq_para_memorization_quality: undefined,
       quarters_revised: undefined,
       dhor_juz: undefined,
@@ -109,22 +110,49 @@ export function DhorBookEntryForm(
         );
 
         const ayahRange = getAyahRangeForSurahInJuz(selectedJuz, selectedSurah);
+        let start = 1;
+        let end = 0;
+
         if (ayahRange) {
-          console.log(
-            `Ayah range found: ${ayahRange.startAyah}-${ayahRange.endAyah}`,
+          // If the mapping returns exactly 20 ayahs, it's likely the placeholder fallback.
+          const isPlaceholder = (ayahRange.endAyah - ayahRange.startAyah + 1) === 20;
+          if (isPlaceholder) {
+            const surahMeta = allSurahsData?.find(
+              (s) => s.surah_number === selectedSurah,
+            );
+            if (surahMeta?.total_ayat) {
+              start = 1;
+              end = surahMeta.total_ayat;
+            } else {
+              start = ayahRange.startAyah;
+              end = ayahRange.endAyah;
+            }
+          } else {
+            start = ayahRange.startAyah;
+            end = ayahRange.endAyah;
+          }
+        } else {
+          // No mapping found: fallback to full surah if we know total_ayat
+          const surahMeta = allSurahsData?.find(
+            (s) => s.surah_number === selectedSurah,
           );
-          const ayatArray = Array.from(
-            { length: ayahRange.endAyah - ayahRange.startAyah + 1 },
-            (_, i) => ayahRange.startAyah + i,
-          );
+          if (surahMeta?.total_ayat) {
+            start = 1;
+            end = surahMeta.total_ayat;
+          }
+        }
+
+        if (end > 0) {
+          console.log(`Ayah range resolved: ${start}-${end}`);
+          const ayatArray = Array.from({ length: end - start + 1 }, (_, i) => start + i);
           setAyatOptions(ayatArray);
           // Reset ayat selections when surah changes
-          form.setValue("start_ayat", ayahRange.startAyah);
+          form.setValue("start_ayat", start);
           form.setValue("end_ayat", undefined);
           setCalculatedPages(0);
         } else {
           console.warn(
-            `No ayah range found for Juz ${selectedJuz}, Surah ${selectedSurah}`,
+            `Unable to resolve ayah range for Juz ${selectedJuz}, Surah ${selectedSurah}`,
           );
           setAyatOptions([]);
         }
@@ -283,7 +311,7 @@ export function DhorBookEntryForm(
                           <SelectValue placeholder="Select Juz" />
                         </SelectTrigger>
                       </FormControl>
-                      <SelectContent>
+                      <SelectContent className="max-h-[320px] overflow-y-auto touch-pan-y" style={{ WebkitOverflowScrolling: "touch" }}>
                         {juzData?.map((juz) => (
                           <SelectItem
                             key={juz.id}
@@ -332,7 +360,7 @@ export function DhorBookEntryForm(
                           />
                         </SelectTrigger>
                       </FormControl>
-                      <SelectContent className="max-h-[300px]">
+                      <SelectContent className="max-h-[300px] overflow-y-auto touch-pan-y" style={{ WebkitOverflowScrolling: "touch" }}>
                         {juzLoading || isLoadingSurahs
                           ? (
                             <SelectItem disabled value="loading">
@@ -550,9 +578,17 @@ export function DhorBookEntryForm(
                     <Input
                       type="number"
                       placeholder="Enter number of pages"
-                      {...field}
-                      onChange={(e) =>
-                        field.onChange(parseInt(e.target.value) || 0)}
+                      value={field.value ?? ""}
+                      onChange={(e) => {
+                        const raw = e.target.value;
+                        if (raw === "") {
+                          field.onChange(undefined);
+                          return;
+                        }
+                        const parsed = parseInt(raw, 10);
+                        field.onChange(Number.isNaN(parsed) ? 0 : Math.max(0, parsed));
+                      }}
+                      inputMode="numeric"
                     />
                   </FormControl>
                   <FormMessage />
