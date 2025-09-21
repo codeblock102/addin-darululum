@@ -31,6 +31,32 @@ export const TeacherAssignments = ({ teacherId }: TeacherAssignmentsProps) => {
   const [openSubmissions, setOpenSubmissions] = useState<Set<string>>(new Set());
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
+  const guessMimeType = (filename: string): string => {
+    const ext = filename.toLowerCase().split(".").pop() || "";
+    switch (ext) {
+      case "jpg":
+      case "jpeg": return "image/jpeg";
+      case "png": return "image/png";
+      case "gif": return "image/gif";
+      case "webp": return "image/webp";
+      case "svg": return "image/svg+xml";
+      case "pdf": return "application/pdf";
+      case "txt": return "text/plain";
+      case "csv": return "text/csv";
+      case "json": return "application/json";
+      case "doc": return "application/msword";
+      case "docx": return "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+      case "xls": return "application/vnd.ms-excel";
+      case "xlsx": return "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+      case "ppt": return "application/vnd.ms-powerpoint";
+      case "pptx": return "application/vnd.openxmlformats-officedocument.presentationml.presentation";
+      case "zip": return "application/zip";
+      case "rar": return "application/vnd.rar";
+      case "7z": return "application/x-7z-compressed";
+      default: return "application/octet-stream";
+    }
+  };
+
   const { data: classes } = useTeacherClasses(teacherId);
 
   const { data: students } = useQuery({
@@ -96,22 +122,17 @@ export const TeacherAssignments = ({ teacherId }: TeacherAssignmentsProps) => {
   const createAssignment = async () => {
     if (!form.title.trim()) return;
 
-    let attachmentName: string | undefined;
-    let attachmentUrl: string | undefined;
-    if (form.file) {
-      attachmentName = form.file.name;
-      attachmentUrl = URL.createObjectURL(form.file);
-    }
-
     try {
+      // 1) Create assignment first to obtain the id
       const { data: inserted, error } = await supabase.from("teacher_assignments").insert({
         teacher_id: teacherId,
         title: form.title.trim(),
         description: form.description.trim() || null,
         due_date: form.dueDate || null,
         status: "pending",
-        attachment_name: attachmentName || null,
-        attachment_url: attachmentUrl || null,
+        // attachment fields will be set after upload (if any)
+        attachment_name: null,
+        attachment_url: null,
         class_ids: selectedClassIds,
         student_ids: selectedStudentIds,
       }).select("id").single();
@@ -120,6 +141,30 @@ export const TeacherAssignments = ({ teacherId }: TeacherAssignmentsProps) => {
       // Seed submissions for targeted students for immediate visibility
       const assignmentId = inserted?.id as string;
       if (assignmentId) {
+        // 2) If there is a file, upload to storage and update the row with storage path
+        if (form.file) {
+          try {
+            const file = form.file as File;
+            const bucket = "teacher-assignments";
+            const sanitized = file.name.replace(/[^a-zA-Z0-9_.-]/g, "_");
+            const objectPath = `${teacherId}/${assignmentId}/${Date.now()}_${sanitized}`;
+            const resolvedContentType = file.type && file.type.trim() !== "" ? file.type : guessMimeType(file.name);
+            const { error: uploadErr } = await supabase.storage.from(bucket).upload(objectPath, file, {
+              cacheControl: "3600",
+              upsert: true,
+              contentType: resolvedContentType,
+            });
+            if (uploadErr) throw uploadErr;
+            await supabase
+              .from("teacher_assignments")
+              .update({ attachment_name: file.name, attachment_url: objectPath })
+              .eq("id", assignmentId)
+              .eq("teacher_id", teacherId);
+          } catch (uploadOrUpdateErr) {
+            console.warn("Attachment upload/update failed:", uploadOrUpdateErr);
+          }
+        }
+
         let targetStudentIds: string[] = [];
         if (selectedStudentIds.length > 0) {
           targetStudentIds = [...selectedStudentIds];
@@ -209,6 +254,63 @@ export const TeacherAssignments = ({ teacherId }: TeacherAssignmentsProps) => {
     if (listFilter === "all") return computedAssignments;
     return computedAssignments.filter((a) => a.status === listFilter);
   }, [computedAssignments, listFilter]);
+
+  const openAttachmentFromPath = async (pathOrUrl?: string | null, fileName?: string | null) => {
+    if (!pathOrUrl) return;
+    try {
+      const nameGuess = (fileName || "").trim() || (pathOrUrl.includes("/") ? pathOrUrl.substring(pathOrUrl.lastIndexOf("/") + 1) : "");
+      const ext = nameGuess.toLowerCase().split(".").pop() || "";
+      const inlineExts = new Set(["jpg","jpeg","png","gif","webp","svg","pdf"]);
+      const isInline = inlineExts.has(ext);
+
+      // Resolve a temporary URL to fetch the file (signed if storage path)
+      let tempUrl = pathOrUrl;
+      if (!/^https?:/i.test(pathOrUrl)) {
+        const { data } = await supabase.storage
+          .from("teacher-assignments")
+          .createSignedUrl(pathOrUrl, 300);
+        tempUrl = data?.signedUrl || "";
+      }
+      if (!tempUrl) return;
+
+      // Fetch as blob so we can mask the superseded URL
+      const resp = await fetch(tempUrl);
+      const blob = await resp.blob();
+      const blobUrl = URL.createObjectURL(blob);
+
+      if (isInline) {
+        try {
+          const g = globalThis as unknown as { location?: { assign?: (u: string) => void; href?: string } };
+          if (typeof g.location?.assign === "function") {
+            g.location.assign(blobUrl);
+          } else if (g.location) {
+            g.location.href = blobUrl as unknown as string;
+          }
+        } catch (_e) {
+          // Fallback: download
+          const a = document.createElement("a");
+          a.href = blobUrl;
+          a.download = nameGuess || "attachment";
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+        }
+      } else {
+        const a = document.createElement("a");
+        a.href = blobUrl;
+        a.download = nameGuess || "attachment";
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+      }
+
+      // Best-effort cleanup — can't revoke if we navigated same tab
+      // Parent version only revokes when not navigated; teachers will often navigate back anyway
+      // We skip revoke here to avoid breaking the open tab; the blob will be released on page unload
+    } catch (e) {
+      console.warn("Failed to open attachment:", e);
+    }
+  };
 
   const toggleSubmissions = (id: string) => {
     setOpenSubmissions((prev) => {
@@ -330,7 +432,9 @@ export const TeacherAssignments = ({ teacherId }: TeacherAssignmentsProps) => {
               <Upload className="w-4 h-4 mr-2" /> {t("pages.teacherPortal.assignments.attachFile", "Attach file")}
             </Button>
             {form.file && (
-              <span className="text-sm text-muted-foreground truncate">{form.file.name}</span>
+              <span className="text-sm text-muted-foreground truncate">
+                {form.file.name} ({(form.file.type && form.file.type.trim() !== "") ? form.file.type : guessMimeType(form.file.name)})
+              </span>
             )}
             <div className="md:ml-auto flex gap-2">
               <Button type="button" disabled={!form.title || (selectedClassIds.length === 0 && selectedStudentIds.length === 0)} onClick={createAssignment}>
@@ -381,7 +485,7 @@ export const TeacherAssignments = ({ teacherId }: TeacherAssignmentsProps) => {
                       {a.attachmentName && a.attachmentUrl && (
                         <>
                           <Separator orientation="vertical" />
-                          <a className="underline" href={a.attachmentUrl} target="_blank" rel="noreferrer">{a.attachmentName}</a>
+                          <button className="underline text-left" type="button" onClick={() => openAttachmentFromPath(a.attachmentUrl, a.attachmentName)}>{a.attachmentName}</button>
                         </>
                       )}
                     </div>
