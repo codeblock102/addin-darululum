@@ -8,6 +8,7 @@ import { useIsMobile } from "@/hooks/use-mobile.tsx";
 import { BottomNavigation } from "@/components/mobile/BottomNavigation.tsx";
 import { FloatingQuickEntryButton } from "@/components/shared/FloatingQuickEntryButton.tsx";
 import { FloatingAttendanceQuickEntryButton } from "@/components/shared/FloatingAttendanceQuickEntryButton.tsx";
+import { FloatingDailyEmailButton } from "@/components/shared/FloatingDailyEmailButton.tsx";
 import { Outlet } from "react-router-dom";
 import { cn } from "@/lib/utils.ts";
 import { useTheme } from "@/hooks/use-theme.ts";
@@ -118,6 +119,13 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
       {!isLoading && (
         (isAdmin || (isTeacher && isAttendanceTaker)) && (
           <FloatingAttendanceQuickEntryButton />
+        )
+      )}
+
+      {/* Floating Daily Progress Email (requires daily_progress_email capability for teachers) */}
+      {!isLoading && (
+        (isAdmin || (isTeacher && hasCapability("daily_progress_email"))) && (
+          <FloatingDailyEmailButton />
         )
       )}
     </div>

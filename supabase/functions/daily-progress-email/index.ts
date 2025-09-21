@@ -103,6 +103,8 @@ serve(async (req: Request) => {
     // Parse request body to get trigger source
     let triggerSource = 'manual';
     let timestamp = new Date().toISOString();
+    let requestScope: 'school' | 'class' = 'school';
+    let requestClassId: string | null = null;
     
     try {
       const body = await req.text();
@@ -110,6 +112,12 @@ serve(async (req: Request) => {
         const parsedBody = JSON.parse(body);
         triggerSource = parsedBody.source || 'manual';
         timestamp = parsedBody.timestamp || timestamp;
+        if (parsedBody.scope === 'class' || parsedBody.scope === 'school') {
+          requestScope = parsedBody.scope;
+        }
+        if (parsedBody.classId && typeof parsedBody.classId === 'string') {
+          requestClassId = parsedBody.classId;
+        }
       }
     } catch (_parseError) {
       console.log("No body or invalid JSON, treating as manual trigger");
@@ -204,7 +212,7 @@ serve(async (req: Request) => {
       userId = userData.user.id;
       const { data: teacherProfile, error: teacherProfileErr } = await supabaseService
         .from("profiles")
-        .select("id, role, madrassah_id")
+        .select("id, role, madrassah_id, capabilities")
         .eq("id", userId)
         .maybeSingle();
       if (teacherProfileErr || !teacherProfile?.madrassah_id) {
@@ -215,6 +223,17 @@ serve(async (req: Request) => {
         });
       }
       invokingMadrassahId = teacherProfile.madrassah_id as string;
+
+      // Capability enforcement: only admins or teachers with daily_progress_email capability
+      const isAdminRole = teacherProfile.role === 'admin';
+      const caps = Array.isArray((teacherProfile as any).capabilities) ? (teacherProfile as any).capabilities as string[] : [];
+      const hasDailyCap = caps.includes('daily_progress_email');
+      if (!isAdminRole && !hasDailyCap) {
+        return new Response(JSON.stringify({ error: 'Forbidden' }), {
+          status: 403,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
     }
 
     // Log the trigger event
@@ -243,10 +262,26 @@ serve(async (req: Request) => {
     }).format(new Date());
     console.log(`Querying progress for local day ${todayLocalDate} (${tzForReport})`);
 
-    const { data: progressRecords, error: progressError } = await supabaseService
+    let progressQuery = supabaseService
       .from("progress")
       .select("*")
       .eq('date', todayLocalDate);
+    if (requestScope === 'class' && requestClassId) {
+      // Filter progress by students in the specified class
+      const { data: cls } = await supabaseService
+        .from('classes')
+        .select('current_students')
+        .eq('id', requestClassId)
+        .maybeSingle();
+      const classStudentIds: string[] = Array.from(new Set((cls?.current_students || []).filter(Boolean)));
+      if (classStudentIds.length > 0) {
+        progressQuery = progressQuery.in('student_id', classStudentIds);
+      } else {
+        // No students => empty result
+        progressQuery = progressQuery.in('student_id', ['00000000-0000-0000-0000-000000000000']);
+      }
+    }
+    const { data: progressRecords, error: progressError } = await progressQuery;
 
     if (progressError) {
       console.error("Error fetching progress records:", progressError);
@@ -269,10 +304,25 @@ serve(async (req: Request) => {
     const submissionStudentIds = [...new Set((subsDaily || []).map((s) => s.student_id))];
     const allStudentIds = [...new Set([...progressStudentIds, ...submissionStudentIds])];
 
-    const { data: students, error: studentsError } = await supabaseService
+    let studentsQuery = supabaseService
       .from("students")
       .select("id, name, guardian_contact, guardian_name, guardian_email, madrassah_id")
-      .in("id", allStudentIds.length > 0 ? allStudentIds : ["00000000-0000-0000-0000-000000000000"]); // include all students with activity
+      .in("id", allStudentIds.length > 0 ? allStudentIds : ["00000000-0000-0000-0000-000000000000"]);
+    if (requestScope === 'class' && requestClassId) {
+      // Ensure we only email for students in the selected class
+      const { data: cls2 } = await supabaseService
+        .from('classes')
+        .select('current_students')
+        .eq('id', requestClassId)
+        .maybeSingle();
+      const allowedIds = Array.from(new Set((cls2?.current_students || []).filter(Boolean)));
+      if (allowedIds.length > 0) {
+        studentsQuery = studentsQuery.in('id', allowedIds);
+      } else {
+        studentsQuery = studentsQuery.in('id', ['00000000-0000-0000-0000-000000000000']);
+      }
+    }
+    const { data: students, error: studentsError } = await studentsQuery; // include all students with activity
 
     if (studentsError) {
       throw studentsError;
@@ -349,39 +399,115 @@ serve(async (req: Request) => {
         .map((r: { email: string | null }) => (r.email || "").trim())
         .filter((e: string) => !!e)
     ));
-    let overallProgressHtml = `
-      <p>Overall student progress for ${reportDate}.</p>
-      <table border="0" cellpadding="0" cellspacing="0" style="width: 100%; border-collapse: collapse;">
-        <thead>
-          <tr>
-            <th style="padding: 8px; border-bottom: 1px solid #ddd; background-color: #f2f2f2; text-align: left;">Student</th>
-            <th style="padding: 8px; border-bottom: 1px solid #ddd; background-color: #f2f2f2; text-align: left;">Lesson</th>
-            <th style="padding: 8px; border-bottom: 1px solid #ddd; background-color: #f2f2f2; text-align: left;">Pages Memorized</th>
-            <th style="padding: 8px; border-bottom: 1px solid #ddd; background-color: #f2f2f2; text-align: left;">Quality</th>
-            <th style="padding: 8px; border-bottom: 1px solid #ddd; background-color: #f2f2f2; text-align: left;">Notes</th>
-          </tr>
-        </thead>
-        <tbody>
-    `;
+    // Build class-organized admin summary
+    // Fetch classes (optionally scoped to a specific class)
+    const { data: classRows } = await supabaseService
+      .from('classes')
+      .select('id, name, current_students');
+    const allClasses: Array<{ id: string; name: string; current_students: string[] | null }> = (classRows || []) as any[];
 
-    for (const { student, progresses } of studentProgressMap.values()) {
+    // If request limited to one class, filter to that class
+    const classesForSummary = (requestScope === 'class' && requestClassId)
+      ? allClasses.filter(c => c.id === requestClassId)
+      : allClasses;
+
+    let classSectionsHtml = '';
+    for (const cls of classesForSummary) {
+      const classStudentIds = Array.from(new Set((cls.current_students || []).filter(Boolean)));
+      // Filter to students with activity today or recent submissions
+      const activeStudentIds = classStudentIds.filter((sid) => studentsMap.has(sid) && (studentProgressMap.has(sid) || studentAcademicMap.has(sid)));
+      if (activeStudentIds.length === 0) {
+        continue;
+      }
+
+      // Sabaq/progress table for this class
+      let classProgressHtml = `
+        <table border="0" cellpadding="0" cellspacing="0" style="width: 100%; border-collapse: collapse;">
+          <thead>
+            <tr>
+              <th style="padding: 8px; border-bottom: 1px solid #ddd; background-color: #f2f2f2; text-align: left;">Student</th>
+              <th style="padding: 8px; border-bottom: 1px solid #ddd; background-color: #f2f2f2; text-align: left;">Lesson</th>
+              <th style="padding: 8px; border-bottom: 1px solid #ddd; background-color: #f2f2f2; text-align: left;">Pages Memorized</th>
+              <th style="padding: 8px; border-bottom: 1px solid #ddd; background-color: #f2f2f2; text-align: left;">Quality</th>
+            </tr>
+          </thead>
+          <tbody>`;
+
+      const totalPagesByStudent = new Map<string, number>();
+      for (const sid of activeStudentIds) {
+        const student = studentsMap.get(sid);
+        const entry = studentProgressMap.get(sid);
+        if (!student || !entry) continue;
+        const progresses = entry.progresses || [];
         for (const p of progresses) {
-            overallProgressHtml += `
-                <tr>
-                    <td style="padding: 8px; border-bottom: 1px solid #ddd;">${student.name}</td>
-                    <td style="padding: 8px; border-bottom: 1px solid #ddd;">Surah ${p.current_surah}:${p.start_ayat}-${p.end_ayat}</td>
-                    <td style="padding: 8px; border-bottom: 1px solid #ddd;">${p.pages_memorized}</td>
-                    <td style="padding: 8px; border-bottom: 1px solid #ddd;">${p.memorization_quality}</td>
-                    <td style="padding: 8px; border-bottom: 1px solid #ddd;">${p.teacher_notes || p.notes || 'N/A'}</td>
-                </tr>
-            `;
+          classProgressHtml += `
+            <tr>
+              <td style="padding: 8px; border-bottom: 1px solid #eee;">${student.name}</td>
+              <td style="padding: 8px; border-bottom: 1px solid #eee;">Surah ${p.current_surah}:${p.start_ayat}-${p.end_ayat}</td>
+              <td style="padding: 8px; border-bottom: 1px solid #eee;">${p.pages_memorized}</td>
+              <td style="padding: 8px; border-bottom: 1px solid #eee;">${p.memorization_quality}</td>
+            </tr>`;
+          totalPagesByStudent.set(sid, (totalPagesByStudent.get(sid) || 0) + (p.pages_memorized || 0));
         }
-    }
+      }
+      classProgressHtml += `</tbody></table>`;
 
-    overallProgressHtml += `
-        </tbody>
-      </table>
-    `;
+      // Top student by pages memorized
+      let topStudentHtml = '';
+      if (totalPagesByStudent.size > 0) {
+        const topEntry = Array.from(totalPagesByStudent.entries()).sort((a, b) => b[1] - a[1])[0];
+        const topStudent = studentsMap.get(topEntry[0]);
+        if (topStudent) {
+          topStudentHtml = `<div style="margin:8px 0; font-size:14px;"><strong>Top Sabaq:</strong> ${topStudent.name} (${topEntry[1]} pages)</div>`;
+        }
+      }
+
+      // Assignments for this class: aggregate unique assignments from academic map
+      const assignmentAggregate = new Map<string, { title: string; due: string | null; count: number }>();
+      for (const sid of activeStudentIds) {
+        const rows = studentAcademicMap.get(sid) || [];
+        for (const r of rows) {
+          const key = `${r.assignmentTitle}|${r.due_date || ''}`;
+          const prev = assignmentAggregate.get(key);
+          if (prev) {
+            prev.count += 1;
+          } else {
+            assignmentAggregate.set(key, { title: r.assignmentTitle, due: r.due_date || null, count: 1 });
+          }
+        }
+      }
+      let classAssignmentsHtml = '';
+      if (assignmentAggregate.size > 0) {
+        classAssignmentsHtml = `
+          <table border="0" cellpadding="0" cellspacing="0" style="width: 100%; border-collapse: collapse; margin-top:8px;">
+            <thead>
+              <tr>
+                <th style="padding: 8px; border-bottom: 1px solid #ddd; background-color: #f2f2f2; text-align: left;">Assignment</th>
+                <th style="padding: 8px; border-bottom: 1px solid #ddd; background-color: #f2f2f2; text-align: left;">Due</th>
+                <th style="padding: 8px; border-bottom: 1px solid #ddd; background-color: #f2f2f2; text-align: left;">Students</th>
+              </tr>
+            </thead>
+            <tbody>`;
+        for (const { title, due, count } of assignmentAggregate.values()) {
+          classAssignmentsHtml += `
+            <tr>
+              <td style="padding: 8px; border-bottom: 1px solid #eee;">${title}</td>
+              <td style="padding: 8px; border-bottom: 1px solid #eee;">${due || '—'}</td>
+              <td style="padding: 8px; border-bottom: 1px solid #eee;">${count}</td>
+            </tr>`;
+        }
+        classAssignmentsHtml += `</tbody></table>`;
+      }
+
+      classSectionsHtml += `
+        <div style="margin:20px 0;">
+          <h3 style="margin:0 0 8px 0;">Class: ${cls.name}</h3>
+          ${topStudentHtml}
+          <h4 style="margin:12px 0 6px 0;">Sabaq Today</h4>
+          ${classProgressHtml}
+          ${assignmentAggregate.size > 0 ? `<h4 style=\"margin:16px 0 6px 0;\">Assignments (Last 24h)</h4>${classAssignmentsHtml}` : ''}
+        </div>`;
+    }
 
     const principalEmailHtml = `
       <!DOCTYPE html>
@@ -405,34 +531,8 @@ serve(async (req: Request) => {
               </div>
               <div class="content">
                   <p>Assalamu Alaikum Principal,</p>
-                  <p>Here is the overall student progress report for ${reportDate}:</p>
-                  ${overallProgressHtml}
-                  <h2 style="margin-top:24px;">Academic Work (Last 24h)</h2>
-                  <table border="0" cellpadding="0" cellspacing="0" style="width: 100%; border-collapse: collapse;">
-                    <thead>
-                      <tr>
-                        <th style="padding: 8px; border-bottom: 1px solid #ddd; background-color: #f2f2f2; text-align: left;">Student</th>
-                        <th style="padding: 8px; border-bottom: 1px solid #ddd; background-color: #f2f2f2; text-align: left;">Assignment</th>
-                        <th style="padding: 8px; border-bottom: 1px solid #ddd; background-color: #f2f2f2; text-align: left;">Status</th>
-                        <th style="padding: 8px; border-bottom: 1px solid #ddd; background-color: #f2f2f2; text-align: left;">Grade</th>
-                        <th style="padding: 8px; border-bottom: 1px solid #ddd; background-color: #f2f2f2; text-align: left;">Dates</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      ${Array.from(studentAcademicMap.entries()).map(([sid, rows]) => {
-                        const st = studentsMap.get(sid);
-                        return rows.map(r => `
-                          <tr>
-                            <td style="padding: 8px; border-bottom: 1px solid #ddd;">${st?.name || sid}</td>
-                            <td style="padding: 8px; border-bottom: 1px solid #ddd;">${r.assignmentTitle}</td>
-                            <td style="padding: 8px; border-bottom: 1px solid #ddd; text-transform: capitalize;">${r.status}</td>
-                            <td style="padding: 8px; border-bottom: 1px solid #ddd;">${r.grade ?? '-'}</td>
-                            <td style="padding: 8px; border-bottom: 1px solid #ddd;">${r.submitted_at ? `Submitted: ${fmtDate(r.submitted_at)}` : ''} ${r.graded_at ? `<br/>Graded: ${fmtDate(r.graded_at)}` : ''}</td>
-                          </tr>
-                        `).join('');
-                      }).join('')}
-                    </tbody>
-                  </table>
+                  <p>Here is the class-organized progress report for ${reportDate}:</p>
+                  ${classSectionsHtml || '<p>No activity detected for today.</p>'}
                   <div class="trigger-info">
                       Report generated ${triggerSource === 'scheduled' ? 'automatically' : 'manually'} at ${new Date(timestamp).toLocaleString()}
                   </div>
