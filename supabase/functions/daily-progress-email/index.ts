@@ -66,6 +66,33 @@ interface Student {
   guardian_email: string;
 }
 
+// Types used for academic/assignment sections in emails
+type AssignmentForEmail = {
+  id: string;
+  title: string;
+  due_date: string | null;
+};
+
+type SubmissionDb = {
+  assignment_id: string;
+  status: 'assigned' | 'submitted' | 'graded';
+  grade: number | null;
+  feedback: string | null;
+  submitted_at: string | null;
+  graded_at: string | null;
+};
+
+type EmailRow = {
+  assignment_id: string;
+  title: string;
+  due_date: string | null;
+  status: string;
+  grade: string;
+  feedback: string;
+  submitted_at?: string | null;
+  graded_at?: string | null;
+};
+
 serve(async (req: Request) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -84,7 +111,7 @@ serve(async (req: Request) => {
         triggerSource = parsedBody.source || 'manual';
         timestamp = parsedBody.timestamp || timestamp;
       }
-    } catch (parseError) {
+    } catch (_parseError) {
       console.log("No body or invalid JSON, treating as manual trigger");
     }
 
@@ -120,9 +147,9 @@ serve(async (req: Request) => {
       .from('app_settings')
       .select('key, value')
       .in('key', ['email_schedule_enabled','email_schedule_time','email_timezone','org_logo_url']);
-    const settingsMap = new Map<string, string>((settingsRows || []).map((r: any) => [r.key, r.value]));
+    const settingsMap = new Map<string, string>((settingsRows || []).map((r: { key: string; value: string }) => [r.key, r.value]));
     const scheduleEnabled = (settingsMap.get('email_schedule_enabled') ?? 'true') !== 'false';
-    const scheduleTime = settingsMap.get('email_schedule_time') || '21:30';
+    const _scheduleTime = settingsMap.get('email_schedule_time') || '21:30';
     const scheduleTz = settingsMap.get('email_timezone') || 'America/New_York';
     // Force using the Supabase Storage public logo URL
     const logoUrl = DEFAULT_ORG_LOGO_URL;
@@ -288,7 +315,7 @@ serve(async (req: Request) => {
       if (assignsError) {
         console.error("Error fetching assignments for academic section:", assignsError);
       } else {
-        assignmentMap = new Map((assigns || []).map((a: any) => [a.id, { id: a.id, title: a.title, due_date: a.due_date }]));
+        assignmentMap = new Map((assigns || []).map((a: { id: string; title: string; due_date: string | null }) => [a.id, { id: a.id, title: a.title, due_date: a.due_date }]));
       }
     }
 
@@ -319,7 +346,7 @@ serve(async (req: Request) => {
     }
     const ADMIN_EMAILS: string[] = Array.from(new Set(
       (adminRows || [])
-        .map((r: any) => (r.email || "").trim())
+        .map((r: { email: string | null }) => (r.email || "").trim())
         .filter((e: string) => !!e)
     ));
     let overallProgressHtml = `
@@ -459,37 +486,90 @@ serve(async (req: Request) => {
             .eq('student_id', student.id)
             .order('submitted_at', { ascending: false });
           if (!subsErr && subs && subs.length > 0) {
-            const assignmentIds = Array.from(new Set(subs.map((s: any) => s.assignment_id).filter(Boolean)));
-            let idToAssignment = new Map<string, any>();
+            const assignmentIds = Array.from(new Set((subs as SubmissionDb[]).map((s) => s.assignment_id).filter(Boolean)));
+            const idToAssignment = new Map<string, AssignmentForEmail>();
             if (assignmentIds.length > 0) {
               const { data: assigns } = await supabaseService
                 .from('teacher_assignments')
                 .select('id, title, due_date, attachment_name, attachment_url')
                 .in('id', assignmentIds);
-              (assigns || []).forEach((a: any) => idToAssignment.set(a.id, a));
+              (assigns || []).forEach((a: { id: string; title: string; due_date: string | null }) => idToAssignment.set(a.id, { id: a.id, title: a.title, due_date: a.due_date }));
+            }
+            // Start with submitted/graded items
+            const rows: EmailRow[] = (subs as SubmissionDb[]).map((s) => {
+              const a = idToAssignment.get(s.assignment_id);
+              return {
+                assignment_id: s.assignment_id,
+                title: a?.title || 'Assignment',
+                due_date: a?.due_date || null,
+                status: s.status || 'assigned',
+                grade: s.grade == null ? '' : String(s.grade),
+                feedback: s.feedback || '',
+                submitted_at: s.submitted_at ?? null,
+                graded_at: s.graded_at ?? null,
+              };
+            });
+
+            // Also include directly assigned items without a submission yet, so parents see assignments + due date
+            try {
+              const { data: directAssigns, error: directErr } = await supabaseService
+                .from('teacher_assignments')
+                .select('id, title, due_date')
+                .overlaps('student_ids', [student.id]);
+              if (!directErr && directAssigns) {
+                const existingIds = new Set(assignmentIds);
+                for (const a of directAssigns as Array<AssignmentForEmail>) {
+                  if (!existingIds.has(a.id)) {
+                    rows.push({
+                      assignment_id: a.id,
+                      title: a.title || 'Assignment',
+                      due_date: a.due_date || null,
+                      status: 'assigned',
+                      grade: '',
+                      feedback: '',
+                    });
+                  }
+                }
+              }
+            } catch (_e) {
+              // ignore fallback failures
             }
 
+            // Sort: prioritize submitted/graded by submitted_at desc, then upcoming by due_date asc
+            rows.sort((a, b) => {
+              const aSubmitted = a.submitted_at ? 1 : 0;
+              const bSubmitted = b.submitted_at ? 1 : 0;
+              if (aSubmitted !== bSubmitted) return bSubmitted - aSubmitted;
+              // If both not submitted, sort by earliest due date first
+              if (!a.submitted_at && !b.submitted_at) {
+                const ad = a.due_date ? new Date(a.due_date).getTime() : Number.MAX_SAFE_INTEGER;
+                const bd = b.due_date ? new Date(b.due_date).getTime() : Number.MAX_SAFE_INTEGER;
+                return ad - bd;
+              }
+              // Both submitted: newest first
+              const at = a.submitted_at ? new Date(a.submitted_at).getTime() : 0;
+              const bt = b.submitted_at ? new Date(b.submitted_at).getTime() : 0;
+              return bt - at;
+            });
+
             // Limit to recent 5 items for brevity
-            const recent = subs.slice(0, 5);
-            academicRows = recent.map((s: any) => {
-              const a = idToAssignment.get(s.assignment_id) || {};
-              const title = a?.title || 'Assignment';
-              const due = a?.due_date || '';
-              const status = (s?.status || 'assigned');
-              const grade = (s?.grade ?? '') === '' ? '' : String(s.grade);
-              const feedback = s?.feedback ? String(s.feedback) : '';
+            const limited = rows.slice(0, 5);
+            academicRows = limited.map((r: EmailRow) => {
+              const dueText = r.due_date ? r.due_date : '—';
+              const gradeText = r.grade || '—';
+              const feedbackText = r.feedback || '—';
               return `
                 <tr>
-                  <td style="padding:6px 8px;border-bottom:1px solid #eee;word-break:break-word;">${title}</td>
-                  <td style="padding:6px 8px;border-bottom:1px solid #eee;text-transform:capitalize;">${status}</td>
-                  <td style="padding:6px 8px;border-bottom:1px solid #eee;">${due || '—'}</td>
-                  <td style="padding:6px 8px;border-bottom:1px solid #eee;">${grade || '—'}</td>
-                  <td style="padding:6px 8px;border-bottom:1px solid #eee;word-break:break-word;">${feedback || '—'}</td>
+                  <td style="padding:6px 8px;border-bottom:1px solid #eee;word-break:break-word;">${r.title}</td>
+                  <td style="padding:6px 8px;border-bottom:1px solid #eee;text-transform:capitalize;">${r.status}</td>
+                  <td style="padding:6px 8px;border-bottom:1px solid #eee;">${dueText}</td>
+                  <td style="padding:6px 8px;border-bottom:1px solid #eee;">${gradeText}</td>
+                  <td style="padding:6px 8px;border-bottom:1px solid #eee;word-break:break-word;">${feedbackText}</td>
                 </tr>
               `;
             }).join('');
           }
-        } catch (e) {
+        } catch (_e) {
           academicRows = '';
         }
 
@@ -648,7 +728,7 @@ serve(async (req: Request) => {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Function execution failed:", error);
     
     // Try to log the error
@@ -664,13 +744,13 @@ serve(async (req: Request) => {
           trigger_source: 'unknown',
           triggered_at: new Date().toISOString(),
           status: 'error',
-          message: error.message
+          message: (error instanceof Error ? error.message : String(error))
         });
     } catch (logError) {
       console.log("Could not log error to email_logs table:", logError);
     }
 
-    return new Response(JSON.stringify({ error: error.message }), {
+    return new Response(JSON.stringify({ error: (error instanceof Error ? error.message : String(error)) }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 500,
     });

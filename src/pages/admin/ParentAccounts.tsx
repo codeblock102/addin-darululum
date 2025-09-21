@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client.ts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card.tsx";
@@ -30,8 +30,42 @@ const ParentAccounts = () => {
     },
   });
 
+  const { data: parents } = useQuery({
+    queryKey: ["all-parents-min"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("parents")
+        .select("id, name, email, student_ids")
+        .order("name", { ascending: true });
+      if (error) throw error;
+      return data || [];
+    },
+  });
+
+  const [parentSearch, setParentSearch] = useState("");
+  type ParentMin = { id: string; name: string; email: string; student_ids: string[] };
+  type StudentMin = { id: string; name: string };
+
+  const filteredParents = useMemo(() => {
+    const q = parentSearch.trim().toLowerCase();
+    if (!q) return parents || [];
+    return (parents || []).filter((p: ParentMin) =>
+      (p.name || "").toLowerCase().includes(q) || (p.email || "").toLowerCase().includes(q)
+    );
+  }, [parents, parentSearch]);
+
+  const [selectedExistingParentId, setSelectedExistingParentId] = useState<string>("");
+  const [linkStudentIds, setLinkStudentIds] = useState<string[]>([]);
+  const [linkIsSubmitting, setLinkIsSubmitting] = useState(false);
+
   const toggleStudent = (id: string) => {
     setSelectedStudentIds((prev) => prev.includes(id)
+      ? prev.filter((s) => s !== id)
+      : [...prev, id]);
+  };
+
+  const toggleLinkStudent = (id: string) => {
+    setLinkStudentIds((prev) => prev.includes(id)
       ? prev.filter((s) => s !== id)
       : [...prev, id]);
   };
@@ -63,6 +97,43 @@ const ParentAccounts = () => {
       toast({ title: "Error", description: msg, variant: "destructive" });
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleLinkExisting = async () => {
+    try {
+      setLinkIsSubmitting(true);
+      if (!selectedExistingParentId) {
+        toast({ title: "Select a parent", description: "Please choose an existing parent to link.", variant: "destructive" });
+        return;
+      }
+      if (linkStudentIds.length === 0) {
+        toast({ title: "Select students", description: "Choose at least one student to link.", variant: "destructive" });
+        return;
+      }
+      // Fetch existing student_ids to merge (avoid overwriting unintentionally)
+      const { data: existing } = await supabase
+        .from("parents")
+        .select("student_ids")
+        .eq("id", selectedExistingParentId)
+        .maybeSingle();
+      const existingIds: string[] = Array.isArray(existing?.student_ids) ? existing!.student_ids : [];
+      const merged = Array.from(new Set([...(existingIds || []), ...linkStudentIds]));
+
+      const res = await linkParentToStudents(selectedExistingParentId, merged);
+      if (!res.success) {
+        toast({ title: "Link Failed", description: res.message, variant: "destructive" });
+        return;
+      }
+      toast({ title: "Linked", description: "Parent was linked to selected students." });
+      setSelectedExistingParentId("");
+      setLinkStudentIds([]);
+      setParentSearch("");
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      toast({ title: "Error", description: msg, variant: "destructive" });
+    } finally {
+      setLinkIsSubmitting(false);
     }
   };
 
@@ -99,7 +170,7 @@ const ParentAccounts = () => {
           <div>
             <Label>Select Children</Label>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 mt-2">
-              {(students || []).map((s: any) => (
+              {(students || []).map((s: StudentMin) => (
                 <label key={s.id} className={`p-2 rounded border cursor-pointer flex items-center gap-2 ${selectedStudentIds.includes(s.id) ? 'bg-primary text-primary-foreground' : ''}`}>
                   <input
                     type="checkbox"
@@ -114,6 +185,67 @@ const ParentAccounts = () => {
 
           <div className="flex justify-end">
             <Button type="button" onClick={handleCreate} disabled={isSubmitting}>Create Parent</Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Separate section for linking existing parents */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Link Existing Parent to Students</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="md:col-span-2">
+              <Label>Find Parent</Label>
+              <Input value={parentSearch} onChange={(e) => setParentSearch(e.target.value)} placeholder="Search by name or email" />
+              <div className="mt-2 max-h-56 overflow-auto rounded border">
+                {(filteredParents || []).map((p: ParentMin) => (
+                  <label key={p.id} className={`flex items-center justify-between px-3 py-2 border-b last:border-0 cursor-pointer ${selectedExistingParentId === p.id ? 'bg-primary/5' : ''}`}>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="radio"
+                        name="existing-parent"
+                        checked={selectedExistingParentId === p.id}
+                        onChange={() => setSelectedExistingParentId(p.id)}
+                      />
+                      <div>
+                        <div className="font-medium">{p.name}</div>
+                        <div className="text-sm text-muted-foreground">{p.email}</div>
+                      </div>
+                    </div>
+                    <div className="text-xs text-muted-foreground">Children: {(p.student_ids || []).length}</div>
+                  </label>
+                ))}
+                {filteredParents && filteredParents.length === 0 && (
+                  <div className="px-3 py-2 text-sm text-muted-foreground">No parents found.</div>
+                )}
+              </div>
+            </div>
+            <div>
+              <Label>Selected Parent</Label>
+              <Input value={(filteredParents || []).find((p: ParentMin) => p.id === selectedExistingParentId)?.email || ''} readOnly placeholder="No parent selected" />
+            </div>
+          </div>
+
+          <div>
+            <Label>Select Children</Label>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 mt-2">
+              {(students || []).map((s: StudentMin) => (
+                <label key={s.id} className={`p-2 rounded border cursor-pointer flex items-center gap-2 ${linkStudentIds.includes(s.id) ? 'bg-primary text-primary-foreground' : ''}`}>
+                  <input
+                    type="checkbox"
+                    checked={linkStudentIds.includes(s.id)}
+                    onChange={() => toggleLinkStudent(s.id)}
+                  />
+                  <span>{s.name}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+
+          <div className="flex justify-end">
+            <Button type="button" onClick={handleLinkExisting} disabled={linkIsSubmitting}>Link Parent</Button>
           </div>
         </CardContent>
       </Card>

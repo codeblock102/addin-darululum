@@ -312,8 +312,6 @@ export const typedClient = createClient<CustomDatabase>(
     },
     global: {
       headers: {
-        "Content-Type": "application/json",
-        "Accept": "*/*",
         "apikey": SUPABASE_PUBLISHABLE_KEY,
       },
     },
