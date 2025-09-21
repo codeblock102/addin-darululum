@@ -16,7 +16,7 @@ interface DashboardLayoutProps {
 }
 
 export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
-  const { isAdmin, isTeacher, isParent, isLoading } = useRBAC();
+  const { isAdmin, isTeacher, isParent, isLoading, hasCapability, isAttendanceTaker } = useRBAC();
   const { setTheme } = useTheme();
   const isMobile = useIsMobile();
   const [sidebarOpen, setSidebarOpen] = useState(!isMobile);
@@ -107,14 +107,18 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
         <BottomNavigation />
       )}
 
-      {/* Floating Quick Entry Action */}
-      {!isLoading && (isTeacher || isAdmin) && (
-        <FloatingQuickEntryButton />
+      {/* Floating Quick Entry Action (requires progress_access for teachers) */}
+      {!isLoading && (
+        (isAdmin || (isTeacher && hasCapability("progress_access"))) && (
+          <FloatingQuickEntryButton />
+        )
       )}
 
-      {/* Floating Attendance Quick Entry */}
-      {!isLoading && (isTeacher || isAdmin) && (
-        <FloatingAttendanceQuickEntryButton />
+      {/* Floating Attendance Quick Entry (requires attendance_access for teachers) */}
+      {!isLoading && (
+        (isAdmin || (isTeacher && isAttendanceTaker)) && (
+          <FloatingAttendanceQuickEntryButton />
+        )
       )}
     </div>
   );

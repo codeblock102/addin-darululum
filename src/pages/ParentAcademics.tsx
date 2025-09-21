@@ -9,6 +9,8 @@ import { Input } from "@/components/ui/input.tsx";
 import { supabase } from "@/integrations/supabase/client.ts";
 import { useQuery } from "@tanstack/react-query";
 import { Calendar, ClipboardList, GraduationCap } from "lucide-react";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog.tsx";
+import { Button } from "@/components/ui/button.tsx";
 
 const ParentAcademics = () => {
   const { children } = useParentChildren();
@@ -37,10 +39,37 @@ const ParentAcademics = () => {
   // Remove stray debug log
 
   // Assignments for selected child
-  const { data: submissions, isLoading: loadingAssignments } = useQuery({
+  type AssignmentRow = {
+    id: string;
+    title: string;
+    description: string | null;
+    due_date: string | null;
+    attachment_name: string | null;
+    attachment_url: string | null;
+    student_ids: string[];
+  };
+  type SubmissionRow = {
+    assignment_id: string;
+    status: "assigned" | "submitted" | "graded";
+    submitted_at: string | null;
+    graded_at: string | null;
+    grade: number | null;
+    feedback: string | null;
+  };
+  type AssignmentListItem = {
+    id: string; // composite `${assignmentId}:${studentId}`
+    status: SubmissionRow["status"] | "assigned";
+    submitted_at: string | null;
+    graded_at: string | null;
+    grade: number | null;
+    feedback: string | null;
+    assignment: Pick<AssignmentRow, "id" | "title" | "description" | "due_date" | "attachment_name" | "attachment_url">;
+  };
+
+  const { data: submissions, isLoading: loadingAssignments } = useQuery<AssignmentListItem[]>({
     queryKey: ["parent-academics-assignments", selectedStudentId],
     queryFn: async () => {
-      if (!selectedStudentId) return [] as any[];
+      if (!selectedStudentId) return [] as AssignmentListItem[];
       // DEV debug: can this user read any assignments at all (RLS check)?
       if (import.meta.env.DEV) {
         const { data: anyRow, error: anyErr } = await supabase
@@ -62,7 +91,7 @@ const ParentAcademics = () => {
       }
       const pick = (assignsOv && assignsOv.length > 0) ? assignsOv : undefined;
 
-      let assigns = pick;
+      let assigns: AssignmentRow[] | undefined = pick as AssignmentRow[] | undefined;
       if (!assigns) {
         console.log("[ParentAcademics] no results via overlaps; trying contains() for:", selectedStudentId);
         const { data: assignsCs, error: assignsCsError } = await supabase
@@ -73,21 +102,21 @@ const ParentAcademics = () => {
         if (assignsCsError) {
           console.error("[ParentAcademics] contains query error:", assignsCsError);
         }
-        assigns = assignsCs || [];
+        assigns = (assignsCs as AssignmentRow[]) || [];
       }
 
       // Debug: verify array membership
       console.log("[ParentAcademics] selected:", selectedStudentId, "assignments count:", assigns?.length ?? 0);
-      (assigns || []).forEach((a: any) => {
+      (assigns || []).forEach((a: AssignmentRow) => {
         const arr = a?.student_ids || [];
         const includes = Array.isArray(arr) ? arr.includes(selectedStudentId) : false;
         console.log("[ParentAcademics] assignment", a.id, "student_ids:", arr, "includes selected:", includes);
       });
 
       // Fetch submissions for this student for the returned assignments
-      let submissionsByAssignment = new Map<string, any>();
+      let submissionsByAssignment = new Map<string, SubmissionRow>();
       try {
-        const assignmentIds = Array.from(new Set((assigns || []).map((a: any) => a.id)));
+        const assignmentIds = Array.from(new Set((assigns || []).map((a: AssignmentRow) => a.id)));
         if (assignmentIds.length > 0) {
           const { data: subs, error: subsErr } = await supabase
             .from("teacher_assignment_submissions")
@@ -97,14 +126,14 @@ const ParentAcademics = () => {
           if (subsErr) {
             console.error("[ParentAcademics] submissions fetch error:", subsErr);
           } else {
-            submissionsByAssignment = new Map((subs || []).map((s: any) => [s.assignment_id, s]));
+            submissionsByAssignment = new Map((subs || []).map((s: SubmissionRow) => [s.assignment_id, s]));
           }
         }
       } catch (e) {
         console.warn("[ParentAcademics] submissions fetch exception:", e);
       }
 
-      return (assigns || []).map((a: any) => {
+      return (assigns || []).map((a: AssignmentRow) => {
         const sub = submissionsByAssignment.get(a.id);
         return {
           id: `${a.id}:${selectedStudentId}`,
@@ -121,7 +150,7 @@ const ParentAcademics = () => {
             attachment_name: a.attachment_name,
             attachment_url: a.attachment_url,
           },
-        };
+        } as AssignmentListItem;
       });
     },
     enabled: !!selectedStudentId,
@@ -130,8 +159,8 @@ const ParentAcademics = () => {
     refetchOnWindowFocus: false,
   });
 
-  const filteredAssignments = useMemo(() => {
-    const list = (submissions || []).filter((s: any) => {
+  const filteredAssignments = useMemo<AssignmentListItem[]>(() => {
+    const list = (submissions || []).filter((s: AssignmentListItem) => {
       if (!s.assignment) return false;
       if (statusFilter !== "all" && s.status !== statusFilter) return false;
       if (search) {
@@ -145,6 +174,65 @@ const ParentAcademics = () => {
     });
     return list;
   }, [submissions, statusFilter, search]);
+
+  // Assignment details modal state
+  const [detailRow, setDetailRow] = useState<AssignmentListItem | null>(null);
+
+  // Inline preview state for attachment inside the modal
+  interface AttachmentPreviewState {
+    url: string; // May be a blob: URL or a signed https URL
+    ext: string;
+    name: string;
+    inline: boolean;
+  }
+  const [attachmentPreview, setAttachmentPreview] = useState<AttachmentPreviewState | null>(null);
+  const [attachmentLoading, setAttachmentLoading] = useState(false);
+
+  // Cleanup created object URLs when closing the modal
+  useEffect(() => {
+    return () => {
+      if (attachmentPreview?.url && attachmentPreview.url.startsWith("blob:")) {
+        URL.revokeObjectURL(attachmentPreview.url);
+      }
+    };
+  }, [attachmentPreview?.url]);
+
+  const showAttachmentInModal = async (pathOrUrl?: string | null, fileName?: string | null) => {
+    if (!pathOrUrl) return;
+    try {
+      setAttachmentLoading(true);
+      // Determine filename/extension and whether it can be shown inline
+      const nameGuess = (fileName || "").trim() || (pathOrUrl.includes("/") ? pathOrUrl.substring(pathOrUrl.lastIndexOf("/") + 1) : "");
+      const ext = nameGuess.toLowerCase().split(".").pop() || "";
+      const inlineExts = new Set(["jpg","jpeg","png","gif","webp","svg","pdf"]);
+      const isInline = inlineExts.has(ext);
+      // Resolve a temporary URL (signed if storage path)
+      let tempUrl = pathOrUrl;
+      if (!/^https?:/i.test(pathOrUrl)) {
+        const { data, error } = await supabase.storage
+          .from("teacher-assignments")
+          .createSignedUrl(pathOrUrl, 300);
+        if (error) throw error;
+        tempUrl = data?.signedUrl || "";
+      }
+      if (!tempUrl) return;
+
+      if (isInline) {
+        // Show inline directly via the signed URL (keeps headers/content-type for pdf/img)
+        setAttachmentPreview({ url: tempUrl, ext, name: nameGuess || "Attachment", inline: true });
+      } else {
+        // Fetch as blob for download-only types to avoid exposing signed URL broadly
+        const resp = await fetch(tempUrl);
+        const blob = await resp.blob();
+        const blobUrl = URL.createObjectURL(blob);
+        setAttachmentPreview({ url: blobUrl, ext, name: nameGuess || "Attachment", inline: false });
+      }
+    } catch (e) {
+      console.warn("Failed to open attachment:", e);
+    } finally {
+      setAttachmentLoading(false);
+    }
+  };
 
   return (
     <ProtectedRoute requireParent>
@@ -161,6 +249,7 @@ const ParentAcademics = () => {
                     key={child.id}
                     className={`px-3 py-2 rounded border shrink-0 ${selectedStudentId === child.id ? "bg-primary text-primary-foreground" : "bg-background"}`}
                     onClick={() => setSelectedStudentId(child.id)}
+                    type="button"
                   >
                     {child.name}
                   </button>
@@ -190,7 +279,7 @@ const ParentAcademics = () => {
                   </div>
                 )}
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  <Select onValueChange={(v) => setStatusFilter(v as any)} value={statusFilter}>
+                  <Select onValueChange={(v) => setStatusFilter(v as typeof statusFilter)} value={statusFilter}>
                     <SelectTrigger>
                       <SelectValue placeholder="Status" />
                     </SelectTrigger>
@@ -216,24 +305,19 @@ const ParentAcademics = () => {
                         <TableHead>Status</TableHead>
                         <TableHead className="text-center">Grade</TableHead>
                         <TableHead className="hidden md:table-cell">Feedback</TableHead>
+                        <TableHead className="text-right">Actions</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {loadingAssignments ? (
                         <TableRow>
-                          <TableCell colSpan={6}>Loading…</TableCell>
+                          <TableCell colSpan={7}>Loading…</TableCell>
                         </TableRow>
                       ) : filteredAssignments && filteredAssignments.length > 0 ? (
-                        filteredAssignments.map((row: any) => (
+                        filteredAssignments.map((row: AssignmentListItem) => (
                           <TableRow key={row.id}>
                             <TableCell className="font-medium">
-                              {row.assignment?.attachment_url ? (
-                                <a href={row.assignment.attachment_url} target="_blank" rel="noreferrer" className="underline">
-                                  {row.assignment?.title}
-                                </a>
-                              ) : (
-                                row.assignment?.title
-                              )}
+                              {row.assignment?.title}
                             </TableCell>
                             <TableCell className="hidden sm:table-cell text-sm text-foreground/80">
                               {row.assignment?.description || "—"}
@@ -246,11 +330,14 @@ const ParentAcademics = () => {
                             <TableCell className="hidden md:table-cell text-sm text-foreground/80">
                               {row.feedback ?? "—"}
                             </TableCell>
+                            <TableCell className="text-right">
+                              <Button size="sm" variant="outline" onClick={() => setDetailRow(row)}>View</Button>
+                            </TableCell>
                           </TableRow>
                         ))
                       ) : (
                         <TableRow>
-                          <TableCell colSpan={6} className="text-center text-muted-foreground py-6">
+                          <TableCell colSpan={7} className="text-center text-muted-foreground py-6">
                             No assignments found.
                           </TableCell>
                         </TableRow>
@@ -270,6 +357,93 @@ const ParentAcademics = () => {
             </Tabs>
           </CardContent>
         </Card>
+
+        {/* Assignment Details Modal */}
+        <Dialog open={!!detailRow} onOpenChange={(open) => setDetailRow(open ? detailRow : null)}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>{detailRow?.assignment?.title || "Assignment Details"}</DialogTitle>
+              <DialogDescription>
+                Assigned work details and any attached file.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-3">
+              <div>
+                <div className="text-sm text-muted-foreground">Description</div>
+                <div>{detailRow?.assignment?.description || "—"}</div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <div className="text-sm text-muted-foreground">Due Date</div>
+                  <div>{detailRow?.assignment?.due_date || "—"}</div>
+                </div>
+                <div>
+                  <div className="text-sm text-muted-foreground">Status</div>
+                  <div className="capitalize">{detailRow?.status || "assigned"}</div>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <div className="text-sm text-muted-foreground">Submitted</div>
+                  <div>{detailRow?.submitted_at ? new Date(detailRow.submitted_at).toLocaleString() : "—"}</div>
+                </div>
+                <div>
+                  <div className="text-sm text-muted-foreground">Graded</div>
+                  <div>{detailRow?.graded_at ? new Date(detailRow.graded_at).toLocaleString() : "—"}</div>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <div className="text-sm text-muted-foreground">Grade</div>
+                  <div>{detailRow?.grade ?? "—"}</div>
+                </div>
+                <div>
+                  <div className="text-sm text-muted-foreground">Feedback</div>
+                  <div>{detailRow?.feedback ?? "—"}</div>
+                </div>
+              </div>
+              {detailRow?.assignment?.attachment_url && (
+                <div className="pt-2">
+              <Button disabled={attachmentLoading} onClick={() => showAttachmentInModal(detailRow.assignment.attachment_url, detailRow.assignment.attachment_name)}>
+                    View Attachment{detailRow.assignment.attachment_name ? `: ${detailRow.assignment.attachment_name}` : ""}
+                  </Button>
+                </div>
+              )}
+          {attachmentLoading && <div className="text-sm text-muted-foreground">Loading attachment…</div>}
+          {attachmentPreview && (
+            <div className="mt-3 border rounded-md overflow-hidden">
+              {attachmentPreview.inline ? (
+                attachmentPreview.ext === "pdf" ? (
+                  <iframe src={attachmentPreview.url} title={attachmentPreview.name} style={{ width: "100%", height: "70vh", border: 0 }} />
+                ) : (
+                  <img src={attachmentPreview.url} alt={attachmentPreview.name} style={{ maxWidth: "100%", height: "auto", display: "block" }} />
+                )
+              ) : (
+                <div className="p-3 text-sm text-muted-foreground">
+                  This file type cannot be previewed. Use Download instead.
+                </div>
+              )}
+              <div className="p-2 flex gap-2 justify-end border-t bg-background">
+                <Button variant="secondary" onClick={() => {
+                  if (attachmentPreview?.url && attachmentPreview.url.startsWith("blob:")) URL.revokeObjectURL(attachmentPreview.url);
+                  setAttachmentPreview(null);
+                }}>Close Preview</Button>
+                <Button onClick={() => {
+                  if (attachmentPreview) {
+                    const a = document.createElement("a");
+                    a.href = attachmentPreview.url;
+                    a.download = attachmentPreview.name || "attachment";
+                    document.body.appendChild(a);
+                    a.click();
+                    a.remove();
+                  }
+                }}>Download</Button>
+              </div>
+            </div>
+          )}
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     </ProtectedRoute>
   );
