@@ -259,9 +259,6 @@ export const TeacherAssignments = ({ teacherId }: TeacherAssignmentsProps) => {
     if (!pathOrUrl) return;
     try {
       const nameGuess = (fileName || "").trim() || (pathOrUrl.includes("/") ? pathOrUrl.substring(pathOrUrl.lastIndexOf("/") + 1) : "");
-      const ext = nameGuess.toLowerCase().split(".").pop() || "";
-      const inlineExts = new Set(["jpg","jpeg","png","gif","webp","svg","pdf"]);
-      const isInline = inlineExts.has(ext);
 
       // Resolve a temporary URL to fetch the file (signed if storage path)
       let tempUrl = pathOrUrl;
@@ -273,40 +270,34 @@ export const TeacherAssignments = ({ teacherId }: TeacherAssignmentsProps) => {
       }
       if (!tempUrl) return;
 
+      // Open a new tab immediately to avoid popup blockers, then stream the blob into it
+      const newTab = window.open("about:blank", "_blank", "noopener,noreferrer");
+
       // Fetch as blob so we can mask the superseded URL
       const resp = await fetch(tempUrl);
       const blob = await resp.blob();
       const blobUrl = URL.createObjectURL(blob);
 
-      if (isInline) {
+      if (newTab) {
         try {
-          const g = globalThis as unknown as { location?: { assign?: (u: string) => void; href?: string } };
-          if (typeof g.location?.assign === "function") {
-            g.location.assign(blobUrl);
-          } else if (g.location) {
-            g.location.href = blobUrl as unknown as string;
-          }
+          newTab.document.title = nameGuess || "Attachment";
         } catch (_e) {
-          // Fallback: download
-          const a = document.createElement("a");
-          a.href = blobUrl;
-          a.download = nameGuess || "attachment";
-          document.body.appendChild(a);
-          a.click();
-          a.remove();
+          // ignore cross-origin title set failures
         }
+        newTab.location.href = blobUrl;
       } else {
+        // Fallback if pop-up blocked
         const a = document.createElement("a");
         a.href = blobUrl;
+        a.target = "_blank";
+        a.rel = "noopener noreferrer";
         a.download = nameGuess || "attachment";
         document.body.appendChild(a);
         a.click();
         a.remove();
       }
 
-      // Best-effort cleanup — can't revoke if we navigated same tab
-      // Parent version only revokes when not navigated; teachers will often navigate back anyway
-      // We skip revoke here to avoid breaking the open tab; the blob will be released on page unload
+      // Do not revoke the object URL immediately; it may be in use by the new tab
     } catch (e) {
       console.warn("Failed to open attachment:", e);
     }
