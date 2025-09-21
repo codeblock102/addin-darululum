@@ -431,7 +431,9 @@ export const StudentForm = ({
           type="submit"
           disabled={isProcessing}
         >
-          {isProcessing ? t("pages.teacherPortal.students.mobile.adding") : t("pages.teacherPortal.students.table.add")}
+          {isProcessing
+            ? t("pages.teacherPortal.students.mobile.adding", "Adding...")
+            : t("pages.teacherPortal.students.table.add", "Add")}
         </Button>
       </DialogFooter>
     </form>
