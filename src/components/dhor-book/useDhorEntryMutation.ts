@@ -28,8 +28,21 @@ interface FormSabaqParaData {
   quarters_revised?: Database["public"]["Enums"]["quarter_revised"]; // Expected by sabaq_para table
 }
 
+interface FormNazirahQaidaData {
+  naz_qaida_type?: "nazirah" | "qaida";
+  // Nazirah
+  nazirah_juz?: number;
+  nazirah_surah?: number;
+  nazirah_start_ayat?: number;
+  nazirah_end_ayat?: number;
+  nazirah_memorization_quality?: Database["public"]["Enums"]["quality_rating"];
+  // Qaida
+  qaida_lesson?: string;
+  qaida_memorization_quality?: Database["public"]["Enums"]["quality_rating"];
+}
+
 // Combined form data type that the mutation function will receive
-export type DhorBookCombinedFormData = FormSabaqData & FormSabaqParaData & {
+export type DhorBookCombinedFormData = FormSabaqData & FormSabaqParaData & FormNazirahQaidaData & {
   entry_date: string;
   comments?: string;
   points?: number;
@@ -159,6 +172,61 @@ export function useDhorEntryMutation({
             console.warn(
               "sabaq_para_pages was provided in form data but is not currently saved. The 'sabaq_para' table expects 'quarters_revised'. Update DB schema or form mapping if 'sabaq_para_pages' should be stored.",
             );
+          }
+        }
+
+        // 2b. Insert Nazirah / Qaida as progress entries (lesson_type)
+        if (formData.naz_qaida_type === "nazirah") {
+          if (
+            formData.nazirah_juz !== undefined &&
+            formData.nazirah_surah !== undefined &&
+            formData.nazirah_start_ayat !== undefined &&
+            formData.nazirah_end_ayat !== undefined
+          ) {
+            const progressRecord: Database["public"]["Tables"]["progress"]["Insert"] = {
+              student_id: studentId,
+              date: entryDate,
+              current_juz: formData.nazirah_juz,
+              current_surah: formData.nazirah_surah,
+              start_ayat: formData.nazirah_start_ayat,
+              end_ayat: formData.nazirah_end_ayat,
+              pages_memorized: undefined,
+              lesson_type: "nazirah",
+              // Additional fields may exist in DB but not typed; we stick to known columns
+            };
+            if (formData.nazirah_memorization_quality) {
+              progressRecord.memorization_quality = formData.nazirah_memorization_quality;
+            }
+
+            const { data: nazData, error: nazErr } = await supabase
+              .from("progress")
+              .insert([progressRecord])
+              .select();
+            if (nazErr) throw new Error(`Failed to insert nazirah progress: ${nazErr.message}`);
+            results.push({ type: "nazirah_progress", data: nazData });
+          } else {
+            console.log("Skipping nazirah insert: missing required fields.");
+          }
+        } else if (formData.naz_qaida_type === "qaida") {
+          if (formData.qaida_lesson) {
+            const progressRecord: Database["public"]["Tables"]["progress"]["Insert"] = {
+              student_id: studentId,
+              date: entryDate,
+              notes: formData.qaida_lesson,
+              qaida_lesson: formData.qaida_lesson,
+              lesson_type: "qaida",
+            };
+            if (formData.qaida_memorization_quality) {
+              progressRecord.memorization_quality = formData.qaida_memorization_quality;
+            }
+            const { data: qaidaData, error: qaidaErr } = await supabase
+              .from("progress")
+              .insert([progressRecord])
+              .select();
+            if (qaidaErr) throw new Error(`Failed to insert qaida progress: ${qaidaErr.message}`);
+            results.push({ type: "qaida_progress", data: qaidaData });
+          } else {
+            console.log("Skipping qaida insert: qaida_lesson not provided.");
           }
         }
 

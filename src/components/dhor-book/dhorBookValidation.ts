@@ -47,6 +47,30 @@ export const DailyActivityFormSchema = z.object({
   dhor_quarter_start: z.number().min(1).max(4).optional(),
   dhor_quarters_covered: z.number().min(1).max(4).optional(),
 
+  // Nazirah & Qaida tab
+  naz_qaida_type: z.enum(["nazirah", "qaida"]).optional(),
+  // Nazirah reading uses juz/surah/ayat like sabaq
+  nazirah_juz: z.number().min(1).max(30).optional(),
+  nazirah_surah: z.number().min(1).max(114).optional(),
+  nazirah_start_ayat: z.number().min(1).optional(),
+  nazirah_end_ayat: z.number().min(1).optional(),
+  nazirah_memorization_quality: z.enum([
+    "excellent",
+    "good",
+    "average",
+    "needsWork",
+    "horrible",
+  ]).optional(),
+  // Qaida lesson selection
+  qaida_lesson: z.string().optional(),
+  qaida_memorization_quality: z.enum([
+    "excellent",
+    "good",
+    "average",
+    "needsWork",
+    "horrible",
+  ]).optional(),
+
   // General / Legacy fields (disposition to be fully decided)
   comments: z.string().optional(), // General comments, where should they be saved?
   points: z.number().min(0).default(0), // Not currently saved

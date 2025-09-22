@@ -11,9 +11,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover.tsx";
-import { Textarea } from "@/components/ui/textarea.tsx";
 import { cn } from "@/lib/utils.ts";
-import { Checkbox } from "@/components/ui/checkbox.tsx";
 import {
   Select,
   SelectContent,
@@ -50,8 +48,8 @@ interface DhorBookEntryFormProps {
   onSubmit: (data: DhorBookCombinedFormData) => void;
   isPending: boolean;
   onCancel: () => void;
-  /** Which tab to show initially: 'sabaq' | 'sabaq-para' | 'revision' | 'general' */
-  initialTab?: "sabaq" | "sabaq-para" | "revision" | "general";
+  /** Which tab to show initially: 'sabaq' | 'sabaq-para' | 'revision' | 'naz-qaida' */
+  initialTab?: "sabaq" | "sabaq-para" | "revision" | "naz-qaida";
 }
 
 export function DhorBookEntryForm(
@@ -60,6 +58,7 @@ export function DhorBookEntryForm(
   const [date, setDate] = useState<Date | undefined>(new Date());
   const [activeTab, setActiveTab] = useState(initialTab);
   const [ayatOptions, setAyatOptions] = useState<number[]>([]);
+  const [nazAyatOptions, setNazAyatOptions] = useState<number[]>([]);
   const [calculatedPages, setCalculatedPages] = useState<number>(0);
 
   const {
@@ -72,6 +71,19 @@ export function DhorBookEntryForm(
     selectedSurah,
     setSelectedSurah,
     allSurahsData,
+  } = useQuranData();
+
+  // Separate Quran data for Nazirah tab to avoid interfering with Sabaq selections
+  const {
+    juzData: nazJuzData,
+    juzLoading: nazJuzLoading,
+    surahsInJuz: nazSurahsInJuz,
+    isLoadingSurahs: nazIsLoadingSurahs,
+    selectedJuz: nazSelectedJuz,
+    setSelectedJuz: setNazSelectedJuz,
+    selectedSurah: nazSelectedSurah,
+    setSelectedSurah: setNazSelectedSurah,
+    allSurahsData: allNazSurahsData,
   } = useQuranData();
 
   const form = useForm<DailyActivityFormValues>({
@@ -92,6 +104,15 @@ export function DhorBookEntryForm(
       dhor_memorization_quality: "average",
       dhor_quarter_start: undefined,
       dhor_quarters_covered: undefined,
+      // Nazirah & Qaida defaults
+      naz_qaida_type: "nazirah",
+      nazirah_juz: undefined,
+      nazirah_surah: undefined,
+      nazirah_start_ayat: undefined,
+      nazirah_end_ayat: undefined,
+      nazirah_memorization_quality: "average",
+      qaida_lesson: "",
+      qaida_memorization_quality: "average",
       comments: "",
       points: 0,
       detention: false,
@@ -162,6 +183,62 @@ export function DhorBookEntryForm(
       setAyatOptions([]);
     }
   }, [selectedJuz, selectedSurah, form]);
+
+  // Update Nazirah ayah options when naz selections change
+  useEffect(() => {
+    if (nazSelectedJuz) {
+      form.setValue("nazirah_juz", nazSelectedJuz);
+
+      if (nazSelectedSurah) {
+        form.setValue("nazirah_surah", nazSelectedSurah);
+        console.log(
+          `Getting ayah range for Nazirah Juz ${nazSelectedJuz}, Surah ${nazSelectedSurah}`,
+        );
+
+        const ayahRange = getAyahRangeForSurahInJuz(nazSelectedJuz, nazSelectedSurah);
+        let start = 1;
+        let end = 0;
+
+        if (ayahRange) {
+          const isPlaceholder = (ayahRange.endAyah - ayahRange.startAyah + 1) === 20;
+          if (isPlaceholder) {
+            const surahMeta = allNazSurahsData?.find(
+              (s) => s.surah_number === nazSelectedSurah,
+            );
+            if (surahMeta?.total_ayat) {
+              start = 1;
+              end = surahMeta.total_ayat;
+            } else {
+              start = ayahRange.startAyah;
+              end = ayahRange.endAyah;
+            }
+          } else {
+            start = ayahRange.startAyah;
+            end = ayahRange.endAyah;
+          }
+        } else {
+          const surahMeta = allNazSurahsData?.find(
+            (s) => s.surah_number === nazSelectedSurah,
+          );
+          if (surahMeta?.total_ayat) {
+            start = 1;
+            end = surahMeta.total_ayat;
+          }
+        }
+
+        if (end > 0) {
+          const ayatArray = Array.from({ length: end - start + 1 }, (_, i) => start + i);
+          setNazAyatOptions(ayatArray);
+          form.setValue("nazirah_start_ayat", start);
+          form.setValue("nazirah_end_ayat", undefined);
+        } else {
+          setNazAyatOptions([]);
+        }
+      }
+    } else {
+      setNazAyatOptions([]);
+    }
+  }, [nazSelectedJuz, nazSelectedSurah, form, allNazSurahsData]);
 
   const startAyah = form.watch("start_ayat");
   const endAyah = form.watch("end_ayat");
@@ -251,14 +328,14 @@ export function DhorBookEntryForm(
 
         <Tabs
           value={activeTab}
-          onValueChange={(v: string) => setActiveTab(v as "sabaq" | "sabaq-para" | "revision" | "general")}
+          onValueChange={(v: string) => setActiveTab(v as "sabaq" | "sabaq-para" | "revision" | "naz-qaida")}
           className="w-full"
         >
           <TabsList className="grid w-full grid-cols-4 bg-white border border-emerald-100 rounded-md p-1 text-gray-600">
             <TabsTrigger className="data-[state=active]:bg-emerald-50 data-[state=active]:text-emerald-700 hover:bg-emerald-50 text-gray-700" value="sabaq">Sabaq</TabsTrigger>
             <TabsTrigger className="data-[state=active]:bg-emerald-50 data-[state=active]:text-emerald-700 hover:bg-emerald-50 text-gray-700" value="sabaq-para">Sabaq Para</TabsTrigger>
             <TabsTrigger className="data-[state=active]:bg-emerald-50 data-[state=active]:text-emerald-700 hover:bg-emerald-50 text-gray-700" value="revision">Revision</TabsTrigger>
-            <TabsTrigger className="data-[state=active]:bg-emerald-50 data-[state=active]:text-emerald-700 hover:bg-emerald-50 text-gray-700" value="general">General</TabsTrigger>
+            <TabsTrigger className="data-[state=active]:bg-emerald-50 data-[state=active]:text-emerald-700 hover:bg-emerald-50 text-gray-700" value="naz-qaida">Nazirah & Qaida</TabsTrigger>
           </TabsList>
 
           <TabsContent value="sabaq" className="space-y-4 pt-4">
@@ -781,66 +858,275 @@ export function DhorBookEntryForm(
             />
           </TabsContent>
 
-          <TabsContent value="general" className="space-y-4 pt-4">
-            <TabsList className="grid w-full grid-cols-1">
-              <TabsTrigger value="general">Other Details</TabsTrigger>
-            </TabsList>
+          <TabsContent value="naz-qaida" className="space-y-4 pt-4">
             <FormField
               control={form.control}
-              name="comments"
+              name="naz_qaida_type"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>General Comments</FormLabel>
-                  <FormControl>
-                    <Textarea
-                      placeholder="Enter any general comments"
-                      className="resize-none"
-                      {...field}
-                    />
-                  </FormControl>
+                  <FormLabel>Select Type</FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select type" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="nazirah">Nazirah</SelectItem>
+                      <SelectItem value="qaida">Qaida</SelectItem>
+                    </SelectContent>
+                  </Select>
                   <FormMessage />
                 </FormItem>
               )}
             />
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="points"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Points</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="number"
-                        placeholder="0"
-                        {...field}
-                        onChange={(e) =>
-                          field.onChange(parseInt(e.target.value) || 0)}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="detention"
-                render={({ field }) => (
-                  <FormItem className="flex flex-row items-end space-x-2 space-y-0 pt-6">
-                    <FormControl>
-                      <Checkbox
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                      />
-                    </FormControl>
-                    <FormLabel className="font-normal cursor-pointer">
-                      Detention
-                    </FormLabel>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
+
+            {/* Nazirah Section */}
+            {form.watch("naz_qaida_type") === "nazirah" && (
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="nazirah_juz"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Nazirah - Juz</FormLabel>
+                        <Select
+                          onValueChange={(value) => {
+                            const num = parseInt(value);
+                            field.onChange(num);
+                            setNazSelectedJuz(num);
+                            setNazSelectedSurah(null);
+                            form.setValue("nazirah_surah", undefined);
+                            form.setValue("nazirah_start_ayat", undefined);
+                            form.setValue("nazirah_end_ayat", undefined);
+                          }}
+                          value={field.value?.toString()}
+                        >
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select Juz" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent className="max-h-[320px] overflow-y-auto touch-pan-y" style={{ WebkitOverflowScrolling: "touch" }}>
+                            {nazJuzData?.map((juz) => (
+                              <SelectItem key={`naz-juz-${juz.id}`} value={juz.juz_number.toString()}>
+                                Juz {juz.juz_number}
+                              </SelectItem>
+                            )) || (
+                              <SelectItem disabled value="loading-juz-naz">
+                                {nazJuzLoading ? "Loading Juz data..." : "No Juz data"}
+                              </SelectItem>
+                            )}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="nazirah_surah"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Nazirah - Surah</FormLabel>
+                        <Select
+                          onValueChange={(value) => {
+                            const num = parseInt(value);
+                            field.onChange(num);
+                            setNazSelectedSurah(num);
+                          }}
+                          value={field.value?.toString()}
+                          disabled={!nazSelectedJuz || nazJuzLoading || nazIsLoadingSurahs}
+                        >
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue
+                                placeholder={nazJuzLoading || nazIsLoadingSurahs
+                                  ? "Loading data..."
+                                  : !nazSelectedJuz
+                                  ? "Select Juz first"
+                                  : nazSurahsInJuz.length === 0
+                                  ? "No surahs found"
+                                  : "Select Surah"}
+                              />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent className="max-h-[300px] overflow-y-auto touch-pan-y" style={{ WebkitOverflowScrolling: "touch" }}>
+                            {nazJuzLoading || nazIsLoadingSurahs
+                              ? (
+                                <SelectItem disabled value="loading">
+                                  Loading data...
+                                </SelectItem>
+                              )
+                              : nazSurahsInJuz && nazSurahsInJuz.length > 0
+                              ? (
+                                nazSurahsInJuz.map((surah) => (
+                                  <SelectItem key={`naz-surah-${surah.id}`} value={surah.surah_number.toString()}>
+                                    {surah.surah_number}. {surah.name}
+                                  </SelectItem>
+                                ))
+                              )
+                              : (
+                                <SelectItem disabled value="none">
+                                  {nazSelectedJuz ? "No surahs found for this Juz" : "Select a Juz first"}
+                                </SelectItem>
+                              )}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="nazirah_start_ayat"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Nazirah - Start Ayat</FormLabel>
+                        <Select
+                          onValueChange={(value) => {
+                            const num = parseInt(value);
+                            field.onChange(num);
+                            form.setValue("nazirah_end_ayat", undefined);
+                          }}
+                          value={field.value?.toString()}
+                          disabled={!nazSelectedSurah || nazAyatOptions.length === 0}
+                        >
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder={nazSelectedSurah ? "Select Ayat" : "Select Surah first"} />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {nazAyatOptions.length > 0 ? (
+                              nazAyatOptions.map((ayat) => (
+                                <SelectItem key={`naz-start-${ayat}`} value={ayat.toString()}>
+                                  Ayat {ayat}
+                                </SelectItem>
+                              ))
+                            ) : (
+                              <SelectItem disabled value="no-ayats">
+                                {nazSelectedSurah ? "No ayats available" : "Select Surah first"}
+                              </SelectItem>
+                            )}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="nazirah_end_ayat"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Nazirah - End Ayat</FormLabel>
+                        <Select
+                          onValueChange={(value) => field.onChange(parseInt(value))}
+                          value={field.value?.toString()}
+                          disabled={!form.watch("nazirah_start_ayat") || nazAyatOptions.length === 0}
+                        >
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder={!form.watch("nazirah_start_ayat") ? "Select Start Ayat first" : "Select End Ayat"} />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {form.watch("nazirah_start_ayat") && nazAyatOptions.length > 0 ? (
+                              nazAyatOptions
+                                .filter((ayat) => {
+                                  const startAyat = form.watch("nazirah_start_ayat");
+                                  return startAyat ? ayat >= startAyat : true;
+                                })
+                                .map((ayat) => (
+                                  <SelectItem key={`naz-end-${ayat}`} value={ayat.toString()}>
+                                    Ayat {ayat}
+                                  </SelectItem>
+                                ))
+                            ) : (
+                              <SelectItem disabled value="no-end-ayats">
+                                {form.watch("nazirah_start_ayat") ? "No end ayats available" : "Select Start Ayat first"}
+                              </SelectItem>
+                            )}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                <FormField
+                  control={form.control}
+                  name="nazirah_memorization_quality"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Nazirah - Quality</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value} defaultValue="average">
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select quality" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="excellent">Excellent</SelectItem>
+                          <SelectItem value="good">Good</SelectItem>
+                          <SelectItem value="average">Average</SelectItem>
+                          <SelectItem value="needsWork">Needs Work</SelectItem>
+                          <SelectItem value="horrible">Incomplete/Horrible</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            )}
+
+            {/* Qaida Section */}
+            {form.watch("naz_qaida_type") === "qaida" && (
+              <div className="space-y-4">
+                <FormField
+                  control={form.control}
+                  name="qaida_lesson"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Qaida Lesson</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Enter lesson (e.g., Lesson 3 - Letters)" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="qaida_memorization_quality"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Qaida - Quality</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value} defaultValue="average">
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select quality" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="excellent">Excellent</SelectItem>
+                          <SelectItem value="good">Good</SelectItem>
+                          <SelectItem value="average">Average</SelectItem>
+                          <SelectItem value="needsWork">Needs Work</SelectItem>
+                          <SelectItem value="horrible">Incomplete/Horrible</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            )}
           </TabsContent>
         </Tabs>
 

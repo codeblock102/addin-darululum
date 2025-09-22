@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/table.tsx";
 import { Button } from "@/components/ui/button.tsx";
 import { NewEntryDialog } from "./NewEntryDialog.tsx";
-import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, eachDayOfInterval } from "date-fns";
+import { format, startOfMonth, endOfMonth, eachDayOfInterval } from "date-fns";
 
 interface DhorBookGridProps {
   entries: DailyActivityEntry[];
@@ -46,6 +46,11 @@ export function DhorBookGrid(
 
   const daysToShow = getDaysToShow();
 
+  // Determine if Nazirah/Qaida columns should be shown based on data presence
+  const showNazirahCol = entries.some((e) => e.nazirah_entries && e.nazirah_entries.length > 0);
+  const showQaidaCol = entries.some((e) => e.qaida_entries && e.qaida_entries.length > 0);
+  const totalColumns = 7 + (showNazirahCol ? 1 : 0) + (showQaidaCol ? 1 : 0); // base 7: Date,Sabaq,SabaqPara,Dhor1,Dhor2,Quality,Notes
+
   const handleEntrySuccess = () => {
     setIsNewEntryOpen(false);
     console.log("Entry success - triggering refresh in DhorBookGrid");
@@ -63,8 +68,10 @@ export function DhorBookGrid(
     const hasProgress = Boolean(entry.current_juz && entry.current_surah && entry.start_ayat && entry.end_ayat);
     const hasSabaq = Boolean(entry.sabaq_para_data);
     const hasRevisions = Boolean(entry.juz_revisions_data && entry.juz_revisions_data.length > 0);
+    const hasNazirah = Boolean(entry.nazirah_entries && entry.nazirah_entries.length > 0);
+    const hasQaida = Boolean(entry.qaida_entries && entry.qaida_entries.length > 0);
     const hasQualityOrNotes = Boolean(entry.memorization_quality || entry.comments);
-    return hasProgress || hasSabaq || hasRevisions || hasQualityOrNotes;
+    return hasProgress || hasSabaq || hasRevisions || hasNazirah || hasQaida || hasQualityOrNotes;
   });
 
   return (
@@ -90,6 +97,12 @@ export function DhorBookGrid(
               <TableHead>Date</TableHead>
               <TableHead>Sabaq</TableHead>
               <TableHead className="hidden sm:table-cell">Sabaq Para</TableHead>
+              {showNazirahCol && (
+                <TableHead className="hidden sm:table-cell">Nazirah</TableHead>
+              )}
+              {showQaidaCol && (
+                <TableHead className="hidden sm:table-cell">Qaida</TableHead>
+              )}
               <TableHead>Dhor 1</TableHead>
               <TableHead className="hidden md:table-cell">Dhor 2</TableHead>
               <TableHead className="hidden md:table-cell">Quality</TableHead>
@@ -126,6 +139,35 @@ export function DhorBookGrid(
                         ? `Juz ${entry.sabaq_para_data.juz_number}, ${entry.sabaq_para_data.quarters_revised || "—"} quarters, Quality ${entry.sabaq_para_data.quality_rating || "—"}`
                         : "—"}
                     </TableCell>
+                    {showNazirahCol && (
+                      <TableCell className="hidden sm:table-cell">
+                        {entry?.nazirah_entries && entry.nazirah_entries.length > 0
+                          ? entry.nazirah_entries
+                              .map((n) => `J${n.juz ?? "?"} S${n.surah ?? "?"}:${n.start_ayat ?? "?"}-${n.end_ayat ?? "?"}${n.quality ? ` (Q: ${n.quality})` : ""}`)
+                              .join("; ")
+                          : "—"}
+                      </TableCell>
+                    )}
+                    {showQaidaCol && (
+                      <TableCell className="hidden sm:table-cell">
+                        {entry?.qaida_entries && entry.qaida_entries.length > 0
+                          ? entry.qaida_entries
+                              .map((q) => {
+                                const raw = (q.lesson || "").trim();
+                                const hasLessonWord = /^lesson\b/i.test(raw);
+                                const numericOnly = /^\d+$/.test(raw);
+                                const startsNum = raw.match(/^(\d+)(.*)$/);
+                                let display: string;
+                                if (hasLessonWord) display = raw;
+                                else if (numericOnly) display = `Lesson ${raw}`;
+                                else if (startsNum) display = `Lesson ${startsNum[1]}${startsNum[2]}`;
+                                else display = raw || "Lesson";
+                                return `${display}${q.quality ? ` (Q: ${q.quality})` : ""}`;
+                              })
+                              .join("; ")
+                          : "—"}
+                      </TableCell>
+                    )}
                     {/* Dhor 1 Cell */}
                     <TableCell>
                       {dhor1Entry
@@ -209,6 +251,35 @@ export function DhorBookGrid(
                           ? `Juz ${entry.sabaq_para_data.juz_number}, ${entry.sabaq_para_data.quarters_revised || "—"} quarters, Quality ${entry.sabaq_para_data.quality_rating || "—"}`
                           : "—"}
                       </TableCell>
+                      {showNazirahCol && (
+                        <TableCell className="hidden sm:table-cell">
+                          {entry?.nazirah_entries && entry.nazirah_entries.length > 0
+                            ? entry.nazirah_entries
+                                .map((n) => `J${n.juz ?? "?"} S${n.surah ?? "?"}:${n.start_ayat ?? "?"}-${n.end_ayat ?? "?"}${n.quality ? ` (Q: ${n.quality})` : ""}`)
+                                .join("; ")
+                            : "—"}
+                        </TableCell>
+                      )}
+                      {showQaidaCol && (
+                        <TableCell className="hidden sm:table-cell">
+                          {entry?.qaida_entries && entry.qaida_entries.length > 0
+                            ? entry.qaida_entries
+                                .map((q) => {
+                                  const raw = (q.lesson || "").trim();
+                                  const hasLessonWord = /^lesson\b/i.test(raw);
+                                  const numericOnly = /^\d+$/.test(raw);
+                                  const startsNum = raw.match(/^(\d+)(.*)$/);
+                                  let display: string;
+                                  if (hasLessonWord) display = raw;
+                                  else if (numericOnly) display = `Lesson ${raw}`;
+                                  else if (startsNum) display = `Lesson ${startsNum[1]}${startsNum[2]}`;
+                                  else display = raw || "Lesson";
+                                  return `${display}${q.quality ? ` (Q: ${q.quality})` : ""}`;
+                                })
+                                .join("; ")
+                            : "—"}
+                        </TableCell>
+                      )}
                       {/* Dhor 1 Cell */}
                       <TableCell>
                         {dhor1Entry
@@ -266,7 +337,7 @@ export function DhorBookGrid(
                 })
               ) : (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center text-muted-foreground py-8">
+                  <TableCell colSpan={totalColumns} className="text-center text-muted-foreground py-8">
                     No entries found for this month
                   </TableCell>
                 </TableRow>

@@ -532,6 +532,7 @@ export const TeacherDialog = (
                         { key: "attendance_access", label: "Attendance access" },
                         { key: "progress_access", label: "Access Progress Book" },
                         { key: "assignments_access", label: "Access Assignments" },
+                        { key: "daily_progress_email", label: "Send Daily Progress Emails" },
                       ].map((cap) => {
                         const checked = Array.isArray(field.value) && field.value.includes(cap.key);
                         return (
