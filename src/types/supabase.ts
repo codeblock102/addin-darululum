@@ -417,6 +417,8 @@ export type Database = {
           start_ayat: number | null;
           student_id: string | null;
           teacher_notes: string | null;
+          lesson_type: Database["public"]["Enums"]["lesson_type"] | null;
+          qaida_lesson: string | null;
           verses_memorized: number | null;
         };
         Insert: {
@@ -438,6 +440,8 @@ export type Database = {
           start_ayat?: number | null;
           student_id?: string | null;
           teacher_notes?: string | null;
+          lesson_type?: Database["public"]["Enums"]["lesson_type"] | null;
+          qaida_lesson?: string | null;
           verses_memorized?: number | null;
         };
         Update: {
@@ -459,6 +463,8 @@ export type Database = {
           start_ayat?: number | null;
           student_id?: string | null;
           teacher_notes?: string | null;
+          lesson_type?: Database["public"]["Enums"]["lesson_type"] | null;
+          qaida_lesson?: string | null;
           verses_memorized?: number | null;
         };
         Relationships: [
@@ -894,6 +900,7 @@ export type Database = {
         | "manage_classes";
       student_status: "active" | "inactive";
       user_role: "admin" | "teacher";
+      lesson_type: "hifz" | "nazirah" | "qaida";
     };
     CompositeTypes: {
       [_ in never]: never;

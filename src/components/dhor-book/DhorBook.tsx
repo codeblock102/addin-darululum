@@ -236,22 +236,59 @@ export const DhorBook = ({
       };
 
       // 2. Merge progress data
-      (progressEntries || []).forEach((pEntry) => {
+      (progressEntries || []).forEach((pEntry: {
+        date?: string;
+        lesson_type?: "hifz" | "nazirah" | "qaida" | null;
+        current_juz?: number | null;
+        current_surah?: number | null;
+        start_ayat?: number | null;
+        end_ayat?: number | null;
+        memorization_quality?: string | null;
+        qaida_lesson?: string | null;
+        notes?: string | null;
+      }) => {
         if (!pEntry.date) return;
         const dateKey = pEntry.date;
         ensureEntry(dateKey);
         const existingEntry = combinedEntriesMap[dateKey];
-        combinedEntriesMap[dateKey] = {
-          ...existingEntry,
-          current_juz: pEntry.current_juz ?? existingEntry?.current_juz,
-          current_surah: pEntry.current_surah ?? existingEntry?.current_surah,
-          start_ayat: pEntry.start_ayat ?? existingEntry?.start_ayat,
-          end_ayat: pEntry.end_ayat ?? existingEntry?.end_ayat,
-          memorization_quality: pEntry.memorization_quality ||
-            existingEntry?.memorization_quality,
-          comments: (pEntry as { comments?: string }).comments ||
-            existingEntry?.comments,
-        };
+
+        // Prepare arrays for Nazirah and Qaida
+        const nazirahEntries = (existingEntry?.nazirah_entries || []).slice();
+        const qaidaEntries = (existingEntry?.qaida_entries || []).slice();
+
+        if (pEntry.lesson_type === "nazirah") {
+          nazirahEntries.push({
+            juz: pEntry.current_juz ?? null,
+            surah: pEntry.current_surah ?? null,
+            start_ayat: pEntry.start_ayat ?? null,
+            end_ayat: pEntry.end_ayat ?? null,
+            quality: pEntry.memorization_quality ?? null,
+          });
+          combinedEntriesMap[dateKey] = {
+            ...existingEntry,
+            nazirah_entries: nazirahEntries,
+          };
+        } else if (pEntry.lesson_type === "qaida") {
+          qaidaEntries.push({
+            lesson: pEntry.qaida_lesson ?? pEntry.notes ?? null,
+            quality: pEntry.memorization_quality ?? null,
+          });
+          combinedEntriesMap[dateKey] = {
+            ...existingEntry,
+            qaida_entries: qaidaEntries,
+          };
+        } else {
+          // Default to Sabaq mapping
+          combinedEntriesMap[dateKey] = {
+            ...existingEntry,
+            current_juz: pEntry.current_juz ?? existingEntry?.current_juz,
+            current_surah: pEntry.current_surah ?? existingEntry?.current_surah,
+            start_ayat: pEntry.start_ayat ?? existingEntry?.start_ayat,
+            end_ayat: pEntry.end_ayat ?? existingEntry?.end_ayat,
+            memorization_quality: pEntry.memorization_quality || existingEntry?.memorization_quality,
+            comments: (pEntry as { comments?: string }).comments || existingEntry?.comments,
+          };
+        }
       });
 
       // 3. Merge sabaq_para data
@@ -296,9 +333,11 @@ export const DhorBook = ({
         combinedEntriesMap,
       )
         .filter((entry) =>
-          entry.current_juz !== undefined || // Check for actual progress data field
+          entry.current_juz !== undefined || // Sabaq
           entry.sabaq_para_data ||
-          (entry.juz_revisions_data && entry.juz_revisions_data.length > 0)
+          (entry.juz_revisions_data && entry.juz_revisions_data.length > 0) ||
+          (entry.nazirah_entries && entry.nazirah_entries.length > 0) ||
+          (entry.qaida_entries && entry.qaida_entries.length > 0)
         )
         .map((entry) => entry as DailyActivityEntry); // Cast to full type
 
@@ -403,7 +442,7 @@ export const DhorBook = ({
           .select("key, value")
           .in("key", ["email_schedule_time", "email_timezone", "email_schedule_enabled"]);
         if (error) throw error;
-        const map: Record<string, string> = Object.fromEntries((data || []).map((r: any) => [r.key, r.value]));
+        const map: Record<string, string> = Object.fromEntries((data || []).map((r: { key: string; value: string }) => [r.key, r.value]));
         return map;
       },
     });
