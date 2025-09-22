@@ -76,10 +76,26 @@ export interface DailyActivityEntry {
     quality_rating?: string;
   };
   juz_revisions_data?: JuzRevision[];
+  // New: allow multiple Nazirah & Qaida entries per day
+  nazirah_entries?: NazirahEntry[];
+  qaida_entries?: QaidaEntry[];
   memorization_quality?: string;
   comments?: string;
   day_of_week?: string;
   points?: number;
+}
+
+export interface NazirahEntry {
+  juz?: number | null;
+  surah?: number | null;
+  start_ayat?: number | null;
+  end_ayat?: number | null;
+  quality?: string | null;
+}
+
+export interface QaidaEntry {
+  lesson?: string | null;
+  quality?: string | null;
 }
 
 export interface JuzRevision {
