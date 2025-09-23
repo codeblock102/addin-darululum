@@ -1094,9 +1094,24 @@ export function DhorBookEntryForm(
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Qaida Lesson</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Enter lesson (e.g., Lesson 3 - Letters)" {...field} />
-                      </FormControl>
+                      <Select
+                        onValueChange={field.onChange}
+                        value={field.value || "1"}
+                        defaultValue="1"
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select lesson" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {Array.from({ length: 16 }, (_, i) => (i + 1).toString()).map((val) => (
+                            <SelectItem key={`qaida-lesson-${val}`} value={val}>
+                              {val}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                       <FormMessage />
                     </FormItem>
                   )}
