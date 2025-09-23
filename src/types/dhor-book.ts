@@ -74,6 +74,7 @@ export interface DailyActivityEntry {
     juz_number: number;
     quarters_revised?: string;
     quality_rating?: string;
+    sabaq_para_pages?: number;
   };
   juz_revisions_data?: JuzRevision[];
   // New: allow multiple Nazirah & Qaida entries per day

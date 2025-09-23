@@ -45,6 +45,7 @@ import ParentAcademics from "@/pages/ParentAcademics.tsx";
 import ParentAttendance from "@/pages/ParentAttendance.tsx";
 import ParentAccounts from "@/pages/admin/ParentAccounts.tsx";
 import BulkStudentImport from "@/pages/admin/BulkStudentImport.tsx";
+import Activity from "@/pages/admin/Activity.tsx";
 import ResetPassword from "@/pages/ResetPassword.tsx";
 import TeacherAddParent from "@/pages/TeacherAddParent.tsx";
 
@@ -100,6 +101,17 @@ function App() {
             <Route path="bulk-student-import" element={<BulkStudentImport />} />
             <Route path="teacher-schedules" element={<TeacherSchedules />} />
           </Route>
+          {/* Admin Activity in main sidebar (not inside Admin Panel) */}
+          <Route
+            path="/activity"
+            element={
+              <ProtectedRoute>
+                <DashboardLayout>
+                  <Activity />
+                </DashboardLayout>
+              </ProtectedRoute>
+            }
+          />
 
           <Route
             element={
