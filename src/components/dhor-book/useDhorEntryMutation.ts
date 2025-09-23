@@ -320,6 +320,9 @@ export function useDhorEntryMutation({
           console.warn(
             "No data was inserted into any table. Check form data and conditions for insertion.",
           );
+          throw new Error(
+            "Nothing was saved. Please fill in at least one section (Sabaq, Sabaq Para, Dhor, or Nazirah/Qaida).",
+          );
         }
 
         return { entryDate, studentId, results };
