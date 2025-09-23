@@ -16,6 +16,8 @@ import {
   TabsTrigger,
 } from "@/components/ui/tabs.tsx";
 import { Button } from "@/components/ui/button.tsx";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select.tsx";
+import { useTeacherClasses } from "@/hooks/useTeacherClasses.ts";
 import { Badge as _Badge } from "@/components/ui/badge.tsx";
 import { DhorBook } from "@/components/dhor-book/DhorBook.tsx";
 import { ClassroomRecords } from "@/components/dhor-book/ClassroomRecords.tsx";
@@ -70,6 +72,7 @@ export const TeacherDhorBook = ({ teacherId }: TeacherDhorBookProps) => {
   const [viewMode, setViewMode] = useState<"daily" | "classroom">("daily");
   const [isSendingEmails, setIsSendingEmails] = useState(false);
   const [showEmailConfirmDialog, setShowEmailConfirmDialog] = useState(false);
+  const [target, setTarget] = useState<string>("school");
   const _isMobile = useIsMobile();
 
   const { data: teacherData, isLoading: isLoadingTeacher } = useQuery({
@@ -89,6 +92,9 @@ export const TeacherDhorBook = ({ teacherId }: TeacherDhorBookProps) => {
     },
     enabled: !!teacherId,
   });
+
+  // Teacher's classes for class-scoped sending
+  const { data: teacherClasses } = useTeacherClasses(teacherId);
 
   // Set up realtime updates for the records
   useRealtimeLeaderboard(teacherId, () => {
@@ -381,10 +387,18 @@ export const TeacherDhorBook = ({ teacherId }: TeacherDhorBookProps) => {
       description: t("pages.teacherPortal.dhor.sendingEmailsDesc", "Triggering the daily progress emails. This may take a moment."),
     });
     try {
-      const { error } = await supabase.functions.invoke("daily-progress-email");
-      if (error) {
-        throw error as Error;
-      }
+      const isSchool = target === "school";
+      const isSection = target === "section";
+      const payload: Record<string, unknown> = {
+        source: "manual_ui",
+        timestamp: new Date().toISOString(),
+        scope: isSchool ? "school" : (isSection ? "section" : "class"),
+        classId: isSchool || isSection ? null : target,
+        section: isSection ? (teacherData?.section || null) : null,
+      };
+
+      const { data, error } = await supabase.functions.invoke("daily-progress-email", { body: payload });
+      if (error) throw error as Error;
       toast({
         title: t("common.success", "Success"),
         description: t("pages.teacherPortal.dhor.sendingEmailsSuccess", "Successfully triggered the daily progress emails."),
@@ -429,10 +443,40 @@ export const TeacherDhorBook = ({ teacherId }: TeacherDhorBookProps) => {
             <AlertDialogHeader>
               <AlertDialogTitle>{t("pages.teacherPortal.dhor.confirm.title", "Confirm Email Send")}</AlertDialogTitle>
               <AlertDialogDescription>
-                {t("pages.teacherPortal.dhor.confirm.desc1", "Are you sure you want to send daily progress emails to all guardian email addresses?")} 
-                {t("pages.teacherPortal.dhor.confirm.desc2", "This action will send progress reports for all students who have progress entries from the last 24 hours.")}
+                {t("pages.teacherPortal.dhor.confirm.desc1", "Are you sure you want to send daily progress emails?")}
                 <br /><br />
-                <strong>{t("pages.teacherPortal.dhor.confirm.cannotUndo", "This action cannot be undone.")}</strong>
+                <div className="space-y-3">
+                  <div className="text-xs font-medium">Target</div>
+                  <Select value={target} onValueChange={setTarget}>
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Select target" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="school">Entire school</SelectItem>
+                      {teacherData?.section && (
+                        <SelectItem value="section">Entire section — {teacherData.section}</SelectItem>
+                      )}
+                      {(teacherClasses || []).map((c: { id: string; name: string }) => (
+                        <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+
+                  <div className="text-[11px] text-muted-foreground">
+                    {target === "school" && <span>It will send to: Entire school</span>}
+                    {target === "section" && teacherData?.section && (
+                      <span>It will send to: Section — {teacherData.section}</span>
+                    )}
+                    {target !== "school" && target !== "section" && (() => {
+                      const found = (teacherClasses || []).find((c: { id: string; name: string }) => c.id === target);
+                      return <span>It will send to: Class — {found?.name || "Selected class"}</span>;
+                    })()}
+                  </div>
+
+                  <div className="text-[11px]">
+                    <strong>{t("pages.teacherPortal.dhor.confirm.cannotUndo", "This action cannot be undone.")}</strong>
+                  </div>
+                </div>
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>

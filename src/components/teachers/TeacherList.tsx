@@ -30,9 +30,12 @@ interface Teacher {
   id: string;
   name: string;
   subject: string;
+  section?: string | null;
+  grade?: number | null;
   bio?: string;
   email?: string;
   phone?: string;
+  capabilities?: string[];
   students: number;
 }
 interface TeacherListProps {
@@ -59,7 +62,7 @@ export const TeacherList = ({
     queryKey: ["profiles", madrassahId, "role", "teacher"],
     queryFn: async () => {
       let query = supabase.from("profiles").select(
-        "id, name, subject, email, phone, bio, capabilities",
+        "id, name, subject, section, grade, email, phone, bio, capabilities",
       ).eq("role", "teacher");
 
       if (madrassahId) {
