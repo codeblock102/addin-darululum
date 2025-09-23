@@ -136,7 +136,10 @@ export function DhorBookGrid(
                     </TableCell>
                     <TableCell className="hidden sm:table-cell">
                       {entry?.sabaq_para_data
-                        ? `Juz ${entry.sabaq_para_data.juz_number}, ${entry.sabaq_para_data.quarters_revised || "—"} quarters, Quality ${entry.sabaq_para_data.quality_rating || "—"}`
+                        ? `J${entry.sabaq_para_data.juz_number}` +
+                          `${entry.sabaq_para_data.sabaq_para_pages ? ", " + entry.sabaq_para_data.sabaq_para_pages + "p" : ""}` +
+                          `${entry.sabaq_para_data.quarters_revised ? ", " + entry.sabaq_para_data.quarters_revised.replace("_", "").replace("quarters", "q").replace("1st", "1").replace("2", "2").replace("3", "3").replace("4", "4") : ""}` +
+                          `${entry.sabaq_para_data.quality_rating ? ", Q " + entry.sabaq_para_data.quality_rating : ""}`
                         : "—"}
                     </TableCell>
                     {showNazirahCol && (
@@ -248,7 +251,10 @@ export function DhorBookGrid(
                       </TableCell>
                       <TableCell className="hidden sm:table-cell">
                         {entry?.sabaq_para_data
-                          ? `Juz ${entry.sabaq_para_data.juz_number}, ${entry.sabaq_para_data.quarters_revised || "—"} quarters, Quality ${entry.sabaq_para_data.quality_rating || "—"}`
+                          ? `J${entry.sabaq_para_data.juz_number}` +
+                            `${entry.sabaq_para_data.sabaq_para_pages ? ", " + entry.sabaq_para_data.sabaq_para_pages + "p" : ""}` +
+                            `${entry.sabaq_para_data.quarters_revised ? ", " + entry.sabaq_para_data.quarters_revised.replace("_", "").replace("quarters", "q").replace("1st", "1").replace("2", "2").replace("3", "3").replace("4", "4") : ""}` +
+                            `${entry.sabaq_para_data.quality_rating ? ", Q " + entry.sabaq_para_data.quality_rating : ""}`
                           : "—"}
                       </TableCell>
                       {showNazirahCol && (
