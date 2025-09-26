@@ -1,4 +1,7 @@
 import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client.ts";
+import { format, subDays } from "date-fns";
 import { useNavigate } from "react-router-dom";
 import { useRBAC } from "@/hooks/useRBAC.ts";
 import { AttendanceForm } from "@/components/attendance/AttendanceForm.tsx";
@@ -11,7 +14,6 @@ import {
   TabsTrigger,
 } from "@/components/ui/tabs.tsx";
 import {
-  AlertCircle,
   BookOpen,
   CalendarCheck,
   Clock,
@@ -43,11 +45,68 @@ const Attendance = () => {
     }
   }, [isLoading, isAdmin, isAttendanceTaker, navigate]);
 
+  // Dates
+  const todayYmd = format(new Date(), "yyyy-MM-dd");
+  const sevenDaysAgoYmd = format(subDays(new Date(), 6), "yyyy-MM-dd");
+
+  // Active students count
+  const { data: activeStudentsCount = 0 } = useQuery({
+    queryKey: ["active-students-count"],
+    queryFn: async () => {
+      const { count, error } = await supabase
+        .from("students")
+        .select("*", { count: "exact", head: true })
+        .eq("status", "active");
+      if (error) throw error;
+      return count || 0;
+    },
+  });
+
+  // Today's attendance records
+  type TodayRow = { id: string; status: string };
+  const { data: todayRows = [] } = useQuery<TodayRow[]>({
+    queryKey: ["attendance-today", todayYmd],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("attendance")
+        .select("id, status")
+        .eq("date", todayYmd);
+      if (error) throw error;
+      return (data || []) as TodayRow[];
+    },
+  });
+
+  // Last 7 days attendance records (including today)
+  type WeekRow = { id: string; status: string };
+  const { data: weekRows = [] } = useQuery<WeekRow[]>({
+    queryKey: ["attendance-week", sevenDaysAgoYmd, todayYmd],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("attendance")
+        .select("id, status, date")
+        .gte("date", sevenDaysAgoYmd)
+        .lte("date", todayYmd);
+      if (error) throw error;
+      return (data || []) as WeekRow[];
+    },
+  });
+
+  // Computations
+  const attendedStatuses = new Set(["present", "late", "excused"]);
+  const attendedToday = todayRows.filter((r) => attendedStatuses.has(r.status?.toLowerCase?.() || "")).length;
+  const totalTodayRecords = todayRows.length;
+  const pendingCount = Math.max(0, activeStudentsCount - totalTodayRecords);
+  const todayPct = activeStudentsCount > 0 ? Math.round((attendedToday / activeStudentsCount) * 1000) / 10 : 0;
+
+  const weekAttended = weekRows.filter((r) => attendedStatuses.has(r.status?.toLowerCase?.() || "")).length;
+  const weekTotal = weekRows.length;
+  const weekPct = weekTotal > 0 ? Math.round((weekAttended / weekTotal) * 1000) / 10 : 0;
+
   const statsCards = [
     {
       title: t("pages.attendance.statToday"),
-      value: "28/32",
-      percentage: "87.5%",
+      value: `${attendedToday}/${activeStudentsCount}`,
+      percentage: `${todayPct.toFixed(1)}%`,
       icon: Users,
       color: "text-green-600",
       bgColor: "bg-green-50 dark:bg-green-900/20",
@@ -55,21 +114,12 @@ const Attendance = () => {
     },
     {
       title: t("pages.attendance.statWeek"),
-      value: "142/160",
-      percentage: "88.7%",
+      value: `${weekAttended}/${weekTotal}`,
+      percentage: `${weekPct.toFixed(1)}%`,
       icon: TrendingUp,
       color: "text-blue-600",
       bgColor: "bg-blue-50 dark:bg-blue-900/20",
       borderColor: "border-blue-200 dark:border-blue-800",
-    },
-    {
-      title: t("pages.attendance.statPending"),
-      value: "3",
-      percentage: "Low",
-      icon: AlertCircle,
-      color: "text-orange-600",
-      bgColor: "bg-orange-50 dark:bg-orange-900/20",
-      borderColor: "border-orange-200 dark:border-orange-800",
     },
   ];
 

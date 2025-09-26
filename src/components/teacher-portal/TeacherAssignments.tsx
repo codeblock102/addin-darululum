@@ -13,6 +13,7 @@ import { useToast } from "@/components/ui/use-toast.ts";
 import { Calendar, CheckCircle2, Clock, FileUp, Trash2, Upload, MessageSquare as _MessageSquare, MessageSquarePlus, MessageSquareText, Loader2, Save } from "lucide-react";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog.tsx";
 import { useI18n } from "@/contexts/I18nContext.tsx";
+import { useIsMobile } from "@/hooks/use-mobile.tsx";
 
 interface TeacherAssignmentsProps {
   teacherId: string;
@@ -30,6 +31,26 @@ export const TeacherAssignments = ({ teacherId }: TeacherAssignmentsProps) => {
   const [listFilter, setListFilter] = useState<"all" | "pending" | "overdue" | "completed">("all");
   const [openSubmissions, setOpenSubmissions] = useState<Set<string>>(new Set());
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const isMobile = useIsMobile();
+
+  // Attachment preview modal state (desktop only)
+  interface AttachmentPreviewState {
+    url: string;
+    ext: string;
+    name: string;
+    inline: boolean;
+  }
+  const [attachmentPreview, setAttachmentPreview] = useState<AttachmentPreviewState | null>(null);
+  const [attachmentLoading, setAttachmentLoading] = useState(false);
+
+  // Cleanup any blob URLs when closing
+  _useEffect(() => {
+    return () => {
+      if (attachmentPreview?.url && attachmentPreview.url.startsWith("blob:")) {
+        URL.revokeObjectURL(attachmentPreview.url);
+      }
+    };
+  }, [attachmentPreview?.url]);
 
   const guessMimeType = (filename: string): string => {
     const ext = filename.toLowerCase().split(".").pop() || "";
@@ -303,6 +324,50 @@ export const TeacherAssignments = ({ teacherId }: TeacherAssignmentsProps) => {
     }
   };
 
+  // Desktop modal preview (images, pdf inline; others via blob with download)
+  const showAttachmentInModal = async (pathOrUrl?: string | null, fileName?: string | null) => {
+    if (!pathOrUrl) return;
+    try {
+      setAttachmentLoading(true);
+      const nameGuess = (fileName || "").trim() || (pathOrUrl.includes("/") ? pathOrUrl.substring(pathOrUrl.lastIndexOf("/") + 1) : "");
+      const ext = nameGuess.toLowerCase().split(".").pop() || "";
+      const inlineExts = new Set(["jpg","jpeg","png","gif","webp","svg","pdf"]);
+      const isInline = inlineExts.has(ext);
+
+      let tempUrl = pathOrUrl;
+      if (!/^https?:/i.test(pathOrUrl)) {
+        const { data, error } = await supabase.storage
+          .from("teacher-assignments")
+          .createSignedUrl(pathOrUrl, 300);
+        if (error) throw error;
+        tempUrl = data?.signedUrl || "";
+      }
+      if (!tempUrl) return;
+
+      if (isInline) {
+        setAttachmentPreview({ url: tempUrl, ext, name: nameGuess || "Attachment", inline: true });
+      } else {
+        const resp = await fetch(tempUrl);
+        const blob = await resp.blob();
+        const blobUrl = URL.createObjectURL(blob);
+        setAttachmentPreview({ url: blobUrl, ext, name: nameGuess || "Attachment", inline: false });
+      }
+    } catch (e) {
+      console.warn("Failed to open attachment:", e);
+    } finally {
+      setAttachmentLoading(false);
+    }
+  };
+
+  const handleAttachmentClick = (pathOrUrl?: string | null, fileName?: string | null) => {
+    if (isMobile) {
+      // Keep mobile behavior: open in a new tab
+      void openAttachmentFromPath(pathOrUrl, fileName);
+    } else {
+      void showAttachmentInModal(pathOrUrl, fileName);
+    }
+  };
+
   const toggleSubmissions = (id: string) => {
     setOpenSubmissions((prev) => {
       const next = new Set(prev);
@@ -476,7 +541,7 @@ export const TeacherAssignments = ({ teacherId }: TeacherAssignmentsProps) => {
                       {a.attachmentName && a.attachmentUrl && (
                         <>
                           <Separator orientation="vertical" />
-                          <button className="underline text-left" type="button" onClick={() => openAttachmentFromPath(a.attachmentUrl, a.attachmentName)}>{a.attachmentName}</button>
+                          <button className="underline text-left" type="button" onClick={() => handleAttachmentClick(a.attachmentUrl, a.attachmentName)}>{a.attachmentName}</button>
                         </>
                       )}
                     </div>
@@ -511,6 +576,60 @@ export const TeacherAssignments = ({ teacherId }: TeacherAssignmentsProps) => {
               ))}
             </div>
           </div>
+          {/* Attachment Preview Modal (desktop) */}
+          {!isMobile && (
+            <Dialog open={!!attachmentPreview || attachmentLoading} onOpenChange={(open) => {
+              if (!open) {
+                if (attachmentPreview?.url && attachmentPreview.url.startsWith("blob:")) URL.revokeObjectURL(attachmentPreview.url);
+                setAttachmentPreview(null);
+                setAttachmentLoading(false);
+              }
+            }}>
+              <DialogContent className="sm:max-w-3xl">
+                <DialogHeader>
+                  <DialogTitle>{attachmentPreview?.name || t("pages.teacherPortal.assignments.attachment", "Attachment")}</DialogTitle>
+                </DialogHeader>
+                <div className="min-h-[200px]">
+                  {attachmentLoading && (
+                    <div className="h-[50svh] flex items-center justify-center text-sm text-muted-foreground">
+                      {t("pages.teacherPortal.assignments.loadingAttachment", "Loading attachment…")}
+                    </div>
+                  )}
+                  {!attachmentLoading && attachmentPreview && (
+                    <div className="mt-3 rounded-lg border shadow-sm overflow-hidden bg-muted/20">
+                      {attachmentPreview.inline ? (
+                        attachmentPreview.ext === "pdf" ? (
+                          <iframe src={attachmentPreview.url} title={attachmentPreview.name} style={{ width: "100%", height: "65svh", border: 0 }} />
+                        ) : (
+                          <img src={attachmentPreview.url} alt={attachmentPreview.name} style={{ maxWidth: "100%", height: "auto", display: "block" }} />
+                        )
+                      ) : (
+                        <div className="p-3 text-sm text-muted-foreground">
+                          {t("pages.teacherPortal.assignments.noPreview", "This file type cannot be previewed. Use Download instead.")}
+                        </div>
+                      )}
+                      <div className="p-2 flex gap-2 justify-end border-t bg-background">
+                        <Button variant="secondary" onClick={() => {
+                          if (attachmentPreview?.url && attachmentPreview.url.startsWith("blob:")) URL.revokeObjectURL(attachmentPreview.url);
+                          setAttachmentPreview(null);
+                        }}>{t("common.close", "Close")}</Button>
+                        {attachmentPreview && (
+                          <Button onClick={() => {
+                            const a = document.createElement("a");
+                            a.href = attachmentPreview.url;
+                            a.download = attachmentPreview.name || "attachment";
+                            document.body.appendChild(a);
+                            a.click();
+                            a.remove();
+                          }}>{t("common.download", "Download")}</Button>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </DialogContent>
+            </Dialog>
+          )}
           </CardContent>
         </Card>
       )}
