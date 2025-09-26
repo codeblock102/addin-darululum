@@ -12,3 +12,5 @@ enabled = true
     verify_jwt = false
   [functions."create-parent"]
     verify_jwt = false
+  [functions."admin-update-password"]
+    verify_jwt = true

@@ -1,10 +1,6 @@
 import { Student, StudentAssignment as _StudentAssignment } from "../MyStudents.tsx";
 import { Button } from "@/components/ui/button.tsx";
-import { Trash2, UserMinus, UserPlus, Edit } from "lucide-react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client.ts";
-import { useToast } from "@/hooks/use-toast.ts";
-import { getErrorMessage } from "@/utils/stringUtils.ts";
+import { Trash2, UserMinus, Edit } from "lucide-react";
 import { useI18n } from "@/contexts/I18nContext.tsx";
 
 interface StudentMobileListProps {
@@ -24,60 +20,7 @@ export const StudentMobileList = ({
   setIsDeleteType,
   onEditStudent,
 }: StudentMobileListProps) => {
-  const { toast } = useToast();
-  const queryClient = useQueryClient();
   const { t } = useI18n();
-
-  const addStudentMutation = useMutation({
-    mutationFn: async (
-      { teacherId, studentName }: { teacherId: string; studentName: string },
-    ) => {
-      const { error } = await supabase
-        .from("students_teachers")
-        .insert({
-          teacher_id: teacherId,
-          student_name: studentName,
-          active: true,
-        });
-
-      if (error) throw error;
-    },
-    onSuccess: (_, variables) => {
-      toast({
-        title: t("pages.teacherPortal.students.addToastTitle"),
-        description: t("pages.teacherPortal.students.addToastDesc").replace("{name}", variables.studentName),
-      });
-      queryClient.invalidateQueries({
-        queryKey: ["teacher-student-assignments"],
-      });
-      queryClient.invalidateQueries({ queryKey: ["teacher-students-details"] });
-      
-      // Invalidate all student-related queries to ensure UI updates everywhere
-      queryClient.invalidateQueries({ queryKey: ["students-for-user"] });
-      queryClient.invalidateQueries({ queryKey: ["all-students-for-search"] });
-      queryClient.invalidateQueries({ queryKey: ["classroom-students"] });
-      queryClient.invalidateQueries({ queryKey: ["students"] });
-      queryClient.invalidateQueries({ queryKey: ["all-students"] });
-      queryClient.invalidateQueries({ queryKey: ["teacher-students"] });
-      queryClient.invalidateQueries({ queryKey: ["students-for-assignment"] });
-      queryClient.invalidateQueries({ queryKey: ["all-students-for-progress"] });
-      queryClient.invalidateQueries({ queryKey: ["students-search"] });
-    },
-    onError: (error) => {
-      const errorMessage = getErrorMessage(error, t("pages.teacherPortal.students.errorAddDefault"));
-      toast({
-        title: t("common.error"),
-        description: errorMessage,
-        variant: "destructive",
-      });
-    },
-  });
-
-  const handleAddStudent = (studentName: string) => {
-    // Get teacherId from localStorage or context - this is a simplified version
-    const teacherId = "temp-teacher-id"; // This should come from your auth context
-    addStudentMutation.mutate({ teacherId, studentName });
-  };
 
   const handleRemoveStudent = (_student: Student) => {
     return;
@@ -156,36 +99,20 @@ export const StudentMobileList = ({
                   {t("pages.teacherPortal.students.mobile.edit")}
                 </Button>
               )}
-              {isAssigned
-                ? (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={(e) => {
-                      e.stopPropagation(); // Prevent card click when clicking the button
-                      handleRemoveStudent(student);
-                    }}
-                    className="text-red-500 hover:text-red-600 hover:bg-red-50 border-red-200"
-                  >
-                    <UserMinus className="h-4 w-4 mr-1" />
-                    {t("pages.teacherPortal.students.mobile.remove")}
-                  </Button>
-                )
-                : (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={(e) => {
-                      e.stopPropagation(); // Prevent card click when clicking the button
-                      handleAddStudent(student.name);
-                    }}
-                    disabled={addStudentMutation.isPending}
-                    className="text-blue-500 hover:text-blue-600 hover:bg-blue-50 border-blue-200"
-                  >
-                    <UserPlus className="h-4 w-4 mr-1" />
-                    {addStudentMutation.isPending ? t("pages.teacherPortal.students.mobile.adding") : t("pages.teacherPortal.students.mobile.add")}
-                  </Button>
-                )}
+              {isAssigned && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleRemoveStudent(student);
+                  }}
+                  className="text-red-500 hover:text-red-600 hover:bg-red-50 border-red-200"
+                >
+                  <UserMinus className="h-4 w-4 mr-1" />
+                  {t("pages.teacherPortal.students.mobile.remove")}
+                </Button>
+              )}
               <Button
                 variant="outline"
                 size="sm"

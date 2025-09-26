@@ -8,12 +8,16 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Input } from "@/components/ui/input.tsx";
 import { supabase } from "@/integrations/supabase/client.ts";
 import { useQuery } from "@tanstack/react-query";
-import { Calendar, ClipboardList, GraduationCap } from "lucide-react";
+import { Calendar, ClipboardList, GraduationCap, FileText, Loader2, Paperclip } from "lucide-react";
+import { Badge } from "@/components/ui/badge.tsx";
+import { Separator } from "@/components/ui/separator.tsx";
+import { useIsMobile } from "@/hooks/use-mobile.tsx";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog.tsx";
 import { Button } from "@/components/ui/button.tsx";
 
 const ParentAcademics = () => {
   const { children } = useParentChildren();
+  const isMobile = useIsMobile();
   const [selectedStudentId, setSelectedStudentId] = useState<string | null>(children[0]?.id ?? null);
   const [statusFilter, setStatusFilter] = useState<"all" | "assigned" | "submitted" | "graded">("all");
   const [search, setSearch] = useState("");
@@ -234,6 +238,16 @@ const ParentAcademics = () => {
     }
   };
 
+  // Auto-open attachment preview on mobile when opening details
+  useEffect(() => {
+    if (!detailRow) return;
+    const url = detailRow.assignment?.attachment_url;
+    if (isMobile && url && !attachmentPreview && !attachmentLoading) {
+      // Fire and forget; errors handled inside showAttachmentInModal
+      void showAttachmentInModal(url, detailRow.assignment?.attachment_name || null);
+    }
+  }, [detailRow, isMobile]);
+
   return (
     <ProtectedRoute requireParent>
       <div className="space-y-6">
@@ -315,7 +329,11 @@ const ParentAcademics = () => {
                         </TableRow>
                       ) : filteredAssignments && filteredAssignments.length > 0 ? (
                         filteredAssignments.map((row: AssignmentListItem) => (
-                          <TableRow key={row.id}>
+                          <TableRow
+                            key={row.id}
+                            onClick={() => setDetailRow(row)}
+                            className="cursor-pointer hover:bg-muted/30"
+                          >
                             <TableCell className="font-medium">
                               {row.assignment?.title}
                             </TableCell>
@@ -331,7 +349,7 @@ const ParentAcademics = () => {
                               {row.feedback ?? "—"}
                             </TableCell>
                             <TableCell className="text-right">
-                              <Button size="sm" variant="outline" onClick={() => setDetailRow(row)}>View</Button>
+                              <Button size="sm" variant="outline" onClick={() => setDetailRow(row)} className="hidden sm:inline-flex">View</Button>
                             </TableCell>
                           </TableRow>
                         ))
@@ -360,61 +378,100 @@ const ParentAcademics = () => {
 
         {/* Assignment Details Modal */}
         <Dialog open={!!detailRow} onOpenChange={(open) => setDetailRow(open ? detailRow : null)}>
-          <DialogContent>
+          <DialogContent className="sm:max-w-3xl max-h-[90vh] overflow-y-auto p-4 sm:p-6 bg-background border border-border sm:rounded-lg">
             <DialogHeader>
               <DialogTitle>{detailRow?.assignment?.title || "Assignment Details"}</DialogTitle>
               <DialogDescription>
                 Assigned work details and any attached file.
               </DialogDescription>
             </DialogHeader>
-            <div className="space-y-3">
-              <div>
-                <div className="text-sm text-muted-foreground">Description</div>
-                <div>{detailRow?.assignment?.description || "—"}</div>
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <div className="text-sm text-muted-foreground">Due Date</div>
-                  <div>{detailRow?.assignment?.due_date || "—"}</div>
+            <div className="space-y-4">
+              <Separator />
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-2">
+                  <Badge>
+                    {detailRow?.status ? detailRow.status.charAt(0).toUpperCase() + detailRow.status.slice(1) : "Assigned"}
+                  </Badge>
                 </div>
-                <div>
-                  <div className="text-sm text-muted-foreground">Status</div>
-                  <div className="capitalize">{detailRow?.status || "assigned"}</div>
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <div className="text-sm text-muted-foreground">Submitted</div>
-                  <div>{detailRow?.submitted_at ? new Date(detailRow.submitted_at).toLocaleString() : "—"}</div>
-                </div>
-                <div>
-                  <div className="text-sm text-muted-foreground">Graded</div>
-                  <div>{detailRow?.graded_at ? new Date(detailRow.graded_at).toLocaleString() : "—"}</div>
+                <div className="flex items-center gap-2 text-sm">
+                  <Calendar className="h-4 w-4" />
+                  <Badge variant="secondary">
+                    {detailRow?.assignment?.due_date || "No due date"}
+                  </Badge>
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <div className="text-sm text-muted-foreground">Grade</div>
-                  <div>{detailRow?.grade ?? "—"}</div>
+
+              <Separator />
+              <div className="rounded-md border bg-muted/30 p-3">
+                <div className="text-xs font-medium tracking-wide text-muted-foreground uppercase">Description</div>
+                <div className="mt-1">{detailRow?.assignment?.description || "—"}</div>
+              </div>
+              <div className="rounded-md border bg-card/50 p-3 space-y-3">
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <div className="text-sm text-muted-foreground">Due Date</div>
+                    <div>{detailRow?.assignment?.due_date || "—"}</div>
+                  </div>
+                  <div>
+                    <div className="text-sm text-muted-foreground">Status</div>
+                    <div className="capitalize">{detailRow?.status || "assigned"}</div>
+                  </div>
                 </div>
-                <div>
-                  <div className="text-sm text-muted-foreground">Feedback</div>
-                  <div>{detailRow?.feedback ?? "—"}</div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <div className="text-sm text-muted-foreground">Submitted</div>
+                    <div>{detailRow?.submitted_at ? new Date(detailRow.submitted_at).toLocaleString() : "—"}</div>
+                  </div>
+                  <div>
+                    <div className="text-sm text-muted-foreground">Graded</div>
+                    <div>{detailRow?.graded_at ? new Date(detailRow.graded_at).toLocaleString() : "—"}</div>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <div className="text-sm text-muted-foreground">Grade</div>
+                    <div>{detailRow?.grade ?? "—"}</div>
+                  </div>
+                  <div>
+                    <div className="text-sm text-muted-foreground">Feedback</div>
+                    <div>{detailRow?.feedback ?? "—"}</div>
+                  </div>
                 </div>
               </div>
+              <Separator />
               {detailRow?.assignment?.attachment_url && (
-                <div className="pt-2">
-              <Button disabled={attachmentLoading} onClick={() => showAttachmentInModal(detailRow.assignment.attachment_url, detailRow.assignment.attachment_name)}>
-                    View Attachment{detailRow.assignment.attachment_name ? `: ${detailRow.assignment.attachment_name}` : ""}
+                <div className="pt-1 space-y-2">
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <Paperclip className="h-4 w-4" /> Attachment
+                  </div>
+                  <Button
+                    size="sm"
+                    variant="default"
+                    className="text-sm rounded-full shadow-sm px-4"
+                    disabled={attachmentLoading}
+                    aria-label={`Open attachment${detailRow.assignment.attachment_name ? `: ${detailRow.assignment.attachment_name}` : ""}`}
+                    onClick={() =>
+                      showAttachmentInModal(
+                        detailRow.assignment.attachment_url,
+                        detailRow.assignment.attachment_name,
+                      )
+                    }
+                  >
+                    <FileText className="h-4 w-4 mr-2" />
+                    Open file
                   </Button>
                 </div>
               )}
-          {attachmentLoading && <div className="text-sm text-muted-foreground">Loading attachment…</div>}
+          {attachmentLoading && (
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Loader2 className="h-4 w-4 animate-spin" /> Loading attachment…
+            </div>
+          )}
           {attachmentPreview && (
-            <div className="mt-3 border rounded-md overflow-hidden">
+            <div className="mt-3 rounded-lg border shadow-sm overflow-hidden bg-muted/20">
               {attachmentPreview.inline ? (
                 attachmentPreview.ext === "pdf" ? (
-                  <iframe src={attachmentPreview.url} title={attachmentPreview.name} style={{ width: "100%", height: "70vh", border: 0 }} />
+                  <iframe src={attachmentPreview.url} title={attachmentPreview.name} style={{ width: "100%", height: "65svh", border: 0 }} />
                 ) : (
                   <img src={attachmentPreview.url} alt={attachmentPreview.name} style={{ maxWidth: "100%", height: "auto", display: "block" }} />
                 )

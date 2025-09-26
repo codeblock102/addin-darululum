@@ -37,13 +37,6 @@ export const QuickActions = ({ teacherId: _teacherId, isAdmin = false }: QuickAc
       color: "bg-purple-500 hover:bg-purple-600",
       description: t("pages.teacherPortal.quickActions.viewStudentsDesc", "Browse student list"),
     },
-    {
-      title: t("pages.teacherPortal.quickActions.messages", "Messages"),
-      icon: MessageSquare,
-      action: () => navigate("/dashboard?tab=messages"),
-      color: "bg-orange-500 hover:bg-orange-600",
-      description: t("pages.teacherPortal.quickActions.messagesDesc", "Send messages"),
-    },
   ];
 
   const adminActions = [
