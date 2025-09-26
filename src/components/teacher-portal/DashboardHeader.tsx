@@ -103,8 +103,6 @@ export const DashboardHeader = (
                   )}
                 </div>
 
-                {/* Enhanced contact info for larger screens */}
-               
               </div>
             </div>
 

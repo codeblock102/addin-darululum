@@ -13,6 +13,7 @@ import { Loader2, Search, UserRound, Users } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { AddStudentDialog as _AddStudentDialog } from "../students/AddStudentDialog.tsx";
 import { useI18n } from "@/contexts/I18nContext.tsx";
+import { useTeacherClasses } from "@/hooks/useTeacherClasses.ts";
 
 interface StudentSearchProps {
   teacherId: string;
@@ -62,27 +63,48 @@ export const StudentSearch = (
     enabled: !!teacherId || isAdmin,
   });
 
+  // Load classes assigned to this teacher (for scoping search results)
+  const { data: teacherClasses = [] } = useTeacherClasses(teacherId);
+
   const { data: students, isLoading: isLoadingStudents } = useQuery({
-    queryKey: ["all-students-for-search", teacherData, isAdmin],
+    queryKey: [
+      "all-students-for-search",
+      teacherData?.madrassah_id,
+      teacherData?.section,
+      isAdmin,
+      (teacherClasses || []).map((c: { id: string }) => c.id).join(","),
+    ],
     queryFn: async () => {
-      if (!teacherData?.madrassah_id) return [];
-
-      let query = supabase
-        .from("students")
-        .select("id, name")
-        .eq("status", "active");
-
-      // For admin users, fetch all students
+      // Admins: search across all active students
       if (isAdmin) {
-        // No madrassah_id filter for admin
-      } else {
-        query = query.eq("madrassah_id", teacherData.madrassah_id);
-        if (teacherData.section) {
-          query = query.eq("section", teacherData.section);
-        }
+        const { data, error } = await supabase
+          .from("students")
+          .select("id, name")
+          .eq("status", "active");
+        if (error) throw error;
+        return data || [];
       }
 
-      const { data, error } = await query;
+      // Teachers: restrict to students in assigned classes
+      if (!teacherData?.madrassah_id) return [];
+      const classIds: string[] = (teacherClasses || []).map((c: { id: string }) => c.id);
+      if (classIds.length === 0) return [];
+
+      const { data: cls, error: clsErr } = await supabase
+        .from("classes")
+        .select("current_students, id")
+        .in("id", classIds);
+      if (clsErr) throw clsErr;
+      const studentIds = (cls || [])
+        .flatMap((c: { current_students?: string[] }) => c.current_students || [])
+        .filter((id: string, i: number, arr: string[]) => id && arr.indexOf(id) === i);
+      if (studentIds.length === 0) return [];
+
+      const { data, error } = await supabase
+        .from("students")
+        .select("id, name")
+        .eq("status", "active")
+        .in("id", studentIds);
       if (error) throw error;
       return data || [];
     },

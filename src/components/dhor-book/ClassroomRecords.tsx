@@ -39,6 +39,7 @@ import {
 import { format } from "date-fns";
 import { useNavigate } from "react-router-dom";
 import { useI18n } from "@/contexts/I18nContext.tsx";
+import { useTeacherClasses } from "@/hooks/useTeacherClasses.ts";
 
 interface ClassroomRecordsProps {
   teacherId?: string;
@@ -97,12 +98,22 @@ export function ClassroomRecords(
     enabled: !!teacherId && !isAdmin,
   });
 
+  // Load classes assigned to this teacher to scope student roster precisely
+  const { data: teacherClasses = [] } = useTeacherClasses(teacherId || "");
+
   const {
     data: students,
     isLoading: studentsLoading,
     error: studentsError,
   } = useQuery({
-    queryKey: ["classroom-students", teacherId, isAdmin, teacherData],
+    queryKey: [
+      "classroom-students",
+      teacherId,
+      isAdmin,
+      teacherData?.madrassah_id,
+      teacherData?.section,
+      (teacherClasses || []).map((c: { id: string }) => c.id).join(","),
+    ],
     queryFn: async () => {
       let query = supabase
         .from("students")
@@ -110,21 +121,34 @@ export function ClassroomRecords(
         .not("madrassah_id", "is", null);
 
       if (isAdmin) {
-        // Admins see all students in their madrassah
+        // Admins: fall back to madrassah filter if available
         if (teacherData?.madrassah_id) {
           query = query.eq("madrassah_id", teacherData.madrassah_id);
         } else {
-          return []; // No madrassah, no students
+          return [];
         }
       } else {
-        // If not an admin, must be a teacher. Apply teacher filters.
-        if (teacherData?.madrassah_id && teacherData?.section) {
+        // Teachers: strictly scope to students in the teacher's assigned classes
+        const classIds: string[] = (teacherClasses || []).map(
+          (c: { id: string }) => c.id,
+        );
+        if (classIds.length > 0) {
+          const { data: cls } = await supabase
+            .from("classes")
+            .select("current_students, id")
+            .in("id", classIds);
+          const studentIds = (cls || [])
+            .flatMap((c: { current_students?: string[] }) => c.current_students || [])
+            .filter((id: string, i: number, arr: string[]) => id && arr.indexOf(id) === i);
+          if (studentIds.length === 0) return [];
+          query = query.in("id", studentIds).order("name", { ascending: true });
+        } else if (teacherData?.madrassah_id && teacherData?.section) {
+          // Fallback: older behavior if classes aren't configured
           query = query
             .eq("madrassah_id", teacherData.madrassah_id)
             .ilike("section", teacherData.section)
             .order("name", { ascending: true });
         } else {
-          // If teacher has no madrassah_id or section, they see no students.
           return [];
         }
       }
