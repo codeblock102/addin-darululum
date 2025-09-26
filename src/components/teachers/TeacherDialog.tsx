@@ -25,7 +25,7 @@ import {
 import { Input } from "@/components/ui/input.tsx";
 import { Button } from "@/components/ui/button.tsx";
 import { Checkbox } from "@/components/ui/checkbox.tsx";
-import { Loader2 } from "lucide-react";
+import { Loader2, Eye, EyeOff, Copy, KeyRound } from "lucide-react";
 import { Teacher } from "@/types/teacher.ts";
 import {
   Select,
@@ -100,6 +100,10 @@ export const TeacherDialog = (
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [changingPwd, setChangingPwd] = useState(false);
+  const [showPwd, setShowPwd] = useState(false);
+  const [newPwd, setNewPwd] = useState("");
+  const [copied, setCopied] = useState(false);
 
   const { data: sections, isLoading: isLoadingSections } = useQuery({
     queryKey: ["sections", madrassahId],
@@ -151,7 +155,10 @@ export const TeacherDialog = (
   // Set default values when selected teacher changes
   useEffect(() => {
     if (selectedTeacher) {
-      const existingCapabilities = (((selectedTeacher as any).capabilities as string[]) || []).slice();
+      const existingCapabilities = (Array.isArray((selectedTeacher as unknown as { capabilities?: unknown }).capabilities)
+        ? ((selectedTeacher as unknown as { capabilities: string[] }).capabilities)
+        : [])
+        .slice();
 
       form.reset({
         name: selectedTeacher.name || "",
@@ -194,6 +201,36 @@ export const TeacherDialog = (
       password += chars.charAt(Math.floor(Math.random() * chars.length));
     }
     return password;
+  };
+
+  const handleCopyPassword = async () => {
+    if (!newPwd) return;
+    try {
+      await navigator.clipboard.writeText(newPwd);
+      setCopied(true);
+      toast({ title: "Copied", description: "Password copied to clipboard." });
+      setTimeout(() => setCopied(false), 1500);
+    } catch (_err) {
+      toast({ title: "Copy failed", description: "Couldn't copy to clipboard.", variant: "destructive" });
+    }
+  };
+
+  const handlePasswordChange = async () => {
+    if (!selectedTeacher || !newPwd || newPwd.length < 6) return;
+    setChangingPwd(true);
+    try {
+      const { error } = await supabase.functions.invoke("admin-update-password", {
+        body: { userId: selectedTeacher.id, newPassword: newPwd },
+      });
+      if (error) throw new Error(error.message || "Failed to update password");
+      toast({ title: "Password updated", description: `Password changed for ${selectedTeacher.name}` });
+      setNewPwd("");
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Unknown error";
+      toast({ title: "Password update failed", description: message, variant: "destructive" });
+    } finally {
+      setChangingPwd(false);
+    }
   };
 
   const isValidUUID = (id: string | undefined): id is string => {
@@ -623,6 +660,64 @@ export const TeacherDialog = (
                     />
                   )}
                 </>
+              )}
+
+              {/* Password Reset - Only show when editing an existing teacher */}
+              {selectedTeacher && (
+                <div className="rounded-md border p-4 space-y-3">
+                  <div className="flex items-center gap-2">
+                    <KeyRound className="h-4 w-4" />
+                    <span className="font-medium">Reset Password</span>
+                  </div>
+                  <div>
+                    <Input
+                      id="admin-new-password"
+                      type={showPwd ? "text" : "password"}
+                      value={newPwd}
+                      onChange={(e) => setNewPwd(e.target.value)}
+                      placeholder="Enter new password (min 6 chars)"
+                    />
+                    <div className="mt-2 flex items-center gap-2">
+                      <button
+                        type="button"
+                        className="inline-flex items-center rounded-md border px-3 py-1.5 text-sm"
+                        onClick={() => {
+                          const pwd = generateRandomPassword();
+                          setNewPwd(pwd);
+                          setShowPwd(true);
+                        }}
+                      >
+                        Generate
+                      </button>
+                      <button
+                        type="button"
+                        className="inline-flex items-center rounded-md border px-3 py-1.5 text-sm"
+                        onClick={handleCopyPassword}
+                        disabled={!newPwd}
+                      >
+                        <Copy className="mr-1 h-4 w-4" /> {copied ? "Copied" : "Copy"}
+                      </button>
+                      <button
+                        type="button"
+                        className="inline-flex items-center rounded-md border px-3 py-1.5 text-sm"
+                        onClick={() => setShowPwd((s) => !s)}
+                      >
+                        {showPwd ? <EyeOff className="mr-1 h-4 w-4" /> : <Eye className="mr-1 h-4 w-4" />} {showPwd ? "Hide" : "Show"}
+                      </button>
+                    </div>
+                  </div>
+                  <div>
+                    <button
+                      type="button"
+                      className="inline-flex items-center rounded-md bg-primary px-3 py-1.5 text-sm text-primary-foreground disabled:opacity-50"
+                      onClick={handlePasswordChange}
+                      disabled={changingPwd || !newPwd || newPwd.length < 6}
+                    >
+                      {changingPwd && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                      Save New Password
+                    </button>
+                  </div>
+                </div>
               )}
             </form>
           </Form>

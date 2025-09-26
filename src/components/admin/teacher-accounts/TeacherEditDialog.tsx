@@ -15,7 +15,7 @@ import { Textarea } from "@/components/ui/textarea.tsx";
 import { supabase } from "@/integrations/supabase/client.ts";
 import { useToast } from "@/hooks/use-toast.ts";
 import { useQueryClient } from "@tanstack/react-query";
-import { Eye, EyeOff, KeyRound, Loader2 } from "lucide-react";
+import { Eye, EyeOff, KeyRound, Loader2, Copy } from "lucide-react";
 
 interface TeacherEditDialogProps {
   teacher: TeacherAccount | null;
@@ -32,6 +32,7 @@ export function TeacherEditDialog({
   const [changingPwd, setChangingPwd] = useState(false);
   const [showPwd, setShowPwd] = useState(false);
   const [newPwd, setNewPwd] = useState("");
+  const [copied, setCopied] = useState(false);
   const [formData, setFormData] = useState<{
     name: string;
     email: string | undefined;
@@ -135,22 +136,36 @@ export function TeacherEditDialog({
     }
   };
 
+  const generateRandomPassword = () => {
+    const characters =
+      "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()";
+    let password = "";
+    for (let i = 0; i < 10; i++) {
+      password += characters.charAt(Math.floor(Math.random() * characters.length));
+    }
+    return password;
+  };
+
+  const handleCopyPassword = async () => {
+    if (!newPwd) return;
+    try {
+      await navigator.clipboard.writeText(newPwd);
+      setCopied(true);
+      toast({ title: "Copied", description: "Password copied to clipboard." });
+      setTimeout(() => setCopied(false), 1500);
+    } catch (_err) {
+      toast({ title: "Copy failed", description: "Couldn't copy to clipboard.", variant: "destructive" });
+    }
+  };
+
   const handlePasswordChange = async () => {
     if (!teacher || !newPwd || newPwd.length < 6) return;
     setChangingPwd(true);
     try {
-      const res = await fetch("/functions/v1/admin-update-password", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("sb-access-token") || ""}`,
-        },
-        body: JSON.stringify({ userId: teacher.id, newPassword: newPwd }),
+      const { error } = await supabase.functions.invoke("admin-update-password", {
+        body: { userId: teacher.id, newPassword: newPwd },
       });
-      if (!res.ok) {
-        const txt = await res.text();
-        throw new Error(txt || "Failed to update password");
-      }
+      if (error) throw new Error(error.message || "Failed to update password");
       toast({ title: "Password updated", description: `Password changed for ${formData.name}` });
       setNewPwd("");
     } catch (err) {
@@ -257,7 +272,7 @@ export function TeacherEditDialog({
               <Label htmlFor="new-password" className="text-right flex items-center gap-1">
                 <KeyRound className="h-4 w-4" /> New Password
               </Label>
-              <div className="col-span-3 relative">
+              <div className="col-span-3">
                 <Input
                   id="new-password"
                   type={showPwd ? "text" : "password"}
@@ -265,15 +280,37 @@ export function TeacherEditDialog({
                   onChange={(e) => setNewPwd(e.target.value)}
                   placeholder="Enter new password (min 6 chars)"
                 />
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8 p-0"
-                  onClick={() => setShowPwd((s) => !s)}
-                >
-                  {showPwd ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                </Button>
+                <div className="mt-2 flex items-center gap-2">
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => {
+                      const pwd = generateRandomPassword();
+                      setNewPwd(pwd);
+                      setShowPwd(true);
+                    }}
+                  >
+                    Generate
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={handleCopyPassword}
+                    disabled={!newPwd}
+                  >
+                    <Copy className="mr-1 h-4 w-4" /> {copied ? "Copied" : "Copy"}
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setShowPwd((s) => !s)}
+                  >
+                    {showPwd ? <EyeOff className="mr-1 h-4 w-4" /> : <Eye className="mr-1 h-4 w-4" />} {showPwd ? "Hide" : "Show"}
+                  </Button>
+                </div>
               </div>
             </div>
             <div className="grid grid-cols-4 items-center gap-4 -mt-2">

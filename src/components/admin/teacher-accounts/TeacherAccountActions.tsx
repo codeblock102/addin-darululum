@@ -22,6 +22,7 @@ import { TeacherAccount } from "@/types/teacher.ts";
 import { promoteToAdmin } from "@/utils/promoteToAdmin.ts";
 import { useToast } from "@/hooks/use-toast.ts";
 import { useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client.ts";
 
 interface TeacherAccountActionsProps {
   teacher: TeacherAccount;
@@ -166,14 +167,9 @@ export function TeacherAccountActions({
               onClick={async () => {
                 if (!newPassword || newPassword.length < 6) return;
                 try {
-                  const { error } = await fetch("/functions/v1/admin-update-password", {
-                    method: "POST",
-                    headers: {
-                      "Content-Type": "application/json",
-                      Authorization: `Bearer ${localStorage.getItem("sb-access-token") || ""}`,
-                    },
-                    body: JSON.stringify({ userId: teacher.id, newPassword }),
-                  }).then(async (r) => ({ error: r.ok ? null : new Error(await r.text()) }));
+                  const { error } = await supabase.functions.invoke("admin-update-password", {
+                    body: { userId: teacher.id, newPassword },
+                  });
 
                   if (error) {
                     toast({ title: "Password update failed", description: (error as Error).message, variant: "destructive" });

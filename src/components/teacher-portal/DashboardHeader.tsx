@@ -104,20 +104,7 @@ export const DashboardHeader = (
                 </div>
 
                 {/* Enhanced contact info for larger screens */}
-                <div className="hidden sm:flex items-center gap-4 text-sm text-black">
-                  {teacher.email && (
-                    <div className="flex items-center gap-2 bg-gray-50 px-3 py-2 rounded-lg border border-gray-200">
-                      <Mail className="h-4 w-4 text-gray-500" />
-                      <span className="truncate max-w-48">{teacher.email}</span>
-                    </div>
-                  )}
-                  {teacher.phone && (
-                    <div className="flex items-center gap-2 bg-gray-50 px-3 py-2 rounded-lg border border-gray-200">
-                      <Phone className="h-4 w-4 text-gray-500" />
-                      <span>{teacher.phone}</span>
-                    </div>
-                  )}
-                </div>
+               
               </div>
             </div>
 

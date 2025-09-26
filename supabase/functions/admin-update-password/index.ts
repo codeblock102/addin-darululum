@@ -2,16 +2,25 @@ import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.8";
 import { corsHeaders } from "../create-admin/cors.ts";
 
-const supabaseUrl = Deno.env.get("API_URL");
-const serviceRoleKey = Deno.env.get("SERVICE_KEY");
+// Prefer SUPABASE_* envs; fallback to legacy names if present
+const supabaseUrl = Deno.env.get("SUPABASE_URL") || Deno.env.get("API_URL");
+const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || Deno.env.get("SERVICE_KEY");
+const anonKey = Deno.env.get("SUPABASE_ANON_KEY");
 
 if (!supabaseUrl || !serviceRoleKey) {
-  console.error("Missing environment variables: API_URL or SERVICE_KEY");
+  console.error("Missing environment variables: SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY");
 }
 
 serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
+  }
+
+  if (req.method !== "POST") {
+    return new Response(JSON.stringify({ error: "Method not allowed" }), {
+      status: 405,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
   }
 
   try {
@@ -31,7 +40,7 @@ serve(async (req: Request) => {
       });
     }
 
-    // Optional: verify caller is admin using the bearer token
+    // Verify caller is admin using the bearer token
     const authHeader = req.headers.get("Authorization") ?? "";
     if (!authHeader) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
@@ -40,7 +49,8 @@ serve(async (req: Request) => {
       });
     }
 
-    const supabaseAuth = createClient(supabaseUrl!, serviceRoleKey!, {
+    // Use anon key for user-context operations (getUser, reading caller profile)
+    const supabaseAuth = createClient(supabaseUrl!, anonKey ?? serviceRoleKey!, {
       global: { headers: { Authorization: authHeader } },
     });
 
