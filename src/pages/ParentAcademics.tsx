@@ -378,7 +378,7 @@ const ParentAcademics = () => {
 
         {/* Assignment Details Modal */}
         <Dialog open={!!detailRow} onOpenChange={(open) => setDetailRow(open ? detailRow : null)}>
-          <DialogContent className="inset-0 left-0 top-0 translate-x-0 translate-y-0 h-[100svh] max-h-[100svh] w-screen max-w-[100vw] overflow-x-hidden overflow-y-auto overscroll-contain box-border rounded-none p-3 shadow-none border border-border bg-background/98 sm:inset-auto sm:left-1/2 sm:top-1/2 sm:translate-x-[-50%] sm:translate-y-[-50%] sm:h-auto sm:max-h-[85vh] sm:w-full sm:max-w-xl sm:rounded-lg sm:p-6 sm:shadow-lg">
+          <DialogContent className="sm:max-w-3xl max-h-[90vh] overflow-y-auto p-4 sm:p-6 bg-background border border-border sm:rounded-lg">
             <DialogHeader>
               <DialogTitle>{detailRow?.assignment?.title || "Assignment Details"}</DialogTitle>
               <DialogDescription>
@@ -386,7 +386,7 @@ const ParentAcademics = () => {
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-4">
-              <div className="h-1.5 rounded-full bg-gradient-to-r from-primary via-fuchsia-500 to-amber-500" />
+              <Separator />
               <div className="flex items-center justify-between gap-3">
                 <div className="flex items-center gap-2">
                   <Badge>
