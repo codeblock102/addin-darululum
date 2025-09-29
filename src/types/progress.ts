@@ -2,6 +2,7 @@ export interface Progress {
   id: string;
   student_id: string;
   current_surah?: number;
+  end_surah?: number;
   start_ayat?: number;
   end_ayat?: number;
   verses_memorized?: number;
@@ -88,6 +89,7 @@ export interface ProgressFormData {
   end_ayat: number;
   verses_memorized?: number;
   current_surah?: number;
+  end_surah?: number;
   current_juz?: number;
   memorization_quality?:
     | "excellent"

@@ -9,7 +9,7 @@ import { Loader2, Activity as ActivityIcon, Mail, MessageSquare, BookOpen, Check
 
 type ActivityItem = {
   id: string;
-  type: "progress" | "attendance" | "message" | "email";
+  type: "progress" | "attendance" | "message" | "email" | "assignment";
   title: string;
   description: string;
   created_at: string;
@@ -24,6 +24,8 @@ export default function Activity() {
   itemsRef.current = liveItems;
   const [teacherMap, setTeacherMap] = useState<Record<string, { name: string; section?: string | null }>>({});
   const [studentToClasses, setStudentToClasses] = useState<Record<string, string[]>>({});
+  const [studentToTeacherIds, setStudentToTeacherIds] = useState<Record<string, string[]>>({});
+  const [selectedTeacher, setSelectedTeacher] = useState<string>("all");
   // Per-graph local filters
   const [dailySection, setDailySection] = useState<string>("all");
   const [dailyClass, setDailyClass] = useState<string>("all");
@@ -36,7 +38,7 @@ export default function Activity() {
   const [availableSections, setAvailableSections] = useState<string[]>([]);
   const [availableClasses, setAvailableClasses] = useState<string[]>([]);
 
-  const { data: initialItems, isLoading } = useQuery({
+  const { data: initialItems, isLoading } = useQuery<ActivityItem[]>({
     queryKey: ["admin-activity-initial"],
     queryFn: async (): Promise<ActivityItem[]> => {
       const gather: ActivityItem[] = [];
@@ -44,33 +46,126 @@ export default function Activity() {
       // Recent progress (today)
       const { data: progress } = await supabase
         .from("progress")
-        .select("id, student_id, teacher_id, date, pages_memorized, memorization_quality, created_at, students(name, section)")
+        .select("*")
         .order("created_at", { ascending: false })
         .limit(50);
+
+      // Recent attendance
+      const { data: attendance } = await supabase
+        .from("attendance")
+        .select("*")
+        .order("created_at", { ascending: false })
+        .limit(50);
+
+      // Fetch student names for display
+      const studentIdsForNames = Array.from(
+        new Set([
+          ...((progress || []).map((p: any) => p.student_id).filter(Boolean)),
+          ...((attendance || []).map((a: any) => a.student_id).filter(Boolean)),
+        ])
+      );
+      let studentNameMap: Record<string, { name: string; section?: string | null }> = {};
+      if (studentIdsForNames.length > 0) {
+        const { data: studs } = await supabase
+          .from("students")
+          .select("id, name, section")
+          .in("id", studentIdsForNames);
+        (studs || []).forEach((s: any) => { studentNameMap[s.id] = { name: s.name, section: s.section }; });
+      }
+
       (progress || []).forEach((p: any) => {
+        const s = p.student_id ? studentNameMap[p.student_id] : undefined;
+        const by = getTeacherByline(p, p.student_id, teacherMap, studentToTeacherIds);
         gather.push({
           id: `progress:${p.id}`,
           type: "progress",
           title: "Progress entry",
-          description: `${p.students?.name || "Student"}${p.students?.section ? ` (${p.students.section})` : ""} — ${p.pages_memorized ?? 0} pages (${p.memorization_quality || "quality"})`,
+          description: `${s?.name || "Student"}${s?.section ? ` (${s.section})` : ""} — ${p.pages_memorized ?? 0} pages (${p.memorization_quality || "quality"})${by ? ` • by ${by}` : ""}`,
           created_at: p.created_at || p.date,
           meta: p,
         });
       });
 
-      // Recent attendance
-      const { data: attendance } = await supabase
-        .from("attendance")
-        .select("id, student_id, teacher_id, status, date, created_at, students(name, section)")
-        .order("created_at", { ascending: false })
-        .limit(50);
       (attendance || []).forEach((a: any) => {
+        const s = a.student_id ? studentNameMap[a.student_id] : undefined;
+        const by = getTeacherByline(a, a.student_id, teacherMap, studentToTeacherIds);
         gather.push({
           id: `attendance:${a.id}`,
           type: "attendance",
           title: "Attendance",
-          description: `${a.students?.name || "Student"}${a.students?.section ? ` (${a.students.section})` : ""} — ${a.status} (${a.date})`,
+          description: `${s?.name || "Student"}${s?.section ? ` (${s.section})` : ""} — ${a.status} (${a.date})${by ? ` • by ${by}` : ""}`,
           created_at: a.created_at || a.date,
+          meta: a,
+        });
+      });
+
+      // Recent assignments and their status
+      const { data: assignments } = await supabase
+        .from("teacher_assignments")
+        .select("id, teacher_id, title, due_date, status, class_ids, student_ids, created_at")
+        .order("created_at", { ascending: false })
+        .limit(30);
+      const assignmentIds = (assignments || []).map((a: any) => a.id);
+      // Ensure teacher names are available for assignment bylines
+      const assignmentTeacherIds = Array.from(new Set((assignments || []).map((a: any) => a.teacher_id).filter(Boolean)));
+      if (assignmentTeacherIds.length > 0) {
+        const missingT = assignmentTeacherIds.filter((id) => !teacherMap[id]);
+        if (missingT.length > 0) {
+          const { data: tprofs } = await supabase.from("profiles").select("id, name, section").in("id", missingT);
+          const tMap: Record<string, { name: string; section?: string | null }> = {};
+          (tprofs || []).forEach((p: any) => { tMap[p.id] = { name: p.name, section: p.section }; });
+          setTeacherMap((prev) => ({ ...prev, ...tMap }));
+        }
+      }
+      const { data: submissions } = assignmentIds.length > 0 ? await supabase
+        .from("teacher_assignment_submissions")
+        .select("assignment_id, student_id, status, submitted_at, graded_at")
+        .in("assignment_id", assignmentIds) : { data: [] } as any;
+
+      // Precompute submissions map
+      const subByAssignment: Record<string, { submitted: Set<string>; graded: Set<string>; assigned: Set<string> }> = {};
+      (assignments || []).forEach((a: any) => {
+        subByAssignment[a.id] = {
+          submitted: new Set<string>(),
+          graded: new Set<string>(),
+          assigned: new Set<string>((a.student_ids || []).filter(Boolean)),
+        };
+      });
+      (submissions || []).forEach((s: any) => {
+        const bucket = subByAssignment[s.assignment_id];
+        if (!bucket) return;
+        if (s.status === "submitted") bucket.submitted.add(s.student_id);
+        if (s.status === "graded") {
+          bucket.submitted.add(s.student_id);
+          bucket.graded.add(s.student_id);
+        }
+      });
+
+      // Load names for assignment students (union for description)
+      const allAssignStudentIds = Array.from(new Set((assignments || []).flatMap((a: any) => (a.student_ids || []) as string[])));
+      const assignStudentNames: Record<string, string> = { ...Object.fromEntries(Object.entries(studentNameMap).map(([id, v]) => [id, v.name || ""])) };
+      if (allAssignStudentIds.length > 0) {
+        const missing = allAssignStudentIds.filter((id) => !assignStudentNames[id]);
+        if (missing.length > 0) {
+          const { data: extraStuds } = await supabase.from("students").select("id, name").in("id", missing);
+          (extraStuds || []).forEach((s: any) => { assignStudentNames[s.id] = s.name; });
+        }
+      }
+
+      (assignments || []).forEach((a: any) => {
+        const bucket = subByAssignment[a.id];
+        const total = bucket.assigned.size;
+        const submittedCount = bucket.submitted.size;
+        const gradedCount = bucket.graded.size;
+        const notSubmitted = Array.from(bucket.assigned).filter((sid) => !bucket.submitted.has(sid));
+        const notSubmittedNames = notSubmitted.slice(0, 5).map((sid) => assignStudentNames[sid] || sid);
+        const teacherByline = teacherMap[a.teacher_id]?.name || a.teacher_id;
+        gather.push({
+          id: `assignment:${a.id}`,
+          type: "assignment",
+          title: `Assignment: ${a.title}${a.due_date ? ` (due ${a.due_date})` : ""}`,
+          description: `By ${teacherByline} — Assigned to ${total} • Submitted ${submittedCount} • Graded ${gradedCount}${notSubmitted.length ? ` • Missing (${notSubmitted.length}): ${notSubmittedNames.join(", ")}${notSubmitted.length > 5 ? ", …" : ""}` : ""}`,
+          created_at: a.created_at,
           meta: a,
         });
       });
@@ -78,7 +173,7 @@ export default function Activity() {
       // Recent communications
       const { data: comms } = await supabase
         .from("communications")
-        .select("id, sender_id, recipient_id, created_at, subject, sender:profiles!communications_sender_id_fkey(name, section), recipient:profiles!communications_recipient_id_fkey(name, section)")
+        .select("id, sender_id, recipient_id, created_at, subject")
         .order("created_at", { ascending: false })
         .limit(50);
       (comms || []).forEach((c: any) => {
@@ -86,7 +181,7 @@ export default function Activity() {
           id: `message:${c.id}`,
           type: "message",
           title: "Message",
-          description: `${c.subject || "New message"} — from ${c.sender?.name || "system"}${c.sender?.section ? ` (${c.sender.section})` : ""}`,
+          description: `${c.subject || "New message"} — from ${c.sender_id || "system"}`,
           created_at: c.created_at,
           meta: c,
         });
@@ -114,11 +209,18 @@ export default function Activity() {
         .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
         .slice(0, MAX_ITEMS);
     },
-    onSuccess: async (items) => {
+  });
+
+  // Populate teacher map and student→classes when initial items load
+  useEffect(() => {
+    const hydrateMaps = async () => {
+      const itemsArr: ActivityItem[] = initialItems || [];
+      if (itemsArr.length === 0) return;
       const teacherIds = new Set<string>();
-      for (const it of items) {
-        const m: any = it.meta || {};
+      for (const it of itemsArr) {
+        const m = (it.meta || {}) as { teacher_id?: string; sender_id?: string };
         if (m.teacher_id) teacherIds.add(m.teacher_id);
+        if (it.type === "message" && m.sender_id) teacherIds.add(m.sender_id);
       }
       if (teacherIds.size > 0) {
         const { data: profs } = await supabase
@@ -130,26 +232,49 @@ export default function Activity() {
         setTeacherMap(map);
       }
 
-      // Build student→classes map for class filter and charts
-      const studentIds = Array.from(new Set(items.map((it) => (it.meta as any)?.student_id).filter(Boolean)));
+      const studentIds = Array.from(
+        new Set(
+          itemsArr
+            .map((it: ActivityItem) => (it.meta as { student_id?: string } | undefined)?.student_id)
+            .filter((v): v is string => typeof v === "string" && v.length > 0)
+        )
+      );
       if (studentIds.length > 0) {
         const { data: classes } = await supabase
           .from("classes")
-          .select("id, name, current_students")
+          .select("id, name, current_students, teacher_ids")
           .order("name", { ascending: true });
-        const map: Record<string, string[]> = {};
+        const s2c: Record<string, string[]> = {};
+        const s2t: Record<string, string[]> = {};
+        const allTeacherIds = new Set<string>();
         (classes || []).forEach((c: any) => {
           const ids: string[] = Array.from(new Set((c.current_students || []).filter(Boolean)));
+          const tIds: string[] = Array.isArray(c.teacher_ids) ? c.teacher_ids.filter(Boolean) : [];
           for (const sid of ids) {
-            if (!map[sid]) map[sid] = [];
-            map[sid].push(c.name);
+            if (!s2c[sid]) s2c[sid] = [];
+            s2c[sid].push(c.name);
+            if (!s2t[sid]) s2t[sid] = [];
+            tIds.forEach((tid) => {
+              if (!s2t[sid].includes(tid)) s2t[sid].push(tid);
+              allTeacherIds.add(tid);
+            });
           }
         });
-        setStudentToClasses(map);
+        setStudentToClasses(s2c);
+        setStudentToTeacherIds(s2t);
         setAvailableClasses(Array.from(new Set(((classes || []).map((c: any) => c.name).filter(Boolean)))));
+        if (allTeacherIds.size > 0) {
+          const { data: teachers } = await supabase
+            .from("teachers")
+            .select("id, name").in("id", Array.from(allTeacherIds));
+          const tMap: Record<string, { name: string; section?: string | null }> = {};
+          (teachers || []).forEach((t: any) => { tMap[t.id] = { name: t.name, section: null }; });
+          setTeacherMap((prev) => ({ ...tMap, ...prev }));
+        }
       }
-    },
-  });
+    };
+    hydrateMaps();
+  }, [initialItems]);
 
   // Load available sections from madrassah table for current admin
   useEffect(() => {
@@ -191,6 +316,10 @@ export default function Activity() {
           created_at: r.created_at || new Date().toISOString(),
           meta: r,
         };
+        if (r.teacher_id && !teacherMap[r.teacher_id]) {
+          const { data: prof } = await supabase.from("profiles").select("name, section").eq("id", r.teacher_id).maybeSingle();
+          if (prof) setTeacherMap((prev) => ({ ...prev, [r.teacher_id]: { name: (prof as any).name, section: (prof as any).section } }));
+        }
         setLiveItems([item, ...itemsRef.current].slice(0, MAX_ITEMS));
       })
       .on("postgres_changes", { event: "*", schema: "public", table: "attendance" }, async (payload) => {
@@ -208,6 +337,10 @@ export default function Activity() {
           created_at: r.created_at || new Date().toISOString(),
           meta: r,
         };
+        if (r.teacher_id && !teacherMap[r.teacher_id]) {
+          const { data: prof } = await supabase.from("profiles").select("name, section").eq("id", r.teacher_id).maybeSingle();
+          if (prof) setTeacherMap((prev) => ({ ...prev, [r.teacher_id]: { name: (prof as any).name, section: (prof as any).section } }));
+        }
         setLiveItems([item, ...itemsRef.current].slice(0, MAX_ITEMS));
       })
       .on("postgres_changes", { event: "*", schema: "public", table: "communications" }, async (payload) => {
@@ -225,6 +358,9 @@ export default function Activity() {
           created_at: r.created_at || new Date().toISOString(),
           meta: r,
         };
+        if (r.sender_id && !teacherMap[r.sender_id]) {
+          if (sender) setTeacherMap((prev) => ({ ...prev, [r.sender_id]: { name: (sender as any).name, section: (sender as any).section } }));
+        }
         setLiveItems([item, ...itemsRef.current].slice(0, MAX_ITEMS));
       })
       .on("postgres_changes", { event: "*", schema: "public", table: "email_logs" }, (payload) => {
@@ -246,12 +382,34 @@ export default function Activity() {
     };
   }, []);
 
+  function getTeacherByline(meta: any, studentId: string | undefined, tMap: Record<string, { name: string; section?: string | null }>, s2t: Record<string, string[]>) {
+    // Prefer contributor fields if present
+    const contributorId = meta?.contributor_id as string | undefined;
+    if (contributorId) return tMap[contributorId]?.name || contributorId;
+    // Fallback: derive from student's class teacher_ids
+    if (studentId) {
+      const tids = s2t[studentId] || [];
+      if (tids.length > 0) return tMap[tids[0]]?.name || tids[0];
+    }
+    return "";
+  }
+
   const items = useMemo(() => {
     const seed = initialItems || [];
-    return [...liveItems, ...seed]
+    const merged = [...liveItems, ...seed]
       .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
       .slice(0, MAX_ITEMS);
-  }, [initialItems, liveItems]);
+    if (selectedTeacher === "all") return merged;
+    return merged.filter((it) => {
+      if (it.type === "email") return false; // not teacher-specific
+      if (it.type === "message") return false; // exclude messages from teacher filter (different ids)
+      const m: any = it.meta || {};
+      const sid = m.student_id as string | undefined;
+      if (!sid) return false;
+      const teacherIds = studentToTeacherIds[sid] || [];
+      return teacherIds.includes(selectedTeacher);
+    });
+  }, [initialItems, liveItems, selectedTeacher, studentToTeacherIds]);
 
   const iconFor = (type: ActivityItem["type"]) => {
     switch (type) {
@@ -259,13 +417,14 @@ export default function Activity() {
       case "attendance": return <CheckSquare className="h-4 w-4 text-emerald-600" />;
       case "message": return <MessageSquare className="h-4 w-4 text-purple-600" />;
       case "email": return <Mail className="h-4 w-4 text-orange-600" />;
+      case "assignment": return <BookOpen className="h-4 w-4 text-purple-600" />;
       default: return <ActivityIcon className="h-4 w-4" />;
     }
   };
 
   // Group by category
   const grouped = useMemo(() => {
-    const groups: Record<string, ActivityItem[]> = { progress: [], attendance: [], message: [], email: [] } as any;
+    const groups: Record<string, ActivityItem[]> = { progress: [], attendance: [], message: [], email: [], assignment: [] } as any;
     for (const it of items) {
       (groups[it.type] ||= []).push(it);
     }
@@ -314,7 +473,20 @@ export default function Activity() {
           <ActivityIcon className="h-6 w-6 text-gray-700" />
           Activity Feed
         </h1>
-        <Badge variant="outline" className="text-xs">Realtime</Badge>
+        <div className="flex items-center gap-3">
+          <Select value={selectedTeacher} onValueChange={setSelectedTeacher}>
+            <SelectTrigger className="w-[220px]"><SelectValue placeholder="Teacher" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Teachers</SelectItem>
+              {Object.entries(teacherMap)
+                .sort((a, b) => (a[1].name || "").localeCompare(b[1].name || ""))
+                .map(([id, t]) => (
+                  <SelectItem key={id} value={id}>{t.name}{t.section ? ` (${t.section})` : ""}</SelectItem>
+                ))}
+            </SelectContent>
+          </Select>
+          <Badge variant="outline" className="text-xs">Realtime</Badge>
+        </div>
       </div>
 
       {/* Summary charts */}
@@ -479,6 +651,7 @@ export default function Activity() {
         <Section title="Attendance" type="attendance" />
         <Section title="Messages" type="message" />
         <Section title="Emails" type="email" />
+        <Section title="Assignments" type="assignment" />
       </div>
     </div>
   );

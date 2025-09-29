@@ -1,5 +1,6 @@
 export interface ProgressFormData {
   current_surah: number;
+  end_surah?: number;
   current_juz: number;
   start_ayat: number;
   end_ayat: number;

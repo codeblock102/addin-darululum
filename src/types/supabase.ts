@@ -403,6 +403,7 @@ export type Database = {
           created_at: string;
           current_juz: number | null;
           current_surah: number | null;
+          end_surah: number | null;
           date: string | null;
           end_ayat: number | null;
           id: string;
@@ -426,6 +427,7 @@ export type Database = {
           created_at?: string;
           current_juz?: number | null;
           current_surah?: number | null;
+          end_surah?: number | null;
           date?: string | null;
           end_ayat?: number | null;
           id?: string;
@@ -449,6 +451,7 @@ export type Database = {
           created_at?: string;
           current_juz?: number | null;
           current_surah?: number | null;
+          end_surah?: number | null;
           date?: string | null;
           end_ayat?: number | null;
           id?: string;

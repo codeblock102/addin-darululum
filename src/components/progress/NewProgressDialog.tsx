@@ -26,6 +26,7 @@ import { useQueryClient } from "@tanstack/react-query";
 interface ProgressFormData {
   student_id: string;
   current_surah: number;
+  end_surah?: number;
   current_juz: number;
   start_ayat: number;
   end_ayat: number;
@@ -47,6 +48,7 @@ export const NewProgressDialog = () => {
   const form = useForm<ProgressFormData>({
     defaultValues: {
       current_surah: 1,
+      end_surah: undefined,
       current_juz: 1,
       start_ayat: 1,
       end_ayat: 1,
@@ -109,6 +111,19 @@ export const NewProgressDialog = () => {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Current Surah</FormLabel>
+                  <FormControl>
+                    <Input type="number" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="end_surah"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>End Surah (optional)</FormLabel>
                   <FormControl>
                     <Input type="number" {...field} />
                   </FormControl>

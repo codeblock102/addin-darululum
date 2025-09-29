@@ -30,6 +30,7 @@ import { FormProvider, useForm } from "react-hook-form";
 import * as z from "zod";
 import { Loader2, Save } from "lucide-react";
 import { useI18n } from "@/contexts/I18nContext.tsx";
+import { countAyahsAcrossSurahs } from "@/utils/quranValidation.ts";
 
 interface ProgressRecordingProps {
   teacherId: string;
@@ -82,6 +83,7 @@ export const ProgressRecording = ({
       required_error: t("pages.teacherPortal.progress.selectStudentError", "Please select a student"),
     }),
     current_surah: z.coerce.number().min(1).max(114),
+    end_surah: z.coerce.number().min(1).max(114).optional(),
     current_juz: z.coerce.number().min(1).max(30),
     start_ayat: z.coerce.number().min(1),
     end_ayat: z.coerce.number().min(1),
@@ -102,6 +104,7 @@ export const ProgressRecording = ({
     defaultValues: {
       student_id: "",
       current_surah: 1,
+      end_surah: undefined,
       current_juz: 1,
       start_ayat: 1,
       end_ayat: 1,
@@ -125,10 +128,19 @@ export const ProgressRecording = ({
           contributor_name: "Teacher",
         };
 
+      const endSurah = values.end_surah ?? values.current_surah;
+      const versesMemorized = countAyahsAcrossSurahs(
+        values.current_surah,
+        values.start_ayat,
+        endSurah,
+        values.end_ayat,
+      );
+
       // Create progress entry with contributor info
       const { data, error } = await supabase.from("progress").insert([{
         student_id: values.student_id,
         current_surah: values.current_surah,
+        end_surah: endSurah,
         current_juz: values.current_juz,
         start_ayat: values.start_ayat,
         end_ayat: values.end_ayat,
@@ -136,7 +148,7 @@ export const ProgressRecording = ({
         tajweed_level: values.tajweed_level,
         teacher_notes: values.notes,
         date: new Date().toISOString().split("T")[0],
-        verses_memorized: values.end_ayat - values.start_ayat + 1,
+        verses_memorized: versesMemorized,
         ...contributorInfo, // Add contributor information
       }]);
 
@@ -214,6 +226,19 @@ export const ProgressRecording = ({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>{t("pages.teacherPortal.progress.surah", "Surah Number")}</FormLabel>
+                    <FormControl>
+                      <Input type="number" min={1} max={114} {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="end_surah"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t("pages.teacherPortal.progress.endSurah", "End Surah (optional)")}</FormLabel>
                     <FormControl>
                       <Input type="number" min={1} max={114} {...field} />
                     </FormControl>
