@@ -62,8 +62,10 @@ export const EditProgressDialog = ({
   // Update form when progressEntry changes
   React.useEffect(() => {
     if (progressEntry) {
+      const endSurah: number | undefined = (progressEntry as unknown as { end_surah?: number })?.end_surah;
       form.reset({
         current_surah: progressEntry.current_surah || 1,
+        ...(endSurah ? { end_surah: endSurah } : {}),
         current_juz: progressEntry.current_juz || 1,
         start_ayat: progressEntry.start_ayat || 1,
         end_ayat: progressEntry.end_ayat || 1,
@@ -79,8 +81,9 @@ export const EditProgressDialog = ({
 
     setIsProcessing(true);
     try {
-      const updateData: Partial<Progress> = {
+      const updateData: Partial<Progress> & { end_surah?: number } = {
         current_surah: data.current_surah,
+        end_surah: (data as unknown as { end_surah?: number }).end_surah ?? data.current_surah,
         current_juz: data.current_juz,
         start_ayat: data.start_ayat,
         end_ayat: data.end_ayat,

@@ -15,6 +15,7 @@ interface UseDhorEntryMutationProps {
 interface FormSabaqData {
   current_juz?: number;
   current_surah?: number;
+  end_surah?: number;
   start_ayat?: number;
   end_ayat?: number;
   memorization_quality?: Database["public"]["Enums"]["quality_rating"];
@@ -98,6 +99,7 @@ export function useDhorEntryMutation({
               date: entryDate,
               current_juz: formData.current_juz,
               current_surah: formData.current_surah,
+            end_surah: formData.end_surah ?? formData.current_surah,
               start_ayat: formData.start_ayat,
               end_ayat: formData.end_ayat,
               pages_memorized: formData.pages_memorized,

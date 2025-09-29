@@ -27,6 +27,7 @@ import {
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+import { countAyahsAcrossSurahs } from "@/utils/quranValidation.ts";
 import { supabase } from "@/integrations/supabase/client.ts";
 import { useToast } from "@/hooks/use-toast.ts";
 import { StudentStatusList } from "./StudentStatusList.tsx";
@@ -38,6 +39,7 @@ const formSchema = z.object({
     required_error: "Please select a student",
   }),
   current_surah: z.coerce.number().min(1).max(114),
+  end_surah: z.coerce.number().min(1).max(114).optional(),
   start_ayat: z.coerce.number().min(1),
   end_ayat: z.coerce.number().min(1),
   page_start: z.coerce.number().min(1).optional(),
@@ -81,6 +83,7 @@ export const TeacherSabaqRecording: React.FC<TeacherSabaqRecordingProps> = (
     defaultValues: {
       student_id: "",
       current_surah: 1,
+      end_surah: undefined,
       start_ayat: 1,
       end_ayat: 1,
       verses_memorized: 0,
@@ -141,15 +144,25 @@ export const TeacherSabaqRecording: React.FC<TeacherSabaqRecordingProps> = (
         pagesMemorized = values.page_end - values.page_start + 1;
       }
 
+      // Compute verses across surahs if end_surah provided or range spans multiple
+      const endSurah = values.end_surah ?? values.current_surah;
+      const versesMemorized = countAyahsAcrossSurahs(
+        values.current_surah,
+        values.start_ayat,
+        endSurah,
+        values.end_ayat,
+      ) || values.verses_memorized;
+
       // Format and save the data
       const progressData = {
         student_id: values.student_id,
         date: new Date().toISOString().split("T")[0],
         current_surah: values.current_surah,
+        end_surah: endSurah,
         current_juz: 1, // Would need to calculate or add to form
         start_ayat: values.start_ayat,
         end_ayat: values.end_ayat,
-        verses_memorized: values.verses_memorized,
+        verses_memorized: versesMemorized,
         pages_memorized: pagesMemorized,
         memorization_quality: values.memorization_quality,
         page_start: values.page_start,
@@ -265,7 +278,7 @@ export const TeacherSabaqRecording: React.FC<TeacherSabaqRecordingProps> = (
                   )}
                 />
 
-                <div className="grid grid-cols-3 gap-4">
+                <div className="grid grid-cols-4 gap-4">
                   <FormField
                     control={form.control}
                     name="current_surah"
@@ -274,6 +287,19 @@ export const TeacherSabaqRecording: React.FC<TeacherSabaqRecordingProps> = (
                         <FormLabel>{t("pages.teacherPortal.sabaq.fields.surah", "Surah")}</FormLabel>
                         <FormControl>
                           <Input type="number" placeholder={t("pages.teacherPortal.sabaq.placeholders.example2", "e.g. 2")} {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="end_surah"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{t("pages.teacherPortal.sabaq.fields.endSurah", "End Surah")}</FormLabel>
+                        <FormControl>
+                          <Input type="number" placeholder={t("pages.teacherPortal.sabaq.placeholders.example2", "e.g. 3")} {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>

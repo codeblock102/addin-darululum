@@ -7,6 +7,7 @@ export const DailyActivityFormSchema = z.object({
   // Sabaq (Main Lesson) - from progress table
   current_juz: z.number().min(1).max(30).optional(),
   current_surah: z.number().min(1).max(114).optional(),
+  end_surah: z.number().min(1).max(114).optional(),
   start_ayat: z.number().min(1).optional(),
   end_ayat: z.number().min(1).optional(),
   memorization_quality: z.enum([

@@ -41,8 +41,10 @@ import {
 import { useQuranData } from "./useQuranData.ts";
 import { toast } from "@/components/ui/use-toast.ts";
 import { getAyahRangeForSurahInJuz } from "@/utils/juzAyahMapping.ts";
+import { getTotalAyahsInSurah } from "@/utils/quranValidation.ts";
 import { calculatePages } from "@/utils/quranPageCalculation.ts";
 import type { DhorBookCombinedFormData } from "./useDhorEntryMutation.ts";
+import { supabase } from "@/integrations/supabase/client.ts";
 
 interface DhorBookEntryFormProps {
   onSubmit: (data: DhorBookCombinedFormData) => void;
@@ -50,16 +52,25 @@ interface DhorBookEntryFormProps {
   onCancel: () => void;
   /** Which tab to show initially: 'sabaq' | 'sabaq-para' | 'revision' | 'naz-qaida' */
   initialTab?: "sabaq" | "sabaq-para" | "revision" | "naz-qaida";
+  /** Needed to prefill start ayat based on last sabaq */
+  studentId?: string;
+  /** Re-run prefill when dialog opens */
+  isOpen?: boolean;
 }
 
 export function DhorBookEntryForm(
-  { onSubmit, isPending, onCancel, initialTab = "sabaq" }: DhorBookEntryFormProps,
+  { onSubmit, isPending, onCancel, initialTab = "sabaq", studentId, isOpen }: DhorBookEntryFormProps,
 ) {
   const [date, setDate] = useState<Date | undefined>(new Date());
   const [activeTab, setActiveTab] = useState(initialTab);
   const [ayatOptions, setAyatOptions] = useState<number[]>([]);
+  const [endSurah, setEndSurah] = useState<number | undefined>(undefined);
   const [nazAyatOptions, setNazAyatOptions] = useState<number[]>([]);
   const [calculatedPages, setCalculatedPages] = useState<number>(0);
+  const [pendingStartAyat, setPendingStartAyat] = useState<number | null>(null);
+  const [pendingNazStartAyat, setPendingNazStartAyat] = useState<number | null>(null);
+  const [pendingSurahToSelect, setPendingSurahToSelect] = useState<number | null>(null);
+  const [pendingNazSurahToSelect, setPendingNazSurahToSelect] = useState<number | null>(null);
 
   const {
     juzData,
@@ -170,7 +181,16 @@ export function DhorBookEntryForm(
           // Reset ayat selections when surah changes
           form.setValue("start_ayat", start);
           form.setValue("end_ayat", undefined);
+          // Default end_surah to current_surah on change
+          form.setValue("end_surah", selectedSurah);
+          setEndSurah(selectedSurah);
           setCalculatedPages(0);
+
+          // If we have a pending start ayat from previous sabaq, and it's within range, prefer it
+          if (pendingStartAyat && pendingStartAyat >= start && pendingStartAyat <= end) {
+            form.setValue("start_ayat", pendingStartAyat);
+            setPendingStartAyat(null);
+          }
         } else {
           console.warn(
             `Unable to resolve ayah range for Juz ${selectedJuz}, Surah ${selectedSurah}`,
@@ -182,7 +202,32 @@ export function DhorBookEntryForm(
       // Reset if no juz selected
       setAyatOptions([]);
     }
-  }, [selectedJuz, selectedSurah, form]);
+  }, [selectedJuz, selectedSurah, form, pendingStartAyat]);
+
+  // Apply pending surah once surah list for selected juz is available
+  useEffect(() => {
+    if (pendingSurahToSelect && selectedJuz && surahsInJuz && surahsInJuz.length > 0) {
+      const exists = surahsInJuz.some((s) => s.surah_number === pendingSurahToSelect);
+      if (exists) {
+        setSelectedSurah(pendingSurahToSelect);
+        form.setValue("current_surah", pendingSurahToSelect);
+        form.setValue("end_surah", pendingSurahToSelect);
+        setEndSurah(pendingSurahToSelect);
+        setPendingSurahToSelect(null);
+      }
+    }
+  }, [surahsInJuz, selectedJuz, pendingSurahToSelect, form, setSelectedSurah]);
+
+  // Fallback: apply pending surah right after juz selection resets selectedSurah
+  useEffect(() => {
+    if (pendingSurahToSelect && selectedJuz && !selectedSurah) {
+      setSelectedSurah(pendingSurahToSelect);
+      form.setValue("current_surah", pendingSurahToSelect);
+      form.setValue("end_surah", pendingSurahToSelect);
+      setEndSurah(pendingSurahToSelect);
+      setPendingSurahToSelect(null);
+    }
+  }, [selectedJuz, selectedSurah, pendingSurahToSelect, form, setSelectedSurah]);
 
   // Update Nazirah ayah options when naz selections change
   useEffect(() => {
@@ -231,6 +276,12 @@ export function DhorBookEntryForm(
           setNazAyatOptions(ayatArray);
           form.setValue("nazirah_start_ayat", start);
           form.setValue("nazirah_end_ayat", undefined);
+
+          // Prefer pending prefill for Nazirah if available and valid
+          if (pendingNazStartAyat && pendingNazStartAyat >= start && pendingNazStartAyat <= end) {
+            form.setValue("nazirah_start_ayat", pendingNazStartAyat);
+            setPendingNazStartAyat(null);
+          }
         } else {
           setNazAyatOptions([]);
         }
@@ -238,7 +289,28 @@ export function DhorBookEntryForm(
     } else {
       setNazAyatOptions([]);
     }
-  }, [nazSelectedJuz, nazSelectedSurah, form, allNazSurahsData]);
+  }, [nazSelectedJuz, nazSelectedSurah, form, allNazSurahsData, pendingNazStartAyat]);
+
+  // Apply pending Nazirah surah once Naz surah list is available
+  useEffect(() => {
+    if (pendingNazSurahToSelect && nazSelectedJuz && nazSurahsInJuz && nazSurahsInJuz.length > 0) {
+      const exists = nazSurahsInJuz.some((s) => s.surah_number === pendingNazSurahToSelect);
+      if (exists) {
+        setNazSelectedSurah(pendingNazSurahToSelect);
+        form.setValue("nazirah_surah", pendingNazSurahToSelect);
+        setPendingNazSurahToSelect(null);
+      }
+    }
+  }, [nazSurahsInJuz, nazSelectedJuz, pendingNazSurahToSelect, form, setNazSelectedSurah]);
+
+  // Fallback: apply pending Nazirah surah after juz selection resets
+  useEffect(() => {
+    if (pendingNazSurahToSelect && nazSelectedJuz && !nazSelectedSurah) {
+      setNazSelectedSurah(pendingNazSurahToSelect);
+      form.setValue("nazirah_surah", pendingNazSurahToSelect);
+      setPendingNazSurahToSelect(null);
+    }
+  }, [nazSelectedJuz, nazSelectedSurah, pendingNazSurahToSelect, form, setNazSelectedSurah]);
 
   const startAyah = form.watch("start_ayat");
   const endAyah = form.watch("end_ayat");
@@ -258,6 +330,93 @@ export function DhorBookEntryForm(
       setCalculatedPages(0);
     }
   }, [startAyah, endAyah, quranFormat, form]);
+
+  // Prefill start ayat (and naz start ayat) based on previous sabaq entry
+  useEffect(() => {
+    if (!studentId) return;
+    if (isOpen === false) return;
+
+    const prefillFromPreviousSabaq = async () => {
+      try {
+        const { data: prev, error } = await supabase
+          .from("progress")
+          .select("current_surah,end_surah,start_ayat,end_ayat,verses_memorized,current_juz,date,lesson_type,created_at")
+          .eq("student_id", studentId)
+          .or("lesson_type.is.null,lesson_type.eq.hifz")
+          .order("date", { ascending: false })
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .maybeSingle();
+
+        if (error) {
+          console.error("Error fetching previous sabaq:", error);
+          return;
+        }
+        if (!prev) return;
+
+        const lastEndSurah: number | undefined = (prev as unknown as { current_surah?: number }).current_surah ?? (prev as unknown as { end_surah?: number }).end_surah;
+        const startAyatRaw: number | undefined = (prev as unknown as { start_ayat?: number }).start_ayat;
+        const endAyatRaw: number | undefined = (prev as unknown as { end_ayat?: number }).end_ayat;
+        const versesMem: number | undefined = (prev as unknown as { verses_memorized?: number }).verses_memorized;
+
+        // Compute last end ayat: prefer explicit end_ayat; otherwise derive from start_ayat + verses_memorized - 1; fallback to start_ayat
+        let lastEndAyat: number | undefined = endAyatRaw;
+        if (lastEndAyat === undefined && startAyatRaw !== undefined) {
+          lastEndAyat = (versesMem && versesMem > 0) ? (startAyatRaw + versesMem - 1) : startAyatRaw;
+        }
+        if (!lastEndSurah || !lastEndAyat) return;
+
+        const totalAyatsInLastSurah = getTotalAyahsInSurah(lastEndSurah);
+        let nextSurah = lastEndSurah;
+        let nextAyat = Math.min(lastEndAyat + 1, totalAyatsInLastSurah);
+        if (lastEndAyat >= totalAyatsInLastSurah) {
+          nextSurah = Math.min(lastEndSurah + 1, 114);
+          nextAyat = 1;
+        }
+
+        let nextJuz: number | undefined = (prev as unknown as { current_juz?: number }).current_juz;
+        // Choose the juz whose range actually contains the next ayat
+        for (let j = 1; j <= 30; j++) {
+          const range = getAyahRangeForSurahInJuz(j, nextSurah);
+          if (range && nextAyat >= range.startAyah && nextAyat <= range.endAyah) {
+            nextJuz = j;
+            break;
+          }
+        }
+
+        if (nextJuz) {
+          setSelectedJuz(nextJuz);
+          setNazSelectedJuz(nextJuz);
+        }
+
+        // Defer setting surah until surah list for the juz is loaded to avoid resets
+        setPendingSurahToSelect(nextSurah);
+        setPendingNazSurahToSelect(nextSurah);
+
+        // Hard reset RHF values to ensure UI reflects prefill immediately
+        const currentValues = form.getValues();
+        form.reset({
+          ...currentValues,
+          current_juz: nextJuz,
+          current_surah: nextSurah,
+          end_surah: nextSurah,
+          nazirah_juz: nextJuz,
+          nazirah_surah: nextSurah,
+          start_ayat: nextAyat, // temporary until ayah options load
+          nazirah_start_ayat: nextAyat,
+        });
+
+        setPendingStartAyat(nextAyat);
+        setPendingNazStartAyat(nextAyat);
+      } catch (e) {
+        console.error("Unexpected error pre-filling from previous sabaq:", e);
+      }
+    };
+
+    prefillFromPreviousSabaq();
+    // Only on mount or when studentId changes
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [studentId, isOpen]);
 
   function handleSubmit(data: DailyActivityFormValues) {
     console.log("Form data from RHF (DailyActivityFormValues):", data);
@@ -363,7 +522,7 @@ export function DhorBookEntryForm(
                 </FormItem>
               )}
             />
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <FormField
                 control={form.control}
                 name="current_juz"
@@ -468,6 +627,45 @@ export function DhorBookEntryForm(
                   </FormItem>
                 )}
               />
+              <FormField
+                control={form.control}
+                name="end_surah"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>End Surah</FormLabel>
+                    <Select
+                      onValueChange={(value) => {
+                        const surahNumber = parseInt(value);
+                        field.onChange(surahNumber);
+                        setEndSurah(surahNumber);
+                        // Reset end ayat when end surah changes
+                        form.setValue("end_ayat", undefined);
+                      }}
+                      value={(field.value ?? endSurah ?? form.watch("current_surah"))?.toString()}
+                      disabled={!form.watch("current_surah")}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select End Surah" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent className="max-h-[300px] overflow-y-auto touch-pan-y" style={{ WebkitOverflowScrolling: "touch" }}>
+                        {Array.from({ length: 114 }, (_, i) => i + 1)
+                          .filter((s) => {
+                            const startSurah = form.watch("current_surah");
+                            return startSurah ? s >= startSurah : true;
+                          })
+                          .map((s) => (
+                            <SelectItem key={`end-surah-${s}`} value={s.toString()}>
+                              {s}
+                            </SelectItem>
+                          ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormField
@@ -534,8 +732,7 @@ export function DhorBookEntryForm(
                         field.onChange(ayatNumber);
                       }}
                       value={field.value?.toString()}
-                      disabled={!form.watch("start_ayat") ||
-                        ayatOptions.length === 0}
+                      disabled={!form.watch("start_ayat")}
                     >
                       <FormControl>
                         <SelectTrigger>
@@ -547,29 +744,26 @@ export function DhorBookEntryForm(
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {form.watch("start_ayat") && ayatOptions.length > 0
-                          ? (
-                            ayatOptions
-                              .filter((ayat) => {
-                                const startAyat = form.watch("start_ayat");
-                                return startAyat ? ayat >= startAyat : true;
-                              })
-                              .map((ayat) => (
-                                <SelectItem
-                                  key={`end-${ayat}`}
-                                  value={ayat.toString()}
-                                >
-                                  Ayat {ayat}
-                                </SelectItem>
-                              ))
-                          )
-                          : (
-                            <SelectItem disabled value="no-end-ayats">
-                              {form.watch("start_ayat")
-                                ? "No end ayats available"
-                                : "Select Start Ayat first"}
+                        {(() => {
+                          const startSurah = form.watch("current_surah");
+                          const startAyat = form.watch("start_ayat");
+                          const selectedEndSurah = form.watch("end_surah") || endSurah || startSurah;
+                          if (!startSurah || !startAyat || !selectedEndSurah) {
+                            return (
+                              <SelectItem disabled value="no-end-ayats">
+                                {form.watch("start_ayat") ? "No end ayats available" : "Select Start Ayat first"}
+                              </SelectItem>
+                            );
+                          }
+                          // Generate ayats for the selected end surah
+                          const totalAyats = getTotalAyahsInSurah(selectedEndSurah);
+                          const startFilter = selectedEndSurah === startSurah ? startAyat : 1;
+                          return Array.from({ length: totalAyats - startFilter + 1 }, (_, i) => startFilter + i).map((ayat) => (
+                            <SelectItem key={`end-${selectedEndSurah}-${ayat}`} value={ayat.toString()}>
+                              {selectedEndSurah}:{ayat}
                             </SelectItem>
-                          )}
+                          ));
+                        })()}
                       </SelectContent>
                     </Select>
                     <FormMessage />

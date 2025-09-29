@@ -85,6 +85,7 @@ export const FloatingQuickEntryButton = () => {
                 onSubmit={(payload) => mutate(payload)}
                 isPending={isPending}
                 onCancel={handleClose}
+                studentId={selectedStudentId}
               />
             </div>
           )}
