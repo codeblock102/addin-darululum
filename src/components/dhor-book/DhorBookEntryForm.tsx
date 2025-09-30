@@ -340,7 +340,7 @@ export function DhorBookEntryForm(
       try {
         const { data: prev, error } = await supabase
           .from("progress")
-          .select("current_surah,end_surah,start_ayat,end_ayat,verses_memorized,current_juz,date,lesson_type,created_at")
+          .select("current_surah,end_surah,start_ayat,end_ayat,verses_memorized,pages_memorized,current_juz,date,lesson_type,created_at")
           .eq("student_id", studentId)
           .or("lesson_type.is.null,lesson_type.eq.hifz")
           .order("date", { ascending: false })
@@ -358,6 +358,7 @@ export function DhorBookEntryForm(
         const startAyatRaw: number | undefined = (prev as unknown as { start_ayat?: number }).start_ayat;
         const endAyatRaw: number | undefined = (prev as unknown as { end_ayat?: number }).end_ayat;
         const versesMem: number | undefined = (prev as unknown as { verses_memorized?: number }).verses_memorized;
+        const pagesMem: number | undefined = (prev as unknown as { pages_memorized?: number }).pages_memorized;
 
         // Compute last end ayat: prefer explicit end_ayat; otherwise derive from start_ayat + verses_memorized - 1; fallback to start_ayat
         let lastEndAyat: number | undefined = endAyatRaw;
@@ -393,6 +394,15 @@ export function DhorBookEntryForm(
         setPendingSurahToSelect(nextSurah);
         setPendingNazSurahToSelect(nextSurah);
 
+        // Infer Quran format (13/15 line) from previous entry if possible
+        // Use a simple heuristic: verses per page ~8 => 13-line; ~10 => 15-line
+        let inferredQuranFormat: "13" | "15" | undefined = undefined;
+        if (pagesMem && pagesMem > 0 && versesMem && versesMem > 0) {
+          const versesPerPage = versesMem / pagesMem;
+          // Threshold midway between 8 and 10
+          inferredQuranFormat = versesPerPage >= 9 ? "15" : "13";
+        }
+
         // Hard reset RHF values to ensure UI reflects prefill immediately
         const currentValues = form.getValues();
         form.reset({
@@ -400,6 +410,7 @@ export function DhorBookEntryForm(
           current_juz: nextJuz,
           current_surah: nextSurah,
           end_surah: nextSurah,
+          quran_format: inferredQuranFormat ?? (currentValues.quran_format ?? "13"),
           nazirah_juz: nextJuz,
           nazirah_surah: nextSurah,
           start_ayat: nextAyat, // temporary until ayah options load
@@ -650,16 +661,31 @@ export function DhorBookEntryForm(
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent className="max-h-[300px] overflow-y-auto touch-pan-y" style={{ WebkitOverflowScrolling: "touch" }}>
-                        {Array.from({ length: 114 }, (_, i) => i + 1)
-                          .filter((s) => {
-                            const startSurah = form.watch("current_surah");
-                            return startSurah ? s >= startSurah : true;
-                          })
-                          .map((s) => (
-                            <SelectItem key={`end-surah-${s}`} value={s.toString()}>
-                              {s}
-                            </SelectItem>
-                          ))}
+                        {allSurahsData && allSurahsData.length > 0
+                          ? (
+                            allSurahsData
+                              .filter((s) => {
+                                const startSurah = form.watch("current_surah");
+                                return startSurah ? s.surah_number >= startSurah : true;
+                              })
+                              .map((s) => (
+                                <SelectItem key={`end-surah-${s.surah_number}`} value={s.surah_number.toString()}>
+                                  {s.surah_number}. {s.name}
+                                </SelectItem>
+                              ))
+                          )
+                          : (
+                            Array.from({ length: 114 }, (_, i) => i + 1)
+                              .filter((s) => {
+                                const startSurah = form.watch("current_surah");
+                                return startSurah ? s >= startSurah : true;
+                              })
+                              .map((s) => (
+                                <SelectItem key={`end-surah-${s}`} value={s.toString()}>
+                                  {s}
+                                </SelectItem>
+                              ))
+                          )}
                       </SelectContent>
                     </Select>
                     <FormMessage />
