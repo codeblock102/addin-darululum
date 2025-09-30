@@ -40,7 +40,7 @@ import {
 } from "@/components/ui/tabs.tsx";
 import { useQuranData } from "./useQuranData.ts";
 import { toast } from "@/components/ui/use-toast.ts";
-import { getAyahRangeForSurahInJuz } from "@/utils/juzAyahMapping.ts";
+// Removed ayah range mapping; derive from DB surah totals instead
 import { getTotalAyahsInSurah } from "@/utils/quranValidation.ts";
 import { calculatePages } from "@/utils/quranPageCalculation.ts";
 import type { DhorBookCombinedFormData } from "./useDhorEntryMutation.ts";
@@ -134,67 +134,24 @@ export function DhorBookEntryForm(
   useEffect(() => {
     if (selectedJuz) {
       form.setValue("current_juz", selectedJuz);
-
       if (selectedSurah) {
         form.setValue("current_surah", selectedSurah);
-        console.log(
-          `Getting ayah range for Juz ${selectedJuz}, Surah ${selectedSurah}`,
-        );
+        const surahMeta = allSurahsData?.find((s) => s.surah_number === selectedSurah);
+        const totalAyat = surahMeta?.total_ayat ?? getTotalAyahsInSurah(selectedSurah);
+        const start = 1;
+        const end = totalAyat;
 
-        const ayahRange = getAyahRangeForSurahInJuz(selectedJuz, selectedSurah);
-        let start = 1;
-        let end = 0;
-
-        if (ayahRange) {
-          // If the mapping returns exactly 20 ayahs, it's likely the placeholder fallback.
-          const isPlaceholder = (ayahRange.endAyah - ayahRange.startAyah + 1) === 20;
-          if (isPlaceholder) {
-            const surahMeta = allSurahsData?.find(
-              (s) => s.surah_number === selectedSurah,
-            );
-            if (surahMeta?.total_ayat) {
-              start = 1;
-              end = surahMeta.total_ayat;
-            } else {
-              start = ayahRange.startAyah;
-              end = ayahRange.endAyah;
-            }
-          } else {
-            start = ayahRange.startAyah;
-            end = ayahRange.endAyah;
-          }
-        } else {
-          // No mapping found: fallback to full surah if we know total_ayat
-          const surahMeta = allSurahsData?.find(
-            (s) => s.surah_number === selectedSurah,
-          );
-          if (surahMeta?.total_ayat) {
-            start = 1;
-            end = surahMeta.total_ayat;
-          }
-        }
-
-        if (end > 0) {
-          console.log(`Ayah range resolved: ${start}-${end}`);
+        if (end && end > 0) {
+          console.log(`[DhorBook] Ayat options from DB totals for Surah ${selectedSurah}: 1-${end}`);
           const ayatArray = Array.from({ length: end - start + 1 }, (_, i) => start + i);
           setAyatOptions(ayatArray);
-          // Reset ayat selections when surah changes
-          form.setValue("start_ayat", start);
+          // Do not set start_ayat here to avoid overriding pending value. Let the post-options effect handle it.
           form.setValue("end_ayat", undefined);
-          // Default end_surah to current_surah on change
           form.setValue("end_surah", selectedSurah);
           setEndSurah(selectedSurah);
           setCalculatedPages(0);
-
-          // If we have a pending start ayat from previous sabaq, and it's within range, prefer it
-          if (pendingStartAyat && pendingStartAyat >= start && pendingStartAyat <= end) {
-            form.setValue("start_ayat", pendingStartAyat);
-            setPendingStartAyat(null);
-          }
         } else {
-          console.warn(
-            `Unable to resolve ayah range for Juz ${selectedJuz}, Surah ${selectedSurah}`,
-          );
+          console.warn(`[DhorBook] Could not resolve total ayat for Surah ${selectedSurah}`);
           setAyatOptions([]);
         }
       }
@@ -203,6 +160,21 @@ export function DhorBookEntryForm(
       setAyatOptions([]);
     }
   }, [selectedJuz, selectedSurah, form, pendingStartAyat]);
+
+  // Ensure start_ayat is applied AFTER ayatOptions are populated to avoid UI defaulting to 1
+  useEffect(() => {
+    if (!selectedSurah || ayatOptions.length === 0) return;
+    const current = form.getValues("start_ayat");
+    const firstOption = ayatOptions[0];
+    if (pendingStartAyat && ayatOptions.includes(pendingStartAyat)) {
+      form.setValue("start_ayat", pendingStartAyat);
+      setPendingStartAyat(null);
+      return;
+    }
+    if (current == null || !ayatOptions.includes(current)) {
+      form.setValue("start_ayat", firstOption);
+    }
+  }, [ayatOptions, selectedSurah, pendingStartAyat, form]);
 
   // Apply pending surah once surah list for selected juz is available
   useEffect(() => {
@@ -217,6 +189,45 @@ export function DhorBookEntryForm(
       }
     }
   }, [surahsInJuz, selectedJuz, pendingSurahToSelect, form, setSelectedSurah]);
+
+  // If we have a pending surah but it's not in the currently selected juz, try to switch juz automatically
+  useEffect(() => {
+    if (pendingSurahToSelect && selectedJuz && surahsInJuz && juzData) {
+      const exists = surahsInJuz.some((s) => s.surah_number === pendingSurahToSelect);
+      if (!exists) {
+        // Find a juz whose surah_list includes the pending surah
+        const surahInJuz = (list: string, targetSurah: number): boolean => {
+          if (!list) return false;
+          let processed = list.trim();
+          if (processed.startsWith("{") && processed.endsWith("}")) {
+            processed = processed.slice(1, -1);
+          }
+          const tokens = processed.split(",").map((p) => p.trim());
+          for (const token of tokens) {
+            // If token contains letters and hyphen (like Ar-Ra'd), treat token as a name, not a range
+            const hasLetters = /[A-Za-z]/.test(token);
+            if (token.includes("-") && !hasLetters) {
+              const [startStr, endStr] = token.split("-").map((s) => s.trim());
+              const startNum = parseInt(startStr, 10);
+              const endNum = parseInt(endStr, 10);
+              if (!Number.isNaN(startNum) && !Number.isNaN(endNum)) {
+                if (targetSurah >= startNum && targetSurah <= endNum) return true;
+              }
+            } else {
+              const num = parseInt(token, 10);
+              if (!Number.isNaN(num) && num === targetSurah) return true;
+            }
+          }
+          return false;
+        };
+        const match = (juzData || []).find((j) => surahInJuz(j.surah_list, pendingSurahToSelect));
+        if (match && match.juz_number !== selectedJuz) {
+          console.log("[DhorBook] Auto-switching Juz to contain pending surah", { from: selectedJuz, to: match.juz_number, pendingSurahToSelect });
+          setSelectedJuz(match.juz_number);
+        }
+      }
+    }
+  }, [pendingSurahToSelect, selectedJuz, surahsInJuz, juzData, setSelectedJuz]);
 
   // Fallback: apply pending surah right after juz selection resets selectedSurah
   useEffect(() => {
@@ -233,55 +244,25 @@ export function DhorBookEntryForm(
   useEffect(() => {
     if (nazSelectedJuz) {
       form.setValue("nazirah_juz", nazSelectedJuz);
-
       if (nazSelectedSurah) {
         form.setValue("nazirah_surah", nazSelectedSurah);
-        console.log(
-          `Getting ayah range for Nazirah Juz ${nazSelectedJuz}, Surah ${nazSelectedSurah}`,
-        );
+        const surahMeta = allNazSurahsData?.find((s) => s.surah_number === nazSelectedSurah);
+        const totalAyat = surahMeta?.total_ayat ?? getTotalAyahsInSurah(nazSelectedSurah);
+        const start = 1;
+        const end = totalAyat;
 
-        const ayahRange = getAyahRangeForSurahInJuz(nazSelectedJuz, nazSelectedSurah);
-        let start = 1;
-        let end = 0;
-
-        if (ayahRange) {
-          const isPlaceholder = (ayahRange.endAyah - ayahRange.startAyah + 1) === 20;
-          if (isPlaceholder) {
-            const surahMeta = allNazSurahsData?.find(
-              (s) => s.surah_number === nazSelectedSurah,
-            );
-            if (surahMeta?.total_ayat) {
-              start = 1;
-              end = surahMeta.total_ayat;
-            } else {
-              start = ayahRange.startAyah;
-              end = ayahRange.endAyah;
-            }
-          } else {
-            start = ayahRange.startAyah;
-            end = ayahRange.endAyah;
-          }
-        } else {
-          const surahMeta = allNazSurahsData?.find(
-            (s) => s.surah_number === nazSelectedSurah,
-          );
-          if (surahMeta?.total_ayat) {
-            start = 1;
-            end = surahMeta.total_ayat;
-          }
-        }
-
-        if (end > 0) {
+        if (end && end > 0) {
+          console.log(`[DhorBook] Nazirah ayat options from DB totals for Surah ${nazSelectedSurah}: 1-${end}`);
           const ayatArray = Array.from({ length: end - start + 1 }, (_, i) => start + i);
           setNazAyatOptions(ayatArray);
-          form.setValue("nazirah_start_ayat", start);
-          form.setValue("nazirah_end_ayat", undefined);
-
-          // Prefer pending prefill for Nazirah if available and valid
-          if (pendingNazStartAyat && pendingNazStartAyat >= start && pendingNazStartAyat <= end) {
-            form.setValue("nazirah_start_ayat", pendingNazStartAyat);
+          const preferredNazStart = (pendingNazStartAyat && pendingNazStartAyat >= start && pendingNazStartAyat <= end)
+            ? pendingNazStartAyat
+            : start;
+          form.setValue("nazirah_start_ayat", preferredNazStart);
+          if (preferredNazStart === pendingNazStartAyat) {
             setPendingNazStartAyat(null);
           }
+          form.setValue("nazirah_end_ayat", undefined);
         } else {
           setNazAyatOptions([]);
         }
@@ -349,12 +330,20 @@ export function DhorBookEntryForm(
           .maybeSingle();
 
         if (error) {
-          console.error("Error fetching previous sabaq:", error);
+          console.error("[DhorBook] Error fetching previous sabaq:", error);
           return;
         }
-        if (!prev) return;
+        if (!prev) {
+          console.warn("[DhorBook] No previous sabaq found for student:", studentId);
+          return;
+        }
 
-        const lastEndSurah: number | undefined = (prev as unknown as { current_surah?: number }).current_surah ?? (prev as unknown as { end_surah?: number }).end_surah;
+        console.group("[DhorBook] Prefill from previous sabaq");
+        console.log("studentId:", studentId);
+        console.log("raw previous row:", prev);
+
+        // Prefer the explicit end_surah as the starting surah for the next entry; fallback to current_surah
+        const lastEndSurah: number | undefined = (prev as unknown as { end_surah?: number }).end_surah ?? (prev as unknown as { current_surah?: number }).current_surah;
         const startAyatRaw: number | undefined = (prev as unknown as { start_ayat?: number }).start_ayat;
         const endAyatRaw: number | undefined = (prev as unknown as { end_ayat?: number }).end_ayat;
         const versesMem: number | undefined = (prev as unknown as { verses_memorized?: number }).verses_memorized;
@@ -365,30 +354,70 @@ export function DhorBookEntryForm(
         if (lastEndAyat === undefined && startAyatRaw !== undefined) {
           lastEndAyat = (versesMem && versesMem > 0) ? (startAyatRaw + versesMem - 1) : startAyatRaw;
         }
-        if (!lastEndSurah || !lastEndAyat) return;
-
-        const totalAyatsInLastSurah = getTotalAyahsInSurah(lastEndSurah);
-        let nextSurah = lastEndSurah;
-        let nextAyat = Math.min(lastEndAyat + 1, totalAyatsInLastSurah);
-        if (lastEndAyat >= totalAyatsInLastSurah) {
-          nextSurah = Math.min(lastEndSurah + 1, 114);
-          nextAyat = 1;
+        console.log("derived values:", {
+          lastEndSurah,
+          startAyatRaw,
+          endAyatRaw,
+          versesMem,
+          pagesMem,
+          lastEndAyat,
+        });
+        if (!lastEndSurah || !lastEndAyat) {
+          console.warn("[DhorBook] Missing lastEndSurah or lastEndAyat; skipping prefill");
+          console.groupEnd();
+          return;
         }
 
+        // Per request: start the new sabaq AT the previous ending ayat, and in the same surah
+        const nextSurah = lastEndSurah;
+        const nextAyat = lastEndAyat;
+
+        // Determine Juz without relying on placeholder ayah mapping to avoid defaulting to 1
+        // Prefer previous entry's current_juz if available
         let nextJuz: number | undefined = (prev as unknown as { current_juz?: number }).current_juz;
-        // Choose the juz whose range actually contains the next ayat
-        for (let j = 1; j <= 30; j++) {
-          const range = getAyahRangeForSurahInJuz(j, nextSurah);
-          if (range && nextAyat >= range.startAyah && nextAyat <= range.endAyah) {
-            nextJuz = j;
-            break;
+        try {
+          // Parse surah_list strings from juzData to find a juz containing nextSurah
+          const surahInJuz = (list: string, targetSurah: number): boolean => {
+            if (!list) return false;
+            let processed = list.trim();
+            if (processed.startsWith("{") && processed.endsWith("}")) {
+              processed = processed.slice(1, -1);
+            }
+            const tokens = processed.split(",").map((p) => p.trim());
+            for (const token of tokens) {
+              if (!token) continue;
+              if (token.includes("-")) {
+                const [startStr, endStr] = token.split("-").map((s) => s.trim());
+                const startNum = parseInt(startStr, 10);
+                const endNum = parseInt(endStr, 10);
+                if (!Number.isNaN(startNum) && !Number.isNaN(endNum)) {
+                  if (targetSurah >= startNum && targetSurah <= endNum) return true;
+                }
+              } else {
+                const num = parseInt(token, 10);
+                if (!Number.isNaN(num) && num === targetSurah) return true;
+              }
+            }
+            return false;
+          };
+          if (nextJuz === undefined) {
+            for (const juz of juzData ?? []) {
+              if (surahInJuz(juz.surah_list, nextSurah)) {
+                nextJuz = juz.juz_number;
+                break;
+              }
+            }
           }
+        } catch (e) {
+          console.warn("[DhorBook] Unable to resolve next Juz from juzData; leaving it undefined", e);
         }
 
-        if (nextJuz) {
+        if (nextJuz !== undefined) {
           setSelectedJuz(nextJuz);
           setNazSelectedJuz(nextJuz);
         }
+
+        console.log("resolved next values:", { nextSurah, nextAyat, nextJuz });
 
         // Defer setting surah until surah list for the juz is loaded to avoid resets
         setPendingSurahToSelect(nextSurah);
@@ -405,7 +434,7 @@ export function DhorBookEntryForm(
 
         // Hard reset RHF values to ensure UI reflects prefill immediately
         const currentValues = form.getValues();
-        form.reset({
+        const nextRHFValues = {
           ...currentValues,
           current_juz: nextJuz,
           current_surah: nextSurah,
@@ -415,12 +444,17 @@ export function DhorBookEntryForm(
           nazirah_surah: nextSurah,
           start_ayat: nextAyat, // temporary until ayah options load
           nazirah_start_ayat: nextAyat,
-        });
+        } as typeof currentValues;
+        console.log("applying RHF reset with:", nextRHFValues);
+        form.reset(nextRHFValues);
 
+        console.log("setting pending values:", { pendingSurahToSelect: nextSurah, pendingAyat: nextAyat });
         setPendingStartAyat(nextAyat);
         setPendingNazStartAyat(nextAyat);
+
+        console.groupEnd();
       } catch (e) {
-        console.error("Unexpected error pre-filling from previous sabaq:", e);
+        console.error("[DhorBook] Unexpected error pre-filling from previous sabaq:", e);
       }
     };
 
@@ -542,7 +576,11 @@ export function DhorBookEntryForm(
                     <FormLabel>Juz</FormLabel>
                     <Select
                       onValueChange={(value) => {
-                        const juzNumber = parseInt(value);
+                        const juzNumber = parseInt(value, 10);
+                        if (Number.isNaN(juzNumber)) {
+                          console.warn("[DhorBook] Ignoring invalid Juz value:", value);
+                          return;
+                        }
                         console.log(`Selected Juz: ${juzNumber}`);
                         field.onChange(juzNumber);
                         setSelectedJuz(juzNumber);
@@ -586,7 +624,11 @@ export function DhorBookEntryForm(
                     <FormLabel>Surah</FormLabel>
                     <Select
                       onValueChange={(value) => {
-                        const surahNumber = parseInt(value);
+                        const surahNumber = parseInt(value, 10);
+                        if (Number.isNaN(surahNumber)) {
+                          console.warn("[DhorBook] Ignoring invalid Surah value:", value);
+                          return;
+                        }
                         console.log(`Selected Surah: ${surahNumber}`);
                         field.onChange(surahNumber);
                         setSelectedSurah(surahNumber);
@@ -646,7 +688,8 @@ export function DhorBookEntryForm(
                     <FormLabel>End Surah</FormLabel>
                     <Select
                       onValueChange={(value) => {
-                        const surahNumber = parseInt(value);
+                        const surahNumber = parseInt(value, 10);
+                        if (Number.isNaN(surahNumber)) return;
                         field.onChange(surahNumber);
                         setEndSurah(surahNumber);
                         // Reset end ayat when end surah changes
@@ -702,7 +745,11 @@ export function DhorBookEntryForm(
                     <FormLabel>Start Ayat</FormLabel>
                     <Select
                       onValueChange={(value) => {
-                        const ayatNumber = parseInt(value);
+                        const ayatNumber = parseInt(value, 10);
+                        if (Number.isNaN(ayatNumber)) {
+                          console.warn("[DhorBook] Ignoring invalid Start Ayat value:", value);
+                          return;
+                        }
                         console.log(`Selected Start Ayat: ${ayatNumber}`);
                         field.onChange(ayatNumber);
                         // Reset end ayat when start changes
@@ -753,7 +800,11 @@ export function DhorBookEntryForm(
                     <FormLabel>End Ayat</FormLabel>
                     <Select
                       onValueChange={(value) => {
-                        const ayatNumber = parseInt(value);
+                        const ayatNumber = parseInt(value, 10);
+                        if (Number.isNaN(ayatNumber)) {
+                          console.warn("[DhorBook] Ignoring invalid End Ayat value:", value);
+                          return;
+                        }
                         console.log(`Selected End Ayat: ${ayatNumber}`);
                         field.onChange(ayatNumber);
                       }}
@@ -1113,7 +1164,8 @@ export function DhorBookEntryForm(
                         <FormLabel>Nazirah - Juz</FormLabel>
                         <Select
                           onValueChange={(value) => {
-                            const num = parseInt(value);
+                            const num = parseInt(value, 10);
+                            if (Number.isNaN(num)) return;
                             field.onChange(num);
                             setNazSelectedJuz(num);
                             setNazSelectedSurah(null);
@@ -1152,7 +1204,8 @@ export function DhorBookEntryForm(
                         <FormLabel>Nazirah - Surah</FormLabel>
                         <Select
                           onValueChange={(value) => {
-                            const num = parseInt(value);
+                            const num = parseInt(value, 10);
+                            if (Number.isNaN(num)) return;
                             field.onChange(num);
                             setNazSelectedSurah(num);
                           }}
@@ -1208,7 +1261,8 @@ export function DhorBookEntryForm(
                         <FormLabel>Nazirah - Start Ayat</FormLabel>
                         <Select
                           onValueChange={(value) => {
-                            const num = parseInt(value);
+                            const num = parseInt(value, 10);
+                            if (Number.isNaN(num)) return;
                             field.onChange(num);
                             form.setValue("nazirah_end_ayat", undefined);
                           }}
@@ -1245,7 +1299,11 @@ export function DhorBookEntryForm(
                       <FormItem>
                         <FormLabel>Nazirah - End Ayat</FormLabel>
                         <Select
-                          onValueChange={(value) => field.onChange(parseInt(value))}
+                          onValueChange={(value) => {
+                            const num = parseInt(value, 10);
+                            if (Number.isNaN(num)) return;
+                            field.onChange(num);
+                          }}
                           value={field.value?.toString()}
                           disabled={!form.watch("nazirah_start_ayat") || nazAyatOptions.length === 0}
                         >
