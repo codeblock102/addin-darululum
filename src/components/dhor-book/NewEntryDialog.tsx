@@ -56,6 +56,8 @@ export function NewEntryDialog({
           onSubmit={mutate}
           isPending={isPending}
           onCancel={() => onOpenChange(false)}
+          studentId={studentId}
+          isOpen={open}
         />
       </DialogContent>
     </Dialog>

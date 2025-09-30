@@ -1,6 +1,6 @@
 import { useForm } from "react-hook-form";
 import { Loader2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/button.tsx";
 import {
   Form,
   FormControl,
@@ -8,17 +8,18 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
+} from "@/components/ui/form.tsx";
+import { Input } from "@/components/ui/input.tsx";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
-import { ProgressFormData } from "./types";
+} from "@/components/ui/select.tsx";
+import { Textarea } from "@/components/ui/textarea.tsx";
+import { ProgressFormData } from "./types.ts";
+//
 
 interface ProgressFormProps {
   onSubmit: (data: ProgressFormData) => void;
@@ -79,6 +80,7 @@ export const ProgressForm = (
               </FormItem>
             )}
           />
+          
           <FormField
             control={form.control}
             name="current_juz"

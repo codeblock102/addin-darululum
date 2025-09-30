@@ -141,6 +141,74 @@ export const getTotalAyahsInSurah = (surah: number): number => {
 };
 
 /**
+ * Counts total ayahs across a range that may span multiple surahs
+ * Inclusive of both ends. Validates input and returns 0 on invalid.
+ */
+export const countAyahsAcrossSurahs = (
+  startSurah: number,
+  startAyah: number,
+  endSurah: number,
+  endAyah: number,
+): number => {
+  if (!isValidSurah(startSurah) || !isValidSurah(endSurah)) return 0;
+  if (startSurah > endSurah) return 0;
+
+  // Single surah fast path
+  if (startSurah === endSurah) {
+    const valid = validateAyahRange(startSurah, startAyah, endAyah).isValid;
+    return valid ? (endAyah - startAyah + 1) : 0;
+  }
+
+  // Validate endpoints
+  if (!isValidAyah(startSurah, startAyah)) return 0;
+  if (!isValidAyah(endSurah, endAyah)) return 0;
+
+  let total = 0;
+  // First partial surah
+  const startSurahTotal = getTotalAyahsInSurah(startSurah);
+  total += (startSurahTotal - startAyah + 1);
+
+  // Intermediate full surahs
+  for (let s = startSurah + 1; s <= endSurah - 1; s++) {
+    total += getTotalAyahsInSurah(s);
+  }
+
+  // Last partial surah
+  total += endAyah;
+
+  return total;
+};
+
+/**
+ * Validates a cross-surah ayah span and returns an error string if invalid.
+ */
+export const validateCrossSurahRange = (
+  startSurah: number,
+  startAyah: number,
+  endSurah: number,
+  endAyah: number,
+): { isValid: boolean; errorMessage?: string } => {
+  if (!isValidSurah(startSurah) || !isValidSurah(endSurah)) {
+    return { isValid: false, errorMessage: "Invalid surah number(s)." };
+  }
+  if (startSurah > endSurah) {
+    return { isValid: false, errorMessage: "Start surah must be <= end surah." };
+  }
+  if (!isValidAyah(startSurah, startAyah)) {
+    const total = getTotalAyahsInSurah(startSurah);
+    return { isValid: false, errorMessage: `Start ayah invalid for surah ${startSurah} (1-${total}).` };
+  }
+  if (!isValidAyah(endSurah, endAyah)) {
+    const total = getTotalAyahsInSurah(endSurah);
+    return { isValid: false, errorMessage: `End ayah invalid for surah ${endSurah} (1-${total}).` };
+  }
+  if (startSurah === endSurah && startAyah > endAyah) {
+    return { isValid: false, errorMessage: "Start ayah must be <= end ayah for same surah." };
+  }
+  return { isValid: true };
+};
+
+/**
  * Validates if an ayah number is valid for a given surah
  * @param surah - Surah number
  * @param ayah - Ayah number to validate
