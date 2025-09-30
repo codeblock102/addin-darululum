@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client.ts";
 import { useToast } from "@/hooks/use-toast.ts";
 import { useAuth } from "@/hooks/use-auth.ts";
 import { ProgressFormData } from "@/types/progress.ts";
+import { countAyahsAcrossSurahs } from "@/utils/quranValidation.ts";
 
 export const useProgressSubmit = (studentId: string) => {
   const { toast } = useToast();
@@ -86,9 +87,14 @@ export const useProgressSubmit = (studentId: string) => {
       // Get contributor information
       const contributorInfo = await getUserInfo();
 
-      // Calculate verses memorized if not provided
-      const verses_memorized = data.verses_memorized ||
-        (data.end_ayat - data.start_ayat + 1);
+      // Calculate verses memorized across surahs if not provided
+      const resolvedEndSurah = data.end_surah ?? data.current_surah;
+      const verses_memorized = data.verses_memorized || countAyahsAcrossSurahs(
+        data.current_surah || 1,
+        data.start_ayat,
+        resolvedEndSurah || 1,
+        data.end_ayat,
+      );
 
       // Insert progress entry with contributor info
       const { error } = await supabase
@@ -96,6 +102,7 @@ export const useProgressSubmit = (studentId: string) => {
         .insert([{
           student_id: studentId,
           ...data,
+          end_surah: resolvedEndSurah,
           verses_memorized,
           date: new Date().toISOString().split("T")[0],
           last_revision_date: new Date().toISOString().split("T")[0],

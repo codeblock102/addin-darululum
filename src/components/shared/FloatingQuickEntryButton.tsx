@@ -81,10 +81,13 @@ export const FloatingQuickEntryButton = () => {
           {selectedStudentId && (
             <div className="space-y-3">
               <DhorBookEntryForm
+                key={selectedStudentId}
                 initialTab="sabaq"
                 onSubmit={(payload) => mutate(payload)}
                 isPending={isPending}
                 onCancel={handleClose}
+                studentId={selectedStudentId}
+                isOpen={open}
               />
             </div>
           )}
