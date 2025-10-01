@@ -78,8 +78,15 @@ const SelectContent = React.forwardRef<
           "data-[side=bottom]:translate-y-1 data-[side=left]:-translate-x-1 data-[side=right]:translate-x-1 data-[side=top]:-translate-y-1",
         className,
       )}
-      style={{ WebkitOverflowScrolling: "touch", ...style }}
+      style={{ WebkitOverflowScrolling: "touch", touchAction: "pan-y", ...style }}
       position={position}
+      data-scroll-lock-scrollable
+      onTouchMove={(e) => {
+        e.stopPropagation();
+      }}
+      onWheel={(e) => {
+        e.stopPropagation();
+      }}
       {...props}
     >
       <SelectScrollUpButton />
@@ -89,7 +96,14 @@ const SelectContent = React.forwardRef<
           position === "popper" &&
             "w-full min-w-[var(--radix-select-trigger-width)]",
         )}
-        style={{ WebkitOverflowScrolling: "touch" }}
+        style={{ WebkitOverflowScrolling: "touch", touchAction: "pan-y" }}
+        data-scroll-lock-scrollable
+        onTouchMove={(e) => {
+          e.stopPropagation();
+        }}
+        onWheel={(e) => {
+          e.stopPropagation();
+        }}
       >
         {children}
       </SelectPrimitive.Viewport>
