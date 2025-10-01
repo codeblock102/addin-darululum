@@ -163,31 +163,56 @@ const getStudentProgress = async (teacherId: string) => {
   }
 };
 
-// Helper function to get contributor activity
+// Helper function to get contributor activity (grouped by contributor and resolved to names)
 const getContributorActivity = async () => {
   try {
-    // Use a direct query instead of RPC
+    // Fetch contributor IDs and any stored contributor_name from progress entries
     const { data, error } = await supabase
       .from("progress")
-      .select("id")
-      .is("contributor_name", null);
+      .select("contributor_id, contributor_name");
 
     if (error) {
       throw error;
     }
 
-    // Since we're not actually tracking contributor activity properly,
-    // just return a placeholder for now
-    return [
-      {
-        name: "Teacher",
-        count: data.length || 10,
-      },
-      {
-        name: "Admin",
-        count: 5,
-      },
-    ];
+    // Aggregate counts per contributor_id and remember any stored contributor_name as preferred label
+    const contributorIdToCount: Record<string, number> = {};
+    const contributorIdToStoredName: Record<string, string> = {};
+    for (const row of data as Array<{ contributor_id: string | null; contributor_name: string | null }>) {
+      const contributorId = row.contributor_id;
+      if (!contributorId) continue;
+      contributorIdToCount[contributorId] =
+        (contributorIdToCount[contributorId] || 0) + 1;
+      if (row.contributor_name && !contributorIdToStoredName[contributorId]) {
+        contributorIdToStoredName[contributorId] = row.contributor_name;
+      }
+    }
+
+    const contributorIds = Object.keys(contributorIdToCount);
+    if (contributorIds.length === 0) return [];
+
+    // Resolve contributor IDs to names via profiles
+    const { data: profiles, error: profilesError } = await supabase
+      .from("profiles")
+      .select("id, name")
+      .in("id", contributorIds);
+
+    if (profilesError) {
+      throw profilesError;
+    }
+
+    const profileIdToName = new Map(
+      (profiles as Array<{ id: string; name: string | null }>).map((p) => [
+        p.id,
+        p.name,
+      ]),
+    );
+
+    // Build chart data with names (fallback to ID if name missing)
+    return contributorIds.map((id) => ({
+      name: contributorIdToStoredName[id] || profileIdToName.get(id) || id,
+      count: contributorIdToCount[id],
+    }));
   } catch (error) {
     console.error("Error getting contributor activity:", error);
     return [];
