@@ -92,7 +92,7 @@ function MultiSelect({
           <CommandInput placeholder="Search ..." />
           <CommandEmpty>No item found.</CommandEmpty>
           <CommandGroup>
-            <CommandList>
+            <CommandList className="max-h-80 overflow-y-auto touch-pan-y" style={{ WebkitOverflowScrolling: "touch" }}>
               {options.map((option) => (
                 <CommandItem
                   key={option.value}
@@ -104,6 +104,7 @@ function MultiSelect({
                     );
                     setOpen(true);
                   }}
+                  className="min-h-[44px] py-2 pr-3"
                 >
                   <Check
                     className={cn(
