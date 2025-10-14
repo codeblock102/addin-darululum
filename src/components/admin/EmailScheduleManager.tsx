@@ -63,6 +63,7 @@ export const EmailScheduleManager = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [isTestingEmail, setIsTestingEmail] = useState(false);
+  const [isSendingWelcomeEmails, setIsSendingWelcomeEmails] = useState(false);
   const [time, setTime] = useState<string>("16:30");
   const [timezone, setTimezone] = useState<string>("America/New_York");
   const [enabled, setEnabled] = useState<boolean>(true);
@@ -108,7 +109,7 @@ export const EmailScheduleManager = () => {
         .select("key, value")
         .in("key", ["email_schedule_time", "email_timezone", "email_schedule_enabled"]);
       if (error) throw error;
-      const map = Object.fromEntries((data || []).map((r: any) => [r.key, r.value]));
+      const map = Object.fromEntries((data || []).map((r: { key: string; value: string }) => [r.key, r.value]));
       if (map.email_schedule_time) setTime(map.email_schedule_time);
       if (map.email_timezone) setTimezone(map.email_timezone);
       if (map.email_schedule_enabled) setEnabled(map.email_schedule_enabled === "true");
@@ -130,7 +131,7 @@ export const EmailScheduleManager = () => {
       queryClient.invalidateQueries({ queryKey: ["scheduled-jobs"] });
       queryClient.invalidateQueries({ queryKey: ["email-schedule-settings"] });
     },
-    onError: (e: any) => {
+    onError: (e: Error) => {
       toast({ title: "Save failed", description: e.message || "Unable to save", variant: "destructive" });
     },
   });
@@ -157,7 +158,7 @@ export const EmailScheduleManager = () => {
       });
       queryClient.invalidateQueries({ queryKey: ["email-logs"] });
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
       toast({
         title: "Test Email Failed",
         description: error.message || "Failed to send test emails",
@@ -166,6 +167,37 @@ export const EmailScheduleManager = () => {
     },
     onSettled: () => {
       setIsTestingEmail(false);
+    }
+  });
+
+  // Send welcome emails to all parents
+  const sendWelcomeEmailsMutation = useMutation({
+    mutationFn: async () => {
+      setIsSendingWelcomeEmails(true);
+      
+      const { data, error } = await supabase.functions.invoke('send-parent-welcome-emails', {
+        body: {}
+      });
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: (data) => {
+      toast({
+        title: "Welcome Emails Sent",
+        description: `Successfully sent ${data.emailsSent || 0} welcome emails to parents. Skipped ${data.emailsSkipped || 0}.`,
+      });
+      queryClient.invalidateQueries({ queryKey: ["email-logs"] });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Welcome Emails Failed",
+        description: error.message || "Failed to send welcome emails",
+        variant: "destructive",
+      });
+    },
+    onSettled: () => {
+      setIsSendingWelcomeEmails(false);
     }
   });
 
@@ -339,6 +371,55 @@ export const EmailScheduleManager = () => {
                 <AlertDialogCancel>Cancel</AlertDialogCancel>
                 <AlertDialogAction onClick={() => testEmailMutation.mutate()}>
                   Yes, Send Test Emails
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </CardContent>
+      </Card>
+
+      {/* Send Welcome Emails */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Mail className="h-5 w-5" />
+            Send Welcome Emails to All Parents
+          </CardTitle>
+          <CardDescription>
+            Send welcome emails with login credentials to all parents who have accounts
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button disabled={isSendingWelcomeEmails} variant="outline" className="w-full sm:w-auto">
+                {isSendingWelcomeEmails ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Sending Welcome Emails...
+                  </>
+                ) : (
+                  <>
+                    <Mail className="h-4 w-4 mr-2" />
+                    Send Welcome Emails
+                  </>
+                )}
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Send Welcome Emails to All Parents</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This will send welcome emails with login credentials and app link to all parents 
+                  who have accounts in the system. This action will actually send real emails.
+                  <br /><br />
+                  <strong>Are you sure you want to proceed?</strong>
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={() => sendWelcomeEmailsMutation.mutate()}>
+                  Yes, Send Welcome Emails
                 </AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>
