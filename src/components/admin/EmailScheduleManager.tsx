@@ -142,13 +142,24 @@ export const EmailScheduleManager = () => {
       setIsTestingEmail(true);
       
       const { data, error } = await supabase.functions.invoke('daily-progress-email', {
+        headers: { 'Content-Type': 'application/json' },
         body: { 
           source: 'manual_test',
           timestamp: new Date().toISOString()
         }
       });
 
-      if (error) throw error;
+      if (error) {
+        const msg = (error as unknown as { message?: string })?.message || '';
+        // Workaround: sometimes a 2xx with non-standard body triggers a client error
+        if (/2xx/i.test(msg) && data) return data as Record<string, unknown>;
+        // Try to parse body from error context when available
+        const ctxBody = (error as unknown as { context?: { body?: string } })?.context?.body;
+        if (ctxBody) {
+          try { return JSON.parse(ctxBody) as Record<string, unknown>; } catch {/* ignore parse error */}
+        }
+        throw error;
+      }
       return data;
     },
     onSuccess: (data) => {
@@ -176,10 +187,21 @@ export const EmailScheduleManager = () => {
       setIsSendingWelcomeEmails(true);
       
       const { data, error } = await supabase.functions.invoke('send-parent-welcome-emails', {
+        headers: { 'Content-Type': 'application/json' },
         body: {}
       });
 
-      if (error) throw error;
+      if (error) {
+        const msg = (error as unknown as { message?: string })?.message || '';
+        // Workaround: sometimes a 2xx with non-standard body triggers a client error
+        if (/2xx/i.test(msg) && data) return data as Record<string, unknown>;
+        // Try to parse body from error context when available
+        const ctxBody = (error as unknown as { context?: { body?: string } })?.context?.body;
+        if (ctxBody) {
+          try { return JSON.parse(ctxBody) as Record<string, unknown>; } catch {/* ignore parse error */}
+        }
+        throw error;
+      }
       return data;
     },
     onSuccess: (data) => {

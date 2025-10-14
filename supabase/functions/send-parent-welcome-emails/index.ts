@@ -26,17 +26,14 @@ serve(async (req: Request) => {
   try {
     const admin = createClient(supabaseUrl!, serviceRoleKey!);
 
-    // Get all parents with their student information
+    // Get all parents (flat fields only)
     const { data: parents, error: parentsError } = await admin
       .from("parents")
       .select(`
         id,
         name,
         email,
-        student_ids,
-        students:student_ids (
-          name
-        )
+        student_ids
       `)
       .not("email", "is", null);
 
@@ -59,6 +56,34 @@ serve(async (req: Request) => {
       });
     }
 
+    // Build student name map from all referenced student_ids
+    const allStudentIds = new Set<string>();
+    for (const p of (parents || [])) {
+      const ids = Array.isArray(p?.student_ids) ? p.student_ids : [];
+      for (const id of ids) {
+        if (typeof id === "string" && id) allStudentIds.add(id);
+      }
+    }
+
+    const studentIdToName = new Map<string, string>();
+    if (allStudentIds.size > 0) {
+      try {
+        const { data: studs, error: studsError } = await admin
+          .from("students")
+          .select("id, name")
+          .in("id", Array.from(allStudentIds));
+        if (!studsError && Array.isArray(studs)) {
+          for (const s of studs) {
+            if (s?.id) studentIdToName.set(String(s.id), String(s.name || "student"));
+          }
+        } else if (studsError) {
+          console.error("[send-parent-welcome-emails] failed to fetch students:", studsError.message);
+        }
+      } catch (e) {
+        console.error("[send-parent-welcome-emails] unexpected error fetching students:", (e as Error)?.message || String(e));
+      }
+    }
+
     // Get email configuration
     const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
     const RESEND_FROM_EMAIL = Deno.env.get("RESEND_FROM_EMAIL");
@@ -73,6 +98,67 @@ serve(async (req: Request) => {
     }
 
     const resend = new Resend(RESEND_API_KEY);
+    const RATE_LIMIT_INTERVAL_MS = 500; // 2 requests/second
+    const MAX_RATE_LIMIT_RETRIES = 5;
+
+    const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+    const isRateLimitError = (err: unknown): boolean => {
+      try {
+        if (!err) return false;
+        type RateErrorShape = { statusCode?: number; name?: unknown; message?: unknown };
+        const e = err as RateErrorShape;
+        if (typeof e.statusCode === "number" && e.statusCode === 429) return true;
+        if (typeof e.name === "string" && /rate.?limit/i.test(e.name)) return true;
+        if (typeof e.message === "string" && /(429|too many requests|rate.?limit)/i.test(e.message)) return true;
+      } catch (_) { /* ignore */ }
+      return false;
+    };
+
+    const getRetryAfterMs = (err: unknown, fallbackMs: number): number => {
+      try {
+        type HeadersLike = { get?: (name: string) => string | null } | Record<string, unknown>;
+        type ResponseLike = { headers?: HeadersLike };
+        type ErrorWithResponse = { response?: ResponseLike };
+        const { response } = (err as ErrorWithResponse) || {};
+        const headers = response?.headers;
+
+        let headerValue: unknown = undefined;
+        if (headers && typeof (headers as { get?: unknown }).get === "function") {
+          const get = (headers as { get: (name: string) => string | null }).get;
+          headerValue = get("retry-after");
+        } else if (headers && typeof headers === "object" && "retry-after" in (headers as Record<string, unknown>)) {
+          headerValue = (headers as Record<string, unknown>)["retry-after"]; 
+        }
+
+        const seconds = typeof headerValue === "string" ? Number(headerValue) : NaN;
+        if (!Number.isNaN(seconds) && seconds > 0) return Math.min(seconds * 1000, 10_000);
+      } catch (_) { /* ignore */ }
+      return fallbackMs;
+    };
+
+    const sendEmailWithRetry = async (payload: { from: string; to: string; subject: string; html: string }) => {
+      let attempt = 0;
+      // base backoff ~750ms, exponential with cap and jitter
+      const baseMs = 750;
+      while (true) {
+        try {
+          return await resend.emails.send(payload);
+        } catch (e) {
+          attempt += 1;
+          if (isRateLimitError(e) && attempt <= MAX_RATE_LIMIT_RETRIES) {
+            const expBackoff = Math.min(baseMs * Math.pow(2, attempt - 1), 8000);
+            const withRetryAfter = getRetryAfterMs(e, expBackoff);
+            const jitter = Math.floor(Math.random() * 200);
+            const waitMs = withRetryAfter + jitter;
+            console.warn(`[send-parent-welcome-emails] 429 rate-limited, retrying in ${waitMs}ms (attempt ${attempt}/${MAX_RATE_LIMIT_RETRIES})`);
+            await sleep(waitMs);
+            continue;
+          }
+          throw e;
+        }
+      }
+    };
     let emailsSent = 0;
     let emailsSkipped = 0;
     const errors: string[] = [];
@@ -86,9 +172,11 @@ serve(async (req: Request) => {
           continue;
         }
 
-        // Get student names for this parent
-        const studentNames = Array.isArray(parent.students) 
-          ? parent.students.map((s: { name: string }) => s.name).filter(Boolean)
+        // Get student names for this parent via pre-fetched map
+        const studentNames = Array.isArray(parent.student_ids)
+          ? parent.student_ids
+              .map((id: string) => studentIdToName.get(id))
+              .filter((n: string | undefined): n is string => Boolean(n))
           : [];
         
         const list = studentNames.length > 0 ? studentNames.join(", ") : "your student";
@@ -99,7 +187,7 @@ serve(async (req: Request) => {
             <h2 style="color: #0f766e; border-bottom: 2px solid #0f766e; padding-bottom: 10px;">
               Welcome to Dār Al-Ulūm Montréal Parent Portal
             </h2>
-            <p>Dear ${parent.name},</p>
+            <p>Assalamualaikum ${parent.name},</p>
             <p>An account has been created and linked to <strong>${list}</strong>.</p>
             <p><strong>Login with:</strong></p>
             <ul style="background-color: #f8f9fa; padding: 15px; border-radius: 5px; border-left: 4px solid #0f766e;">
@@ -107,7 +195,6 @@ serve(async (req: Request) => {
               <li>Temporary password: <strong>Parent123!</strong></li>
             </ul>
             <p><strong>Access your account:</strong> <a href="${APP_URL}" style="color: #0f766e; text-decoration: none; font-weight: bold;">${APP_URL}</a></p>
-            <p>Please log in and change your password for security. If you didn't request this account, please contact the school immediately.</p>
             <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;">
             <p style="font-size: 12px; color: #666;">
               This is an automated message from Dār Al-Ulūm Montréal. Please do not reply to this email.
@@ -115,13 +202,16 @@ serve(async (req: Request) => {
           </div>
         </body></html>`;
 
-        // Send the email
-        await resend.emails.send({
+        // Send the email with retry and rate-limit pacing
+        await sendEmailWithRetry({
           from: RESEND_FROM_EMAIL,
           to: parent.email.trim(),
           subject: "Your Parent Portal Account - Dār Al-Ulūm Montréal",
           html
         });
+
+        // Pace to 2 requests/second
+        await sleep(RATE_LIMIT_INTERVAL_MS);
 
         emailsSent++;
         console.log(`[send-parent-welcome-emails] sent email to ${parent.email}`);

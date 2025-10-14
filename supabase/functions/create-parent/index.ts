@@ -235,7 +235,6 @@ serve(async (req: Request) => {
             <li>Temporary password: <strong>${defaultPassword}</strong></li>
           </ul>
           <p><strong>Access your account:</strong> <a href="${APP_URL}" style="color: #0f766e; text-decoration: none;">${APP_URL}</a></p>
-          <p>Please log in and change your password. If you didn't request this, contact the school.</p>
         </body></html>`;
         await resend.emails.send({ from: RESEND_FROM_EMAIL, to: normalizedEmail, subject: "Your Parent Portal Account", html });
       }
