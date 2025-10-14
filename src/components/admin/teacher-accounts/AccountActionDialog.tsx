@@ -63,18 +63,13 @@ export function AccountActionDialog({
         }
 
         case "delete": {
-          // Delete the teacher record from profiles
-          const { error } = await supabase
-            .from("profiles")
-            .delete()
-            .eq("id", teacher.id);
-
+          const { error } = await supabase.functions.invoke("delete-teacher", {
+            body: { userId: teacher.id },
+          });
           if (error) throw error;
-
           toast({
             title: "Account deleted",
-            description:
-              `${teacher.name}'s account has been permanently deleted.`,
+            description: `${teacher.name}'s account has been permanently deleted.`,
             variant: "default",
           });
           break;
