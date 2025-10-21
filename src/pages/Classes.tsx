@@ -10,12 +10,11 @@ import { SearchInput } from "@/components/table/SearchInput.tsx";
 import { Plus } from "lucide-react";
 import { AdminHeader } from "@/components/admin/AdminHeader.tsx";
 import { ClassFormData } from "@/components/classes/validation/classFormSchema.ts";
-import { withoutLovId } from "@/lib/stripLovId.tsx";
 import { DeleteClassDialog } from "@/components/classes/components/DeleteClassDialog.tsx";
 import { useI18n } from "@/contexts/I18nContext.tsx";
 
-// Wrap the Dialog component with our HOC to strip out data-lov-id
-const SafeDialog = withoutLovId(Dialog);
+// Use Dialog directly; components sanitize unsupported attributes
+const SafeDialog = Dialog;
 
 const fetchClasses = async () => {
   const { data: classes, error: classesError } = await supabase
@@ -140,7 +139,7 @@ export default function Classes() {
 
   const filteredClasses = classes?.filter((c) => {
     const query = searchQuery.toLowerCase();
-    const teacherNames = c.teachers.map((t) => t.name.toLowerCase()).join(" ");
+    const teacherNames = c.teachers.map((teacher: { name: string }) => teacher.name.toLowerCase()).join(" ");
     return (
       c.name.toLowerCase().includes(query) ||
       (c.subject && c.subject.toLowerCase().includes(query)) ||

@@ -17,7 +17,7 @@ import { AuthProvider } from "@/contexts/AuthContext.tsx";
 import { I18nProvider } from "@/contexts/I18nContext.tsx";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 // Apply the React patch to filter out data-lov-id attributes
-import "@/lib/reactPatches.tsx";
+// reactPatches removed: component-level sanitizing handles data-lov-id
 
 const queryClient = new QueryClient();
 

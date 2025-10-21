@@ -48,6 +48,7 @@ import BulkStudentImport from "@/pages/admin/BulkStudentImport.tsx";
 import Activity from "@/pages/admin/Activity.tsx";
 import ResetPassword from "@/pages/ResetPassword.tsx";
 import TeacherAddParent from "@/pages/TeacherAddParent.tsx";
+import TeacherMessages from "@/pages/TeacherMessages.tsx";
 
 /**
  * @component App
@@ -185,6 +186,14 @@ function App() {
               element={
                 <ProtectedRoute requireTeacher>
                   <Attendance />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/messages"
+              element={
+                <ProtectedRoute requireTeacher>
+                  <TeacherMessages />
                 </ProtectedRoute>
               }
             />
