@@ -13,7 +13,6 @@ import { useToast } from "@/hooks/use-toast.ts";
 import { Loader2, X } from "lucide-react";
 import { MultiSelect } from "@/components/ui/MultiSelect.tsx";
 import { useState } from "react";
-import { stripLovId } from "@/lib/stripLovId.tsx";
 
 interface EnrollmentDialogProps {
   classId: string;
@@ -162,7 +161,6 @@ export const EnrollmentDialog = ({
                       variant="ghost"
                       size="sm"
                       onClick={() => handleUnenroll(student.id)}
-                      {...stripLovId({})}
                     >
                       <X className="h-4 w-4" />
                     </Button>
@@ -187,7 +185,6 @@ export const EnrollmentDialog = ({
                   selectedStudentIds.length === 0 ||
                   updateEnrollments.isPending
                 }
-                {...stripLovId({})}
               >
                 {updateEnrollments.isPending ? (
                   <Loader2 className="animate-spin" />
@@ -202,7 +199,6 @@ export const EnrollmentDialog = ({
           <Button 
             variant="outline" 
             onClick={() => onOpenChange(false)}
-            {...stripLovId({})}
           >
             Close
           </Button>

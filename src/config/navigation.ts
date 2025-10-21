@@ -140,6 +140,12 @@ export const teacherNavItems: NavItem[] = [
     description: "Track student attendance",
   },
   {
+    href: "/messages",
+    label: "Messages",
+    icon: FileText,
+    description: "Message parents of your class",
+  },
+  {
     href: "/schedule",
     label: "nav.schedule",
     icon: Clock,
