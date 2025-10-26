@@ -249,6 +249,23 @@ export default function ParentMessages() {
   }, [parentId, messageText, selectedRecipientId, recipientsLoading]);
 
   const [sending, setSending] = useState(false);
+  const openThreadWithPeer = async (peerId: string) => {
+    try {
+      await supabase
+        .from("communications")
+        .update({ read: true })
+        .eq("recipient_id", parentId)
+        .eq("sender_id", peerId)
+        .eq("read", false);
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["parent-inbox", parentId] }),
+        queryClient.invalidateQueries({ queryKey: ["unread-count", parentId] }),
+      ]);
+    } catch {
+      // ignore
+    }
+    setOpenThreadPeerId(peerId);
+  };
   const handleSend = async () => {
     if (isSendingDisabled) return;
     try {
@@ -265,6 +282,20 @@ export default function ParentMessages() {
         category: "general",
       });
       if (error) throw error;
+      // Try to notify teacher via email function
+      try {
+        const { data: _notify, error: nerr } = await supabase.functions.invoke("send-teacher-message", {
+          body: {
+            recipients: [teacherId],
+            subject: subject.trim() || "New in-app message",
+            body: messageText.trim(),
+            fromName: "Parent",
+          },
+        });
+        if (nerr) {
+          // ignore silently
+        }
+      } catch { /* ignore */ }
       toast({ title: "Message sent", description: "Sent to teacher" });
       setMessageText("");
       setSelectedRecipientId("");
@@ -355,11 +386,7 @@ export default function ParentMessages() {
                   // Try to choose a recipient option for this teacher to support reply
                   const replyOption = (teacherRecipients || []).find((r) => r.teacherId === m.sender_id);
                   return (
-                    <li
-                      key={m.id}
-                      className="p-3 border rounded-md text-sm hover:bg-muted/50 cursor-pointer transition-colors"
-                      onClick={() => setOpenThreadPeerId(m.sender_id)}
-                    >
+                    <li key={m.id} className="p-3 border rounded-md text-sm hover:bg-muted/50 cursor-pointer transition-colors" onClick={() => openThreadWithPeer(m.sender_id)}>
                       <div className="flex items-center justify-between gap-2">
                         <button
                           type="button"
@@ -381,6 +408,12 @@ export default function ParentMessages() {
                         </button>
                         <div className="text-muted-foreground text-xs">{new Date(m.created_at).toLocaleString()}</div>
                       </div>
+                      {!m.read && (
+                        <div className="mt-1">
+                          <span className="inline-block h-2 w-2 rounded-full bg-blue-600 align-middle" />
+                          <span className="sr-only">Unread</span>
+                        </div>
+                      )}
                       <div className="mt-1 text-sm font-medium truncate max-w-[80%]">{m.subject ? `Subject: ${m.subject}` : ''}</div>
                       <div className="mt-1 truncate">{m.message}</div>
                     </li>
