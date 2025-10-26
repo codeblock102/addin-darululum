@@ -178,6 +178,12 @@ export const parentNavItems: NavItem[] = [
     description: "Add another guardian for your child",
   },
   {
+    href: "/parent/messages",
+    label: "Messages",
+    icon: FileText,
+    description: "Message your child's teacher",
+  },
+  {
     href: "/parent/progress",
     label: "nav.quranProgress",
     icon: Book,
