@@ -479,6 +479,27 @@ export default function TeacherMessages() {
   }, [teacherId, messageText, selectedRecipientId, parentsLoading, studentsLoading]);
 
   const [sending, setSending] = useState(false);
+
+  const openThreadWithPeer = async (peerId: string, markReadForInbox: boolean) => {
+    try {
+      if (markReadForInbox) {
+        await supabase
+          .from("communications")
+          .update({ read: true })
+          .eq("recipient_id", teacherId)
+          .eq("sender_id", peerId)
+          .eq("read", false);
+        await Promise.all([
+          queryClient.invalidateQueries({ queryKey: ["teacher-inbox", teacherId] }),
+          queryClient.invalidateQueries({ queryKey: ["unread-count", teacherId] }),
+        ]);
+      }
+    } catch {
+      // ignore
+    } finally {
+      setOpenThreadPeerId(peerId);
+    }
+  };
   const handleSend = async () => {
     if (isSendingDisabled) return;
     try {
@@ -538,6 +559,26 @@ export default function TeacherMessages() {
         const rows = recipients.map((rid) => ({ sender_id: teacherId, recipient_id: rid, message: messageText.trim(), subject: subj, parent_message_id: replyParentId, read: false, message_type: "direct", category: "general" }));
         const { error } = await supabase.from("communications").insert(rows);
         if (error) throw error;
+        // Try to email-notify the parent recipients using parents.email
+        try {
+          type ParentRow = { id: string; email: string | null };
+          const { data: parentRows } = await (supabase as unknown as {
+            from: (t: string) => { select: (s: string) => { in: (c: string, vals: string[]) => Promise<{ data: ParentRow[] | null }> } };
+          }).from("parents").select("id, email").in("id", recipients);
+          const emailTargets = Array.from(new Set(((parentRows || []) as ParentRow[])
+            .map((p) => p.email)
+            .filter((e): e is string => !!e && e.includes("@"))));
+          if (emailTargets.length > 0) {
+            await supabase.functions.invoke("send-teacher-message", {
+              body: {
+                recipients: emailTargets,
+                subject: subj || "New in-app message",
+                body: messageText.trim(),
+                fromName: "Teacher",
+              },
+            });
+          }
+        } catch { /* ignore */ }
         toast({ title: "Message sent", description: selectedRecipientId === "__all_parents__" ? `Sent to ${recipients.length} recipients` : "Sent successfully" });
       }
       setMessageText("");
@@ -640,7 +681,7 @@ export default function TeacherMessages() {
                     <li
                       key={m.id}
                       className="p-3 border rounded-md text-sm hover:bg-muted/50 cursor-pointer transition-colors"
-                      onClick={() => setOpenThreadPeerId(m.sender_id)}
+                      onClick={() => openThreadWithPeer(m.sender_id, true)}
                     >
                       <div className="flex items-center justify-between gap-2">
                         <button
@@ -663,6 +704,12 @@ export default function TeacherMessages() {
                         </button>
                         <div className="text-muted-foreground text-xs">{new Date(m.created_at).toLocaleString()}</div>
                       </div>
+                      {!m.read && (
+                        <div className="mt-1">
+                          <span className="inline-block h-2 w-2 rounded-full bg-blue-600 align-middle" />
+                          <span className="sr-only">Unread</span>
+                        </div>
+                      )}
                       <div className="mt-1 text-sm font-medium truncate max-w-[80%]">{m.subject ? `Subject: ${m.subject}` : ''}</div>
                       <div className="mt-1 truncate">{m.message}</div>
                     </li>
