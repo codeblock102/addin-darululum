@@ -140,6 +140,12 @@ export const teacherNavItems: NavItem[] = [
     description: "Track student attendance",
   },
   {
+    href: "/messages",
+    label: "Messages",
+    icon: FileText,
+    description: "Message parents of your class",
+  },
+  {
     href: "/schedule",
     label: "nav.schedule",
     icon: Clock,
@@ -170,6 +176,12 @@ export const parentNavItems: NavItem[] = [
     label: "nav.addParent",
     icon: Users,
     description: "Add another guardian for your child",
+  },
+  {
+    href: "/parent/messages",
+    label: "Messages",
+    icon: FileText,
+    description: "Message your child's teacher",
   },
   {
     href: "/parent/progress",
