@@ -1,6 +1,6 @@
 import { useMemo, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client.ts";
+import { supabase, SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY } from "@/integrations/supabase/client.ts";
 import { useToast } from "@/components/ui/use-toast.ts";
 import { useAuth } from "@/hooks/use-auth.ts";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card.tsx";
@@ -271,6 +271,44 @@ export default function ParentMessages() {
     try {
       setSending(true);
       const teacherId = selectedRecipientId.split("::")[0] || "";
+
+      // Pre-send email notify attached to button click
+      try {
+        const senderName = (session?.user?.user_metadata?.name as string) || "Parent";
+        const notifySubject = `You have received a message from ${senderName}`;
+        const notifyBody = `${senderName} wrote:\n\n${messageText.trim()}\n\nPlease sign in to view and reply.`;
+        // Resolve teacher email
+        type TeacherRow = { id: string; email: string | null };
+        const emails: string[] = [];
+        const { data: tRows } = await supabase.from("teachers").select("id, email").eq("id", teacherId).limit(1);
+        const tEmail = ((tRows || []) as TeacherRow[])[0]?.email;
+        if (tEmail && tEmail.includes("@")) emails.push(tEmail);
+        if (emails.length === 0) {
+          const { data: pRows } = await (supabase as unknown as {
+            from: (t: string) => { select: (s: string) => { eq: (c: string, v: string) => Promise<{ data: Array<{ id: string; email?: string | null }> | null }> } };
+          }).from("profiles").select("id, email").eq("id", teacherId);
+          const pEmail = ((pRows || []) as Array<{ id: string; email?: string | null }>)[0]?.email;
+          if (pEmail && pEmail.includes("@")) emails.push(pEmail);
+        }
+        if (emails.length > 0) {
+          // Try supabase.invoke first
+          const { error: invErr } = await supabase.functions.invoke("send-teacher-message", { body: { recipients: emails, subject: notifySubject, body: notifyBody, fromName: senderName, senderId: parentId } });
+          if (invErr) {
+            // Fallback to direct fetch with headers
+            const { data: sessionData } = await supabase.auth.getSession();
+            const accessToken = sessionData.session?.access_token || "";
+            await fetch(`${SUPABASE_URL}/functions/v1/send-teacher-message`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                apikey: SUPABASE_PUBLISHABLE_KEY,
+                Authorization: accessToken ? `Bearer ${accessToken}` : "",
+              },
+              body: JSON.stringify({ recipients: emails, subject: notifySubject, body: notifyBody, fromName: senderName, senderId: parentId }),
+            });
+          }
+        }
+      } catch { /* ignore */ }
       const { error } = await supabase.from("communications").insert({
         sender_id: parentId,
         recipient_id: teacherId,
@@ -306,14 +344,7 @@ export default function ParentMessages() {
           const senderName = (session?.user?.user_metadata?.name as string) || "Parent";
           const notifySubject = `You have received a message from ${senderName}`;
           const notifyBody = `${senderName} wrote:\n\n${messageText.trim()}\n\nPlease sign in to view and reply.`;
-          await supabase.functions.invoke("send-teacher-message", {
-            body: {
-              recipients: emails,
-              subject: notifySubject,
-              body: notifyBody,
-              fromName: senderName,
-            },
-          });
+          await supabase.functions.invoke("send-teacher-message", { body: { recipients: emails, subject: notifySubject, body: notifyBody, fromName: senderName, senderId: parentId } });
         }
       } catch { /* ignore */ }
       toast({ title: "Message sent", description: "Sent to teacher" });
