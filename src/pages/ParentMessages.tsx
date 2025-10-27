@@ -282,18 +282,38 @@ export default function ParentMessages() {
         category: "general",
       });
       if (error) throw error;
-      // Try to notify teacher via email function
+      // Try to notify teacher via email function by resolving teacher's email
       try {
-        const { data: _notify, error: nerr } = await supabase.functions.invoke("send-teacher-message", {
-          body: {
-            recipients: [teacherId],
-            subject: subject.trim() || "New in-app message",
-            body: messageText.trim(),
-            fromName: "Parent",
-          },
-        });
-        if (nerr) {
-          // ignore silently
+        type TeacherRow = { id: string; email: string | null };
+        const emails: string[] = [];
+        // Primary: teachers table
+        const { data: tRows } = await supabase
+          .from("teachers")
+          .select("id, email")
+          .eq("id", teacherId)
+          .limit(1);
+        const tEmail = ((tRows || []) as TeacherRow[])[0]?.email;
+        if (tEmail && tEmail.includes("@")) emails.push(tEmail);
+        // Fallback: profiles.email (if present in schema)
+        if (emails.length === 0) {
+          const { data: pRows } = await (supabase as unknown as {
+            from: (t: string) => { select: (s: string) => { eq: (c: string, v: string) => Promise<{ data: Array<{ id: string; email?: string | null }> | null }> } };
+          }).from("profiles").select("id, email").eq("id", teacherId);
+          const pEmail = ((pRows || []) as Array<{ id: string; email?: string | null }>)[0]?.email;
+          if (pEmail && pEmail.includes("@")) emails.push(pEmail);
+        }
+        if (emails.length > 0) {
+          const senderName = (session?.user?.user_metadata?.name as string) || "Parent";
+          const notifySubject = `You have received a message from ${senderName}`;
+          const notifyBody = `${senderName} wrote:\n\n${messageText.trim()}\n\nPlease sign in to view and reply.`;
+          await supabase.functions.invoke("send-teacher-message", {
+            body: {
+              recipients: emails,
+              subject: notifySubject,
+              body: notifyBody,
+              fromName: senderName,
+            },
+          });
         }
       } catch { /* ignore */ }
       toast({ title: "Message sent", description: "Sent to teacher" });
