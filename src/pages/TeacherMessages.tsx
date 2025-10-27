@@ -517,12 +517,24 @@ export default function TeacherMessages() {
       const emailRecipients = recipients.filter((id) => id.includes("@"));
       if (emailRecipients.length > 0) {
         // Try standard invoke first
+        // Build sender display name and templated subject/body
+        let senderName = (session?.user?.user_metadata?.name as string) || "Teacher";
+        try {
+          if (!session?.user?.user_metadata?.name) {
+            const { data: prof } = await supabase.from("profiles").select("name").eq("id", teacherId).maybeSingle();
+            const profName = (prof as { name?: string } | null)?.name;
+            if (profName) senderName = profName;
+          }
+        } catch { /* ignore */ }
+        const notifySubject = `You have received a message from ${senderName}`;
+        const notifyBody = `${senderName} wrote:\n\n${messageText.trim()}\n\nPlease sign in to view and reply.`;
+
         const { data: _data, error } = await supabase.functions.invoke("send-teacher-message", {
           body: {
             recipients: emailRecipients,
-            subject: subject.trim() || "Message from your child's teacher",
-            body: messageText.trim(),
-            fromName: "Teacher",
+            subject: notifySubject,
+            body: notifyBody,
+            fromName: senderName,
           },
         });
         const err: unknown = (error as { message?: string } | null);
@@ -541,9 +553,9 @@ export default function TeacherMessages() {
             },
             body: JSON.stringify({
               recipients: emailRecipients,
-              subject: subject.trim() || "Message from your child's teacher",
-              body: messageText.trim(),
-              fromName: "Teacher",
+              subject: notifySubject,
+              body: notifyBody,
+              fromName: senderName,
             }),
           });
           ok = resp.ok;
@@ -561,6 +573,16 @@ export default function TeacherMessages() {
         if (error) throw error;
         // Try to email-notify the parent recipients using parents.email
         try {
+          let senderName = (session?.user?.user_metadata?.name as string) || "Teacher";
+          try {
+            if (!session?.user?.user_metadata?.name) {
+              const { data: prof } = await supabase.from("profiles").select("name").eq("id", teacherId).maybeSingle();
+              const profName = (prof as { name?: string } | null)?.name;
+              if (profName) senderName = profName;
+            }
+          } catch { /* ignore */ }
+          const notifySubject = `You have received a message from ${senderName}`;
+          const notifyBody = `${senderName} wrote:\n\n${messageText.trim()}\n\nPlease sign in to view and reply.`;
           type ParentRow = { id: string; email: string | null };
           const { data: parentRows } = await (supabase as unknown as {
             from: (t: string) => { select: (s: string) => { in: (c: string, vals: string[]) => Promise<{ data: ParentRow[] | null }> } };
@@ -572,9 +594,9 @@ export default function TeacherMessages() {
             await supabase.functions.invoke("send-teacher-message", {
               body: {
                 recipients: emailTargets,
-                subject: subj || "New in-app message",
-                body: messageText.trim(),
-                fromName: "Teacher",
+                subject: notifySubject,
+                body: notifyBody,
+                fromName: senderName,
               },
             });
           }
