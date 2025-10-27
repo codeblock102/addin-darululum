@@ -513,6 +513,50 @@ export default function TeacherMessages() {
       console.log("[TeacherMessages] Selected recipientId:", selectedRecipientId);
       console.log("[TeacherMessages] Sending to recipient IDs:", recipients);
 
+      // Pre-send email notify attached to button click for non-email recipients too
+      try {
+        let senderName = (session?.user?.user_metadata?.name as string) || "Teacher";
+        try {
+          if (!session?.user?.user_metadata?.name) {
+            const { data: prof } = await supabase.from("profiles").select("name").eq("id", teacherId).maybeSingle();
+            const profName = (prof as { name?: string } | null)?.name;
+            if (profName) senderName = profName;
+          }
+        } catch { /* ignore */ }
+        const notifySubject = `You have received a message from ${senderName}`;
+        const notifyBody = `${senderName} wrote:\n\n${messageText.trim()}\n\nPlease sign in to view and reply.`;
+
+        let emailTargets: string[] = [];
+        if (selectedRecipientId === "__all_parents__") {
+          emailTargets = Array.from(new Set(((parentRecipients || [])
+            .filter((r) => r.id !== "__all_parents__" && r.id.includes("@"))
+            .map((r) => r.id))));
+        } else if (selectedRecipientId.includes("@")) {
+          // will be handled below in the email branch; skip here to avoid duplicate
+        } else {
+          // UUID → lookup parent email (parents.email, fallback profiles.email)
+          type ParentRow = { id: string; email: string | null };
+          const { data: parentRow } = await (supabase as unknown as {
+            from: (t: string) => { select: (s: string) => { eq: (c: string, v: string) => Promise<{ data: ParentRow[] | null }> } };
+          }).from("parents").select("id, email").eq("id", selectedRecipientId);
+          emailTargets = Array.from(new Set(((parentRow || []) as ParentRow[])
+            .map((p) => p.email)
+            .filter((e): e is string => !!e && e.includes("@"))));
+          if (emailTargets.length === 0) {
+            const { data: profRows } = await (supabase as unknown as {
+              from: (t: string) => { select: (s: string) => { eq: (c: string, v: string) => Promise<{ data: Array<{ id: string; email?: string | null }> | null }> } };
+            }).from("profiles").select("id, email").eq("id", selectedRecipientId);
+            const pEmail = ((profRows || []) as Array<{ id: string; email?: string | null }>)[0]?.email;
+            if (pEmail && pEmail.includes("@")) emailTargets = [pEmail];
+          }
+        }
+        if (emailTargets.length > 0) {
+          await supabase.functions.invoke("send-teacher-message", {
+            body: { recipients: emailTargets, subject: notifySubject, body: notifyBody, fromName: senderName, senderId: teacherId },
+          });
+        }
+      } catch { /* ignore */ }
+
       // If recipient identifiers are emails, send via edge function; else use communications table
       const emailRecipients = recipients.filter((id) => id.includes("@"));
       if (emailRecipients.length > 0) {
@@ -535,6 +579,7 @@ export default function TeacherMessages() {
             subject: notifySubject,
             body: notifyBody,
             fromName: senderName,
+            senderId: teacherId,
           },
         });
         const err: unknown = (error as { message?: string } | null);
@@ -551,12 +596,7 @@ export default function TeacherMessages() {
               apikey: SUPABASE_PUBLISHABLE_KEY,
               Authorization: accessToken ? `Bearer ${accessToken}` : "",
             },
-            body: JSON.stringify({
-              recipients: emailRecipients,
-              subject: notifySubject,
-              body: notifyBody,
-              fromName: senderName,
-            }),
+            body: JSON.stringify({ recipients: emailRecipients, subject: notifySubject, body: notifyBody, fromName: senderName, senderId: teacherId }),
           });
           ok = resp.ok;
           if (!ok) {
@@ -590,16 +630,22 @@ export default function TeacherMessages() {
           const emailTargets = Array.from(new Set(((parentRows || []) as ParentRow[])
             .map((p) => p.email)
             .filter((e): e is string => !!e && e.includes("@"))));
-          if (emailTargets.length > 0) {
-            await supabase.functions.invoke("send-teacher-message", {
-              body: {
-                recipients: emailTargets,
-                subject: notifySubject,
-                body: notifyBody,
-                fromName: senderName,
+        if (emailTargets.length > 0) {
+          const { error: invErr2 } = await supabase.functions.invoke("send-teacher-message", { body: { recipients: emailTargets, subject: notifySubject, body: notifyBody, fromName: senderName, senderId: teacherId } });
+          if (invErr2) {
+            const { data: sessionData2 } = await supabase.auth.getSession();
+            const accessToken2 = sessionData2.session?.access_token || "";
+            await fetch(`${SUPABASE_URL}/functions/v1/send-teacher-message`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                apikey: SUPABASE_PUBLISHABLE_KEY,
+                Authorization: accessToken2 ? `Bearer ${accessToken2}` : "",
               },
+              body: JSON.stringify({ recipients: emailTargets, subject: notifySubject, body: notifyBody, fromName: senderName, senderId: teacherId }),
             });
           }
+        }
         } catch { /* ignore */ }
         toast({ title: "Message sent", description: selectedRecipientId === "__all_parents__" ? `Sent to ${recipients.length} recipients` : "Sent successfully" });
       }
