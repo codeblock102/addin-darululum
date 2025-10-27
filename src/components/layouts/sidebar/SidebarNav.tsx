@@ -3,6 +3,10 @@ import { cn } from "@/lib/utils.ts";
 import { NavItem } from "@/types/navigation.ts";
 import { useIsMobile } from "@/hooks/use-mobile.tsx";
 import { useI18n } from "@/contexts/I18nContext.tsx";
+import { useAuth } from "@/hooks/use-auth.ts";
+import { useEffect } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client.ts";
 
 interface SidebarNavProps {
   items: NavItem[];
@@ -14,6 +18,9 @@ export const SidebarNav = ({ items, isAdmin, isOpen }: SidebarNavProps) => {
   const location = useLocation();
   const isMobile = useIsMobile();
   const { t } = useI18n();
+  const { session } = useAuth();
+  const queryClient = useQueryClient();
+  const userId = session?.user?.id || "";
 
   const isNavItemActive = (item: NavItem) => {
     const normalize = (p?: string) => (p || "").replace(/\/+$/, "");
@@ -38,6 +45,35 @@ export const SidebarNav = ({ items, isAdmin, isOpen }: SidebarNavProps) => {
       globalThis.dispatchEvent(navEvent);
     }
   };
+
+  // Unread messages count for current user
+  const { data: unreadCount } = useQuery<number>({
+    queryKey: ["unread-count", userId],
+    queryFn: async () => {
+      if (!userId) return 0;
+      const { count, error } = await supabase
+        .from("communications")
+        .select("id", { count: "exact", head: true })
+        .eq("recipient_id", userId)
+        .eq("read", false);
+      if (error) return 0;
+      return count || 0;
+    },
+    enabled: !!userId,
+    staleTime: 15_000,
+  });
+
+  // Realtime invalidate for unread count
+  useEffect(() => {
+    if (!userId) return;
+    const channel = supabase
+      .channel("nav-unread")
+      .on("postgres_changes", { event: "*", schema: "public", table: "communications", filter: `recipient_id=eq.${userId}` }, () => {
+        queryClient.invalidateQueries({ queryKey: ["unread-count", userId] });
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [userId, queryClient]);
 
   return (
     <nav
@@ -90,6 +126,11 @@ export const SidebarNav = ({ items, isAdmin, isOpen }: SidebarNavProps) => {
                 {t(item.label)}
               </span>
             )}
+
+              {/* Unread badge for Messages routes */}
+              {typeof unreadCount === "number" && unreadCount > 0 && item.href && item.href.includes("/messages") && (
+                <span className="absolute right-2 top-1 inline-block h-2 w-2 rounded-full bg-red-600 shadow-sm" />
+              )}
 
             {/* Tooltip for collapsed state */}
             {(!isMobile && isOpen === false) && (

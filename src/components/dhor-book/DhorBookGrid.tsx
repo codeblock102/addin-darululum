@@ -101,7 +101,7 @@ export function DhorBookGrid(
                 <TableHead className="hidden sm:table-cell">Nazirah</TableHead>
               )}
               {showQaidaCol && (
-                <TableHead className="hidden sm:table-cell">Qaida</TableHead>
+              <TableHead>Qaida</TableHead>
               )}
               <TableHead>Dhor 1</TableHead>
               <TableHead className="hidden md:table-cell">Dhor 2</TableHead>
@@ -152,7 +152,7 @@ export function DhorBookGrid(
                       </TableCell>
                     )}
                     {showQaidaCol && (
-                      <TableCell className="hidden sm:table-cell">
+                    <TableCell>
                         {entry?.qaida_entries && entry.qaida_entries.length > 0
                           ? entry.qaida_entries
                               .map((q) => {
@@ -169,7 +169,7 @@ export function DhorBookGrid(
                               })
                               .join("; ")
                           : "—"}
-                      </TableCell>
+                    </TableCell>
                     )}
                     {/* Dhor 1 Cell */}
                     <TableCell>
@@ -267,7 +267,7 @@ export function DhorBookGrid(
                         </TableCell>
                       )}
                       {showQaidaCol && (
-                        <TableCell className="hidden sm:table-cell">
+                        <TableCell>
                           {entry?.qaida_entries && entry.qaida_entries.length > 0
                             ? entry.qaida_entries
                                 .map((q) => {
@@ -283,7 +283,7 @@ export function DhorBookGrid(
                                   return `${display}${q.quality ? ` (Q: ${q.quality})` : ""}`;
                                 })
                                 .join("; ")
-                            : "—"}
+                              : "—"}
                         </TableCell>
                       )}
                       {/* Dhor 1 Cell */}
