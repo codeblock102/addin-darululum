@@ -26,20 +26,42 @@ serve(async (req: Request) => {
   try {
     const admin = createClient(supabaseUrl!, serviceRoleKey!);
 
-    // Get all parents (flat fields only)
-    const { data: parents, error: parentsError } = await admin
-      .from("parents")
-      .select(`
-        id,
-        name,
-        email,
-        student_ids
-      `)
-      .not("email", "is", null);
+    // Read optional payload to target specific parents
+    let targetParentIds: string[] = [];
+    try {
+      const body = await req.json();
+      if (Array.isArray(body?.parentIds)) {
+        targetParentIds = (body.parentIds as unknown[])
+          .map((v) => (typeof v === "string" ? v : ""))
+          .filter((v) => v.length > 0);
+      }
+    } catch (_) { /* ignore */ }
+
+    // Get target parents (flat fields only)
+    type ParentRow = { id: string; name: string; email: string; student_ids: string[] };
+    let parents: ParentRow[] | null = null;
+    let parentsError: unknown = null;
+    if (targetParentIds.length > 0) {
+      const { data, error } = await admin
+        .from("parents")
+        .select("id, name, email, student_ids")
+        .in("id", targetParentIds)
+        .not("email", "is", null);
+      parents = (data || []) as ParentRow[];
+      parentsError = error;
+    } else {
+      const { data, error } = await admin
+        .from("parents")
+        .select("id, name, email, student_ids")
+        .not("email", "is", null);
+      parents = (data || []) as ParentRow[];
+      parentsError = error;
+    }
 
     if (parentsError) {
-      console.error("[send-parent-welcome-emails] failed to fetch parents:", parentsError.message);
-      return new Response(JSON.stringify({ error: parentsError.message }), {
+      const msg = (parentsError as { message?: string } | null)?.message || "Unknown error";
+      console.error("[send-parent-welcome-emails] failed to fetch parents:", msg);
+      return new Response(JSON.stringify({ error: msg }), {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
