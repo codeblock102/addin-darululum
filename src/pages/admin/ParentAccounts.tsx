@@ -75,6 +75,36 @@ const ParentAccounts = () => {
   const [newParentPassword, setNewParentPassword] = useState("");
   const [isChangingPassword, setIsChangingPassword] = useState(false);
 
+  // Welcome email selection
+  const [selectedParentIdsForWelcome, setSelectedParentIdsForWelcome] = useState<string[]>([]);
+  const [isSendingWelcome, setIsSendingWelcome] = useState(false);
+  const toggleWelcomeParent = (id: string) => {
+    setSelectedParentIdsForWelcome((prev) => prev.includes(id)
+      ? prev.filter((p) => p !== id)
+      : [...prev, id]);
+  };
+  const handleSendWelcomeEmails = async () => {
+    try {
+      setIsSendingWelcome(true);
+      const targets = selectedParentIdsForWelcome.length > 0
+        ? selectedParentIdsForWelcome
+        : (filteredParents || []).map((p: ParentMin) => p.id);
+      if (targets.length === 0) {
+        toast({ title: "No parents selected", description: "Select at least one parent.", variant: "destructive" });
+        return;
+      }
+      const { error } = await supabase.functions.invoke("send-parent-welcome-emails", {
+        body: { parentIds: targets },
+      });
+      if (error) throw error;
+      toast({ title: "Welcome emails queued", description: `Dispatch started for ${targets.length} parent(s).` });
+    } catch (e) {
+      toast({ title: "Failed to send", description: e instanceof Error ? e.message : String(e), variant: "destructive" });
+    } finally {
+      setIsSendingWelcome(false);
+    }
+  };
+
   const toggleStudent = (id: string) => {
     setSelectedStudentIds((prev) => prev.includes(id)
       ? prev.filter((s) => s !== id)
@@ -319,13 +349,26 @@ const ParentAccounts = () => {
                 <Label>Search</Label>
                 <Input value={parentSearch} onChange={(e) => setParentSearch(e.target.value)} placeholder="Search by name or email" />
               </div>
+              <div className="flex items-center justify-end">
+                <Button variant="secondary" onClick={handleSendWelcomeEmails} disabled={isSendingWelcome}>
+                  {isSendingWelcome ? "Sending..." : "Send Welcome Email"}
+                </Button>
+              </div>
               <div className="grid grid-cols-1 gap-2">
                 {(filteredParents || []).map((p: ParentMin) => (
                   <div key={p.id} className="flex items-center justify-between rounded border px-3 py-2">
-                    <div>
+                    <div className="flex items-center gap-3">
+                      <input
+                        type="checkbox"
+                        checked={selectedParentIdsForWelcome.includes(p.id)}
+                        onChange={() => toggleWelcomeParent(p.id)}
+                        aria-label={`Select ${p.name}`}
+                      />
+                      <div>
                       <div className="font-medium">{p.name}</div>
                       <div className="text-sm text-muted-foreground">{p.email}</div>
                       <div className="text-xs text-muted-foreground">Children: {(p.student_ids || []).length}</div>
+                      </div>
                     </div>
                     <div className="flex items-center gap-2">
                       <Button variant="secondary" onClick={() => openPasswordDialogFor(p)}>Change Password</Button>
