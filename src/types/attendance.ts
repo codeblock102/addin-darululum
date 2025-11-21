@@ -1,5 +1,5 @@
 import { StatusType } from "@/components/ui/status-badge.tsx";
-import { Tables } from "@/types/supabase.ts";
+import { Tables } from "@/integrations/supabase/types.ts";
 
 export type AttendanceStatus = "present" | "absent" | "late" | "excused";
 

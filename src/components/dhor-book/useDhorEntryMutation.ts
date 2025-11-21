@@ -2,7 +2,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client.ts";
 import { useToast } from "@/hooks/use-toast.ts";
 import { endOfWeek, format, startOfWeek } from "date-fns";
-import type { Database } from "@/types/supabase.ts";
+import type { Database } from "@/integrations/supabase/types.ts";
 
 interface UseDhorEntryMutationProps {
   studentId: string;
