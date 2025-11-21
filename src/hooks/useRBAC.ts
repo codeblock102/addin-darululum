@@ -2,7 +2,6 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client.ts";
 import { useAuth } from "@/hooks/use-auth.ts";
 import { useEffect } from "react";
-import type { Json } from "@/integrations/supabase/types.ts";
 
 interface UserRole {
   role: string | null;
