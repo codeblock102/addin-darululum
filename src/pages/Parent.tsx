@@ -4,7 +4,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs.t
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client.ts";
 import { useQuery } from "@tanstack/react-query";
-import { Tables } from "@/integrations/supabase/types.ts";
+import { Tables } from "@/types/supabase.ts";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute.tsx";
 // Removed Add Parent tab from parent dashboard; sidebar page is the source of truth
 import { useToast } from "@/hooks/use-toast.ts";
