@@ -1,4 +1,4 @@
-import { Json } from "@/types/supabase.ts";
+import { Json } from "@/integrations/supabase/types.ts";
 
 export interface TeacherFormValues {
   name: string;

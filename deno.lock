@@ -55,7 +55,6 @@
     "npm:input-otp@^1.2.4": "1.4.2_react@18.3.1_react-dom@18.3.1__react@18.3.1",
     "npm:lovable-tagger@^1.1.4": "1.1.9_vite@5.4.19__@types+node@22.17.2_@types+node@22.17.2",
     "npm:lucide-react@0.462": "0.462.0_react@18.3.1",
-    "npm:next-themes@0.3": "0.3.0_react@18.3.1_react-dom@18.3.1__react@18.3.1",
     "npm:postcss@^8.4.47": "8.5.6",
     "npm:react-day-picker@^8.10.1": "8.10.1_date-fns@3.6.0_react@18.3.1",
     "npm:react-dom@^18.3.1": "18.3.1_react@18.3.1",
@@ -64,7 +63,6 @@
     "npm:react-router-dom@^6.26.2": "6.30.1_react@18.3.1_react-dom@18.3.1__react@18.3.1",
     "npm:react@^18.3.1": "18.3.1",
     "npm:recharts@^2.12.7": "2.15.4_react@18.3.1_react-dom@18.3.1__react@18.3.1",
-    "npm:sonner@^1.5.0": "1.7.4_react@18.3.1_react-dom@18.3.1__react@18.3.1",
     "npm:tailwind-merge@^2.5.2": "2.6.0",
     "npm:tailwindcss-animate@^1.0.7": "1.0.7_tailwindcss@3.4.17__postcss@8.5.6",
     "npm:tailwindcss@^3.4.11": "3.4.17_postcss@8.5.6",
@@ -2711,13 +2709,6 @@
     "natural-compare@1.4.0": {
       "integrity": "sha512-OWND8ei3VtNC9h7V60qff3SVobHr996CTwgxubgyQYEpg290h9J0buyECNNJexkFm5sOajh5G116RYA1c8ZMSw=="
     },
-    "next-themes@0.3.0_react@18.3.1_react-dom@18.3.1__react@18.3.1": {
-      "integrity": "sha512-/QHIrsYpd6Kfk7xakK4svpDI5mmXP0gfvCoJdGpZQ2TOrQZmsW0QxjaiLn8wbIKjtm4BTSqLoix4lxYYOnLJ/w==",
-      "dependencies": [
-        "react",
-        "react-dom"
-      ]
-    },
     "node-releases@2.0.19": {
       "integrity": "sha512-xxOWJsBKtzAq7DY0J+DTzuz58K8e7sJbdgwkbMWQe8UYB6ekmsQ45q0M/tJDsGaZmbC+l7n57UV8Hl5tHxO9uw=="
     },
@@ -3093,13 +3084,6 @@
     },
     "signal-exit@4.1.0": {
       "integrity": "sha512-bzyZ1e88w9O1iNJbKnOlvYTrWPDl46O1bG0D3XInv+9tkPrxrN8jUUTiFlDkkmKWgn1M6CfIA13SuGqOa9Korw=="
-    },
-    "sonner@1.7.4_react@18.3.1_react-dom@18.3.1__react@18.3.1": {
-      "integrity": "sha512-DIS8z4PfJRbIyfVFDVnK9rO3eYDtse4Omcm6bt0oEr5/jtLgysmjuBl1frJ9E/EQZrFmKx2A8m/s5s9CRXIzhw==",
-      "dependencies": [
-        "react",
-        "react-dom"
-      ]
     },
     "source-map-js@1.2.1": {
       "integrity": "sha512-UXWMKhLOwVKb728IUtQPXxfYU+usdybtUrK/8uGE8CQMvrhOpwvzDBwj0QhSL7MQc7vIsISBG8VQ8+IDQxpfQA=="
@@ -3571,6 +3555,12 @@
         "npm:@radix-ui/react-toggle-group@^1.1.0",
         "npm:@radix-ui/react-toggle@^1.1.0",
         "npm:@radix-ui/react-tooltip@^1.1.4",
+        "npm:@semantic-release/changelog@^6.0.3",
+        "npm:@semantic-release/commit-analyzer@13",
+        "npm:@semantic-release/git@^10.0.1",
+        "npm:@semantic-release/github@^11.0.6",
+        "npm:@semantic-release/npm@^12.0.2",
+        "npm:@semantic-release/release-notes-generator@14",
         "npm:@supabase/supabase-js@^2.48.1",
         "npm:@tailwindcss/typography@~0.5.15",
         "npm:@tanstack/react-query@^5.56.2",
@@ -3592,7 +3582,6 @@
         "npm:input-otp@^1.2.4",
         "npm:lovable-tagger@^1.1.4",
         "npm:lucide-react@0.462",
-        "npm:next-themes@0.3",
         "npm:node-fetch@^3.3.2",
         "npm:postcss@^8.4.47",
         "npm:react-day-picker@^8.10.1",
@@ -3602,7 +3591,7 @@
         "npm:react-router-dom@^6.26.2",
         "npm:react@^18.3.1",
         "npm:recharts@^2.12.7",
-        "npm:sonner@^1.5.0",
+        "npm:semantic-release@^24.2.9",
         "npm:tailwind-merge@^2.5.2",
         "npm:tailwindcss-animate@^1.0.7",
         "npm:tailwindcss@^3.4.11",
