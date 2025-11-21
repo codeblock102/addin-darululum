@@ -1,6 +1,6 @@
 import { useMemo, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { supabase, SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY } from "@/integrations/supabase/client.ts";
+import { supabase } from "@/integrations/supabase/client.ts";
 import { useToast } from "@/components/ui/use-toast.ts";
 import { useAuth } from "@/hooks/use-auth.ts";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card.tsx";
@@ -293,20 +293,7 @@ export default function ParentMessages() {
         if (emails.length > 0) {
           // Try supabase.invoke first
           const { error: invErr } = await supabase.functions.invoke("send-teacher-message", { body: { recipients: emails, subject: notifySubject, body: notifyBody, fromName: senderName, senderId: parentId } });
-          if (invErr) {
-            // Fallback to direct fetch with headers
-            const { data: sessionData } = await supabase.auth.getSession();
-            const accessToken = sessionData.session?.access_token || "";
-            await fetch(`${SUPABASE_URL}/functions/v1/send-teacher-message`, {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                apikey: SUPABASE_PUBLISHABLE_KEY,
-                Authorization: accessToken ? `Bearer ${accessToken}` : "",
-              },
-              body: JSON.stringify({ recipients: emails, subject: notifySubject, body: notifyBody, fromName: senderName, senderId: parentId }),
-            });
-          }
+          if (invErr) { /* ignore fallback */ }
         }
       } catch { /* ignore */ }
       const { error } = await supabase.from("communications").insert({

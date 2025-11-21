@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card.tsx";
 import { supabase } from "@/integrations/supabase/client.ts";
 import { useQuery } from "@tanstack/react-query";
-import { Tables } from "@/types/supabase.ts";
+import { Tables } from "@/integrations/supabase/types.ts";
 
 const ParentAttendance = () => {
   const { children } = useParentChildren();
@@ -17,7 +17,7 @@ const ParentAttendance = () => {
     }
   }, [children, selectedStudentId]);
 
-  const { data: attendance } = useQuery<Tables["attendance"][] | null>({
+  const { data: attendance } = useQuery<Tables<"attendance">[] | null>({
     queryKey: ["parent-student-attendance", selectedStudentId],
     queryFn: async () => {
       if (!selectedStudentId) return [];
@@ -46,6 +46,7 @@ const ParentAttendance = () => {
                 {children.map((child) => (
                   <button
                     key={child.id}
+                    type="button"
                     className={`px-3 py-2 rounded border shrink-0 ${selectedStudentId === child.id ? "bg-primary text-primary-foreground" : "bg-background"}`}
                     onClick={() => setSelectedStudentId(child.id)}
                   >
@@ -55,7 +56,7 @@ const ParentAttendance = () => {
               </div>
             </div>
             <ul className="space-y-2">
-              {(attendance || []).map((a: any) => (
+              {(attendance || []).map((a: Tables<"attendance">) => (
                 <li key={a.id} className="p-3 rounded border flex flex-col sm:flex-row sm:justify-between gap-1">
                   <span className="text-sm text-muted-foreground">{a.date}</span>
                   <span className="uppercase font-medium">{a.status}</span>

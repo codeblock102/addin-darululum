@@ -1,9 +1,9 @@
 import { createClient } from "@supabase/supabase-js";
-import { Database } from "./types";
+import { Database } from "@/integrations/supabase/types.ts";
 
-const SUPABASE_URL = "https://depsfpodwaprzxffdcks.supabase.co";
-const SUPABASE_PUBLISHABLE_KEY =
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRlcHNmcG9kd2Fwcnp4ZmZkY2tzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzkxNTM5NjAsImV4cCI6MjA1NDcyOTk2MH0.Ax6eLUm_0Dd-YU7fv8VcvstqphIQ61DDmbb6yrKT0mc";
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string;
+const SUPABASE_PUBLISHABLE_KEY = import.meta.env
+  .VITE_SUPABASE_ANON_KEY as string;
 
 /**
  * Custom Database type that extends the generated Database type
@@ -12,6 +12,81 @@ const SUPABASE_PUBLISHABLE_KEY =
 interface CustomDatabase extends Database {
   public: {
     Tables: Database["public"]["Tables"] & {
+      classes: {
+        Row: Database["public"]["Tables"]["classes"]["Row"] & {
+          teacher_ids?: string[] | null;
+          current_students?: string[] | null;
+        };
+        Insert: Database["public"]["Tables"]["classes"]["Insert"] & {
+          teacher_ids?: string[] | null;
+          current_students?: string[] | null;
+        };
+        Update: Database["public"]["Tables"]["classes"]["Update"] & {
+          teacher_ids?: string[] | null;
+          current_students?: string[] | null;
+        };
+        Relationships: Database["public"]["Tables"]["classes"]["Relationships"];
+      };
+      communications: {
+        Row: {
+          id: string;
+          message: string;
+          subject: string | null;
+          created_at: string;
+          sender_id: string;
+          recipient_id: string;
+          read: boolean | null;
+          message_type?: string | null;
+          category?: string | null;
+        };
+        Insert: {
+          id?: string;
+          message: string;
+          subject?: string | null;
+          created_at?: string;
+          sender_id: string;
+          recipient_id: string;
+          read?: boolean | null;
+          message_type?: string | null;
+          category?: string | null;
+        };
+        Update: {
+          id?: string;
+          message?: string;
+          subject?: string | null;
+          created_at?: string;
+          sender_id?: string;
+          recipient_id?: string;
+          read?: boolean | null;
+          message_type?: string | null;
+          category?: string | null;
+        };
+        Relationships: [];
+      };
+      teachers: {
+        Row: {
+          id: string;
+          email: string | null;
+          name?: string | null;
+          subject?: string | null;
+          created_at?: string;
+        };
+        Insert: {
+          id?: string;
+          email?: string | null;
+          name?: string | null;
+          subject?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          email?: string | null;
+          name?: string | null;
+          subject?: string | null;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
       difficult_ayahs: {
         Row: {
           id: string;
