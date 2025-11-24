@@ -41,9 +41,9 @@ export function SliderTimeSelector({ form }: SliderTimeSelectorProps) {
     <FormField
       control={form.control}
       name="time"
-      render={({ field }) => (
+      render={({ field: _field }) => (
         <FormItem>
-          <FormLabel className="text-gray-900 font-medium">{t("pages.attendance.time.label", "Attendance Time")}</FormLabel>
+          <FormLabel className="text-gray-900 font-medium">{t("pages.attendance.time.label", "Attendance / Departure Time")}</FormLabel>
           <FormControl>
             <div className="space-y-5 p-4 sm:p-5 bg-white border border-gray-200 rounded-xl shadow-sm">
               {/* Current Time Display */}
@@ -57,7 +57,7 @@ export function SliderTimeSelector({ form }: SliderTimeSelectorProps) {
                   <span className="text-xs sm:text-sm">{localizedTime}</span>
                 </div>
                 <div className="text-xs sm:text-sm text-gray-500 mt-2">
-                  {t("pages.attendance.time.help", "Select the time for this attendance record")}
+                  {t("pages.attendance.time.help", "Select the time for this attendance record (use the actual pickup time for early departures)")}
                 </div>
               </div>
 

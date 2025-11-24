@@ -216,7 +216,14 @@ serve(async (req: Request) => {
               <li>Username (email): <strong>${parent.email}</strong></li>
               <li>Temporary password: <strong>Parent123!</strong></li>
             </ul>
-            <p><strong>Access your account:</strong> <a href="${APP_URL}" style="color: #0f766e; text-decoration: none; font-weight: bold;">${APP_URL}</a></p>
+            <div style="margin:24px 0;text-align:center;">
+              <a href="${APP_URL}" style="display:inline-block;padding:12px 24px;background-color:#0f766e;color:#ffffff;text-decoration:none;font-weight:600;border-radius:6px;" target="_blank" rel="noopener noreferrer">
+                Open Parent Portal
+              </a>
+              <p style="font-size:12px;color:#6b7280;margin-top:8px;">
+                Or copy this link: <a href="${APP_URL}" style="color:#0f766e;text-decoration:none;" target="_blank" rel="noopener noreferrer">${APP_URL}</a>
+              </p>
+            </div>
             <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;">
             <p style="font-size: 12px; color: #666;">
               This is an automated message from Dār Al-Ulūm Montréal. Please do not reply to this email.

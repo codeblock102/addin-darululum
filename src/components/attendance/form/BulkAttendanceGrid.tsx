@@ -18,6 +18,7 @@ import { AttendanceFormValues } from "@/types/attendance-form.ts";
 import { format } from "date-fns";
 import { useToast } from "@/hooks/use-toast.ts";
 import { useI18n } from "@/contexts/I18nContext.tsx";
+import { formatErrorMessage } from "@/utils/formatErrorMessage.ts";
 
 interface BulkAttendanceGridProps {
   form: UseFormReturn<AttendanceFormValues>;
@@ -88,10 +89,10 @@ export function BulkAttendanceGrid({ form }: BulkAttendanceGridProps) {
       setBulkLateReason("");
       queryClient.invalidateQueries({ queryKey: ["attendance"] });
     },
-    onError: (error: Error) => {
+    onError: (error: unknown) => {
       toast({
         title: t("common.error", "Error"),
-        description: error.message,
+        description: formatErrorMessage(error),
         variant: "destructive",
       });
     },
@@ -187,6 +188,7 @@ export function BulkAttendanceGrid({ form }: BulkAttendanceGridProps) {
                     <SelectItem value="absent">{t("pages.attendance.status.absent", "Absent")}</SelectItem>
                     <SelectItem value="late">{t("pages.attendance.status.late", "Late")}</SelectItem>
                     <SelectItem value="excused">{t("pages.attendance.status.excused", "Excused")}</SelectItem>
+                    <SelectItem value="early_departure">{t("pages.attendance.status.earlyDeparture", "Early Departure")}</SelectItem>
                   </SelectContent>
                 </Select>
 

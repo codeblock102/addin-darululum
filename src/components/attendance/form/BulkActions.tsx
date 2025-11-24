@@ -32,7 +32,7 @@ export const BulkActions = ({ form, selectedStudents, onClear, isSubmitting, onS
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <SliderTimeSelector form={form} />
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+        <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
           <Button onClick={() => handleStatusClick('present')} disabled={isSubmitting} className="w-full bg-emerald-600 hover:bg-emerald-700">
             {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             {t("pages.attendance.status.present", "Present")}
@@ -48,6 +48,10 @@ export const BulkActions = ({ form, selectedStudents, onClear, isSubmitting, onS
           <Button onClick={() => handleStatusClick('excused')} disabled={isSubmitting} className="w-full bg-blue-600 hover:bg-blue-700">
             {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             {t("pages.attendance.status.excused", "Excused")}
+          </Button>
+          <Button onClick={() => handleStatusClick('early_departure')} disabled={isSubmitting} className="w-full bg-indigo-600 hover:bg-indigo-700">
+            {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            {t("pages.attendance.status.earlyDeparture", "Early Departure")}
           </Button>
         </div>
       </div>
