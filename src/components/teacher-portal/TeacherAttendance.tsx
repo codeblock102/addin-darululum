@@ -36,7 +36,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { CalendarIcon, Loader2, MoreHorizontal, Search } from "lucide-react";
 import { supabase, SUPABASE_PUBLISHABLE_KEY, SUPABASE_URL } from "@/integrations/supabase/client.ts";
-import type { Database } from "@/integrations/supabase/types.ts";
+import { formatErrorMessage } from "@/utils/formatErrorMessage.ts";
 import { useToast } from "@/components/ui/use-toast.ts";
 import {
   AlertDialog,
@@ -54,6 +54,23 @@ interface StudentData {
   id: string;
   name: string;
 }
+
+type StudentTeacherAssignmentRow = {
+  student_name: string | null;
+};
+
+type AttendanceQueryRow = {
+  id: string;
+  date: string;
+  status: string;
+  notes: string | null;
+  class_id: string | null;
+  created_at: string | null;
+  time: string | null;
+  late_reason: string | null;
+  student_id: string;
+  students: { name?: string | null } | null;
+};
 
 // Define the structure of an attendance record as fetched for this component
 // It combines data from 'attendance' and the related 'students' table.
@@ -103,7 +120,14 @@ export const TeacherAttendance = () => {
         .eq("teacher_id", uid)
         .eq("active", true);
       if (assignErr) throw assignErr;
-      const names = Array.from(new Set((assignRows || []).map((r: any) => r.student_name).filter(Boolean)));
+      const rows = (assignRows || []) as StudentTeacherAssignmentRow[];
+      const names = Array.from(
+        new Set(
+          rows
+            .map((r) => r.student_name)
+            .filter((name): name is string => Boolean(name)),
+        ),
+      );
       if (names.length === 0) return [];
 
       // Resolve to student IDs via names
@@ -174,7 +198,8 @@ export const TeacherAttendance = () => {
         throw error;
       }
 
-      const mappedData: StudentAttendanceRecord[] = data?.map((record) => ({
+      const rows = (data || []) as AttendanceQueryRow[];
+      const mappedData: StudentAttendanceRecord[] = rows.map((record) => ({
         id: record.id,
         date: record.date,
         status: record.status,
@@ -183,9 +208,9 @@ export const TeacherAttendance = () => {
         created_at: record.created_at,
         time: record.time,
         late_reason: record.late_reason,
-        student_id: record.student_id!,
-        student_name: (record.students as any)?.name || "Unknown Student",
-      })) || [];
+        student_id: record.student_id,
+        student_name: record.students?.name || "Unknown Student",
+      }));
 
       console.log(
         "[QueryFn student-attendance-records] Mapped attendance data:",
@@ -289,7 +314,7 @@ export const TeacherAttendance = () => {
           "Content-Type": "application/json",
         },
       });
-      let result: any = data;
+      let result: Record<string, unknown> | null = (data as Record<string, unknown> | null);
       let err: unknown = error as unknown;
 
       // Fallback to direct fetch
@@ -313,7 +338,11 @@ export const TeacherAttendance = () => {
         throw new Error(typeof err === "string" ? err : "Failed to send emails");
       }
     } catch (e) {
-      toast({ title: "Error", description: e instanceof Error ? e.message : String(e), variant: "destructive" });
+      toast({
+        title: "Error",
+        description: formatErrorMessage(e),
+        variant: "destructive",
+      });
     } finally {
       setIsSending(false);
       setConfirmOpen(false);
@@ -412,6 +441,12 @@ export const TeacherAttendance = () => {
         return (
           <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-200 dark:bg-blue-700 dark:text-blue-100">
             Excused
+          </Badge>
+        );
+      case "early_departure":
+        return (
+          <Badge className="bg-indigo-100 text-indigo-800 hover:bg-indigo-200 dark:bg-indigo-700 dark:text-indigo-100">
+            Early Departure
           </Badge>
         );
       default:
@@ -550,6 +585,7 @@ export const TeacherAttendance = () => {
                     <SelectItem value="absent">Absent</SelectItem>
                     <SelectItem value="late">Late</SelectItem>
                     <SelectItem value="excused">Excused</SelectItem>
+                    <SelectItem value="early_departure">Early Departure</SelectItem>
                   </SelectContent>
                 </Select>
                 <Button
@@ -594,6 +630,7 @@ export const TeacherAttendance = () => {
                     <SelectItem value="absent">Absent</SelectItem>
                     <SelectItem value="late">Late</SelectItem>
                     <SelectItem value="excused">Excused</SelectItem>
+                    <SelectItem value="early_departure">Early Departure</SelectItem>
                     <SelectItem value="not-marked">Not Marked</SelectItem>
                   </SelectContent>
                 </Select>
@@ -696,6 +733,9 @@ export const TeacherAttendance = () => {
                                   <SelectItem value="late">Late</SelectItem>
                                   <SelectItem value="excused">
                                     Excused
+                                  </SelectItem>
+                                  <SelectItem value="early_departure">
+                                    Early Departure
                                   </SelectItem>
                                 </SelectContent>
                               </Select>

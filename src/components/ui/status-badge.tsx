@@ -6,6 +6,7 @@ import {
   Check,
   Clock,
   Info,
+  LogOut,
   X,
 } from "lucide-react";
 import { cn } from "@/lib/utils.ts";
@@ -15,6 +16,8 @@ export type StatusType =
   | "present"
   | "absent"
   | "late"
+  | "excused"
+  | "early_departure"
   // Teacher/user statuses
   | "active"
   | "suspended"
@@ -78,6 +81,18 @@ export function StatusBadge({
         return (
           <Clock className={cn("h-3 w-3", size === "lg" ? "h-4 w-4" : "")} />
         );
+      case "excused":
+        return (
+          <CalendarCheck
+            className={cn("h-3 w-3", size === "lg" ? "h-4 w-4" : "")}
+          />
+        );
+      case "early_departure":
+        return (
+          <LogOut
+            className={cn("h-3 w-3", size === "lg" ? "h-4 w-4" : "")}
+          />
+        );
       case "active":
       case "good":
       case "completed":
@@ -132,6 +147,10 @@ export function StatusBadge({
       case "needsWork":
       case "skipped":
         return "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-800";
+      case "excused":
+        return "bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-800";
+      case "early_departure":
+        return "bg-indigo-50 text-indigo-700 border-indigo-200 dark:bg-indigo-900/20 dark:text-indigo-400 dark:border-indigo-800";
 
       case "info":
       case "pending":
@@ -155,6 +174,10 @@ export function StatusBadge({
         return "Absent";
       case "late":
         return "Late";
+      case "excused":
+        return "Excused";
+      case "early_departure":
+        return "Early Departure";
       case "active":
         return "Active";
       case "suspended":

@@ -644,6 +644,9 @@ export type Database = {
           city: string | null;
           province: string | null;
           postal_code: string | null;
+          status_start_date: string | null;
+          status_end_date: string | null;
+          status_notes: string | null;
         };
         Insert: {
           completed_juz?: number[] | null;
@@ -667,6 +670,9 @@ export type Database = {
           city?: string | null;
           province?: string | null;
           postal_code?: string | null;
+          status_start_date?: string | null;
+          status_end_date?: string | null;
+          status_notes?: string | null;
         };
         Update: {
           completed_juz?: number[] | null;
@@ -690,6 +696,9 @@ export type Database = {
           city?: string | null;
           province?: string | null;
           postal_code?: string | null;
+          status_start_date?: string | null;
+          status_end_date?: string | null;
+          status_notes?: string | null;
         };
         Relationships: [];
       };
@@ -879,7 +888,7 @@ export type Database = {
     };
     Functions: {};
     Enums: {
-      attendance_status: "present" | "absent" | "late";
+      attendance_status: "present" | "absent" | "late" | "excused" | "early_departure";
       mastery_level: "not_started" | "in_progress" | "memorized" | "mastered";
       quality_rating:
         | "excellent"
@@ -901,7 +910,7 @@ export type Database = {
         | "manage_roles"
         | "bulk_actions"
         | "manage_classes";
-      student_status: "active" | "inactive";
+      student_status: "active" | "inactive" | "vacation" | "hospitalized" | "suspended" | "graduated";
       user_role: "admin" | "teacher";
       lesson_type: "hifz" | "nazirah" | "qaida";
     };
@@ -1023,7 +1032,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      attendance_status: ["present", "absent", "late"],
+      attendance_status: ["present", "absent", "late", "excused", "early_departure"],
       mastery_level: ["not_started", "in_progress", "memorized", "mastered"],
       quality_rating: ["excellent", "good", "average", "needsWork", "horrible"],
       quarter_revised: [
@@ -1042,7 +1051,7 @@ export const Constants = {
         "bulk_actions",
         "manage_classes",
       ],
-      student_status: ["active", "inactive"],
+      student_status: ["active", "inactive", "vacation", "hospitalized", "suspended", "graduated"],
       user_role: ["admin", "teacher"],
     },
   },

@@ -13,6 +13,13 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card.tsx";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select.tsx";
 import { useAuth } from "@/hooks/use-auth.ts";
 import { Skeleton } from "@/components/ui/skeleton.tsx";
 import { useI18n } from "@/contexts/I18nContext.tsx";
@@ -24,10 +31,24 @@ interface Student {
   enrollment_date: string | null;
   guardian_name: string | null;
   guardian_contact: string | null;
-  status: "active" | "inactive";
+  guardian_email?: string | null;
+  status: "active" | "inactive" | "vacation" | "hospitalized" | "suspended" | "graduated";
   madrassah_id?: string;
   section?: string;
   medical_condition?: string | null;
+  gender?: string | null;
+  grade?: string | null;
+  health_card?: string | null;
+  permanent_code?: string | null;
+  street?: string | null;
+  city?: string | null;
+  province?: string | null;
+  postal_code?: string | null;
+  completed_juz?: number[];
+  current_juz?: number | null;
+  status_start_date?: string | null;
+  status_end_date?: string | null;
+  status_notes?: string | null;
 }
 
 interface StatCardProps {
@@ -68,6 +89,7 @@ const StatCard = ({ title, value, icon, description, isLoading, isAdmin }: StatC
 const Students = () => {
   const { t } = useI18n();
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedSection, setSelectedSection] = useState<string>("all");
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const { session } = useAuth();
@@ -93,7 +115,7 @@ const Students = () => {
         const { data: students, error } = await supabase
           .from("students")
           .select(
-            "id, name, date_of_birth, enrollment_date, guardian_name, guardian_contact, status, madrassah_id, section, medical_condition",
+            "id, name, date_of_birth, enrollment_date, guardian_name, guardian_contact, guardian_email, status, madrassah_id, section, medical_condition, gender, grade, health_card, permanent_code, street, city, province, postal_code, completed_juz, current_juz, status_start_date, status_end_date, status_notes",
           )
           .eq("madrassah_id", userData.madrassah_id);
 
@@ -120,7 +142,7 @@ const Students = () => {
         const { data: students, error: studentsError } = await supabase
           .from("students")
           .select(
-            "id, name, date_of_birth, enrollment_date, guardian_name, guardian_contact, status, madrassah_id, section, medical_condition",
+            "id, name, date_of_birth, enrollment_date, guardian_name, guardian_contact, guardian_email, status, madrassah_id, section, medical_condition, gender, grade, health_card, permanent_code, street, city, province, postal_code, completed_juz, current_juz, status_start_date, status_end_date, status_notes",
           )
           .in("id", studentIds);
         
@@ -140,10 +162,23 @@ const Students = () => {
   const activeStudents = students.filter((s) => s.status === "active").length;
   const inactiveStudents = totalStudents - activeStudents;
 
+  const uniqueSections = Array.from(new Set(students.map(s => s.section).filter(Boolean))).sort();
+
   const filteredStudents = students.filter(
-    (student) =>
-      student.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (student.guardian_name || "").toLowerCase().includes(searchQuery.toLowerCase())
+    (student) => {
+      const sectionMatch =
+        selectedSection === "all"
+          ? true
+          : selectedSection === "unassigned"
+          ? !student.section
+          : student.section === selectedSection;
+
+      const searchMatch =
+        student.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (student.guardian_name || "").toLowerCase().includes(searchQuery.toLowerCase());
+
+      return sectionMatch && searchMatch;
+    }
   );
 
   const handleEditStudent = (student: Student) => {
@@ -210,14 +245,32 @@ const Students = () => {
         >
           <CardTitle>{t("pages.students.allStudents")}</CardTitle>
           <CardDescription>{t("pages.students.allStudentsDesc")}</CardDescription>
-          <div className="relative pt-4">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder={t("pages.students.searchPlaceholder")}
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-8 w-full"
-            />
+          <div className="flex flex-col sm:flex-row gap-4 pt-4">
+            <div className="relative flex-1">
+              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder={t("pages.students.searchPlaceholder")}
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-8 w-full"
+              />
+            </div>
+            {isAdmin && uniqueSections.length > 0 && (
+              <Select value={selectedSection} onValueChange={setSelectedSection}>
+                <SelectTrigger className="w-full sm:w-[200px]">
+                  <SelectValue placeholder="Filter by section" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Sections</SelectItem>
+                  <SelectItem value="unassigned">No Section</SelectItem>
+                  {uniqueSections.map((section) => (
+                    <SelectItem key={section as string} value={section as string}>
+                      {section}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
           </div>
         </CardHeader>
         <CardContent>
