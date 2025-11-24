@@ -92,10 +92,8 @@ const Attendance = () => {
   });
 
   // Computations
-  const attendedStatuses = new Set(["present", "late", "excused"]);
+  const attendedStatuses = new Set(["present", "late", "excused", "early_departure"]);
   const attendedToday = todayRows.filter((r) => attendedStatuses.has(r.status?.toLowerCase?.() || "")).length;
-  const totalTodayRecords = todayRows.length;
-  const pendingCount = Math.max(0, activeStudentsCount - totalTodayRecords);
   const todayPct = activeStudentsCount > 0 ? Math.round((attendedToday / activeStudentsCount) * 1000) / 10 : 0;
 
   const weekAttended = weekRows.filter((r) => attendedStatuses.has(r.status?.toLowerCase?.() || "")).length;

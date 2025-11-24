@@ -139,6 +139,10 @@ function AttendanceStatusBadge({ status }: { status: string }) {
         return "bg-red-100 text-red-800";
       case "late":
         return "bg-amber-100 text-amber-800";
+      case "excused":
+        return "bg-blue-100 text-blue-800";
+      case "early_departure":
+        return "bg-indigo-100 text-indigo-800";
       default:
         return "bg-gray-100 text-gray-800";
     }
@@ -148,7 +152,9 @@ function AttendanceStatusBadge({ status }: { status: string }) {
     <span
       className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusStyles()}`}
     >
-      {status.charAt(0).toUpperCase() + status.slice(1)}
+      {status === "early_departure"
+        ? "Early Departure"
+        : status.charAt(0).toUpperCase() + status.slice(1)}
     </span>
   );
 }

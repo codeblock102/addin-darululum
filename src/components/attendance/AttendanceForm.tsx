@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Form } from "@/components/ui/form.tsx";
 import { useToast } from "@/hooks/use-toast.ts";
 import { DateSelector } from "./form/DateSelector.tsx";
@@ -9,6 +9,7 @@ import { BulkActions } from "./form/BulkActions.tsx";
 import { useAuth } from "@/hooks/use-auth.ts";
 import { supabase, SUPABASE_PUBLISHABLE_KEY, SUPABASE_URL } from "@/integrations/supabase/client.ts";
 import { useQuery } from "@tanstack/react-query";
+import { useRBAC } from "@/hooks/useRBAC.ts";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select.tsx";
 import {
   Card,
@@ -28,6 +29,9 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog.tsx";
 import { useI18n } from "@/contexts/I18nContext.tsx";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert.tsx";
+import { LogOut } from "lucide-react";
+import { formatErrorMessage } from "@/utils/formatErrorMessage.ts";
 
 // =================================================================================
 // STEP 1: COMPONENT DEFINITION & STATE MANAGEMENT
@@ -37,11 +41,14 @@ export const AttendanceForm = () => {
   const { session } = useAuth(); // Authentication context to get the current user.
   const { toast } = useToast(); // Hook for displaying toast notifications.
   const { t } = useI18n();
+  const { isAdmin, teacherId } = useRBAC();
 
   // --- Component State ---
   const [selectedStudents, setSelectedStudents] = useState<Set<string>>(new Set()); // Tracks which students are selected via checkboxes.
   const [classId, setClassId] = useState<string>("all"); // Holds the ID of the class being filtered. 'all' means no filter.
   const [pendingStatus, setPendingStatus] = useState<string>(""); // Stores the status selected in "Bulk Actions" before it's applied.
+  const [sectionFilter, setSectionFilter] = useState<string>("all");
+  const [availableSections, setAvailableSections] = useState<string[]>([]);
   
   // State related to the email sending process.
   const [isSending, setIsSending] = useState(false); // Used to show loading state on buttons during email sending.
@@ -59,13 +66,67 @@ export const AttendanceForm = () => {
   // Custom hook to manage the main form's state and submission logic.
   // This hook encapsulates react-hook-form setup.
   const { form, isProcessing } = useAttendanceSubmit({
-    onError: (error: Error) =>
+    onError: (error) => {
       toast({
         title: t("common.error", "Error"),
-        description: error.message,
+        description: formatErrorMessage(error),
         variant: "destructive",
-      }),
+      });
+    },
   });
+
+  // =================================================================================
+  // STEP 2a: ADMIN SECTION FILTER SETUP
+  // =================================================================================
+
+  // Load available sections for the current admin's madrassah
+  useEffect(() => {
+    const loadAdminSections = async () => {
+      try {
+        if (!isAdmin || !teacherId) return;
+
+        const { data: prof } = await supabase
+          .from("profiles")
+          .select("madrassah_id")
+          .eq("id", teacherId)
+          .maybeSingle();
+
+        const madrassahId = (prof && "madrassah_id" in prof
+          ? (prof.madrassah_id as string | null | undefined)
+          : null);
+        if (!madrassahId) return;
+
+        const { data: mad } = await supabase
+          .from("madrassahs")
+          .select("section")
+          .eq("id", madrassahId)
+          .maybeSingle();
+
+        const rawSections =
+          mad && "section" in mad ? (mad.section as unknown) : null;
+        const sectionsArr = Array.isArray(rawSections) ? rawSections : [];
+
+        const uniqueSections = Array.from(
+          new Set(
+            sectionsArr.filter(
+              (s) => typeof s === "string" && s.trim().length > 0,
+            ),
+          ),
+        );
+
+        setAvailableSections(uniqueSections);
+      } catch (_e) {
+        // Non-fatal; leave sections empty on error
+      }
+    };
+
+    void loadAdminSections();
+  }, [isAdmin, teacherId]);
+
+  // Clear any selected students when the filters change
+  useEffect(() => {
+    setSelectedStudents(new Set());
+  }, [classId, sectionFilter]);
 
   // =================================================================================
   // STEP 3: EVENT HANDLERS
@@ -141,7 +202,7 @@ export const AttendanceForm = () => {
       console.log("%c--------------------------", 'color: blue; font-weight: bold;');
 
     } catch (e) {
-      const message = e instanceof Error ? e.message : String(e);
+      const message = formatErrorMessage(e);
       console.error("[Attendance Queue] Error fetching debug info:", message);
     }
   };
@@ -233,8 +294,12 @@ export const AttendanceForm = () => {
       setPendingStatus("");
 
     } catch (e) {
-      const message = e instanceof Error ? e.message : String(e);
-      toast({ title: t("common.error", "Error"), description: message || t("pages.attendance.email.failed", "Failed to trigger emails"), variant: "destructive" });
+      const message = formatErrorMessage(e);
+      toast({
+        title: t("common.error", "Error"),
+        description: message || t("pages.attendance.email.failed", "Failed to trigger emails"),
+        variant: "destructive",
+      });
     }
   };
 
@@ -348,22 +413,42 @@ export const AttendanceForm = () => {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            {/* Class Filter Dropdown */}
-            {teacherClasses && teacherClasses.length > 0 && (
-              <div className="mb-4">
-                <Select value={classId} onValueChange={setClassId}>
-                  <SelectTrigger className="w-[280px]">
-                    <SelectValue placeholder={t("pages.attendance.form.students.filterPlaceholder", "Filter by class (optional)")} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">{t("pages.attendance.form.students.allClasses", "All my classes")}</SelectItem>
-                    {teacherClasses.map((c: { id: string; name?: string }) => (
-                      <SelectItem key={c.id} value={c.id}>{c.name || c.id}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+            {/* Class & Section Filters */}
+            {(teacherClasses && teacherClasses.length > 0) || (isAdmin && availableSections.length > 0) ? (
+              <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center">
+                {teacherClasses && teacherClasses.length > 0 && (
+                  <Select value={classId} onValueChange={setClassId}>
+                    <SelectTrigger className="w-[260px] sm:w-[280px]">
+                      <SelectValue placeholder={t("pages.attendance.form.students.filterPlaceholder", "Filter by class (optional)")} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">{t("pages.attendance.form.students.allClasses", "All my classes")}</SelectItem>
+                      {teacherClasses.map((c: { id: string; name?: string }) => (
+                        <SelectItem key={c.id} value={c.id}>{c.name || c.id}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+
+                {isAdmin && availableSections.length > 0 && (
+                  <Select value={sectionFilter} onValueChange={setSectionFilter}>
+                    <SelectTrigger className="w-[260px] sm:w-[280px]">
+                      <SelectValue placeholder={t("pages.attendance.form.students.sectionFilterPlaceholder", "Filter by section (optional)")} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">
+                        {t("pages.attendance.form.students.allSections", "All sections")}
+                      </SelectItem>
+                      {availableSections.map((sec) => (
+                        <SelectItem key={sec} value={sec}>
+                          {sec}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
               </div>
-            )}
+            ) : null}
             {/* Student Grid */}
             <StudentGrid
               user={session?.user ?? null}
@@ -372,6 +457,7 @@ export const AttendanceForm = () => {
               onSelectAll={handleSelectAll}
               classId={classId !== "all" ? classId : undefined}
               stagedStatus={pendingStatus || undefined}
+              sectionFilter={isAdmin && sectionFilter !== "all" ? sectionFilter : undefined}
               dateYmd={(function() {
                 const d = form.getValues().date as Date | undefined;
                 const dd = d ? new Date(d) : new Date();
@@ -391,6 +477,16 @@ export const AttendanceForm = () => {
               </CardDescription>
             </CardHeader>
             <CardContent>
+              <Alert className="mb-4 border-indigo-200 bg-indigo-50/80 text-indigo-900">
+                <LogOut className="h-4 w-4 text-indigo-600" />
+                <AlertTitle>{t("pages.attendance.form.earlyDepartureTitle", "Early departures")}</AlertTitle>
+                <AlertDescription>
+                  {t(
+                    "pages.attendance.form.earlyDepartureDesc",
+                    "Use the Early Departure option when a student leaves before dismissal. Set the time selector above to the actual pick-up time so parents receive the correct information."
+                  )}
+                </AlertDescription>
+              </Alert>
               <BulkActions
                 form={form}
                 selectedStudents={selectedStudents}

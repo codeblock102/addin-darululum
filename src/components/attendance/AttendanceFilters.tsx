@@ -53,6 +53,7 @@ export function AttendanceFilters({
             <SelectItem value="absent">Absent</SelectItem>
             <SelectItem value="late">Late</SelectItem>
             <SelectItem value="excused">Excused</SelectItem>
+            <SelectItem value="early_departure">Early Departure</SelectItem>
           </SelectContent>
         </Select>
       </div>
