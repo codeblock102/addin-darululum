@@ -88,17 +88,17 @@ export function AttendanceDataTable(
           <TableBody>
             {attendanceRecords.map((record) => (
               <TableRow key={record.id} className=" transition-colors">
-                <TableCell className="text-gray-900 dark:text-gray-200 font-medium">
+                <TableCell className="text-gray-900  font-medium">
                   {format(parseISO(record.date), "PPP")}
                 </TableCell>
-                <TableCell className="text-gray-900 dark:text-gray-200 flex items-center gap-2">
+                <TableCell className="text-gray-900 flex items-center gap-2">
                   <Clock className="h-4 w-4 text-black" />
                   {formatTime(record.time)}
                 </TableCell>
-                <TableCell className="text-gray-900 dark:text-gray-200">
+                <TableCell className="text-gray-900">
                   {record.students?.name || "Unknown Student"}
                 </TableCell>
-                <TableCell className="text-gray-900 dark:text-gray-200">
+                <TableCell className="text-gray-900">
                   {record.classes?.name || "N/A"}
                 </TableCell>
                 <TableCell>
