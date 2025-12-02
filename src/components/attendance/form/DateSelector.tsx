@@ -46,7 +46,7 @@ export function DateSelector({ form }: DateSelectorProps) {
                 >
                   {field.value
                     ? (
-                      <span className="text-slate-900 dark:text-slate-100">
+                      <span className="text-slate-900 ">
                         {format(field.value, "PPP")}
                       </span>
                     )
