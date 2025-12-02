@@ -560,7 +560,6 @@ export default function TeacherMessages() {
       // If recipient identifiers are emails, send via edge function; else use communications table
       const emailRecipients = recipients.filter((id) => id.includes("@"));
       if (emailRecipients.length > 0) {
-        // Try standard invoke first
         // Build sender display name and templated subject/body
         let senderName = (session?.user?.user_metadata?.name as string) || "Teacher";
         try {
@@ -573,6 +572,51 @@ export default function TeacherMessages() {
         const notifySubject = `You have received a message from ${senderName}`;
         const notifyBody = `${senderName} wrote:\n\n${messageText.trim()}\n\nPlease sign in to view and reply.`;
 
+        // Look up parent UUIDs from email addresses to save messages to database
+        try {
+          type ParentRow = { id: string; email: string | null };
+          const { data: parentRows } = await (supabase as unknown as {
+            from: (t: string) => { select: (s: string) => { in: (c: string, vals: string[]) => Promise<{ data: ParentRow[] | null }> } };
+          }).from("parents").select("id, email").in("email", emailRecipients);
+          
+          const resolvedParentIds = ((parentRows || []) as ParentRow[])
+            .map((p) => p.id)
+            .filter(Boolean);
+          
+          // Save messages to communications table for resolved parent UUIDs
+          if (resolvedParentIds.length > 0) {
+            const subj = subject.trim();
+            const rows = resolvedParentIds.map((rid) => ({ 
+              sender_id: teacherId, 
+              recipient_id: rid, 
+              message: messageText.trim(), 
+              subject: subj, 
+              parent_message_id: replyParentId, 
+              read: false, 
+              message_type: "direct", 
+              category: "general" 
+            }));
+            const { error: dbError } = await supabase.from("communications").insert(rows);
+            if (dbError) {
+              console.warn("[TeacherMessages] Failed to save messages to database:", dbError);
+              // Continue with email sending even if database save fails
+            }
+          }
+          
+          // Log warning for emails without corresponding parent records
+          const resolvedEmails = new Set(((parentRows || []) as ParentRow[])
+            .map((p) => p.email)
+            .filter((e): e is string => !!e && e.includes("@")));
+          const unresolvedEmails = emailRecipients.filter((email) => !resolvedEmails.has(email));
+          if (unresolvedEmails.length > 0) {
+            console.warn("[TeacherMessages] Some email addresses don't have corresponding parent records:", unresolvedEmails);
+          }
+        } catch (e) {
+          console.warn("[TeacherMessages] Error looking up parent UUIDs:", e);
+          // Continue with email sending even if lookup fails
+        }
+
+        // Send email notifications
         const { data: _data, error } = await supabase.functions.invoke("send-teacher-message", {
           body: {
             recipients: emailRecipients,
