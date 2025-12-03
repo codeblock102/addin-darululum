@@ -28,6 +28,9 @@ export default function TeacherMessages() {
   const [replyParentId, setReplyParentId] = useState<string | null>(null);
   const [openThreadPeerId, setOpenThreadPeerId] = useState<string | null>(null);
   const [filterParentId, setFilterParentId] = useState<string>("all");
+  const [threadReplyText, setThreadReplyText] = useState("");
+  const [threadReplySubject, setThreadReplySubject] = useState("");
+  const threadReplyRef = useRef<HTMLTextAreaElement | null>(null);
   // Removed student filter per request
 
   // Fetch recipients' student set based on role:
@@ -498,6 +501,96 @@ export default function TeacherMessages() {
       // ignore
     } finally {
       setOpenThreadPeerId(peerId);
+      setThreadReplyText("");
+      setThreadReplySubject("");
+    }
+  };
+
+  // Pre-fill thread reply subject when thread messages load
+  useEffect(() => {
+    if (threadMessages && threadMessages.length > 0 && openThreadPeerId) {
+      const lastMessage = threadMessages[threadMessages.length - 1];
+      if (lastMessage.subject && !threadReplySubject) {
+        const currentSubject = lastMessage.subject.trim();
+        setThreadReplySubject(currentSubject.toUpperCase().startsWith("RE:") ? currentSubject : `RE: ${currentSubject}`);
+      } else if (!lastMessage.subject && !threadReplySubject) {
+        setThreadReplySubject("RE:");
+      }
+    }
+  }, [threadMessages, openThreadPeerId]);
+
+  const handleThreadReply = async () => {
+    if (!openThreadPeerId || !threadReplyText.trim()) return;
+    try {
+      setSending(true);
+      // Get the last message in the thread to use as parent_message_id
+      const lastMessageId = threadMessages && threadMessages.length > 0 
+        ? threadMessages[threadMessages.length - 1].id 
+        : null;
+      
+      const subj = threadReplySubject.trim() || null;
+      const { error } = await supabase.from("communications").insert({
+        sender_id: teacherId,
+        recipient_id: openThreadPeerId,
+        message: threadReplyText.trim(),
+        subject: subj,
+        parent_message_id: lastMessageId,
+        read: false,
+        message_type: "direct",
+        category: "general",
+      });
+      if (error) throw error;
+
+      // Try to email-notify the parent recipient
+      try {
+        let senderName = (session?.user?.user_metadata?.name as string) || "Teacher";
+        try {
+          if (!session?.user?.user_metadata?.name) {
+            const { data: prof } = await supabase.from("profiles").select("name").eq("id", teacherId).maybeSingle();
+            const profName = (prof as { name?: string } | null)?.name;
+            if (profName) senderName = profName;
+          }
+        } catch { /* ignore */ }
+        const notifySubject = `You have received a message from ${senderName}`;
+        const notifyBody = `${senderName} wrote:\n\n${threadReplyText.trim()}\n\nPlease sign in to view and reply.`;
+        type ParentRow = { id: string; email: string | null };
+        const { data: parentRows } = await (supabase as unknown as {
+          from: (t: string) => { select: (s: string) => { eq: (c: string, v: string) => Promise<{ data: ParentRow[] | null }> } };
+        }).from("parents").select("id, email").eq("id", openThreadPeerId);
+        const emailTargets = Array.from(new Set(((parentRows || []) as ParentRow[])
+          .map((p) => p.email)
+          .filter((e): e is string => !!e && e.includes("@"))));
+        if (emailTargets.length > 0) {
+          const { error: invErr } = await supabase.functions.invoke("send-teacher-message", { body: { recipients: emailTargets, subject: notifySubject, body: notifyBody, fromName: senderName, senderId: teacherId } });
+          if (invErr) {
+            const { data: sessionData } = await supabase.auth.getSession();
+            const accessToken = sessionData.session?.access_token || "";
+            await fetch(`${SUPABASE_URL}/functions/v1/send-teacher-message`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                apikey: SUPABASE_PUBLISHABLE_KEY,
+                Authorization: accessToken ? `Bearer ${accessToken}` : "",
+              },
+              body: JSON.stringify({ recipients: emailTargets, subject: notifySubject, body: notifyBody, fromName: senderName, senderId: teacherId }),
+            });
+          }
+        }
+      } catch { /* ignore */ }
+
+      setThreadReplyText("");
+      setThreadReplySubject("");
+      toast({ title: "Reply sent", description: "Your reply has been sent" });
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["messages-thread", teacherId, openThreadPeerId] }),
+        queryClient.invalidateQueries({ queryKey: ["teacher-sent", teacherId] }),
+        queryClient.invalidateQueries({ queryKey: ["teacher-inbox", teacherId] }),
+      ]);
+    } catch (e) {
+      console.error("[TeacherMessages] thread reply error:", e);
+      toast({ title: "Failed to send reply", description: e instanceof Error ? e.message : String(e), variant: "destructive" });
+    } finally {
+      setSending(false);
     }
   };
   const handleSend = async () => {
@@ -707,7 +800,6 @@ export default function TeacherMessages() {
           }
           
           // Log warning for emails without corresponding parent records
-          const resolvedEmails = Array.from(emailToParentId.keys());
           const finalUnresolvedEmails = emailRecipients.filter((email) => !emailToParentId.has(email.toLowerCase()));
           if (finalUnresolvedEmails.length > 0) {
             console.warn("[TeacherMessages] Some email addresses don't have corresponding parent records in database:", finalUnresolvedEmails);
@@ -987,12 +1079,18 @@ export default function TeacherMessages() {
           </CardContent>
         </Card>
       </div>
-      <Dialog open={!!openThreadPeerId} onOpenChange={(v) => !v && setOpenThreadPeerId(null)}>
-        <DialogContent className="max-w-2xl">
+      <Dialog open={!!openThreadPeerId} onOpenChange={(v) => {
+        if (!v) {
+          setOpenThreadPeerId(null);
+          setThreadReplyText("");
+          setThreadReplySubject("");
+        }
+      }}>
+        <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col">
           <DialogHeader>
             <DialogTitle>Conversation</DialogTitle>
           </DialogHeader>
-          <div className="space-y-3 max-h-[60vh] overflow-auto">
+          <div className="space-y-3 flex-1 overflow-auto min-h-0 mb-4">
             {(threadMessages || []).map((tm) => (
               <div key={tm.id} className="p-3 border rounded-md text-sm">
                 <div className="flex items-center justify-between gap-2">
@@ -1004,6 +1102,35 @@ export default function TeacherMessages() {
               </div>
             ))}
             {(threadMessages || []).length === 0 && <div className="text-center text-muted-foreground py-6">No messages</div>}
+          </div>
+          <div className="border-t pt-4 space-y-3">
+            <div className="space-y-2">
+              <Label>Subject</Label>
+              <Input 
+                value={threadReplySubject} 
+                onChange={(e) => setThreadReplySubject(e.target.value)} 
+                placeholder="Subject (optional)" 
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Reply</Label>
+              <Textarea 
+                ref={threadReplyRef}
+                rows={4} 
+                value={threadReplyText} 
+                onChange={(e) => setThreadReplyText(e.target.value)} 
+                placeholder="Type your reply..." 
+              />
+            </div>
+            <div className="flex justify-end">
+              <Button 
+                onClick={handleThreadReply} 
+                disabled={!threadReplyText.trim() || sending || !openThreadPeerId}
+              >
+                {sending ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Send className="h-4 w-4 mr-2" />}
+                {sending ? "Sending" : "Send Reply"}
+              </Button>
+            </div>
           </div>
         </DialogContent>
       </Dialog>
