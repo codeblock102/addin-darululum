@@ -573,20 +573,117 @@ export default function TeacherMessages() {
         const notifyBody = `${senderName} wrote:\n\n${messageText.trim()}\n\nPlease sign in to view and reply.`;
 
         // Look up parent UUIDs from email addresses to save messages to database
+        // Try multiple sources: parents table, profiles table, and via students
+        const resolvedParentIds = new Set<string>();
+        const emailToParentId = new Map<string, string>();
+        
         try {
           type ParentRow = { id: string; email: string | null };
+          
+          // Strategy 1: Check parents table by email
           const { data: parentRows } = await (supabase as unknown as {
             from: (t: string) => { select: (s: string) => { in: (c: string, vals: string[]) => Promise<{ data: ParentRow[] | null }> } };
           }).from("parents").select("id, email").in("email", emailRecipients);
           
-          const resolvedParentIds = ((parentRows || []) as ParentRow[])
-            .map((p) => p.id)
-            .filter(Boolean);
+          if (parentRows) {
+            for (const p of parentRows) {
+              if (p.id && p.email) {
+                resolvedParentIds.add(p.id);
+                emailToParentId.set(p.email.toLowerCase(), p.id);
+              }
+            }
+          }
+          
+          // Strategy 2: Check profiles table by email where role='parent'
+          const unresolvedEmails = emailRecipients.filter((email) => !emailToParentId.has(email.toLowerCase()));
+          if (unresolvedEmails.length > 0) {
+            try {
+              const { data: profileRows } = await supabase
+                .from("profiles")
+                .select("id, email")
+                .in("email", unresolvedEmails)
+                .eq("role", "parent");
+              
+              if (profileRows) {
+                for (const prof of profileRows as Array<{ id: string; email?: string | null }>) {
+                  if (prof.id && prof.email) {
+                    resolvedParentIds.add(prof.id);
+                    emailToParentId.set(prof.email.toLowerCase(), prof.id);
+                  }
+                }
+              }
+            } catch (profileErr) {
+              console.warn("[TeacherMessages] Error checking profiles table:", profileErr);
+            }
+          }
+          
+          // Strategy 3: Find via students - find students with matching guardian_email, then find parents linked to those students
+          const stillUnresolvedEmails = emailRecipients.filter((email) => !emailToParentId.has(email.toLowerCase()));
+          if (stillUnresolvedEmails.length > 0 && (students || []).length > 0) {
+            try {
+              // Get student IDs that have these emails as guardian emails
+              const studentIds = ((students || []) as Array<{ id: string }>).map((s) => s.id);
+              if (studentIds.length > 0) {
+                const { data: studentRows } = await supabase
+                  .from("students")
+                  .select("id, guardian_email, secondary_guardian_email")
+                  .in("id", studentIds);
+                
+                if (studentRows) {
+                  const emailToStudentIds = new Map<string, string[]>();
+                  for (const student of studentRows as Array<{ id: string; guardian_email?: string | null; secondary_guardian_email?: string | null }>) {
+                    const emails = [student.guardian_email, student.secondary_guardian_email]
+                      .filter(Boolean)
+                      .map((e) => e?.toLowerCase().trim())
+                      .filter((e): e is string => !!e && e.includes("@"));
+                    
+                    for (const email of emails) {
+                      if (stillUnresolvedEmails.some((ue) => ue.toLowerCase() === email)) {
+                        if (!emailToStudentIds.has(email)) {
+                          emailToStudentIds.set(email, []);
+                        }
+                        emailToStudentIds.get(email)!.push(student.id);
+                      }
+                    }
+                  }
+                  
+                  // Now find parents linked to these students
+                  const studentIdsToCheck = Array.from(new Set(Array.from(emailToStudentIds.values()).flat()));
+                  if (studentIdsToCheck.length > 0) {
+                    // Check parents table for parents with these students in student_ids
+                    const { data: parentsByStudents } = await (supabase as unknown as {
+                      from: (t: string) => { 
+                        select: (s: string) => { 
+                          overlaps: (c: string, vals: string[]) => Promise<{ data: Array<{ id: string; email?: string | null; student_ids?: string[] | null }> | null }> 
+                        } 
+                      };
+                    }).from("parents").select("id, email, student_ids").overlaps("student_ids", studentIdsToCheck);
+                    
+                    if (parentsByStudents) {
+                      for (const parent of parentsByStudents as Array<{ id: string; email?: string | null; student_ids?: string[] | null }>) {
+                        if (parent.id && parent.email) {
+                          const parentEmailLower = parent.email.toLowerCase();
+                          // Check if this parent's email matches any unresolved email
+                          if (stillUnresolvedEmails.some((ue) => ue.toLowerCase() === parentEmailLower)) {
+                            resolvedParentIds.add(parent.id);
+                            emailToParentId.set(parentEmailLower, parent.id);
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            } catch (studentErr) {
+              console.warn("[TeacherMessages] Error checking via students:", studentErr);
+            }
+          }
           
           // Save messages to communications table for resolved parent UUIDs
-          if (resolvedParentIds.length > 0) {
+          const resolvedIdsArray = Array.from(resolvedParentIds);
+          if (resolvedIdsArray.length > 0) {
             const subj = subject.trim();
-            const rows = resolvedParentIds.map((rid) => ({ 
+            const rows = resolvedIdsArray.map((rid) => ({ 
               sender_id: teacherId, 
               recipient_id: rid, 
               message: messageText.trim(), 
@@ -598,22 +695,38 @@ export default function TeacherMessages() {
             }));
             const { error: dbError } = await supabase.from("communications").insert(rows);
             if (dbError) {
-              console.warn("[TeacherMessages] Failed to save messages to database:", dbError);
-              // Continue with email sending even if database save fails
+              console.error("[TeacherMessages] Failed to save messages to database:", dbError);
+              toast({ 
+                title: "Warning", 
+                description: "Message sent via email but failed to save to database. Some messages may not appear in the app.", 
+                variant: "destructive" 
+              });
+            } else {
+              console.log(`[TeacherMessages] Successfully saved ${resolvedIdsArray.length} message(s) to database`);
             }
           }
           
           // Log warning for emails without corresponding parent records
-          const resolvedEmails = new Set(((parentRows || []) as ParentRow[])
-            .map((p) => p.email)
-            .filter((e): e is string => !!e && e.includes("@")));
-          const unresolvedEmails = emailRecipients.filter((email) => !resolvedEmails.has(email));
-          if (unresolvedEmails.length > 0) {
-            console.warn("[TeacherMessages] Some email addresses don't have corresponding parent records:", unresolvedEmails);
+          const resolvedEmails = Array.from(emailToParentId.keys());
+          const finalUnresolvedEmails = emailRecipients.filter((email) => !emailToParentId.has(email.toLowerCase()));
+          if (finalUnresolvedEmails.length > 0) {
+            console.warn("[TeacherMessages] Some email addresses don't have corresponding parent records in database:", finalUnresolvedEmails);
+            // Still send email, but warn user that message won't appear in app
+            if (resolvedIdsArray.length === 0) {
+              toast({ 
+                title: "Warning", 
+                description: "Message sent via email, but parent records not found in database. Message may not appear in the app.", 
+                variant: "destructive" 
+              });
+            }
           }
         } catch (e) {
-          console.warn("[TeacherMessages] Error looking up parent UUIDs:", e);
-          // Continue with email sending even if lookup fails
+          console.error("[TeacherMessages] Error looking up parent UUIDs:", e);
+          toast({ 
+            title: "Warning", 
+            description: "Message sent via email, but failed to save to database. Message may not appear in the app.", 
+            variant: "destructive" 
+          });
         }
 
         // Send email notifications
