@@ -19,6 +19,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select.tsx";
+import { Button } from "@/components/ui/button.tsx";
+import { Calendar } from "@/components/ui/calendar.tsx";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover.tsx";
+import { CalendarIcon } from "lucide-react";
+import { format } from "date-fns";
+import { cn } from "@/lib/utils.ts";
+import { useRBAC } from "@/hooks/useRBAC.ts";
 
 interface AttendanceRecord {
   id: string;
@@ -33,8 +44,11 @@ interface AttendanceRecord {
 }
 
 export function AttendanceTable() {
+  const { isAdmin } = useRBAC();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedSection, setSelectedSection] = useState<string>("all");
+  const [dateFilter, setDateFilter] = useState<Date | null>(null);
+  const [selectedStatus, setSelectedStatus] = useState<string>("all");
 
   const { data: attendanceRecords, isLoading } = useQuery<AttendanceRecord[], Error>({
     queryKey: ["attendance-records"],
@@ -80,7 +94,19 @@ export function AttendanceTable() {
             ? !record.students?.section
             : record.students?.section === selectedSection;
 
-        return matchesSearch && matchesSection;
+        const matchesDate = !dateFilter || (() => {
+          // Compare dates as strings to avoid timezone issues
+          // record.date is already in "YYYY-MM-DD" format from the database
+          const filterDateStr = format(dateFilter, "yyyy-MM-dd");
+          return record.date === filterDateStr;
+        })();
+
+        const matchesStatus = 
+          selectedStatus === "all" 
+            ? true 
+            : record.status === selectedStatus;
+
+        return matchesSearch && matchesSection && matchesDate && matchesStatus;
       }
     ) || [];
 
@@ -91,9 +117,11 @@ export function AttendanceTable() {
   const resetFilters = () => {
     setSearchQuery("");
     setSelectedSection("all");
+    setDateFilter(null);
+    setSelectedStatus("all");
   };
   
-  const hasFilters = searchQuery.length > 0 || selectedSection !== "all";
+  const hasFilters = searchQuery.length > 0 || selectedSection !== "all" || dateFilter !== null || selectedStatus !== "all";
 
   return (
     <Card>
@@ -122,6 +150,52 @@ export function AttendanceTable() {
                 </SelectContent>
               </Select>
             )}
+            <Select value={selectedStatus} onValueChange={setSelectedStatus}>
+              <SelectTrigger className="w-full sm:w-[180px]">
+                <SelectValue placeholder="Filter by status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Statuses</SelectItem>
+                <SelectItem value="present">Present</SelectItem>
+                <SelectItem value="absent">Absent</SelectItem>
+                <SelectItem value="late">Late</SelectItem>
+                <SelectItem value="excused">Excused</SelectItem>
+                <SelectItem value="early_departure">Early Departure</SelectItem>
+              </SelectContent>
+            </Select>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  className={cn(
+                    "w-full sm:w-[180px] justify-start text-left font-normal bg-white text-black border-gray-300 hover:bg-gray-50",
+                    !dateFilter && "text-muted-foreground"
+                  )}
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {dateFilter ? format(dateFilter, "PPP") : "Filter by date"}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                  mode="single"
+                  selected={dateFilter ?? undefined}
+                  onSelect={(date) => setDateFilter(date ?? null)}
+                  initialFocus
+                />
+                {dateFilter && (
+                  <div className="p-3 border-t">
+                    <Button
+                      variant="ghost"
+                      className="w-full justify-center"
+                      onClick={() => setDateFilter(null)}
+                    >
+                      Clear Date
+                    </Button>
+                  </div>
+                )}
+              </PopoverContent>
+            </Popover>
             <SearchInput
               value={searchQuery}
               onChange={handleSearchChange}
@@ -139,7 +213,7 @@ export function AttendanceTable() {
             <Skeleton className="h-12 w-full" />
           </div>
         ) : filteredRecords.length > 0 ? (
-          <AttendanceDataTable attendanceRecords={filteredRecords} />
+          <AttendanceDataTable attendanceRecords={filteredRecords} isAdmin={isAdmin} />
         ) : (
           <div className="text-center py-12">
             <AttendanceEmptyState hasFilters={hasFilters} resetFilters={resetFilters} />
