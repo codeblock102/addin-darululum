@@ -2,7 +2,7 @@ import { MyStudents } from "../MyStudents.tsx";
 import { TeacherDhorBook } from "../TeacherDhorBook.tsx";
 import { TeacherAttendance } from "../TeacherAttendance.tsx";
 import { TeacherPerformance } from "./TeacherPerformance.tsx";
-import { TeacherMessagesEnhanced } from "../messaging/TeacherMessagesEnhanced.tsx";
+import TeacherMessages from "@/pages/TeacherMessages.tsx";
 import { DashboardOverview } from "./DashboardOverview.tsx";
 import { TeacherAssignments } from "../TeacherAssignments.tsx";
 import { useRBAC } from "@/hooks/useRBAC.ts";
@@ -29,12 +29,7 @@ export const DashboardContent = (
     case "performance":
       return <TeacherPerformance teacherId={teacherId} />;
     case "messages":
-      return (
-        <TeacherMessagesEnhanced
-          teacherId={teacherId}
-          teacherName={teacherName || ""}
-        />
-      );
+      return <TeacherMessages />;
     case "assignments":
       // Assignments by capability or admin
       return isAdmin || hasCapability("assignments_access") ? <TeacherAssignments teacherId={teacherId} /> : <DashboardOverview teacherId={teacherId} isAdmin={isAdmin} />;
