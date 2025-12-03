@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState, useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase, SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY } from "@/integrations/supabase/client.ts";
 import { useToast } from "@/components/ui/use-toast.ts";
@@ -36,6 +36,9 @@ export default function ParentMessages() {
   const [subject, setSubject] = useState<string>("");
   const [replyParentId, setReplyParentId] = useState<string | null>(null);
   const [filterTeacherId, setFilterTeacherId] = useState<string>("all");
+  const [threadReplyText, setThreadReplyText] = useState("");
+  const [threadReplySubject, setThreadReplySubject] = useState("");
+  const threadReplyRef = useRef<HTMLTextAreaElement | null>(null);
 
   // Build teacher recipients for this parent's children
   const { data: teacherRecipients, isLoading: recipientsLoading } = useQuery<Recipient[]>({
@@ -100,26 +103,30 @@ export default function ParentMessages() {
       const teacherIds = Array.from(new Set(classList.flatMap((c) => (c.teacher_ids || []) as string[])));
       if (teacherIds.length === 0) return [] as Recipient[];
 
-      // 4) Resolve teacher names
+      // 4) Resolve teacher names and subjects
       const { data: profiles, error: profErr } = await supabase
         .from("profiles")
-        .select("id, name")
+        .select("id, name, subject")
         .in("id", teacherIds);
       if (profErr) throw profErr;
-      const teacherNameById = new Map(((profiles || []) as Array<{ id: string; name: string | null }>).map((p) => [p.id, p.name || "Teacher"]));
+      const teacherInfoById = new Map(
+        ((profiles || []) as Array<{ id: string; name: string | null; subject: string | null }>).map((p) => [
+          p.id,
+          { name: p.name || "Teacher", subject: p.subject || "General" },
+        ])
+      );
 
-      // Build recipients as "Teacher Name - Class Name" with composite id teacherId::classId for uniqueness
+      // Build recipients as "Teacher Name - Subject" with teacherId as id (deduplicated by teacher)
       const recipsMap = new Map<string, Recipient>();
-      for (const c of classList) {
-        const classId = c.id;
-        const className = (c.name || "Class").trim();
-        const tIds = Array.from(new Set((c.teacher_ids || []) as string[]));
-        for (const tid of tIds) {
-          const tName = (teacherNameById.get(tid) || "Teacher").trim();
-          const label = `${tName} - ${className}`;
-          const id = `${tid}::${classId}`;
-          if (!recipsMap.has(id)) {
-            recipsMap.set(id, { id, name: label, teacherId: tid, classId });
+      for (const tid of teacherIds) {
+        const teacherInfo = teacherInfoById.get(tid);
+        if (teacherInfo) {
+          const tName = teacherInfo.name.trim();
+          const tSubject = teacherInfo.subject.trim();
+          const label = `${tName} - ${tSubject}`;
+          // Use teacherId as the id (not composite), so each teacher appears only once
+          if (!recipsMap.has(tid)) {
+            recipsMap.set(tid, { id: tid, name: label, teacherId: tid, classId: "" });
           }
         }
       }
@@ -265,12 +272,102 @@ export default function ParentMessages() {
       // ignore
     }
     setOpenThreadPeerId(peerId);
+    setThreadReplyText("");
+    setThreadReplySubject("");
+  };
+
+  // Pre-fill thread reply subject when thread messages load
+  useEffect(() => {
+    if (threadMessages && threadMessages.length > 0 && openThreadPeerId) {
+      const lastMessage = threadMessages[threadMessages.length - 1];
+      if (lastMessage.subject && !threadReplySubject) {
+        const currentSubject = lastMessage.subject.trim();
+        setThreadReplySubject(currentSubject.toUpperCase().startsWith("RE:") ? currentSubject : `RE: ${currentSubject}`);
+      } else if (!lastMessage.subject && !threadReplySubject) {
+        setThreadReplySubject("RE:");
+      }
+    }
+  }, [threadMessages, openThreadPeerId]);
+
+  const handleThreadReply = async () => {
+    if (!openThreadPeerId || !threadReplyText.trim()) return;
+    try {
+      setSending(true);
+      // Get the last message in the thread to use as parent_message_id
+      const lastMessageId = threadMessages && threadMessages.length > 0 
+        ? threadMessages[threadMessages.length - 1].id 
+        : null;
+      
+      const teacherId = openThreadPeerId;
+      const subj = threadReplySubject.trim() || null;
+      const { error } = await supabase.from("communications").insert({
+        sender_id: parentId,
+        recipient_id: teacherId,
+        message: threadReplyText.trim(),
+        subject: subj,
+        parent_message_id: lastMessageId,
+        read: false,
+        message_type: "direct",
+        category: "general",
+      });
+      if (error) throw error;
+
+      // Try to email-notify the teacher recipient
+      try {
+        const senderName = (session?.user?.user_metadata?.name as string) || "Parent";
+        const notifySubject = `You have received a message from ${senderName}`;
+        const notifyBody = `${senderName} wrote:\n\n${threadReplyText.trim()}\n\nPlease sign in to view and reply.`;
+        type TeacherRow = { id: string; email: string | null };
+        const emails: string[] = [];
+        const { data: tRows } = await supabase.from("teachers").select("id, email").eq("id", teacherId).limit(1);
+        const tEmail = ((tRows || []) as TeacherRow[])[0]?.email;
+        if (tEmail && tEmail.includes("@")) emails.push(tEmail);
+        if (emails.length === 0) {
+          const { data: pRows } = await (supabase as unknown as {
+            from: (t: string) => { select: (s: string) => { eq: (c: string, v: string) => Promise<{ data: Array<{ id: string; email?: string | null }> | null }> } };
+          }).from("profiles").select("id, email").eq("id", teacherId);
+          const pEmail = ((pRows || []) as Array<{ id: string; email?: string | null }>)[0]?.email;
+          if (pEmail && pEmail.includes("@")) emails.push(pEmail);
+        }
+        if (emails.length > 0) {
+          const { error: invErr } = await supabase.functions.invoke("send-teacher-message", { body: { recipients: emails, subject: notifySubject, body: notifyBody, fromName: senderName, senderId: parentId } });
+          if (invErr) {
+            const { data: sessionData } = await supabase.auth.getSession();
+            const accessToken = sessionData.session?.access_token || "";
+            await fetch(`${SUPABASE_URL}/functions/v1/send-teacher-message`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                apikey: SUPABASE_PUBLISHABLE_KEY,
+                Authorization: accessToken ? `Bearer ${accessToken}` : "",
+              },
+              body: JSON.stringify({ recipients: emails, subject: notifySubject, body: notifyBody, fromName: senderName, senderId: parentId }),
+            });
+          }
+        }
+      } catch { /* ignore */ }
+
+      setThreadReplyText("");
+      setThreadReplySubject("");
+      toast({ title: "Reply sent", description: "Your reply has been sent" });
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["parent-thread", parentId, openThreadPeerId] }),
+        queryClient.invalidateQueries({ queryKey: ["parent-sent", parentId] }),
+        queryClient.invalidateQueries({ queryKey: ["parent-inbox", parentId] }),
+      ]);
+    } catch (e) {
+      console.error("[ParentMessages] thread reply error:", e);
+      toast({ title: "Failed to send reply", description: e instanceof Error ? e.message : String(e), variant: "destructive" });
+    } finally {
+      setSending(false);
+    }
   };
   const handleSend = async () => {
     if (isSendingDisabled) return;
     try {
       setSending(true);
-      const teacherId = selectedRecipientId.split("::")[0] || "";
+      // selectedRecipientId is now directly the teacherId (no composite ID)
+      const teacherId = selectedRecipientId || "";
 
       // Pre-send email notify attached to button click
       try {
@@ -508,12 +605,18 @@ export default function ParentMessages() {
           </CardContent>
         </Card>
       </div>
-      <Dialog open={!!openThreadPeerId} onOpenChange={(v) => !v && setOpenThreadPeerId(null)}>
-        <DialogContent className="max-w-2xl">
+      <Dialog open={!!openThreadPeerId} onOpenChange={(v) => {
+        if (!v) {
+          setOpenThreadPeerId(null);
+          setThreadReplyText("");
+          setThreadReplySubject("");
+        }
+      }}>
+        <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col">
           <DialogHeader>
             <DialogTitle>Conversation</DialogTitle>
           </DialogHeader>
-          <div className="space-y-3 max-h-[60vh] overflow-auto">
+          <div className="space-y-3 flex-1 overflow-auto min-h-0 mb-4">
             {(threadMessages || []).map((tm) => (
               <div key={tm.id} className="p-3 border rounded-md text-sm">
                 <div className="flex items-center justify-between gap-2">
@@ -525,6 +628,35 @@ export default function ParentMessages() {
               </div>
             ))}
             {(threadMessages || []).length === 0 && <div className="text-center text-muted-foreground py-6">No messages</div>}
+          </div>
+          <div className="border-t pt-4 space-y-3">
+            <div className="space-y-2">
+              <Label>Subject</Label>
+              <Input 
+                value={threadReplySubject} 
+                onChange={(e) => setThreadReplySubject(e.target.value)} 
+                placeholder="Subject (optional)" 
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Reply</Label>
+              <Textarea 
+                ref={threadReplyRef}
+                rows={4} 
+                value={threadReplyText} 
+                onChange={(e) => setThreadReplyText(e.target.value)} 
+                placeholder="Type your reply..." 
+              />
+            </div>
+            <div className="flex justify-end">
+              <Button 
+                onClick={handleThreadReply} 
+                disabled={!threadReplyText.trim() || sending || !openThreadPeerId}
+              >
+                {sending ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Send className="h-4 w-4 mr-2" />}
+                {sending ? "Sending" : "Send Reply"}
+              </Button>
+            </div>
           </div>
         </DialogContent>
       </Dialog>

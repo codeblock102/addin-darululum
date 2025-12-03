@@ -5,6 +5,26 @@ import { corsHeaders } from "../_shared/cors.ts";
 
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
 const RESEND_FROM_EMAIL = Deno.env.get("RESEND_FROM_EMAIL");
+const APP_URL = Deno.env.get("APP_URL") || "https://app.daralulummontreal.com/";
+
+// Build portal CTA button HTML
+function buildPortalCtaHtml(): string {
+  return `
+    <div style="margin:24px 0;text-align:center;">
+      <a
+        href="${APP_URL}"
+        style="display:inline-block;padding:12px 24px;background-color:#0f766e;color:#ffffff;text-decoration:none;font-weight:600;border-radius:6px;"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        Open Parent Portal
+      </a>
+      <p style="font-size:12px;color:#6b7280;margin-top:8px;">
+        Or copy this link: <a href="${APP_URL}" style="color:#0f766e;text-decoration:none;" target="_blank" rel="noopener noreferrer">${APP_URL}</a>
+      </p>
+    </div>
+  `;
+}
 
 serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
@@ -64,13 +84,23 @@ serve(async (req: Request) => {
       ? [payload.to]
       : [];
     const subject: string = String(payload.subject || "").trim();
-    const html: string = String(payload.html || "").trim();
+    let html: string = String(payload.html || "").trim();
 
     if (toList.length === 0 || !subject || !html) {
       return new Response(JSON.stringify({ error: "Missing to/subject/html" }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
+    }
+
+    // Append portal CTA button to HTML (before closing body/html tags if present, or at the end)
+    const portalCta = buildPortalCtaHtml();
+    if (html.includes("</body>")) {
+      html = html.replace("</body>", `${portalCta}</body>`);
+    } else if (html.includes("</html>")) {
+      html = html.replace("</html>", `${portalCta}</html>`);
+    } else {
+      html = `${html}${portalCta}`;
     }
 
     const resend = new Resend(RESEND_API_KEY);
