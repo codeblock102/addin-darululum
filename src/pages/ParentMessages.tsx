@@ -100,26 +100,30 @@ export default function ParentMessages() {
       const teacherIds = Array.from(new Set(classList.flatMap((c) => (c.teacher_ids || []) as string[])));
       if (teacherIds.length === 0) return [] as Recipient[];
 
-      // 4) Resolve teacher names
+      // 4) Resolve teacher names and subjects
       const { data: profiles, error: profErr } = await supabase
         .from("profiles")
-        .select("id, name")
+        .select("id, name, subject")
         .in("id", teacherIds);
       if (profErr) throw profErr;
-      const teacherNameById = new Map(((profiles || []) as Array<{ id: string; name: string | null }>).map((p) => [p.id, p.name || "Teacher"]));
+      const teacherInfoById = new Map(
+        ((profiles || []) as Array<{ id: string; name: string | null; subject: string | null }>).map((p) => [
+          p.id,
+          { name: p.name || "Teacher", subject: p.subject || "General" },
+        ])
+      );
 
-      // Build recipients as "Teacher Name - Class Name" with composite id teacherId::classId for uniqueness
+      // Build recipients as "Teacher Name - Subject" with teacherId as id (deduplicated by teacher)
       const recipsMap = new Map<string, Recipient>();
-      for (const c of classList) {
-        const classId = c.id;
-        const className = (c.name || "Class").trim();
-        const tIds = Array.from(new Set((c.teacher_ids || []) as string[]));
-        for (const tid of tIds) {
-          const tName = (teacherNameById.get(tid) || "Teacher").trim();
-          const label = `${tName} - ${className}`;
-          const id = `${tid}::${classId}`;
-          if (!recipsMap.has(id)) {
-            recipsMap.set(id, { id, name: label, teacherId: tid, classId });
+      for (const tid of teacherIds) {
+        const teacherInfo = teacherInfoById.get(tid);
+        if (teacherInfo) {
+          const tName = teacherInfo.name.trim();
+          const tSubject = teacherInfo.subject.trim();
+          const label = `${tName} - ${tSubject}`;
+          // Use teacherId as the id (not composite), so each teacher appears only once
+          if (!recipsMap.has(tid)) {
+            recipsMap.set(tid, { id: tid, name: label, teacherId: tid, classId: "" });
           }
         }
       }
@@ -270,7 +274,8 @@ export default function ParentMessages() {
     if (isSendingDisabled) return;
     try {
       setSending(true);
-      const teacherId = selectedRecipientId.split("::")[0] || "";
+      // selectedRecipientId is now directly the teacherId (no composite ID)
+      const teacherId = selectedRecipientId || "";
 
       // Pre-send email notify attached to button click
       try {

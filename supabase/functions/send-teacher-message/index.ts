@@ -37,8 +37,28 @@ async function handler(req: Request) {
     const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY") || "";
     const RESEND_FROM_EMAIL = Deno.env.get("RESEND_FROM_EMAIL") || "";
     const LOGO_URL = Deno.env.get("LOGO_URL") || "https://depsfpodwaprzxffdcks.supabase.co/storage/v1/object/public/dum-logo/dum-logo.png";
+    const APP_URL = Deno.env.get("APP_URL") || "https://app.daralulummontreal.com/";
     if (!RESEND_API_KEY || !RESEND_FROM_EMAIL) {
       return jsonResponse(500, { ok: false, error: "Email service not configured" });
+    }
+
+    // Build portal CTA button HTML
+    function buildPortalCtaHtml(): string {
+      return `
+        <div style="margin:24px 0;text-align:center;">
+          <a
+            href="${APP_URL}"
+            style="display:inline-block;padding:12px 24px;background-color:#0f766e;color:#ffffff;text-decoration:none;font-weight:600;border-radius:6px;"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Open Parent Portal
+          </a>
+          <p style="font-size:12px;color:#6b7280;margin-top:8px;">
+            Or copy this link: <a href="${APP_URL}" style="color:#0f766e;text-decoration:none;" target="_blank" rel="noopener noreferrer">${APP_URL}</a>
+          </p>
+        </div>
+      `;
     }
 
     const resend = new Resend(RESEND_API_KEY);
@@ -101,7 +121,7 @@ async function handler(req: Request) {
                   <div style="border:1px solid #e5e7eb; border-radius:6px; padding:14px; background:#fafafa; white-space:pre-wrap; color:#111827;">
                     ${safeBody.replace(/</g, "&lt;")}
                   </div>
-                  <div style="font-size:12px; color:#6b7280; margin-top:16px;">Sign in to your portal to view and reply to this message.</div>
+                  ${buildPortalCtaHtml()}
                 </div>
                 <div style="padding:12px 16px; border-top:1px solid #f3f4f6; background:#ffffff; text-align:center; font-size:12px; color:#9ca3af;">
                   This is an automated notification.
