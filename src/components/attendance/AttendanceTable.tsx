@@ -29,6 +29,7 @@ import {
 import { CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils.ts";
+import { useRBAC } from "@/hooks/useRBAC.ts";
 
 interface AttendanceRecord {
   id: string;
@@ -43,6 +44,7 @@ interface AttendanceRecord {
 }
 
 export function AttendanceTable() {
+  const { isAdmin } = useRBAC();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedSection, setSelectedSection] = useState<string>("all");
   const [dateFilter, setDateFilter] = useState<Date | null>(null);
@@ -211,7 +213,7 @@ export function AttendanceTable() {
             <Skeleton className="h-12 w-full" />
           </div>
         ) : filteredRecords.length > 0 ? (
-          <AttendanceDataTable attendanceRecords={filteredRecords} />
+          <AttendanceDataTable attendanceRecords={filteredRecords} isAdmin={isAdmin} />
         ) : (
           <div className="text-center py-12">
             <AttendanceEmptyState hasFilters={hasFilters} resetFilters={resetFilters} />
