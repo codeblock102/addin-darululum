@@ -1,6 +1,5 @@
-import React from 'react';
 import { NavLink, Outlet, Link, useNavigate } from 'react-router-dom';
-import { Shield, Database, UserPlus, Users, Home, LogOut, Calendar, Activity as ActivityIcon } from 'lucide-react';
+import { Shield, Database, UserPlus, Users, Home, LogOut, Calendar, Activity as ActivityIcon, Settings } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth.ts';
 
 const AdminLayout = () => {
@@ -11,7 +10,7 @@ const AdminLayout = () => {
     try {
       await signOut();
       navigate('/auth');
-    } catch (err) {
+    } catch (_err) {
       // fallback navigate even if toast already handled
       navigate('/auth');
     }
@@ -32,6 +31,7 @@ const AdminLayout = () => {
               Dashboard
             </Link>
             <button
+              type="button"
               onClick={handleLogout}
               className="inline-flex items-center gap-2 text-xs bg-red-600 hover:bg-red-700 text-white px-3 py-1.5 rounded-md transition-colors"
               title="Log out"
@@ -132,6 +132,19 @@ const AdminLayout = () => {
           >
             <Users className="mr-3 h-5 w-5" />
             Parent Accounts
+          </NavLink>
+          <NavLink
+            to="/settings"
+            className={({ isActive }) =>
+              `flex items-center px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                isActive
+                  ? 'bg-gray-700 text-white'
+                  : 'text-gray-300 hover:bg-gray-700 hover:text-white'
+              }`
+            }
+          >
+            <Settings className="mr-3 h-5 w-5" />
+            Settings & Emails
           </NavLink>
         </nav>
       </aside>

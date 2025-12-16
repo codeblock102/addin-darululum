@@ -312,6 +312,100 @@ export function DhorBookEntryForm(
     }
   }, [startAyah, endAyah, quranFormat, form]);
 
+  // Prefill Nazirah independently from last Nazirah progress
+  useEffect(() => {
+    if (!studentId) return;
+    if (isOpen === false) return;
+
+    const prefillFromPreviousNazirah = async () => {
+      try {
+        const { data: prevNaz, error: nazErr } = await supabase
+          .from("progress")
+          .select("current_surah,end_surah,start_ayat,end_ayat,verses_memorized,current_juz,date,lesson_type,created_at")
+          .eq("student_id", studentId)
+          .eq("lesson_type", "nazirah")
+          .order("date", { ascending: false })
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .maybeSingle();
+
+        if (nazErr) {
+          console.error("[DhorBook] Error fetching previous nazirah:", nazErr);
+          return;
+        }
+        if (!prevNaz) return;
+
+        const lastEndSurah: number | undefined = (prevNaz as unknown as { end_surah?: number }).end_surah ?? (prevNaz as unknown as { current_surah?: number }).current_surah;
+        const startAyatRaw: number | undefined = (prevNaz as unknown as { start_ayat?: number }).start_ayat;
+        const versesMem: number | undefined = (prevNaz as unknown as { verses_memorized?: number }).verses_memorized;
+        let lastEndAyat: number | undefined = (prevNaz as unknown as { end_ayat?: number }).end_ayat;
+        if (lastEndAyat === undefined && startAyatRaw !== undefined) {
+          lastEndAyat = (versesMem && versesMem > 0) ? (startAyatRaw + versesMem - 1) : startAyatRaw;
+        }
+        if (!lastEndSurah || !lastEndAyat) return;
+
+        const nextSurah = lastEndSurah;
+        const nextAyat = lastEndAyat;
+
+        // Determine Juz using Naz Juz data if not present
+        let nextJuz: number | undefined = (prevNaz as unknown as { current_juz?: number }).current_juz;
+        try {
+          const surahInJuz = (list: string, targetSurah: number): boolean => {
+            if (!list) return false;
+            let processed = list.trim();
+            if (processed.startsWith("{") && processed.endsWith("}")) {
+              processed = processed.slice(1, -1);
+            }
+            const tokens = processed.split(",").map((p) => p.trim());
+            for (const token of tokens) {
+              if (!token) continue;
+              if (token.includes("-")) {
+                const [startStr, endStr] = token.split("-").map((s) => s.trim());
+                const startNum = parseInt(startStr, 10);
+                const endNum = parseInt(endStr, 10);
+                if (!Number.isNaN(startNum) && !Number.isNaN(endNum)) {
+                  if (targetSurah >= startNum && targetSurah <= endNum) return true;
+                }
+              } else {
+                const num = parseInt(token, 10);
+                if (!Number.isNaN(num) && num === targetSurah) return true;
+              }
+            }
+            return false;
+          };
+          if (nextJuz === undefined) {
+            for (const juz of nazJuzData ?? []) {
+              if (surahInJuz(juz.surah_list, nextSurah)) {
+                nextJuz = juz.juz_number;
+                break;
+              }
+            }
+          }
+        } catch (e) {
+          console.warn("[DhorBook] Unable to resolve next Nazirah Juz from nazJuzData; leaving it undefined", e);
+        }
+
+        // Only set Nazirah fields if they are not already chosen by the user
+        if (!form.getValues("nazirah_juz") && nextJuz !== undefined) {
+          form.setValue("nazirah_juz", nextJuz);
+          setNazSelectedJuz(nextJuz);
+        }
+        if (!form.getValues("nazirah_surah")) {
+          form.setValue("nazirah_surah", nextSurah);
+          setPendingNazSurahToSelect(nextSurah);
+        }
+        if (!form.getValues("nazirah_start_ayat")) {
+          form.setValue("nazirah_start_ayat", nextAyat);
+          setPendingNazStartAyat(nextAyat);
+        }
+      } catch (e) {
+        console.error("[DhorBook] Unexpected error pre-filling Nazirah:", e);
+      }
+    };
+
+    prefillFromPreviousNazirah();
+  }, [studentId, isOpen, nazJuzData, form, setNazSelectedJuz]);
+
   // Prefill start ayat (and naz start ayat) based on previous sabaq entry
   useEffect(() => {
     if (!studentId) return;
@@ -414,14 +508,12 @@ export function DhorBookEntryForm(
 
         if (nextJuz !== undefined) {
           setSelectedJuz(nextJuz);
-          setNazSelectedJuz(nextJuz);
         }
 
         console.log("resolved next values:", { nextSurah, nextAyat, nextJuz });
 
         // Defer setting surah until surah list for the juz is loaded to avoid resets
         setPendingSurahToSelect(nextSurah);
-        setPendingNazSurahToSelect(nextSurah);
 
         // Infer Quran format (13/15 line) from previous entry if possible
         // Use a simple heuristic: verses per page ~8 => 13-line; ~10 => 15-line
@@ -440,17 +532,13 @@ export function DhorBookEntryForm(
           current_surah: nextSurah,
           end_surah: nextSurah,
           quran_format: inferredQuranFormat ?? (currentValues.quran_format ?? "13"),
-          nazirah_juz: nextJuz,
-          nazirah_surah: nextSurah,
           start_ayat: nextAyat, // temporary until ayah options load
-          nazirah_start_ayat: nextAyat,
         } as typeof currentValues;
         console.log("applying RHF reset with:", nextRHFValues);
         form.reset(nextRHFValues);
 
         console.log("setting pending values:", { pendingSurahToSelect: nextSurah, pendingAyat: nextAyat });
         setPendingStartAyat(nextAyat);
-        setPendingNazStartAyat(nextAyat);
 
         console.groupEnd();
       } catch (e) {

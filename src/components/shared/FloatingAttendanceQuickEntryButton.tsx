@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { CalendarCheck, Clock, CalendarX, CheckCircle2 } from "lucide-react";
+import { CalendarCheck, Clock, CalendarX, CheckCircle2, LogOut } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog.tsx";
 import { useIsMobile } from "@/hooks/use-mobile.tsx";
 import { StudentSearch } from "@/components/student-progress/StudentSearch.tsx";
@@ -13,11 +13,12 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/contexts/AuthContext.tsx";
 import { supabase } from "@/integrations/supabase/client.ts";
 import { format } from "date-fns";
+import { formatErrorMessage } from "@/utils/formatErrorMessage.ts";
 
 type QuickAttendanceForm = {
   date: Date;
   time: string;
-  status: "present" | "absent" | "late" | "excused";
+  status: "present" | "absent" | "late" | "excused" | "early_departure";
   notes?: string;
   late_reason?: string;
 };
@@ -72,8 +73,11 @@ export const FloatingAttendanceQuickEntryButton = () => {
       queryClient.invalidateQueries({ queryKey: ["attendance"] });
       handleClose();
     } catch (e) {
-      const message = e instanceof Error ? e.message : "Failed to save attendance";
-      toast({ title: "Error", description: message, variant: "destructive" });
+      toast({
+        title: "Error",
+        description: formatErrorMessage(e),
+        variant: "destructive",
+      });
     }
   };
 
@@ -165,6 +169,10 @@ export const FloatingAttendanceQuickEntryButton = () => {
                           <label className="flex items-center gap-2 rounded-md border p-2 cursor-pointer hover:bg-emerald-50">
                             <RadioGroupItem value="excused" id="qa-excused" />
                             <CalendarCheck className="h-4 w-4 text-blue-600" /> Excused
+                          </label>
+                          <label className="flex items-center gap-2 rounded-md border p-2 cursor-pointer hover:bg-emerald-50">
+                            <RadioGroupItem value="early_departure" id="qa-early-departure" />
+                            <LogOut className="h-4 w-4 text-indigo-600" /> Early Departure
                           </label>
                         </RadioGroup>
                       </FormControl>

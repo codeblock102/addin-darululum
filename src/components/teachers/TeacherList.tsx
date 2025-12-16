@@ -103,9 +103,9 @@ export const TeacherList = ({
   const handleDelete = async (teacherId: string) => {
     setIsProcessing(true);
     try {
-      const {
-        error,
-      } = await supabase.from("profiles").delete().eq("id", teacherId);
+      const { error } = await supabase.functions.invoke("delete-teacher", {
+        body: { userId: teacherId },
+      });
       if (error) throw error;
       toast({
         title: "Success",
