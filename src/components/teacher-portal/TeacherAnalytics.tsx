@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import {
   Card,
   CardContent,
@@ -18,6 +18,11 @@ import { StudentProgressChart } from "./analytics/StudentProgressChart.tsx";
 import { TimeProgressChart } from "./analytics/TimeProgressChart.tsx";
 import { ContributorActivityChart } from "./analytics/ContributorActivityChart.tsx";
 import { useI18n } from "@/contexts/I18nContext.tsx";
+import { Button } from "@/components/ui/button.tsx";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover.tsx";
+import { Calendar } from "@/components/ui/calendar.tsx";
+import { format } from "date-fns";
+import { ClassAttendanceBreakdown } from "./analytics/ClassAttendanceBreakdown.tsx";
 
 interface AnalyticsHeaderProps {
   stats: {
@@ -69,12 +74,26 @@ export const TeacherAnalytics = ({ teacherId }: TeacherAnalyticsProps) => {
   const { data, isLoading, error } = useAnalyticsData(teacherId);
   const [currentView, setCurrentView] = useState("week");
   const { t } = useI18n();
+  const [dateRange, setDateRange] = useState<{ from: Date; to: Date }>(() => {
+    const to = new Date();
+    const from = new Date();
+    from.setDate(to.getDate() - 29);
+    return { from, to };
+  });
 
   // Transform the data for the charts if available
   const timeProgress = data?.timeProgress?.map((item) => ({
     date: item.date,
     count: Number(item.count) || 0,
   })) || [];
+
+  const dateRangeLabel = useMemo(() => {
+    try {
+      return `${format(dateRange.from, "MMM d, yyyy")} - ${format(dateRange.to, "MMM d, yyyy")}`;
+    } catch {
+      return "Select range";
+    }
+  }, [dateRange]);
 
   const stats = [
     {
@@ -139,8 +158,6 @@ export const TeacherAnalytics = ({ teacherId }: TeacherAnalyticsProps) => {
 
   return (
     <div className="space-y-8 animate-fadeIn">
-      <AnalyticsHeader stats={stats} />
-
       <Tabs defaultValue="progress" className="space-y-4">
         <TabsList>
           <TabsTrigger value="progress">{t("pages.teacherPortal.analytics.tabs.progress")}</TabsTrigger>
@@ -149,7 +166,61 @@ export const TeacherAnalytics = ({ teacherId }: TeacherAnalyticsProps) => {
         </TabsList>
 
         <TabsContent value="progress" className="space-y-4">
-          <div className="grid gap-4 md:grid-cols-2">
+          {/* Header controls similar to GA: Date range + timeframe toggles */}
+          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+            <div>
+              <h2 className="text-lg font-semibold">Audience Overview</h2>
+              <p className="text-sm text-muted-foreground">{t("pages.teacherPortal.analytics.progressOverTime.desc.unit")}</p>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="flex rounded-md border">
+                <Button type="button" variant="ghost" className={`h-8 px-2 text-xs ${currentView === "week" ? "bg-emerald-50 text-emerald-700" : "text-muted-foreground"}`} onClick={() => setCurrentView("week")}>
+                  {t("pages.teacherPortal.analytics.progressOverTime.desc.week")}
+                </Button>
+                <Button type="button" variant="ghost" className={`h-8 px-2 text-xs ${currentView === "month" ? "bg-emerald-50 text-emerald-700" : "text-muted-foreground"}`} onClick={() => setCurrentView("month")}>
+                  {t("pages.teacherPortal.analytics.progressOverTime.desc.month")}
+                </Button>
+                <Button type="button" variant="ghost" className={`h-8 px-2 text-xs ${currentView === "year" ? "bg-emerald-50 text-emerald-700" : "text-muted-foreground"}`} onClick={() => setCurrentView("year")}>
+                  {t("pages.teacherPortal.analytics.progressOverTime.desc.year")}
+                </Button>
+              </div>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" className="h-8 text-xs">
+                    {dateRangeLabel}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="end">
+                  <Calendar
+                    mode="range"
+                    selected={dateRange as unknown as { from: Date; to?: Date }}
+                    onSelect={(r: { from?: Date; to?: Date } | undefined) => {
+                      if (!r?.from || !r?.to) return;
+                      setDateRange({ from: r.from, to: r.to });
+                    }}
+                    numberOfMonths={2}
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
+          </div>
+
+          {/* Primary line chart */}
+          <Card>
+            <CardHeader>
+              <CardTitle>{t("pages.teacherPortal.analytics.progressOverTime.title")}</CardTitle>
+              <CardDescription>{dateRangeLabel}</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <TimeProgressChart data={timeProgress} />
+            </CardContent>
+          </Card>
+
+          {/* Summary cards and pie chart, GA-style layout */}
+          <div className="grid gap-4 lg:grid-cols-3">
+            <div className="lg:col-span-2">
+              <AnalyticsHeader stats={stats} />
+            </div>
             <Card>
               <CardHeader>
                 <CardTitle>{t("pages.teacherPortal.analytics.progressDistribution.title")}</CardTitle>
@@ -159,56 +230,14 @@ export const TeacherAnalytics = ({ teacherId }: TeacherAnalyticsProps) => {
                 <ProgressDistributionChart data={formattedQualityData} />
               </CardContent>
             </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>{t("pages.teacherPortal.analytics.progressOverTime.title")}</CardTitle>
-                <CardDescription>
-                  <div className="flex items-center gap-4">
-                    <span>{t("pages.teacherPortal.analytics.progressOverTime.desc.unit")}</span>
-                    <div className="flex items-center gap-2 ml-auto">
-                      <button
-                        type="button"
-                        onClick={() => setCurrentView("week")}
-                        className={`text-xs px-2 py-0.5 rounded ${
-                          currentView === "week"
-                            ? "bg-emerald-100 text-emerald-800"
-                            : "text-muted-foreground"
-                        }`}
-                      >
-                        {t("pages.teacherPortal.analytics.progressOverTime.desc.week")}
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setCurrentView("month")}
-                        className={`text-xs px-2 py-0.5 rounded ${
-                          currentView === "month"
-                            ? "bg-emerald-100 text-emerald-800"
-                            : "text-muted-foreground"
-                        }`}
-                      >
-                        {t("pages.teacherPortal.analytics.progressOverTime.desc.month")}
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setCurrentView("year")}
-                        className={`text-xs px-2 py-0.5 rounded ${
-                          currentView === "year"
-                            ? "bg-emerald-100 text-emerald-800"
-                            : "text-muted-foreground"
-                        }`}
-                      >
-                        {t("pages.teacherPortal.analytics.progressOverTime.desc.year")}
-                      </button>
-                    </div>
-                  </div>
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <TimeProgressChart data={timeProgress} />
-              </CardContent>
-            </Card>
           </div>
+
+          {/* Per-class attendance breakdown for the selected date range */}
+          <ClassAttendanceBreakdown
+            teacherId={teacherId}
+            fromYmd={format(dateRange.from, "yyyy-MM-dd")}
+            toYmd={format(dateRange.to, "yyyy-MM-dd")}
+          />
         </TabsContent>
 
         <TabsContent value="students" className="space-y-4">
