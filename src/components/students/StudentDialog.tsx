@@ -101,14 +101,6 @@ export const StudentDialog = (
     status_start_date: string | null;
     status_end_date: string | null;
     status_notes: string | null;
-    gender: string | null;
-    grade: string | null;
-    health_card: string | null;
-    permanent_code: string | null;
-    street: string | null;
-    city: string | null;
-    province: string | null;
-    postal_code: string | null;
   };
 
   const [formData, setFormData] = useState<FormState>({
