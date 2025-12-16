@@ -1,4 +1,4 @@
-import { CalendarCheck, CalendarX, Clock } from "lucide-react";
+import { CalendarCheck, CalendarX, Clock, LogOut } from "lucide-react";
 import { AttendanceStatus } from "@/types/attendance.ts";
 import {
   FormControl,
@@ -82,6 +82,34 @@ export function AttendanceStatusRadioGroup(
                 >
                   <Clock className="h-4 w-4 mr-2 text-amber-600" />
                   {t("pages.attendance.status.late", "Late")}
+                </label>
+              </div>
+              <div className="flex items-center space-x-2 p-2 rounded-md transition-colors">
+                <RadioGroupItem
+                  value="excused"
+                  id="excused"
+                  className="text-purple-600 border-gray-400 focus:ring-purple-500"
+                />
+                <label
+                  htmlFor="excused"
+                  className="flex items-center text-gray-900 dark:text-gray-100 font-medium cursor-pointer"
+                >
+                  <CalendarCheck className="h-4 w-4 mr-2 text-blue-600" />
+                  {t("pages.attendance.status.excused", "Excused")}
+                </label>
+              </div>
+              <div className="flex items-center space-x-2 p-2 rounded-md transition-colors">
+                <RadioGroupItem
+                  value="early_departure"
+                  id="early_departure"
+                  className="text-purple-600 border-gray-400 focus:ring-purple-500"
+                />
+                <label
+                  htmlFor="early_departure"
+                  className="flex items-center text-gray-900 dark:text-gray-100 font-medium cursor-pointer"
+                >
+                  <LogOut className="h-4 w-4 mr-2 text-indigo-600" />
+                  {t("pages.attendance.status.earlyDeparture", "Early Departure")}
                 </label>
               </div>
             </RadioGroup>

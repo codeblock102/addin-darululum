@@ -8,13 +8,14 @@ import { supabase } from "@/integrations/supabase/client.ts";
 import { useToast } from "@/hooks/use-toast.ts";
 import { AttendanceFormValues } from "@/types/attendance-form.ts";
 import { useI18n } from "@/contexts/I18nContext.tsx";
+import { formatErrorMessage } from "@/utils/formatErrorMessage.ts";
 
 const attendanceSchema = z.object({
   class_id: z.string().optional(),
   student_id: z.string().optional(),
   date: z.date(),
   time: z.string().min(1, "Time is required"),
-  status: z.enum(["present", "absent", "late", "excused"]),
+  status: z.enum(["present", "absent", "late", "excused", "early_departure"]),
   late_reason: z.string().optional(),
   notes: z.string().optional(),
 });
@@ -33,7 +34,7 @@ type AttendanceRecord = {
 
 interface UseAttendanceSubmitProps {
   onSuccess?: () => void;
-  onError?: (error: Error) => void;
+  onError?: (error: unknown) => void;
 }
 
 export function useAttendanceSubmit(
@@ -94,7 +95,7 @@ export function useAttendanceSubmit(
 
   useEffect(() => {
     if (existingAttendance) {
-      form.setValue("status", existingAttendance.status as unknown as "present" | "absent" | "late" | "excused");
+      form.setValue("status", existingAttendance.status as AttendanceFormValues["status"]);
       form.setValue("notes", existingAttendance.notes || "");
       if (existingAttendance.time) {
         form.setValue("time", existingAttendance.time);
@@ -149,10 +150,10 @@ export function useAttendanceSubmit(
     onError: (error) => {
       toast({
         title: t("common.error", "Error"),
-        description: error.message,
+        description: formatErrorMessage(error),
         variant: "destructive",
       });
-      onError?.(error as Error);
+      onError?.(error);
     },
   });
 

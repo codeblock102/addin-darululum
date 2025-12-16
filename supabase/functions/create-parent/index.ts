@@ -222,6 +222,7 @@ serve(async (req: Request) => {
     try {
       const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
       const RESEND_FROM_EMAIL = Deno.env.get("RESEND_FROM_EMAIL");
+      const APP_URL = Deno.env.get("APP_URL") || "https://app.daralulummontreal.com/";
       if (RESEND_API_KEY && RESEND_FROM_EMAIL) {
         const resend = new Resend(RESEND_API_KEY);
         const list = studentNames.length > 0 ? studentNames.join(", ") : "your student";
@@ -233,7 +234,14 @@ serve(async (req: Request) => {
             <li>Username (email): <strong>${email}</strong></li>
             <li>Temporary password: <strong>${defaultPassword}</strong></li>
           </ul>
-          <p>Please log in and change your password. If you didn’t request this, contact the school.</p>
+          <div style="margin:24px 0;text-align:center;">
+            <a href="${APP_URL}" style="display:inline-block;padding:12px 24px;background-color:#0f766e;color:#ffffff;text-decoration:none;font-weight:600;border-radius:6px;" target="_blank" rel="noopener noreferrer">
+              Open Parent Portal
+            </a>
+            <p style="font-size:12px;color:#6b7280;margin-top:8px;">
+              Or copy this link: <a href="${APP_URL}" style="color:#0f766e;text-decoration:none;" target="_blank" rel="noopener noreferrer">${APP_URL}</a>
+            </p>
+          </div>
         </body></html>`;
         await resend.emails.send({ from: RESEND_FROM_EMAIL, to: normalizedEmail, subject: "Your Parent Portal Account", html });
       }

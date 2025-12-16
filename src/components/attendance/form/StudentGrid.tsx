@@ -15,7 +15,11 @@ import { useI18n } from '@/contexts/I18nContext.tsx';
 
 type Student = Database['public']['Tables']['students']['Row'];
 
-async function fetchStudentsForUser(user: User | null, classId?: string): Promise<Student[]> {
+async function fetchStudentsForUser(
+  user: User | null,
+  classId?: string,
+  sectionFilter?: string,
+): Promise<Student[]> {
   if (!user) {
     return [];
   }
@@ -69,6 +73,7 @@ async function fetchStudentsForUser(user: User | null, classId?: string): Promis
     const { data, error } = await supabase
       .from('students')
       .select('id, name')
+      .eq('status', 'active') // Only fetch active students
       .in('id', studentIds);
 
     if (error) {
@@ -80,10 +85,19 @@ async function fetchStudentsForUser(user: User | null, classId?: string): Promis
 
   // Admin or other roles logic
   const { madrassah_id } = userData;
-  const { data, error } = await supabase
+  let query = supabase
     .from('students')
-    .select('id, name')
+    .select('id, name, section')
     .eq('madrassah_id', madrassah_id);
+
+  if (sectionFilter && sectionFilter.trim()) {
+    query = query.ilike('section', sectionFilter.trim());
+  }
+
+  // Filter by status 'active' for attendance
+  query = query.eq('status', 'active');
+
+  const { data, error } = await query;
 
   if (error) {
     console.error('Error fetching students for user:', error);
@@ -100,15 +114,25 @@ export interface StudentGridProps {
   classId?: string;
   stagedStatus?: string;
   dateYmd?: string; // YYYY-MM-DD selected date
+  sectionFilter?: string | null;
 }
 
-export const StudentGrid = ({ user, selectedStudents, onStudentSelect, onSelectAll, classId, stagedStatus, dateYmd }: StudentGridProps) => {
+export const StudentGrid = ({
+  user,
+  selectedStudents,
+  onStudentSelect,
+  onSelectAll,
+  classId,
+  stagedStatus,
+  dateYmd,
+  sectionFilter,
+}: StudentGridProps) => {
   const [searchQuery, setSearchQuery] = useState('');
   const { t } = useI18n();
 
   const { data: students = [], isLoading, isError, error } = useQuery<Student[]>({
-    queryKey: ['students', user?.id, classId || null],
-    queryFn: () => fetchStudentsForUser(user, classId),
+    queryKey: ['students', user?.id, classId || null, sectionFilter || null],
+    queryFn: () => fetchStudentsForUser(user, classId, sectionFilter || undefined),
     enabled: !!user,
   });
 
@@ -191,18 +215,22 @@ export const StudentGrid = ({ user, selectedStudents, onStudentSelect, onSelectA
   const classStartHm = classRow ? parseStartTimeFromClass(classRow) : null;
 
   function statusBadgeClasses(status?: string): string {
-    switch ((status || '').toLowerCase()) {
-      case 'present':
-        return 'bg-emerald-100 text-emerald-700';
-      case 'absent':
-        return 'bg-red-100 text-red-700';
-      case 'late':
-        return 'bg-amber-100 text-amber-700';
-      case 'not_marked':
-      case 'not-marked':
-        return 'bg-slate-100 text-slate-700';
+    switch ((status || "").toLowerCase()) {
+      case "present":
+        return "bg-emerald-100 text-emerald-700";
+      case "absent":
+        return "bg-red-100 text-red-700";
+      case "late":
+        return "bg-amber-100 text-amber-700";
+      case "excused":
+        return "bg-blue-100 text-blue-700";
+      case "early_departure":
+        return "bg-indigo-100 text-indigo-700";
+      case "not_marked":
+      case "not-marked":
+        return "bg-slate-100 text-slate-700";
       default:
-        return 'bg-slate-100 text-slate-700';
+        return "bg-slate-100 text-slate-700";
     }
   }
 

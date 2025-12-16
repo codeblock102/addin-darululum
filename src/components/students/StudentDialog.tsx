@@ -39,7 +39,10 @@ interface Student {
   guardian2_name?: string | null;
   guardian2_contact?: string | null;
   guardian2_email?: string | null;
-  status: "active" | "inactive";
+    status: "active" | "inactive" | "vacation" | "hospitalized" | "suspended" | "graduated";
+  status_start_date?: string | null;
+  status_end_date?: string | null;
+  status_notes?: string | null;
   completed_juz?: number[];
   current_juz?: number | null;
   madrassah_id?: string;
@@ -89,12 +92,23 @@ export const StudentDialog = (
     guardian2_name: string | null;
     guardian2_contact: string | null;
     guardian2_email: string | null;
-    status: "active" | "inactive";
+    status: "active" | "inactive" | "vacation" | "hospitalized" | "suspended" | "graduated";
     completed_juz: number[];
     current_juz: string;
     madrassah_id: string;
     section: string;
     medicalConditions: string | null;
+    status_start_date: string | null;
+    status_end_date: string | null;
+    status_notes: string | null;
+    gender: string | null;
+    grade: string | null;
+    health_card: string | null;
+    permanent_code: string | null;
+    street: string | null;
+    city: string | null;
+    province: string | null;
+    postal_code: string | null;
   };
 
   const [formData, setFormData] = useState<FormState>({
@@ -122,6 +136,9 @@ export const StudentDialog = (
     madrassah_id: selectedStudent?.madrassah_id || madrassahId || "",
     section: selectedStudent?.section || "",
     medicalConditions: selectedStudent?.medical_condition || "",
+    status_start_date: selectedStudent?.status_start_date || null,
+    status_end_date: selectedStudent?.status_end_date || null,
+    status_notes: selectedStudent?.status_notes || "",
   });
 
   // Fetch complete student data when editing
@@ -191,6 +208,9 @@ export const StudentDialog = (
         madrassah_id: studentData.madrassah_id || madrassahId || "",
         section: studentData.section || "",
         medicalConditions: studentData.medical_condition || "",
+        status_start_date: studentData.status_start_date || null,
+        status_end_date: studentData.status_end_date || null,
+        status_notes: studentData.status_notes || "",
       });
     } else {
       // Reset form data for new student
@@ -218,6 +238,9 @@ export const StudentDialog = (
         madrassah_id: madrassahId || "",
         section: "",
         medicalConditions: "",
+        status_start_date: null,
+        status_end_date: null,
+        status_notes: "",
       });
     }
   }, [selectedStudent, completeStudentData, madrassahId]);
@@ -286,6 +309,10 @@ export const StudentDialog = (
         city: formData.city || null,
         province: formData.province || null,
         postal_code: formData.postal_code || null,
+        status: formData.status,
+        status_start_date: formData.status_start_date || null,
+        status_end_date: formData.status_end_date || null,
+        status_notes: formData.status_notes || null,
       } as Record<string, unknown>;
 
       // Teachers cannot modify section assignments
@@ -454,7 +481,7 @@ export const StudentDialog = (
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto bg-white text-gray-900 border border-gray-200 shadow-2xl dark:bg-slate-900 dark:text-white dark:border-slate-700">
         <DialogHeader>
           <DialogTitle>
             {selectedStudent ? "Edit Student" : "Add New Student"}
@@ -625,7 +652,7 @@ export const StudentDialog = (
                 <Label htmlFor="status">Status</Label>
                 <Select
                   value={formData.status}
-                  onValueChange={(value: "active" | "inactive") =>
+                  onValueChange={(value: any) =>
                     setFormData((prev) => ({ ...prev, status: value }))}
                 >
                   <SelectTrigger id="status">
@@ -634,9 +661,65 @@ export const StudentDialog = (
                   <SelectContent>
                     <SelectItem value="active">Active</SelectItem>
                     <SelectItem value="inactive">Inactive</SelectItem>
+                    <SelectItem value="vacation">Vacation</SelectItem>
+                    <SelectItem value="hospitalized">Hospitalized</SelectItem>
+                    <SelectItem value="suspended">Suspended</SelectItem>
+                    <SelectItem value="graduated">Graduated</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
+
+              {/* Conditional Status Fields */}
+              {(formData.status === "vacation" || formData.status === "hospitalized" || formData.status === "suspended") && (
+                <div className="space-y-4 border p-4 rounded-md bg-gray-50">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="status_start_date">
+                        Start Date
+                        <span className="text-red-500 ml-1">*</span>
+                      </Label>
+                      <Input
+                        id="status_start_date"
+                        type="date"
+                        value={formData.status_start_date || ""}
+                        onChange={(e) =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            status_start_date: e.target.value,
+                          }))}
+                        required
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="status_end_date">End Date (Optional)</Label>
+                      <Input
+                        id="status_end_date"
+                        type="date"
+                        value={formData.status_end_date || ""}
+                        onChange={(e) =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            status_end_date: e.target.value,
+                          }))}
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="status_notes">Status Notes / Reason</Label>
+                    <Textarea
+                      id="status_notes"
+                      placeholder={`Enter details for ${formData.status}...`}
+                      value={formData.status_notes || ""}
+                      onChange={(e) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          status_notes: e.target.value,
+                        }))}
+                      rows={2}
+                    />
+                  </div>
+                </div>
+              )}
             </TabsContent>
 
             <TabsContent value="address" className="space-y-4">

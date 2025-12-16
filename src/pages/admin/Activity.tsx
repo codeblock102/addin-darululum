@@ -743,7 +743,7 @@ function buildTeacherPerformance(items: ActivityItem[], teacherMap: Record<strin
 
 function buildAttendanceMix(items: ActivityItem[], section: string = "all", className: string = "all", studentToClasses: Record<string, string[]> = {}) {
   const within7 = (d: string) => (Date.now() - new Date(d).getTime()) <= 7 * 24 * 3600 * 1000;
-  const counts: Record<string, number> = { present: 0, absent: 0, late: 0, excused: 0 };
+  const counts: Record<string, number> = { present: 0, absent: 0, late: 0, excused: 0, early_departure: 0 };
   for (const it of items) {
     if (it.type !== "attendance" || !within7(it.created_at)) continue;
     if (section !== "all") {

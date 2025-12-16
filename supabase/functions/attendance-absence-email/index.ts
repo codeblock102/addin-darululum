@@ -1,4 +1,4 @@
-// @ts-nocheck
+// @ts-nocheck: Edge function relies on dynamic JSON parsing and Supabase client helpers
 // =================================================================================
 // STEP 1: INITIALIZATION & CONFIGURATION
 // =================================================================================
@@ -24,6 +24,7 @@ console.log("-------------------------");
 
 // --- Constants & Clients ---
 const DEFAULT_ORG_LOGO_URL = "https://depsfpodwaprzxffdcks.supabase.co/storage/v1/object/public/dum-logo/dum-logo.png";
+const APP_URL = Deno.env.get("APP_URL") || "https://app.daralulummontreal.com/";
 // Note: Runtime secrets may change without a cold start. We'll re-read inside the handler as well.
 
 const corsHeaders = {
@@ -79,6 +80,87 @@ function hmToMinutes(hm: string): number {
   return (isNaN(h) ? 0 : h) * 60 + (isNaN(m) ? 0 : m);
 }
 
+const STATUS_LABELS: Record<string, string> = {
+  present: "Present",
+  absent: "Absent",
+  late: "Late",
+  excused: "Excused",
+  early_departure: "Early Departure",
+  default: "Not Marked",
+};
+
+function getStatusLabel(status: string): string {
+  return STATUS_LABELS[status] || STATUS_LABELS.default;
+}
+
+function formatDisplayTime(time?: string | null): string | null {
+  if (!time) return null;
+  const parts = time.split(":");
+  if (parts.length < 2) return null;
+  const [h, m] = parts;
+  const date = new Date();
+  date.setHours(parseInt(h || "0", 10));
+  date.setMinutes(parseInt(m || "0", 10));
+  date.setSeconds(0, 0);
+  return new Intl.DateTimeFormat("en-US", {
+    hour: "numeric",
+    minute: "2-digit",
+  }).format(date);
+}
+
+function buildStatusNarrative(
+  studentName: string,
+  status: string,
+  dateYmd: string,
+  time?: string | null,
+): string {
+  const safeName = htmlEscape(studentName || "the student");
+  const safeDate = htmlEscape(dateYmd);
+  const label = getStatusLabel(status);
+  const formattedTime = formatDisplayTime(time);
+  const safeTime = formattedTime ? htmlEscape(formattedTime) : null;
+
+  let message: string;
+  switch (status) {
+    case "late":
+      message = safeTime
+        ? `${safeName} arrived <strong>late at ${safeTime}</strong> on ${safeDate}.`
+        : `${safeName} arrived <strong>late</strong> on ${safeDate}.`;
+      break;
+    case "early_departure":
+      message = safeTime
+        ? `${safeName} left <strong>early at ${safeTime}</strong> on ${safeDate}.`
+        : `${safeName} left <strong>early</strong> on ${safeDate}.`;
+      break;
+    case "excused":
+      message = `${safeName} was marked <strong>${label}</strong> on ${safeDate}.`;
+      break;
+    default:
+      message = `${safeName} was marked <strong>${label}</strong> on ${safeDate}.`;
+      break;
+  }
+
+  return `<p>${message}</p>`;
+}
+
+function buildPortalCtaHtml(): string {
+  return `
+    <div style="margin:24px 0;text-align:center;">
+      <a
+        href="${APP_URL}"
+        style="display:inline-block;padding:12px 24px;background-color:#0f766e;color:#ffffff;text-decoration:none;font-weight:600;border-radius:6px;"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        Open Parent Portal
+      </a>
+      <p style="font-size:12px;color:#6b7280;margin-top:8px;">
+        Or copy this link: <a href="${APP_URL}" style="color:#0f766e;text-decoration:none;" target="_blank" rel="noopener noreferrer">${APP_URL}</a>
+      </p>
+    </div>
+  `;
+}
+
 // Escapes HTML characters in a string to prevent XSS.
 function htmlEscape(str: string): string {
   return str.replace(/[&<>\"]/g, (c) => ({
@@ -106,7 +188,7 @@ serve(async (req: Request) => {
 
   // --- Handle Health Check Request ---
   if (req.method === "GET") {
-    try { console.log("[attendance-absence-email] GET health"); } catch (_) {}
+    try { console.log("[attendance-absence-email] GET health"); } catch (_) { /* noop */ }
     return new Response(JSON.stringify({ ok: true, service: "attendance-absence-email" }), {
       status: 200,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -123,7 +205,7 @@ serve(async (req: Request) => {
       const ct = (req.headers.get("content-type") || "").toLowerCase();
       const hasAuth = !!req.headers.get("authorization");
       console.log(`[Edge Fn] Request method=${method} content-type=${ct} hasAuth=${hasAuth}`);
-    } catch (_) {}
+    } catch (_) { /* noop */ }
     let triggerSource = "manual";
     let timestamp = new Date().toISOString();
     let explicitMadrassahId: string | null = null;
@@ -141,20 +223,20 @@ serve(async (req: Request) => {
       try {
         const clone = req.clone();
         bodyText = await clone.text();
-      } catch (_) {}
+      } catch (_) { /* noop */ }
       if (!bodyText || bodyText.trim() === "") {
         if (ct.includes("application/json")) {
           try {
             const asJson = await req.json();
             bodyText = JSON.stringify(asJson);
-          } catch (_) {}
+          } catch (_) { /* noop */ }
         }
       }
       console.log("[Edge Fn] Raw request body text:", bodyText);
       console.log("[Edge Fn] content-length:", contentLength);
       if (bodyText && bodyText.trim() !== "") {
         let parsed: any = null;
-        try { parsed = JSON.parse(bodyText); } catch (_) {}
+        try { parsed = JSON.parse(bodyText); } catch (_) { /* noop */ }
         if (parsed && typeof parsed === 'object') {
           console.log("[Edge Fn] Parsed request body:", parsed);
           console.log("[Edge Fn] parsed.student_ids specifically:", parsed.student_ids);
@@ -203,7 +285,7 @@ serve(async (req: Request) => {
           if (!explicitDate && qd && /^\d{4}-\d{2}-\d{2}$/.test(qd)) {
             explicitDate = qd;
           }
-        } catch (_) {}
+        } catch (_) { /* noop */ }
       }
     } catch (_) {
       // Ignore parsing errors; proceed with defaults.
@@ -242,7 +324,7 @@ serve(async (req: Request) => {
     }
     try {
       console.log(`[email-config] enabled=${emailSendingEnabled} hasKey=${!!RUNTIME_RESEND_API_KEY} hasFrom=${!!RUNTIME_FROM_EMAIL}`);
-    } catch (_) {}
+    } catch (_) { /* noop */ }
 
     // --- Initialize Supabase Clients ---
     // Service role client for admin-level operations.
@@ -321,15 +403,20 @@ serve(async (req: Request) => {
 
       const { data: attendanceRows, error: attendanceErr } = await supabaseService
         .from("attendance")
-        .select("student_id, status")
+        .select("student_id, status, time")
         .eq("date", effectiveYmd)
         .in("student_id", studentIds);
       if (attendanceErr) throw attendanceErr;
 
-      const statusByStudent = new Map<string, string>();
+      const statusByStudent = new Map<string, { status: string; time?: string | null }>();
       for (const row of (attendanceRows || [])) {
-        const st = String((row as any)?.status || '').toLowerCase();
-        if ((row as any)?.student_id) statusByStudent.set((row as any).student_id, st);
+        const st = String((row as any)?.status || "").toLowerCase();
+        if ((row as any)?.student_id) {
+          statusByStudent.set((row as any).student_id, {
+            status: st,
+            time: (row as any)?.time || null,
+          });
+        }
       }
 
       let emailsSent = 0;
@@ -338,7 +425,9 @@ serve(async (req: Request) => {
 
       // --- Process Each Student ---
       for (const student of activeStudents) {
-        const status = statusByStudent.get(student.id) || 'not marked';
+        const statusInfo = statusByStudent.get(student.id);
+        const status = statusInfo?.status || "not marked";
+        const statusTime = statusInfo?.time || null;
 
         // --- STEP 5a: GATHER RECIPIENTS ---
         // Collect unique, valid email addresses from multiple tables.
@@ -422,11 +511,13 @@ serve(async (req: Request) => {
 
         // Send the email.
         try {
+          const statusLabel = getStatusLabel(status);
+          const emailBody = `${buildStatusNarrative(student.name, status, effectiveYmd, statusTime)}${buildPortalCtaHtml()}`;
           await resendClient!.emails.send({
             from: RUNTIME_FROM_EMAIL!,
             to: recipients,
-            subject: `Attendance Status - ${student.name} (${effectiveYmd})`,
-            html: `<p>${student.name} was marked <strong>${status}</strong> on ${effectiveYmd}.</p>`,
+            subject: `Attendance Status - ${student.name} (${statusLabel})`,
+            html: emailBody,
           });
           emailsSent += recipients.length;
         } catch {
@@ -522,15 +613,20 @@ serve(async (req: Request) => {
 
       const { data: attendanceRows, error: attendanceErr } = await supabaseService
         .from("attendance")
-        .select("student_id, status")
+        .select("student_id, status, time")
         .eq("date", localYmd)
         .in("student_id", studentIds);
       if (attendanceErr) throw attendanceErr;
 
-      const statusByStudent = new Map<string, string>();
+      const statusByStudent = new Map<string, { status: string; time?: string | null }>();
       for (const row of (attendanceRows || [])) {
-        const st = String((row as any)?.status || '').toLowerCase();
-        if ((row as any)?.student_id) statusByStudent.set((row as any).student_id, st);
+        const st = String((row as any)?.status || "").toLowerCase();
+        if ((row as any)?.student_id) {
+          statusByStudent.set((row as any).student_id, {
+            status: st,
+            time: (row as any)?.time || null,
+          });
+        }
       }
 
       let emailsSent = 0;
@@ -538,7 +634,9 @@ serve(async (req: Request) => {
 
       // --- STEP 6c: PROCESS EACH STUDENT ---
       for (const student of activeStudents) {
-        const status = statusByStudent.get(student.id) || 'not marked';
+        const statusInfo = statusByStudent.get(student.id);
+        const status = statusInfo?.status || "not marked";
+        const statusTime = statusInfo?.time || null;
 
         // --- Gather Recipients (same logic as teacher-scoped run) ---
         const recipientSet = new Set<string>();
@@ -567,7 +665,7 @@ serve(async (req: Request) => {
               addEmail(p.email);
             }
           }
-        } catch (_) {}
+        } catch (_) { /* noop */ }
 
         if (recipientSet.size === 0) {
           emailsSkipped++;
@@ -596,7 +694,9 @@ serve(async (req: Request) => {
         }
 
         // --- STEP 6d: COMPOSE AND SEND EMAIL ---
-        const subject = `Attendance Status: ${student.name} (${localYmd})`;
+        const statusLabel = getStatusLabel(status);
+        const subject = `Attendance Status: ${student.name} (${statusLabel})`;
+        const statusNarrative = buildStatusNarrative(student.name, status, localYmd, statusTime);
         const html = `<!doctype html>
 <html><head><meta charset="utf-8"><style>
 body{font-family:Arial,Helvetica,sans-serif;background:#f6f7f9;margin:0;padding:0}
@@ -610,8 +710,9 @@ body{font-family:Arial,Helvetica,sans-serif;background:#f6f7f9;margin:0;padding:
     <div class="header"><h2>Attendance Status</h2></div>
     <div class="content">
       <p>Assalamu alaikum ${htmlEscape(student.guardian_name || '')},</p>
-      <p>This is to inform you that <strong>${htmlEscape(student.name)}</strong> was marked <strong>${htmlEscape(status)}</strong> on ${localYmd}.</p>
+      ${statusNarrative}
       <p>If your child is late or excused, please coordinate with the office as needed.</p>
+      ${buildPortalCtaHtml()}
       <div style=\"text-align:center;margin-top:16px;\">
         <img src=\"${Deno.env.get('ORG_LOGO_URL') || DEFAULT_ORG_LOGO_URL}\" alt=\"Dār Al-Ulūm Montréal\" style=\"max-width:180px;height:auto;\"/>
       </div>
@@ -642,7 +743,7 @@ body{font-family:Arial,Helvetica,sans-serif;background:#f6f7f9;margin:0;padding:
                 successfulForStudent++;
                 emailsSent++;
                 continue;
-              } catch (_) {}
+              } catch (_) { /* noop */ }
             }
             emailsSkipped++;
           }
@@ -713,7 +814,7 @@ body{font-family:Arial,Helvetica,sans-serif;background:#f6f7f9;margin:0;padding:
         status: 'error',
         message: error?.message || 'unknown error in attendance-absence-email'
       });
-    } catch (_) {}
+    } catch (_) { /* noop */ }
 
     // Return a generic 500 error response.
     return new Response(JSON.stringify({ error: error?.message || 'Unknown error' }), {
