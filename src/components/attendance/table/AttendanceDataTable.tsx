@@ -18,6 +18,8 @@ import {
 } from "@/components/ui/dialog.tsx";
 import { Button } from "@/components/ui/button.tsx";
 import { Textarea } from "@/components/ui/textarea.tsx";
+import { Input } from "@/components/ui/input.tsx";
+import { Label } from "@/components/ui/label.tsx";
 import { Clock, Loader2, Pencil } from "lucide-react";
 import { StatusBadge, StatusType } from "@/components/ui/status-badge.tsx";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -50,32 +52,72 @@ export function AttendanceDataTable(
 ) {
   const [editingRecordId, setEditingRecordId] = useState<string | null>(null);
   const [noteValue, setNoteValue] = useState<string>("");
+  const [timeValue, setTimeValue] = useState<string>("");
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const updateNoteMutation = useMutation({
-    mutationFn: async ({ recordId, note }: { recordId: string; note: string }) => {
+  // Convert database time format (HH:mm:ss) to HTML time input format (HH:mm)
+  const dbTimeToInputTime = (timeString: string | null | undefined): string => {
+    if (!timeString) return "";
+    try {
+      const time = parse(timeString, "HH:mm:ss", new Date());
+      return format(time, "HH:mm");
+    } catch {
+      // If parsing fails, try to extract HH:mm from the string
+      const match = timeString.match(/^(\d{2}:\d{2})/);
+      return match ? match[1] : "";
+    }
+  };
+
+  // Convert HTML time input format (HH:mm) to database format (HH:mm:ss)
+  const inputTimeToDbTime = (timeString: string): string | null => {
+    if (!timeString || !timeString.trim()) return null;
+    // Ensure it's in HH:mm format, then append :00 for seconds
+    const match = timeString.match(/^(\d{2}:\d{2})/);
+    return match ? `${match[1]}:00` : null;
+  };
+
+  const updateRecordMutation = useMutation({
+    mutationFn: async ({ 
+      recordId, 
+      note, 
+      time 
+    }: { 
+      recordId: string; 
+      note: string; 
+      time?: string | null;
+    }) => {
+      const updateData: { notes?: string | null; time?: string | null } = {
+        notes: note || null,
+      };
+      
+      // Only include time in update if it's provided
+      if (time !== undefined) {
+        updateData.time = time;
+      }
+
       const { error } = await supabase
         .from("attendance")
-        .update({ notes: note || null })
+        .update(updateData)
         .eq("id", recordId);
 
       if (error) throw error;
-      return { recordId, note };
+      return { recordId, note, time };
     },
     onSuccess: () => {
       toast({
         title: "Success",
-        description: "Note updated successfully.",
+        description: "Record updated successfully.",
       });
       queryClient.invalidateQueries({ queryKey: ["attendance-records"] });
       setEditingRecordId(null);
       setNoteValue("");
+      setTimeValue("");
     },
     onError: (error) => {
       toast({
         title: "Error",
-        description: `Failed to update note: ${error.message}`,
+        description: `Failed to update record: ${error.message}`,
         variant: "destructive",
       });
     },
@@ -84,16 +126,26 @@ export function AttendanceDataTable(
   const handleOpenDialog = (record: AttendanceRecord) => {
     setEditingRecordId(record.id);
     setNoteValue(record.notes || "");
+    // Convert DB time format to HTML time input format
+    setTimeValue(dbTimeToInputTime(record.time));
   };
 
   const handleCloseDialog = () => {
     setEditingRecordId(null);
     setNoteValue("");
+    setTimeValue("");
   };
 
-  const handleSaveNote = () => {
+  const handleSaveRecord = () => {
     if (editingRecordId) {
-      updateNoteMutation.mutate({ recordId: editingRecordId, note: noteValue });
+      // Always allow time updates for admins, regardless of status
+      const dbTime = isAdmin ? inputTimeToDbTime(timeValue) : undefined;
+      
+      updateRecordMutation.mutate({ 
+        recordId: editingRecordId, 
+        note: noteValue,
+        time: dbTime,
+      });
     }
   };
 
@@ -179,7 +231,7 @@ export function AttendanceDataTable(
                           size="icon"
                           className="h-8 w-8 flex-shrink-0 hover:bg-purple-100 dark:hover:bg-purple-900/30"
                           onClick={() => handleOpenDialog(record)}
-                          title="Edit note"
+                          title="Edit record"
                         >
                           <Pencil className="h-4 w-4 text-purple-600 dark:text-purple-400" />
                         </Button>
@@ -196,32 +248,50 @@ export function AttendanceDataTable(
       <Dialog open={editingRecordId !== null} onOpenChange={(open) => !open && handleCloseDialog()}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Edit Note</DialogTitle>
+            <DialogTitle>Edit Attendance Record</DialogTitle>
             <DialogDescription>
               {editingRecord && (
                 <>
-                  Add or edit a note for {editingRecord.students?.name || "Unknown Student"} on{" "}
-                  {format(parseISO(editingRecord.date), "PPP")}
+                  {isAdmin
+                    ? `Edit time and notes for ${editingRecord.students?.name || "Unknown Student"} on ${format(parseISO(editingRecord.date), "PPP")}`
+                    : `Add or edit a note for ${editingRecord.students?.name || "Unknown Student"} on ${format(parseISO(editingRecord.date), "PPP")}`
+                  }
                 </>
               )}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
-            <Textarea
-              value={noteValue}
-              onChange={(e) => setNoteValue(e.target.value)}
-              placeholder="Enter note here..."
-              rows={4}
-            />
+            {isAdmin && (
+              <div className="space-y-2">
+                <Label htmlFor="time-input">Attendance Time</Label>
+                <Input
+                  id="time-input"
+                  type="time"
+                  value={timeValue}
+                  onChange={(e) => setTimeValue(e.target.value)}
+                  className="w-full"
+                />
+              </div>
+            )}
+            <div className="space-y-2">
+              <Label htmlFor="note-input">Notes</Label>
+              <Textarea
+                id="note-input"
+                value={noteValue}
+                onChange={(e) => setNoteValue(e.target.value)}
+                placeholder="Enter note here..."
+                rows={4}
+              />
+            </div>
             <div className="flex justify-end gap-2">
               <Button variant="outline" onClick={handleCloseDialog}>
                 Cancel
               </Button>
               <Button
-                onClick={handleSaveNote}
-                disabled={updateNoteMutation.isPending}
+                onClick={handleSaveRecord}
+                disabled={updateRecordMutation.isPending}
               >
-                {updateNoteMutation.isPending ? "Saving..." : "Save"}
+                {updateRecordMutation.isPending ? "Saving..." : "Save"}
               </Button>
             </div>
           </div>

@@ -619,18 +619,77 @@ serve(async (req: Request) => {
     let emailsSent = 0;
     let emailsSkipped = 0;
     const emailResults = [];
+    // Collect email payloads for batch sending
+    const emailPayloads: Array<{
+        from: string;
+        to: string;
+        subject: string;
+        html: string;
+        student_name: string;
+        guardian_email: string;
+    }> = [];
 
     for (const { student, progresses } of studentProgressMap.values()) {
-        if (timeRemainingMs() < 7000) {
-            endedDueToTimeout = true;
-            console.log('Stopping sends due to runtime limit');
-            break;
+        // Collect all parent emails from both sources
+        const parentEmailsSet = new Set<string>();
+        
+        // Source 1: Direct guardian_email from students table
+        if (student.guardian_email) {
+            const trimmed = student.guardian_email.trim();
+            if (trimmed) {
+                parentEmailsSet.add(trimmed);
+            }
         }
-        if (!student.guardian_email) {
-            console.log(`Student ${student.name} has no guardian email. Skipping.`);
+
+        // Source 2: `parents` table (student_ids array) -> fetch parent IDs, then emails from profiles
+        try {
+            const studentUuid = student.id; // Keep as UUID, don't convert to string
+
+            const { data: parents, error: parentsError } = await supabaseService
+                .from("parents")
+                .select("id, student_ids")
+                .contains("student_ids", [studentUuid]);
+
+            if (parentsError) {
+                console.error(`Error fetching parents for student ${studentUuid}:`, parentsError.message);
+            } else {
+                console.log(`Found ${(parents || []).length} parent rows for student ${studentUuid}`);
+
+                const parentIds = (parents || []).map((p: any) => p.id);
+
+                if (parentIds.length > 0) {
+                    const { data: profiles, error: profilesError } = await supabaseService
+                        .from("profiles")
+                        .select("email, role")
+                        .in("id", parentIds)
+                        .eq("role", "parent");
+                    
+                    if (profilesError) {
+                        console.error(`Error fetching profiles:`, profilesError.message);
+                    } else {
+                        const parentEmails = (profiles || []).map((p: any) => p.email).filter(Boolean);
+                        
+                        for (const email of parentEmails) {
+                            const trimmed = email.trim();
+                            if (trimmed) {
+                                parentEmailsSet.add(trimmed);
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (e) {
+            console.error(`Exception in parent email lookup for student ${student.id}:`, (e as Error).message);
+        }
+
+        // Skip if no parent emails found at all
+        if (parentEmailsSet.size === 0) {
+            console.log(`Student ${student.name} has no parent emails. Skipping.`);
             emailsSkipped++;
             continue;
         }
+
+        const parentEmails = Array.from(parentEmailsSet);
 
         const progressSummary = progresses.map(p => 
             `<tr>
@@ -810,37 +869,126 @@ serve(async (req: Request) => {
         </html>
         `;
 
-        try {
-            if (!RESEND_FROM_EMAIL) {
-                console.error("RESEND_FROM_EMAIL environment variable is not set.");
+        if (!RESEND_FROM_EMAIL) {
+            console.error("RESEND_FROM_EMAIL environment variable is not set.");
+            // Mark all parent emails as failed
+            for (const email of parentEmails) {
                 emailsSkipped++;
-                continue;
+                emailResults.push({
+                    student_name: student.name,
+                    guardian_email: email,
+                    status: 'failed',
+                    error: 'RESEND_FROM_EMAIL not configured'
+                });
             }
+            continue;
+        }
 
-            await withTimeout(resend.emails.send({
+        // Collect email payloads for batch sending - one per parent email
+        for (const parentEmail of parentEmails) {
+            emailPayloads.push({
                 from: RESEND_FROM_EMAIL,
-                to: student.guardian_email,
+                to: parentEmail,
                 subject: `Quran Progress Report for ${student.name} - ${reportDate}`,
                 html: emailHtml,
-            }), 10000, `Guardian email to ${student.guardian_email}`);
-            
-            console.log(`Email sent to ${student.guardian_email} for student ${student.name}`);
-            emailsSent++;
-            emailResults.push({
                 student_name: student.name,
-                guardian_email: student.guardian_email,
-                status: 'sent'
+                guardian_email: parentEmail,
             });
-        } catch (emailError) {
-            const errMsg = emailError instanceof Error ? emailError.message : String(emailError);
-            console.error(`Failed to send email to ${student.guardian_email} for student ${student.name}:`, errMsg);
-            emailsSkipped++;
-            emailResults.push({
-                student_name: student.name,
-                guardian_email: student.guardian_email,
-                status: 'failed',
-                error: errMsg
-            });
+        }
+    }
+
+    // Send emails in batches using Resend batch API
+    if (emailPayloads.length > 0) {
+        const BATCH_SIZE = 150; // Split into chunks of 150 emails
+        const batches: typeof emailPayloads[] = [];
+        
+        // Split email payloads into chunks
+        for (let i = 0; i < emailPayloads.length; i += BATCH_SIZE) {
+            batches.push(emailPayloads.slice(i, i + BATCH_SIZE));
+        }
+
+        console.log(`Sending ${emailPayloads.length} emails in ${batches.length} batch(es)`);
+
+        // Process each batch
+        for (let batchIndex = 0; batchIndex < batches.length; batchIndex++) {
+            const batch = batches[batchIndex];
+            try {
+                // Prepare batch payload (remove student metadata for API call)
+                const batchPayload = batch.map(({ student_name, guardian_email, ...emailData }) => emailData);
+                
+                const { data, error } = await resend.batch.send(batchPayload);
+                
+                if (error) {
+                    console.error(`Batch ${batchIndex + 1} failed:`, error);
+                    // Mark all emails in this batch as failed
+                    for (const payload of batch) {
+                        emailsSkipped++;
+                        emailResults.push({
+                            student_name: payload.student_name,
+                            guardian_email: payload.guardian_email,
+                            status: 'failed',
+                            error: error instanceof Error ? error.message : String(error)
+                        });
+                    }
+                } else if (data) {
+                    // Process batch results
+                    // Resend batch API returns an array of results, one per email
+                    // Each result has an id if successful, or error if failed
+                    const results = Array.isArray(data) ? data : [];
+                    
+                    for (let i = 0; i < batch.length; i++) {
+                        const payload = batch[i];
+                        const result = results[i];
+                        
+                        if (result && result.id && !result.error) {
+                            // Success
+                            emailsSent++;
+                            emailResults.push({
+                                student_name: payload.student_name,
+                                guardian_email: payload.guardian_email,
+                                status: 'sent'
+                            });
+                            console.log(`Email sent to ${payload.guardian_email} for student ${payload.student_name}`);
+                        } else {
+                            // Failed
+                            emailsSkipped++;
+                            const errorMsg = result?.error ? (result.error instanceof Error ? result.error.message : String(result.error)) : 'Unknown error';
+                            emailResults.push({
+                                student_name: payload.student_name,
+                                guardian_email: payload.guardian_email,
+                                status: 'failed',
+                                error: errorMsg
+                            });
+                            console.error(`Failed to send email to ${payload.guardian_email} for student ${payload.student_name}:`, errorMsg);
+                        }
+                    }
+                } else {
+                    // No data returned, mark all as failed
+                    console.error(`Batch ${batchIndex + 1} returned no data`);
+                    for (const payload of batch) {
+                        emailsSkipped++;
+                        emailResults.push({
+                            student_name: payload.student_name,
+                            guardian_email: payload.guardian_email,
+                            status: 'failed',
+                            error: 'No response from batch API'
+                        });
+                    }
+                }
+            } catch (batchError) {
+                const errMsg = batchError instanceof Error ? batchError.message : String(batchError);
+                console.error(`Exception sending batch ${batchIndex + 1}:`, errMsg);
+                // Mark all emails in this batch as failed
+                for (const payload of batch) {
+                    emailsSkipped++;
+                    emailResults.push({
+                        student_name: payload.student_name,
+                        guardian_email: payload.guardian_email,
+                        status: 'failed',
+                        error: errMsg
+                    });
+                }
+            }
         }
     }
 
