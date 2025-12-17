@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client.ts";
 import { Button } from "@/components/ui/button.tsx";
 import { Input } from "@/components/ui/input.tsx";
@@ -78,6 +78,14 @@ export const StudentDialog = (
     name: string;
     date_of_birth: string | null;
     enrollment_date: string | null;
+    gender: string;
+    grade: string;
+    health_card: string;
+    permanent_code: string;
+    street: string;
+    city: string;
+    province: string;
+    postal_code: string;
     guardian_name: string | null;
     guardian_contact: string | null;
     guardian_email: string | null;
@@ -93,14 +101,6 @@ export const StudentDialog = (
     status_start_date: string | null;
     status_end_date: string | null;
     status_notes: string | null;
-    gender: string | null;
-    grade: string | null;
-    health_card: string | null;
-    permanent_code: string | null;
-    street: string | null;
-    city: string | null;
-    province: string | null;
-    postal_code: string | null;
   };
 
   const [formData, setFormData] = useState<FormState>({
@@ -133,37 +133,76 @@ export const StudentDialog = (
     status_notes: selectedStudent?.status_notes || "",
   });
 
-  // Update form data when selectedStudent changes
+  // Fetch complete student data when editing
+  const { data: completeStudentData, isLoading: isLoadingStudent } = useQuery({
+    queryKey: ["student", selectedStudent?.id],
+    queryFn: async () => {
+      if (!selectedStudent?.id) return null;
+      
+      const { data, error } = await supabase
+        .from("students")
+        .select("*")
+        .eq("id", selectedStudent.id)
+        .single();
+      
+      if (error) {
+        console.error("Error fetching student data:", error);
+        throw error;
+      }
+      
+      return data;
+    },
+    enabled: !!selectedStudent?.id && open,
+  });
+
+  // Update form data when selectedStudent or completeStudentData changes
   useEffect(() => {
-    if (selectedStudent) {
+    // Prioritize completeStudentData (fetched from DB) over selectedStudent (from list)
+    const studentData = completeStudentData || selectedStudent;
+    
+    if (studentData) {
+      // Map secondary guardian DB columns to form fields
+      // DB columns: secondary_guardian_name, secondary_guardian_phone, secondary_guardian_email
+      // Form fields: guardian2_name, guardian2_contact, guardian2_email
+      const dbData = completeStudentData as Record<string, unknown> | null;
+      const guardian2_name = (dbData?.secondary_guardian_name as string) || 
+                            (selectedStudent as any)?.guardian2_name || 
+                            "";
+      const guardian2_contact = (dbData?.secondary_guardian_phone as string) || 
+                               (selectedStudent as any)?.guardian2_contact || 
+                               "";
+      const guardian2_email = (dbData?.secondary_guardian_email as string) || 
+                             (selectedStudent as any)?.guardian2_email || 
+                             "";
+      
       setFormData({
-        name: selectedStudent.name || "",
-        date_of_birth: selectedStudent.date_of_birth || "",
-        enrollment_date: selectedStudent.enrollment_date ||
+        name: studentData.name || "",
+        date_of_birth: studentData.date_of_birth || "",
+        enrollment_date: studentData.enrollment_date ||
           new Date().toISOString().split("T")[0],
-        gender: selectedStudent.gender || "",
-        grade: selectedStudent.grade || "",
-        health_card: selectedStudent.health_card || "",
-        permanent_code: selectedStudent.permanent_code || "",
-        street: selectedStudent.street || "",
-        city: selectedStudent.city || "",
-        province: selectedStudent.province || "",
-        postal_code: selectedStudent.postal_code || "",
-        guardian_name: selectedStudent.guardian_name || "",
-        guardian_contact: selectedStudent.guardian_contact || "",
-        guardian_email: selectedStudent.guardian_email || "",
-        guardian2_name: selectedStudent.guardian2_name || "",
-        guardian2_contact: selectedStudent.guardian2_contact || "",
-        guardian2_email: selectedStudent.guardian2_email || "",
-        status: selectedStudent.status || "active",
-        completed_juz: selectedStudent.completed_juz || [],
-        current_juz: selectedStudent.current_juz?.toString() || "_none_",
-        madrassah_id: selectedStudent.madrassah_id || "",
-        section: selectedStudent.section || "",
-        medicalConditions: selectedStudent.medical_condition || "",
-        status_start_date: selectedStudent.status_start_date || null,
-        status_end_date: selectedStudent.status_end_date || null,
-        status_notes: selectedStudent.status_notes || "",
+        gender: studentData.gender || "",
+        grade: studentData.grade || "",
+        health_card: studentData.health_card || "",
+        permanent_code: studentData.permanent_code || "",
+        street: studentData.street || "",
+        city: studentData.city || "",
+        province: studentData.province || "",
+        postal_code: studentData.postal_code || "",
+        guardian_name: studentData.guardian_name || "",
+        guardian_contact: studentData.guardian_contact || "",
+        guardian_email: studentData.guardian_email || "",
+        guardian2_name: guardian2_name,
+        guardian2_contact: guardian2_contact,
+        guardian2_email: guardian2_email,
+        status: studentData.status || "active",
+        completed_juz: studentData.completed_juz || [],
+        current_juz: studentData.current_juz?.toString() || "_none_",
+        madrassah_id: studentData.madrassah_id || madrassahId || "",
+        section: studentData.section || "",
+        medicalConditions: studentData.medical_condition || "",
+        status_start_date: studentData.status_start_date || null,
+        status_end_date: studentData.status_end_date || null,
+        status_notes: studentData.status_notes || "",
       });
     } else {
       // Reset form data for new student
@@ -196,7 +235,7 @@ export const StudentDialog = (
         status_notes: "",
       });
     }
-  }, [selectedStudent, madrassahId]);
+  }, [selectedStudent, completeStudentData, madrassahId]);
 
   // Load available sections for this madrassah (admin view only)
   useEffect(() => {
@@ -231,7 +270,14 @@ export const StudentDialog = (
         throw new Error("Student name is required");
       }
 
-      const { medicalConditions: _medicalConditions, section, ...formDataWithoutMedical } = formData;
+      const { 
+        medicalConditions: _medicalConditions, 
+        section, 
+        guardian2_name: _guardian2_name,
+        guardian2_contact: _guardian2_contact,
+        guardian2_email: _guardian2_email,
+        ...formDataWithoutMedical 
+      } = formData;
       const baseSubmissionData = {
         ...formDataWithoutMedical,
         current_juz: formData.current_juz === "_none_"
@@ -240,21 +286,21 @@ export const StudentDialog = (
         completed_juz: formData.completed_juz.map((juz) => Number(juz)),
         medical_condition: formData.medicalConditions || null,
         guardian_email: formData.guardian_email || null,
-        // Map secondary guardian fields to actual DB columns
+        // Map secondary guardian form fields to DB columns
         secondary_guardian_name: formData.guardian2_name || null,
         secondary_guardian_phone: formData.guardian2_contact || null,
-        secondary_guardian_whatsapp: formData.guardian2_email || null,
+        secondary_guardian_email: formData.guardian2_email || null,
         // Normalize empty strings to null for optional fields
         date_of_birth: formData.date_of_birth || null,
         enrollment_date: formData.enrollment_date || new Date().toISOString().split("T")[0],
-        gender: (formData as any).gender || null,
-        grade: (formData as any).grade || null,
-        health_card: (formData as any).health_card || null,
-        permanent_code: (formData as any).permanent_code || null,
-        street: (formData as any).street || null,
-        city: (formData as any).city || null,
-        province: (formData as any).province || null,
-        postal_code: (formData as any).postal_code || null,
+        gender: formData.gender || null,
+        grade: formData.grade || null,
+        health_card: formData.health_card || null,
+        permanent_code: formData.permanent_code || null,
+        street: formData.street || null,
+        city: formData.city || null,
+        province: formData.province || null,
+        postal_code: formData.postal_code || null,
         status: formData.status,
         status_start_date: formData.status_start_date || null,
         status_end_date: formData.status_end_date || null,
@@ -293,7 +339,7 @@ export const StudentDialog = (
       }
 
       if (selectedStudent) {
-        // Update with graceful fallback if guardian2_* columns are missing in DB
+        // Update with graceful fallback if secondary_guardian_* columns are missing in DB
         let updateError: unknown | null = null;
         try {
           const { error } = await supabase
@@ -305,8 +351,8 @@ export const StudentDialog = (
           if (error) throw error;
         } catch (err) {
           const msg = getErrorMessage(err, "");
-          if (/guardian2_/i.test(msg) || /secondary_guardian_/i.test(msg) || /column .* does not exist/i.test(msg)) {
-            const { guardian2_name: _gn, guardian2_contact: _gc, guardian2_email: _ge, secondary_guardian_name: _sgn, secondary_guardian_phone: _sgp, secondary_guardian_whatsapp: _sgw, ...cleaned } = submissionData as Record<string, unknown>;
+          if (/secondary_guardian_/i.test(msg) || /column .* does not exist/i.test(msg)) {
+            const { secondary_guardian_name: _sgn, secondary_guardian_phone: _sgp, secondary_guardian_email: _sge, ...cleaned } = submissionData as Record<string, unknown>;
             const { error: retryError } = await supabase
               .from("students")
               .update(cleaned)
@@ -323,7 +369,7 @@ export const StudentDialog = (
           description: "Student updated successfully",
         });
       } else {
-        // Insert with graceful fallback if guardian2_* columns are missing in DB
+        // Insert with graceful fallback if secondary_guardian_* columns are missing in DB
         let created: { id: string } | null = null;
         try {
           const { data, error } = await supabase
@@ -335,8 +381,8 @@ export const StudentDialog = (
           created = data as { id: string } | null;
         } catch (err) {
           const msg = getErrorMessage(err, "");
-          if (/guardian2_/i.test(msg) || /secondary_guardian_/i.test(msg) || /column .* does not exist/i.test(msg)) {
-            const { guardian2_name: _gn, guardian2_contact: _gc, guardian2_email: _ge, secondary_guardian_name: _sgn, secondary_guardian_phone: _sgp, secondary_guardian_whatsapp: _sgw, ...cleaned } = submissionData as Record<string, unknown>;
+          if (/secondary_guardian_/i.test(msg) || /column .* does not exist/i.test(msg)) {
+            const { secondary_guardian_name: _sgn, secondary_guardian_phone: _sgp, secondary_guardian_email: _sge, ...cleaned } = submissionData as Record<string, unknown>;
             const { data, error: retryError } = await supabase
               .from("students")
               .insert([cleaned])
