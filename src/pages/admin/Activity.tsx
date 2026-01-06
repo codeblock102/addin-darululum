@@ -111,7 +111,7 @@ export default function Activity() {
       // Fetch progress entries (include contributor info for teacher attribution)
       let progressQuery = supabase
         .from("progress")
-        .select("*, students(name, section), contributor_id, contributor_name")
+        .select("*, students(name, section), contributor_id, contributor_name, contributor:profiles!contributor_id(name, role)")
         .gte("created_at", fromISO)
         .lte("created_at", toISO)
         .order("created_at", { ascending: false });
@@ -122,7 +122,7 @@ export default function Activity() {
 
       const { data: progress } = await progressQuery;
 
-      // Fetch attendance (include class info to derive teacher)
+      // Fetch attendance (include class info and student's assigned teachers to derive teacher)
       let attendanceQuery = supabase
         .from("attendance")
         .select("*, students(name, section), classes(teacher_ids, name)")
@@ -211,9 +211,22 @@ export default function Activity() {
     // Progress entries
     (dashboardData.progress || []).forEach((p: any) => {
       const s = p.students || {};
-      // Get teacher name from contributor_name or lookup from teacherMap
+      // Get teacher name - prefer joined contributor profile, then contributor_name, then teacherMap lookup
       const teacherId = p.contributor_id;
-      const teacherName = p.contributor_name || (teacherId ? teacherMap[teacherId]?.name : null) || "Unknown";
+      const contributorProfile = p.contributor;
+      let teacherName = "Unknown";
+      
+      if (contributorProfile?.name) {
+        // Use name from joined profile (most reliable)
+        teacherName = contributorProfile.name;
+      } else if (p.contributor_name) {
+        // Use cached contributor_name (may have "Teacher " prefix)
+        teacherName = p.contributor_name.replace(/^Teacher\s+/i, ""); // Remove "Teacher " prefix if present
+      } else if (teacherId && teacherMap[teacherId]?.name) {
+        // Fallback to teacherMap lookup
+        teacherName = teacherMap[teacherId].name;
+      }
+      
       gather.push({
         id: `progress:${p.id}`,
         type: "progress",
@@ -227,11 +240,29 @@ export default function Activity() {
     // Attendance
     (dashboardData.attendance || []).forEach((a: any) => {
       const s = a.students || {};
-      // Get teacher from class relationship or direct teacher_id if available
+      // Get teacher from class relationship, student's assigned teachers, or direct teacher_id
       const classData = a.classes || {};
-      const teacherIds = classData.teacher_ids || [];
-      const teacherId = a.teacher_id || (teacherIds.length > 0 ? teacherIds[0] : null);
-      const teacherName = teacherId ? (teacherMap[teacherId]?.name || "Unknown") : "System";
+      const teacherIds = classData?.teacher_ids || [];
+      
+      // Try multiple sources for teacher ID
+      let teacherId: string | null = null;
+      if (a.teacher_id) {
+        teacherId = a.teacher_id;
+      } else if (teacherIds.length > 0) {
+        // Use first teacher from class
+        teacherId = teacherIds[0];
+      } else if (a.student_id && studentToTeacherIds[a.student_id]?.length > 0) {
+        // Fallback to student's assigned teachers
+        teacherId = studentToTeacherIds[a.student_id][0];
+      }
+      
+      // Get teacher name
+      let teacherName = "Unknown";
+      if (teacherId) {
+        const teacherData = teacherMap[teacherId];
+        teacherName = teacherData?.name || "Unknown";
+      }
+      
       gather.push({
         id: `attendance:${a.id}`,
         type: "attendance",
@@ -376,19 +407,31 @@ export default function Activity() {
       .on("postgres_changes", { event: "*", schema: "public", table: "progress" }, async (payload) => {
         const r: any = payload.new || payload.old || {};
         let student: any = null;
-        let teacher: any = null;
+        let teacher: any = { name: "Unknown" };
         if (r.student_id) {
           const { data } = await supabase.from("students").select("name, section").eq("id", r.student_id).maybeSingle();
           student = data;
         }
-        // Get teacher info from contributor
+        // Get teacher info from contributor - fetch profile if needed
         if (r.contributor_id) {
+          // First try teacherMap
           const teacherData = teacherMap[r.contributor_id];
-          teacher = teacherData || { name: r.contributor_name || "Unknown" };
+          if (teacherData) {
+            teacher = teacherData;
+          } else if (r.contributor_name) {
+            // Use contributor_name, removing "Teacher " prefix if present
+            teacher = { name: r.contributor_name.replace(/^Teacher\s+/i, "") };
+          } else {
+            // Fetch from profiles table
+            const { data: profile } = await supabase
+              .from("profiles")
+              .select("name")
+              .eq("id", r.contributor_id)
+              .maybeSingle();
+            teacher = { name: profile?.name || "Unknown" };
+          }
         } else if (r.contributor_name) {
-          teacher = { name: r.contributor_name };
-        } else {
-          teacher = { name: "Unknown" };
+          teacher = { name: r.contributor_name.replace(/^Teacher\s+/i, "") };
         }
         const item: ActivityItem = {
           id: `progress:${r.id}:${payload.eventType}:${payload.commit_timestamp}`,
@@ -403,27 +446,40 @@ export default function Activity() {
       .on("postgres_changes", { event: "*", schema: "public", table: "attendance" }, async (payload) => {
         const r: any = payload.new || payload.old || {};
         let student: any = null;
-        let teacher: any = { name: "System" };
+        let teacher: any = { name: "Unknown" };
         if (r.student_id) {
           const { data } = await supabase.from("students").select("name, section").eq("id", r.student_id).maybeSingle();
           student = data;
         }
-        // Get teacher from class relationship
-        if (r.class_id) {
+        // Get teacher from multiple sources
+        let teacherId: string | null = null;
+        
+        // Try direct teacher_id first
+        if (r.teacher_id) {
+          teacherId = r.teacher_id;
+        } else if (r.class_id) {
+          // Get from class
           const { data: classData } = await supabase
             .from("classes")
             .select("teacher_ids")
             .eq("id", r.class_id)
             .maybeSingle();
           if (classData?.teacher_ids && Array.isArray(classData.teacher_ids) && classData.teacher_ids.length > 0) {
-            const teacherId = classData.teacher_ids[0];
-            const teacherData = teacherMap[teacherId];
-            teacher = teacherData || { name: "Unknown" };
+            teacherId = classData.teacher_ids[0];
           }
-        } else if (r.teacher_id) {
-          const teacherData = teacherMap[r.teacher_id];
+        }
+        
+        // If still no teacher, try student's assigned teachers
+        if (!teacherId && r.student_id && studentToTeacherIds[r.student_id]?.length > 0) {
+          teacherId = studentToTeacherIds[r.student_id][0];
+        }
+        
+        // Get teacher name
+        if (teacherId) {
+          const teacherData = teacherMap[teacherId];
           teacher = teacherData || { name: "Unknown" };
         }
+        
         const item: ActivityItem = {
           id: `attendance:${r.id}:${payload.eventType}:${payload.commit_timestamp}`,
           type: "attendance",
