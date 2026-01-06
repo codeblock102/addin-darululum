@@ -108,10 +108,10 @@ export default function Activity() {
       const fromISO = from.toISOString();
       const toISO = to.toISOString();
 
-      // Fetch progress entries
+      // Fetch progress entries (include contributor info for teacher attribution)
       let progressQuery = supabase
         .from("progress")
-        .select("*, students(name, section)")
+        .select("*, students(name, section), contributor_id, contributor_name")
         .gte("created_at", fromISO)
         .lte("created_at", toISO)
         .order("created_at", { ascending: false });
@@ -122,10 +122,10 @@ export default function Activity() {
 
       const { data: progress } = await progressQuery;
 
-      // Fetch attendance
+      // Fetch attendance (include class info to derive teacher)
       let attendanceQuery = supabase
         .from("attendance")
-        .select("*, students(name, section)")
+        .select("*, students(name, section), classes(teacher_ids, name)")
         .gte("created_at", fromISO)
         .lte("created_at", toISO)
         .order("created_at", { ascending: false });
@@ -159,10 +159,10 @@ export default function Activity() {
             .in("assignment_id", assignmentIds)
         : { data: [] };
 
-      // Fetch communications
+      // Fetch communications (include sender profile for teacher attribution)
       let commsQuery = supabase
         .from("communications")
-        .select("id, sender_id, recipient_id, created_at, subject")
+        .select("id, sender_id, recipient_id, created_at, subject, sender:profiles!sender_id(name, role, section)")
         .gte("created_at", fromISO)
         .lte("created_at", toISO)
         .order("created_at", { ascending: false });
@@ -211,11 +211,14 @@ export default function Activity() {
     // Progress entries
     (dashboardData.progress || []).forEach((p: any) => {
       const s = p.students || {};
+      // Get teacher name from contributor_name or lookup from teacherMap
+      const teacherId = p.contributor_id;
+      const teacherName = p.contributor_name || (teacherId ? teacherMap[teacherId]?.name : null) || "Unknown";
       gather.push({
         id: `progress:${p.id}`,
         type: "progress",
         title: "Progress entry",
-        description: `${s.name || "Student"}${s.section ? ` (${s.section})` : ""} — ${p.pages_memorized ?? 0} pages (${p.memorization_quality || "quality"})`,
+        description: `By ${teacherName} — ${s.name || "Student"}${s.section ? ` (${s.section})` : ""} — ${p.pages_memorized ?? 0} pages (${p.memorization_quality || "quality"})`,
         created_at: p.created_at || p.date,
         meta: p,
       });
@@ -224,11 +227,16 @@ export default function Activity() {
     // Attendance
     (dashboardData.attendance || []).forEach((a: any) => {
       const s = a.students || {};
+      // Get teacher from class relationship or direct teacher_id if available
+      const classData = a.classes || {};
+      const teacherIds = classData.teacher_ids || [];
+      const teacherId = a.teacher_id || (teacherIds.length > 0 ? teacherIds[0] : null);
+      const teacherName = teacherId ? (teacherMap[teacherId]?.name || "Unknown") : "System";
       gather.push({
         id: `attendance:${a.id}`,
         type: "attendance",
         title: "Attendance",
-        description: `${s.name || "Student"}${s.section ? ` (${s.section})` : ""} — ${a.status} (${a.date})`,
+        description: `By ${teacherName} — ${s.name || "Student"}${s.section ? ` (${s.section})` : ""} — ${a.status} (${a.date})`,
         created_at: a.created_at || a.date,
         meta: a,
       });
@@ -271,11 +279,17 @@ export default function Activity() {
 
     // Communications
     (dashboardData.communications || []).forEach((c: any) => {
+      // Get sender info - prefer joined sender data, fallback to teacherMap
+      const senderId = c.sender_id;
+      const senderData = c.sender || (senderId ? teacherMap[senderId] : null);
+      const senderName = senderData?.name || (senderId ? "Unknown" : "System");
+      const senderRole = senderData?.role;
+      const senderLabel = senderRole === "teacher" ? `Teacher ${senderName}` : senderName;
       gather.push({
         id: `message:${c.id}`,
         type: "message",
         title: "Message",
-        description: `${c.subject || "New message"} — from ${c.sender_id || "system"}`,
+        description: `By ${senderLabel}${senderData?.section ? ` (${senderData.section})` : ""} — ${c.subject || "New message"}`,
         created_at: c.created_at,
         meta: c,
       });
@@ -362,15 +376,25 @@ export default function Activity() {
       .on("postgres_changes", { event: "*", schema: "public", table: "progress" }, async (payload) => {
         const r: any = payload.new || payload.old || {};
         let student: any = null;
+        let teacher: any = null;
         if (r.student_id) {
           const { data } = await supabase.from("students").select("name, section").eq("id", r.student_id).maybeSingle();
           student = data;
+        }
+        // Get teacher info from contributor
+        if (r.contributor_id) {
+          const teacherData = teacherMap[r.contributor_id];
+          teacher = teacherData || { name: r.contributor_name || "Unknown" };
+        } else if (r.contributor_name) {
+          teacher = { name: r.contributor_name };
+        } else {
+          teacher = { name: "Unknown" };
         }
         const item: ActivityItem = {
           id: `progress:${r.id}:${payload.eventType}:${payload.commit_timestamp}`,
           type: "progress",
           title: payload.eventType === "DELETE" ? "Progress deleted" : "Progress entry",
-          description: `${student?.name || "Student"}${student?.section ? ` (${student.section})` : ""} — ${r.pages_memorized ?? 0} pages`,
+          description: `By ${teacher.name} — ${student?.name || "Student"}${student?.section ? ` (${student.section})` : ""} — ${r.pages_memorized ?? 0} pages`,
           created_at: r.created_at || new Date().toISOString(),
           meta: r,
         };
@@ -379,15 +403,32 @@ export default function Activity() {
       .on("postgres_changes", { event: "*", schema: "public", table: "attendance" }, async (payload) => {
         const r: any = payload.new || payload.old || {};
         let student: any = null;
+        let teacher: any = { name: "System" };
         if (r.student_id) {
           const { data } = await supabase.from("students").select("name, section").eq("id", r.student_id).maybeSingle();
           student = data;
+        }
+        // Get teacher from class relationship
+        if (r.class_id) {
+          const { data: classData } = await supabase
+            .from("classes")
+            .select("teacher_ids")
+            .eq("id", r.class_id)
+            .maybeSingle();
+          if (classData?.teacher_ids && Array.isArray(classData.teacher_ids) && classData.teacher_ids.length > 0) {
+            const teacherId = classData.teacher_ids[0];
+            const teacherData = teacherMap[teacherId];
+            teacher = teacherData || { name: "Unknown" };
+          }
+        } else if (r.teacher_id) {
+          const teacherData = teacherMap[r.teacher_id];
+          teacher = teacherData || { name: "Unknown" };
         }
         const item: ActivityItem = {
           id: `attendance:${r.id}:${payload.eventType}:${payload.commit_timestamp}`,
           type: "attendance",
           title: payload.eventType === "DELETE" ? "Attendance deleted" : "Attendance",
-          description: `${student?.name || "Student"}${student?.section ? ` (${student.section})` : ""} — ${r.status} (${r.date})`,
+          description: `By ${teacher.name} — ${student?.name || "Student"}${student?.section ? ` (${student.section})` : ""} — ${r.status} (${r.date})`,
           created_at: r.created_at || new Date().toISOString(),
           meta: r,
         };
@@ -397,14 +438,15 @@ export default function Activity() {
         const r: any = payload.new || payload.old || {};
         let sender: any = null;
         if (r.sender_id) {
-          const { data } = await supabase.from("profiles").select("name, section").eq("id", r.sender_id).maybeSingle();
+          const { data } = await supabase.from("profiles").select("name, section, role").eq("id", r.sender_id).maybeSingle();
           sender = data;
         }
+        const senderLabel = sender?.role === "teacher" ? `Teacher ${sender.name}` : (sender?.name || "System");
         const item: ActivityItem = {
           id: `message:${r.id}:${payload.eventType}:${payload.commit_timestamp}`,
           type: "message",
           title: payload.eventType === "DELETE" ? "Message deleted" : "Message",
-          description: `${r.subject || "Message"} — ${sender?.name || "system"}${sender?.section ? ` (${sender.section})` : ""}`,
+          description: `By ${senderLabel}${sender?.section ? ` (${sender.section})` : ""} — ${r.subject || "Message"}`,
           created_at: r.created_at || new Date().toISOString(),
           meta: r,
         };

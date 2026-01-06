@@ -63,10 +63,6 @@ CREATE POLICY "Admins can update analytics alerts"
     )
   );
 
--- Policy: Allow service role to insert/update (for aggregation job)
-CREATE POLICY "Service role can manage analytics alerts"
-  ON analytics_alerts
-  FOR ALL
-  USING (true)
-  WITH CHECK (true);
+-- Note: Service role (used by aggregation job) bypasses RLS by default in Supabase
+-- No explicit policy needed - service role has full access when using service_role key
 

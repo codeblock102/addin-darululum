@@ -39,10 +39,6 @@ CREATE POLICY "Admins can read teacher metrics summary"
     )
   );
 
--- Policy: Allow service role to insert/update (for aggregation job)
-CREATE POLICY "Service role can manage teacher metrics summary"
-  ON teacher_metrics_summary
-  FOR ALL
-  USING (true)
-  WITH CHECK (true);
+-- Note: Service role (used by aggregation job) bypasses RLS by default in Supabase
+-- No explicit policy needed - service role has full access when using service_role key
 

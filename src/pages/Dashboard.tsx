@@ -15,9 +15,8 @@
  * - Admin view includes an `AdminHeader`, `DashboardStats`, `AdminDashboardTabs`, and `AdminMessaging` components.
  * - Uses `DashboardLayout` for the overall page structure.
  */
-import { useEffect, useState } from "react";
 import { useAuth } from "@/hooks/use-auth.ts";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client.ts";
 import { TeacherDashboard } from "@/components/teacher-portal/TeacherDashboard.tsx";
 import { useToast } from "@/components/ui/use-toast.ts";
@@ -26,8 +25,6 @@ import { AccessDenied } from "@/components/teacher-portal/AccessDenied.tsx";
 import { ProfileNotFound } from "@/components/teacher-portal/ProfileNotFound.tsx";
 import { Teacher } from "@/types/teacher.ts";
 import { useRBAC } from "@/hooks/useRBAC.ts";
-import { Button } from "@/components/ui/button.tsx";
-import { Link } from "react-router-dom";
 
 /**
  * @component Dashboard
@@ -38,15 +35,14 @@ import { Link } from "react-router-dom";
  * For teachers, it displays their specific dashboard.
  *
  * State Management:
- *  - `isCheckingRole`: Boolean to track if the initial role and profile check is in progress.
- *  - `refreshKey`: A number used to trigger re-fetching of teacher profile data.
+ *  - Uses React Query for server state management - no local state needed for data fetching.
  *
  * Hooks:
  *  - `useAuth`: To get the current session and refreshSession function.
  *  - `useToast`: To display notifications.
  *  - `useRBAC`: To determine if the user is a teacher, admin, and the role loading state.
  *  - `useQuery`: To fetch the teacher's profile data if the user is not an admin.
- *  - `useEffect`: To perform an initial check for a teacher's profile and to trigger refetches.
+ *  - `useQueryClient`: To invalidate queries when manual refresh is needed.
  *
  * Conditional Rendering Logic:
  *  - Shows a `LoadingState` if role/profile data is being fetched (for non-admins).
@@ -66,18 +62,16 @@ import { Link } from "react-router-dom";
 const Dashboard = () => {
   const { session, refreshSession } = useAuth();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const { isTeacher, isAdmin, isLoading: isRoleLoading } = useRBAC();
-  const [isCheckingRole, setIsCheckingRole] = useState(true);
-  const [refreshKey, setRefreshKey] = useState(0);
 
-  // Moved useQuery for teacherData BEFORE the useEffect that uses its refetch method
+  // Fetch teacher profile data - useQuery handles caching and refetching automatically
   const {
     data: teacherData,
     isLoading,
     error,
-    refetch,
   } = useQuery({
-    queryKey: ["teacher-profile", session?.user?.email, refreshKey],
+    queryKey: ["teacher-profile", session?.user?.email],
     /**
      * @function queryFn (for useQuery)
      * @description Fetches the teacher profile from the 'teachers' table based on the session user's email.
@@ -124,79 +118,16 @@ const Dashboard = () => {
     refetchOnWindowFocus: false, // Disable automatic refetch on window focus
   });
 
-  // useEffect for checkTeacherProfile now comes AFTER useQuery for teacherData
-  useEffect(() => {
-    /**
-     * @function checkTeacherProfile
-     * @description An async function within useEffect to check if a teacher profile exists for the current user (if not admin).
-     * It's intended to ensure that if a teacher record is created externally (e.g., by an admin),
-     * the `teacherData` query is refreshed to reflect this.
-     * This function is called when the session, refreshKey, isAdmin status changes, or when refetch is available.
-     * @async
-     */
-    const checkTeacherProfile = async () => {
-      if (!session?.user?.email) {
-        setIsCheckingRole(false);
-        return;
-      }
-
-      try {
-        setIsCheckingRole(true);
-        console.log("Checking teacher status for email:", session.user.email);
-
-        // Skip this check for admin users
-        if (isAdmin) {
-          console.log("User is admin, skipping teacher profile check");
-          setIsCheckingRole(false);
-          return;
-        }
-
-        // Explicitly check if a teacher profile exists in the database
-        const { data: teacherExistsData, error: checkError } = await supabase
-          .from("profiles")
-          .select("id")
-          .eq("email", session.user.email)
-          .limit(1);
-
-        if (checkError) throw checkError;
-
-        // Handle potential duplicate records gracefully
-        const profileExists = teacherExistsData && teacherExistsData.length > 0 ? teacherExistsData[0] : null;
-        
-        if (teacherExistsData && teacherExistsData.length > 1) {
-          console.warn(`Warning: Found ${teacherExistsData.length} profiles for email ${session.user.email} during existence check.`);
-        }
-
-        console.log(
-          "Teacher profile check result:",
-          profileExists ? "Found" : "Not found",
-        );
-
-        // Force refetch of the query
-        if (profileExists) {
-          refetch();
-        }
-      } catch (error) {
-        console.error("Error checking teacher profile:", error);
-      } finally {
-        setIsCheckingRole(false);
-      }
-    };
-
-    checkTeacherProfile();
-  }, [session, refreshKey, isAdmin, refetch]); // Added refetch to dependency array
-
   /**
    * @function handleRefresh
    * @description Manually triggers a refresh of the session and teacher profile data.
-   * It calls `refreshSession` from `useAuth` and updates `refreshKey` to re-trigger the `useQuery` for teacher data.
+   * Uses queryClient.invalidateQueries instead of refreshKey pattern for cleaner state management.
    * @async
    */
   const handleRefresh = async () => {
-    console.log("Refreshing teacher data...");
     await refreshSession();
-    setRefreshKey((prev) => prev + 1); // Force a refresh of the query
-    refetch();
+    // Invalidate and refetch teacher profile query
+    await queryClient.invalidateQueries({ queryKey: ["teacher-profile", session?.user?.email] });
   };
 
   if (error) {
@@ -211,7 +142,7 @@ const Dashboard = () => {
   }
 
   // Show loading state while checking roles or fetching teacher data
-  if ((isLoading || isCheckingRole || isRoleLoading) && !isAdmin) {
+  if ((isLoading || isRoleLoading) && !isAdmin) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
         <div className="w-full max-w-md">
@@ -236,7 +167,7 @@ const Dashboard = () => {
   }
 
   // Show profile not found if teacher data is missing (for non-admin users)
-  if (!teacherData && !isLoading && !isCheckingRole) {
+  if (!teacherData && !isLoading && !isRoleLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
         <div className="w-full max-w-2xl">
@@ -250,7 +181,7 @@ const Dashboard = () => {
     );
   }
 
-  if (!isTeacher && !isAdmin && !isRoleLoading && !isCheckingRole) {
+  if (!isTeacher && !isAdmin && !isRoleLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
         <div className="w-full max-w-md">

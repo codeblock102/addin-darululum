@@ -179,35 +179,31 @@ export async function fetchStudentAnalyticsData(
 
 /**
  * Hook to get all student metrics
+ * Uses shared analytics data context to prevent duplicate fetches
  */
 export function useStudentAnalytics(timeRange?: { from: Date; to: Date }) {
+  // Use shared context to prevent duplicate data fetching
+  const { data: context, isLoading: contextLoading, error: contextError } = useAnalyticsDataContext(timeRange);
+  
   const query = useQuery<StudentMetrics[]>({
     queryKey: ["student-analytics", timeRange?.from?.toISOString(), timeRange?.to?.toISOString()],
     queryFn: async () => {
-      console.log('[useStudentAnalytics] queryFn called');
-      const context = await fetchStudentAnalyticsData(timeRange);
+      if (!context) {
+        throw new Error("Analytics context not available");
+      }
       const result = calculateAllStudentMetrics(context, timeRange);
-      console.log('[useStudentAnalytics] Calculated metrics:', {
-        hasResult: !!result,
-        resultType: Array.isArray(result) ? 'array' : typeof result,
-        resultLength: Array.isArray(result) ? result.length : 0
-      });
       return result;
     },
+    enabled: !!context && !contextLoading, // Only run when context is available
     staleTime: 5 * 60 * 1000, // 5 minutes
     gcTime: 10 * 60 * 1000, // 10 minutes
   });
 
-  // Log hook return values
-  console.log('[useStudentAnalytics] Hook return:', {
-    hasData: !!query.data,
-    dataType: query.data ? (Array.isArray(query.data) ? 'array' : typeof query.data) : 'null',
-    dataLength: Array.isArray(query.data) ? query.data.length : 0,
-    isLoading: query.isLoading,
-    hasError: !!query.error
-  });
-
-  return query;
+  return {
+    ...query,
+    isLoading: query.isLoading || contextLoading,
+    error: query.error || contextError,
+  };
 }
 
 /**
