@@ -46,6 +46,7 @@ import ParentAttendance from "@/pages/ParentAttendance.tsx";
 import ParentAccounts from "@/pages/admin/ParentAccounts.tsx";
 import BulkStudentImport from "@/pages/admin/BulkStudentImport.tsx";
 import Activity from "@/pages/admin/Activity.tsx";
+import Analytics from "@/pages/admin/Analytics.tsx";
 import ResetPassword from "@/pages/ResetPassword.tsx";
 import TeacherAddParent from "@/pages/TeacherAddParent.tsx";
 import TeacherMessages from "@/pages/TeacherMessages.tsx";
@@ -110,6 +111,17 @@ function App() {
               <ProtectedRoute>
                 <DashboardLayout>
                   <Activity />
+                </DashboardLayout>
+              </ProtectedRoute>
+            }
+          />
+          {/* Admin Analytics in main sidebar (not inside Admin Panel) */}
+          <Route
+            path="/analytics"
+            element={
+              <ProtectedRoute requireAdmin>
+                <DashboardLayout>
+                  <Analytics />
                 </DashboardLayout>
               </ProtectedRoute>
             }
