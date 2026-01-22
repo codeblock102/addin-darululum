@@ -7,7 +7,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Tables } from "@/types/supabase.ts";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute.tsx";
 // Removed Add Parent tab from parent dashboard; sidebar page is the source of truth
-import { useToast } from "@/hooks/use-toast.ts";
+import { useToast } from "@/components/ui/use-toast.ts";
 
 const Parent = () => {
   const { children, isLoading } = useParentChildren();

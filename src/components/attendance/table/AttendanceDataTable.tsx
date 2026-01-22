@@ -24,7 +24,7 @@ import { Clock, Loader2, Pencil } from "lucide-react";
 import { StatusBadge, StatusType } from "@/components/ui/status-badge.tsx";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client.ts";
-import { useToast } from "@/hooks/use-toast.ts";
+import { useToast } from "@/components/ui/use-toast.ts";
 
 type AttendanceRecord = {
   id: string;

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Form } from "@/components/ui/form.tsx";
-import { useToast } from "@/hooks/use-toast.ts";
+import { useToast } from "@/components/ui/use-toast.ts";
 import { DateSelector } from "./form/DateSelector.tsx";
 import { NotesField } from "./form/NotesField.tsx";
 import { useAttendanceSubmit } from "./form/useAttendanceSubmit.ts";

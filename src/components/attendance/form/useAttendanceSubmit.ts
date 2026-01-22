@@ -5,7 +5,7 @@ import { z } from "zod";
 import { format } from "date-fns";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client.ts";
-import { useToast } from "@/hooks/use-toast.ts";
+import { useToast } from "@/components/ui/use-toast.ts";
 import { AttendanceFormValues } from "@/types/attendance-form.ts";
 import { useI18n } from "@/contexts/I18nContext.tsx";
 import { formatErrorMessage } from "@/utils/formatErrorMessage.ts";

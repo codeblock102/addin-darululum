@@ -19,7 +19,7 @@ import { Input } from "@/components/ui/input.tsx";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { BookOpen } from "lucide-react";
-import { useToast } from "@/hooks/use-toast.ts";
+import { useToast } from "@/components/ui/use-toast.ts";
 import { supabase } from "@/integrations/supabase/client.ts";
 import { useQueryClient } from "@tanstack/react-query";
 

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useToast } from "@/hooks/use-toast.ts";
+import { useToast } from "@/components/ui/use-toast.ts";
 import { Button } from "@/components/ui/button.tsx";
 import {
   DialogContent,
@@ -14,7 +14,7 @@ import {
   UserDialogProps,
   UserFormData,
   UserRole,
-} from "@/types/adminUser.ts";
+} from "@/types/user.ts";
 import { UserFormFields } from "./user/UserFormFields.tsx";
 import { validateUserForm } from "./user/UserFormValidation.ts";
 import { handleUserSubmit } from "./user/UserFormSubmitHandler.ts";

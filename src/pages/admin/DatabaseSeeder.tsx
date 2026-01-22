@@ -14,7 +14,7 @@ import {
   assignStudentsToTeacher,
   seedStudentsTable,
 } from "@/utils/seedDatabase.ts";
-import { useToast } from "@/hooks/use-toast.ts";
+import { useToast } from "@/components/ui/use-toast.ts";
 import { Loader2, Info, CheckCircle, XCircle } from "lucide-react";
 
 /**

@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/use-auth.ts";
 import { Loader2 } from "lucide-react";
 import { useRBAC } from "@/hooks/useRBAC.ts";
-import { useToast } from "@/hooks/use-toast.ts";
+import { useToast } from "@/components/ui/use-toast.ts";
 import { RolePermission } from "@/utils/roleUtils.ts";
 import { Button } from "@/components/ui/button.tsx";
 

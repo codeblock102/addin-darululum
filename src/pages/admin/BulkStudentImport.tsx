@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { parseCsvOrTsv, readFileAsText } from "@/utils/csv.ts";
 import { supabase, SUPABASE_URL } from "@/integrations/supabase/client.ts";
 import type { TablesInsert } from "@/integrations/supabase/types.ts";
-import { useToast } from "@/hooks/use-toast.ts";
+import { useToast } from "@/components/ui/use-toast.ts";
 import { Button } from "@/components/ui/button.tsx";
 import { Input } from "@/components/ui/input.tsx";
 import { Label } from "@/components/ui/label.tsx";

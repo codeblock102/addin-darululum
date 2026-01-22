@@ -1,15 +1,23 @@
 import { TabsContent } from "@/components/ui/tabs.tsx";
 import { SystemSettings } from "@/types/settings.ts";
-import { AppearanceSettingsSection } from "./AppearanceSettings.tsx";
-import { NotificationSettingsSection } from "./NotificationSettings.tsx";
-import { SecuritySettingsSection } from "./SecuritySettings.tsx";
-import { AcademicSettingsSection } from "./AcademicSettings.tsx";
-import { LocalizationSettingsSection } from "./LocalizationSettings.tsx";
-import { IntegrationSettingsSection } from "./IntegrationSettings.tsx";
-import { DataManagementSettingsSection } from "./DataManagementSettings.tsx";
-import { UserExperienceSettingsSection } from "./UserExperienceSettings.tsx";
-import { AdvancedSettingsSection } from "./AdvancedSettings.tsx";
 import { EmailScheduleManager } from "../EmailScheduleManager.tsx";
+
+// Consolidated settings imports
+import {
+  AppearanceSettingsSection,
+  LocalizationSettingsSection,
+  UserExperienceSettingsSection,
+} from "./GeneralSettings.tsx";
+import {
+  AcademicSettingsSection,
+  DataManagementSettingsSection,
+  IntegrationSettingsSection,
+  AdvancedSettingsSection,
+} from "./SystemSettings.tsx";
+import {
+  SecuritySettingsSection,
+  NotificationSettingsSection,
+} from "./SecurityNotificationSettings.tsx";
 
 interface SettingsContentProps {
   settings: SystemSettings;

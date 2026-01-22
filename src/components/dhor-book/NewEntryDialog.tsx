@@ -7,7 +7,7 @@ import {
 } from "@/components/ui/dialog.tsx";
 import { DhorBookEntryForm } from "./DhorBookEntryForm.tsx";
 import { useDhorEntryMutation } from "./useDhorEntryMutation.ts";
-import { useToast } from "@/hooks/use-toast.ts";
+import { useToast } from "@/components/ui/use-toast.ts";
 
 export interface NewEntryDialogProps {
   open: boolean;

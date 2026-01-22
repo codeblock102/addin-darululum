@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button.tsx";
 import { TeacherAccount } from "@/types/teacher.ts";
 import { Textarea } from "@/components/ui/textarea.tsx";
 import { supabase } from "@/integrations/supabase/client.ts";
-import { useToast } from "@/hooks/use-toast.ts";
+import { useToast } from "@/components/ui/use-toast.ts";
 import { useQueryClient } from "@tanstack/react-query";
 import { Eye, EyeOff, KeyRound, Loader2, Copy } from "lucide-react";
 

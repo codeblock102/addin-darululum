@@ -29,7 +29,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { countAyahsAcrossSurahs } from "@/utils/quranValidation.ts";
 import { supabase } from "@/integrations/supabase/client.ts";
-import { useToast } from "@/hooks/use-toast.ts";
+import { useToast } from "@/components/ui/use-toast.ts";
 import { StudentStatusList } from "./StudentStatusList.tsx";
 import { useI18n } from "@/contexts/I18nContext.tsx";
 

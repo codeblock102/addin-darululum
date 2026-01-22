@@ -16,7 +16,7 @@ import { UseFormReturn } from "react-hook-form";
 import { getInitials } from "@/utils/stringUtils.ts";
 import { AttendanceFormValues } from "@/types/attendance-form.ts";
 import { format } from "date-fns";
-import { useToast } from "@/hooks/use-toast.ts";
+import { useToast } from "@/components/ui/use-toast.ts";
 import { useI18n } from "@/contexts/I18nContext.tsx";
 import { formatErrorMessage } from "@/utils/formatErrorMessage.ts";
 

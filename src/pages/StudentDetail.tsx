@@ -19,7 +19,7 @@ import { ArrowLeft, BookOpen, RefreshCw, UserRound } from "lucide-react";
 import { StudentProgressChart } from "@/components/students/StudentProgressChart.tsx";
 import { Skeleton } from "@/components/ui/skeleton.tsx";
 import { NewProgressEntry } from "@/components/students/NewProgressEntry.tsx";
-import { useToast } from "@/hooks/use-toast.ts";
+import { useToast } from "@/components/ui/use-toast.ts";
 import { DhorBook } from "@/components/dhor-book/DhorBook.tsx";
 
 import { useAuth } from "@/contexts/AuthContext.tsx";

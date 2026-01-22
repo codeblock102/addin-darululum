@@ -8,7 +8,7 @@ import {
   CardTitle,
 } from "@/components/ui/card.tsx";
 import { Button } from "@/components/ui/button.tsx";
-import { useToast } from "@/hooks/use-toast.ts";
+import { useToast } from "@/components/ui/use-toast.ts";
 import { AlertTriangle, Check, Loader2 } from "lucide-react";
 import { DashboardLayout } from "@/components/layouts/DashboardLayout.tsx";
 import { Link } from "react-router-dom";

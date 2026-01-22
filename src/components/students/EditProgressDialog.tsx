@@ -26,7 +26,7 @@ import {
 } from "@/components/ui/select.tsx";
 import { Textarea } from "@/components/ui/textarea.tsx";
 import { Button } from "@/components/ui/button.tsx";
-import { useToast } from "@/hooks/use-toast.ts";
+import { useToast } from "@/components/ui/use-toast.ts";
 import { useForm } from "react-hook-form";
 import { Loader2 } from "lucide-react";
 import { Progress, ProgressFormData } from "@/types/progress.ts";
