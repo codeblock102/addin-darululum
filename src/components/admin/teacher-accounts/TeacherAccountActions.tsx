@@ -20,7 +20,7 @@ import {
 import { Edit, Eye, KeyRound, MoreHorizontal, ShieldCheck, Trash2, UserMinus } from "lucide-react";
 import { TeacherAccount } from "@/types/teacher.ts";
 import { promoteToAdmin } from "@/utils/promoteToAdmin.ts";
-import { useToast } from "@/hooks/use-toast.ts";
+import { useToast } from "@/components/ui/use-toast.ts";
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client.ts";
 

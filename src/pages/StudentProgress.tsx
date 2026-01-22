@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Card } from "@/components/ui/card.tsx";
-import { useToast } from "@/hooks/use-toast.ts";
+import { useToast } from "@/components/ui/use-toast.ts";
 import { StudentSearch } from "@/components/student-progress/StudentSearch.tsx";
 import { ProgressOverview } from "@/components/student-progress/ProgressOverview.tsx";
 import { ProgressCharts } from "@/components/student-progress/ProgressCharts.tsx";

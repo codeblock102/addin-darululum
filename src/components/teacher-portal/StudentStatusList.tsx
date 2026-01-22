@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge.tsx";
 import { Skeleton } from "@/components/ui/skeleton.tsx";
 import { RefreshCcw, User, UserCheck, UserX } from "lucide-react";
 import { StudentAssignment } from "@/types/user.ts";
-import { useToast } from "@/hooks/use-toast.ts";
+import { useToast } from "@/components/ui/use-toast.ts";
 import { useI18n } from "@/contexts/I18nContext.tsx";
 
 interface StudentStatusListProps {

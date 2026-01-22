@@ -18,7 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select.tsx";
-import { useToast } from "@/hooks/use-toast.ts";
+import { useToast } from "@/components/ui/use-toast.ts";
 import { Checkbox } from "@/components/ui/checkbox.tsx";
 import {
   Tabs,
@@ -26,7 +26,7 @@ import {
   TabsList,
   TabsTrigger,
 } from "@/components/ui/tabs.tsx";
-import { getErrorMessage } from "@/utils/stringUtils.ts";
+import { formatErrorMessage } from "@/utils/formatErrorMessage.ts";
 
 interface Student {
   id: string;
@@ -350,7 +350,7 @@ export const StudentDialog = (
           updateError = error;
           if (error) throw error;
         } catch (err) {
-          const msg = getErrorMessage(err, "");
+          const msg = formatErrorMessage(err);
           if (/secondary_guardian_/i.test(msg) || /column .* does not exist/i.test(msg)) {
             const { secondary_guardian_name: _sgn, secondary_guardian_phone: _sgp, secondary_guardian_email: _sge, ...cleaned } = submissionData as Record<string, unknown>;
             const { error: retryError } = await supabase
@@ -380,7 +380,7 @@ export const StudentDialog = (
           if (error) throw error;
           created = data as { id: string } | null;
         } catch (err) {
-          const msg = getErrorMessage(err, "");
+          const msg = formatErrorMessage(err);
           if (/secondary_guardian_/i.test(msg) || /column .* does not exist/i.test(msg)) {
             const { secondary_guardian_name: _sgn, secondary_guardian_phone: _sgp, secondary_guardian_email: _sge, ...cleaned } = submissionData as Record<string, unknown>;
             const { data, error: retryError } = await supabase
@@ -459,7 +459,7 @@ export const StudentDialog = (
       queryClient.invalidateQueries({ queryKey: ["students"] });
       onClose();
     } catch (error) {
-      const message = getErrorMessage(error, "Failed to save student");
+      const message = formatErrorMessage(error) || "Failed to save student";
       console.error("Student create/update failed:", error);
       toast({
         title: "Error",

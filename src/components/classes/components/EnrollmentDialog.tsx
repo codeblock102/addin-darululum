@@ -9,7 +9,7 @@ import {
 import { Button } from "@/components/ui/button.tsx";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client.ts";
-import { useToast } from "@/hooks/use-toast.ts";
+import { useToast } from "@/components/ui/use-toast.ts";
 import { Loader2, X } from "lucide-react";
 import { MultiSelect } from "@/components/ui/MultiSelect.tsx";
 import { useState } from "react";

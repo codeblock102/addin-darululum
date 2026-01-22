@@ -42,7 +42,7 @@ import { AttendanceStats } from "@/components/student-progress/AttendanceStats.t
 import { StudentPerformanceMetrics } from "@/components/student-progress/StudentPerformanceMetrics.tsx";
 import { useRealtimeLeaderboard } from "@/hooks/useRealtimeLeaderboard.ts";
 import { useIsMobile } from "@/hooks/use-mobile.tsx";
-import { useToast } from "@/hooks/use-toast.ts";
+import { useToast } from "@/components/ui/use-toast.ts";
 import { useI18n } from "@/contexts/I18nContext.tsx";
 import { format, startOfMonth as _startOfMonth, endOfMonth as _endOfMonth, subMonths, parseISO } from "date-fns";
 import {

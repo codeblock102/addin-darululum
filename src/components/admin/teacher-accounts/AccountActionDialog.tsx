@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/alert-dialog.tsx";
 import { TeacherAccount } from "@/types/teacher.ts";
 import { supabase } from "@/integrations/supabase/client.ts";
-import { useToast } from "@/hooks/use-toast.ts";
+import { useToast } from "@/components/ui/use-toast.ts";
 import { useQueryClient } from "@tanstack/react-query";
 import { Loader2, Shield, Trash } from "lucide-react";
 

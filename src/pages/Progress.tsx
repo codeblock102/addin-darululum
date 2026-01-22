@@ -6,7 +6,7 @@ import { ProgressStats } from "@/components/progress/ProgressStats.tsx";
 import { ProgressTable } from "@/components/progress/ProgressTable.tsx";
 import { RecentRevisions } from "@/components/progress/RecentRevisions.tsx";
 import { CompleteRevisions } from "@/components/progress/CompleteRevisions.tsx";
-import { useToast } from "@/hooks/use-toast.ts";
+import { useToast } from "@/components/ui/use-toast.ts";
 import { Button } from "@/components/ui/button.tsx";
 import { Progress } from "@/types/progress.ts";
 

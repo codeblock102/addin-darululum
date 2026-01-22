@@ -23,7 +23,7 @@ import {
   TableRow,
 } from "@/components/ui/table.tsx";
 import { supabase } from "@/integrations/supabase/client.ts";
-import { useToast } from "@/hooks/use-toast.ts";
+import { useToast } from "@/components/ui/use-toast.ts";
 import { 
   Clock, 
   Mail, 

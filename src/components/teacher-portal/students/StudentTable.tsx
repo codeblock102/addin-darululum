@@ -11,8 +11,8 @@ import { Trash2, UserMinus as _UserMinus, UserPlus as _UserPlus, Edit } from "lu
 import { Student, StudentAssignment as _StudentAssignment } from "../MyStudents.tsx";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client.ts";
-import { useToast } from "@/hooks/use-toast.ts";
-import { getErrorMessage } from "@/utils/stringUtils.ts";
+import { useToast } from "@/components/ui/use-toast.ts";
+import { formatErrorMessage } from "@/utils/formatErrorMessage.ts";
 import { useI18n } from "@/contexts/I18nContext.tsx";
 
 interface StudentTableProps {
@@ -72,7 +72,7 @@ export const StudentTable = ({
       queryClient.invalidateQueries({ queryKey: ["students-search"] });
     },
     onError: (error) => {
-      const errorMessage = getErrorMessage(error, t("pages.teacherPortal.students.errorAddDefault"));
+      const errorMessage = formatErrorMessage(error) || t("pages.teacherPortal.students.errorAddDefault");
       toast({
         title: t("common.error"),
         description: errorMessage,

@@ -5,7 +5,7 @@ import { Card } from "@/components/ui/card.tsx";
 import { ArrowLeft, RefreshCcw, UserPlus } from "lucide-react";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client.ts";
-import { useToast } from "@/hooks/use-toast.ts";
+import { useToast } from "@/components/ui/use-toast.ts";
 import { useI18n } from "@/contexts/I18nContext.tsx";
 
 interface ProfileNotFoundProps {

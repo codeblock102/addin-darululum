@@ -30,7 +30,7 @@ import {
   Users,
 } from "lucide-react";
 import { useTeacherStatus } from "@/hooks/useTeacherStatus.ts";
-import { useToast } from "@/hooks/use-toast.ts";
+import { useToast } from "@/components/ui/use-toast.ts";
 import { AlertCircle } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext.tsx";
 

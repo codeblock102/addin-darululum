@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client.ts";
-import { useToast } from "@/hooks/use-toast.ts";
+import { useToast } from "@/components/ui/use-toast.ts";
 import { useAuth } from "@/hooks/use-auth.ts";
 import { ProgressFormData } from "@/types/progress.ts";
 import { countAyahsAcrossSurahs } from "@/utils/quranValidation.ts";
