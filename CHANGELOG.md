@@ -1,3 +1,10 @@
+## [1.1.4](https://github.com/codeblock102/addin-darululum/compare/v1.1.3...v1.1.4) (2026-03-11)
+
+
+### Bug Fixes
+
+* add admin RLS policies so Activity/Insights page works for admins ([2bfc1af](https://github.com/codeblock102/addin-darululum/commit/2bfc1afbf68ec486148cc356187868356db99ff7))
+
 # 1.0.0 (2025-10-28)
 
 
