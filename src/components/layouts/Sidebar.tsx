@@ -34,6 +34,7 @@ import { SidebarNav } from "./sidebar/SidebarNav.tsx";
 import { SidebarUser } from "./sidebar/SidebarUser.tsx";
 import { cn } from "@/lib/utils.ts";
 import { useI18n } from "@/contexts/I18nContext.tsx";
+import { NotificationBell } from "@/components/shared/NotificationBell.tsx";
 
 interface SidebarProps {
   /** Optional callback function to be invoked when the sidebar should be closed, typically on mobile. */
@@ -176,36 +177,47 @@ export const Sidebar = (
             </Link>
           )}
 
-          {/* Collapsed state logo */}
+          {/* Collapsed state logo + notification bell */}
           {!isMobile && isOpen === false && (
-            <Link
-              to="/dashboard"
-              className="flex items-center justify-center w-full hover:bg-gray-100 rounded-lg p-2 transition-all duration-200"
-              title={isAdmin ? t("portal.admin") : isParent ? t("portal.parent") : t("portal.teacher")}
-            >
-              {isAdmin
-                ? (
-                  <ShieldCheck className="h-6 w-6 text-amber-600 drop-shadow-sm" />
-                ) : <BookOpen className="h-6 w-6 text-[hsl(142.8,64.2%,24.1%)] drop-shadow-sm" />}
-            </Link>
+            <div className="flex flex-col items-center gap-2 w-full py-1">
+              <Link
+                to="/dashboard"
+                className="flex items-center justify-center hover:bg-gray-100 rounded-lg p-2 transition-all duration-200"
+                title={isAdmin ? t("portal.admin") : isParent ? t("portal.parent") : t("portal.teacher")}
+              >
+                {isAdmin
+                  ? (
+                    <ShieldCheck className="h-6 w-6 text-amber-600 drop-shadow-sm" />
+                  ) : <BookOpen className="h-6 w-6 text-[hsl(142.8,64.2%,24.1%)] drop-shadow-sm" />}
+              </Link>
+              {(isAdmin || isTeacher) && (
+                <NotificationBell collapsed={true} />
+              )}
+            </div>
           )}
 
           {!isMobile && toggleSidebar && isOpen !== false && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className={cn(
-                isAdmin
-                  ? "text-gray-700 hover:bg-gray-100 hover:text-amber-600"
-                  : "text-gray-700 hover:bg-gray-100 hover:text-[hsl(142.8,64.2%,24.1%)]",
-                "transition-all duration-300 hover:scale-105",
+            <div className="flex items-center gap-1">
+              {/* Notification bell — admins and teachers only */}
+              {(isAdmin || isTeacher) && (
+                <NotificationBell collapsed={false} />
               )}
-              onClick={toggleSidebar}
-              title="Collapse sidebar"
-            >
-              <ChevronLeft className="h-5 w-5" />
-              <span className="sr-only">Collapse sidebar</span>
-            </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                className={cn(
+                  isAdmin
+                    ? "text-gray-700 hover:bg-gray-100 hover:text-amber-600"
+                    : "text-gray-700 hover:bg-gray-100 hover:text-[hsl(142.8,64.2%,24.1%)]",
+                  "transition-all duration-300 hover:scale-105",
+                )}
+                onClick={toggleSidebar}
+                title="Collapse sidebar"
+              >
+                <ChevronLeft className="h-5 w-5" />
+                <span className="sr-only">Collapse sidebar</span>
+              </Button>
+            </div>
           )}
 
           {/* Expand button for collapsed state */}
