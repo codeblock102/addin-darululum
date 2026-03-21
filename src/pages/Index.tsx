@@ -28,7 +28,7 @@ export default function Index() {
 
       if (data) {
         localStorage.setItem("userRole", "teacher");
-        navigate("/teacher-portal");
+        navigate("/dashboard");
       } else {
         // No specific role found, show the dashboard navigation options
         setIsLoading(false);
@@ -62,7 +62,7 @@ export default function Index() {
 
       if (isAdmin) {
         localStorage.setItem("userRole", "admin");
-        navigate("/admin");
+        navigate("/dashboard");
         clearTimeout(timeoutId);
         return;
       }
@@ -70,11 +70,11 @@ export default function Index() {
       // Try to redirect based on local storage role if available
       const role = localStorage.getItem("userRole");
       if (role === "admin") {
-        navigate("/admin");
+        navigate("/dashboard");
         clearTimeout(timeoutId);
         return;
       } else if (role === "teacher") {
-        navigate("/teacher-portal");
+        navigate("/dashboard");
         clearTimeout(timeoutId);
         return;
       } else {
@@ -99,12 +99,12 @@ export default function Index() {
 
   const handleGoToAdmin = () => {
     localStorage.setItem("userRole", "admin");
-    navigate("/admin");
+    navigate("/dashboard");
   };
 
   const handleGoToTeacher = () => {
     localStorage.setItem("userRole", "teacher");
-    navigate("/teacher-portal");
+    navigate("/dashboard");
   };
 
   const handleRefresh = () => {
