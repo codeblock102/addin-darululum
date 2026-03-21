@@ -1,3 +1,8 @@
+/**
+ * @file src/components/admin/messaging/AdminMessaging.tsx
+ * @summary Admin messaging interface for sending and receiving messages to/from teachers.
+ */
+
 import { useState } from "react";
 import {
   Card,

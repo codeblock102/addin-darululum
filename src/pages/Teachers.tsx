@@ -1,3 +1,7 @@
+/**
+ * @file src/pages/Teachers.tsx
+ * @summary Teacher list management page for administrators.
+ */
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import TeacherDialog from "@/components/teachers/TeacherDialog.tsx";

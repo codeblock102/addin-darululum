@@ -1,3 +1,8 @@
+/**
+ * @file src/hooks/useRealtimeAnalytics.ts
+ * @summary Sets up real-time subscription for analytics data updates.
+ */
+
 import { useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client.ts";

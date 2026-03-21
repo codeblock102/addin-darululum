@@ -1,3 +1,7 @@
+/**
+ * @file src/hooks/useAnalyticsData.ts
+ * @summary Fetches analytics data (quality distribution, time progress, student progress, daily activity) for the teacher portal.
+ */
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client.ts";
 

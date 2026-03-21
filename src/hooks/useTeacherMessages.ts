@@ -1,3 +1,7 @@
+/**
+ * @file src/hooks/useTeacherMessages.ts
+ * @summary Fetches inbox, sent messages, and recipients for a teacher from the communications table.
+ */
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client.ts";
 import { Message } from "@/types/progress.ts";

@@ -1,3 +1,7 @@
+/**
+ * @file src/pages/ProgressBook.tsx
+ * @summary Dhor Book progress entry and classroom records page.
+ */
 import { useEffect, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card.tsx";
 import { supabase } from "@/integrations/supabase/client.ts";

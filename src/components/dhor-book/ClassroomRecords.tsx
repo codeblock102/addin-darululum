@@ -1,3 +1,8 @@
+/**
+ * @file src/components/dhor-book/ClassroomRecords.tsx
+ * @summary Classroom records view showing all student progress entries with filtering.
+ */
+
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client.ts";

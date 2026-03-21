@@ -1,3 +1,8 @@
+/**
+ * @file src/components/admin/messaging/compose/AdminMessageCompose.tsx
+ * @summary Admin compose interface with teacher selector and message form.
+ */
+
 import { useState } from "react";
 import {
   Card,

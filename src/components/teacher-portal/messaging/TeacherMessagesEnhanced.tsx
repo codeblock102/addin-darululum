@@ -1,3 +1,8 @@
+/**
+ * @file src/components/teacher-portal/messaging/TeacherMessagesEnhanced.tsx
+ * @summary Teacher messaging interface with inbox, sent, and compose tabs.
+ */
+
 import {
   Card,
   CardContent,

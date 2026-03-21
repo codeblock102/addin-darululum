@@ -1,3 +1,8 @@
+/**
+ * @file src/components/teacher-portal/messaging/MessageCompose.tsx
+ * @summary Form for composing and sending messages to other users.
+ */
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button.tsx";
 import { Loader2, Send } from "lucide-react";

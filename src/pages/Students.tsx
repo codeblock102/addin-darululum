@@ -1,3 +1,7 @@
+/**
+ * @file src/pages/Students.tsx
+ * @summary Student list management page for administrators.
+ */
 
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";

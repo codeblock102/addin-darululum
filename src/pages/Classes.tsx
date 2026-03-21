@@ -1,3 +1,7 @@
+/**
+ * @file src/pages/Classes.tsx
+ * @summary Class management page for creating and editing classes.
+ */
 import { Fragment, useState } from "react";
 import { ClassDialog } from "@/components/classes/ClassDialog.tsx";
 import { ClassList } from "@/components/classes/ClassList.tsx";

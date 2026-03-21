@@ -1,3 +1,7 @@
+/**
+ * @file src/pages/StudentDetail.tsx
+ * @summary Individual student detail view with progress history.
+ */
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";

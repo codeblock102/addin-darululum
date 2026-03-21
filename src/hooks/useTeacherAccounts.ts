@@ -1,3 +1,7 @@
+/**
+ * @file src/hooks/useTeacherAccounts.ts
+ * @summary Manages teacher account data for the admin teacher accounts page.
+ */
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client.ts";
 import { TeacherAccount } from "@/types/teacher.ts";

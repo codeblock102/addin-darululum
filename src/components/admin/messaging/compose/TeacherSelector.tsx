@@ -1,3 +1,7 @@
+/**
+ * @file src/components/admin/messaging/compose/TeacherSelector.tsx
+ * @summary Dropdown selector for choosing teacher recipients when composing admin messages.
+ */
 
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client.ts";

@@ -1,3 +1,7 @@
+/**
+ * @file src/hooks/useUserRole.ts
+ * @summary Fetches the current authenticated user's role from the profiles table.
+ */
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client.ts";
 import { useAuth } from "@/hooks/use-auth.ts";

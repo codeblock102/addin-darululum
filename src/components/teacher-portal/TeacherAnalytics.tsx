@@ -1,3 +1,8 @@
+/**
+ * @file src/components/teacher-portal/TeacherAnalytics.tsx
+ * @summary Analytics page with quality distribution, time progress, and student performance charts.
+ */
+
 import { useState } from "react";
 import {
   Card,

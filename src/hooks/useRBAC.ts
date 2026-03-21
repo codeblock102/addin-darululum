@@ -1,3 +1,7 @@
+/**
+ * @file src/hooks/useRBAC.ts
+ * @summary Role-based access control hook providing isAdmin, isTeacher flags and permission helpers.
+ */
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client.ts";
 import { useAuth } from "@/hooks/use-auth.ts";

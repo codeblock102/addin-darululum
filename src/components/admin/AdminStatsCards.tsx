@@ -1,3 +1,7 @@
+/**
+ * @file src/components/admin/AdminStatsCards.tsx
+ * @summary Stats summary cards shown on the admin dashboard.
+ */
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Users, GraduationCap, BookOpen, TrendingUp } from "lucide-react";

@@ -1,3 +1,7 @@
+/**
+ * @file src/pages/Attendance.tsx
+ * @summary Student attendance management page.
+ */
 
 import { useState } from "react";
 import { AttendanceForm } from "@/components/attendance/AttendanceForm.tsx";

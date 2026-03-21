@@ -1,3 +1,7 @@
+/**
+ * @file src/hooks/useRealtimeMessages.ts
+ * @summary Sets up Supabase real-time subscriptions for teacher message notifications.
+ */
 import { useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client.ts";

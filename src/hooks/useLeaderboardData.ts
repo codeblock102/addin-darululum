@@ -1,3 +1,7 @@
+/**
+ * @file src/hooks/useLeaderboardData.ts
+ * @summary Fetches student leaderboard data based on Juz mastery rankings.
+ */
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 

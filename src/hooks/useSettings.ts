@@ -1,3 +1,7 @@
+/**
+ * @file src/hooks/useSettings.ts
+ * @summary Fetches and manages application settings from Supabase.
+ */
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/components/ui/use-toast.ts";

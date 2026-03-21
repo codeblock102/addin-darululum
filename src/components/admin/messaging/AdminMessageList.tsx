@@ -1,3 +1,8 @@
+/**
+ * @file src/components/admin/messaging/AdminMessageList.tsx
+ * @summary Renders a list of admin messages with read/unread status.
+ */
+
 import { useState } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area.tsx";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar.tsx";

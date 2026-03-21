@@ -1,3 +1,7 @@
+/**
+ * @file src/hooks/useTeacherStatus.ts
+ * @summary Fetches teacher active/inactive status data.
+ */
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client.ts";
 import { useAuth } from "@/hooks/use-auth.ts";

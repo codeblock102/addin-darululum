@@ -1,3 +1,7 @@
+/**
+ * @file src/pages/Settings.tsx
+ * @summary Admin application settings page.
+ */
 import { useState } from "react";
 import { SettingsHeader } from "@/components/admin/settings/SettingsHeader.tsx";
 import { SettingsContent } from "@/components/admin/settings/SettingsContent.tsx";

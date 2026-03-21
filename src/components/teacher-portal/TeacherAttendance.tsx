@@ -1,3 +1,8 @@
+/**
+ * @file src/components/teacher-portal/TeacherAttendance.tsx
+ * @summary Attendance recording interface for teachers to mark student attendance.
+ */
+
 import { useState } from "react";
 import {
   Card,

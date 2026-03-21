@@ -1,3 +1,8 @@
+/**
+ * @file src/components/dhor-book/DhorBookEntryForm.tsx
+ * @summary Main Dhor Book entry form orchestrator with Sabaq, Sabaq Para, and Dhor tabs.
+ */
+
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";

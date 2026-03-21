@@ -1,3 +1,8 @@
+/**
+ * @file src/components/teacher-portal/TeacherDashboard.tsx
+ * @summary Teacher portal main dashboard showing stats, leaderboard, and quick actions.
+ */
+
 import { TeacherDashboardProps } from "@/types/teacher.ts";
 import { useTeacherSummary } from "@/hooks/useTeacherSummary.ts";
 import { DashboardHeader } from "./DashboardHeader.tsx";

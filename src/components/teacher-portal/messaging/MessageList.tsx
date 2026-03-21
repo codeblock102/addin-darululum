@@ -1,3 +1,8 @@
+/**
+ * @file src/components/teacher-portal/messaging/MessageList.tsx
+ * @summary Renders a list of messages with expand/collapse and read/unread indicators.
+ */
+
 import { useState } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area.tsx";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar.tsx";

@@ -1,3 +1,7 @@
+/**
+ * @file src/hooks/useAdminMessages.ts
+ * @summary Fetches received and sent messages for the admin from the communications table.
+ */
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client.ts";
 import { Message } from "@/types/progress.ts";

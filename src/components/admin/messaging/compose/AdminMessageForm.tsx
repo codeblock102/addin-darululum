@@ -1,3 +1,8 @@
+/**
+ * @file src/components/admin/messaging/compose/AdminMessageForm.tsx
+ * @summary Form for composing and sending admin messages to teachers.
+ */
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button.tsx";
 import { Textarea } from "@/components/ui/textarea.tsx";
