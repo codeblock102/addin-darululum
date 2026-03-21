@@ -1,78 +1,94 @@
-# Welcome to your Lovable project
+# Addin Darululum
 
-## Project info
+A student management system for Madrassah Hifz (Quran memorization) programmes. Enables administrators and teachers to track student progress, attendance, and communicate effectively.
 
-**URL**: https://lovable.dev/projects/95a8c02b-afdd-49ad-9fe5-cc93646030c1
+## Features
 
-## How can I edit this code?
+- **Admin Portal** — Manage students, teachers, classes, and view system-wide stats
+- **Teacher Portal** — Record daily Quran memorization progress (Sabaq, Sabaq Para, Dhor), mark attendance, and view analytics
+- **Progress Book (Dhor Book)** — Digital equivalent of the traditional Hifz record book
+- **Messaging** — Real-time messaging between admin and teachers
+- **Analytics** — Charts for memorization quality, student progress, and daily activity
+- **Leaderboard** — Gamified student rankings by Juz mastery
 
-There are several ways of editing your application.
+## Tech Stack
 
-**Use Lovable**
+| Layer | Technology |
+|-------|-----------|
+| Frontend | React 18 + TypeScript |
+| Build tool | Vite |
+| Backend/Database | Supabase (PostgreSQL + Auth + Realtime) |
+| UI | shadcn/ui + Tailwind CSS |
+| Charts | Recharts |
+| Forms | react-hook-form + Zod |
+| State | TanStack Query (React Query v5) |
 
-Simply visit the
-[Lovable Project](https://lovable.dev/projects/95a8c02b-afdd-49ad-9fe5-cc93646030c1)
-and start prompting.
+## Getting Started
 
-Changes made via Lovable will be committed automatically to this repo.
+### Prerequisites
 
-**Use your preferred IDE**
+- Node.js 18+ and npm
+- A Supabase project with the required tables (see [Architecture docs](docs/ARCHITECTURE.md))
 
-If you want to work locally using your own IDE, you can clone this repo and push
-changes. Pushed changes will also be reflected in Lovable.
+### Environment Setup
 
-The only requirement is having Node.js & npm installed -
-[install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
+Create a `.env` file (or set environment variables):
 
 ```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+VITE_SUPABASE_URL=https://your-project.supabase.co
+VITE_SUPABASE_ANON_KEY=your-anon-key
 ```
 
-**Edit a file directly in GitHub**
+### Development
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+```sh
+# Install dependencies
+npm install
 
-**Use GitHub Codespaces**
+# Start development server
+npm run dev
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once
-  you're done.
+# Type check
+npx tsc --noEmit
 
-## What technologies are used for this project?
+# Build for production
+npm run build
+```
 
-This project is built with .
+### First-time Admin Setup
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+1. Navigate to `/setup-admin` to create the first admin account.
+2. Log in and go to **Teacher Accounts** to create teacher logins.
+3. Add students and assign them to teachers via **Classes**.
 
-## How can I deploy this project?
+## Documentation
 
-Simply open
-[Lovable](https://lovable.dev/projects/95a8c02b-afdd-49ad-9fe5-cc93646030c1) and
-click on Share -> Publish.
+| Document | Description |
+|----------|-------------|
+| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | System architecture, directory structure, database schema |
+| [docs/HOOKS.md](docs/HOOKS.md) | Reference for all custom React hooks |
+| [docs/USER_GUIDE.md](docs/USER_GUIDE.md) | Step-by-step guide for admins and teachers |
+| [docs/GLOSSARY.md](docs/GLOSSARY.md) | Definitions of Islamic/Madrassah terms used in the system |
+| [docs/FAQ.md](docs/FAQ.md) | Frequently asked questions |
 
-## I want to use a custom domain - is that possible?
+## Project Structure
 
-We don't support custom domains (yet). If you want to deploy your project under
-your own domain then we recommend using Netlify. Visit our docs for more
-details: [Custom domains](https://docs.lovable.dev/tips-tricks/custom-domain/)
+```
+src/
+├── pages/          # Route-level page components
+├── components/     # UI components (admin/, teacher-portal/, dhor-book/, ui/)
+├── hooks/          # Custom React hooks
+├── contexts/       # React context providers
+├── integrations/   # Supabase client and generated types
+├── types/          # TypeScript type definitions
+└── utils/          # Utility functions
+```
+
+See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the full structure.
+
+## Roles
+
+| Role | Access |
+|------|--------|
+| **Admin** | Full access to all features |
+| **Teacher** | Access to own students, progress recording, attendance, analytics, messaging |
