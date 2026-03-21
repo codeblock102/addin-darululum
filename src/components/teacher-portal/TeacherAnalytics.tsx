@@ -18,47 +18,67 @@ import { StudentProgressChart } from "./analytics/StudentProgressChart.tsx";
 import { TimeProgressChart } from "./analytics/TimeProgressChart.tsx";
 import { ContributorActivityChart } from "./analytics/ContributorActivityChart.tsx";
 
-interface AnalyticsHeaderProps {
-  stats: {
-    title: string;
-    value: string | number;
-    description: string;
-    trend: string;
-  }[];
+const QUALITY_SCORES: Record<string, number> = {
+  excellent: 5,
+  good: 4,
+  average: 3,
+  needsWork: 2,
+  horrible: 1,
+};
+
+const QUALITY_LABELS: Record<string, string> = {
+  excellent: "Excellent",
+  good: "Good",
+  average: "Average",
+  needsWork: "Needs Work",
+  horrible: "Needs Improvement",
+};
+
+function computeAvgQuality(
+  distribution: { quality: string; count: number }[],
+): string {
+  if (!distribution || distribution.length === 0) return "N/A";
+
+  let totalWeighted = 0;
+  let totalCount = 0;
+
+  distribution.forEach(({ quality, count }) => {
+    const score = QUALITY_SCORES[quality];
+    if (score !== undefined) {
+      totalWeighted += score * count;
+      totalCount += count;
+    }
+  });
+
+  if (totalCount === 0) return "N/A";
+
+  const avg = totalWeighted / totalCount;
+  const rounded = Math.round(avg * 10) / 10;
+
+  let label = "Average";
+  if (avg >= 4.5) label = "Excellent";
+  else if (avg >= 3.5) label = "Good";
+  else if (avg >= 2.5) label = "Average";
+  else label = "Needs Work";
+
+  return `${label} (${rounded}/5)`;
 }
 
-export const AnalyticsHeader = ({ stats }: AnalyticsHeaderProps) => {
-  return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-      {stats.map((stat, index) => (
-        <Card key={index}>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <p className="text-sm font-medium text-muted-foreground">
-                {stat.title}
-              </p>
-              <span
-                className={`text-xs px-2 py-0.5 rounded ${
-                  stat.trend.startsWith("+")
-                    ? "bg-green-100 text-green-800"
-                    : "bg-amber-100 text-amber-800"
-                }`}
-              >
-                {stat.trend}
-              </span>
-            </div>
-            <div className="mt-2">
-              <p className="text-2xl font-bold">{stat.value}</p>
-              <p className="text-xs text-muted-foreground mt-1">
-                {stat.description}
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-      ))}
-    </div>
-  );
-};
+interface StatCardProps {
+  title: string;
+  value: string | number;
+  description: string;
+}
+
+const StatCard = ({ title, value, description }: StatCardProps) => (
+  <Card>
+    <CardContent className="p-6">
+      <p className="text-sm font-medium text-muted-foreground">{title}</p>
+      <p className="text-2xl font-bold mt-2">{value}</p>
+      <p className="text-xs text-muted-foreground mt-1">{description}</p>
+    </CardContent>
+  </Card>
+);
 
 interface TeacherAnalyticsProps {
   teacherId: string;
@@ -68,46 +88,41 @@ export const TeacherAnalytics = ({ teacherId }: TeacherAnalyticsProps) => {
   const { data, isLoading, error } = useAnalyticsData(teacherId);
   const [currentView, setCurrentView] = useState("week");
 
-  // Transform the data for the charts if available
-  const timeProgress = data?.timeProgress?.map((item) => ({
-    date: item.date,
-    count: Number(item.count) || 0,
-  })) || [];
+  const timeProgress =
+    data?.timeProgress?.map((item) => ({
+      date: item.date,
+      count: Number(item.count) || 0,
+    })) || [];
 
-  const stats = [
-    {
-      title: "Total Students",
-      value: data?.studentProgress?.length || 0,
-      description: "Students assigned to you",
-      trend: "+2.5%",
-    },
-    {
-      title: "Avg. Quality",
-      value: (data?.qualityDistribution?.length ?? 0) > 0 ? "Good" : "N/A",
-      description: "Average memorization quality",
-      trend: "+0.3",
-    },
-    {
-      title: "Active Tasks",
-      value: data?.contributorActivity?.length || 0,
-      description: "Pending assignments",
-      trend: "-2",
-    },
-    {
-      title: "Revisions This Month",
-      value: timeProgress.reduce((sum, item) => sum + item.count, 0),
-      description: "Completed revisions",
-      trend: "+15.2%",
-    },
-  ];
+  // Entries in current month
+  const now = new Date();
+  const currentMonth = now.getMonth();
+  const currentYear = now.getFullYear();
+  const revisionsThisMonth = timeProgress.filter((item) => {
+    const d = new Date(item.date);
+    return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
+  }).reduce((sum, item) => sum + item.count, 0);
 
-  // Handle loading state
+  // Entries in last 7 days
+  const sevenDaysAgo = new Date();
+  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+  const thisWeekEntries = timeProgress.filter(
+    (item) => new Date(item.date) >= sevenDaysAgo,
+  ).reduce((sum, item) => sum + item.count, 0);
+
+  const avgQuality = computeAvgQuality(data?.qualityDistribution || []);
+
+  const formattedQualityData =
+    data?.qualityDistribution?.map((item) => ({
+      name: QUALITY_LABELS[item.quality] || item.quality,
+      value: Number(item.count) || 0,
+    })) || [];
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center p-12">
         <div className="flex flex-col items-center gap-2">
-          <div className="h-8 w-8 animate-spin rounded-full border-2 border-emerald-600 border-t-transparent">
-          </div>
+          <div className="h-8 w-8 animate-spin rounded-full border-2 border-emerald-600 border-t-transparent" />
           <p className="text-sm text-muted-foreground">
             Loading analytics data...
           </p>
@@ -116,7 +131,6 @@ export const TeacherAnalytics = ({ teacherId }: TeacherAnalyticsProps) => {
     );
   }
 
-  // Handle error state
   if (error) {
     return (
       <Card className="border-destructive/50">
@@ -129,30 +143,45 @@ export const TeacherAnalytics = ({ teacherId }: TeacherAnalyticsProps) => {
     );
   }
 
-  // Format the quality distribution data for the chart
-  const formattedQualityData = data?.qualityDistribution?.map((item) => ({
-    name: item.quality,
-    value: Number(item.count) || 0,
-  })) || [];
-
   return (
     <div className="space-y-8 animate-fadeIn">
-      <AnalyticsHeader stats={stats} />
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <StatCard
+          title="My Students"
+          value={data?.studentProgress?.length || 0}
+          description="Students currently assigned to you"
+        />
+        <StatCard
+          title="Average Quality"
+          value={avgQuality}
+          description="Weighted average memorization quality"
+        />
+        <StatCard
+          title="This Week's Entries"
+          value={thisWeekEntries}
+          description="Progress entries recorded in the last 7 days"
+        />
+        <StatCard
+          title="Revisions This Month"
+          value={revisionsThisMonth}
+          description="Total progress entries this month"
+        />
+      </div>
 
       <Tabs defaultValue="progress" className="space-y-4">
         <TabsList>
           <TabsTrigger value="progress">Progress Overview</TabsTrigger>
           <TabsTrigger value="students">Student Performance</TabsTrigger>
-          <TabsTrigger value="trends">Trends Analysis</TabsTrigger>
+          <TabsTrigger value="trends">Daily Activity</TabsTrigger>
         </TabsList>
 
         <TabsContent value="progress" className="space-y-4">
           <div className="grid gap-4 md:grid-cols-2">
             <Card>
               <CardHeader>
-                <CardTitle>Progress Distribution</CardTitle>
+                <CardTitle>Memorization Quality Distribution</CardTitle>
                 <CardDescription>
-                  Memorization quality assessment
+                  Quality breakdown across all students
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -165,41 +194,22 @@ export const TeacherAnalytics = ({ teacherId }: TeacherAnalyticsProps) => {
                 <CardTitle>Progress Over Time</CardTitle>
                 <CardDescription>
                   <div className="flex items-center gap-4">
-                    <span>Measured in completed ayahs</span>
+                    <span>Daily entries (last 90 days)</span>
                     <div className="flex items-center gap-2 ml-auto">
-                      <button
-                        type="button"
-                        onClick={() => setCurrentView("week")}
-                        className={`text-xs px-2 py-0.5 rounded ${
-                          currentView === "week"
-                            ? "bg-emerald-100 text-emerald-800"
-                            : "text-muted-foreground"
-                        }`}
-                      >
-                        Week
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setCurrentView("month")}
-                        className={`text-xs px-2 py-0.5 rounded ${
-                          currentView === "month"
-                            ? "bg-emerald-100 text-emerald-800"
-                            : "text-muted-foreground"
-                        }`}
-                      >
-                        Month
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setCurrentView("year")}
-                        className={`text-xs px-2 py-0.5 rounded ${
-                          currentView === "year"
-                            ? "bg-emerald-100 text-emerald-800"
-                            : "text-muted-foreground"
-                        }`}
-                      >
-                        Year
-                      </button>
+                      {(["week", "month", "year"] as const).map((v) => (
+                        <button
+                          key={v}
+                          type="button"
+                          onClick={() => setCurrentView(v)}
+                          className={`text-xs px-2 py-0.5 rounded capitalize ${
+                            currentView === v
+                              ? "bg-emerald-100 text-emerald-800"
+                              : "text-muted-foreground"
+                          }`}
+                        >
+                          {v}
+                        </button>
+                      ))}
                     </div>
                   </div>
                 </CardDescription>
@@ -214,9 +224,9 @@ export const TeacherAnalytics = ({ teacherId }: TeacherAnalyticsProps) => {
         <TabsContent value="students" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Student Progress Comparison</CardTitle>
+              <CardTitle>Student Memorization Progress</CardTitle>
               <CardDescription>
-                Top performing students this month
+                Total verses memorized per student
               </CardDescription>
             </CardHeader>
             <CardContent className="pt-2">
@@ -228,13 +238,13 @@ export const TeacherAnalytics = ({ teacherId }: TeacherAnalyticsProps) => {
         <TabsContent value="trends" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Activity Patterns</CardTitle>
-              <CardDescription>When students are most active</CardDescription>
+              <CardTitle>Daily Activity</CardTitle>
+              <CardDescription>
+                Progress entries per day (last 14 days)
+              </CardDescription>
             </CardHeader>
             <CardContent>
-              <ContributorActivityChart
-                data={data?.contributorActivity || []}
-              />
+              <ContributorActivityChart data={data?.dailyActivity || []} />
             </CardContent>
           </Card>
         </TabsContent>
