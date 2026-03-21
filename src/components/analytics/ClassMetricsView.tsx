@@ -1,14 +1,17 @@
 /**
- * Class Metrics View - Capacity & Effectiveness
- * Purpose: "Which class structures are working or failing?"
- * Shows 4 essential KPIs + aggregated class list
- * Fast load: ≤2 queries (summary + class list)
+ * Class Metrics View
+ * Answers: "How are our classes structured and are they effective?"
+ *
+ * Shows per-class data including:
+ * - Capacity utilization (enrolled / max capacity)
+ * - Attendance rate from attendance records (last 30 days)
+ * - Status indicator
+ *
+ * Classes near or over capacity are flagged.
  */
 
-import { useAnalyticsSummary } from "@/hooks/useAnalyticsSummary.ts";
-import { useClassMetricsSummary } from "@/hooks/useClassMetricsSummary.ts";
+import { useAnalyticsLive } from "@/hooks/useAnalyticsLive.ts";
 import { KPICard } from "./KPICard.tsx";
-import { EmptyState } from "./EmptyState.tsx";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card.tsx";
 import {
   Table,
@@ -22,88 +25,83 @@ import { Badge } from "@/components/ui/badge.tsx";
 import { calculateThresholdStatus } from "@/types/dashboard.ts";
 import { useMemo } from "react";
 import {
+  GraduationCap,
   Users,
   TrendingUp,
   AlertTriangle,
-  GraduationCap,
   Loader2,
   AlertCircle,
 } from "lucide-react";
 
 export function ClassMetricsView() {
-  const { data: summary, isLoading: summaryLoading, error: summaryError } = useAnalyticsSummary();
-  const { data: classMetrics, isLoading: classMetricsLoading } = useClassMetricsSummary();
-  
-  const isLoading = summaryLoading || classMetricsLoading;
-  const error = summaryError;
+  const { data, isLoading, error } = useAnalyticsLive();
 
-  // Calculate aggregated metrics from class list
-  const aggregatedMetrics = useMemo(() => {
-    if (!classMetrics || classMetrics.length === 0) {
+  const classes = data?.classes || [];
+  const overview = data?.overview;
+
+  const summary = useMemo(() => {
+    if (classes.length === 0) {
       return {
-        avgProgress: 0,
-        avgAttendance: 0,
+        totalClasses: 0,
         avgCapacityUtilization: 0,
-        avgDropoffRate: 0,
+        avgAttendanceRate: 0,
+        overCapacityCount: 0,
+        classesWithLowAttendance: 0,
       };
     }
 
-    const avgProgress = classMetrics.length > 0
-      ? classMetrics.reduce((sum, c) => sum + c.avg_progress, 0) / classMetrics.length
-      : 0;
+    const avgCapacityUtilization =
+      classes.reduce((sum, c) => sum + c.capacityUtilization, 0) / classes.length;
 
-    const avgAttendance = classMetrics.length > 0
-      ? classMetrics.reduce((sum, c) => sum + c.attendance_rate, 0) / classMetrics.length
-      : 0;
+    const classesWithAtt = classes.filter((c) => c.attendanceRate !== null);
+    const avgAttendanceRate =
+      classesWithAtt.length > 0
+        ? classesWithAtt.reduce((sum, c) => sum + (c.attendanceRate ?? 0), 0) /
+          classesWithAtt.length
+        : 0;
 
-    const avgCapacityUtilization = classMetrics.length > 0
-      ? classMetrics.reduce((sum, c) => sum + c.capacity_utilization, 0) / classMetrics.length
-      : 0;
-
-    const avgDropoffRate = classMetrics.length > 0
-      ? classMetrics.reduce((sum, c) => sum + c.dropoff_rate, 0) / classMetrics.length
-      : 0;
+    const overCapacityCount = classes.filter((c) => c.capacityUtilization >= 95).length;
+    const classesWithLowAttendance = classesWithAtt.filter(
+      (c) => (c.attendanceRate ?? 100) < 75
+    ).length;
 
     return {
-      avgProgress,
-      avgAttendance,
+      totalClasses: classes.length,
       avgCapacityUtilization,
-      avgDropoffRate,
+      avgAttendanceRate,
+      overCapacityCount,
+      classesWithLowAttendance,
     };
-  }, [classMetrics]);
+  }, [classes]);
 
-  // Show loading state
   if (isLoading) {
     return (
-      <div className="flex flex-col items-center justify-center py-12 space-y-4">
+      <div className="flex flex-col items-center justify-center py-16 space-y-4">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        <p className="text-gray-600">Loading class metrics...</p>
+        <p className="text-gray-600">Loading class data...</p>
       </div>
     );
   }
 
-  // Show error state
   if (error) {
     return (
-      <div className="flex flex-col items-center justify-center py-12 space-y-4">
+      <div className="flex flex-col items-center justify-center py-16 space-y-4">
         <AlertCircle className="h-8 w-8 text-red-500" />
-        <div className="text-center">
-          <p className="font-semibold text-gray-900">Failed to load class metrics</p>
-          <p className="text-sm text-gray-600 mt-1">
-            {error instanceof Error ? error.message : "An unexpected error occurred"}
-          </p>
-        </div>
+        <p className="font-semibold text-gray-900">Failed to load class data</p>
+        <p className="text-sm text-gray-600">
+          {error instanceof Error ? error.message : "Unknown error"}
+        </p>
       </div>
     );
   }
 
-  // Show empty state if no data
-  if (!summary || !classMetrics || classMetrics.length === 0) {
+  if (classes.length === 0) {
     return (
-      <EmptyState
-        message="No class data available"
-        description="Class metrics will be available after the weekly aggregation job runs."
-      />
+      <div className="py-16 text-center text-gray-500">
+        <GraduationCap className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+        <p className="font-semibold text-gray-700">No classes found</p>
+        <p className="text-sm mt-1">Create classes to see their metrics here.</p>
+      </div>
     );
   }
 
@@ -111,178 +109,186 @@ export function ClassMetricsView() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h2 className="text-2xl font-bold text-gray-900">Classes - Capacity & Effectiveness</h2>
-        <p className="text-sm text-gray-600 mt-1">
-          Which class structures are working or failing? • Updated weekly
+        <h2 className="text-2xl font-bold text-gray-900">Class Overview</h2>
+        <p className="text-sm text-gray-500 mt-1">
+          Live data · {classes.length} classes
         </p>
       </div>
 
-      {/* KPI Cards - 4 essential metrics */}
+      {/* Summary KPIs */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* 1. Average Progress per Class */}
         <KPICard
           definition={{
-            id: "avg_class_progress",
-            name: "Avg Progress per Class",
-            formula: "AVG(class.total_pages_memorized / class.student_count)",
-            displayType: "number",
-            unit: "pages/student",
-            thresholds: {
-              green: { min: 50 },
-              yellow: { min: 30, max: 49 },
-              red: { max: 29 },
-            },
-            redAction: "Identify underperforming classes, restructure if needed",
-            comparisonPeriod: "month",
+            id: "total_classes",
+            name: "Total Classes",
+            formula: "COUNT(all classes)",
+            displayType: "count",
+            thresholds: { green: { min: 1 }, yellow: { min: 0 }, red: { max: -1 } },
+            redAction: "No classes found",
+            comparisonPeriod: "none",
           }}
-          value={aggregatedMetrics.avgProgress}
-          status={calculateThresholdStatus(aggregatedMetrics.avgProgress, {
-            green: { min: 50 },
-            yellow: { min: 30, max: 49 },
-            red: { max: 29 },
-          })}
-          icon={<TrendingUp className="h-5 w-5" />}
+          value={summary.totalClasses}
+          status="green"
+          icon={<GraduationCap className="h-5 w-5" />}
         />
-        
-        {/* 2. Class Attendance Rate */}
+
+        <KPICard
+          definition={{
+            id: "avg_capacity",
+            name: "Avg Capacity Used",
+            formula: "Average (enrolled ÷ max capacity) across all classes",
+            displayType: "percentage",
+            unit: "%",
+            thresholds: {
+              green: { min: 50, max: 90 },
+              yellow: { min: 91, max: 94 },
+              red: { min: 95 },
+            },
+            redAction: "Classes are near or at full capacity — consider opening new classes",
+            comparisonPeriod: "none",
+          }}
+          value={summary.avgCapacityUtilization}
+          status={calculateThresholdStatus(summary.avgCapacityUtilization, {
+            green: { min: 50, max: 90 },
+            yellow: { min: 91, max: 94 },
+            red: { min: 95 },
+          })}
+          icon={<Users className="h-5 w-5" />}
+        />
+
         <KPICard
           definition={{
             id: "class_attendance",
-            name: "Class Attendance Rate",
-            formula: "AVG(class.attendance_rate)",
+            name: "Avg Class Attendance",
+            formula: "Average attendance rate across classes with records",
             displayType: "percentage",
             unit: "%",
             thresholds: {
               green: { min: 90 },
-              yellow: { min: 80, max: 89 },
-              red: { max: 79 },
+              yellow: { min: 75, max: 89 },
+              red: { max: 74 },
             },
-            redAction: "Identify classes with attendance issues, review scheduling",
+            redAction: "Low class attendance — review scheduling and follow up with absent students",
             comparisonPeriod: "week",
           }}
-          value={aggregatedMetrics.avgAttendance}
-          status={calculateThresholdStatus(aggregatedMetrics.avgAttendance, {
+          value={summary.avgAttendanceRate}
+          status={calculateThresholdStatus(summary.avgAttendanceRate, {
             green: { min: 90 },
-            yellow: { min: 80, max: 89 },
-            red: { max: 79 },
+            yellow: { min: 75, max: 89 },
+            red: { max: 74 },
           })}
-          icon={<Users className="h-5 w-5" />}
+          icon={<TrendingUp className="h-5 w-5" />}
         />
-        
-        {/* 3. Capacity Utilization */}
+
         <KPICard
           definition={{
-            id: "capacity_utilization",
-            name: "Capacity Utilization",
-            formula: "AVG(class.current_students / class.capacity)",
-            displayType: "percentage",
-            unit: "%",
-            thresholds: {
-              green: { min: 70, max: 90 },
-              yellow: { min: 91, max: 95 },
-              red: { min: 96 },
-            },
-            redAction: "Optimize class sizes, split classes, adjust capacity",
+            id: "overcapacity_classes",
+            name: "Near-Capacity Classes",
+            formula: "Classes at ≥95% capacity",
+            displayType: "count",
+            thresholds: { green: { max: 0 }, yellow: { min: 1, max: 2 }, red: { min: 3 } },
+            redAction: "Multiple classes are overcrowded — open new classes immediately",
             comparisonPeriod: "none",
           }}
-          value={aggregatedMetrics.avgCapacityUtilization}
-          status={calculateThresholdStatus(aggregatedMetrics.avgCapacityUtilization, {
-            green: { min: 70, max: 90 },
-            yellow: { min: 91, max: 95 },
-            red: { min: 96 },
+          value={summary.overCapacityCount}
+          status={calculateThresholdStatus(summary.overCapacityCount, {
+            green: { max: 0 },
+            yellow: { min: 1, max: 2 },
+            red: { min: 3 },
           })}
           icon={<AlertTriangle className="h-5 w-5" />}
         />
-        
-        {/* 4. Drop-off Rate per Class */}
-        <KPICard
-          definition={{
-            id: "dropoff_rate",
-            name: "Drop-off Rate",
-            formula: "AVG(class.students_dropped / class.students_enrolled)",
-            displayType: "percentage",
-            unit: "%",
-            thresholds: {
-              green: { max: 5 },
-              yellow: { min: 6, max: 10 },
-              red: { min: 11 },
-            },
-            redAction: "Identify problematic classes, investigate causes",
-            comparisonPeriod: "month",
-          }}
-          value={aggregatedMetrics.avgDropoffRate}
-          status={calculateThresholdStatus(aggregatedMetrics.avgDropoffRate, {
-            green: { max: 5 },
-            yellow: { min: 6, max: 10 },
-            red: { min: 11 },
-          })}
-          icon={<GraduationCap className="h-5 w-5" />}
-        />
       </div>
 
-      {/* Class List Table */}
+      {/* Class Table */}
       <Card>
         <CardHeader>
-          <CardTitle>Class Performance Summary</CardTitle>
+          <CardTitle>All Classes</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-0">
           <div className="overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Class</TableHead>
-                  <TableHead>Students</TableHead>
-                  <TableHead>Capacity %</TableHead>
-                  <TableHead>Avg Progress</TableHead>
-                  <TableHead>Attendance</TableHead>
-                  <TableHead>Drop-off Rate</TableHead>
+                  <TableHead>Class Name</TableHead>
+                  <TableHead>Enrolled / Capacity</TableHead>
+                  <TableHead>Capacity Used</TableHead>
+                  <TableHead>Attendance (30d)</TableHead>
                   <TableHead>Status</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {classMetrics.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={7} className="text-center py-8 text-gray-500">
-                      No class data available
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  classMetrics.map((classMetric) => {
-                    const isProblematic = 
-                      classMetric.capacity_utilization >= 95 ||
-                      classMetric.attendance_rate < 80 ||
-                      classMetric.dropoff_rate >= 10;
-                    
+                {classes
+                  .slice()
+                  .sort((a, b) => b.capacityUtilization - a.capacityUtilization)
+                  .map((cls) => {
+                    const isOverCapacity = cls.capacityUtilization >= 95;
+                    const hasLowAttendance =
+                      cls.attendanceRate !== null && cls.attendanceRate < 75;
+                    const isProblematic = isOverCapacity || hasLowAttendance;
+
+                    const capColor =
+                      cls.capacityUtilization >= 95
+                        ? "text-red-700 font-semibold"
+                        : cls.capacityUtilization >= 80
+                        ? "text-yellow-700"
+                        : "text-green-700";
+
+                    const attColor =
+                      cls.attendanceRate === null
+                        ? "text-gray-400"
+                        : cls.attendanceRate >= 90
+                        ? "text-green-700"
+                        : cls.attendanceRate >= 75
+                        ? "text-yellow-700"
+                        : "text-red-700";
+
                     return (
-                      <TableRow key={classMetric.class_id}>
-                        <TableCell className="font-medium">{classMetric.class_name}</TableCell>
-                        <TableCell>{classMetric.student_count} / {classMetric.capacity}</TableCell>
+                      <TableRow
+                        key={cls.id}
+                        className={isProblematic ? "bg-orange-50/40" : ""}
+                      >
+                        <TableCell className="font-medium">{cls.name}</TableCell>
                         <TableCell>
-                          <Badge variant={classMetric.capacity_utilization >= 95 ? "destructive" : "default"}>
-                            {(classMetric.capacity_utilization * 100).toFixed(1)}%
-                          </Badge>
-                        </TableCell>
-                        <TableCell>{classMetric.avg_progress.toFixed(1)} pages</TableCell>
-                        <TableCell>{(classMetric.attendance_rate * 100).toFixed(1)}%</TableCell>
-                        <TableCell>
-                          <Badge variant={classMetric.dropoff_rate >= 10 ? "destructive" : "default"}>
-                            {(classMetric.dropoff_rate * 100).toFixed(1)}%
-                          </Badge>
+                          {cls.currentStudents} / {cls.capacity}
                         </TableCell>
                         <TableCell>
-                          <Badge variant={isProblematic ? "destructive" : "default"}>
-                            {isProblematic ? "Needs Review" : "On Track"}
-                          </Badge>
+                          <span className={capColor}>
+                            {cls.capacityUtilization.toFixed(0)}%
+                          </span>
+                        </TableCell>
+                        <TableCell>
+                          <span className={`font-semibold ${attColor}`}>
+                            {cls.attendanceRate !== null
+                              ? `${cls.attendanceRate.toFixed(0)}%`
+                              : "No records"}
+                          </span>
+                        </TableCell>
+                        <TableCell>
+                          {isOverCapacity ? (
+                            <Badge variant="destructive">Near Capacity</Badge>
+                          ) : hasLowAttendance ? (
+                            <Badge variant="outline" className="border-yellow-400 text-yellow-700">
+                              Low Attendance
+                            </Badge>
+                          ) : (
+                            <Badge variant="outline" className="border-green-400 text-green-700">
+                              Healthy
+                            </Badge>
+                          )}
                         </TableCell>
                       </TableRow>
                     );
-                  })
-                )}
+                  })}
               </TableBody>
             </Table>
           </div>
         </CardContent>
       </Card>
+
+      <p className="text-xs text-gray-400">
+        Attendance rate is calculated from sessions recorded in the last 30 days. Classes with no attendance records show "No records".
+      </p>
     </div>
   );
 }
