@@ -528,46 +528,46 @@ export default function ParentMessages() {
             {inboxLoading ? (
               <div className="flex items-center justify-center py-6"><Loader2 className="h-5 w-5 animate-spin mr-2" />Loading...</div>
             ) : (
-              <ul className="space-y-3">
+              <ul className="space-y-2">
                 {(filteredInbox || []).map((m) => {
-                  const teacherName = inboxSenderIdToName.get(m.sender_id) || m.sender_id;
-                  // Try to choose a recipient option for this teacher to support reply
+                  const teacherName = inboxSenderIdToName.get(m.sender_id) || "Teacher";
                   const replyOption = (teacherRecipients || []).find((r) => r.teacherId === m.sender_id);
                   return (
-                    <li key={m.id} className="p-3 border rounded-md text-sm hover:bg-muted/50 cursor-pointer transition-colors" onClick={() => openThreadWithPeer(m.sender_id)}>
-                      <div className="flex items-center justify-between gap-2">
-                        <button
-                          type="button"
-                          className="text-xs font-medium underline underline-offset-2 hover:opacity-80"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            if (replyOption) setSelectedRecipientId(replyOption.id);
-                            setSubject((prev) => {
-                              const current = prev.trim();
-                              if (current.toUpperCase().startsWith("RE:")) return current;
-                              const base = current || "";
-                              return base ? `RE: ${base}` : "RE:";
-                            });
-                            setReplyParentId(m.id);
-                            setTimeout(() => messageRef.current?.focus(), 0);
-                          }}
-                        >
-                          {teacherName}
-                        </button>
-                        <div className="text-muted-foreground text-xs">{new Date(m.created_at).toLocaleString()}</div>
-                      </div>
-                      {!m.read && (
-                        <div className="mt-1">
-                          <span className="inline-block h-2 w-2 rounded-full bg-blue-600 align-middle" />
-                          <span className="sr-only">Unread</span>
+                    <li
+                      key={m.id}
+                      className={`p-3 rounded-lg border cursor-pointer transition-colors hover:bg-muted/40 ${!m.read ? "border-blue-300 bg-blue-50/40 dark:bg-blue-950/20" : ""}`}
+                      onClick={() => openThreadWithPeer(m.sender_id)}
+                    >
+                      <div className="flex items-center justify-between gap-2 mb-1">
+                        <div className="flex items-center gap-1.5">
+                          {!m.read && <span className="h-2 w-2 rounded-full bg-blue-600 shrink-0" />}
+                          <button
+                            type="button"
+                            className="text-xs font-semibold hover:underline"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (replyOption) setSelectedRecipientId(replyOption.id);
+                              setSubject((prev) => {
+                                const current = prev.trim();
+                                if (current.toUpperCase().startsWith("RE:")) return current;
+                                const base = current || "";
+                                return base ? `RE: ${base}` : "RE:";
+                              });
+                              setReplyParentId(m.id);
+                              setTimeout(() => messageRef.current?.focus(), 0);
+                            }}
+                          >
+                            {teacherName}
+                          </button>
                         </div>
-                      )}
-                      <div className="mt-1 text-sm font-medium truncate max-w-[80%]">{m.subject ? `Subject: ${m.subject}` : ''}</div>
-                      <div className="mt-1 truncate">{m.message}</div>
+                        <span className="text-[11px] text-muted-foreground shrink-0">{new Date(m.created_at).toLocaleString()}</span>
+                      </div>
+                      {m.subject && <div className="text-xs font-medium text-foreground/80 truncate mb-0.5">{m.subject}</div>}
+                      <div className="text-xs text-muted-foreground truncate">{m.message}</div>
                     </li>
                   );
                 })}
-                {(filteredInbox || []).length === 0 && <div className="text-center text-muted-foreground py-6">No messages</div>}
+                {(filteredInbox || []).length === 0 && <div className="text-center text-muted-foreground py-6 text-sm">No messages</div>}
               </ul>
             )}
           </CardContent>
@@ -581,25 +581,25 @@ export default function ParentMessages() {
             {sentLoading ? (
               <div className="flex items-center justify-center py-6"><Loader2 className="h-5 w-5 animate-spin mr-2" />Loading...</div>
             ) : (
-              <ul className="space-y-3">
+              <ul className="space-y-2">
                 {(filteredSent || []).map((m) => {
-                  const teacherName = sentRecipientIdToName.get(m.recipient_id) || m.recipient_id;
+                  const teacherName = sentRecipientIdToName.get(m.recipient_id) || "Teacher";
                   return (
                     <li
                       key={m.id}
-                      className="p-3 border rounded-md text-sm hover:bg-muted/50 cursor-pointer transition-colors"
+                      className="p-3 rounded-lg border cursor-pointer transition-colors hover:bg-muted/40"
                       onClick={() => setOpenThreadPeerId(m.recipient_id)}
                     >
-                      <div className="flex items-center justify-between gap-2">
-                        <span className="text-xs font-medium">To: {teacherName}</span>
-                        <div className="text-muted-foreground text-xs">{new Date(m.created_at).toLocaleString()}</div>
+                      <div className="flex items-center justify-between gap-2 mb-1">
+                        <span className="text-xs font-semibold">To: {teacherName}</span>
+                        <span className="text-[11px] text-muted-foreground shrink-0">{new Date(m.created_at).toLocaleString()}</span>
                       </div>
-                      {m.subject && <div className="mt-1 text-sm font-medium truncate">Subject: {m.subject}</div>}
-                      <div className="mt-1 truncate">{m.message}</div>
+                      {m.subject && <div className="text-xs font-medium text-foreground/80 truncate mb-0.5">{m.subject}</div>}
+                      <div className="text-xs text-muted-foreground truncate">{m.message}</div>
                     </li>
                   );
                 })}
-                {(filteredSent || []).length === 0 && <div className="text-center text-muted-foreground py-6">No messages</div>}
+                {(filteredSent || []).length === 0 && <div className="text-center text-muted-foreground py-6 text-sm">No messages</div>}
               </ul>
             )}
           </CardContent>
@@ -616,18 +616,32 @@ export default function ParentMessages() {
           <DialogHeader>
             <DialogTitle>Conversation</DialogTitle>
           </DialogHeader>
-          <div className="space-y-3 flex-1 overflow-auto min-h-0 mb-4">
-            {(threadMessages || []).map((tm) => (
-              <div key={tm.id} className="p-3 border rounded-md text-sm">
-                <div className="flex items-center justify-between gap-2">
-                  <span className="text-xs font-medium">{tm.sender_id === parentId ? "You" : "Teacher"}</span>
-                  <div className="text-muted-foreground text-xs">{new Date(tm.created_at).toLocaleString()}</div>
+          <div className="flex flex-col gap-3 flex-1 overflow-auto min-h-0 mb-4 px-1">
+            {(threadMessages || []).map((tm) => {
+              const isMine = tm.sender_id === parentId;
+              return (
+                <div key={tm.id} className={`flex flex-col ${isMine ? "items-end" : "items-start"}`}>
+                  <div
+                    className={`max-w-[80%] rounded-2xl px-4 py-2.5 text-sm ${
+                      isMine
+                        ? "bg-primary text-primary-foreground rounded-br-sm"
+                        : "bg-muted text-foreground rounded-bl-sm"
+                    }`}
+                  >
+                    {tm.subject && (
+                      <div className={`text-xs font-semibold mb-1 ${isMine ? "text-primary-foreground/70" : "text-muted-foreground"}`}>
+                        {tm.subject}
+                      </div>
+                    )}
+                    <div className="whitespace-pre-wrap leading-relaxed">{tm.message}</div>
+                  </div>
+                  <div className="text-[10px] text-muted-foreground mt-1 px-1">
+                    {isMine ? "You" : "Teacher"} · {new Date(tm.created_at).toLocaleString()}
+                  </div>
                 </div>
-                {tm.subject && <div className="mt-1 text-sm font-medium">Subject: {tm.subject}</div>}
-                <div className="mt-1 whitespace-pre-wrap">{tm.message}</div>
-              </div>
-            ))}
-            {(threadMessages || []).length === 0 && <div className="text-center text-muted-foreground py-6">No messages</div>}
+              );
+            })}
+            {(threadMessages || []).length === 0 && <div className="text-center text-muted-foreground py-6 text-sm">No messages yet</div>}
           </div>
           <div className="border-t pt-4 space-y-3">
             <div className="space-y-2">

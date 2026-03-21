@@ -1,5 +1,6 @@
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute.tsx";
 import { useParentChildren } from "@/hooks/useParentChildren.ts";
+import { ChildSelector } from "@/components/parent/ChildSelector.tsx";
 import { useEffect, useMemo, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card.tsx";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs.tsx";
@@ -256,19 +257,12 @@ const ParentAcademics = () => {
             <CardTitle>Academics</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="-mx-1 mb-4">
-              <div className="flex gap-2 overflow-x-auto whitespace-nowrap px-1 py-1">
-                {children.map((child) => (
-                  <button
-                    key={child.id}
-                    className={`px-3 py-2 rounded border shrink-0 ${selectedStudentId === child.id ? "bg-primary text-primary-foreground" : "bg-background"}`}
-                    onClick={() => setSelectedStudentId(child.id)}
-                    type="button"
-                  >
-                    {child.name}
-                  </button>
-                ))}
-              </div>
+            <div className="mb-4">
+              <ChildSelector
+                children={children}
+                selectedId={selectedStudentId}
+                onSelect={setSelectedStudentId}
+              />
             </div>
             <Tabs defaultValue="assignments" className="w-full">
               <TabsList className="grid grid-cols-2 sm:grid-cols-3 w-full">
