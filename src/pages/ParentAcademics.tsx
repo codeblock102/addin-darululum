@@ -30,19 +30,6 @@ const ParentAcademics = () => {
     }
   }, [children, selectedStudentId]);
 
-  // Debug: compare parent children IDs and selected student
-  useEffect(() => {
-    try {
-      const childIds = (children || []).map((c) => c.id);
-      console.log("[ParentAcademics] Parent children IDs:", childIds);
-      console.log("[ParentAcademics] Selected student ID:", selectedStudentId);
-    } catch (e) {
-      console.warn("[ParentAcademics] Debug logging failed:", e);
-    }
-  }, [children, selectedStudentId]);
-
-  // Remove stray debug log
-
   // Assignments for selected child
   type AssignmentRow = {
     id: string;
@@ -85,38 +72,22 @@ const ParentAcademics = () => {
       }
 
       // Fetch assignments directly targeting this child; avoid submissions endpoint to prevent 500s
-      console.log("[ParentAcademics] fetching assignments (overlaps) for:", selectedStudentId);
       const { data: assignsOv, error: assignsOvError } = await supabase
         .from("teacher_assignments")
         .select("id, title, description, due_date, attachment_name, attachment_url, student_ids")
         .overlaps("student_ids", [selectedStudentId])
         .order("due_date", { ascending: false });
-      if (assignsOvError) {
-        console.error("[ParentAcademics] overlaps query error:", assignsOvError);
-      }
-      const pick = (assignsOv && assignsOv.length > 0) ? assignsOv : undefined;
+      const pick = (assignsOv && !assignsOvError && assignsOv.length > 0) ? assignsOv : undefined;
 
       let assigns: AssignmentRow[] | undefined = pick as AssignmentRow[] | undefined;
       if (!assigns) {
-        console.log("[ParentAcademics] no results via overlaps; trying contains() for:", selectedStudentId);
-        const { data: assignsCs, error: assignsCsError } = await supabase
+        const { data: assignsCs } = await supabase
           .from("teacher_assignments")
           .select("id, title, description, due_date, attachment_name, attachment_url, student_ids")
           .contains("student_ids", [selectedStudentId])
           .order("due_date", { ascending: false });
-        if (assignsCsError) {
-          console.error("[ParentAcademics] contains query error:", assignsCsError);
-        }
         assigns = (assignsCs as AssignmentRow[]) || [];
       }
-
-      // Debug: verify array membership
-      console.log("[ParentAcademics] selected:", selectedStudentId, "assignments count:", assigns?.length ?? 0);
-      (assigns || []).forEach((a: AssignmentRow) => {
-        const arr = a?.student_ids || [];
-        const includes = Array.isArray(arr) ? arr.includes(selectedStudentId) : false;
-        console.log("[ParentAcademics] assignment", a.id, "student_ids:", arr, "includes selected:", includes);
-      });
 
       // Fetch submissions for this student for the returned assignments
       let submissionsByAssignment = new Map<string, SubmissionRow>();
@@ -128,14 +99,12 @@ const ParentAcademics = () => {
             .select("assignment_id, status, submitted_at, graded_at, grade, feedback")
             .eq("student_id", selectedStudentId)
             .in("assignment_id", assignmentIds);
-          if (subsErr) {
-            console.error("[ParentAcademics] submissions fetch error:", subsErr);
-          } else {
+          if (!subsErr) {
             submissionsByAssignment = new Map((subs || []).map((s: SubmissionRow) => [s.assignment_id, s]));
           }
         }
-      } catch (e) {
-        console.warn("[ParentAcademics] submissions fetch exception:", e);
+      } catch {
+        // submissions fetch failed; continue without submission data
       }
 
       return (assigns || []).map((a: AssignmentRow) => {
@@ -281,11 +250,6 @@ const ParentAcademics = () => {
               </TabsList>
 
               <TabsContent value="assignments" className="mt-4 space-y-3">
-                {import.meta.env.DEV && (
-                  <div className="text-xs text-foreground/70">
-                    Debug — children: {(children || []).map((c) => c.id).join(", ")} | selected: {selectedStudentId || "none"} | rows: {filteredAssignments?.length || 0}
-                  </div>
-                )}
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <Select onValueChange={(v) => setStatusFilter(v as typeof statusFilter)} value={statusFilter}>
                     <SelectTrigger>
