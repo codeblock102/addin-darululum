@@ -1,22 +1,29 @@
 import { useParentChildren } from "@/hooks/useParentChildren.ts";
+import { ChildSelector } from "@/components/parent/ChildSelector.tsx";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card.tsx";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs.tsx";
+import { Badge } from "@/components/ui/badge.tsx";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client.ts";
 import { useQuery } from "@tanstack/react-query";
 import { Tables } from "@/types/supabase.ts";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute.tsx";
-// Removed Add Parent tab from parent dashboard; sidebar page is the source of truth
-import { useToast } from "@/hooks/use-toast.ts";
+import { BookOpen, CalendarCheck, ClipboardList, TrendingUp } from "lucide-react";
+
+const statusColor = (status: string) => {
+  switch (status?.toLowerCase()) {
+    case "present": return "bg-green-100 text-green-800 border-green-200";
+    case "absent":  return "bg-red-100 text-red-800 border-red-200";
+    case "late":    return "bg-amber-100 text-amber-800 border-amber-200";
+    default:        return "bg-muted text-muted-foreground";
+  }
+};
 
 const Parent = () => {
   const { children, isLoading } = useParentChildren();
-  const [selectedStudentId, setSelectedStudentId] = useState<string | null>(children[0]?.id ?? null);
-  const { toast: _toast } = useToast();
+  const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
 
-  // Ensure a default child is selected once children load
   useEffect(() => {
-    if (!selectedStudentId && children && children.length > 0) {
+    if (!selectedStudentId && children.length > 0) {
       setSelectedStudentId(children[0].id);
     }
   }, [children, selectedStudentId]);
@@ -37,7 +44,7 @@ const Parent = () => {
     enabled: !!selectedStudentId,
   });
 
-  const { data: attendance } = useQuery<Tables<"attendance">[] | null>({
+  const { data: attendance } = useQuery<Tables<"attendance">[]>({
     queryKey: ["parent-student-attendance", selectedStudentId],
     queryFn: async () => {
       if (!selectedStudentId) return [];
@@ -67,98 +74,182 @@ const Parent = () => {
     enabled: !!selectedStudentId,
   });
 
-  // Add Parent flow removed from parent dashboard
+  // Derived stats
+  const attendanceRate = (() => {
+    if (!attendance || attendance.length === 0) return null;
+    const present = attendance.filter((a) => a.status?.toLowerCase() === "present").length;
+    return Math.round((present / attendance.length) * 100);
+  })();
+
+  const lastProgress = progressEntries?.[0];
+  const pendingAssignments = (assignments || []).filter(
+    (a: { status: string }) => a.status?.toLowerCase() !== "graded"
+  ).length;
 
   return (
     <ProtectedRoute requireParent>
       <div className="space-y-6 animate-fadeIn">
-        <Card>
-          <CardHeader>
-            <CardTitle>Parent Dashboard</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="-mx-1">
-              <div className="flex gap-2 overflow-x-auto whitespace-nowrap px-1 py-1">
-              {isLoading && <span>Loading children...</span>}
-              {!isLoading && children.length === 0 && <span>No linked children found.</span>}
-              {children.map((child) => (
-                <button
-                  key={child.id}
-                  type="button"
-                  className={`px-3 py-2 rounded border shrink-0 ${selectedStudentId === child.id ? "bg-primary text-primary-foreground" : "bg-background"}`}
-                  onClick={() => setSelectedStudentId(child.id)}
-                >
-                  {child.name}
-                </button>
-              ))}
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        {/* Header + child selector */}
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight mb-1">Parent Dashboard</h1>
+          <p className="text-muted-foreground text-sm mb-4">Track your child's progress and school activity.</p>
+          <ChildSelector
+            children={children}
+            selectedId={selectedStudentId}
+            onSelect={setSelectedStudentId}
+            isLoading={isLoading}
+          />
+        </div>
 
         {selectedStudentId && (
-          <Tabs defaultValue="quran" className="w-full">
-            <TabsList>
-              <TabsTrigger value="quran">Qur'an</TabsTrigger>
-              <TabsTrigger value="attendance">Attendance</TabsTrigger>
-              <TabsTrigger value="assignments">Current Work</TabsTrigger>
-            </TabsList>
-            <TabsContent value="quran">
+          <>
+            {/* Stat cards */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
               <Card>
-                <CardHeader>
-                  <CardTitle>Recent Qur'an Progress</CardTitle>
-                </CardHeader>
-                <CardContent>
+                <CardContent className="pt-5 pb-4">
+                  <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                    <CalendarCheck className="h-4 w-4" />
+                    <span className="text-xs font-medium uppercase tracking-wide">Attendance</span>
+                  </div>
+                  <div className="text-3xl font-bold">
+                    {attendanceRate !== null ? `${attendanceRate}%` : "—"}
+                  </div>
+                  <div className="text-xs text-muted-foreground mt-1">
+                    {attendance?.length ?? 0} sessions recorded
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardContent className="pt-5 pb-4">
+                  <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                    <BookOpen className="h-4 w-4" />
+                    <span className="text-xs font-medium uppercase tracking-wide">Qur'an</span>
+                  </div>
+                  <div className="text-lg font-semibold leading-tight">
+                    {lastProgress
+                      ? `Surah ${lastProgress.current_surah ?? "—"}, Juz ${lastProgress.current_juz ?? "—"}`
+                      : "No entries yet"}
+                  </div>
+                  {lastProgress?.memorization_quality && (
+                    <div className="text-xs text-muted-foreground mt-1">
+                      Quality: {lastProgress.memorization_quality}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardContent className="pt-5 pb-4">
+                  <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                    <ClipboardList className="h-4 w-4" />
+                    <span className="text-xs font-medium uppercase tracking-wide">Pending Work</span>
+                  </div>
+                  <div className="text-3xl font-bold">{pendingAssignments}</div>
+                  <div className="text-xs text-muted-foreground mt-1">
+                    {(assignments || []).length} total assignments
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardContent className="pt-5 pb-4">
+                  <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                    <TrendingUp className="h-4 w-4" />
+                    <span className="text-xs font-medium uppercase tracking-wide">Progress Entries</span>
+                  </div>
+                  <div className="text-3xl font-bold">{progressEntries?.length ?? 0}</div>
+                  <div className="text-xs text-muted-foreground mt-1">last 20 sessions</div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Recent attendance */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">Recent Attendance</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {(attendance || []).length === 0 ? (
+                  <p className="text-sm text-muted-foreground">No attendance records.</p>
+                ) : (
                   <ul className="space-y-2">
-                    {(progressEntries || []).map((p: Tables<"progress">) => (
-                      <li key={p.id} className="p-3 rounded border">
-                        <div className="text-sm text-muted-foreground">{new Date(p.created_at).toLocaleString()}</div>
-                        <div>Surah {p.current_surah ?? "-"}, Juz {p.current_juz ?? "-"}, Verses {p.start_ayat ?? "-"}-{p.end_ayat ?? "-"}</div>
-                        {p.memorization_quality && <div>Quality: {p.memorization_quality}</div>}
-                        {p.notes && <div className="text-sm">Notes: {p.notes}</div>}
+                    {(attendance || []).slice(0, 10).map((a) => (
+                      <li key={a.id} className="flex items-center justify-between text-sm">
+                        <span className="text-muted-foreground">{a.date}</span>
+                        <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium border ${statusColor(a.status)}`}>
+                          {a.status}
+                        </span>
                       </li>
                     ))}
                   </ul>
-                </CardContent>
-              </Card>
-            </TabsContent>
-            
-            <TabsContent value="attendance">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Attendance</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <ul className="space-y-2">
-                    {(attendance || []).map((a: Tables<"attendance">) => (
-                      <li key={a.id} className="p-3 rounded border flex justify-between">
-                        <span>{a.date}</span>
-                        <span className="uppercase">{a.status}</span>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Recent Qur'an progress */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">Recent Qur'an Progress</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {(progressEntries || []).length === 0 ? (
+                  <p className="text-sm text-muted-foreground">No progress entries yet.</p>
+                ) : (
+                  <ul className="space-y-3">
+                    {(progressEntries || []).slice(0, 5).map((p: Tables<"progress">) => (
+                      <li key={p.id} className="p-3 rounded-lg border bg-muted/20 space-y-1">
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="font-medium text-sm">
+                            Surah {p.current_surah ?? "—"}, Juz {p.current_juz ?? "—"}
+                          </span>
+                          <span className="text-xs text-muted-foreground">
+                            {new Date(p.created_at).toLocaleDateString()}
+                          </span>
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          Verses {p.start_ayat ?? "—"}–{p.end_ayat ?? "—"}
+                          {p.memorization_quality && ` · Quality: ${p.memorization_quality}`}
+                        </div>
+                        {p.notes && <div className="text-xs text-foreground/70">{p.notes}</div>}
                       </li>
                     ))}
                   </ul>
-                </CardContent>
-              </Card>
-            </TabsContent>
-            <TabsContent value="assignments">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Current Work</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <ul className="space-y-2">
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Pending assignments */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">Current Work</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {(assignments || []).length === 0 ? (
+                  <p className="text-sm text-muted-foreground">No assignments found.</p>
+                ) : (
+                  <ul className="space-y-3">
                     {(assignments || []).map((as: { id: string; title: string; description: string | null; due_date: string | null; status: string }) => (
-                      <li key={as.id} className="p-3 rounded border">
-                        <div className="font-medium">{as.title}</div>
-                        {as.description && <div className="text-sm text-muted-foreground">{as.description}</div>}
-                        <div className="text-sm">Due: {as.due_date ?? "-"} | Status: {as.status}</div>
+                      <li key={as.id} className="p-3 rounded-lg border flex items-start justify-between gap-3">
+                        <div className="space-y-0.5 min-w-0">
+                          <div className="font-medium text-sm truncate">{as.title}</div>
+                          {as.description && (
+                            <div className="text-xs text-muted-foreground truncate">{as.description}</div>
+                          )}
+                          {as.due_date && (
+                            <div className="text-xs text-muted-foreground">Due: {as.due_date}</div>
+                          )}
+                        </div>
+                        <Badge variant={as.status === "graded" ? "secondary" : "outline"} className="shrink-0 capitalize">
+                          {as.status}
+                        </Badge>
                       </li>
                     ))}
                   </ul>
-                </CardContent>
-              </Card>
-            </TabsContent>
-          </Tabs>
+                )}
+              </CardContent>
+            </Card>
+          </>
         )}
       </div>
     </ProtectedRoute>
@@ -166,5 +257,3 @@ const Parent = () => {
 };
 
 export default Parent;
-
-
