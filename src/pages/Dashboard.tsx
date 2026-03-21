@@ -25,6 +25,7 @@ import { AccessDenied } from "@/components/teacher-portal/AccessDenied.tsx";
 import { ProfileNotFound } from "@/components/teacher-portal/ProfileNotFound.tsx";
 import { Teacher } from "@/types/teacher.ts";
 import { useRBAC } from "@/hooks/useRBAC.ts";
+import { Navigate } from "react-router-dom";
 
 /**
  * @component Dashboard
@@ -63,7 +64,7 @@ const Dashboard = () => {
   const { session, refreshSession } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const { isTeacher, isAdmin, isLoading: isRoleLoading } = useRBAC();
+  const { isTeacher, isAdmin, isParent, isLoading: isRoleLoading } = useRBAC();
 
   // Fetch teacher profile data - useQuery handles caching and refetching automatically
   const {
@@ -179,6 +180,11 @@ const Dashboard = () => {
         </div>
       </div>
     );
+  }
+
+  // Parents should never see the teacher portal — send them to their own dashboard
+  if (isParent && !isRoleLoading) {
+    return <Navigate to="/parent" replace />;
   }
 
   if (!isTeacher && !isAdmin && !isRoleLoading) {

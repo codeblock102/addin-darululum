@@ -5,7 +5,7 @@ import interactionPlugin from "@fullcalendar/interaction";
 import { useBreakpoint } from "@/hooks/use-mobile.tsx";
 import { useRef, useState } from "react";
 import { Button } from "@/components/ui/button.tsx";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, CalendarDays } from "lucide-react";
 import { useI18n } from "@/contexts/I18nContext.tsx";
 import frLocale from "@fullcalendar/core/locales/fr";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog.tsx";
@@ -223,6 +223,21 @@ export const ScheduleCalendar = ({ classes, teacherId }: ScheduleCalendarProps) 
 
   return (
     <div className="bg-white p-4 rounded-lg shadow-md h-full relative">
+      {/* Google Calendar sync banner */}
+      <div className="mb-3 flex items-center justify-between gap-2 rounded-lg border border-blue-100 bg-blue-50 px-3 py-2">
+        <div className="flex items-center gap-2 text-xs text-blue-700">
+          <CalendarDays className="h-4 w-4 shrink-0" />
+          <span>Schedule shows your class timetable from the madrasah database.</span>
+        </div>
+        <a
+          href="https://calendar.google.com"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="shrink-0 rounded-md bg-blue-600 px-2.5 py-1 text-xs font-medium text-white hover:bg-blue-700 transition-colors"
+        >
+          Open Google Calendar
+        </a>
+      </div>
       {isMobile && (
         <>
           <Button
