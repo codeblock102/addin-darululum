@@ -81,9 +81,9 @@ function App() {
         <Routes>
           <Route path="/auth" element={<Auth />} />
           <Route path="/reset-password" element={<ResetPassword />} />
-          <Route path="/create-demo-account" element={<CreateDemoAccount />} />
-          <Route path="/create-teacher-profile" element={<CreateTeacherProfileForTestAccount />} />
-          <Route path="/admin-diagnostic" element={<AdminAccessDiagnostic />} />
+          <Route path="/create-demo-account" element={<ProtectedRoute requireAdmin><CreateDemoAccount /></ProtectedRoute>} />
+          <Route path="/create-teacher-profile" element={<ProtectedRoute requireAdmin><CreateTeacherProfileForTestAccount /></ProtectedRoute>} />
+          <Route path="/admin-diagnostic" element={<ProtectedRoute requireAdmin><AdminAccessDiagnostic /></ProtectedRoute>} />
           <Route path="*" element={<NotFound />} />
 
           {/* Admin Routes */}
@@ -193,7 +193,7 @@ function App() {
             />
             <Route path="/classes" element={<Classes />} />
             <Route path="/progress-book" element={<ProgressBook />} />
-            <Route path="/add-parent" element={<ProtectedRoute requireParent><TeacherAddParent /></ProtectedRoute>} />
+            <Route path="/add-parent" element={<ProtectedRoute requireTeacher><TeacherAddParent /></ProtectedRoute>} />
             <Route
               path="/attendance"
               element={
