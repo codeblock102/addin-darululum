@@ -156,7 +156,7 @@ export const Sidebar = (
         >
           {(isOpen !== false || isMobile) && (
             <Link
-              to="/dashboard"
+              to={isParent ? "/parent" : "/dashboard"}
               className="flex items-center gap-2 font-semibold hover:opacity-80 transition-opacity"
             >
               {isAdmin
@@ -181,7 +181,7 @@ export const Sidebar = (
           {!isMobile && isOpen === false && (
             <div className="flex flex-col items-center gap-2 w-full py-1">
               <Link
-                to="/dashboard"
+                to={isParent ? "/parent" : "/dashboard"}
                 className="flex items-center justify-center hover:bg-gray-100 rounded-lg p-2 transition-all duration-200"
                 title={isAdmin ? t("portal.admin") : isParent ? t("portal.parent") : t("portal.teacher")}
               >
@@ -246,7 +246,7 @@ export const Sidebar = (
             "flex-1 transition-all duration-300 overflow-x-hidden",
             (!isMobile && isOpen === false) ? "py-2" : "py-2 sm:py-4",
           )}
-          style={{ overflowY: isMobile ? "auto" : "hidden" }}
+          style={{ overflowY: "auto" }}
         >
           {/* DEBUG: Log navItems for admin */}
           {isAdmin && (() => {

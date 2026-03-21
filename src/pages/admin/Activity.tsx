@@ -583,8 +583,8 @@ export default function Activity() {
       });
       const isAtRisk = attendanceRate < 70 || averageQuality < 2.5 || recentProgress.length === 0;
 
-      // Top performer criteria: attendance >= 90% AND average quality >= 4 AND recent progress
-      const isTopPerformer = attendanceRate >= 90 && averageQuality >= 4 && recentProgress.length > 0;
+      // Top performer criteria: attendance >= 75% AND average quality >= 3.5 AND recent progress
+      const isTopPerformer = attendanceRate >= 75 && averageQuality >= 3.5 && recentProgress.length > 0;
 
       return {
         id: student.id,
@@ -612,25 +612,20 @@ export default function Activity() {
     const submissions = dashboardData.submissions || [];
     const students = dashboardData.students || [];
 
-    // Teacher actions
+    // Teacher actions — count all progress entries, attendance records, and assignments
+    // (contributor_id / teacher_id may be null on older records, so we count totals)
     const teacherActions = new Map<string, number>();
     progress.forEach((p: any) => {
-      const teacherId = p.contributor_id || p.teacher_id;
-      if (teacherId) {
-        teacherActions.set(teacherId, (teacherActions.get(teacherId) || 0) + 1);
-      }
+      const teacherId = p.contributor_id || p.teacher_id || "__unattributed__";
+      teacherActions.set(teacherId, (teacherActions.get(teacherId) || 0) + 1);
     });
     attendance.forEach((a: any) => {
-      const teacherId = a.teacher_id;
-      if (teacherId) {
-        teacherActions.set(teacherId, (teacherActions.get(teacherId) || 0) + 1);
-      }
+      const teacherId = (a.classes?.teacher_ids?.[0]) || a.teacher_id || "__unattributed__";
+      teacherActions.set(teacherId, (teacherActions.get(teacherId) || 0) + 1);
     });
     assignments.forEach((a: any) => {
-      const teacherId = a.teacher_id;
-      if (teacherId) {
-        teacherActions.set(teacherId, (teacherActions.get(teacherId) || 0) + 1);
-      }
+      const teacherId = a.teacher_id || "__unattributed__";
+      teacherActions.set(teacherId, (teacherActions.get(teacherId) || 0) + 1);
     });
     const totalTeacherActions = Array.from(teacherActions.values()).reduce((a, b) => a + b, 0);
 
