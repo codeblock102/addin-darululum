@@ -8,10 +8,8 @@ import {
   ClipboardCheck,
   Mail,
   MessageSquare,
-  User,
 } from "lucide-react";
 import { Message, MessageType } from "@/types/progress.ts";
-import { Alert, AlertDescription } from "@/components/ui/alert.tsx";
 
 interface MessageListProps {
   messages: Message[] | undefined;
@@ -33,10 +31,10 @@ export const MessageList = ({
   );
 
   const handleMessageClick = (message: Message) => {
-    // Messaging functionality is disabled
-    if (onMessageClick) {
-      onMessageClick(message);
-    }
+    setExpandedMessageId(
+      expandedMessageId === message.id ? null : message.id,
+    );
+    if (onMessageClick) onMessageClick(message);
   };
 
   const formatMessageDate = (dateString: string) => {
@@ -61,24 +59,83 @@ export const MessageList = ({
       <div className="flex justify-center p-6">
         <div className="animate-pulse flex flex-col w-full space-y-4">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="h-24 bg-muted rounded-lg"></div>
+            <div key={i} className="h-24 bg-muted rounded-lg" />
           ))}
         </div>
       </div>
     );
   }
 
-  return (
-    <ScrollArea className="h-[400px]">
-      <Alert className="mb-4">
-        <AlertDescription>
-          Messaging functionality is currently disabled. Please contact the
-          system administrator to enable this feature.
-        </AlertDescription>
-      </Alert>
+  if (!messages || messages.length === 0) {
+    return (
       <div className="text-center p-6 text-muted-foreground">
         <Mail className="h-12 w-12 mx-auto mb-2 opacity-20" />
         <p>{emptyMessage}</p>
+      </div>
+    );
+  }
+
+  return (
+    <ScrollArea className="h-[400px]">
+      <div className="space-y-2 pr-2">
+        {messages.map((message) => (
+          <div
+            key={message.id}
+            className={`p-3 rounded-lg border cursor-pointer transition-colors hover:bg-muted/50 ${
+              !message.read ? "border-primary/40 bg-primary/5" : "border-border"
+            }`}
+            onClick={() => handleMessageClick(message)}
+          >
+            <div className="flex items-start gap-3">
+              <Avatar className="h-8 w-8">
+                <AvatarFallback className="text-xs">
+                  {showRecipient
+                    ? (message.recipient_name?.charAt(0) || "?")
+                    : (message.sender_name?.charAt(0) || "A")}
+                </AvatarFallback>
+              </Avatar>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-sm font-medium truncate">
+                    {showRecipient
+                      ? (message.recipient_name || "Unknown")
+                      : (message.sender_name || "Admin")}
+                  </span>
+                  <div className="flex items-center gap-1 shrink-0">
+                    {getMessageTypeIcon(message.message_type)}
+                    {!message.read && (
+                      <Badge variant="default" className="text-[10px] px-1 py-0">
+                        New
+                      </Badge>
+                    )}
+                    <span className="text-xs text-muted-foreground">
+                      {formatMessageDate(message.created_at)}
+                    </span>
+                  </div>
+                </div>
+                <p
+                  className={`text-sm text-muted-foreground mt-1 ${
+                    expandedMessageId === message.id
+                      ? ""
+                      : "truncate"
+                  }`}
+                >
+                  {message.message}
+                </p>
+              </div>
+            </div>
+            {expandedMessageId === message.id && (
+              <div className="mt-2 pt-2 border-t">
+                <p className="text-sm">{message.message}</p>
+                {message.category && (
+                  <Badge variant="outline" className="mt-2 text-xs">
+                    {message.category}
+                  </Badge>
+                )}
+              </div>
+            )}
+          </div>
+        ))}
       </div>
     </ScrollArea>
   );

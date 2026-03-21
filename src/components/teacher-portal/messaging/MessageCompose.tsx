@@ -14,54 +14,91 @@ import {
   MessageRecipient,
   MessageType,
 } from "@/types/progress.ts";
-import { Alert, AlertDescription } from "@/components/ui/alert.tsx";
+import { supabase } from "@/integrations/supabase/client.ts";
+import { useToast } from "@/hooks/use-toast.ts";
 
 interface MessageComposeProps {
   teacherId: string;
   recipients: MessageRecipient[];
   recipientsLoading: boolean;
+  onSendSuccess?: () => void;
 }
 
 export const MessageCompose = ({
   teacherId,
   recipients,
   recipientsLoading,
+  onSendSuccess,
 }: MessageComposeProps) => {
+  const { toast } = useToast();
   const [newMessage, setNewMessage] = useState("");
   const [selectedRecipient, setSelectedRecipient] = useState("");
   const [messageType, setMessageType] = useState<MessageType>("direct");
   const [messageCategory, setMessageCategory] = useState<MessageCategory>(
     "academic",
   );
+  const [isSending, setIsSending] = useState(false);
 
-  const handleSendMessage = (e: React.FormEvent) => {
+  const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Messaging functionality is disabled
+    if (!newMessage.trim() || !selectedRecipient) return;
+
+    setIsSending(true);
+    try {
+      const { error } = await supabase.from("communications").insert({
+        sender_id: teacherId,
+        recipient_id: selectedRecipient,
+        message: newMessage.trim(),
+        message_type: messageType,
+        category: messageCategory,
+        read: false,
+      });
+
+      if (error) throw error;
+
+      toast({ title: "Message sent successfully" });
+      setNewMessage("");
+      setSelectedRecipient("");
+      if (onSendSuccess) onSendSuccess();
+    } catch (err) {
+      console.error("Failed to send message:", err);
+      toast({
+        title: "Failed to send message",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSending(false);
+    }
   };
 
   return (
     <form onSubmit={handleSendMessage} className="space-y-4">
-      <Alert>
-        <AlertDescription>
-          Messaging functionality is currently disabled. Please contact the
-          system administrator to enable this feature.
-        </AlertDescription>
-      </Alert>
-
       <div className="space-y-2">
         <Label>Recipient</Label>
         <Select
           value={selectedRecipient}
           onValueChange={setSelectedRecipient}
-          disabled
+          disabled={recipientsLoading}
         >
           <SelectTrigger>
             <SelectValue placeholder="Select recipient" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="no-recipients" disabled>
-              Messaging disabled
-            </SelectItem>
+            {recipientsLoading ? (
+              <div className="flex justify-center p-2">
+                <Loader2 className="h-4 w-4 animate-spin" />
+              </div>
+            ) : recipients.length > 0 ? (
+              recipients.map((r) => (
+                <SelectItem key={r.id} value={r.id}>
+                  {r.name} ({r.type})
+                </SelectItem>
+              ))
+            ) : (
+              <SelectItem value="none" disabled>
+                No recipients available
+              </SelectItem>
+            )}
           </SelectContent>
         </Select>
       </div>
@@ -72,7 +109,6 @@ export const MessageCompose = ({
           <Select
             value={messageType}
             onValueChange={(value) => setMessageType(value as MessageType)}
-            disabled
           >
             <SelectTrigger>
               <SelectValue placeholder="Message type" />
@@ -91,7 +127,6 @@ export const MessageCompose = ({
             value={messageCategory}
             onValueChange={(value) =>
               setMessageCategory(value as MessageCategory)}
-            disabled
           >
             <SelectTrigger>
               <SelectValue placeholder="Message category" />
@@ -107,21 +142,25 @@ export const MessageCompose = ({
 
       <div className="space-y-2">
         <Label>Message</Label>
-        <div className="relative">
-          <textarea
-            className="w-full min-h-[200px] p-3 rounded-md border resize-none focus:outline-none focus:ring-2 focus:ring-primary"
-            placeholder="Messaging is currently disabled..."
-            value={newMessage}
-            onChange={(e) => setNewMessage(e.target.value)}
-            disabled
-          />
-        </div>
+        <textarea
+          className="w-full min-h-[200px] p-3 rounded-md border resize-none focus:outline-none focus:ring-2 focus:ring-primary"
+          placeholder="Type your message here..."
+          value={newMessage}
+          onChange={(e) => setNewMessage(e.target.value)}
+        />
       </div>
 
       <div className="flex justify-end">
-        <Button type="submit" disabled>
-          <Send className="mr-2 h-4 w-4" />
-          Send Message (Disabled)
+        <Button
+          type="submit"
+          disabled={!newMessage.trim() || !selectedRecipient || isSending}
+        >
+          {isSending ? (
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+          ) : (
+            <Send className="mr-2 h-4 w-4" />
+          )}
+          {isSending ? "Sending..." : "Send Message"}
         </Button>
       </div>
     </form>

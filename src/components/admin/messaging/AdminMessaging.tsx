@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { useToast } from "@/components/ui/use-toast.ts";
 import {
   Card,
   CardContent,
@@ -14,79 +13,85 @@ import {
   TabsTrigger,
 } from "@/components/ui/tabs.tsx";
 import { Button } from "@/components/ui/button.tsx";
+import { Badge } from "@/components/ui/badge.tsx";
 import { RefreshCcw } from "lucide-react";
 import { AdminMessageList } from "./AdminMessageList.tsx";
 import { AdminMessageCompose } from "./compose/AdminMessageCompose.tsx";
-import { Alert, AlertDescription } from "@/components/ui/alert.tsx";
+import { useAdminMessages } from "@/hooks/useAdminMessages.ts";
 
 export const AdminMessaging = () => {
   const [activeTab, setActiveTab] = useState("inbox");
+  const {
+    receivedMessages,
+    sentMessages,
+    receivedLoading,
+    sentLoading,
+    refetchMessages,
+  } = useAdminMessages();
 
-  const handleRefresh = () => {
-    // Disabled for now
-  };
+  const unreadCount = receivedMessages.filter((m) => !m.read).length;
 
   return (
     <div className="space-y-6">
       <Card>
-        <CardHeader className="pb-3 bg-gray-700">
+        <CardHeader className="pb-3">
           <div className="flex justify-between items-center">
             <div>
-              <CardTitle>Messaging</CardTitle>
+              <CardTitle className="flex items-center gap-2">
+                Messaging
+                {unreadCount > 0 && (
+                  <Badge variant="default" className="text-xs">
+                    {unreadCount} new
+                  </Badge>
+                )}
+              </CardTitle>
               <CardDescription>
                 Send and receive messages to and from teachers
               </CardDescription>
             </div>
-            <Button
-              variant="outline"
-              onClick={handleRefresh}
-              size="sm"
-              disabled
-            >
+            <Button variant="outline" onClick={refetchMessages} size="sm">
               <RefreshCcw className="h-4 w-4 mr-2" />
               Refresh
             </Button>
           </div>
         </CardHeader>
-        <CardContent className="bg-gray-600">
-          <Alert className="mb-4">
-            <AlertDescription>
-              Messaging functionality is currently disabled. Please contact the
-              system administrator to enable this feature.
-            </AlertDescription>
-          </Alert>
-
+        <CardContent>
           <Tabs
             defaultValue="inbox"
             value={activeTab}
             onValueChange={setActiveTab}
           >
             <TabsList className="grid w-full grid-cols-2 mb-4">
-              <TabsTrigger value="inbox" disabled>
+              <TabsTrigger value="inbox">
                 Inbox
+                {unreadCount > 0 && (
+                  <Badge variant="default" className="ml-2 text-xs">
+                    {unreadCount}
+                  </Badge>
+                )}
               </TabsTrigger>
-              <TabsTrigger value="compose" disabled>Compose</TabsTrigger>
+              <TabsTrigger value="compose">Compose</TabsTrigger>
             </TabsList>
 
             <TabsContent value="inbox">
               <Tabs defaultValue="received">
                 <TabsList>
-                  <TabsTrigger value="received" disabled>Received</TabsTrigger>
-                  <TabsTrigger value="sent" disabled>Sent</TabsTrigger>
+                  <TabsTrigger value="received">Received</TabsTrigger>
+                  <TabsTrigger value="sent">Sent</TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="received">
                   <AdminMessageList
-                    messages={[]}
-                    isLoading={false}
+                    messages={receivedMessages}
+                    isLoading={receivedLoading}
                     emptyMessage="No messages received"
                   />
                 </TabsContent>
 
                 <TabsContent value="sent">
                   <AdminMessageList
-                    messages={[]}
-                    isLoading={false}
+                    messages={sentMessages}
+                    isLoading={sentLoading}
                     emptyMessage="No sent messages"
                     showRecipient
                   />
