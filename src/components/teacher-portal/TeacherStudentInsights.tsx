@@ -1,15 +1,24 @@
 /**
  * Teacher Student Insights
  *
- * Per-student metrics table for the teacher portal "My Students" / "Performance" tab.
- * Shows attendance rate, memorization pace, days since last progress, juz progress,
- * and at-risk / stagnant badges for each of the teacher's assigned students.
- *
- * Data powered by useTeacherStudentMetrics().
+ * Per-student metrics for the teacher portal Performance tab.
+ * — 4 KPI cards (reuses KPICard for visual consistency with admin analytics)
+ * — Horizontal bar chart: pages memorized per student (last 30 days)
+ * — Searchable table: attendance, pace, last progress, juz, risk badges
  */
 
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  Cell,
+} from "recharts";
 import {
   Card,
   CardContent,
@@ -21,53 +30,78 @@ import { Badge } from "@/components/ui/badge.tsx";
 import { Input } from "@/components/ui/input.tsx";
 import {
   AlertTriangle,
+  BookOpen,
+  CheckCircle2,
   Clock,
   Search,
   TrendingUp,
   Users,
 } from "lucide-react";
 import { cn } from "@/lib/utils.ts";
+import { KPICard } from "@/components/analytics/KPICard.tsx";
+import { calculateThresholdStatus } from "@/types/dashboard.ts";
 import {
   useTeacherStudentMetrics,
   type TeacherStudentMetric,
 } from "@/hooks/useTeacherStudentMetrics.ts";
 
-// ── Summary KPI card ────────────────────────────────────────────────────────
-function KpiCard({
-  label,
-  value,
-  sub,
-  highlight,
-}: {
-  label: string;
-  value: string | number;
-  sub?: string;
-  highlight?: "red" | "yellow" | "green";
-}) {
+// ── Pace bar chart ──────────────────────────────────────────────────────────
+function PaceBarChart({ students }: { students: TeacherStudentMetric[] }) {
+  const chartData = [...students]
+    .sort((a, b) => b.totalPagesLast30Days - a.totalPagesLast30Days)
+    .slice(0, 12) // show top 12 to keep it readable
+    .map((s) => ({
+      name: s.name.split(" ")[0], // first name only for brevity
+      pages: s.totalPagesLast30Days,
+      isAtRisk: s.isAtRisk,
+    }));
+
+  if (chartData.every((d) => d.pages === 0)) {
+    return (
+      <div className="flex h-40 items-center justify-center text-sm text-muted-foreground">
+        No memorization data logged in the last 30 days.
+      </div>
+    );
+  }
+
   return (
-    <div
-      className={cn(
-        "rounded-lg border p-4",
-        highlight === "red" && "border-red-200 bg-red-50",
-        highlight === "yellow" && "border-yellow-200 bg-yellow-50",
-        highlight === "green" && "border-emerald-200 bg-emerald-50",
-        !highlight && "bg-white",
-      )}
-    >
-      <p className="text-xs font-medium text-muted-foreground">{label}</p>
-      <p
-        className={cn(
-          "mt-1 text-2xl font-bold",
-          highlight === "red" && "text-red-700",
-          highlight === "yellow" && "text-yellow-700",
-          highlight === "green" && "text-emerald-700",
-          !highlight && "text-gray-900",
-        )}
-      >
-        {value}
-      </p>
-      {sub && <p className="mt-0.5 text-xs text-muted-foreground">{sub}</p>}
-    </div>
+    <ResponsiveContainer width="100%" height={180}>
+      <BarChart data={chartData} margin={{ top: 4, right: 8, bottom: 4, left: -16 }}>
+        <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={0.25} />
+        <XAxis
+          dataKey="name"
+          tick={{ fontSize: 11 }}
+          tickLine={false}
+          axisLine={false}
+        />
+        <YAxis
+          tick={{ fontSize: 11 }}
+          tickLine={false}
+          axisLine={false}
+          unit=" pg"
+        />
+        <Tooltip
+          cursor={{ fill: "rgba(0,0,0,0.04)" }}
+          content={({ active, payload }) => {
+            if (!active || !payload?.length) return null;
+            return (
+              <div className="rounded-lg border bg-white p-2 shadow-md text-xs">
+                <p className="font-semibold text-gray-800">{payload[0].payload.name}</p>
+                <p className="text-emerald-700">{payload[0].value} pages in 30 days</p>
+              </div>
+            );
+          }}
+        />
+        <Bar dataKey="pages" radius={[4, 4, 0, 0]}>
+          {chartData.map((entry, i) => (
+            <Cell
+              key={i}
+              fill={entry.isAtRisk ? "#f87171" : entry.pages >= 20 ? "#10b981" : "#6ee7b7"}
+            />
+          ))}
+        </Bar>
+      </BarChart>
+    </ResponsiveContainer>
   );
 }
 
@@ -93,15 +127,12 @@ function StudentRow({ student }: { student: TeacherStudentMetric }) {
 
   return (
     <tr
-      className="border-b last:border-0 hover:bg-gray-50 cursor-pointer transition-colors"
+      className="border-b last:border-0 hover:bg-muted/40 cursor-pointer transition-colors"
       onClick={() => navigate(`/students/${student.id}`)}
     >
-      {/* Name + badges */}
       <td className="px-4 py-3">
         <div className="flex flex-wrap items-center gap-1.5">
-          <span className="text-sm font-medium text-gray-900">
-            {student.name}
-          </span>
+          <span className="text-sm font-medium text-gray-900">{student.name}</span>
           {student.isAtRisk && (
             <Badge variant="destructive" className="text-[10px] py-0 px-1.5 h-4">
               At Risk
@@ -117,32 +148,22 @@ function StudentRow({ student }: { student: TeacherStudentMetric }) {
           )}
         </div>
         {student.section && (
-          <p className="text-xs text-muted-foreground mt-0.5">
-            {student.section}
-          </p>
+          <p className="text-xs text-muted-foreground mt-0.5">{student.section}</p>
         )}
       </td>
 
-      {/* Attendance */}
       <td className={cn("px-4 py-3 text-sm tabular-nums", attendanceColor)}>
-        {student.attendanceRate !== null
-          ? `${Math.round(student.attendanceRate)}%`
-          : "—"}
+        {student.attendanceRate !== null ? `${Math.round(student.attendanceRate)}%` : "—"}
       </td>
 
-      {/* Pace */}
       <td className="px-4 py-3 text-sm tabular-nums text-gray-700">
         {student.pacePerWeek > 0 ? `${student.pacePerWeek} pg/wk` : "—"}
       </td>
 
-      {/* Days since progress */}
       <td className={cn("px-4 py-3 text-sm tabular-nums", daysColor)}>
-        {student.daysSinceProgress === 999
-          ? "Never"
-          : `${student.daysSinceProgress}d`}
+        {student.daysSinceProgress === 999 ? "Never" : `${student.daysSinceProgress}d ago`}
       </td>
 
-      {/* Juz progress */}
       <td className="px-4 py-3 text-sm text-gray-700 tabular-nums">
         {student.completedJuz > 0
           ? `${student.completedJuz} juz`
@@ -151,11 +172,8 @@ function StudentRow({ student }: { student: TeacherStudentMetric }) {
           : "—"}
       </td>
 
-      {/* Pages last 30d */}
       <td className="px-4 py-3 text-sm tabular-nums text-gray-700">
-        {student.totalPagesLast30Days > 0
-          ? `${student.totalPagesLast30Days} pg`
-          : "—"}
+        {student.totalPagesLast30Days > 0 ? `${student.totalPagesLast30Days} pg` : "—"}
       </td>
     </tr>
   );
@@ -173,11 +191,15 @@ export function TeacherStudentInsights({ teacherId }: { teacherId: string }) {
 
   if (isLoading) {
     return (
-      <Card>
-        <CardContent className="flex items-center justify-center py-12">
-          <div className="h-8 w-8 animate-spin rounded-full border-2 border-emerald-600 border-t-transparent" />
-        </CardContent>
-      </Card>
+      <div className="space-y-4">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+          {[...Array(4)].map((_, i) => (
+            <div key={i} className="h-28 animate-pulse rounded-xl bg-muted" />
+          ))}
+        </div>
+        <div className="h-52 animate-pulse rounded-xl bg-muted" />
+        <div className="h-64 animate-pulse rounded-xl bg-muted" />
+      </div>
     );
   }
 
@@ -194,57 +216,157 @@ export function TeacherStudentInsights({ teacherId }: { teacherId: string }) {
   if (!data || data.students.length === 0) {
     return (
       <Card>
-        <CardContent className="py-12 text-center text-sm text-muted-foreground">
-          <Users className="mx-auto mb-2 h-8 w-8 text-gray-300" />
-          No assigned students found.
+        <CardContent className="py-16 text-center">
+          <Users className="mx-auto mb-3 h-10 w-10 text-gray-300" />
+          <p className="text-sm font-medium text-gray-600">No assigned students found.</p>
+          <p className="text-xs text-muted-foreground mt-1">
+            Students are assigned via the student management panel.
+          </p>
         </CardContent>
       </Card>
     );
   }
 
+  const onTrackCount = data.students.filter((s) => !s.isAtRisk && !s.isStagnant).length;
+  const onTrackPct = Math.round((onTrackCount / data.students.length) * 100);
+
   return (
-    <div className="space-y-4">
-      {/* KPI summary row */}
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <KpiCard
-          label="Total Students"
+    <div className="space-y-5">
+      {/* ── 4 KPI cards ─────────────────────────────────────────────────── */}
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+        {/* Total Students */}
+        <KPICard
+          definition={{
+            id: "total_students",
+            name: "Total Students",
+            formula: "Active assigned students",
+            displayType: "count",
+            thresholds: { green: { min: 1 }, yellow: { min: 0 }, red: { max: -1 } },
+            redAction: "No students assigned",
+            comparisonPeriod: "none",
+          }}
           value={data.students.length}
-          sub="active & assigned"
+          status="green"
+          icon={<Users className="h-5 w-5" />}
         />
-        <KpiCard
-          label="At Risk"
+
+        {/* On Track */}
+        <KPICard
+          definition={{
+            id: "on_track",
+            name: "On Track",
+            formula: "Not at-risk and not stagnant",
+            displayType: "percentage",
+            unit: "%",
+            thresholds: {
+              green: { min: 70 },
+              yellow: { min: 50, max: 69 },
+              red: { max: 49 },
+            },
+            redAction: "More than half of your students need attention",
+            comparisonPeriod: "none",
+          }}
+          value={onTrackPct}
+          status={calculateThresholdStatus(onTrackPct, {
+            green: { min: 70 },
+            yellow: { min: 50, max: 69 },
+            red: { max: 49 },
+          })}
+          icon={<CheckCircle2 className="h-5 w-5" />}
+        />
+
+        {/* Avg Attendance */}
+        <KPICard
+          definition={{
+            id: "avg_attendance",
+            name: "Avg Attendance",
+            formula: "Average attendance rate across students (last 30 days)",
+            displayType: "percentage",
+            unit: "%",
+            thresholds: {
+              green: { min: 85 },
+              yellow: { min: 70, max: 84 },
+              red: { max: 69 },
+            },
+            redAction: "Class attendance is critically low — contact parents",
+            comparisonPeriod: "none",
+          }}
+          value={data.avgAttendanceRate}
+          status={calculateThresholdStatus(data.avgAttendanceRate, {
+            green: { min: 85 },
+            yellow: { min: 70, max: 84 },
+            red: { max: 69 },
+          })}
+          icon={<BookOpen className="h-5 w-5" />}
+        />
+
+        {/* At Risk */}
+        <KPICard
+          definition={{
+            id: "at_risk",
+            name: "At Risk",
+            formula: "Attendance <70% OR no progress in 14+ days",
+            displayType: "count",
+            thresholds: {
+              green: { max: 0 },
+              yellow: { min: 1, max: 2 },
+              red: { min: 3 },
+            },
+            redAction: "3+ students need immediate follow-up",
+            comparisonPeriod: "none",
+          }}
           value={data.atRiskCount}
-          sub="need immediate attention"
-          highlight={data.atRiskCount > 0 ? "red" : undefined}
-        />
-        <KpiCard
-          label="Avg Attendance"
-          value={`${data.avgAttendanceRate}%`}
-          sub="last 30 days"
-          highlight={
-            data.avgAttendanceRate < 70
-              ? "red"
-              : data.avgAttendanceRate < 85
-              ? "yellow"
-              : "green"
-          }
-        />
-        <KpiCard
-          label="Avg Pace"
-          value={`${data.avgPacePerWeek} pg/wk`}
-          sub="pages memorized / week"
-          highlight={data.avgPacePerWeek >= 3 ? "green" : "yellow"}
+          status={calculateThresholdStatus(data.atRiskCount, {
+            green: { max: 0 },
+            yellow: { min: 1, max: 2 },
+            red: { min: 3 },
+          })}
+          icon={<AlertTriangle className="h-5 w-5" />}
         />
       </div>
 
-      {/* Student table */}
+      {/* ── Pace bar chart ───────────────────────────────────────────────── */}
+      <Card>
+        <CardHeader className="pb-2">
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="text-base flex items-center gap-2">
+                <TrendingUp className="h-4 w-4 text-emerald-600" />
+                Memorization Pace — Last 30 Days
+              </CardTitle>
+              <CardDescription className="mt-0.5">
+                Pages memorized per student · red = at-risk
+              </CardDescription>
+            </div>
+            <div className="flex items-center gap-3 text-xs text-muted-foreground">
+              <span className="flex items-center gap-1">
+                <span className="inline-block h-2.5 w-2.5 rounded-sm bg-emerald-500" />
+                Good (≥20 pg)
+              </span>
+              <span className="flex items-center gap-1">
+                <span className="inline-block h-2.5 w-2.5 rounded-sm bg-emerald-200" />
+                Progressing
+              </span>
+              <span className="flex items-center gap-1">
+                <span className="inline-block h-2.5 w-2.5 rounded-sm bg-red-400" />
+                At Risk
+              </span>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="pt-0">
+          <PaceBarChart students={data.students} />
+        </CardContent>
+      </Card>
+
+      {/* ── Student table ────────────────────────────────────────────────── */}
       <Card>
         <CardHeader className="pb-3">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <CardTitle className="text-base">Student Performance</CardTitle>
+              <CardTitle className="text-base">Student Details</CardTitle>
               <CardDescription>
-                At-risk students appear first · Click a row to view full profile
+                At-risk students appear first · click a row to open full profile
               </CardDescription>
             </div>
             <div className="relative w-full sm:w-56">
@@ -267,7 +389,7 @@ export function TeacherStudentInsights({ teacherId }: { teacherId: string }) {
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b bg-gray-50 text-xs font-medium text-muted-foreground">
+                  <tr className="border-b bg-muted/50 text-xs font-medium text-muted-foreground">
                     <th className="px-4 py-2.5 text-left">Student</th>
                     <th className="px-4 py-2.5 text-left">Attendance</th>
                     <th className="px-4 py-2.5 text-left">
@@ -295,14 +417,14 @@ export function TeacherStudentInsights({ teacherId }: { teacherId: string }) {
         </CardContent>
       </Card>
 
-      {/* Legend */}
-      <div className="flex flex-wrap gap-4 text-xs text-muted-foreground">
-        <span className="flex items-center gap-1">
-          <AlertTriangle className="h-3 w-3 text-red-500" />
+      {/* ── Legend ──────────────────────────────────────────────────────── */}
+      <div className="flex flex-wrap gap-4 rounded-lg bg-muted/40 px-4 py-2.5 text-xs text-muted-foreground">
+        <span className="flex items-center gap-1.5">
+          <AlertTriangle className="h-3.5 w-3.5 text-red-500" />
           At Risk = attendance &lt;70% or no progress in 14+ days
         </span>
-        <span className="flex items-center gap-1">
-          <Clock className="h-3 w-3 text-yellow-500" />
+        <span className="flex items-center gap-1.5">
+          <Clock className="h-3.5 w-3.5 text-yellow-500" />
           Stagnant = no progress in 7–13 days
         </span>
       </div>
