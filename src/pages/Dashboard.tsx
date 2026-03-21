@@ -167,6 +167,11 @@ const Dashboard = () => {
     return <TeacherDashboard teacher={adminViewProfile} isAdmin={true} />;
   }
 
+  // Parents should never see the teacher portal — send them to their own dashboard
+  if (isParent && !isRoleLoading) {
+    return <Navigate to="/parent" replace />;
+  }
+
   // Show profile not found if teacher data is missing (for non-admin users)
   if (!teacherData && !isLoading && !isRoleLoading) {
     return (
@@ -180,11 +185,6 @@ const Dashboard = () => {
         </div>
       </div>
     );
-  }
-
-  // Parents should never see the teacher portal — send them to their own dashboard
-  if (isParent && !isRoleLoading) {
-    return <Navigate to="/parent" replace />;
   }
 
   if (!isTeacher && !isAdmin && !isRoleLoading) {
