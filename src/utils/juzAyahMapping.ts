@@ -6,8 +6,6 @@ export function getAyahRangeForSurahInJuz(
   // This is a simplified mapping that should be expanded with real data
   // For now, we'll return some default ranges for testing
 
-  console.log(`Getting ayah range for Juz ${juzNumber}, Surah ${surahNumber}`);
-
   // Default ayah ranges based on juz and surah
   // In a real implementation, this should be a complete mapping
   const juzSurahRanges: Record<

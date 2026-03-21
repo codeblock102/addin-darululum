@@ -149,7 +149,6 @@ export const useSettings = () => {
     mutationFn: (newSettings: Partial<SystemSettings>) => {
       setIsLoading(true);
       // This is a placeholder since system_settings table doesn't exist yet
-      console.log("Would update settings:", newSettings);
       return Promise.resolve(newSettings);
     },
     onSuccess: () => {
@@ -179,7 +178,6 @@ export const useSettings = () => {
     ) => {
       setIsLoading(true);
       // This is a placeholder since system_settings table doesn't exist yet
-      console.log("Would create settings:", newSettings);
       return Promise.resolve({
         ...newSettings,
         id: "new-id",

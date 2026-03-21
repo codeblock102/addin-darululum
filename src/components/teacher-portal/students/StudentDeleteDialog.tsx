@@ -65,10 +65,6 @@ export const StudentDeleteDialog = ({
     mutationFn: async (
       { studentId, studentName }: { studentId: string; studentName: string },
     ) => {
-      console.log(
-        `Starting deletion process for student: ${studentName} (ID: ${studentId})`,
-      );
-
       // First, delete all attendance records for this student
       const { error: attendanceError } = await supabase
         .from("attendance")
@@ -153,7 +149,6 @@ export const StudentDeleteDialog = ({
         );
       }
 
-      console.log(`Successfully deleted student: ${studentName}`);
       return studentId;
     },
     onSuccess: () => {

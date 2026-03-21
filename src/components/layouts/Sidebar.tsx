@@ -226,11 +226,6 @@ export const Sidebar = (
             (!isMobile && isOpen === false) ? "py-2" : "py-2 sm:py-4",
           )}
         >
-          {/* DEBUG: Log navItems for admin */}
-          {isAdmin && (() => {
-            console.log("Admin NavItems being passed to SidebarNav:", navItems);
-            return null;
-          })()}
           <SidebarNav items={navItems} isAdmin={isAdmin} isOpen={isOpen} />
         </div>
 

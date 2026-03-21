@@ -29,7 +29,6 @@ export function NewEntryDialog({
     studentId,
     teacherId,
     onSuccess: (data) => {
-      console.log("Entry created successfully:", data);
       toast({
         title: "Entry Added",
         description: "The dhor book entry has been saved successfully.",

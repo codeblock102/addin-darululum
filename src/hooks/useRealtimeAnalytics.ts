@@ -21,8 +21,6 @@ export const useRealtimeAnalytics = (teacherId: string) => {
           table: "progress",
         },
         (payload) => {
-          console.log("Real-time progress update received:", payload);
-
           // Invalidate the query to fetch fresh data
           queryClient.invalidateQueries({
             queryKey: ["teacher-analytics", teacherId],
@@ -52,8 +50,6 @@ export const useRealtimeAnalytics = (teacherId: string) => {
           table: "juz_revisions",
         },
         (payload) => {
-          console.log("Real-time revision update received:", payload);
-
           // Invalidate the query to fetch fresh data
           queryClient.invalidateQueries({
             queryKey: ["teacher-analytics", teacherId],

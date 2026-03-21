@@ -20,8 +20,6 @@ export const handleUserSubmit = async (
       );
       return "Operation not permitted";
     } else {
-      console.log("Creating new user with data:", formData);
-
       // Always set the role based on the selection, defaulting to 'teacher'
       const userRole = formData.role || "teacher";
 
@@ -57,10 +55,6 @@ export const handleUserSubmit = async (
           if (roleError || !roleData) {
             console.warn("Could not find role:", roleError);
           } else {
-            console.log(
-              `Assigning ${userRole} role (${roleData.id}) to user ${data.user.id}`,
-            );
-
             // Use the create_user_role RPC function to assign role
             const { error: userRoleError } = await supabase.rpc(
               "create_user_role",
@@ -80,7 +74,6 @@ export const handleUserSubmit = async (
         }
       }
 
-      console.log("User account created successfully:", data);
       onSuccess();
       return `User account created successfully with role: ${userRole}. They can now log in using their email.`;
     }

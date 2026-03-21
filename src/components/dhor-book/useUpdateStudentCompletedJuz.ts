@@ -47,7 +47,6 @@ export function useUpdateStudentCompletedJuz() {
         (latestProgressEntry.completed_juz || []) as number[];
 
       if (currentCompletedJuz.includes(newlyCompletedJuz)) {
-        console.log(`Juz ${newlyCompletedJuz} already in completed_juz array.`);
         return {
           message: `Juz ${newlyCompletedJuz} already marked as completed.`,
         };

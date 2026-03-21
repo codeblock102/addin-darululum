@@ -2,7 +2,6 @@ import { supabase } from "@/integrations/supabase/client.ts";
 
 export const setUserAsAdmin = async (_email: string) => {
   try {
-    console.log("setUserAsAdmin: Attempting to get current user.");
     const { data: { user }, error: userError } = await supabase.auth.getUser();
 
     if (userError || !user) {
@@ -12,9 +11,6 @@ export const setUserAsAdmin = async (_email: string) => {
       );
       return false;
     }
-    console.log("setUserAsAdmin: Current user ID:", user.id);
-
-    console.log("setUserAsAdmin: Attempting to update user metadata to admin.");
     const { data: updatedUserData, error: updateError } = await supabase.auth
       .updateUser({
         data: { role: "admin" },
@@ -28,13 +24,8 @@ export const setUserAsAdmin = async (_email: string) => {
       return false;
     }
 
-    console.log(
-      "setUserAsAdmin: User metadata update successful. Response:",
-      updatedUserData,
-    );
     // Verify the metadata directly from the response if possible
     if (updatedUserData?.user?.user_metadata?.role === "admin") {
-      console.log("setUserAsAdmin: Confirmed admin role in updatedUserData.");
       localStorage.setItem("userRole", "admin");
       return true;
     } else {
@@ -58,8 +49,6 @@ export const setUserAsAdmin = async (_email: string) => {
 
 export const setupAdminAccount = async (email: string) => {
   try {
-    console.log("setupAdminAccount: Starting admin setup for", email);
-
     // 1. Get the user from auth
     const { data: { user }, error: userError } = await supabase.auth.getUser();
 
@@ -119,7 +108,6 @@ export const setupAdminAccount = async (email: string) => {
     // 5. Set local storage
     localStorage.setItem("userRole", "admin");
 
-    console.log("setupAdminAccount: Admin setup completed successfully");
     return true;
   } catch (error) {
     console.error("setupAdminAccount: Unexpected error", error);
@@ -129,8 +117,6 @@ export const setupAdminAccount = async (email: string) => {
 
 export const updateAdminMadrassahId = async (madrassahId: string) => {
   try {
-    console.log("updateAdminMadrassahId: Starting update for madrassah ID", madrassahId);
-    
     // 1. Get the user from auth
     const { data: { user }, error: userError } = await supabase.auth.getUser();
     
@@ -166,7 +152,6 @@ export const updateAdminMadrassahId = async (madrassahId: string) => {
     // 4. Set local storage
     localStorage.setItem("userRole", "admin");
 
-    console.log("updateAdminMadrassahId: Profile update completed successfully");
     return true;
   } catch (error) {
     console.error("updateAdminMadrassahId: Unexpected error", error);

@@ -24,7 +24,6 @@ export function useAttendanceRecords() {
         throw error;
       }
 
-      console.log(`Found ${data?.length || 0} students for attendance records`);
       return data || [];
     },
   });
@@ -79,7 +78,6 @@ export function useAttendanceRecords() {
         throw error;
       }
 
-      console.log(`Found ${data?.length || 0} attendance records`);
       return data || [];
     },
   });

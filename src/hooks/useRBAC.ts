@@ -48,8 +48,6 @@ export const useRBAC = () => {
   const isTeacher = userRole?.role === "teacher";
   const teacherId = userRole?.teacher_id;
 
-  console.log("RBAC Hook - Role:", userRole?.role, "Admin:", isAdmin, "Teacher:", isTeacher, "Teacher ID:", teacherId);
-
   return {
     isAdmin,
     isTeacher,

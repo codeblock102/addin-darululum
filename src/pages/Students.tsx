@@ -81,7 +81,6 @@ const Students = () => {
       }
 
       if (!userData?.madrassah_id) {
-        console.log("No madrassah_id found for this user.");
         return { students: [], userData };
       }
 
@@ -89,20 +88,17 @@ const Students = () => {
 
       // 2. Build the query based on the user's role
       if (userData.role === 'admin') {
-        console.log(`User is an ADMIN. Fetching all students for madrassah: ${userData.madrassah_id}`);
         query = supabase
           .from("students")
           .select("*")
           .eq("madrassah_id", userData.madrassah_id);
       } else if (userData.role === 'teacher' && userData.section) {
-        console.log(`User is a TEACHER. Fetching students for madrassah ${userData.madrassah_id}, section: ${userData.section}`);
         query = supabase
           .from("students")
           .select("*")
           .eq("madrassah_id", userData.madrassah_id)
           .eq("section", userData.section);
       } else {
-        console.log(`User role is '${userData.role}'. No permissions to fetch students or missing data.`);
         return { students: [], userData };
       }
 
@@ -114,7 +110,6 @@ const Students = () => {
         throw studentsError;
       }
       
-      console.log(`Successfully fetched ${students?.length || 0} students.`);
       return { students: students || [], userData };
     },
     enabled: !!userId,

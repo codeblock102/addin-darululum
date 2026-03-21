@@ -52,13 +52,9 @@ export default function ManualRoleSetup() {
 
     try {
       // Direct call to updateUser using Supabase JS client
-      console.log(`Setting user role to: ${selectedRole}`);
-
       const updateResponse = await supabase.auth.updateUser({
         data: { role: selectedRole },
       });
-
-      console.log("Update response:", updateResponse);
 
       if (updateResponse.error) {
         throw new Error(
@@ -69,10 +65,6 @@ export default function ManualRoleSetup() {
       // If the role is teacher, ensure a teacher record exists
       if (selectedRole === "teacher" && updateResponse.data.user?.email) {
         const userEmail = updateResponse.data.user.email;
-        console.log(
-          `Selected role is teacher. Checking/creating teacher record for ${userEmail}`,
-        );
-
         const { data: existingTeacher, error: checkError } = await supabase
           .from("profiles")
           .select("id")
@@ -89,9 +81,6 @@ export default function ManualRoleSetup() {
         }
 
         if (!existingTeacher) {
-          console.log(
-            `No existing teacher record found for ${userEmail}. Creating one.`,
-          );
           const { error: insertError } = await supabase
             .from("profiles")
             .insert([{

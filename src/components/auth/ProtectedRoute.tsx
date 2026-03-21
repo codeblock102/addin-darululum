@@ -39,7 +39,6 @@ export const ProtectedRoute = ({
     // Set up timeout to prevent infinite loading
     const timeoutId = setTimeout(() => {
       if (!permissionChecked) {
-        console.warn("Permission check timed out after 3 seconds");
         setTimeoutReached(true);
 
         // Show error toast
@@ -64,14 +63,12 @@ export const ProtectedRoute = ({
 
     // Check if user is authenticated
     if (!session) {
-      console.log("No session detected, redirecting to auth");
       navigate("/auth");
       return;
     }
 
     // Prevent infinite redirect loop
     if (redirectCount >= 3) {
-      console.log("Too many redirects, allowing access to prevent loop");
       return;
     }
 
@@ -86,7 +83,6 @@ export const ProtectedRoute = ({
 
     // Check for required roles
     if (requireAdmin && !isAdmin) {
-      console.log("Admin access required but not admin, redirecting");
       setRedirectCount((prev) => prev + 1);
       toast({
         title: "Access Denied",
@@ -98,9 +94,6 @@ export const ProtectedRoute = ({
     }
 
     if (requireTeacher && !isTeacher && !isAdmin) {
-      console.log(
-        "Teacher access required but not teacher or admin, redirecting",
-      );
       setRedirectCount((prev) => prev + 1);
       toast({
         title: "Access Denied",
@@ -113,7 +106,6 @@ export const ProtectedRoute = ({
 
     // We're bypassing detailed permission checks if we've hit the timeout
     if (timeoutReached) {
-      console.log("Timeout reached - bypassing detailed permission checks");
       return;
     }
 

@@ -49,7 +49,6 @@ export const useQuranData = () => {
   const { data: juzData, isLoading: juzLoading } = useQuery<JuzData[]>({
     queryKey: ["quran-juz-data"],
     queryFn: async () => {
-      console.log("Fetching all juz data...");
       const { data, error } = await supabase
         .from("juz")
         .select("id, juz_number, surah_list")
@@ -59,7 +58,6 @@ export const useQuranData = () => {
         console.error("Error fetching all juz data:", error);
         return [];
       }
-      console.log("All juz data received:", data?.length);
       return data as unknown as JuzData[];
     },
     staleTime: Infinity, // Juz data is static
@@ -71,7 +69,6 @@ export const useQuranData = () => {
   >({
     queryKey: ["quran-all-surahs"],
     queryFn: async () => {
-      console.log("Fetching all surahs data...");
       const { data, error } = await supabase
         .from("surah")
         .select("id, surah_number, name, total_ayat")
@@ -81,7 +78,6 @@ export const useQuranData = () => {
         console.error("Error fetching all surahs data:", error);
         return [];
       }
-      console.log("All surahs data received:", data?.length);
       return data as unknown as SurahData[];
     },
     staleTime: Infinity, // Surah data is static
@@ -93,7 +89,6 @@ export const useQuranData = () => {
         setParsedSurahNumbers(null);
         return;
       }
-      console.log(`Parsing surah list string for numbers: "${listString}"`);
       const numbers: number[] = [];
       let processedStr = listString.trim();
       if (processedStr.startsWith("{") && processedStr.endsWith("}")) {
@@ -121,9 +116,6 @@ export const useQuranData = () => {
         if (part.includes("-")) {
           const [startStr, endStr] = part.split("-").map((numStr) =>
             numStr.trim()
-          );
-          console.log(
-            `Range parsing: part="${part}", startStr="${startStr}", endStr="${endStr}"`,
           );
           let startNum = parseInt(startStr, 10);
           let endNum = parseInt(endStr, 10);
@@ -172,10 +164,6 @@ export const useQuranData = () => {
         }
       });
       const uniqueSortedNumbers = [...new Set(numbers)].sort((a, b) => a - b);
-      console.log(
-        "Parsed surah numbers for selected Juz:",
-        uniqueSortedNumbers,
-      );
       setParsedSurahNumbers(uniqueSortedNumbers);
     },
     [],
@@ -188,7 +176,6 @@ export const useQuranData = () => {
         setErrorFetchingSurahDetails(null);
         return;
       }
-      console.log("Fetching details for surah numbers:", numbersToFetch);
       setIsLoadingSurahDetails(true);
       setErrorFetchingSurahDetails(null);
       try {
@@ -202,7 +189,6 @@ export const useQuranData = () => {
           setErrorFetchingSurahDetails(error.message);
           setSurahDetailsForSelectedJuz([]);
         } else {
-          console.log("Successfully fetched surah details:", data);
           setSurahDetailsForSelectedJuz(data as SurahData[]);
         }
       } catch (err) {
@@ -231,7 +217,6 @@ export const useQuranData = () => {
       return;
     }
 
-    console.log(`Fetching surah_list for Juz ${juzNumber}...`);
     setIsLoadingSurahList(true);
     setErrorFetchingSurahList(null);
     setSurahListForSelectedJuz(null); // Clear previous list
@@ -250,10 +235,6 @@ export const useQuranData = () => {
         setSurahListForSelectedJuz(null);
       } else if (data) {
         const typedData = data as unknown as JuzSurahList; // Cast to our interface
-        console.log(
-          `Successfully fetched surah_list for Juz ${juzNumber}:`,
-          typedData.surah_list,
-        );
         setSurahListForSelectedJuz(typedData.surah_list);
       } else {
         console.warn(`No data found for Juz ${juzNumber}.`);

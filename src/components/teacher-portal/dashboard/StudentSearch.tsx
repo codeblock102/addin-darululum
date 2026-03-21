@@ -53,9 +53,6 @@ export const StudentSearch = (
       return data;
     },
     enabled: !!teacherId,
-    onSuccess: (data) => {
-      console.log("StudentSearch: Fetched user profile for search:", data);
-    },
     onError: (error) => {
       console.error("StudentSearch: Error fetching user profile:", error);
     },
@@ -81,11 +78,6 @@ export const StudentSearch = (
       return data || [];
     },
     enabled: !!teacherData,
-    onSuccess: (data) => {
-      console.log(
-        `StudentSearch: Fetched ${data?.length || 0} students for search list.`,
-      );
-    },
     onError: (error) => {
       console.error("StudentSearch: Error fetching students:", error);
     },

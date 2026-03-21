@@ -69,7 +69,6 @@ export const getUserPermissions = async (
 
     // If no role ID found, return empty permissions array
     if (!roleIdData) {
-      console.log("No role assigned for user");
       return [];
     }
 

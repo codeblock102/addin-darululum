@@ -89,11 +89,8 @@ const Dashboard = () => {
 
       // Skip the query for admin users
       if (isAdmin) {
-        console.log("Admin user, skipping teacher profile query");
         return null;
       }
-
-      console.log("Fetching teacher profile for email:", session.user.email);
 
       const { data, error } = await supabase
         .from("profiles")
@@ -102,11 +99,9 @@ const Dashboard = () => {
         .maybeSingle();
 
       if (error) {
-        console.error("Error fetching teacher profile:", error);
         throw error;
       }
 
-      console.log("Teacher profile fetch result:", data);
       return data as Teacher | null;
     },
     enabled: !!session?.user?.email && !isAdmin, // Only enabled for non-admin users
@@ -133,11 +128,9 @@ const Dashboard = () => {
 
       try {
         setIsCheckingRole(true);
-        console.log("Checking teacher status for email:", session.user.email);
 
         // Skip this check for admin users
         if (isAdmin) {
-          console.log("User is admin, skipping teacher profile check");
           setIsCheckingRole(false);
           return;
         }
@@ -151,17 +144,12 @@ const Dashboard = () => {
 
         if (checkError) throw checkError;
 
-        console.log(
-          "Teacher profile check result:",
-          teacherExistsData ? "Found" : "Not found",
-        );
-
         // Force refetch of the query
         if (teacherExistsData) {
           refetch();
         }
       } catch (error) {
-        console.error("Error checking teacher profile:", error);
+        // Error checking teacher profile
       } finally {
         setIsCheckingRole(false);
       }
@@ -177,14 +165,12 @@ const Dashboard = () => {
    * @async
    */
   const handleRefresh = async () => {
-    console.log("Refreshing teacher data...");
     await refreshSession();
     setRefreshKey((prev) => prev + 1); // Force a refresh of the query
     refetch();
   };
 
   if (error) {
-    console.error("Error loading teacher profile:", error);
     toast({
       title: "Error loading profile",
       description:
@@ -208,22 +194,6 @@ const Dashboard = () => {
   // If user is admin, show the dedicated admin dashboard
   if (isAdmin) {
     return <AdminDashboard />;
-
-<!--     const adminViewProfile: Teacher = {
-      id: session?.user?.id ?? "fallback-admin-id",
-      name: "Admin View",
-      subject: "Administration",
-      email: session?.user?.email || "admin@example.com",
-      bio: "Viewing the teacher portal as an administrator",
-      phone: "",
-    };
-
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-red-50">
-        <TeacherDashboard teacher={adminViewProfile} isAdmin={true} />
-      </div>
-    ); -->
-
   }
 
   // Show profile not found if teacher data is missing (for non-admin users)

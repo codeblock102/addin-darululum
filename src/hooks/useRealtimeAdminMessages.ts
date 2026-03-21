@@ -20,8 +20,6 @@ export const useRealtimeAdminMessages = () => {
           filter: `recipient_id=eq.admin-1`,
         },
         (payload) => {
-          console.log("Admin message update received:", payload);
-
           // Invalidate the queries to fetch fresh data
           queryClient.invalidateQueries({ queryKey: ["admin-messages"] });
 
@@ -49,7 +47,6 @@ export const useRealtimeAdminMessages = () => {
           filter: `sender_id=is.null AND recipient_id=is.not.null`,
         },
         (payload) => {
-          console.log("Admin response update received:", payload);
           queryClient.invalidateQueries({ queryKey: ["admin-responses"] });
           queryClient.invalidateQueries({ queryKey: ["admin-sent-messages"] });
         },

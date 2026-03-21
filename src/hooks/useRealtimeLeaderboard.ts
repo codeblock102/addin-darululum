@@ -12,11 +12,8 @@ export function useRealtimeLeaderboard(
 
   useEffect(() => {
     if (!teacherId) {
-      console.log("No teacherId provided, skipping real-time subscriptions");
       return;
     }
-
-    console.log("Setting up real-time subscriptions for teacher:", teacherId);
 
     // Set up subscriptions for all three tables: progress, sabaq_para, and juz_revisions
     const progressChannel = supabase
@@ -29,7 +26,6 @@ export function useRealtimeLeaderboard(
           table: "progress",
         },
         (payload) => {
-          console.log("Progress change detected:", payload);
           // Invalidate the leaderboard queries to trigger a refresh
           queryClient.invalidateQueries({ queryKey: ["leaderboard"] });
           queryClient.invalidateQueries({ queryKey: ["classroom-records"] });
@@ -39,7 +35,6 @@ export function useRealtimeLeaderboard(
 
           // Call additional refresh callback if provided
           if (refreshCallback) {
-            console.log("Calling refresh callback due to progress change");
             refreshCallback();
           }
 
@@ -52,9 +47,7 @@ export function useRealtimeLeaderboard(
           }
         },
       )
-      .subscribe((status) => {
-        console.log("Progress channel subscription status:", status);
-      });
+      .subscribe();
 
     const sabaqParaChannel = supabase
       .channel("leaderboard-sabaq-para-changes")
@@ -66,7 +59,6 @@ export function useRealtimeLeaderboard(
           table: "sabaq_para",
         },
         (payload) => {
-          console.log("Sabaq Para change detected:", payload);
           queryClient.invalidateQueries({ queryKey: ["leaderboard"] });
           queryClient.invalidateQueries({ queryKey: ["classroom-records"] });
           queryClient.invalidateQueries({
@@ -75,7 +67,6 @@ export function useRealtimeLeaderboard(
 
           // Call additional refresh callback if provided
           if (refreshCallback) {
-            console.log("Calling refresh callback due to sabaq para change");
             refreshCallback();
           }
 
@@ -88,9 +79,7 @@ export function useRealtimeLeaderboard(
           }
         },
       )
-      .subscribe((status) => {
-        console.log("Sabaq Para channel subscription status:", status);
-      });
+      .subscribe();
 
     const juzRevisionsChannel = supabase
       .channel("leaderboard-juz-revisions-changes")
@@ -102,7 +91,6 @@ export function useRealtimeLeaderboard(
           table: "juz_revisions",
         },
         (payload) => {
-          console.log("Juz Revisions change detected:", payload);
           queryClient.invalidateQueries({ queryKey: ["leaderboard"] });
           queryClient.invalidateQueries({ queryKey: ["classroom-records"] });
           queryClient.invalidateQueries({
@@ -111,7 +99,6 @@ export function useRealtimeLeaderboard(
 
           // Call additional refresh callback if provided
           if (refreshCallback) {
-            console.log("Calling refresh callback due to juz revision change");
             refreshCallback();
           }
 
@@ -124,15 +111,10 @@ export function useRealtimeLeaderboard(
           }
         },
       )
-      .subscribe((status) => {
-        console.log("Juz Revisions channel subscription status:", status);
-      });
-
-    console.log("Real-time subscriptions have been set up");
+      .subscribe();
 
     // Clean up subscriptions when component unmounts
     return () => {
-      console.log("Cleaning up real-time subscriptions");
       supabase.removeChannel(progressChannel);
       supabase.removeChannel(sabaqParaChannel);
       supabase.removeChannel(juzRevisionsChannel);

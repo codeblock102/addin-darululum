@@ -96,7 +96,6 @@ const Auth = () => {
     setErrorMessage(null);
 
     try {
-      console.log(`Attempting to login with email: ${email}`);
       const { data, error: signInError } = await supabase.auth
         .signInWithPassword({
           email,
@@ -130,7 +129,6 @@ const Auth = () => {
         throw new Error("Refreshed user is null after session refresh.");
       }
 
-      console.log("Checking user metadata:", refreshedUser.user_metadata);
       if (refreshedUser.user_metadata?.role === "admin") {
         localStorage.setItem("userRole", "admin");
         toast({
@@ -142,10 +140,6 @@ const Auth = () => {
       }
 
       if (refreshedUser.email) {
-        console.log(
-          "Checking for teacher profile with email:",
-          refreshedUser.email,
-        );
         const { data: teacherData, error: teacherError } = await supabase
           .from("profiles")
           .select("id")
@@ -168,7 +162,6 @@ const Auth = () => {
         }
       }
 
-      console.log("No role found, redirecting to role setup");
       toast({
         title: "Role Setup Required",
         description:

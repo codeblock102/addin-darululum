@@ -78,16 +78,11 @@ export const TeacherAttendance = () => {
   } = useQuery<StudentData[], Error>({
     queryKey: ["all-students"],
     queryFn: async () => {
-      console.log("[QueryFn all-students] Starting to fetch all students.");
       const { data: studentDetails, error: studentDetailsError } =
         await supabase
           .from("students")
           .select("id, name");
 
-      console.log(
-        "[QueryFn all-students] Fetched all studentDetails from students table:",
-        studentDetails,
-      );
       if (studentDetailsError) {
         console.error(
           "[QueryFn all-students] Error fetching all studentDetails:",
@@ -111,23 +106,10 @@ export const TeacherAttendance = () => {
       allStudents?.map((s) => s.id),
     ],
     queryFn: async (): Promise<StudentAttendanceRecord[]> => {
-      console.log(
-        "[QueryFn student-attendance-records] Starting. Date:",
-        date,
-        "All Students:",
-        allStudents,
-      );
       if (!date || !allStudents || allStudents.length === 0) return [];
       const studentIds = allStudents.map((student) => student.id);
       if (studentIds.length === 0) return [];
       const formattedDate = format(date, "yyyy-MM-dd");
-      console.log(
-        "[QueryFn student-attendance-records] Fetching attendance for studentIds:",
-        studentIds,
-        "on date:",
-        formattedDate,
-      );
-
       const { data, error } = await supabase
         .from("attendance")
         .select(`
@@ -145,10 +127,6 @@ export const TeacherAttendance = () => {
         .eq("date", formattedDate)
         .in("student_id", studentIds);
 
-      console.log(
-        "[QueryFn student-attendance-records] Raw attendance data from Supabase:",
-        data,
-      );
       if (error) {
         console.error(
           "[QueryFn student-attendance-records] Error fetching attendance records:",
@@ -170,10 +148,6 @@ export const TeacherAttendance = () => {
         student_name: (record.students as any)?.name || "Unknown Student",
       })) || [];
 
-      console.log(
-        "[QueryFn student-attendance-records] Mapped attendance data:",
-        mappedData,
-      );
       return mappedData;
     },
     enabled: !!date && !!allStudents && allStudents.length > 0,
@@ -187,10 +161,6 @@ export const TeacherAttendance = () => {
     if (!currentDate) return;
     const formattedDate = format(currentDate, "yyyy-MM-dd");
 
-    console.log(
-      `[handleStatusUpdate] Upserting for studentId: ${studentId}, date: ${formattedDate}, status: ${newStatus}`,
-    );
-
     const { error } = await supabase
       .from("attendance")
       .upsert(
@@ -201,7 +171,6 @@ export const TeacherAttendance = () => {
     if (error) {
       console.error("[handleStatusUpdate] Error upserting attendance:", error);
     } else {
-      console.log("[handleStatusUpdate] Upsert successful");
       await queryClient.invalidateQueries({
         queryKey: [
           "student-attendance-records",
@@ -278,10 +247,6 @@ export const TeacherAttendance = () => {
       status: bulkActionStatus,
     }));
 
-    console.log(
-      `[handleBulkStatusUpdate] Upserting ${recordsToUpsert.length} records with status: ${bulkActionStatus}`,
-    );
-
     const { error } = await supabase
       .from("attendance")
       .upsert(recordsToUpsert, { onConflict: "student_id, date" });
@@ -292,7 +257,6 @@ export const TeacherAttendance = () => {
         error,
       );
     } else {
-      console.log("[handleBulkStatusUpdate] Bulk upsert successful");
       await queryClient.invalidateQueries({
         queryKey: [
           "student-attendance-records",

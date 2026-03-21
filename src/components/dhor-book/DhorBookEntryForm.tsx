@@ -102,15 +102,8 @@ export function DhorBookEntryForm(
 
       if (selectedSurah) {
         form.setValue("current_surah", selectedSurah);
-        console.log(
-          `Getting ayah range for Juz ${selectedJuz}, Surah ${selectedSurah}`,
-        );
-
         const ayahRange = getAyahRangeForSurahInJuz(selectedJuz, selectedSurah);
         if (ayahRange) {
-          console.log(
-            `Ayah range found: ${ayahRange.startAyah}-${ayahRange.endAyah}`,
-          );
           const ayatArray = Array.from(
             { length: ayahRange.endAyah - ayahRange.startAyah + 1 },
             (_, i) => ayahRange.startAyah + i,
@@ -152,7 +145,6 @@ export function DhorBookEntryForm(
   }, [startAyah, endAyah, quranFormat]);
 
   function handleSubmit(data: DailyActivityFormValues) {
-    console.log("Form data from RHF (DailyActivityFormValues):", data);
     if (!date) {
       toast({
         title: "Error",
@@ -165,10 +157,6 @@ export function DhorBookEntryForm(
       ...data,
       entry_date: format(date, "yyyy-MM-dd"),
     };
-    console.log(
-      "Final payload for onSubmit (DhorBookCombinedFormData):",
-      JSON.stringify(finalPayload, null, 2),
-    );
     onSubmit(finalPayload);
   }
 
@@ -260,7 +248,6 @@ export function DhorBookEntryForm(
                     <Select
                       onValueChange={(value) => {
                         const juzNumber = parseInt(value);
-                        console.log(`Selected Juz: ${juzNumber}`);
                         field.onChange(juzNumber);
                         setSelectedJuz(juzNumber);
                         setSelectedSurah(null);
@@ -304,7 +291,6 @@ export function DhorBookEntryForm(
                     <Select
                       onValueChange={(value) => {
                         const surahNumber = parseInt(value);
-                        console.log(`Selected Surah: ${surahNumber}`);
                         field.onChange(surahNumber);
                         setSelectedSurah(surahNumber);
                       }}
@@ -366,7 +352,6 @@ export function DhorBookEntryForm(
                     <Select
                       onValueChange={(value) => {
                         const ayatNumber = parseInt(value);
-                        console.log(`Selected Start Ayat: ${ayatNumber}`);
                         field.onChange(ayatNumber);
                         // Reset end ayat when start changes
                         form.setValue("end_ayat", undefined);
@@ -417,7 +402,6 @@ export function DhorBookEntryForm(
                     <Select
                       onValueChange={(value) => {
                         const ayatNumber = parseInt(value);
-                        console.log(`Selected End Ayat: ${ayatNumber}`);
                         field.onChange(ayatNumber);
                       }}
                       value={field.value?.toString()}

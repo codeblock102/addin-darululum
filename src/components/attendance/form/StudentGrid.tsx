@@ -83,3 +83,5 @@ export function StudentGrid({
         <NoSearchResultsState searchQuery={searchQuery} />
       )}
     </div>
+  );
+}

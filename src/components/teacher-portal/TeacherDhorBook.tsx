@@ -66,9 +66,7 @@ export const TeacherDhorBook = ({ teacherId }: TeacherDhorBookProps) => {
 
   // Set up realtime updates for the records
   useRealtimeLeaderboard(teacherId, () => {
-    console.log(
-      "Realtime update detected, refreshing classroom/student records",
-    );
+    // Realtime update detected, refreshing classroom/student records
   });
 
   // Check URL for studentId parameter

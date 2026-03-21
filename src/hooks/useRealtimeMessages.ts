@@ -22,8 +22,6 @@ export const useRealtimeMessages = (teacherId: string) => {
           filter: `recipient_id=eq.${teacherId}`,
         },
         (payload) => {
-          console.log("Real-time message update received:", payload);
-
           // Invalidate the queries to fetch fresh data
           queryClient.invalidateQueries({
             queryKey: ["teacher-inbox", teacherId],
@@ -53,8 +51,6 @@ export const useRealtimeMessages = (teacherId: string) => {
           filter: `sender_id=eq.${teacherId}`,
         },
         (payload) => {
-          console.log("Message status update received:", payload);
-
           // Invalidate sent messages query to refresh read status
           queryClient.invalidateQueries({
             queryKey: ["teacher-sent", teacherId],
@@ -75,7 +71,6 @@ export const useRealtimeMessages = (teacherId: string) => {
           filter: `sender_id=is.null AND parent_message_id=eq.${teacherId}`,
         },
         (payload) => {
-          console.log("Admin message update received:", payload);
           queryClient.invalidateQueries({
             queryKey: ["teacher-inbox", teacherId],
           });

@@ -84,7 +84,6 @@ export const seedStudentsTable = async () => {
       return false;
     }
 
-    console.log("Successfully seeded students table:", data);
     return true;
   } catch (err) {
     console.error("Exception seeding students table:", err);
@@ -128,7 +127,6 @@ export const assignStudentsToTeacher = async (teacherId: string) => {
       return false;
     }
 
-    console.log("Successfully assigned students to teacher");
     return true;
   } catch (err) {
     console.error("Exception assigning students to teacher:", err);

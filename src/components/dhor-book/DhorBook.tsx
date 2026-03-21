@@ -106,12 +106,6 @@ export const DhorBook = ({
       format(weekEnd, "yyyy-MM-dd"),
     ],
     queryFn: async () => {
-      console.log(
-        `Fetching dhor book for student ${studentId} between ${
-          format(weekStart, "yyyy-MM-dd")
-        } and ${format(weekEnd, "yyyy-MM-dd")}`,
-      );
-
       // Fetch all data sources (excluding dhor_book_entries)
       const { data: juzRevisions, error: juzError } = await supabase
         .from("juz_revisions")
@@ -227,9 +221,6 @@ export const DhorBook = ({
         new Date(b.entry_date).getTime() - new Date(a.entry_date).getTime()
       );
 
-      console.log(
-        `Consolidated ${finalCombinedEntries.length} dhor book entries for the week`,
-      );
       return finalCombinedEntries;
     },
     enabled: !!studentId && isAuthorized,
