@@ -40,7 +40,6 @@ export default function TeacherMessages() {
     queryKey: ["messages-teacher-students", teacherId],
     queryFn: async () => {
       if (!teacherId) return [] as { id: string; name: string }[];
-      console.log("[TeacherMessages] teacherId:", teacherId);
       // Get classes where this teacher is assigned via teacher_ids array
       const { data: classesByArray, error: errArray } = await supabase
         .from("classes")
@@ -49,10 +48,8 @@ export default function TeacherMessages() {
       if (errArray) throw errArray;
       const allClasses = (classesByArray || []) as Array<{ id: string; current_students: string[] | null }>;
       const classIds = Array.from(new Set(allClasses.map((c) => c.id)));
-      console.log("[TeacherMessages] classIds for teacher:", classIds);
       if (classIds.length === 0) {
         // Parent flow: find classes via user's children → classmates
-        console.log("[TeacherMessages] No classes as teacher. Trying parent flow.");
         // 1) from consolidated parents table
         let childIds: string[] = [];
         const { data: parentRow } = await (supabase as unknown as {
@@ -72,7 +69,6 @@ export default function TeacherMessages() {
             .eq("parent_id", teacherId);
           childIds = Array.from(new Set(((pcRows || []) as { student_id: string }[]).map((r) => r.student_id)));
         }
-        console.log("[TeacherMessages] parent childIds:", childIds);
       
         if (childIds.length === 0) return [] as { id: string; name: string }[];
       
@@ -83,7 +79,6 @@ export default function TeacherMessages() {
           .in("id", childIds);
         if (childErr) throw childErr;
         const parentClassIds = Array.from(new Set(((childRows || []) as { class_ids?: string[] }[]).flatMap((r) => r.class_ids || [])));
-        console.log("[TeacherMessages] parent classIds from children:", parentClassIds);
         if (parentClassIds.length === 0) return [] as { id: string; name: string }[];
 
         // Prefer classes.current_students to resolve classmates
@@ -108,7 +103,6 @@ export default function TeacherMessages() {
           .in("id", targetStudentIds);
         if (studsErr2) throw studsErr2;
         const resolvedClassmates = ((studentRows2 || []) as { id: string; name: string }[]);
-        console.log("[TeacherMessages] resolved classmates for parent:", resolvedClassmates);
         return resolvedClassmates;
       }
 
@@ -116,7 +110,6 @@ export default function TeacherMessages() {
       const currentStudentIds = Array.from(new Set((allClasses || [])
         .flatMap((c) => Array.isArray(c.current_students) ? c.current_students : [])
         .filter(Boolean))) as string[];
-      console.log("[TeacherMessages] current_students IDs:", currentStudentIds);
 
       if (currentStudentIds.length > 0) {
         const { data: studentRows, error: stErr } = await supabase
@@ -125,7 +118,6 @@ export default function TeacherMessages() {
           .in("id", currentStudentIds);
         if (stErr) throw stErr;
         const resolved = (studentRows || []) as { id: string; name: string }[];
-        console.log("[TeacherMessages] resolved students from current_students:", resolved);
         return resolved;
       }
 
@@ -136,7 +128,6 @@ export default function TeacherMessages() {
         .overlaps("class_ids", classIds);
       if (csErr) throw csErr;
       const classResolved = (classStudents || []) as { id: string; name: string }[];
-      console.log("[TeacherMessages] class-based resolved students (fallback class_ids):", classResolved);
       return classResolved;
     },
     enabled: !!teacherId,
@@ -169,7 +160,6 @@ export default function TeacherMessages() {
         }
       }
       const recips: MessageRecipient[] = Array.from(emailToLabel.entries()).map(([email, label]) => ({ id: email, name: label, type: "parent" }));
-      console.log("[TeacherMessages] derived parent emails count:", recips.length);
       if (recips.length > 0) recips.unshift({ id: "__all_parents__", name: "All Parents", type: "parent", isSpecial: true });
       return recips;
     },
@@ -595,10 +585,6 @@ export default function TeacherMessages() {
         : [selectedRecipientId];
       if (recipients.length === 0) return;
 
-      // Debug: log selected recipient and resolved recipient IDs
-      console.log("[TeacherMessages] Selected recipientId:", selectedRecipientId);
-      console.log("[TeacherMessages] Sending to recipient IDs:", recipients);
-
       // Pre-send email notify attached to button click for non-email recipients too
       try {
         let senderName = (session?.user?.user_metadata?.name as string) || "Teacher";
@@ -787,8 +773,6 @@ export default function TeacherMessages() {
                 description: "Message sent via email but failed to save to database. Some messages may not appear in the app.", 
                 variant: "destructive" 
               });
-            } else {
-              console.log(`[TeacherMessages] Successfully saved ${resolvedIdsArray.length} message(s) to database`);
             }
           }
           

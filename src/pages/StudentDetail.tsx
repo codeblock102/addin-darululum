@@ -53,7 +53,7 @@ const StudentDetail = () => {
 
         const { data, error } = await supabase
           .from("students")
-          .select("*")
+          .select("id, name, grade, class_ids, guardian_name, guardian_email, secondary_guardian_email, madrassah_id, created_at")
           .eq("id", id)
           .single();
 
@@ -88,7 +88,7 @@ const StudentDetail = () => {
 
       const { data, error } = await supabase
         .from("progress")
-        .select("*")
+        .select("id, student_id, date, current_surah, current_ayah, memorization_quality, notes, teacher_id")
         .eq("student_id", id)
         .order("date", { ascending: false });
 

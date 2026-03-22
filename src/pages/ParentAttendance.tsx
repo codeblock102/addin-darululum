@@ -36,7 +36,7 @@ const ParentAttendance = () => {
       if (!selectedStudentId) return [];
       const { data, error } = await supabase
         .from("attendance")
-        .select("*")
+        .select("id, student_id, date, status, session, reason, notes")
         .eq("student_id", selectedStudentId)
         .order("date", { ascending: false })
         .limit(50);
