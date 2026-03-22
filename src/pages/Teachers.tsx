@@ -87,13 +87,13 @@ const Teachers = () => {
 
       const { data: teachers } = await supabase
         .from("profiles")
-        .select("*")
+        .select("id, name, email, role, subject, madrassah_id, bio, phone, experience")
         .eq("role", "teacher")
         .eq("madrassah_id", adminData.madrassah_id);
 
       const { data: students } = await supabase
         .from("students")
-        .select("*")
+        .select("id, name, grade, class_ids, madrassah_id")
         .eq("madrassah_id", adminData.madrassah_id);
 
       return {

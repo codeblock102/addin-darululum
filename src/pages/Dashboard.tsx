@@ -86,11 +86,8 @@ const Dashboard = () => {
 
       // Skip the query for admin users
       if (isAdmin) {
-        console.log("Admin user, skipping teacher profile query");
         return null;
       }
-
-      console.log("Fetching teacher profile for email:", session.user.email);
 
       const { data, error } = await supabase
         .from("profiles")
@@ -107,10 +104,8 @@ const Dashboard = () => {
       const profileData = data && data.length > 0 ? data[0] : null;
       
       if (data && data.length > 1) {
-        console.warn(`Warning: Found ${data.length} profiles for email ${session.user.email}. Using the first one.`, data);
+        console.warn("Warning: Found multiple profiles for this email. Using the first one.");
       }
-
-      console.log("Teacher profile fetch result:", profileData);
       return profileData ? (profileData as unknown as Teacher) : null;
     },
     enabled: !!session?.user?.email && !isAdmin, // Only enabled for non-admin users
