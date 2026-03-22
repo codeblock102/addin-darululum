@@ -177,13 +177,6 @@ export default function TeacherMessages() {
     staleTime: 60_000,
   });
 
-  // Debug: log recipients when they load/update
-  useEffect(() => {
-    if (parentRecipients) {
-      console.log("[TeacherMessages] Parent recipients:", parentRecipients);
-    }
-  }, [parentRecipients]);
-
   // Fetch inbox and sent for teacher from communications
   const { data: inbox, isLoading: inboxLoading } = useQuery<InboxRow[]>({
     queryKey: ["teacher-inbox", teacherId],

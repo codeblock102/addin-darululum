@@ -6,6 +6,7 @@ import { useAuth } from "@/hooks/use-auth.ts";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card.tsx";
 import { Button } from "@/components/ui/button.tsx";
 import { Loader2, Send } from "lucide-react";
+import { EmptyState } from "@/components/analytics/EmptyState.tsx";
 import { Textarea } from "@/components/ui/textarea.tsx";
 import { Input } from "@/components/ui/input.tsx";
 import { Label } from "@/components/ui/label.tsx";
@@ -567,7 +568,7 @@ export default function ParentMessages() {
                     </li>
                   );
                 })}
-                {(filteredInbox || []).length === 0 && <div className="text-center text-muted-foreground py-6 text-sm">No messages</div>}
+                {(filteredInbox || []).length === 0 && <EmptyState message="No messages" description="Messages from your child's teacher will appear here." />}
               </ul>
             )}
           </CardContent>
@@ -599,7 +600,7 @@ export default function ParentMessages() {
                     </li>
                   );
                 })}
-                {(filteredSent || []).length === 0 && <div className="text-center text-muted-foreground py-6 text-sm">No messages</div>}
+                {(filteredSent || []).length === 0 && <EmptyState message="No sent messages" description="Messages you send will appear here." />}
               </ul>
             )}
           </CardContent>
@@ -641,7 +642,7 @@ export default function ParentMessages() {
                 </div>
               );
             })}
-            {(threadMessages || []).length === 0 && <div className="text-center text-muted-foreground py-6 text-sm">No messages yet</div>}
+            {(threadMessages || []).length === 0 && <EmptyState message="No messages yet" description="Start the conversation by sending a message below." />}
           </div>
           <div className="border-t pt-4 space-y-3">
             <div className="space-y-2">
