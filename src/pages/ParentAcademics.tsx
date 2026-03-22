@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input.tsx";
 import { supabase } from "@/integrations/supabase/client.ts";
 import { useQuery } from "@tanstack/react-query";
 import { Calendar, ClipboardList, GraduationCap, FileText, Loader2, Paperclip } from "lucide-react";
+import { EmptyState } from "@/components/analytics/EmptyState.tsx";
 import { Badge } from "@/components/ui/badge.tsx";
 import { Separator } from "@/components/ui/separator.tsx";
 import { useIsMobile } from "@/hooks/use-mobile.tsx";
@@ -313,8 +314,8 @@ const ParentAcademics = () => {
                         ))
                       ) : (
                         <TableRow>
-                          <TableCell colSpan={7} className="text-center text-muted-foreground py-6">
-                            No assignments found.
+                          <TableCell colSpan={7} className="py-2">
+                            <EmptyState message="No assignments found" description="Assignments will appear here once your teacher creates them." />
                           </TableCell>
                         </TableRow>
                       )}

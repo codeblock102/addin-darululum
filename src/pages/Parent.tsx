@@ -8,6 +8,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Tables } from "@/types/supabase.ts";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute.tsx";
 import { BookOpen, CalendarCheck, ClipboardList, TrendingUp } from "lucide-react";
+import { EmptyState } from "@/components/analytics/EmptyState.tsx";
 
 const statusColor = (status: string) => {
   switch (status?.toLowerCase()) {
@@ -171,7 +172,7 @@ const Parent = () => {
               </CardHeader>
               <CardContent>
                 {(attendance || []).length === 0 ? (
-                  <p className="text-sm text-muted-foreground">No attendance records.</p>
+                  <EmptyState message="No attendance records" description="Attendance will appear here once it's recorded." icon={<CalendarCheck className="h-8 w-8 text-gray-400" />} />
                 ) : (
                   <ul className="space-y-2">
                     {(attendance || []).slice(0, 10).map((a) => (
@@ -194,7 +195,7 @@ const Parent = () => {
               </CardHeader>
               <CardContent>
                 {(progressEntries || []).length === 0 ? (
-                  <p className="text-sm text-muted-foreground">No progress entries yet.</p>
+                  <EmptyState message="No progress entries yet" description="Progress will appear here once your teacher logs entries." icon={<TrendingUp className="h-8 w-8 text-gray-400" />} />
                 ) : (
                   <ul className="space-y-3">
                     {(progressEntries || []).slice(0, 5).map((p: Tables<"progress">) => (
@@ -226,7 +227,7 @@ const Parent = () => {
               </CardHeader>
               <CardContent>
                 {(assignments || []).length === 0 ? (
-                  <p className="text-sm text-muted-foreground">No assignments found.</p>
+                  <EmptyState message="No assignments" description="Assignments will appear here once your teacher creates them." icon={<ClipboardList className="h-8 w-8 text-gray-400" />} />
                 ) : (
                   <ul className="space-y-3">
                     {(assignments || []).map((as: { id: string; title: string; description: string | null; due_date: string | null; status: string }) => (
