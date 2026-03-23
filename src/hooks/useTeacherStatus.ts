@@ -36,9 +36,6 @@ export const useTeacherStatus = () => {
         setIsTeacher(isUserTeacher || isUserAdmin);
         setTeacherId(profile?.id || null);
 
-        console.log(
-          `User status check: isTeacher=${isUserTeacher}, isAdmin=${isUserAdmin}, profileId=${profile?.id}`,
-        );
       } catch (error) {
         console.error("Error checking user status:", error);
         setIsTeacher(false);

@@ -53,11 +53,8 @@ export function DhorBookGrid(
 
   const handleEntrySuccess = () => {
     setIsNewEntryOpen(false);
-    console.log("Entry success - triggering refresh in DhorBookGrid");
     onRefresh(); // Simplified refresh, DhorBook.tsx handles staggered if needed
   };
-
-  console.log("Entries received in DhorBookGrid:", entries);
 
   // Determine if weekly view has any data at all; if not, show compact empty state on mobile
   const isWeekly = viewMode === "weekly";

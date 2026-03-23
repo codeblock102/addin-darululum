@@ -1,4 +1,3 @@
-import { ProtectedRoute } from "@/components/auth/ProtectedRoute.tsx";
 import { useParentChildren } from "@/hooks/useParentChildren.ts";
 import { ChildSelector } from "@/components/parent/ChildSelector.tsx";
 import { useEffect, useMemo, useState } from "react";
@@ -220,8 +219,7 @@ const ParentAcademics = () => {
   }, [detailRow, isMobile]);
 
   return (
-    <ProtectedRoute requireParent>
-      <div className="space-y-6">
+    <div className="space-y-6">
         <Card>
           <CardHeader>
             <CardTitle>Academics</CardTitle>
@@ -460,8 +458,7 @@ const ParentAcademics = () => {
             </div>
           </DialogContent>
         </Dialog>
-      </div>
-    </ProtectedRoute>
+    </div>
   );
 };
 
