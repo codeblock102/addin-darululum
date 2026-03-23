@@ -1,4 +1,3 @@
-import { ProtectedRoute } from "@/components/auth/ProtectedRoute.tsx";
 import { useParentChildren } from "@/hooks/useParentChildren.ts";
 import { ChildSelector } from "@/components/parent/ChildSelector.tsx";
 import { useEffect, useState } from "react";
@@ -16,36 +15,34 @@ const ParentProgress = () => {
   }, [children, selectedStudentId]);
 
   return (
-    <ProtectedRoute requireParent>
-      <div className="space-y-6">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight mb-1">Qur'an Progress</h1>
-          <p className="text-muted-foreground text-sm mb-4">View your child's memorisation book.</p>
-          <ChildSelector
-            children={children}
-            selectedId={selectedStudentId}
-            onSelect={setSelectedStudentId}
-          />
-        </div>
-
-        {selectedStudentId && (
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">Dhor Book</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <DhorBook
-                studentId={selectedStudentId}
-                isAdmin={false}
-                isLoadingTeacher={false}
-                readOnly={true}
-                skipAuth={true}
-              />
-            </CardContent>
-          </Card>
-        )}
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-2xl font-bold tracking-tight mb-1">Qur'an Progress</h1>
+        <p className="text-muted-foreground text-sm mb-4">View your child's memorisation book.</p>
+        <ChildSelector
+          children={children}
+          selectedId={selectedStudentId}
+          onSelect={setSelectedStudentId}
+        />
       </div>
-    </ProtectedRoute>
+
+      {selectedStudentId && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Dhor Book</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <DhorBook
+              studentId={selectedStudentId}
+              isAdmin={false}
+              isLoadingTeacher={false}
+              readOnly={true}
+              skipAuth={true}
+            />
+          </CardContent>
+        </Card>
+      )}
+    </div>
   );
 };
 

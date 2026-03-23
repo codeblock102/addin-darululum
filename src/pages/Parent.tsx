@@ -6,7 +6,6 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client.ts";
 import { useQuery } from "@tanstack/react-query";
 import { Tables } from "@/types/supabase.ts";
-import { ProtectedRoute } from "@/components/auth/ProtectedRoute.tsx";
 import { BookOpen, CalendarCheck, ClipboardList, TrendingUp } from "lucide-react";
 import { EmptyState } from "@/components/analytics/EmptyState.tsx";
 
@@ -88,8 +87,7 @@ const Parent = () => {
   ).length;
 
   return (
-    <ProtectedRoute requireParent>
-      <div className="space-y-6 animate-fadeIn">
+    <div className="space-y-6 animate-fadeIn">
         {/* Header + child selector */}
         <div>
           <h1 className="text-2xl font-bold tracking-tight mb-1">Parent Dashboard</h1>
@@ -252,8 +250,7 @@ const Parent = () => {
             </Card>
           </>
         )}
-      </div>
-    </ProtectedRoute>
+    </div>
   );
 };
 

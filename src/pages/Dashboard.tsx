@@ -19,7 +19,6 @@ import { useAuth } from "@/hooks/use-auth.ts";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client.ts";
 import { TeacherDashboard } from "@/components/teacher-portal/TeacherDashboard.tsx";
-import { useToast } from "@/components/ui/use-toast.ts";
 import { LoadingState } from "@/components/teacher-portal/LoadingState.tsx";
 import { AccessDenied } from "@/components/teacher-portal/AccessDenied.tsx";
 import { ProfileNotFound } from "@/components/teacher-portal/ProfileNotFound.tsx";
@@ -62,7 +61,6 @@ import { Navigate } from "react-router-dom";
  */
 const Dashboard = () => {
   const { session, refreshSession } = useAuth();
-  const { toast } = useToast();
   const queryClient = useQueryClient();
   const { isTeacher, isAdmin, isParent, isLoading: isRoleLoading } = useRBAC();
 
@@ -126,15 +124,20 @@ const Dashboard = () => {
     await queryClient.invalidateQueries({ queryKey: ["teacher-profile", session?.user?.email] });
   };
 
-  if (error) {
-    console.error("Error loading teacher profile:", error);
-    toast({
-      title: "Error loading profile",
-      description:
-        "Could not load your teacher profile. Please try again later.",
-      variant: "destructive",
-    });
-    // Optionally, return an error component here if needed
+  if (error && !isAdmin) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+        <div className="w-full max-w-md text-center space-y-4">
+          <p className="text-destructive font-medium">Could not load your profile.</p>
+          <button
+            className="text-sm underline text-muted-foreground"
+            onClick={handleRefresh}
+          >
+            Try again
+          </button>
+        </div>
+      </div>
+    );
   }
 
   // Show loading state while checking roles or fetching teacher data

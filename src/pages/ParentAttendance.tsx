@@ -1,4 +1,3 @@
-import { ProtectedRoute } from "@/components/auth/ProtectedRoute.tsx";
 import { useParentChildren } from "@/hooks/useParentChildren.ts";
 import { ChildSelector } from "@/components/parent/ChildSelector.tsx";
 import { useEffect, useState } from "react";
@@ -54,8 +53,7 @@ const ParentAttendance = () => {
   const attendanceRate = total > 0 ? Math.round((presentCount / total) * 100) : null;
 
   return (
-    <ProtectedRoute requireParent>
-      <div className="space-y-6">
+    <div className="space-y-6">
         <div>
           <h1 className="text-2xl font-bold tracking-tight mb-1">Attendance</h1>
           <p className="text-muted-foreground text-sm mb-4">Track your child's attendance record.</p>
@@ -125,8 +123,7 @@ const ParentAttendance = () => {
             </Card>
           </>
         )}
-      </div>
-    </ProtectedRoute>
+    </div>
   );
 };
 
