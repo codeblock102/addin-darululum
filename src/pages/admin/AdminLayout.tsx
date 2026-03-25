@@ -22,12 +22,12 @@ const AdminLayout = () => {
   const navLinkClass = ({ isActive }: { isActive: boolean }) =>
     `flex items-center px-4 py-2 rounded-md text-sm font-medium transition-colors ${
       isActive
-        ? 'bg-gray-700 text-white'
-        : 'text-gray-300 hover:bg-gray-700 hover:text-white'
+        ? 'bg-white/15 backdrop-blur-sm text-white'
+        : 'text-gray-300 hover:bg-white/10 hover:text-white'
     }`;
 
   return (
-    <div className="flex min-h-screen bg-gray-100 font-sans">
+    <div className="flex min-h-screen bg-transparent font-sans">
       {/* Mobile backdrop */}
       {sidebarOpen && (
         <div
@@ -40,12 +40,12 @@ const AdminLayout = () => {
       {/* Sidebar */}
       <aside
         className={cn(
-          "fixed inset-y-0 left-0 z-50 w-64 bg-gray-800 text-white flex flex-col transform transition-transform duration-200 ease-in-out",
+          "fixed inset-y-0 left-0 z-50 w-64 bg-slate-900/90 backdrop-blur-xl text-white border-r border-white/10 flex flex-col transform transition-transform duration-200 ease-in-out",
           "md:relative md:translate-x-0 md:z-auto",
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
         )}
       >
-        <div className="h-16 flex items-center justify-between bg-gray-900 px-4 flex-shrink-0">
+        <div className="h-16 flex items-center justify-between bg-slate-950/80 backdrop-blur-sm border-b border-white/10 px-4 flex-shrink-0">
           <h1 className="text-xl font-bold">Admin Panel</h1>
           <div className="flex items-center gap-2">
             <Link
@@ -112,7 +112,7 @@ const AdminLayout = () => {
       {/* Main content */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Mobile top bar with hamburger */}
-        <div className="md:hidden h-14 bg-gray-900 flex items-center px-4 gap-3 flex-shrink-0">
+        <div className="md:hidden h-14 bg-slate-950/80 backdrop-blur-sm border-b border-white/10 flex items-center px-4 gap-3 flex-shrink-0">
           <button
             type="button"
             onClick={() => setSidebarOpen(true)}

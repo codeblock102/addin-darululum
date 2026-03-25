@@ -128,7 +128,7 @@ export const SidebarUser = ({ isAdmin, isOpen }: SidebarUserProps) => {
             variant="ghost"
             className={cn(
               "w-full justify-start h-auto p-3 transition-all duration-200",
-              "hover:bg-gray-100/60 text-gray-700",
+              "hover:bg-white/40 hover:backdrop-blur-sm text-gray-700",
               "hover:shadow-sm rounded-lg",
             )}
           >

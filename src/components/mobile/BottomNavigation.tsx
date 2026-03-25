@@ -61,7 +61,7 @@ export const BottomNavigation = () => {
   // Use horizontal scroll instead of fixed grid to handle many items on small screens
 
   return (
-    <div className="fixed bottom-0 left-0 z-50 w-full h-16 bg-background border-t lg:hidden pb-[env(safe-area-inset-bottom)]">
+    <div className="fixed bottom-0 left-0 z-50 w-full h-16 glass-bottom-nav lg:hidden pb-[env(safe-area-inset-bottom)]">
       <div className="h-full overflow-x-auto">
         <div className="flex h-full items-stretch gap-1 px-1">
           {navItems.map((item, index) => {

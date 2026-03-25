@@ -100,8 +100,8 @@ export const SidebarNav = ({ items, isAdmin, isOpen }: SidebarNavProps) => {
                   ? "bg-white/15 text-amber-400 font-medium backdrop-blur-sm border-l-2 border-amber-500 shadow-sm"
                   : "text-gray-300 hover:bg-white/10 hover:text-amber-400 border-l-2 border-transparent hover:shadow-sm")
                 : (isActive
-                  ? "bg-primary/10 text-primary font-medium border-l-2 border-primary shadow-sm"
-                  : "text-gray-700 hover:bg-primary/5 hover:text-primary border-l-2 border-transparent hover:shadow-sm"),
+                  ? "bg-white/40 backdrop-blur-sm text-primary font-medium border-l-2 border-primary shadow-sm"
+                  : "text-gray-700 hover:bg-white/30 hover:backdrop-blur-sm hover:text-primary border-l-2 border-transparent hover:shadow-sm"),
               "hover:scale-[1.02] active:scale-[0.98]",
             )}
             title={(!isMobile && isOpen === false)

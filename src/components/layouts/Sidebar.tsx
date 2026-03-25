@@ -130,7 +130,7 @@ export const Sidebar = (
           size="icon"
           className={cn(
             "absolute top-3 right-3 z-50",
-            isAdmin ? "text-white hover:bg-white/10" : "",
+            isAdmin ? "text-white hover:bg-white/10" : "hover:bg-black/5",
           )}
           onClick={onCloseSidebar}
         >
@@ -141,7 +141,7 @@ export const Sidebar = (
       <div
         className={cn(
           "flex h-full w-full flex-col transition-all duration-300 ease-in-out",
-          isAdmin ? "bg-white border-r border-gray-200" : "bg-white border-r border-gray-200",
+          isAdmin ? "border-r border-gray-200" : "border-r border-gray-200",
           !isMobile && isOpen === false && "shadow-sm",
         )}
       >
