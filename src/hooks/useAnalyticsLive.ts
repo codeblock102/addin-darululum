@@ -95,7 +95,7 @@ export function useAnalyticsLive() {
           .eq("role", "teacher"),
         supabase
           .from("classes")
-          .select("id, name, capacity, current_students, status, teacher_id"),
+          .select("id, name, capacity, current_students, status, teacher_id, teacher_ids"),
         supabase
           .from("attendance")
           .select("student_id, class_id, date, status")
@@ -213,25 +213,41 @@ export function useAnalyticsLive() {
           : 0;
 
       // ─── Per-teacher metrics ───────────────────────────────────────────────
-      // Build a lookup: teacher_id → assigned student names
-      const teacherStudentNames: Record<string, string[]> = {};
-      for (const st of studentsTeachers) {
-        if (!teacherStudentNames[st.teacher_id]) {
-          teacherStudentNames[st.teacher_id] = [];
+      // Build a lookup: teacher_id → Set<student_id> via classes (primary)
+      const teacherStudentIdMap: Record<string, Set<string>> = {};
+      for (const cls of allClasses) {
+        const teacherIdList: string[] = Array.isArray((cls as any).teacher_ids)
+          ? (cls as any).teacher_ids
+          : (cls as any).teacher_id
+          ? [(cls as any).teacher_id]
+          : [];
+        const studentIdList: string[] = Array.isArray(cls.current_students)
+          ? (cls.current_students as unknown as string[])
+          : [];
+        for (const tid of teacherIdList) {
+          if (!teacherStudentIdMap[tid]) teacherStudentIdMap[tid] = new Set();
+          for (const sid of studentIdList) teacherStudentIdMap[tid].add(sid);
         }
-        teacherStudentNames[st.teacher_id].push(st.student_name);
       }
 
-      // Build a lookup: student name → StudentLiveMetrics
+      // Fallback: also add from students_teachers table (by name matching)
+      const studentById: Record<string, StudentLiveMetrics> = {};
+      for (const s of studentMetrics) studentById[s.id] = s;
       const studentByName: Record<string, StudentLiveMetrics> = {};
-      for (const s of studentMetrics) {
-        studentByName[s.name] = s;
+      for (const s of studentMetrics) studentByName[s.name] = s;
+
+      for (const st of studentsTeachers) {
+        const matched = studentByName[st.student_name];
+        if (matched) {
+          if (!teacherStudentIdMap[st.teacher_id]) teacherStudentIdMap[st.teacher_id] = new Set();
+          teacherStudentIdMap[st.teacher_id].add(matched.id);
+        }
       }
 
       const teacherMetrics: TeacherLiveMetrics[] = allTeachers.map((teacher) => {
-        const assignedNames = teacherStudentNames[teacher.id] || [];
-        const assignedStudents = assignedNames
-          .map((name) => studentByName[name])
+        const assignedIds = Array.from(teacherStudentIdMap[teacher.id] || new Set<string>());
+        const assignedStudents = assignedIds
+          .map((id) => studentById[id])
           .filter(Boolean);
 
         const studentsWithAtt = assignedStudents.filter((s) => s.attendanceRate !== null);
@@ -266,14 +282,23 @@ export function useAnalyticsLive() {
 
       // ─── Per-class metrics ─────────────────────────────────────────────────
       const classMetrics: ClassLiveMetrics[] = allClasses.map((cls) => {
-        const currentStudents = cls.current_students || 0;
+        // current_students is a string[] of UUIDs — use .length for count
+        const currentStudents = Array.isArray(cls.current_students)
+          ? (cls.current_students as unknown as string[]).length
+          : typeof cls.current_students === "number"
+          ? cls.current_students
+          : 0;
         const capacityUtilization =
           cls.capacity > 0
             ? parseFloat(((currentStudents / cls.capacity) * 100).toFixed(1))
             : 0;
 
-        // Attendance rate for students in this class
-        const classAttendance = attendanceRecords.filter((a) => a.class_id === cls.id);
+        // Attendance: first try by class_id, then fall back to student membership
+        let classAttendance = attendanceRecords.filter((a) => a.class_id === cls.id);
+        if (classAttendance.length === 0 && Array.isArray(cls.current_students) && (cls.current_students as unknown as string[]).length > 0) {
+          const memberIds = new Set(cls.current_students as unknown as string[]);
+          classAttendance = attendanceRecords.filter((a) => memberIds.has(a.student_id));
+        }
         const classPresent = classAttendance.filter(
           (a) => a.status === "present" || a.status === "late"
         ).length;

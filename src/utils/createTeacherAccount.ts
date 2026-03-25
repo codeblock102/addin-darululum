@@ -14,7 +14,6 @@ export const createTeacherWithAccount = async (
   password: string,
 ) => {
   try {
-    console.log(`Attempting to create account for ${name} with email ${email}`);
 
     // Check if teacher already exists with this email
     const { data: existingTeacher } = await supabase
@@ -50,9 +49,6 @@ export const createTeacherWithAccount = async (
 
       teacherId = newTeacherData[0].id;
       teacherData = newTeacherData[0];
-      console.log("Teacher record created:", teacherData);
-    } else {
-      console.log("Teacher already exists:", existingTeacher);
     }
 
     // Check if a user with this email exists first
@@ -63,7 +59,6 @@ export const createTeacherWithAccount = async (
       });
 
     if (existingUser) {
-      console.log("User account already exists:", existingUser);
 
       // Update user metadata if profile_id is missing
       if (!existingUser.user_metadata?.profile_id) {
@@ -84,8 +79,7 @@ export const createTeacherWithAccount = async (
     }
 
     try {
-      // Try creating user account with auto-confirmation
-      console.log("Attempting to create user with admin API");
+      // Try creating user account with auto-confirmation;
       const { data: userData, error: userError } = await supabase.auth.admin
         .createUser({
           email: email,
@@ -98,7 +92,6 @@ export const createTeacherWithAccount = async (
         });
 
       if (!userError && userData) {
-        console.log("User account created with auto-confirmation:", userData);
         return {
           success: true,
           teacher: teacherData,
@@ -110,10 +103,6 @@ export const createTeacherWithAccount = async (
         throw userError || new Error("Failed to create user with admin API");
       }
     } catch (adminError) {
-      console.log(
-        "Admin API failed, falling back to regular signup",
-        adminError,
-      );
       // Fallback to regular signup
       const { data: regularUserData, error: regularUserError } = await supabase
         .auth.signUp({
@@ -132,11 +121,6 @@ export const createTeacherWithAccount = async (
         console.error("User account creation error:", regularUserError);
         throw regularUserError;
       }
-
-      console.log(
-        "User account created (needs confirmation):",
-        regularUserData,
-      );
 
       return {
         success: true,

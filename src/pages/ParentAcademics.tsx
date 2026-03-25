@@ -1,5 +1,5 @@
-import { ProtectedRoute } from "@/components/auth/ProtectedRoute.tsx";
 import { useParentChildren } from "@/hooks/useParentChildren.ts";
+import { ChildSelector } from "@/components/parent/ChildSelector.tsx";
 import { useEffect, useMemo, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card.tsx";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs.tsx";
@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input.tsx";
 import { supabase } from "@/integrations/supabase/client.ts";
 import { useQuery } from "@tanstack/react-query";
 import { Calendar, ClipboardList, GraduationCap, FileText, Loader2, Paperclip } from "lucide-react";
+import { EmptyState } from "@/components/analytics/EmptyState.tsx";
 import { Badge } from "@/components/ui/badge.tsx";
 import { Separator } from "@/components/ui/separator.tsx";
 import { useIsMobile } from "@/hooks/use-mobile.tsx";
@@ -28,19 +29,6 @@ const ParentAcademics = () => {
       setSelectedStudentId(children[0].id);
     }
   }, [children, selectedStudentId]);
-
-  // Debug: compare parent children IDs and selected student
-  useEffect(() => {
-    try {
-      const childIds = (children || []).map((c) => c.id);
-      console.log("[ParentAcademics] Parent children IDs:", childIds);
-      console.log("[ParentAcademics] Selected student ID:", selectedStudentId);
-    } catch (e) {
-      console.warn("[ParentAcademics] Debug logging failed:", e);
-    }
-  }, [children, selectedStudentId]);
-
-  // Remove stray debug log
 
   // Assignments for selected child
   type AssignmentRow = {
@@ -84,38 +72,22 @@ const ParentAcademics = () => {
       }
 
       // Fetch assignments directly targeting this child; avoid submissions endpoint to prevent 500s
-      console.log("[ParentAcademics] fetching assignments (overlaps) for:", selectedStudentId);
       const { data: assignsOv, error: assignsOvError } = await supabase
         .from("teacher_assignments")
         .select("id, title, description, due_date, attachment_name, attachment_url, student_ids")
         .overlaps("student_ids", [selectedStudentId])
         .order("due_date", { ascending: false });
-      if (assignsOvError) {
-        console.error("[ParentAcademics] overlaps query error:", assignsOvError);
-      }
-      const pick = (assignsOv && assignsOv.length > 0) ? assignsOv : undefined;
+      const pick = (assignsOv && !assignsOvError && assignsOv.length > 0) ? assignsOv : undefined;
 
       let assigns: AssignmentRow[] | undefined = pick as AssignmentRow[] | undefined;
       if (!assigns) {
-        console.log("[ParentAcademics] no results via overlaps; trying contains() for:", selectedStudentId);
-        const { data: assignsCs, error: assignsCsError } = await supabase
+        const { data: assignsCs } = await supabase
           .from("teacher_assignments")
           .select("id, title, description, due_date, attachment_name, attachment_url, student_ids")
           .contains("student_ids", [selectedStudentId])
           .order("due_date", { ascending: false });
-        if (assignsCsError) {
-          console.error("[ParentAcademics] contains query error:", assignsCsError);
-        }
         assigns = (assignsCs as AssignmentRow[]) || [];
       }
-
-      // Debug: verify array membership
-      console.log("[ParentAcademics] selected:", selectedStudentId, "assignments count:", assigns?.length ?? 0);
-      (assigns || []).forEach((a: AssignmentRow) => {
-        const arr = a?.student_ids || [];
-        const includes = Array.isArray(arr) ? arr.includes(selectedStudentId) : false;
-        console.log("[ParentAcademics] assignment", a.id, "student_ids:", arr, "includes selected:", includes);
-      });
 
       // Fetch submissions for this student for the returned assignments
       let submissionsByAssignment = new Map<string, SubmissionRow>();
@@ -127,14 +99,12 @@ const ParentAcademics = () => {
             .select("assignment_id, status, submitted_at, graded_at, grade, feedback")
             .eq("student_id", selectedStudentId)
             .in("assignment_id", assignmentIds);
-          if (subsErr) {
-            console.error("[ParentAcademics] submissions fetch error:", subsErr);
-          } else {
+          if (!subsErr) {
             submissionsByAssignment = new Map((subs || []).map((s: SubmissionRow) => [s.assignment_id, s]));
           }
         }
-      } catch (e) {
-        console.warn("[ParentAcademics] submissions fetch exception:", e);
+      } catch {
+        // submissions fetch failed; continue without submission data
       }
 
       return (assigns || []).map((a: AssignmentRow) => {
@@ -249,26 +219,18 @@ const ParentAcademics = () => {
   }, [detailRow, isMobile]);
 
   return (
-    <ProtectedRoute requireParent>
-      <div className="space-y-6">
+    <div className="space-y-6">
         <Card>
           <CardHeader>
             <CardTitle>Academics</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="-mx-1 mb-4">
-              <div className="flex gap-2 overflow-x-auto whitespace-nowrap px-1 py-1">
-                {children.map((child) => (
-                  <button
-                    key={child.id}
-                    className={`px-3 py-2 rounded border shrink-0 ${selectedStudentId === child.id ? "bg-primary text-primary-foreground" : "bg-background"}`}
-                    onClick={() => setSelectedStudentId(child.id)}
-                    type="button"
-                  >
-                    {child.name}
-                  </button>
-                ))}
-              </div>
+            <div className="mb-4">
+              <ChildSelector
+                children={children}
+                selectedId={selectedStudentId}
+                onSelect={setSelectedStudentId}
+              />
             </div>
             <Tabs defaultValue="assignments" className="w-full">
               <TabsList className="grid grid-cols-2 sm:grid-cols-3 w-full">
@@ -287,11 +249,6 @@ const ParentAcademics = () => {
               </TabsList>
 
               <TabsContent value="assignments" className="mt-4 space-y-3">
-                {import.meta.env.DEV && (
-                  <div className="text-xs text-foreground/70">
-                    Debug — children: {(children || []).map((c) => c.id).join(", ")} | selected: {selectedStudentId || "none"} | rows: {filteredAssignments?.length || 0}
-                  </div>
-                )}
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <Select onValueChange={(v) => setStatusFilter(v as typeof statusFilter)} value={statusFilter}>
                     <SelectTrigger>
@@ -355,8 +312,8 @@ const ParentAcademics = () => {
                         ))
                       ) : (
                         <TableRow>
-                          <TableCell colSpan={7} className="text-center text-muted-foreground py-6">
-                            No assignments found.
+                          <TableCell colSpan={7} className="py-2">
+                            <EmptyState message="No assignments found" description="Assignments will appear here once your teacher creates them." />
                           </TableCell>
                         </TableRow>
                       )}
@@ -501,8 +458,7 @@ const ParentAcademics = () => {
             </div>
           </DialogContent>
         </Dialog>
-      </div>
-    </ProtectedRoute>
+    </div>
   );
 };
 

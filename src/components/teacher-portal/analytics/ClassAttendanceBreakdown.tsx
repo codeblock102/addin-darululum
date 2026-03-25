@@ -128,47 +128,109 @@ export const ClassAttendanceBreakdown = ({ teacherId, fromYmd, toYmd }: ClassAtt
     return { id: cls.id, name: cls.name, present, late, absent, total };
   });
 
+  const hasData = cards.some((c) => c.total > 0);
+
   return (
     <Card>
-        <CardHeader>
-          <CardTitle>Class Attendance</CardTitle>
-          <CardDescription>Present, late, and absent percentages per class (selected range)</CardDescription>
+      <CardHeader>
+        <div className="flex items-center justify-between">
+          <div>
+            <CardTitle className="text-base">Class Attendance</CardTitle>
+            <CardDescription>Present, late, and absent breakdown per class</CardDescription>
+          </div>
+          <div className="flex items-center gap-3 text-xs text-muted-foreground">
+            <span className="flex items-center gap-1">
+              <span className="inline-block h-2.5 w-2.5 rounded-sm bg-emerald-500" /> Present
+            </span>
+            <span className="flex items-center gap-1">
+              <span className="inline-block h-2.5 w-2.5 rounded-sm bg-amber-400" /> Late
+            </span>
+            <span className="flex items-center gap-1">
+              <span className="inline-block h-2.5 w-2.5 rounded-sm bg-red-400" /> Absent
+            </span>
+          </div>
+        </div>
       </CardHeader>
       <CardContent>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {cards.map((c) => {
-            const presentPct = c.total > 0 ? Math.round((c.present / c.total) * 1000) / 10 : 0;
-            const latePct = c.total > 0 ? Math.round((c.late / c.total) * 1000) / 10 : 0;
-            const absentPct = c.total > 0 ? Math.round((c.absent / c.total) * 1000) / 10 : 0;
-            return (
-              <div key={c.id} className="rounded-md border p-4">
-                <div className="mb-2 flex items-center justify-between">
-                  <div className="font-medium">{c.name}</div>
-                  <div className="text-xs text-muted-foreground">{c.total} records</div>
-                </div>
-                <div className="h-3 w-full overflow-hidden rounded bg-muted">
-                  <div className="h-full bg-green-500" style={{ width: `${presentPct}%` }} />
-                  <div className="h-full -mt-3 bg-amber-500" style={{ width: `${presentPct + latePct}%` }} />
-                  <div className="h-full -mt-3 bg-red-500" style={{ width: `${presentPct + latePct + absentPct}%` }} />
-                </div>
-                <div className="mt-3 grid grid-cols-3 gap-2 text-xs">
-                  <div className="flex items-center gap-1">
-                    <span className="inline-block h-2 w-2 rounded-sm bg-green-500" />
-                    <span>Present {presentPct}%</span>
+        {!hasData ? (
+          <p className="py-8 text-center text-sm text-muted-foreground">
+            No attendance records found for this period.
+          </p>
+        ) : (
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {cards.map((c) => {
+              const presentPct = c.total > 0 ? Math.round((c.present / c.total) * 1000) / 10 : 0;
+              const latePct    = c.total > 0 ? Math.round((c.late    / c.total) * 1000) / 10 : 0;
+              const absentPct  = c.total > 0 ? Math.round((c.absent  / c.total) * 1000) / 10 : 0;
+              const attendancePct = Math.round(presentPct + latePct);
+
+              return (
+                <div key={c.id} className="rounded-xl border bg-white p-4 shadow-sm">
+                  {/* Header */}
+                  <div className="mb-3 flex items-start justify-between">
+                    <div>
+                      <p className="text-sm font-semibold text-gray-900">{c.name}</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">{c.total} session records</p>
+                    </div>
+                    <span
+                      className={`text-sm font-bold tabular-nums ${
+                        attendancePct >= 90
+                          ? "text-emerald-600"
+                          : attendancePct >= 75
+                          ? "text-yellow-600"
+                          : "text-red-600"
+                      }`}
+                    >
+                      {attendancePct}%
+                    </span>
                   </div>
-                  <div className="flex items-center gap-1">
-                    <span className="inline-block h-2 w-2 rounded-sm bg-amber-500" />
-                    <span>Late {latePct}%</span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <span className="inline-block h-2 w-2 rounded-sm bg-red-500" />
-                    <span>Absent {absentPct}%</span>
+
+                  {/* Segmented progress bar */}
+                  {c.total > 0 ? (
+                    <div className="flex h-3 w-full overflow-hidden rounded-full bg-gray-100">
+                      {presentPct > 0 && (
+                        <div
+                          className="h-full bg-emerald-500 transition-all"
+                          style={{ width: `${presentPct}%` }}
+                        />
+                      )}
+                      {latePct > 0 && (
+                        <div
+                          className="h-full bg-amber-400 transition-all"
+                          style={{ width: `${latePct}%` }}
+                        />
+                      )}
+                      {absentPct > 0 && (
+                        <div
+                          className="h-full bg-red-400 transition-all"
+                          style={{ width: `${absentPct}%` }}
+                        />
+                      )}
+                    </div>
+                  ) : (
+                    <div className="h-3 w-full rounded-full bg-gray-100" />
+                  )}
+
+                  {/* Stat row */}
+                  <div className="mt-3 grid grid-cols-3 gap-1 text-xs">
+                    <div className="text-center">
+                      <p className="font-semibold text-emerald-700">{presentPct}%</p>
+                      <p className="text-muted-foreground">Present</p>
+                    </div>
+                    <div className="text-center">
+                      <p className="font-semibold text-amber-600">{latePct}%</p>
+                      <p className="text-muted-foreground">Late</p>
+                    </div>
+                    <div className="text-center">
+                      <p className="font-semibold text-red-600">{absentPct}%</p>
+                      <p className="text-muted-foreground">Absent</p>
+                    </div>
                   </div>
                 </div>
-              </div>
-            );
-          })}
-        </div>
+              );
+            })}
+          </div>
+        )}
       </CardContent>
     </Card>
   );

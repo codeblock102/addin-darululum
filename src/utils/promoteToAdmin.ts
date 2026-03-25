@@ -21,16 +21,9 @@ export const promoteToAdmin = async (targetUserId: string) => {
     
     const madrassahId = adminProfile.madrassah_id;
 
-    // 3. Update the target user's auth metadata to set their role
-    const { error: updateUserError } = await supabase.auth.admin.updateUserById(
-      targetUserId,
-      { user_metadata: { role: 'admin' } }
-    );
-    if (updateUserError) {
-      throw new Error(`Failed to update target user's authentication role: ${updateUserError.message}`);
-    }
-
-    // 4. Upsert the target user's profile to set their role and madrassah
+    // 3. Upsert the target user's profile to set their role and madrassah
+    // Note: auth metadata update requires a server-side Edge Function with service role key.
+    // Profile upsert is sufficient — role is sourced from the profiles table by the app.
     const { error: profileError } = await supabase.from("profiles").upsert(
       {
         id: targetUserId,
