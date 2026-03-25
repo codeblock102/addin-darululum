@@ -360,11 +360,11 @@ const Auth = () => {
                 <div className="w-2 h-2 bg-emerald-400 rounded-full"></div>
               </div>
               
-              <p className="text-xs text-gray-500">
+              <p className="text-xs text-gray-300">
                 &copy; {new Date().getFullYear()} Dār Al-Ulūm Montréal. All rights reserved.
               </p>
               
-              <p className="text-xs text-gray-500">
+              <p className="text-xs text-gray-300">
                 Need assistance?{" "}
                 <a
                   href="mailto:support@darululum-montreal.com"

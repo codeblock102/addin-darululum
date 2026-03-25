@@ -9,7 +9,7 @@ export const TeacherPreferences = () => {
     <div className="space-y-6">
       <h2 className="text-2xl font-bold">{t("settings.tabs.preferences", t("nav.preferences"))}</h2>
 
-      <div className="p-4 border rounded-lg space-y-4 bg-white">
+      <div className="p-4 border rounded-lg space-y-4 glass-card">
         <div className="space-y-2">
           <Label className="font-medium">{t("settings.localization.language")}</Label>
           <Select
