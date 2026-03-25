@@ -232,10 +232,10 @@ const Teachers = () => {
             className="w-full"
           >
             <div className="border-b border-gray-200 px-4 sm:px-6 pt-4 sm:pt-6">
-              <TabsList className="w-full sm:w-auto bg-gray-50 border border-gray-200 p-1 h-10 sm:h-12 rounded-lg overflow-x-auto">
+              <TabsList className="w-full sm:w-auto glass-card border border-white/20 p-1 h-10 sm:h-12 rounded-lg overflow-x-auto">
                 <TabsTrigger 
                   value="profiles" 
-                  className="data-[state=active]:bg-white data-[state=active]:text-emerald-700 data-[state=active]:shadow-sm transition-all duration-200 px-4 sm:px-8 rounded-md text-sm sm:text-base"
+                  className="data-[state=active]:bg-white/40 data-[state=active]:text-emerald-700 data-[state=active]:shadow-sm transition-all duration-200 px-4 sm:px-8 rounded-md text-sm sm:text-base"
                 >
                   {t("pages.teachers.tabProfiles")}
                 </TabsTrigger>

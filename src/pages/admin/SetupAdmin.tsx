@@ -40,7 +40,7 @@ export default function SetupAdmin() {
   };
 
   return (
-    <div className="bg-white p-8 rounded-lg shadow-md max-w-2xl mx-auto">
+    <div className="glass-card p-8 rounded-lg shadow-md max-w-2xl mx-auto">
       <div className="flex items-center mb-6">
         <div className="bg-blue-500 text-white rounded-full p-3 mr-4">
           <UserCog className="h-6 w-6" />
@@ -58,7 +58,7 @@ export default function SetupAdmin() {
           This process will configure your currently logged-in account as an 
           <strong>administrator</strong>. This action is irreversible and grants full access.
         </p>
-        <div className="p-4 bg-gray-50 border border-gray-200 rounded-lg">
+        <div className="p-4 bg-white/20 border border-white/20 rounded-lg">
           <h3 className="font-semibold text-lg text-gray-800 mb-2">This will:</h3>
           <ul className="space-y-2">
             <li className="flex items-start">
