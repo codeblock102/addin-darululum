@@ -132,7 +132,7 @@ export function AlertsPanel({
             {filteredAlerts.map((alert) => (
               <div
                 key={alert.id}
-                className="p-4 hover:bg-gray-50 transition-colors"
+                className="p-4 hover:bg-white/20 transition-colors"
               >
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex-1 min-w-0">

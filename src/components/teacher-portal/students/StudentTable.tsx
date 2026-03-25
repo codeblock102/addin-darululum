@@ -95,7 +95,7 @@ export const StudentTable = ({
     <div className="rounded-lg border border-gray-200 overflow-hidden">
       <Table>
         <TableHeader>
-          <TableRow className="bg-gray-50">
+          <TableRow className="bg-white/10">
             <TableHead className="font-semibold text-gray-700">
               {t("pages.teacherPortal.students.table.student")}
             </TableHead>
@@ -115,7 +115,7 @@ export const StudentTable = ({
             return (
               <TableRow
                 key={student.id}
-                className="transition-colors hover:bg-gray-50 cursor-pointer"
+                className="transition-colors hover:bg-white/20 cursor-pointer"
                 onClick={() => onEditStudent?.(student)}
               >
                 <TableCell>

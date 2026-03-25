@@ -105,7 +105,7 @@ export const TeacherManagement = () => {
         </Card>
       </div>
 
-      <div className="bg-white p-5 rounded-lg shadow-sm border">
+      <div className="glass-card p-5 rounded-lg shadow-sm border">
         <h3 className="text-lg font-medium mb-4">Admin User Management</h3>
         <p className="text-sm text-gray-600 mb-4">
           Teacher management is now centralized. When you add a new teacher, a

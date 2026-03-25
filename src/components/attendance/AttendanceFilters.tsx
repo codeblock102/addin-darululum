@@ -35,19 +35,19 @@ export function AttendanceFilters({
   setDateFilter,
 }: AttendanceFiltersProps) {
   return (
-    <div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0 mb-4 bg-gray-50 p-4 rounded-lg shadow-sm border border-gray-200">
+    <div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0 mb-4 glass-card p-4 rounded-lg shadow-sm border border-white/20">
       <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
         <Input
           placeholder="Search students..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full sm:w-[300px] bg-white text-black border-gray-300 focus:ring-2 focus:ring-[hsl(142.8,64.2%,24.1%)] focus:border-[hsl(142.8,64.2%,24.1%)]"
+          className="w-full sm:w-[300px] glass-input text-black border-white/30 focus:ring-2 focus:ring-[hsl(142.8,64.2%,24.1%)] focus:border-[hsl(142.8,64.2%,24.1%)]"
         />
         <Select value={statusFilter || "all"} onValueChange={(value) => setStatusFilter(value === "all" ? null : value)}>
-          <SelectTrigger className="justify-start text-left sm:w-[180px] bg-white text-black border-gray-300 hover:bg-gray-100">
+          <SelectTrigger className="justify-start text-left sm:w-[180px] glass-input text-black border-white/30 hover:bg-white/20">
             <SelectValue placeholder="All Statuses" />
           </SelectTrigger>
-          <SelectContent className="bg-white text-black border-gray-200">
+          <SelectContent className="glass-card text-black border-white/20">
             <SelectItem value="all">All Statuses</SelectItem>
             <SelectItem value="present">Present</SelectItem>
             <SelectItem value="absent">Absent</SelectItem>
@@ -64,7 +64,7 @@ export function AttendanceFilters({
             <Button
               variant="outline"
               className={cn(
-                "justify-start text-left sm:w-[180px] bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200 border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-600",
+                "justify-start text-left sm:w-[180px] glass-input text-gray-900 dark:text-gray-200 border-white/30 hover:bg-white/20",
                 !dateFilter && "text-black",
               )}
             >
@@ -78,13 +78,13 @@ export function AttendanceFilters({
               selected={dateFilter ?? undefined}
               onSelect={(date) => setDateFilter(date ?? null)}
               initialFocus
-              className="bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-200"
+              className="glass-card text-gray-900 dark:text-gray-200"
             />
             {dateFilter && (
               <div className="p-3 border-t border-gray-200 dark:border-gray-700">
                 <Button
                   variant="ghost"
-                  className="w-full justify-center hover:bg-gray-100 dark:hover:bg-gray-700"
+                  className="w-full justify-center hover:bg-white/20"
                   onClick={() => setDateFilter(null)}
                 >
                   Clear Date
@@ -101,7 +101,7 @@ export function AttendanceFilters({
             setStatusFilter(null);
             setDateFilter(null);
           }}
-          className="bg-white text-black border-gray-200 hover:bg-gray-100"
+          className="glass-input text-black border-white/20 hover:bg-white/20"
         >
           Clear Filters
         </Button>

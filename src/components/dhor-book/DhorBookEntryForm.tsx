@@ -594,7 +594,7 @@ export function DhorBookEntryForm(
           onValueChange={(v: string) => setActiveTab(v as "sabaq" | "sabaq-para" | "revision" | "naz-qaida")}
           className="w-full"
         >
-          <TabsList className="grid w-full grid-cols-4 bg-white border border-emerald-100 rounded-md p-1 text-gray-600">
+          <TabsList className="grid w-full grid-cols-4 glass-input border border-emerald-100/30 rounded-md p-1 text-gray-600">
             <TabsTrigger className="data-[state=active]:bg-emerald-50 data-[state=active]:text-emerald-700 hover:bg-emerald-50 text-gray-700" value="sabaq">Sabaq</TabsTrigger>
             <TabsTrigger className="data-[state=active]:bg-emerald-50 data-[state=active]:text-emerald-700 hover:bg-emerald-50 text-gray-700" value="sabaq-para">Sabaq Para</TabsTrigger>
             <TabsTrigger className="data-[state=active]:bg-emerald-50 data-[state=active]:text-emerald-700 hover:bg-emerald-50 text-gray-700" value="revision">Revision</TabsTrigger>

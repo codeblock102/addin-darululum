@@ -62,7 +62,7 @@ export function ReasonSelector(
             {t("pages.attendance.reason.label", "Reason for Lateness")}
           </FormLabel>
           <FormControl>
-            <ScrollArea className="h-40 w-full rounded-lg border-2 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm p-4">
+            <ScrollArea className="h-40 w-full rounded-lg border-2 border-white/20 glass-card shadow-sm p-4">
               <div className="space-y-3">
                 {predefinedReasons.map((reason) => (
                   <Button
@@ -75,7 +75,7 @@ export function ReasonSelector(
                     className={`w-full justify-start font-medium transition-all ${
                       selectedReason === reason || field.value === reason
                         ? "bg-blue-600 text-white shadow-md border-blue-600 hover:bg-blue-700"
-                        : "bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 border-gray-300 dark:border-gray-600 hover:bg-blue-50 dark:hover:bg-gray-600 hover:border-blue-300"
+                        : "glass-input text-gray-700 dark:text-gray-200 border-white/30 hover:bg-white/20 hover:border-blue-300"
                     }`}
                     onClick={() => {
                       field.onChange(reason);

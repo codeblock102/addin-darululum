@@ -50,7 +50,7 @@ export const TeacherDashboard = (
   // For admin users, render without DashboardLayout to avoid duplication
   if (isAdmin) {
     return (
-      <div className="min-h-screen bg-gray-50 p-4 sm:p-6 md:p-8">
+      <div className="min-h-screen p-4 sm:p-6 md:p-8">
         <div className="max-w-7xl mx-auto space-y-6">
           <DashboardHeader
             teacher={teacher}

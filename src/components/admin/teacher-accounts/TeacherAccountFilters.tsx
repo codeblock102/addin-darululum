@@ -33,7 +33,7 @@ export function TeacherAccountFilters({
           onValueChange={(value) =>
             onStatusFilterChange(value as "all" | "active" | "suspended")}
         >
-          <SelectTrigger className="w-full bg-white border-gray-300 focus:ring-2 focus:ring-[hsl(142.8,64.2%,24.1%)] focus:border-[hsl(142.8,64.2%,24.1%)]">
+          <SelectTrigger className="w-full glass-input border-white/30 focus:ring-2 focus:ring-[hsl(142.8,64.2%,24.1%)] focus:border-[hsl(142.8,64.2%,24.1%)]">
             <SelectValue placeholder="Filter by status" />
           </SelectTrigger>
           <SelectContent>
@@ -56,7 +56,7 @@ export function TeacherAccountFilters({
               value as "all" | "7days" | "30days" | "inactive",
             )}
         >
-          <SelectTrigger className="w-full bg-white border-gray-300 focus:ring-2 focus:ring-[hsl(142.8,64.2%,24.1%)] focus:border-[hsl(142.8,64.2%,24.1%)]">
+          <SelectTrigger className="w-full glass-input border-white/30 focus:ring-2 focus:ring-[hsl(142.8,64.2%,24.1%)] focus:border-[hsl(142.8,64.2%,24.1%)]">
             <SelectValue placeholder="Filter by activity" />
           </SelectTrigger>
           <SelectContent>

@@ -47,7 +47,7 @@ export function TeacherAccountsTab() {
       </div>
 
       {/* Search and Filter Controls */}
-      <Card className="border-0 shadow-sm bg-white">
+      <Card className="border-0 shadow-sm glass-card">
         <CardContent className="p-6">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Search */}
@@ -80,8 +80,8 @@ export function TeacherAccountsTab() {
       </Card>
 
       {/* Teacher Accounts Table */}
-      <Card className="border-0 shadow-sm bg-white overflow-hidden">
-        <CardHeader className="bg-gray-50 border-b border-gray-200 px-6 py-4">
+      <Card className="border-0 shadow-sm glass-card overflow-hidden">
+        <CardHeader className="bg-white/10 border-b border-white/10 px-6 py-4">
           <CardTitle className="text-lg font-semibold text-gray-900 flex items-center gap-2">
             <Shield className="h-5 w-5 text-gray-600" />
             Teacher Accounts

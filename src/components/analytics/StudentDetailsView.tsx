@@ -240,7 +240,7 @@ export function StudentDetailsView({ onBack }: StudentDetailsViewProps) {
                     return (
                       <TableRow
                         key={student.studentId}
-                        className="cursor-pointer hover:bg-gray-50"
+                        className="cursor-pointer hover:bg-white/20"
                         onClick={() => navigate(`/students/${student.studentId}`)}
                       >
                         <TableCell className="font-medium">{student.studentName}</TableCell>
@@ -294,7 +294,7 @@ export function StudentDetailsView({ onBack }: StudentDetailsViewProps) {
                   {stagnantStudents.map((student) => (
                     <TableRow
                       key={student.studentId}
-                      className="cursor-pointer hover:bg-gray-50"
+                      className="cursor-pointer hover:bg-white/20"
                       onClick={() => navigate(`/students/${student.studentId}`)}
                     >
                       <TableCell className="font-medium">{student.studentName}</TableCell>
@@ -346,7 +346,7 @@ export function StudentDetailsView({ onBack }: StudentDetailsViewProps) {
                     return (
                       <TableRow
                         key={student.studentId}
-                        className="cursor-pointer hover:bg-gray-50"
+                        className="cursor-pointer hover:bg-white/20"
                         onClick={() => navigate(`/students/${student.studentId}`)}
                       >
                         <TableCell className="font-medium">{student.studentName}</TableCell>

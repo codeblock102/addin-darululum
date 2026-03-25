@@ -10,7 +10,7 @@ export function AttendanceEmptyState(
   { hasFilters = false, resetFilters }: AttendanceEmptyStateProps,
 ) {
   return (
-    <div className="flex flex-col items-center justify-center p-8 bg-gray-50 rounded-lg border border-gray-200">
+    <div className="flex flex-col items-center justify-center p-8 glass-card rounded-lg border border-white/20">
       <div className="h-16 w-16 rounded-full bg-purple-100 flex items-center justify-center mb-4">
         <CalendarCheck className="h-8 w-8 text-purple-500" />
       </div>

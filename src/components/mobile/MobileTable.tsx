@@ -80,7 +80,7 @@ export const MobileTable = <T extends Record<string, unknown>>(
 
   if (data.length === 0) {
     return (
-      <div className="text-center p-6 bg-gray-50 rounded-lg dark:bg-gray-800/30">
+      <div className="text-center p-6 bg-white/20 rounded-lg backdrop-blur-sm">
         <p className="text-muted-foreground">No data available</p>
       </div>
     );

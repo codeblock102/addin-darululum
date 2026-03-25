@@ -473,7 +473,7 @@ export const StudentDialog = (
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto bg-white text-gray-900 border border-gray-200 shadow-2xl dark:bg-slate-900 dark:text-white dark:border-slate-700">
+      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto glass-card text-gray-900 border border-white/20 shadow-2xl">
         <DialogHeader>
           <DialogTitle>
             {selectedStudent ? "Edit Student" : "Add New Student"}
@@ -663,7 +663,7 @@ export const StudentDialog = (
 
               {/* Conditional Status Fields */}
               {(formData.status === "vacation" || formData.status === "hospitalized" || formData.status === "suspended") && (
-                <div className="space-y-4 border p-4 rounded-md bg-gray-50">
+                <div className="space-y-4 border border-white/20 p-4 rounded-md bg-white/20">
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="status_start_date">

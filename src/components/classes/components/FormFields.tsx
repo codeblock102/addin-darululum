@@ -24,7 +24,7 @@ export const ClassFormFields = ({ teachers }: ClassFormFieldsProps) => {
     <>
       <BasicInfoFields teachers={teachers} />
       <TimeFields />
-      <Accordion type="single" collapsible defaultValue="per-day" className="rounded-md border border-gray-200 bg-white/70">
+      <Accordion type="single" collapsible defaultValue="per-day" className="rounded-md border border-white/20 bg-white/20 backdrop-blur-sm">
         <AccordionItem value="per-day" className="border-none">
           <AccordionTrigger className="py-2 px-2 text-sm">Per-day schedule (optional)</AccordionTrigger>
           <AccordionContent className="pt-0 pb-2 px-2">

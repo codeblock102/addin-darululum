@@ -44,7 +44,7 @@ export function MetricCard({
   };
 
   return (
-    <Card className={cn("border glass-stat", status ? statusColors[status] : "border-gray-200 bg-white", className)}>
+    <Card className={cn("border glass-stat", status ? statusColors[status] : "border-white/20", className)}>
       <CardContent className="pt-6">
         <div className="flex items-center justify-between">
           <div className="flex-1">

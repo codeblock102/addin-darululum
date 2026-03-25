@@ -14,7 +14,7 @@ export function TeacherAccountSearch(
         value={searchQuery}
         onChange={onSearchChange}
         placeholder="Search by name, email, or subject..."
-        className="w-full bg-white border-gray-300 focus:ring-2 focus:ring-[hsl(142.8,64.2%,24.1%)] focus:border-[hsl(142.8,64.2%,24.1%)] transition-all duration-200"
+        className="w-full glass-input border-white/30 focus:ring-2 focus:ring-[hsl(142.8,64.2%,24.1%)] focus:border-[hsl(142.8,64.2%,24.1%)] transition-all duration-200"
       />
     </div>
   );

@@ -62,7 +62,7 @@ export function TimeSelector(
             {t("pages.attendance.time.label", "Attendance Time")}
           </FormLabel>
           <FormControl>
-            <ScrollArea className="w-full whitespace-nowrap rounded-lg border-2 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm">
+            <ScrollArea className="w-full whitespace-nowrap rounded-lg border-2 border-white/20 glass-card shadow-sm">
               <div className="flex w-max space-x-3 p-4">
                 {timeSlots.map((slot) => (
                   <Button
@@ -76,7 +76,7 @@ export function TimeSelector(
                     className={`flex-shrink-0 font-medium transition-all ${
                       selectedTime === slot.value || field.value === slot.value
                         ? "bg-blue-600 text-white shadow-md border-blue-600 hover:bg-blue-700"
-                        : "bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 border-gray-300 dark:border-gray-600 hover:bg-blue-50 dark:hover:bg-gray-600 hover:border-blue-300"
+                        : "glass-input text-gray-700 dark:text-gray-200 border-white/30 hover:bg-white/20 hover:border-blue-300"
                     }`}
                     onClick={() => {
                       field.onChange(slot.value);

@@ -172,7 +172,7 @@ export function AttendanceCutoffSettings() {
                 id="timezone"
                 name="timezone"
                 defaultValue={settings?.timezone ?? "America/New_York"}
-                className="w-full h-10 rounded-md border px-3 text-sm bg-white text-black"
+                className="w-full h-10 rounded-md border px-3 text-sm glass-input text-black"
               >
                 {tzOptions.map((tz) => (
                   <option key={tz} value={tz}>{tz}</option>

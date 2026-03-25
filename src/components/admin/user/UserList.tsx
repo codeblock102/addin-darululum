@@ -59,7 +59,7 @@ export const UserList = (
         </Dialog>
       </div>
 
-      <div className="bg-white rounded-lg border border-gray-200 shadow-sm divide-y divide-gray-200">
+      <div className="glass-card rounded-lg border border-white/20 shadow-sm divide-y divide-white/10">
         {filteredUsers.length === 0
           ? (
             <div className="p-8 text-center text-gray-500">
@@ -70,7 +70,7 @@ export const UserList = (
             filteredUsers.map((user) => (
               <div
                 key={user.id}
-                className="p-4 hover:bg-gray-50 flex justify-between items-center"
+                className="p-4 hover:bg-white/20 flex justify-between items-center"
               >
                 <div>
                   <h3 className="font-medium">

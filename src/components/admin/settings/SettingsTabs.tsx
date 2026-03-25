@@ -29,7 +29,7 @@ export function SettingsTabs() {
   ];
 
   return (
-    <TabsList className="flex flex-col h-auto w-full items-start justify-start bg-white p-2 rounded-lg shadow-sm border border-gray-200/80">
+    <TabsList className="flex flex-col h-auto w-full items-start justify-start glass-card p-2 rounded-lg shadow-sm border border-white/20">
       {tabs.map((tab) => (
         <TabsTrigger
           key={tab.value}

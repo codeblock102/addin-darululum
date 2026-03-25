@@ -268,7 +268,7 @@ export const TeacherList = ({
               </TableRow>
             )
             : filteredTeachers?.map((teacher) => (
-              <TableRow key={teacher.id} className="hover:bg-gray-50">
+              <TableRow key={teacher.id} className="hover:bg-white/20">
                 <TableCell className="font-medium">{teacher.name}</TableCell>
                 <TableCell>
                   <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200">
@@ -300,7 +300,7 @@ export const TeacherList = ({
                     size="sm"
                     onClick={() => onEdit(teacher)}
                     title="Edit teacher"
-                    className="border-gray-300 hover:bg-gray-100"
+                    className="border-white/30 hover:bg-white/20"
                   >
                     <Pencil className="h-4 w-4" />
                   </Button>

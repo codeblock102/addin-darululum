@@ -17,7 +17,7 @@ export const ProgressStats = ({
 }: ProgressStatsProps) => {
   const { isAdmin } = useUserRole();
 
-  const cardClass = isAdmin ? "glass-effect" : "bg-white border shadow-sm";
+  const cardClass = "glass-card border border-white/20 shadow-sm";
   const titleClass = isAdmin
     ? "text-amber-400 font-medium"
     : "text-gray-700 font-semibold";

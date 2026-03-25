@@ -862,7 +862,7 @@ export const TeacherDhorBook = ({ teacherId }: TeacherDhorBookProps) => {
                                       const count = progressData.filter(entry => entry.memorization_quality === quality).length;
                                       const percentage = progressData.length > 0 ? (count / progressData.length * 100).toFixed(0) : 0;
                                                                               return (
-                                          <div key={quality} className="text-center p-2 bg-gray-50 rounded">
+                                          <div key={quality} className="text-center p-2 bg-white/20 rounded">
                                             <div className="font-medium">{count}</div>
                                             <div className="text-xs text-gray-600 capitalize">{quality === 'needsWork' ? 'Needs Work' : quality}</div>
                                             <div className="text-xs text-gray-500">{percentage}%</div>

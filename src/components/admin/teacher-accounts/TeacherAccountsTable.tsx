@@ -53,8 +53,8 @@ export function TeacherAccountsTable({ teachers }: TeacherAccountsTableProps) {
     <>
       <div className="overflow-hidden">
         <Table>
-          <TableHeader className="bg-gray-50">
-            <TableRow className="border-gray-200 hover:bg-gray-50">
+          <TableHeader className="bg-white/10">
+            <TableRow className="border-white/10 hover:bg-white/10">
               <TableHead className="w-[200px] font-semibold text-gray-700">Full Name</TableHead>
               <TableHead className="w-[250px] font-semibold text-gray-700">Email</TableHead>
               <TableHead className="font-semibold text-gray-700">Subject</TableHead>
@@ -81,7 +81,7 @@ export function TeacherAccountsTable({ teachers }: TeacherAccountsTableProps) {
               )
               : (
                 teachers.map((teacher) => (
-                  <TableRow key={teacher.id} className="hover:bg-gray-50 border-gray-100 transition-colors duration-150">
+                  <TableRow key={teacher.id} className="hover:bg-white/20 border-white/10 transition-colors duration-150">
                     <TableCell className="font-medium text-gray-900">
                       {teacher.name}
                     </TableCell>

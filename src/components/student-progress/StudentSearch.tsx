@@ -109,7 +109,7 @@ export const StudentSearch = ({
   const inputBorder = accent === "amber" ? "border-amber-200 focus:ring-amber-500 focus:border-amber-500" : accent === "emerald" ? "border-emerald-200 focus:ring-emerald-500 focus:border-emerald-500" : "border-gray-300 focus:ring-primary focus:border-primary";
 
   return (
-    <Card className={`${!showHeader ? "border-0 shadow-none" : ""} bg-white text-gray-900 border ${cardBorder} shadow-md`}>
+    <Card className={`${!showHeader ? "border-0 shadow-none" : ""} glass-card text-gray-900 border ${cardBorder} shadow-md`}>
       {showHeader && (
         <CardHeader>
           <CardTitle>Student Search</CardTitle>
@@ -126,13 +126,13 @@ export const StudentSearch = ({
             <Input
               type="search"
               placeholder="Search students by name..."
-              className={`pl-8 bg-white text-gray-900 placeholder:text-gray-400 ${inputBorder}`}
+              className={`pl-8 glass-input text-gray-900 placeholder:text-gray-400 ${inputBorder}`}
               value={searchQuery}
               onChange={handleSearchChange}
             />
           </div>
 
-          <div className={`border ${listBorder} rounded-md overflow-hidden bg-white`}>
+          <div className={`border ${listBorder} rounded-md overflow-hidden glass-card`}>
             {isLoading
               ? (
                 <div className="flex justify-center items-center p-4 text-gray-700">

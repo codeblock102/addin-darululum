@@ -38,14 +38,14 @@ export const ClassTable = ({
       {/* Card list for mobile and tablets */}
       <div className="lg:hidden space-y-3 p-4">
         {classes.length === 0 ? (
-          <Card className="border border-gray-200 bg-white">
+          <Card className="border border-white/20 glass-card">
             <CardContent className="p-4 text-center text-gray-600">
               No classes found.
             </CardContent>
           </Card>
         ) : (
           classes.map((classItem) => (
-            <Card key={classItem.id} className="border border-gray-200 bg-white">
+            <Card key={classItem.id} className="border border-white/20 glass-card">
               <CardContent className="p-4">
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
@@ -57,7 +57,7 @@ export const ClassTable = ({
                         </Badge>
                       )}
                       {classItem.section && (
-                        <span className="px-2 py-0.5 rounded-md border border-gray-200 text-gray-700 bg-gray-50 text-xs">
+                        <span className="px-2 py-0.5 rounded-md border border-white/20 text-gray-700 bg-white/20 text-xs">
                           {classItem.section}
                         </span>
                       )}

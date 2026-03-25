@@ -69,7 +69,7 @@ export function RevisionsList(
               </div>
             </div>
             {revision.teacher_notes && (
-              <div className="mt-3 bg-white p-3 rounded border text-sm">
+              <div className="mt-3 glass-card p-3 rounded border border-white/20 text-sm">
                 <p className="text-xs font-medium mb-1">Teacher Notes:</p>
                 <p className="text-muted-foreground">
                   {revision.teacher_notes}

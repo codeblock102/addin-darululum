@@ -109,13 +109,13 @@ export const DashboardHeader = (
             {/* Mobile contact info */}
             <div className="sm:hidden w-full space-y-2 mt-4">
               {teacher.email && (
-                <div className="flex items-center gap-2 text-sm text-black bg-gray-50 p-3 rounded-lg border border-gray-200">
+                <div className="flex items-center gap-2 text-sm text-black bg-white/20 p-3 rounded-lg border border-white/20">
                   <Mail className="h-4 w-4 text-gray-500 flex-shrink-0" />
                   <span className="truncate">{teacher.email}</span>
                 </div>
               )}
               {teacher.phone && (
-                <div className="flex items-center gap-2 text-sm text-black bg-gray-50 p-3 rounded-lg border border-gray-200">
+                <div className="flex items-center gap-2 text-sm text-black bg-white/20 p-3 rounded-lg border border-white/20">
                   <Phone className="h-4 w-4 text-gray-500 flex-shrink-0" />
                   <span>{teacher.phone}</span>
                 </div>

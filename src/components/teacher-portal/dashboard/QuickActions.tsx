@@ -89,7 +89,7 @@ export const QuickActions = ({ teacherId: _teacherId, isAdmin = false }: QuickAc
             <Button
               key={index}
               variant="outline"
-              className="h-24 flex flex-col items-center justify-center gap-2 border-2 border-gray-200 hover:border-[hsl(142.8,64.2%,24.1%)] hover:shadow-sm transition-all duration-200 bg-white hover:bg-gray-50 group"
+              className="h-24 flex flex-col items-center justify-center gap-2 border-2 border-white/20 hover:border-[hsl(142.8,64.2%,24.1%)] hover:shadow-sm transition-all duration-200 bg-white/20 hover:bg-white/30 group"
               onClick={action.action}
             >
               <div className={`p-2 rounded-lg ${action.color} text-white group-hover:scale-105 transition-transform duration-200`}>

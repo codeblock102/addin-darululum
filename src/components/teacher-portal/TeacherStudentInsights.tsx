@@ -85,7 +85,7 @@ function PaceBarChart({ students }: { students: TeacherStudentMetric[] }) {
           content={({ active, payload }) => {
             if (!active || !payload?.length) return null;
             return (
-              <div className="rounded-lg border bg-white p-2 shadow-md text-xs">
+              <div className="rounded-lg border glass-card p-2 shadow-md text-xs">
                 <p className="font-semibold text-gray-800">{payload[0].payload.name}</p>
                 <p className="text-emerald-700">{payload[0].value} pages in 30 days</p>
               </div>

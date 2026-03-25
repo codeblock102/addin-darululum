@@ -222,7 +222,7 @@ export const ScheduleCalendar = ({ classes, teacherId }: ScheduleCalendarProps) 
       };
 
   return (
-    <div className="bg-white p-4 rounded-lg shadow-md h-full relative">
+    <div className="glass-card p-4 rounded-lg shadow-md h-full relative">
       {/* Google Calendar sync banner */}
       <div className="mb-3 flex items-center justify-between gap-2 rounded-lg border border-blue-100 bg-blue-50 px-3 py-2">
         <div className="flex items-center gap-2 text-xs text-blue-700">

@@ -168,7 +168,7 @@ export function AttendanceTable() {
                 <Button
                   variant="outline"
                   className={cn(
-                    "w-full sm:w-[180px] justify-start text-left font-normal bg-white text-black border-gray-300 hover:bg-gray-50",
+                    "w-full sm:w-[180px] justify-start text-left font-normal glass-input text-black border-white/30 hover:bg-white/20",
                     !dateFilter && "text-muted-foreground"
                   )}
                 >

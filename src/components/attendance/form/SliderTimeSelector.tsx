@@ -45,7 +45,7 @@ export function SliderTimeSelector({ form }: SliderTimeSelectorProps) {
         <FormItem>
           <FormLabel className="text-gray-900 font-medium">{t("pages.attendance.time.label", "Attendance / Departure Time")}</FormLabel>
           <FormControl>
-            <div className="space-y-5 p-4 sm:p-5 bg-white border border-gray-200 rounded-xl shadow-sm">
+            <div className="space-y-5 p-4 sm:p-5 glass-card border border-white/20 rounded-xl shadow-sm">
               {/* Current Time Display */}
               <div className="text-center">
                 <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-700">

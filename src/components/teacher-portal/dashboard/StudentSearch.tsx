@@ -146,12 +146,12 @@ export const StudentSearch = (
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             disabled={isLoading}
-            className="pl-10 h-11 bg-white border-gray-300 focus:ring-2 focus:ring-[hsl(142.8,64.2%,24.1%)] focus:border-[hsl(142.8,64.2%,24.1%)] transition-all duration-200"
+            className="pl-10 h-11 glass-input border-white/30 focus:ring-2 focus:ring-[hsl(142.8,64.2%,24.1%)] focus:border-[hsl(142.8,64.2%,24.1%)] transition-all duration-200"
           />
         </div>
 
         {isLoading && (
-          <div className="flex items-center gap-2 text-sm text-black p-3 bg-gray-50 rounded-lg border border-gray-200">
+          <div className="flex items-center gap-2 text-sm text-black p-3 bg-white/20 rounded-lg border border-white/20">
             <Loader2 className="h-4 w-4 animate-spin text-[hsl(142.8,64.2%,24.1%)]" />
             <span>{t("pages.teacherPortal.studentSearch.loading", "Loading students...")}</span>
           </div>
@@ -165,7 +165,7 @@ export const StudentSearch = (
                 {filteredStudents.map((student) => (
                   <div
                     key={student.id}
-                    className="flex items-center gap-3 p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 hover:border-[hsl(142.8,64.2%,24.1%)]/30 transition-all duration-200 group"
+                    className="flex items-center gap-3 p-3 border border-white/20 rounded-lg cursor-pointer hover:bg-white/20 hover:border-[hsl(142.8,64.2%,24.1%)]/30 transition-all duration-200 group"
                     onClick={() => handleStudentClick(student.id)}
                   >
                     <div className="p-2 bg-[hsl(142.8,64.2%,24.1%)]/10 rounded-lg group-hover:bg-[hsl(142.8,64.2%,24.1%)]/20 transition-colors duration-200">
@@ -178,7 +178,7 @@ export const StudentSearch = (
                 ))}
               </div>
             ) : (
-              <div className="text-center p-6 bg-gray-50 rounded-lg border border-gray-200">
+              <div className="text-center p-6 bg-white/20 rounded-lg border border-white/20">
                 <Users className="h-8 w-8 text-gray-400 mx-auto mb-2" />
                 <div className="text-sm text-black">{t("pages.teacherPortal.studentSearch.nonePrefix", "No students found for")} "<span className="font-medium">{searchQuery}</span>"</div>
                 <div className="text-xs text-black mt-1">{t("pages.teacherPortal.studentSearch.noneHint", "Try a different search term")}</div>
@@ -188,7 +188,7 @@ export const StudentSearch = (
         )}
 
         {!searchQuery && !isLoading && (
-          <div className="text-center p-6 bg-gray-50 rounded-lg border border-gray-200">
+          <div className="text-center p-6 bg-white/20 rounded-lg border border-white/20">
             <Search className="h-8 w-8 text-gray-400 mx-auto mb-2" />
             <div className="text-sm text-black">{isAdmin ? t("pages.teacherPortal.studentSearch.emptyAdmin", "Search for students to manage") : t("pages.teacherPortal.studentSearch.empty", "Search for your students")}</div>
             <div className="text-xs text-black mt-1">{t("pages.teacherPortal.studentSearch.emptyHint", "Start typing a student's name above")}</div>

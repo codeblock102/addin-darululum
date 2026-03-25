@@ -70,7 +70,7 @@ export const StudentProgressList = ({ progress }: StudentProgressListProps) => {
       case "horrible":
         return "bg-red-50 text-red-700 border-red-200";
       default:
-        return "bg-gray-50 text-gray-600 border-gray-200";
+        return "bg-white/20 text-gray-600 border-white/20";
     }
   };
 
@@ -260,7 +260,7 @@ export const StudentProgressList = ({ progress }: StudentProgressListProps) => {
 
         <Table>
           <TableHeader>
-            <TableRow className="bg-gray-50/50">
+            <TableRow className="bg-white/10">
               <TableHead className="font-semibold text-gray-700">
                 <div className="flex items-center space-x-2">
                   <Calendar className="h-4 w-4" />
@@ -292,7 +292,7 @@ export const StudentProgressList = ({ progress }: StudentProgressListProps) => {
               <TableRow
                 key={entry.id}
                 className={`hover:bg-blue-50/50 transition-colors ${
-                  index % 2 === 0 ? "bg-white" : "bg-gray-50/30"
+                  index % 2 === 0 ? "bg-white/10" : "bg-white/5"
                 }`}
               >
                 <TableCell className="font-medium">

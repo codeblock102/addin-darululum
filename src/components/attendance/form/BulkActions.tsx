@@ -21,12 +21,12 @@ export const BulkActions = ({ form, selectedStudents, onClear, isSubmitting, onS
   };
   
   return (
-    <div className="p-4 sm:p-5 border border-gray-200 rounded-xl bg-white space-y-4 shadow-sm">
+    <div className="p-4 sm:p-5 border border-white/20 rounded-xl glass-card space-y-4 shadow-sm">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
         <h3 className="font-medium text-gray-900">
           {t("pages.attendance.bulk.selectedCount", "{count} students selected").replace("{count}", String(selectedStudents.size))}
         </h3>
-        <Button variant="outline" onClick={onClear} disabled={isSubmitting} className="border-gray-300 hover:bg-gray-100">
+        <Button variant="outline" onClick={onClear} disabled={isSubmitting} className="border-white/30 hover:bg-white/20">
           {t("pages.attendance.bulk.clearSelection", "Clear selection")}
         </Button>
       </div>
