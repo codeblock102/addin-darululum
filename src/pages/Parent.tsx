@@ -104,7 +104,7 @@ const Parent = () => {
           <>
             {/* Stat cards */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-              <Card>
+              <Card className="glass-stat">
                 <CardContent className="pt-5 pb-4">
                   <div className="flex items-center gap-2 text-muted-foreground mb-1">
                     <CalendarCheck className="h-4 w-4" />
@@ -119,7 +119,7 @@ const Parent = () => {
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card className="glass-stat">
                 <CardContent className="pt-5 pb-4">
                   <div className="flex items-center gap-2 text-muted-foreground mb-1">
                     <BookOpen className="h-4 w-4" />
@@ -138,7 +138,7 @@ const Parent = () => {
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card className="glass-stat">
                 <CardContent className="pt-5 pb-4">
                   <div className="flex items-center gap-2 text-muted-foreground mb-1">
                     <ClipboardList className="h-4 w-4" />
@@ -151,7 +151,7 @@ const Parent = () => {
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card className="glass-stat">
                 <CardContent className="pt-5 pb-4">
                   <div className="flex items-center gap-2 text-muted-foreground mb-1">
                     <TrendingUp className="h-4 w-4" />
@@ -164,7 +164,7 @@ const Parent = () => {
             </div>
 
             {/* Recent attendance */}
-            <Card>
+            <Card className="glass-card">
               <CardHeader>
                 <CardTitle className="text-base">Recent Attendance</CardTitle>
               </CardHeader>
@@ -187,7 +187,7 @@ const Parent = () => {
             </Card>
 
             {/* Recent Qur'an progress */}
-            <Card>
+            <Card className="glass-card">
               <CardHeader>
                 <CardTitle className="text-base">Recent Qur'an Progress</CardTitle>
               </CardHeader>
@@ -197,7 +197,7 @@ const Parent = () => {
                 ) : (
                   <ul className="space-y-3">
                     {(progressEntries || []).slice(0, 5).map((p: Tables<"progress">) => (
-                      <li key={p.id} className="p-3 rounded-lg border bg-muted/20 space-y-1">
+                      <li key={p.id} className="p-3 bg-white/30 backdrop-blur-sm rounded-lg space-y-1">
                         <div className="flex items-center justify-between gap-2">
                           <span className="font-medium text-sm">
                             Surah {p.current_surah ?? "—"}, Juz {p.current_juz ?? "—"}
@@ -219,7 +219,7 @@ const Parent = () => {
             </Card>
 
             {/* Pending assignments */}
-            <Card>
+            <Card className="glass-card">
               <CardHeader>
                 <CardTitle className="text-base">Current Work</CardTitle>
               </CardHeader>

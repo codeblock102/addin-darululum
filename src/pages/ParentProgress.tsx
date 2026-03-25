@@ -27,7 +27,7 @@ const ParentProgress = () => {
       </div>
 
       {selectedStudentId && (
-        <Card>
+        <Card className="glass-card">
           <CardHeader>
             <CardTitle className="text-base">Dhor Book</CardTitle>
           </CardHeader>

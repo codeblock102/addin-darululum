@@ -137,7 +137,7 @@ export const FloatingDailyEmailButton = () => {
       </div>
 
       <Dialog open={open} onOpenChange={(v) => (v ? handleOpen() : handleClose())}>
-        <DialogContent className="sm:max-w-[520px] bg-white text-gray-900 border border-sky-100 shadow-2xl">
+        <DialogContent className="sm:max-w-[520px] glass-card text-gray-900 shadow-2xl">
           <DialogHeader>
             <DialogTitle className="text-sky-700">Daily Progress Emails</DialogTitle>
             <DialogDescription className="text-gray-600">

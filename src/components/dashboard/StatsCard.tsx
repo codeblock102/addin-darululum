@@ -20,7 +20,7 @@ export const StatsCard = ({ title, value, icon, trend }: StatsCardProps) => {
 
   return (
     <Card
-      className={`stats-card ${isAdmin ? "glass-effect" : ""} overflow-hidden`}
+      className={`stats-card overflow-hidden ${isAdmin ? "glass-card-dark border-white/10" : "glass-card"}`}
     >
       <div className="p-6">
         <div className="flex items-center justify-between">
@@ -34,7 +34,7 @@ export const StatsCard = ({ title, value, icon, trend }: StatsCardProps) => {
           {icon && (
             <div
               className={`${
-                isAdmin ? "bg-amber-500/10 p-1.5 rounded-full" : ""
+                isAdmin ? "bg-amber-500/20 p-1.5 rounded-full" : ""
               }`}
             >
               <div

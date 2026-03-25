@@ -923,7 +923,7 @@ export default function Activity() {
   }, [items]);
 
   const Section = ({ title, type }: { title: string; type: ActivityItem["type"] }) => (
-    <Card className="border border-gray-200 bg-white">
+    <Card className="glass-card-dark">
       <CardHeader className="border-b">
         <CardTitle className="text-base flex items-center gap-2">
           {iconFor(type)}
@@ -982,11 +982,11 @@ export default function Activity() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+          <h1 className="text-2xl font-bold text-white flex items-center gap-2">
             <ActivityIcon className="h-6 w-6 text-gray-700" />
             Admin Dashboard
           </h1>
-          <p className="text-sm text-gray-600 mt-1">Track teacher actions and student progress</p>
+          <p className="text-sm text-gray-300 mt-1">Track teacher actions and student progress</p>
         </div>
         <div className="flex items-center gap-2">
           <Button
@@ -1003,7 +1003,7 @@ export default function Activity() {
       </div>
 
       {/* Filters */}
-      <Card className="border border-gray-200 bg-white">
+      <Card className="glass-card-dark">
         <CardHeader className="border-b">
           <CardTitle className="text-base flex items-center gap-2">
             <Filter className="h-4 w-4" />
@@ -1177,59 +1177,59 @@ export default function Activity() {
       {/* Summary Cards */}
       {summaryMetrics && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <Card className="border border-gray-200 bg-white">
+          <Card className="glass-card-dark">
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600">Teacher Actions</p>
-                  <p className="text-2xl font-bold text-gray-900 mt-1">{summaryMetrics.totalTeacherActions}</p>
+                  <p className="text-sm font-medium text-gray-300">Teacher Actions</p>
+                  <p className="text-2xl font-bold text-white mt-1">{summaryMetrics.totalTeacherActions}</p>
                 </div>
                 <Users className="h-8 w-8 text-blue-600" />
               </div>
             </CardContent>
           </Card>
 
-          <Card className="border border-gray-200 bg-white">
+          <Card className="glass-card-dark">
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600">Progress Entries</p>
-                  <p className="text-2xl font-bold text-gray-900 mt-1">{summaryMetrics.totalProgressEntries}</p>
+                  <p className="text-sm font-medium text-gray-300">Progress Entries</p>
+                  <p className="text-2xl font-bold text-white mt-1">{summaryMetrics.totalProgressEntries}</p>
                 </div>
                 <BookOpen className="h-8 w-8 text-green-600" />
               </div>
             </CardContent>
           </Card>
 
-          <Card className="border border-gray-200 bg-white">
+          <Card className="glass-card-dark">
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600">Attendance Rate</p>
-                  <p className="text-2xl font-bold text-gray-900 mt-1">{summaryMetrics.averageAttendanceRate}%</p>
+                  <p className="text-sm font-medium text-gray-300">Attendance Rate</p>
+                  <p className="text-2xl font-bold text-white mt-1">{summaryMetrics.averageAttendanceRate}%</p>
                 </div>
                 <CheckSquare className="h-8 w-8 text-emerald-600" />
               </div>
             </CardContent>
           </Card>
 
-          <Card className="border border-gray-200 bg-white">
+          <Card className="glass-card-dark">
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600">Assignment Completion</p>
-                  <p className="text-2xl font-bold text-gray-900 mt-1">{summaryMetrics.assignmentCompletionRate}%</p>
+                  <p className="text-sm font-medium text-gray-300">Assignment Completion</p>
+                  <p className="text-2xl font-bold text-white mt-1">{summaryMetrics.assignmentCompletionRate}%</p>
                 </div>
                 <TrendingUp className="h-8 w-8 text-purple-600" />
               </div>
             </CardContent>
           </Card>
 
-          <Card className="border border-gray-200 bg-white">
+          <Card className="glass-card-dark">
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600">At-Risk Students</p>
+                  <p className="text-sm font-medium text-gray-300">At-Risk Students</p>
                   <p className="text-2xl font-bold text-red-600 mt-1">{summaryMetrics.atRiskStudentsCount}</p>
                 </div>
                 <AlertTriangle className="h-8 w-8 text-red-600" />
@@ -1237,7 +1237,7 @@ export default function Activity() {
             </CardContent>
           </Card>
 
-          <Card className="border border-gray-200 bg-white">
+          <Card className="glass-card-dark">
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
@@ -1249,7 +1249,7 @@ export default function Activity() {
             </CardContent>
           </Card>
 
-          <Card className="border border-gray-200 bg-white">
+          <Card className="glass-card-dark">
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
@@ -1261,7 +1261,7 @@ export default function Activity() {
             </CardContent>
           </Card>
 
-          <Card className="border border-gray-200 bg-white">
+          <Card className="glass-card-dark">
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
@@ -1279,7 +1279,7 @@ export default function Activity() {
       {chartData && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Daily Progress & Attendance */}
-          <Card className="border border-gray-200 bg-white">
+          <Card className="glass-card-dark">
             <CardHeader className="border-b">
               <CardTitle className="text-base">Progress & Attendance Over Time</CardTitle>
             </CardHeader>
@@ -1305,7 +1305,7 @@ export default function Activity() {
           </Card>
 
           {/* Teacher Activity */}
-          <Card className="border border-gray-200 bg-white">
+          <Card className="glass-card-dark">
             <CardHeader className="border-b">
               <CardTitle className="text-base">Teacher Activity</CardTitle>
             </CardHeader>
@@ -1330,7 +1330,7 @@ export default function Activity() {
           </Card>
 
           {/* Quality Distribution */}
-          <Card className="border border-gray-200 bg-white">
+          <Card className="glass-card-dark">
             <CardHeader className="border-b">
               <CardTitle className="text-base">Quality Distribution</CardTitle>
             </CardHeader>
@@ -1353,7 +1353,7 @@ export default function Activity() {
           </Card>
 
           {/* Attendance Mix */}
-          <Card className="border border-gray-200 bg-white">
+          <Card className="glass-card-dark">
             <CardHeader className="border-b">
               <CardTitle className="text-base">Attendance Status Mix</CardTitle>
             </CardHeader>

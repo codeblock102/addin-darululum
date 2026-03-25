@@ -224,7 +224,7 @@ const Auth = () => {
       
       <div className="relative z-10 w-full max-w-md">
         {/* Premium Card */}
-        <Card className="backdrop-blur-xl bg-white/95 shadow-2xl border-0 rounded-3xl overflow-hidden">
+        <Card className="glass-float shadow-2xl border-0 rounded-3xl overflow-hidden">
           {/* Header with gradient */}
           <div className="bg-gradient-to-r from-[hsl(142.8,64.2%,24.1%)] to-[hsl(142.8,64.2%,28%)] p-8 text-center relative">
             <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-emerald-400 via-teal-400 to-cyan-400"></div>
@@ -268,7 +268,7 @@ const Auth = () => {
             
             <form onSubmit={handleSignIn} className="space-y-6">
               <div className="space-y-3">
-                <Label htmlFor="email" className="text-gray-700 font-semibold text-sm">
+                <Label htmlFor="email" className="text-gray-100 font-semibold text-sm">
                   Email Address
                 </Label>
                 <div className="relative group">
@@ -289,7 +289,7 @@ const Auth = () => {
               </div>
               
               <div className="space-y-3">
-                <Label htmlFor="password" className="text-gray-700 font-semibold text-sm">
+                <Label htmlFor="password" className="text-gray-100 font-semibold text-sm">
                   Password
                 </Label>
                 <div className="relative group">
@@ -352,9 +352,9 @@ const Auth = () => {
           </CardContent>
 
           {/* Footer */}
-          <CardFooter className="p-6 bg-gray-50 border-t border-gray-100">
+          <CardFooter className="p-6 bg-white/5 border-t border-white/10">
             <div className="w-full text-center space-y-3">
-              <div className="flex items-center justify-center space-x-2 text-gray-500">
+              <div className="flex items-center justify-center space-x-2 text-gray-300">
                 <div className="w-2 h-2 bg-emerald-400 rounded-full"></div>
                 <span className="text-xs font-medium">Secure Connection</span>
                 <div className="w-2 h-2 bg-emerald-400 rounded-full"></div>

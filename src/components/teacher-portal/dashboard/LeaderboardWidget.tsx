@@ -51,7 +51,7 @@ export const LeaderboardWidget = ({ teacherId }: LeaderboardWidgetProps) => {
   };
 
   return (
-    <Card>
+    <Card className="glass-card">
       <CardHeader className="pb-2">
         <CardTitle className="flex items-center text-lg font-medium">
           <Trophy className="h-5 w-5 text-amber-500 mr-2" />

@@ -31,7 +31,7 @@ export const TeacherMessagesEnhanced = ({
 
   return (
     <div className="space-y-4">
-      <Card>
+      <Card className="glass-card">
         <CardHeader>
           <div className="flex justify-between items-center">
             <div>

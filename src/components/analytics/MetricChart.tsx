@@ -113,7 +113,7 @@ export function MetricChart({
   };
 
   return (
-    <Card className={className}>
+    <Card className={`glass-card ${className || ""}`}>
       <CardHeader className="border-b">
         <CardTitle className="text-base">{title}</CardTitle>
       </CardHeader>

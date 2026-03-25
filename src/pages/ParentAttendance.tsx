@@ -68,7 +68,7 @@ const ParentAttendance = () => {
           <>
             {/* Summary cards */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-              <Card>
+              <Card className="glass-stat">
                 <CardContent className="pt-5 pb-4 text-center">
                   <div className="text-3xl font-bold">
                     {attendanceRate !== null ? `${attendanceRate}%` : "—"}
@@ -76,19 +76,19 @@ const ParentAttendance = () => {
                   <div className="text-xs text-muted-foreground mt-1">Attendance Rate</div>
                 </CardContent>
               </Card>
-              <Card>
+              <Card className="glass-stat">
                 <CardContent className="pt-5 pb-4 text-center">
                   <div className="text-3xl font-bold text-green-700">{presentCount}</div>
                   <div className="text-xs text-muted-foreground mt-1">Present</div>
                 </CardContent>
               </Card>
-              <Card>
+              <Card className="glass-stat">
                 <CardContent className="pt-5 pb-4 text-center">
                   <div className="text-3xl font-bold text-red-600">{absentCount}</div>
                   <div className="text-xs text-muted-foreground mt-1">Absent</div>
                 </CardContent>
               </Card>
-              <Card>
+              <Card className="glass-stat">
                 <CardContent className="pt-5 pb-4 text-center">
                   <div className="text-3xl font-bold text-amber-600">{lateCount}</div>
                   <div className="text-xs text-muted-foreground mt-1">Late</div>
@@ -97,7 +97,7 @@ const ParentAttendance = () => {
             </div>
 
             {/* Record list */}
-            <Card>
+            <Card className="glass-card">
               <CardHeader>
                 <CardTitle className="text-base">Session History</CardTitle>
               </CardHeader>

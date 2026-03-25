@@ -11,7 +11,7 @@ export const DashboardSummary = ({ summaryData }: DashboardSummaryProps) => {
   const { t } = useI18n();
   return (
     <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-      <Card className="overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 bg-white/80 backdrop-blur-sm">
+      <Card className="glass-card overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300">
         <div className="relative">
           <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-green-500/10 to-transparent rounded-bl-full">
           </div>
@@ -42,7 +42,7 @@ export const DashboardSummary = ({ summaryData }: DashboardSummaryProps) => {
         </div>
       </Card>
 
-      <Card className="overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 bg-white/80 backdrop-blur-sm">
+      <Card className="glass-card overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300">
         <div className="relative">
           <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-amber-500/10 to-transparent rounded-bl-full">
           </div>
@@ -71,7 +71,7 @@ export const DashboardSummary = ({ summaryData }: DashboardSummaryProps) => {
         </div>
       </Card>
 
-      <Card className="overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 bg-white/80 backdrop-blur-sm sm:col-span-2 lg:col-span-1">
+      <Card className="glass-card overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 sm:col-span-2 lg:col-span-1">
         <div className="relative">
           <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-blue-500/10 to-transparent rounded-bl-full">
           </div>

@@ -20,8 +20,8 @@ export const ChildSelector = ({ children, selectedId, onSelect, isLoading }: Chi
           onClick={() => onSelect(child.id)}
           className={`px-4 py-1.5 rounded-full text-sm font-medium border transition-colors shrink-0 ${
             selectedId === child.id
-              ? "bg-primary text-primary-foreground border-primary"
-              : "bg-background text-foreground border-border hover:bg-muted"
+              ? "bg-primary/85 backdrop-blur-sm text-primary-foreground border-primary"
+              : "bg-white/50 backdrop-blur-sm text-foreground border-white/40 hover:bg-white/70"
           }`}
         >
           {child.name}

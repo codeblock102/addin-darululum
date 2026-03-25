@@ -74,7 +74,7 @@ export const QuickActions = ({ teacherId: _teacherId, isAdmin = false }: QuickAc
   const actions: Action[] = (isAdmin ? adminActions : teacherActions).filter((a): a is Action => Boolean(a));
 
   return (
-    <Card className="border border-gray-200 shadow-sm bg-white hover:shadow-md transition-all duration-200">
+    <Card className="glass-card border border-gray-200 shadow-sm hover:shadow-md transition-all duration-200">
       <CardHeader className={`pb-3 ${isAdmin ? 'pb-2' : 'pb-3'}`}>
         <CardTitle className={`flex items-center gap-3 font-semibold text-gray-800 ${isAdmin ? 'text-base' : 'text-lg'}`}>
           <div className={`p-2 bg-[hsl(142.8,64.2%,24.1%)]/10 rounded-lg ${isAdmin ? 'p-1.5' : 'p-2'}`}>

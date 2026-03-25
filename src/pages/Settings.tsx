@@ -25,7 +25,7 @@ const Settings = () => {
   }
 
   return (
-    <div className="bg-gray-50/50 min-h-screen">
+    <div className="min-h-screen">
       <div className="container mx-auto py-8 px-4 sm:px-6 lg:px-8">
         <SettingsHeader isSaving={isLoading} onSave={handleSave} />
 
@@ -50,7 +50,7 @@ const Settings = () => {
                 />
               )
               : (
-                <div className="flex items-center justify-center h-full bg-white p-12 rounded-lg shadow-sm">
+                <div className="flex items-center justify-center h-full glass-card p-12 rounded-lg shadow-sm">
                   <p className="text-gray-500">
                     Settings data is currently unavailable.
                   </p>

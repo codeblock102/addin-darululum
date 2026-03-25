@@ -220,7 +220,7 @@ const ParentAcademics = () => {
 
   return (
     <div className="space-y-6">
-        <Card>
+        <Card className="glass-card">
           <CardHeader>
             <CardTitle>Academics</CardTitle>
           </CardHeader>
@@ -359,11 +359,11 @@ const ParentAcademics = () => {
               </div>
 
               <Separator />
-              <div className="rounded-md border bg-muted/30 p-3">
+              <div className="rounded-md border border-white/40 bg-white/30 backdrop-blur-sm p-3">
                 <div className="text-xs font-medium tracking-wide text-muted-foreground uppercase">Description</div>
                 <div className="mt-1">{detailRow?.assignment?.description || "—"}</div>
               </div>
-              <div className="rounded-md border bg-card/50 p-3 space-y-3">
+              <div className="rounded-md bg-white/40 backdrop-blur-sm p-3 space-y-3">
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <div className="text-sm text-muted-foreground">Due Date</div>

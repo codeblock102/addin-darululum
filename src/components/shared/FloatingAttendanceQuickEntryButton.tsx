@@ -95,7 +95,7 @@ export const FloatingAttendanceQuickEntryButton = () => {
       </div>
 
       <Dialog open={open} onOpenChange={(v) => (v ? handleOpen() : handleClose())}>
-        <DialogContent className="sm:max-w-[560px] max-h-[90vh] overflow-y-auto bg-white text-gray-900 border border-emerald-100 shadow-2xl">
+        <DialogContent className="sm:max-w-[560px] max-h-[90vh] overflow-y-auto glass-card text-gray-900 shadow-2xl">
           <DialogHeader>
             <DialogTitle className="text-emerald-700">Quick Attendance Entry</DialogTitle>
             <DialogDescription className="text-gray-600">Select a student and record attendance.</DialogDescription>

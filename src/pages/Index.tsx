@@ -124,7 +124,7 @@ export default function Index() {
           </>
         )
         : (
-          <div className="max-w-md w-full space-y-6 p-6 bg-card border rounded-lg shadow-md">
+          <div className="max-w-md w-full space-y-6 p-6 glass-card border rounded-lg shadow-md">
             <h1 className="text-2xl font-bold text-center">{t("pages.index.navTitle")}</h1>
 
             {errorOccurred && (

@@ -19,7 +19,7 @@ export const WeeklySchedule = () => {
   const currentDay = new Date().getDay();
 
   return (
-    <Card className="h-auto lg:h-96 border border-purple-100 dark:border-purple-900/30 shadow-sm">
+    <Card className="h-auto lg:h-96 border border-purple-100 dark:border-purple-900/30 shadow-sm glass-card">
       <CardHeader className="">
         <CardTitle className="text-purple-700 dark:text-purple-300 flex items-center gap-2">
           <Calendar className="h-5 w-5" />

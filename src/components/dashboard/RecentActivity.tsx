@@ -40,7 +40,7 @@ export const RecentActivity = () => {
   });
 
   return (
-    <Card className="h-auto lg:h-96">
+    <Card className="h-auto lg:h-96 glass-card">
       <CardHeader className="">
         <CardTitle className="text-purple-700 dark:text-purple-300">{t("pages.dashboard.activity.title")}</CardTitle>
       </CardHeader>

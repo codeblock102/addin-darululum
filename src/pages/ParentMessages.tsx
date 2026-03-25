@@ -464,7 +464,7 @@ export default function ParentMessages() {
 
   return (
     <div className="space-y-4">
-      <Card>
+      <Card className="glass-card">
         <CardHeader>
           <CardTitle>Message Teacher</CardTitle>
           <CardDescription>Send a message to your child's teacher.</CardDescription>
@@ -520,7 +520,7 @@ export default function ParentMessages() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <Card>
+        <Card className="glass-card">
           <CardHeader>
             <CardTitle>Inbox</CardTitle>
             <CardDescription>Messages sent to you</CardDescription>
@@ -536,7 +536,7 @@ export default function ParentMessages() {
                   return (
                     <li
                       key={m.id}
-                      className={`p-3 rounded-lg border cursor-pointer transition-colors hover:bg-muted/40 ${!m.read ? "border-blue-300 bg-blue-50/40 dark:bg-blue-950/20" : ""}`}
+                      className={`p-3 rounded-lg border cursor-pointer transition-colors hover:bg-white/40 hover:backdrop-blur-sm ${!m.read ? "border-blue-300 bg-blue-50/60 backdrop-blur-sm" : ""}`}
                       onClick={() => openThreadWithPeer(m.sender_id)}
                     >
                       <div className="flex items-center justify-between gap-2 mb-1">
@@ -573,7 +573,7 @@ export default function ParentMessages() {
             )}
           </CardContent>
         </Card>
-        <Card>
+        <Card className="glass-card">
           <CardHeader>
             <CardTitle>Sent</CardTitle>
             <CardDescription>Messages you sent</CardDescription>
@@ -588,7 +588,7 @@ export default function ParentMessages() {
                   return (
                     <li
                       key={m.id}
-                      className="p-3 rounded-lg border cursor-pointer transition-colors hover:bg-muted/40"
+                      className="p-3 rounded-lg border cursor-pointer transition-colors hover:bg-white/40 hover:backdrop-blur-sm"
                       onClick={() => setOpenThreadPeerId(m.recipient_id)}
                     >
                       <div className="flex items-center justify-between gap-2 mb-1">

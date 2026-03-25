@@ -33,7 +33,7 @@ export const AnalyticsCharts = ({
 
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-      <Card className="col-span-2">
+      <Card className="glass-card col-span-2">
         <CardHeader>
           <CardTitle>Student Progress</CardTitle>
           <CardDescription>
@@ -45,7 +45,7 @@ export const AnalyticsCharts = ({
         </CardContent>
       </Card>
 
-      <Card>
+      <Card className="glass-card">
         <CardHeader>
           <CardTitle>Quality Distribution</CardTitle>
           <CardDescription>
@@ -57,7 +57,7 @@ export const AnalyticsCharts = ({
         </CardContent>
       </Card>
 
-      <Card>
+      <Card className="glass-card">
         <CardHeader>
           <CardTitle>Progress Over Time</CardTitle>
           <CardDescription>
@@ -69,7 +69,7 @@ export const AnalyticsCharts = ({
         </CardContent>
       </Card>
 
-      <Card className="col-span-2">
+      <Card className="glass-card col-span-2">
         <CardHeader>
           <CardTitle>Contributor Activity</CardTitle>
           <CardDescription>
