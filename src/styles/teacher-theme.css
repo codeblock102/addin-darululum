@@ -238,3 +238,25 @@
 .teacher-theme .dashboard-overview svg {
   @apply text-gray-700;
 }
+
+/* Teacher/Parent Portal — Glassmorphism nav active state */
+.teacher-theme .glass-nav-active {
+  background: rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-left: 2px solid hsl(var(--primary));
+}
+.teacher-theme .glass-nav-hover:hover {
+  background: rgba(255, 255, 255, 0.35);
+  backdrop-filter: blur(4px);
+}
+
+/* Teacher/Parent Portal — card refinements */
+.teacher-theme .glass-card {
+  background: rgba(255, 255, 255, 0.72);
+  border-color: rgba(255, 255, 255, 0.6);
+}
+.teacher-theme .glass-stat {
+  background: rgba(255, 255, 255, 0.78);
+  border-color: rgba(255, 255, 255, 0.55);
+}

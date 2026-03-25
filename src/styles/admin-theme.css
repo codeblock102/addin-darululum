@@ -374,3 +374,27 @@
 .admin-theme ::-webkit-scrollbar-thumb:hover {
   background: var(--admin-border-accent);
 }
+
+/* Admin Portal — Glassmorphism card overrides */
+.admin-theme .glass-card {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25), 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+.admin-theme .glass-card:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.18);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35), 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+.admin-theme .glass-stat {
+  background: rgba(255, 255, 255, 0.07);
+  border-color: rgba(255, 255, 255, 0.12);
+}
+.admin-theme .glass-stat:hover {
+  background: rgba(255, 255, 255, 0.11);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+.admin-theme .glass-sidebar {
+  background: rgba(15, 23, 42, 0.92);
+  border-right-color: rgba(255, 255, 255, 0.08);
+}
