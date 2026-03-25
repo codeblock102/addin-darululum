@@ -169,18 +169,11 @@ export function ClassroomRecords(
       queryKey: ["classroom-records", selectedDate, students],
       queryFn: async () => {
         if (!students || students.length === 0) {
-          console.log("No students to fetch records for");
           return [];
         }
 
         const studentIds = students.map((student) => student?.id).filter(
           Boolean,
-        );
-        console.log(
-          "Fetching records for student IDs:",
-          studentIds,
-          "date:",
-          selectedDate,
         );
 
         // Fetch progress records (sabaq)
@@ -216,15 +209,6 @@ export function ClassroomRecords(
         if (juzRevisionsError) {
           console.error("Error fetching juz revisions:", juzRevisionsError);
         }
-
-        console.log(
-          "Records fetched - Progress:",
-          progressData?.length || 0,
-          "Sabaq Para:",
-          sabaqParaData?.length || 0,
-          "Juz Revisions:",
-          juzRevisionsData?.length || 0,
-        );
 
         // Create summary for each student
         const studentSummaries: StudentRecordSummary[] = students.map(

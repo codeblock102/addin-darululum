@@ -9,7 +9,8 @@ import {
   TabsList,
   TabsTrigger,
 } from "@/components/ui/tabs.tsx";
-import { Loader2, UserPlus } from "lucide-react";
+import { UserPlus } from "lucide-react";
+import { LoadingState } from "@/components/teacher-portal/LoadingState.tsx";
 import { supabase } from "@/integrations/supabase/client.ts";
 import { useToast } from "@/components/ui/use-toast.ts";
 import { useQuery } from "@tanstack/react-query";
@@ -86,13 +87,13 @@ const Teachers = () => {
 
       const { data: teachers } = await supabase
         .from("profiles")
-        .select("*")
+        .select("id, name, email, role, subject, madrassah_id, bio, phone, experience")
         .eq("role", "teacher")
         .eq("madrassah_id", adminData.madrassah_id);
 
       const { data: students } = await supabase
         .from("students")
-        .select("*")
+        .select("id, name, grade, class_ids, madrassah_id")
         .eq("madrassah_id", adminData.madrassah_id);
 
       return {
@@ -197,11 +198,7 @@ const Teachers = () => {
    * Otherwise, it shows the main layout with statistics, action buttons, and tabbed content for profiles and accounts.
    */
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <Loader2 className="w-8 h-8 animate-spin text-emerald-600" />
-      </div>
-    );
+    return <LoadingState />;
   }
 
   return (

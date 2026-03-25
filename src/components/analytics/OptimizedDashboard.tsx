@@ -17,7 +17,6 @@ import { KPICard } from "./KPICard.tsx";
 import { calculateThresholdStatus } from "@/types/dashboard.ts";
 import { Loader2, AlertCircle, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button.tsx";
-import { Card, CardContent } from "@/components/ui/card.tsx";
 import {
   Users,
   TrendingUp,
@@ -236,38 +235,6 @@ export function OptimizedDashboard() {
         />
       </div>
 
-      {/* Quick summary bar */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <Card className="bg-gray-50">
-          <CardContent className="pt-4 pb-3">
-            <p className="text-xs text-gray-500">Active Students</p>
-            <p className="text-xl font-bold text-gray-900">{overview.totalActiveStudents}</p>
-          </CardContent>
-        </Card>
-        <Card className="bg-gray-50">
-          <CardContent className="pt-4 pb-3">
-            <p className="text-xs text-gray-500">Active Teachers</p>
-            <p className="text-xl font-bold text-gray-900">{overview.totalActiveTeachers}</p>
-          </CardContent>
-        </Card>
-        <Card className="bg-gray-50">
-          <CardContent className="pt-4 pb-3">
-            <p className="text-xs text-gray-500">Students On Track</p>
-            <p className="text-xl font-bold text-gray-900">
-              {overview.studentsOnTrackCount}{" "}
-              <span className="text-sm font-normal text-gray-500">
-                / {overview.totalActiveStudents}
-              </span>
-            </p>
-          </CardContent>
-        </Card>
-        <Card className="bg-gray-50">
-          <CardContent className="pt-4 pb-3">
-            <p className="text-xs text-gray-500">Need Attention</p>
-            <p className="text-xl font-bold text-red-600">{overview.atRiskCount}</p>
-          </CardContent>
-        </Card>
-      </div>
     </div>
   );
 }

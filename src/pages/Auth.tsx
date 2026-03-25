@@ -99,7 +99,6 @@ const Auth = () => {
     setErrorMessage(null);
 
     try {
-      console.log(`Attempting to login with email: ${email}`);
       const { data, error: signInError } = await supabase.auth
         .signInWithPassword({
           email,
@@ -170,7 +169,6 @@ const Auth = () => {
         return;
       }
 
-      console.log("No role found, redirecting to dashboard fallback");
       toast({
         title: "Login Successful",
         description: "Redirecting to dashboard...",

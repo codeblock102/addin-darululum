@@ -27,6 +27,11 @@ const en: Dict = {
     addParent: "Add Parent",
     quranProgress: "Qur'an Progress",
     academics: "Academics",
+    activityFeed: "Activity Feed",
+    analytics: "Analytics",
+    messages: "Messages",
+    bulkStudentImport: "Bulk Student Import",
+    teacherSchedules: "Teacher Schedules",
   },
   portal: {
     admin: "Admin Portal",
@@ -734,6 +739,11 @@ const fr: Dict = {
     addParent: "Ajouter un parent",
     quranProgress: "Progrès du Coran",
     academics: "Scolaire",
+    activityFeed: "Journal d'activité",
+    analytics: "Analytiques",
+    messages: "Messages",
+    bulkStudentImport: "Importation d'élèves en masse",
+    teacherSchedules: "Horaires des enseignants",
   },
   portal: {
     admin: "Portail Admin",

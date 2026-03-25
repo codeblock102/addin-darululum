@@ -45,14 +45,10 @@ export const ProtectedRoute = ({
     // Set up timeout to prevent infinite loading
     const timeoutId = setTimeout(() => {
       if (!permissionChecked) {
-        console.warn("Permission check timed out after 3 seconds");
         setTimeoutReached(true);
-
-        // Show error toast
         toast({
-          title: "Permission check timeout",
-          description:
-            "We'll continue with limited access. Please contact support if you experience issues.",
+          title: "Session check timed out",
+          description: "Please log in again.",
           variant: "destructive",
         });
       }
@@ -70,32 +66,17 @@ export const ProtectedRoute = ({
 
     // Check if user is authenticated
     if (!session) {
-      console.log("No session detected, redirecting to auth");
       navigate("/auth");
       return;
     }
 
     // Prevent infinite redirect loop
     if (redirectCount >= 3) {
-      console.log("Too many redirects, allowing access to prevent loop");
       return;
-    }
-
-    // Store role in localStorage for recovery in case of RBAC issues
-    if (isAdmin) {
-      localStorage.setItem("userRole", "admin");
-      setRedirectCount(0); // Reset redirect count on successful role determination
-    } else if (isTeacher) {
-      localStorage.setItem("userRole", "teacher");
-      setRedirectCount(0); // Reset redirect count on successful role determination
-    } else if (isParent) {
-      localStorage.setItem("userRole", "parent");
-      setRedirectCount(0);
     }
 
     // Check for required roles
     if (requireAdmin && !isAdmin) {
-      console.log("Admin access required but not admin, redirecting");
       setRedirectCount((prev) => prev + 1);
       toast({
         title: "Access Denied",
@@ -107,9 +88,6 @@ export const ProtectedRoute = ({
     }
 
     if (requireTeacher && !isTeacher && !isAdmin) {
-      console.log(
-        "Teacher access required but not teacher or admin, redirecting",
-      );
       setRedirectCount((prev) => prev + 1);
       toast({
         title: "Access Denied",
@@ -121,9 +99,6 @@ export const ProtectedRoute = ({
     }
 
     if (requireAttendanceTaker && !isAttendanceTaker && !isAdmin) {
-      console.log(
-        "Attendance taker access required but not flagged and not admin, redirecting",
-      );
       setRedirectCount((prev) => prev + 1);
       toast({
         title: "Access Denied",
@@ -135,9 +110,6 @@ export const ProtectedRoute = ({
     }
 
     if (requireParent && !isParent && !isAdmin) {
-      console.log(
-        "Parent access required but not parent or admin, redirecting",
-      );
       setRedirectCount((prev) => prev + 1);
       toast({
         title: "Access Denied",
@@ -148,9 +120,9 @@ export const ProtectedRoute = ({
       return;
     }
 
-    // We're bypassing detailed permission checks if we've hit the timeout
+    // If RBAC timed out, send to login rather than granting uncertain access
     if (timeoutReached) {
-      console.log("Timeout reached - bypassing detailed permission checks");
+      navigate("/auth");
       return;
     }
 
@@ -199,28 +171,17 @@ export const ProtectedRoute = ({
       <div className="min-h-screen flex flex-col items-center justify-center p-4">
         <Loader2 className="h-8 w-8 animate-spin text-primary mb-4" />
         <p className="mb-4 text-muted-foreground">Checking permissions...</p>
-        <div className="flex flex-col gap-2">
-          <Button
-            variant="link"
-            onClick={() => setTimeoutReached(true)}
-          >
-            Continue with limited access
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => {
-              localStorage.removeItem("userRole");
-              navigate("/auth");
-            }}
-          >
-            Go to login page
-          </Button>
-        </div>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => navigate("/auth")}
+        >
+          Go to login page
+        </Button>
       </div>
     );
   }
 
-  // If we've done all checks or hit timeout, render the children
+  // If we've done all checks, render the children
   return <>{children}</>;
 };

@@ -76,19 +76,6 @@ export const useRBAC = () => {
   const isAttendanceTaker = hasCapability("attendance_access");
   const isHifdhTeacher = (userRole?.subject || "").toLowerCase().includes("hifdh");
 
-  console.log(
-    "RBAC Hook - Role:",
-    userRole?.role,
-    "Admin:",
-    isAdmin,
-    "Teacher:",
-    isTeacher,
-    "Parent:",
-    isParent,
-    "Teacher ID:",
-    teacherId,
-  );
-
   // Live update attendance_taker changes for current user
   useEffect(() => {
     if (!teacherId) return;

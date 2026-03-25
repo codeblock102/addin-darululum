@@ -2,72 +2,42 @@ import { supabase } from "@/integrations/supabase/client.ts";
 
 export const setUserAsAdmin = async (_email: string) => {
   try {
-    console.log("setUserAsAdmin: Attempting to get current user.");
     const { data: { user }, error: userError } = await supabase.auth.getUser();
 
     if (userError || !user) {
-      console.error(
-        "setUserAsAdmin: Error getting user or no user found.",
-        userError,
-      );
+      console.error("setUserAsAdmin: Error getting user or no user found.", userError);
       return false;
     }
-    console.log("setUserAsAdmin: Current user ID:", user.id);
 
-    console.log("setUserAsAdmin: Attempting to update user metadata to admin.");
     const { data: updatedUserData, error: updateError } = await supabase.auth
       .updateUser({
         data: { role: "admin" },
       });
 
     if (updateError) {
-      console.error(
-        "setUserAsAdmin: Error updating user metadata.",
-        updateError,
-      );
+      console.error("setUserAsAdmin: Error updating user metadata.", updateError);
       return false;
     }
 
-    console.log(
-      "setUserAsAdmin: User metadata update successful. Response:",
-      updatedUserData,
-    );
-    // Verify the metadata directly from the response if possible
     if (updatedUserData?.user?.user_metadata?.role === "admin") {
-      console.log("setUserAsAdmin: Confirmed admin role in updatedUserData.");
-      localStorage.setItem("userRole", "admin");
       return true;
     } else {
-      console.warn(
-        "setUserAsAdmin: Admin role not found in updatedUserData immediately after update. Metadata:",
-        updatedUserData?.user?.user_metadata,
-      );
-      // Still, the update might have been processed. Let's trust the process for now and set local storage.
-      // The next login will rely on a fresh getUser() which should have the metadata.
-      localStorage.setItem("userRole", "admin");
-      return true; // Return true, assuming eventual consistency or direct update worked.
+      // Assume eventual consistency
+      return true;
     }
   } catch (error) {
-    console.error(
-      "setUserAsAdmin: Unexpected error setting admin role.",
-      error,
-    );
+    console.error("setUserAsAdmin: Unexpected error setting admin role.", error);
     return false;
   }
 };
 
 export const setupAdminAccount = async (email: string) => {
   try {
-    console.log("setupAdminAccount: Starting admin setup for", email);
-
     // 1. Get the user from auth
     const { data: { user }, error: userError } = await supabase.auth.getUser();
 
     if (userError || !user) {
-      console.error(
-        "setupAdminAccount: Error getting user or no user found",
-        userError,
-      );
+      console.error("setupAdminAccount: Error getting user or no user found", userError);
       return false;
     }
 
@@ -77,10 +47,7 @@ export const setupAdminAccount = async (email: string) => {
     });
 
     if (updateError) {
-      console.error(
-        "setupAdminAccount: Error updating user metadata",
-        updateError,
-      );
+      console.error("setupAdminAccount: Error updating user metadata", updateError);
       return false;
     }
 
@@ -89,7 +56,7 @@ export const setupAdminAccount = async (email: string) => {
       .from("madrassahs")
       .select("id")
       .eq("admin_id", user.id)
-      .single(); // Use .single() to expect exactly one row
+      .single();
 
     if (madrassahError || !madrassahData) {
       console.error(
@@ -99,7 +66,7 @@ export const setupAdminAccount = async (email: string) => {
       );
       return false;
     }
-    
+
     const madrassahId = madrassahData.id;
 
     // 4. Create or update profile with madrassah_id
@@ -116,10 +83,6 @@ export const setupAdminAccount = async (email: string) => {
       return false;
     }
 
-    // 5. Set local storage
-    localStorage.setItem("userRole", "admin");
-
-    console.log("setupAdminAccount: Admin setup completed successfully");
     return true;
   } catch (error) {
     console.error("setupAdminAccount: Unexpected error", error);
@@ -129,11 +92,9 @@ export const setupAdminAccount = async (email: string) => {
 
 export const updateAdminMadrassahId = async (madrassahId: string) => {
   try {
-    console.log("updateAdminMadrassahId: Starting update for madrassah ID", madrassahId);
-    
     // 1. Get the user from auth
     const { data: { user }, error: userError } = await supabase.auth.getUser();
-    
+
     if (userError || !user) {
       console.error("updateAdminMadrassahId: Error getting user or no user found", userError);
       return false;
@@ -142,9 +103,9 @@ export const updateAdminMadrassahId = async (madrassahId: string) => {
     // 2. Update profile with madrassah_id
     const { error: updateProfileError } = await supabase
       .from("profiles")
-      .update({ 
+      .update({
         madrassah_id: madrassahId,
-        role: "admin" // Ensure role is set to admin
+        role: "admin",
       })
       .eq("id", user.id);
 
@@ -163,10 +124,6 @@ export const updateAdminMadrassahId = async (madrassahId: string) => {
       return false;
     }
 
-    // 4. Set local storage
-    localStorage.setItem("userRole", "admin");
-
-    console.log("updateAdminMadrassahId: Profile update completed successfully");
     return true;
   } catch (error) {
     console.error("updateAdminMadrassahId: Unexpected error", error);
@@ -180,8 +137,6 @@ export const updateAdminMadrassahId = async (madrassahId: string) => {
  */
 export const fixAdminProfile = async (userId: string, email: string) => {
   try {
-    console.log("fixAdminProfile: Starting profile fix for user", userId);
-    
     // 1. Check if profile already exists
     const { data: existingProfile, error: checkError } = await supabase
       .from("profiles")
@@ -195,26 +150,23 @@ export const fixAdminProfile = async (userId: string, email: string) => {
     }
 
     if (existingProfile) {
-      console.log("fixAdminProfile: Profile already exists", existingProfile);
-      
       // Update role to admin if it's not already
       if (existingProfile.role !== 'admin') {
         const { error: updateError } = await supabase
           .from("profiles")
           .update({ role: 'admin' })
           .eq("id", userId);
-        
+
         if (updateError) {
           console.error("fixAdminProfile: Error updating role to admin", updateError);
           return false;
         }
-        console.log("fixAdminProfile: Updated existing profile role to admin");
       }
       return true;
     }
 
     // 2. Create missing profile record
-    const profileData: any = {
+    const profileData: { id: string; email: string; role: string; name: string; madrassah_id?: string } = {
       id: userId,
       email: email,
       role: 'admin',
@@ -229,10 +181,9 @@ export const fixAdminProfile = async (userId: string, email: string) => {
         .select("madrassah_id")
         .eq("id", currentUser.id)
         .single();
-      
+
       if (currentProfile?.madrassah_id) {
         profileData.madrassah_id = currentProfile.madrassah_id;
-        console.log("fixAdminProfile: Assigning to madrassah", currentProfile.madrassah_id);
       }
     }
 
@@ -255,10 +206,6 @@ export const fixAdminProfile = async (userId: string, email: string) => {
       // Continue anyway as profile was created
     }
 
-    // 4. Set local storage
-    localStorage.setItem("userRole", "admin");
-
-    console.log("fixAdminProfile: Profile fix completed successfully");
     return true;
   } catch (error) {
     console.error("fixAdminProfile: Unexpected error", error);
