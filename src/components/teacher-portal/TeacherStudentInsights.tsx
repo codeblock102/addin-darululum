@@ -205,7 +205,7 @@ export function TeacherStudentInsights({ teacherId }: { teacherId: string }) {
 
   if (error) {
     return (
-      <Card className="border-destructive/50">
+      <Card className="glass-card border-destructive/50">
         <CardContent className="py-6 text-center text-sm text-destructive">
           Failed to load student metrics.
         </CardContent>
@@ -215,7 +215,7 @@ export function TeacherStudentInsights({ teacherId }: { teacherId: string }) {
 
   if (!data || data.students.length === 0) {
     return (
-      <Card>
+      <Card className="glass-card">
         <CardContent className="py-16 text-center">
           <Users className="mx-auto mb-3 h-10 w-10 text-gray-300" />
           <p className="text-sm font-medium text-gray-600">No assigned students found.</p>
@@ -326,7 +326,7 @@ export function TeacherStudentInsights({ teacherId }: { teacherId: string }) {
       </div>
 
       {/* ── Pace bar chart ───────────────────────────────────────────────── */}
-      <Card>
+      <Card className="glass-card">
         <CardHeader className="pb-2">
           <div className="flex items-center justify-between">
             <div>
@@ -360,7 +360,7 @@ export function TeacherStudentInsights({ teacherId }: { teacherId: string }) {
       </Card>
 
       {/* ── Student table ────────────────────────────────────────────────── */}
-      <Card>
+      <Card className="glass-card">
         <CardHeader className="pb-3">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <div>

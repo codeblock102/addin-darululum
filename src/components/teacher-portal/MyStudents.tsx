@@ -155,7 +155,7 @@ export const MyStudents = ({ teacherId, isAdmin = false }: MyStudentsProps) => {
   };
 
   return (
-    <Card className="w-full overflow-hidden">
+    <Card className="glass-card w-full overflow-hidden">
       <CardHeader>
         <div className="flex items-center justify-between">
           <div>

@@ -62,7 +62,7 @@ export const TeacherGrading = ({ teacherId }: GradingProps) => {
 
   return (
     <div className="space-y-4">
-      <Card>
+      <Card className="glass-card">
         <CardHeader>
           <CardTitle className="flex items-center">
             <GraduationCap className="mr-2 h-5 w-5" />

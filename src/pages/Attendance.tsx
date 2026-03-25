@@ -126,7 +126,7 @@ const Attendance = () => {
       <div className="container mx-auto px-3 sm:px-4 lg:px-8 py-4 sm:py-6 space-y-4 sm:space-y-8">
         {/* Mobile-optimized Header Section */}
         <div className="relative overflow-hidden">
-          <div className="relative bg-white border border-gray-200 rounded-xl sm:rounded-2xl p-4 sm:p-6 lg:p-8 shadow-sm">
+          <div className="relative glass-card p-4 sm:p-6 lg:p-8 shadow-sm">
             <div className="flex flex-col gap-4 sm:gap-6">
 
               <div className="space-y-2">
@@ -174,7 +174,7 @@ const Attendance = () => {
           {statsCards.map((stat, index) => (
             <Card
               key={index}
-              className="bg-white border border-gray-200 hover:shadow-md transition-all duration-300 hover:-translate-y-1 group"
+              className="glass-stat hover:shadow-md transition-all duration-300 hover:-translate-y-1 group"
             >
               <CardContent className="p-4 sm:p-6">
                 <div className="flex items-center justify-between">
@@ -201,7 +201,7 @@ const Attendance = () => {
         </div>
 
         {/* Mobile-optimized Main Content */}
-        <Card className="border border-gray-200 shadow-sm bg-white overflow-hidden">
+        <Card className="glass-card overflow-hidden">
           <CardHeader className="bg-gray-50 border-b border-gray-200 p-4 sm:p-6">
             <div className="flex flex-col gap-3 sm:gap-4">
               <div>

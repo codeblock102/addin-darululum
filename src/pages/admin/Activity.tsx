@@ -1014,7 +1014,7 @@ export default function Activity() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
             {/* Time Range */}
             <div className="space-y-2">
-              <label className="text-xs font-medium text-gray-700">Time Range</label>
+              <label className="text-xs font-medium text-gray-300">Time Range</label>
               <Select value={timeRange} onValueChange={(v) => setTimeRange(v as TimeRange)}>
                 <SelectTrigger>
                   <SelectValue />
@@ -1055,7 +1055,7 @@ export default function Activity() {
 
             {/* Teacher Filter */}
             <div className="space-y-2">
-              <label className="text-xs font-medium text-gray-700">Teacher</label>
+              <label className="text-xs font-medium text-gray-300">Teacher</label>
               <Select value={selectedTeacher} onValueChange={setSelectedTeacher}>
                 <SelectTrigger>
                   <SelectValue placeholder="All Teachers" />
@@ -1241,7 +1241,7 @@ export default function Activity() {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600">Top Performers</p>
+                  <p className="text-sm font-medium text-gray-300">Top Performers</p>
                   <p className="text-2xl font-bold text-green-600 mt-1">{summaryMetrics.topPerformersCount}</p>
                 </div>
                 <Award className="h-8 w-8 text-yellow-600" />
@@ -1253,8 +1253,8 @@ export default function Activity() {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600">Average Quality</p>
-                  <p className="text-2xl font-bold text-gray-900 mt-1">{summaryMetrics.averageQuality.toFixed(1)}</p>
+                  <p className="text-sm font-medium text-gray-300">Average Quality</p>
+                  <p className="text-2xl font-bold text-white mt-1">{summaryMetrics.averageQuality.toFixed(1)}</p>
                 </div>
                 <TrendingUp className="h-8 w-8 text-blue-600" />
               </div>
@@ -1265,8 +1265,8 @@ export default function Activity() {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600">Attendance Marks</p>
-                  <p className="text-2xl font-bold text-gray-900 mt-1">{summaryMetrics.totalAttendanceMarks}</p>
+                  <p className="text-sm font-medium text-gray-300">Attendance Marks</p>
+                  <p className="text-2xl font-bold text-white mt-1">{summaryMetrics.totalAttendanceMarks}</p>
                 </div>
                 <CheckSquare className="h-8 w-8 text-emerald-600" />
               </div>
@@ -1384,7 +1384,7 @@ export default function Activity() {
       {/* At-Risk Students & Top Performers */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* At-Risk Students */}
-        <Card className="border border-red-200 bg-white">
+        <Card className="glass-card-dark border-red-500/30">
           <CardHeader className="border-b bg-red-50">
             <CardTitle className="text-base flex items-center gap-2 text-red-700">
               <AlertTriangle className="h-4 w-4" />
@@ -1415,7 +1415,7 @@ export default function Activity() {
         </Card>
 
         {/* Top Performers */}
-        <Card className="border border-green-200 bg-white">
+        <Card className="glass-card-dark border-green-500/30">
           <CardHeader className="border-b bg-green-50">
             <CardTitle className="text-base flex items-center gap-2 text-green-700">
               <Award className="h-4 w-4" />
@@ -1448,7 +1448,7 @@ export default function Activity() {
 
       {/* Activity Feed */}
       <div>
-        <h2 className="text-xl font-bold text-gray-900 mb-4">Activity Feed</h2>
+        <h2 className="text-xl font-bold text-white mb-4">Activity Feed</h2>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <Section title="Progress" type="progress" />
           <Section title="Attendance" type="attendance" />

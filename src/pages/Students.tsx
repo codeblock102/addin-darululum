@@ -61,7 +61,7 @@ interface StatCardProps {
 }
 
 const StatCard = ({ title, value, icon, description, isLoading, isAdmin }: StatCardProps) => (
-  <Card>
+  <Card className="glass-stat">
     <CardHeader
       className={`flex flex-row items-center justify-between space-y-0 ${
         isAdmin ? "border-b border-primary/30 pb-4" : "pb-2"
@@ -239,7 +239,7 @@ const Students = () => {
         />
       </div>
 
-      <Card>
+      <Card className="glass-card">
         <CardHeader
           className={isAdmin ? "border-b border-primary/30" : ""}
         >

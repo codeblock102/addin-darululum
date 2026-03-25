@@ -50,7 +50,7 @@ export const StudentMobileList = ({
             className={`rounded-lg border p-4 space-y-3 cursor-pointer hover:shadow-md transition-shadow ${
               isAssigned
                 ? "border-blue-200 bg-blue-50"
-                : "border-gray-200 bg-white"
+                : "border-gray-200"
             }`}
             onClick={() => onEditStudent?.(student)}
           >
