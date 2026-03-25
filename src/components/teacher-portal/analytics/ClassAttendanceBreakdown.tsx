@@ -66,7 +66,7 @@ export const ClassAttendanceBreakdown = ({ teacherId, fromYmd, toYmd }: ClassAtt
 
   if (isLoading) {
     return (
-      <Card>
+      <Card className="glass-card">
         <CardHeader>
           <CardTitle>Class Attendance</CardTitle>
           <CardDescription>Loading class attendance breakdown...</CardDescription>
@@ -131,7 +131,7 @@ export const ClassAttendanceBreakdown = ({ teacherId, fromYmd, toYmd }: ClassAtt
   const hasData = cards.some((c) => c.total > 0);
 
   return (
-    <Card>
+    <Card className="glass-card">
       <CardHeader>
         <div className="flex items-center justify-between">
           <div>

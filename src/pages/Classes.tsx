@@ -191,7 +191,7 @@ export default function Classes() {
           />
         )}
 
-        <div className="glass-effect rounded-lg shadow-lg overflow-hidden">
+        <div className="glass-card shadow-lg overflow-hidden">
           <SearchInput
             placeholder={t("pages.classes.searchPlaceholder")}
             value={searchQuery}
