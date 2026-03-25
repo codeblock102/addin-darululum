@@ -69,44 +69,42 @@ const Teachers = () => {
 
   // Get teacher stats
   const { data: stats } = useQuery({
-    queryKey: ["teacher-stats", adminData],
-    /**
-     * @function queryFn (for teacher stats)
-     * @description Fetches statistics related to teachers and students from Supabase.
-     * This includes total number of teachers, total students, number of active teachers (those with an email), and the count of unique subjects taught.
-     * @async
-     * @returns {Promise<object>} A promise that resolves to an object containing teacher and student statistics.
-     * @property {number} totalTeachers - Total number of teachers.
-     * @property {number} totalStudents - Total number of students.
-     * @property {number} activeTeachers - Number of teachers with an email address (considered active).
-     * @property {number} subjectCount - Number of unique subjects taught by teachers.
-     * @property {number} totalClasses - Placeholder for total classes (currently 0).
-     */
+    queryKey: ["teacher-stats", adminData, userId],
     queryFn: async () => {
-      if (!adminData?.madrassah_id) return null;
-
-      const { data: teachers } = await supabase
+      // Build teacher query — filter by madrassah_id when available, otherwise fetch all teachers
+      let teacherQuery = supabase
         .from("profiles")
         .select("id, name, email, role, subject, madrassah_id, bio, phone, experience")
-        .eq("role", "teacher")
-        .eq("madrassah_id", adminData.madrassah_id);
+        .eq("role", "teacher");
 
-      const { data: students } = await supabase
+      if (adminData?.madrassah_id) {
+        teacherQuery = teacherQuery.eq("madrassah_id", adminData.madrassah_id);
+      }
+
+      const { data: teachers } = await teacherQuery;
+
+      // Build student query similarly
+      let studentQuery = supabase
         .from("students")
-        .select("id, name, grade, class_ids, madrassah_id")
-        .eq("madrassah_id", adminData.madrassah_id);
+        .select("id, name, grade, class_ids, madrassah_id");
+
+      if (adminData?.madrassah_id) {
+        studentQuery = studentQuery.eq("madrassah_id", adminData.madrassah_id);
+      }
+
+      const { data: students } = await studentQuery;
 
       return {
         totalTeachers: teachers?.length || 0,
         totalStudents: students?.length || 0,
         activeTeachers: teachers?.filter((t) => t.email).length || 0,
         subjectCount: teachers
-          ? new Set(teachers.map((t) => t.subject)).size
+          ? new Set(teachers.filter((t) => t.subject).map((t) => t.subject)).size
           : 0,
-        totalClasses: 0, // Will be populated later
+        totalClasses: 0,
       };
     },
-    enabled: !!adminData,
+    enabled: !isAdminDataLoading,
   });
 
   // Check authentication
@@ -202,10 +200,10 @@ const Teachers = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen">
       <div className="max-w-7xl mx-auto p-4 sm:p-6 space-y-6 sm:space-y-8">
         {/* Header Section */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6 lg:p-8">
+        <div className="glass-card p-4 sm:p-6 lg:p-8">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
             <div>
               <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">{t("pages.teachers.headerTitle")}</h1>
@@ -226,7 +224,7 @@ const Teachers = () => {
         <TeacherStatsSection stats={stats || undefined} />
 
         {/* Tabs Navigation */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        <div className="glass-card overflow-hidden">
           <Tabs
             defaultValue="profiles"
             value={activeTab}

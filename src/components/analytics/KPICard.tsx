@@ -67,9 +67,8 @@ export function KPICard({
   return (
     <Card
       className={cn(
-        "border-2 transition-all hover:shadow-md",
+        "glass-stat border-2 transition-all hover:shadow-md",
         style.border,
-        style.bg,
         onClick && "cursor-pointer",
         className
       )}

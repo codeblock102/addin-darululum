@@ -1,3 +1,66 @@
+/* ── Glassmorphism utilities ─────────────────────────────────────────────── */
+
+/* Light glass — for white/light backgrounds (teacher, parent portals) */
+.glass-card {
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(0, 0, 0, 0.04);
+  border-radius: 1rem;
+}
+
+.glass-card:hover {
+  background: rgba(255, 255, 255, 0.85);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12), 0 4px 12px rgba(0, 0, 0, 0.06);
+  transform: translateY(-2px);
+  transition: all 0.25s ease;
+}
+
+/* Dark glass — for admin dashboard (dark backgrounds) */
+.glass-card-dark {
+  background: rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25), 0 2px 8px rgba(0, 0, 0, 0.15);
+  border-radius: 1rem;
+}
+
+.glass-card-dark:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35), 0 4px 12px rgba(0, 0, 0, 0.2);
+  transform: translateY(-2px);
+  transition: all 0.25s ease;
+}
+
+/* Sidebar glass */
+.glass-sidebar {
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-right: 1px solid rgba(255, 255, 255, 0.6);
+  box-shadow: 4px 0 24px rgba(0, 0, 0, 0.06);
+}
+
+/* Stat / KPI card glass */
+.glass-stat {
+  background: rgba(255, 255, 255, 0.78);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.07);
+  border-radius: 0.875rem;
+  transition: all 0.2s ease;
+}
+
+.glass-stat:hover {
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+  transform: translateY(-1px);
+}
+
 /* Card hover effects */
 .card-hover {
   @apply transition-all duration-300 hover:shadow-md hover:-translate-y-1;

@@ -84,6 +84,7 @@ export function useAnalyticsLive() {
         attendanceResult,
         progressResult,
         studentsTeachersResult,
+        latestProgressResult,
       ] = await Promise.all([
         supabase
           .from("students")
@@ -108,6 +109,12 @@ export function useAnalyticsLive() {
           .from("students_teachers")
           .select("teacher_id, student_name, id")
           .eq("active", true),
+        // Fetch the single most-recent progress entry per student (no date filter)
+        // so daysSinceProgress is accurate even for students with older records
+        supabase
+          .from("progress")
+          .select("student_id, created_at")
+          .order("created_at", { ascending: false }),
       ]);
 
       const activeStudents = studentsResult.data || [];
@@ -116,6 +123,14 @@ export function useAnalyticsLive() {
       const attendanceRecords = attendanceResult.data || [];
       const progressRecords = progressResult.data || [];
       const studentsTeachers = studentsTeachersResult.data || [];
+
+      // Build a map: student_id → most recent created_at (from full history)
+      const latestProgressByStudent: Record<string, string> = {};
+      for (const p of (latestProgressResult.data || [])) {
+        if (!latestProgressByStudent[p.student_id]) {
+          latestProgressByStudent[p.student_id] = p.created_at;
+        }
+      }
 
       // ─── Per-student metrics ───────────────────────────────────────────────
       const studentMetrics: StudentLiveMetrics[] = activeStudents.map((student) => {
@@ -140,15 +155,18 @@ export function useAnalyticsLive() {
         );
         const pacePerWeek = parseFloat((totalPages / 4.3).toFixed(2));
 
-        // Days since most recent progress entry
-        const sortedProgress = [...studentProgress].sort(
-          (a, b) =>
-            new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-        );
-        const lastProgress = sortedProgress[0];
-        const daysSinceProgress = lastProgress
+        // Days since most recent progress entry (use full history for accuracy)
+        const lastProgressDate =
+          latestProgressByStudent[student.id] ||
+          (studentProgress.length > 0
+            ? studentProgress.reduce((latest, p) =>
+                p.created_at > latest ? p.created_at : latest,
+                studentProgress[0].created_at
+              )
+            : null);
+        const daysSinceProgress = lastProgressDate
           ? Math.floor(
-              (now.getTime() - new Date(lastProgress.created_at).getTime()) /
+              (now.getTime() - new Date(lastProgressDate).getTime()) /
                 (1000 * 60 * 60 * 24)
             )
           : 999;

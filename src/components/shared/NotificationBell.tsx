@@ -208,8 +208,8 @@ export function NotificationBell({ collapsed = false }: { collapsed?: boolean })
         <div
           className={cn(
             "absolute z-[100] mt-2 w-80 rounded-xl shadow-2xl bg-white border border-gray-200 overflow-hidden",
-            // Position: if collapsed sidebar, open to the right; otherwise open below
-            collapsed ? "left-full top-0 ml-2" : "right-0"
+            // Collapsed sidebar: open to the right. Expanded: open downward aligned to left of bell
+            collapsed ? "left-full top-0 ml-2" : "left-0"
           )}
         >
           {/* Header */}

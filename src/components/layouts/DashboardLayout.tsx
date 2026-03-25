@@ -64,7 +64,7 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
       {/* Sidebar */}
       <div
         className={cn(
-          "fixed inset-y-0 left-0 z-40 bg-white border-r border-gray-200 shadow-sm",
+          "fixed inset-y-0 left-0 z-40 glass-sidebar",
           isMobile ? `${sidebarWidthClass} -translate-x-full` : [
             sidebarOpen ? sidebarWidthClass : collapsedSidebarWidthClass,
             "transition-all duration-300 ease-in-out",

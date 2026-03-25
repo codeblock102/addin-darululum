@@ -16,7 +16,7 @@ export function TeacherStatsSection({ stats }: TeacherStatsProps) {
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 animate-pulse">
         {[...Array(4)].map((_, index) => (
-          <Card key={index} className="h-32 border border-gray-200 shadow-sm bg-white rounded-xl">
+          <Card key={index} className="h-32 glass-stat">
             <CardContent className="p-6">
               <div className="h-full bg-gray-100 rounded-lg"></div>
             </CardContent>
@@ -64,7 +64,7 @@ export function TeacherStatsSection({ stats }: TeacherStatsProps) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
       {statItems.map((stat, index) => (
-        <Card key={index} className="border border-gray-200 shadow-sm bg-white hover:shadow-md transition-all duration-200 overflow-hidden rounded-xl">
+        <Card key={index} className="glass-stat overflow-hidden">
           <CardContent className="p-4 sm:p-6">
             <div className="flex items-start justify-between mb-4">
               <div className={`p-3 rounded-lg ${stat.color} ${stat.borderColor} border`}>

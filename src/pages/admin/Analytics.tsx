@@ -27,9 +27,9 @@ export default function Analytics() {
   return (
     <div className="container mx-auto py-6 space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between glass-card p-5">
         <div>
-          <h1 className="text-3xl font-bold">Analytics Dashboard</h1>
+          <h1 className="text-3xl font-bold text-gray-900">Analytics Dashboard</h1>
           <p className="text-gray-600 mt-1">
             Executive decision-making interface for your madrassah
           </p>
@@ -43,7 +43,7 @@ export default function Analytics() {
 
       {/* Main Content with Tabs */}
       <Tabs value={tab} onValueChange={handleTabChange} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-5">
+        <TabsList className="grid w-full grid-cols-5 glass-card p-1 rounded-xl border-0 bg-white/60 backdrop-blur-md">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="students">
             Students

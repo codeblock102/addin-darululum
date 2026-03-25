@@ -12,6 +12,7 @@ import { LogOut, Settings, User } from "lucide-react";
 import { cn } from "@/lib/utils.ts";
 import { useIsMobile } from "@/hooks/use-mobile.tsx";
 import { useI18n } from "@/contexts/I18nContext.tsx";
+import { useNavigate } from "react-router-dom";
 
 interface SidebarUserProps {
   isAdmin: boolean;
@@ -22,6 +23,7 @@ export const SidebarUser = ({ isAdmin, isOpen }: SidebarUserProps) => {
   const { session, signOut } = useAuth();
   const isMobile = useIsMobile();
   const { t } = useI18n();
+  const navigate = useNavigate();
 
   if (!session?.user) return null;
 
@@ -38,18 +40,18 @@ export const SidebarUser = ({ isAdmin, isOpen }: SidebarUserProps) => {
   // Collapsed state
   if (!isMobile && isOpen === false) {
     return (
-      <div className="p-2 border-t border-white/10">
+      <div className="p-2 border-t border-gray-200">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button
               variant="ghost"
               className={cn(
-                "w-full h-12 p-2 hover:bg-white/5 transition-all duration-200 group",
+                "w-full h-12 p-2 hover:bg-gray-100 transition-all duration-200 group",
                 "justify-center rounded-lg",
               )}
               title={userName}
             >
-              <Avatar className="h-8 w-8 border-2 border-white/20 group-hover:border-white/40 transition-all duration-200">
+              <Avatar className="h-8 w-8 border-2 border-gray-200 group-hover:border-gray-300 transition-all duration-200">
                 <AvatarFallback
                   className={cn(
                     "text-xs font-semibold",
@@ -90,11 +92,11 @@ export const SidebarUser = ({ isAdmin, isOpen }: SidebarUserProps) => {
               </div>
             </div>
             <DropdownMenuSeparator />
-            <DropdownMenuItem className="cursor-pointer">
+            <DropdownMenuItem className="cursor-pointer" onClick={() => navigate("/settings?tab=profile")}>
               <User className="mr-2 h-4 w-4" />
               <span>{t("nav.profile", "Profile")}</span>
             </DropdownMenuItem>
-            <DropdownMenuItem className="cursor-pointer">
+            <DropdownMenuItem className="cursor-pointer" onClick={() => navigate("/settings")}>
               <Settings className="mr-2 h-4 w-4" />
               <span>{t("nav.settings")}</span>
             </DropdownMenuItem>
@@ -117,7 +119,7 @@ export const SidebarUser = ({ isAdmin, isOpen }: SidebarUserProps) => {
     <div
       className={cn(
         "p-3 sm:p-4",
-        isAdmin ? "border-t border-white/10" : "border-t border-gray-100",
+        "border-t border-gray-100",
       )}
     >
       <DropdownMenu>
@@ -126,18 +128,13 @@ export const SidebarUser = ({ isAdmin, isOpen }: SidebarUserProps) => {
             variant="ghost"
             className={cn(
               "w-full justify-start h-auto p-3 transition-all duration-200",
-              isAdmin
-                ? "hover:bg-white/5 text-white"
-                : "hover:bg-gray-100/60 text-gray-700",
+              "hover:bg-gray-100/60 text-gray-700",
               "hover:shadow-sm rounded-lg",
             )}
           >
             <div className="flex items-center gap-3 w-full">
               <Avatar
-                className={cn(
-                  "h-10 w-10 border-2 transition-all duration-200",
-                  isAdmin ? "border-white/20" : "border-gray-200",
-                )}
+                className="h-10 w-10 border-2 border-gray-200 transition-all duration-200"
               >
                 <AvatarFallback
                   className={cn(
@@ -151,15 +148,10 @@ export const SidebarUser = ({ isAdmin, isOpen }: SidebarUserProps) => {
                 </AvatarFallback>
               </Avatar>
               <div className="flex flex-col items-start space-y-1 flex-1 min-w-0">
-                <p className="text-sm font-medium leading-none truncate w-full">
+                <p className="text-sm font-medium leading-none truncate w-full text-gray-900">
                   {userName}
                 </p>
-                <p
-                  className={cn(
-                    "text-xs leading-none truncate w-full",
-                    isAdmin ? "text-gray-300" : "text-muted-foreground",
-                  )}
-                >
+                <p className="text-xs leading-none truncate w-full text-muted-foreground">
                   {userEmail}
                 </p>
               </div>
@@ -167,11 +159,11 @@ export const SidebarUser = ({ isAdmin, isOpen }: SidebarUserProps) => {
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent side="top" align="end" className="w-56">
-          <DropdownMenuItem className="cursor-pointer">
+          <DropdownMenuItem className="cursor-pointer" onClick={() => navigate("/settings?tab=profile")}>
             <User className="mr-2 h-4 w-4" />
             <span>{t("nav.profile", "Profile")}</span>
           </DropdownMenuItem>
-          <DropdownMenuItem className="cursor-pointer">
+          <DropdownMenuItem className="cursor-pointer" onClick={() => navigate("/settings")}>
             <Settings className="mr-2 h-4 w-4" />
             <span>{t("nav.settings")}</span>
           </DropdownMenuItem>
