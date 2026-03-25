@@ -626,7 +626,7 @@ export default function ParentMessages() {
                     className={`max-w-[80%] rounded-2xl px-4 py-2.5 text-sm ${
                       isMine
                         ? "bg-primary text-primary-foreground rounded-br-sm"
-                        : "bg-muted text-foreground rounded-bl-sm"
+                        : "bg-white/60 backdrop-blur-sm text-foreground rounded-bl-sm"
                     }`}
                   >
                     {tm.subject && (
