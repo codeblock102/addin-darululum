@@ -153,10 +153,12 @@ export function useAnalyticsLive() {
             )
           : 999;
 
+        // 999 = never had progress (new/unstarted student) — not the same as going silent
+        const hasProgressHistory = daysSinceProgress < 999;
         const isAtRisk =
           (attendanceRate !== null && attendanceRate < 70) ||
-          daysSinceProgress >= 14;
-        const isStagnant = daysSinceProgress >= 7;
+          (hasProgressHistory && daysSinceProgress >= 14);
+        const isStagnant = hasProgressHistory && daysSinceProgress >= 7;
 
         return {
           id: student.id,

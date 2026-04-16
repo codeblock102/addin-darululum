@@ -83,18 +83,23 @@ const Teachers = () => {
      * @property {number} totalClasses - Placeholder for total classes (currently 0).
      */
     queryFn: async () => {
-      if (!adminData?.madrassah_id) return null;
-
-      const { data: teachers } = await supabase
+      let teacherQuery = supabase
         .from("profiles")
         .select("id, name, email, role, subject, madrassah_id, bio, phone, experience")
-        .eq("role", "teacher")
-        .eq("madrassah_id", adminData.madrassah_id);
+        .eq("role", "teacher");
 
-      const { data: students } = await supabase
+      let studentQuery = supabase
         .from("students")
-        .select("id, name, grade, class_ids, madrassah_id")
-        .eq("madrassah_id", adminData.madrassah_id);
+        .select("id, madrassah_id");
+
+      // Only filter by madrassah if the admin has one set
+      if (adminData?.madrassah_id) {
+        teacherQuery = teacherQuery.eq("madrassah_id", adminData.madrassah_id);
+        studentQuery = studentQuery.eq("madrassah_id", adminData.madrassah_id);
+      }
+
+      const { data: teachers } = await teacherQuery;
+      const { data: students } = await studentQuery;
 
       return {
         totalTeachers: teachers?.length || 0,
@@ -106,7 +111,7 @@ const Teachers = () => {
         totalClasses: 0, // Will be populated later
       };
     },
-    enabled: !!adminData,
+    enabled: true,
   });
 
   // Check authentication
