@@ -102,8 +102,8 @@ export const RecentActivity = ({ teacherId, isAdmin = false }: RecentActivityPro
                     <span className="text-xs text-muted-foreground">
                       Juz {entry.current_juz ?? "—"}, Surah {entry.current_surah ?? "—"}
                       {entry.memorization_quality && (
-                        <span className={` · ${qualityColor(entry.memorization_quality)}`}>
-                          {entry.memorization_quality}
+                        <span className={qualityColor(entry.memorization_quality)}>
+                          {" · "}{entry.memorization_quality}
                         </span>
                       )}
                     </span>

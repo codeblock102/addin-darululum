@@ -57,20 +57,16 @@ interface StatCardProps {
   icon: React.ReactNode;
   description: string;
   isLoading: boolean;
-  isAdmin: boolean;
+  isAdmin?: boolean;
 }
 
-const StatCard = ({ title, value, icon, description, isLoading, isAdmin }: StatCardProps) => (
-  <Card>
-    <CardHeader
-      className={`flex flex-row items-center justify-between space-y-0 ${
-        isAdmin ? "border-b border-primary/30 pb-4" : "pb-2"
-      }`}
-    >
-      <CardTitle className="text-sm font-medium">{title}</CardTitle>
-      {icon}
+const StatCard = ({ title, value, icon, description, isLoading }: StatCardProps) => (
+  <Card className="border border-gray-100 shadow-sm">
+    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+      <CardTitle className="text-sm font-medium text-muted-foreground">{title}</CardTitle>
+      <div className="p-2 bg-gray-100 rounded-lg">{icon}</div>
     </CardHeader>
-    <CardContent className="pt-4">
+    <CardContent>
       {isLoading ? (
         <>
           <Skeleton className="h-8 w-1/2" />
@@ -78,8 +74,8 @@ const StatCard = ({ title, value, icon, description, isLoading, isAdmin }: StatC
         </>
       ) : (
         <>
-          <div className="text-2xl font-bold">{value}</div>
-          <p className="text-xs text-muted-foreground">{description}</p>
+          <div className="text-2xl font-bold text-gray-900">{value}</div>
+          <p className="text-xs text-muted-foreground mt-1">{description}</p>
         </>
       )}
     </CardContent>

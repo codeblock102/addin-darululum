@@ -131,8 +131,8 @@ const Attendance = () => {
 
               <div className="space-y-2">
                 <div className="flex items-center gap-2 sm:gap-3">
-                  <div className="p-2 sm:p-3 bg-gradient-to-br from-[hsl(142.8,64.2%,24.1%)] to-[hsl(142.8,64.2%,32%)] rounded-lg sm:rounded-xl text-white shadow-sm">
-                    <BookOpen className="h-4 w-4 sm:h-6 sm:w-6" />
+                  <div className="p-2 sm:p-2.5 bg-green-100 rounded-lg text-green-700">
+                    <BookOpen className="h-4 w-4 sm:h-5 sm:w-5" />
                   </div>
                   <div>
                     <h1 className="text-xl sm:text-3xl lg:text-4xl font-bold text-foreground">{t("pages.attendance.headerTitle")}</h1>
@@ -206,7 +206,7 @@ const Attendance = () => {
             <div className="flex flex-col gap-3 sm:gap-4">
               <div>
                 <CardTitle className="text-lg sm:text-2xl font-bold text-foreground flex items-center gap-2 sm:gap-3">
-                  <div className="p-1.5 sm:p-2 bg-gradient-to-br from-[hsl(142.8,64.2%,24.1%)] to-[hsl(142.8,64.2%,32%)] rounded-md sm:rounded-lg text-white">
+                  <div className="p-1.5 sm:p-2 bg-green-100 rounded-md sm:rounded-lg text-green-700">
                     <Users className="h-4 w-4 sm:h-5 sm:w-5" />
                   </div>
                   {t("pages.attendance.dashboardTitle")}
