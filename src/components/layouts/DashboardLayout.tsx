@@ -24,15 +24,13 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
 
   useEffect(() => {
     const root = document.documentElement;
+    root.classList.remove("dark");
     if ((isTeacher || isParent) && !isAdmin) {
-      root.classList.remove("dark");
       root.classList.add("teacher-theme");
-      setTheme("light");
-    } else if (isAdmin) {
+    } else {
       root.classList.remove("teacher-theme");
-      root.classList.add("dark");
-      setTheme("dark");
     }
+    setTheme("light");
   }, [isAdmin, isTeacher, isParent, setTheme]);
 
   useEffect(() => {

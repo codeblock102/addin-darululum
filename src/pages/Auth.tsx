@@ -39,7 +39,6 @@ import {
   Loader2,
   LockKeyhole,
   Mail,
-  Sparkles,
   Shield,
 } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth.ts";
@@ -212,46 +211,27 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[hsl(142.8,64.2%,24.1%)] via-[hsl(142.8,64.2%,20%)] to-[hsl(142.8,64.2%,16%)] p-4 relative overflow-hidden">
-      {/* Background Pattern */}
-      <div className="absolute inset-0 opacity-10">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_1px_1px,rgba(255,255,255,0.1)_1px,transparent_0)] bg-[length:20px_20px]"></div>
-      </div>
-      
-      {/* Floating Elements */}
-      <div className="absolute top-20 left-20 w-32 h-32 bg-gradient-to-br from-emerald-400/20 to-teal-400/20 rounded-full blur-3xl animate-pulse"></div>
-      <div className="absolute bottom-20 right-20 w-40 h-40 bg-gradient-to-br from-cyan-400/20 to-blue-400/20 rounded-full blur-3xl animate-pulse delay-1000"></div>
-      
-      <div className="relative z-10 w-full max-w-md">
-        {/* Premium Card */}
-        <Card className="backdrop-blur-xl bg-white/95 shadow-2xl border-0 rounded-3xl overflow-hidden">
-          {/* Header with gradient */}
-          <div className="bg-gradient-to-r from-[hsl(142.8,64.2%,24.1%)] to-[hsl(142.8,64.2%,28%)] p-8 text-center relative">
-            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-emerald-400 via-teal-400 to-cyan-400"></div>
-            
-            {/* Logo Container */}
-            <div className="relative mb-6 flex justify-center">
-              <div className="bg-white/95 rounded-xl p-3 shadow-md border border-white/50 w-[220px] sm:w-[260px]">
+    <div className="min-h-screen flex items-center justify-center bg-[hsl(142.8,64.2%,22%)] p-4">
+      <div className="w-full max-w-md">
+        <Card className="bg-white shadow-xl border-0 rounded-2xl overflow-hidden">
+          {/* Header */}
+          <div className="bg-[hsl(142.8,64.2%,22%)] px-8 py-8 text-center">
+            {/* Logo */}
+            <div className="flex justify-center mb-5">
+              <div className="bg-white rounded-xl p-3 shadow-sm w-[200px] sm:w-[240px]">
                 <img
                   src={DumLogo}
                   alt="Dār Al-Ulūm Montréal Logo"
                   className="w-full h-auto object-contain"
                 />
               </div>
-              <div className="absolute -top-3 left-1/2 -translate-x-1/2 w-8 h-8 bg-gradient-to-r from-emerald-400 to-teal-400 rounded-full flex items-center justify-center">
-                <Sparkles className="w-4 h-4 text-white" />
-              </div>
             </div>
-            
-            <CardTitle className="text-3xl font-bold text-white mb-2">
+            <CardTitle className="text-2xl font-bold text-white mb-1">
               Dār Al-Ulūm Montréal
             </CardTitle>
-            <CardDescription className="text-emerald-100/90 text-lg font-medium">
-              Welcome to Excellence
-            </CardDescription>
-            <p className="text-emerald-200/70 text-sm mt-2">
+            <CardDescription className="text-white/70 text-sm">
               Secure access to your educational portal
-            </p>
+            </CardDescription>
           </div>
 
           <CardContent className="p-8">
