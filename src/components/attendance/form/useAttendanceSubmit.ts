@@ -131,7 +131,7 @@ export function useAttendanceSubmit(
         time: formData.time,
         status: status,
         notes: formData.notes,
-        late_reason: status === 'late' ? formData.late_reason : null,
+        late_reason: ['late', 'absent', 'excused'].includes(status) ? formData.late_reason : null,
         class_id: formData.class_id || null,
       }));
 

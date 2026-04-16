@@ -3,6 +3,7 @@ import { Form } from "@/components/ui/form.tsx";
 import { useToast } from "@/hooks/use-toast.ts";
 import { DateSelector } from "./form/DateSelector.tsx";
 import { NotesField } from "./form/NotesField.tsx";
+import { ReasonSelector } from "./form/ReasonSelector.tsx";
 import { useAttendanceSubmit } from "./form/useAttendanceSubmit.ts";
 import { StudentGrid } from "./form/StudentGrid.tsx";
 import { BulkActions } from "./form/BulkActions.tsx";
@@ -170,7 +171,7 @@ export const AttendanceForm = () => {
           time: formVals?.time,
           status: pendingStatus,
           notes: formVals?.notes,
-          late_reason: pendingStatus === 'late' ? (formVals?.late_reason || null) : null,
+          late_reason: ['late', 'absent', 'excused'].includes(pendingStatus) ? (formVals?.late_reason || null) : null,
           class_id: classId !== "all" ? classId : null,
         }));
         const { error: upsertErr } = await supabase.from('attendance').upsert(records, { onConflict: 'student_id,date' });
@@ -442,15 +443,16 @@ export const AttendanceForm = () => {
           </Card>
         )}
 
-        {/* --- Additional Notes Card --- */}
+        {/* --- Absence Reason Card (shown for absent, excused, late) --- */}
         <Card>
           <CardHeader>
-            <CardTitle>{t("pages.attendance.form.notes.title", "Additional Notes")}</CardTitle>
+            <CardTitle>{t("pages.attendance.form.reason.title", "Absence / Late Reason")}</CardTitle>
             <CardDescription>
-              {t("pages.attendance.form.notes.desc", "Add any relevant notes for this attendance record.")}
+              {t("pages.attendance.form.reason.desc", "Select a reason when marking a student absent, excused, or late.")}
             </CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="space-y-4">
+            <ReasonSelector form={form} />
             <NotesField form={form} />
           </CardContent>
         </Card>

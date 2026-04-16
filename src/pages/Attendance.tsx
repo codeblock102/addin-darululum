@@ -7,6 +7,7 @@ import { useRBAC } from "@/hooks/useRBAC.ts";
 import { AttendanceForm } from "@/components/attendance/AttendanceForm.tsx";
 import { AttendanceTable } from "@/components/attendance/AttendanceTable.tsx";
 import { AttendanceCutoffSettings } from "@/components/attendance/AttendanceCutoffSettings.tsx";
+import { LongTermAbsenceModal } from "@/components/attendance/LongTermAbsenceModal.tsx";
 import {
   Tabs,
   TabsContent,
@@ -16,6 +17,7 @@ import {
 import {
   BookOpen,
   CalendarCheck,
+  CalendarDays,
   Clock,
   TrendingUp,
   Users,
@@ -28,12 +30,14 @@ import {
   CardTitle,
 } from "@/components/ui/card.tsx";
 import { Badge } from "@/components/ui/badge.tsx";
+import { Button } from "@/components/ui/button.tsx";
 import { useIsMobile } from "@/hooks/use-mobile.tsx";
 import { useI18n } from "@/contexts/I18nContext.tsx";
 
 const Attendance = () => {
   const { t } = useI18n();
   const [selectedTab, setSelectedTab] = useState("take-attendance");
+  const [longTermOpen, setLongTermOpen] = useState(false);
   const isMobile = useIsMobile();
   const navigate = useNavigate();
   const { isAdmin, isAttendanceTaker, isLoading } = useRBAC();
@@ -204,17 +208,34 @@ const Attendance = () => {
         <Card className="border border-gray-200 shadow-sm bg-white overflow-hidden">
           <CardHeader className="bg-gray-50 border-b border-gray-200 p-4 sm:p-6">
             <div className="flex flex-col gap-3 sm:gap-4">
-              <div>
-                <CardTitle className="text-lg sm:text-2xl font-bold text-foreground flex items-center gap-2 sm:gap-3">
-                  <div className="p-1.5 sm:p-2 bg-green-100 rounded-md sm:rounded-lg text-green-700">
-                    <Users className="h-4 w-4 sm:h-5 sm:w-5" />
-                  </div>
-                  {t("pages.attendance.dashboardTitle")}
-                </CardTitle>
-                <CardDescription className="text-foreground mt-1 sm:mt-2 text-sm sm:text-base">{t("pages.attendance.dashboardDesc")}</CardDescription>
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <CardTitle className="text-lg sm:text-2xl font-bold text-foreground flex items-center gap-2 sm:gap-3">
+                    <div className="p-1.5 sm:p-2 bg-green-100 rounded-md sm:rounded-lg text-green-700">
+                      <Users className="h-4 w-4 sm:h-5 sm:w-5" />
+                    </div>
+                    {t("pages.attendance.dashboardTitle")}
+                  </CardTitle>
+                  <CardDescription className="text-foreground mt-1 sm:mt-2 text-sm sm:text-base">{t("pages.attendance.dashboardDesc")}</CardDescription>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setLongTermOpen(true)}
+                  className="flex-shrink-0 border-blue-200 text-blue-700 hover:bg-blue-50"
+                >
+                  <CalendarDays className="h-4 w-4 mr-1.5" />
+                  Multi-day Absence
+                </Button>
               </div>
             </div>
           </CardHeader>
+
+          {/* Long-term absence modal */}
+          <LongTermAbsenceModal
+            open={longTermOpen}
+            onClose={() => setLongTermOpen(false)}
+          />
 
           <CardContent className="p-0">
             <div className="p-3 sm:p-6 lg:p-8 pt-4">
