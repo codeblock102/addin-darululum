@@ -15,10 +15,11 @@ import {
   TabsList,
   TabsTrigger,
 } from "@/components/ui/tabs.tsx";
-import { ArrowLeft, BookOpen, RefreshCw, UserRound } from "lucide-react";
+import { ArrowLeft, BookOpen, FolderOpen, RefreshCw, UserRound } from "lucide-react";
 import { StudentProgressChart } from "@/components/students/StudentProgressChart.tsx";
 import { Skeleton } from "@/components/ui/skeleton.tsx";
 import { NewProgressEntry } from "@/components/students/NewProgressEntry.tsx";
+import { StudentDossier } from "@/components/students/StudentDossier.tsx";
 import { useToast } from "@/hooks/use-toast.ts";
 import { DhorBook } from "@/components/dhor-book/DhorBook.tsx";
 
@@ -53,7 +54,7 @@ const StudentDetail = () => {
 
         const { data, error } = await supabase
           .from("students")
-          .select("id, name, grade, class_ids, guardian_name, guardian_email, secondary_guardian_email, madrassah_id, created_at")
+          .select("id, name, grade, gender, section, class_ids, guardian_name, guardian_email, guardian_contact, secondary_guardian_email, permanent_code, health_card, date_of_birth, street, city, province, postal_code, madrassah_id, created_at")
           .eq("id", id)
           .single();
 
@@ -266,6 +267,10 @@ const StudentDetail = () => {
             <RefreshCw className="w-4 h-4 mr-2" />
             Revision History
           </TabsTrigger>
+          <TabsTrigger value="dossier">
+            <FolderOpen className="w-4 h-4 mr-2" />
+            Dossier
+          </TabsTrigger>
         </TabsList>
         <TabsContent value="dhor-book">
           <DhorBook
@@ -284,6 +289,9 @@ const StudentDetail = () => {
               </p>
             </div>
           )}
+        </TabsContent>
+        <TabsContent value="dossier">
+          <StudentDossier studentId={student.id} student={student} />
         </TabsContent>
       </Tabs>
     </div>
