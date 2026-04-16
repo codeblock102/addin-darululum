@@ -67,7 +67,7 @@ export function StudentSelector({
       name="student_id"
       render={({ field }) => (
         <FormItem>
-          <FormLabel className="text-black">
+          <FormLabel className="text-foreground">
             {t("pages.attendance.form.students.title", "Select Students")}
           </FormLabel>
           <FormControl>

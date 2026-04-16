@@ -170,7 +170,7 @@ export function BulkAttendanceGrid({ form }: BulkAttendanceGridProps) {
                 onCheckedChange={handleSelectAll}
                 className="data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600"
               />
-              <span className="text-sm font-medium text-black">
+              <span className="text-sm font-medium text-foreground">
                 {selectedStudents.size > 0 
                   ? t("pages.attendance.bulk.selectedCount", "{count} students selected").replace("{count}", String(selectedStudents.size))
                   : t("pages.attendance.bulk.selectPrompt", "Select students for bulk attendance")}
@@ -269,10 +269,10 @@ export function BulkAttendanceGrid({ form }: BulkAttendanceGridProps) {
                             </AvatarFallback>
                           </Avatar>
                           <div className="flex-1 min-w-0">
-                            <p className="text-sm text-black">
+                            <p className="text-sm text-foreground">
                               {student.name}
                             </p>
-                            <p className="text-xs text-black">
+                            <p className="text-xs text-foreground">
                               {t("pages.attendance.bulk.activeStudent", "Active Student")}
                             </p>
                           </div>
@@ -282,7 +282,7 @@ export function BulkAttendanceGrid({ form }: BulkAttendanceGridProps) {
                   ))}
                 </div>
                 {(!students || students.length === 0) && (
-                  <div className="text-center py-8 text-black">
+                  <div className="text-center py-8 text-foreground">
                     {t("pages.attendance.bulk.none", "No students found")}
                   </div>
                 )}
@@ -303,7 +303,7 @@ export function BulkAttendanceGrid({ form }: BulkAttendanceGridProps) {
                   <CheckSquare className="h-3 w-3 mr-1" />
                   {t("pages.attendance.bulk.badgeSelected", "{count} Selected").replace("{count}", String(selectedStudents.size))}
                 </Badge>
-                <span className="text-sm text-black">
+                <span className="text-sm text-foreground">
                   {t("pages.attendance.bulk.ready", "Ready for bulk attendance recording")}
                 </span>
               </div>
@@ -311,7 +311,7 @@ export function BulkAttendanceGrid({ form }: BulkAttendanceGridProps) {
                 variant="outline"
                 size="sm"
                 onClick={() => setSelectedStudents(new Set())}
-                className="text-black hover:text-gray-800"
+                className="text-foreground hover:text-gray-800"
               >
                 {t("pages.attendance.bulk.clear", "Clear Selection")}
               </Button>

@@ -14,8 +14,8 @@ export function AttendanceEmptyState(
       <div className="h-16 w-16 rounded-full bg-purple-100 flex items-center justify-center mb-4">
         <CalendarCheck className="h-8 w-8 text-purple-500" />
       </div>
-      <h3 className="text-lg font-semibold text-black mb-2">No attendance records found</h3>
-      <p className="text-black text-center max-w-md">
+      <h3 className="text-lg font-semibold text-foreground mb-2">No attendance records found</h3>
+      <p className="text-foreground text-center max-w-md">
         {hasFilters 
           ? "No attendance records match your current filters. Try adjusting your search criteria."
           : "There are no attendance records for the selected criteria. Try adjusting your filters or check back later."

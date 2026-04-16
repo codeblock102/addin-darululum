@@ -4,7 +4,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase, SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY } from "@/integrations/supabase/client.ts";
 import { useToast } from "@/components/ui/use-toast.ts";
 import { useAuth } from "@/hooks/use-auth.ts";
-import { Message as _Message, MessageRecipient } from "@/types/progress.ts";
+import { MessageRecipient } from "@/types/progress.ts";
 import { Button } from "@/components/ui/button.tsx";
 import { Loader2, Send } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea.tsx";

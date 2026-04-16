@@ -135,8 +135,8 @@ const Attendance = () => {
                     <BookOpen className="h-4 w-4 sm:h-6 sm:w-6" />
                   </div>
                   <div>
-                    <h1 className="text-xl sm:text-3xl lg:text-4xl font-bold text-black">{t("pages.attendance.headerTitle")}</h1>
-                    <p className="text-black text-sm sm:text-lg">{t("pages.attendance.headerDesc")}</p>
+                    <h1 className="text-xl sm:text-3xl lg:text-4xl font-bold text-foreground">{t("pages.attendance.headerTitle")}</h1>
+                    <p className="text-foreground text-sm sm:text-lg">{t("pages.attendance.headerDesc")}</p>
                   </div>
                 </div>
               </div>
@@ -179,11 +179,11 @@ const Attendance = () => {
               <CardContent className="p-4 sm:p-6">
                 <div className="flex items-center justify-between">
                   <div className="space-y-1 sm:space-y-2">
-                    <p className="text-xs sm:text-sm font-medium text-black">
+                    <p className="text-xs sm:text-sm font-medium text-foreground">
                       {stat.title}
                     </p>
                     <div className="flex items-baseline gap-1 sm:gap-2">
-                      <p className="text-lg sm:text-2xl lg:text-3xl font-bold text-black">
+                      <p className="text-lg sm:text-2xl lg:text-3xl font-bold text-foreground">
                         {stat.value}
                       </p>
                       <p className={`text-xs sm:text-sm font-medium ${stat.color}`}>
@@ -205,13 +205,13 @@ const Attendance = () => {
           <CardHeader className="bg-gray-50 border-b border-gray-200 p-4 sm:p-6">
             <div className="flex flex-col gap-3 sm:gap-4">
               <div>
-                <CardTitle className="text-lg sm:text-2xl font-bold text-black flex items-center gap-2 sm:gap-3">
+                <CardTitle className="text-lg sm:text-2xl font-bold text-foreground flex items-center gap-2 sm:gap-3">
                   <div className="p-1.5 sm:p-2 bg-gradient-to-br from-[hsl(142.8,64.2%,24.1%)] to-[hsl(142.8,64.2%,32%)] rounded-md sm:rounded-lg text-white">
                     <Users className="h-4 w-4 sm:h-5 sm:w-5" />
                   </div>
                   {t("pages.attendance.dashboardTitle")}
                 </CardTitle>
-                <CardDescription className="text-black mt-1 sm:mt-2 text-sm sm:text-base">{t("pages.attendance.dashboardDesc")}</CardDescription>
+                <CardDescription className="text-foreground mt-1 sm:mt-2 text-sm sm:text-base">{t("pages.attendance.dashboardDesc")}</CardDescription>
               </div>
             </div>
           </CardHeader>
@@ -229,14 +229,14 @@ const Attendance = () => {
                 <TabsList className="w-full h-auto p-0 bg-transparent grid grid-cols-2 rounded-none">
                   <TabsTrigger
                     value="take-attendance"
-                    className="flex items-center justify-center gap-1.5 sm:gap-3 py-3 sm:py-4 px-3 sm:px-6 text-sm sm:text-base font-medium transition-all duration-300 rounded-none border-b-2 border-transparent data-[state=active]:border-[hsl(142.8,64.2%,24.1%)] data-[state=active]:bg-[hsl(142.8,64.2%,24.1%)]/10 data-[state=active]:text-[hsl(142.8,64.2%,24.1%)] hover:bg-gray-100 text-black"
+                    className="flex items-center justify-center gap-1.5 sm:gap-3 py-3 sm:py-4 px-3 sm:px-6 text-sm sm:text-base font-medium transition-all duration-300 rounded-none border-b-2 border-transparent data-[state=active]:border-[hsl(142.8,64.2%,24.1%)] data-[state=active]:bg-[hsl(142.8,64.2%,24.1%)]/10 data-[state=active]:text-[hsl(142.8,64.2%,24.1%)] hover:bg-gray-100 text-foreground"
                   >
                     <CalendarCheck className="h-4 w-4 sm:h-5 sm:w-5" />
                     <span className="text-xs sm:text-base">{t("pages.attendance.tabs.take")}</span>
                   </TabsTrigger>
                   <TabsTrigger
                     value="records"
-                    className="flex items-center justify-center gap-1.5 sm:gap-3 py-3 sm:py-4 px-3 sm:px-6 text-sm sm:text-base font-medium transition-all duration-300 rounded-none border-b-2 border-transparent data-[state=active]:border-purple-500 data-[state=active]:bg-purple-50 data-[state=active]:text-purple-700 hover:bg-gray-100 text-black"
+                    className="flex items-center justify-center gap-1.5 sm:gap-3 py-3 sm:py-4 px-3 sm:px-6 text-sm sm:text-base font-medium transition-all duration-300 rounded-none border-b-2 border-transparent data-[state=active]:border-purple-500 data-[state=active]:bg-purple-50 data-[state=active]:text-purple-700 hover:bg-gray-100 text-foreground"
                   >
                     <Users className="h-4 w-4 sm:h-5 sm:w-5" />
                     <span className="text-xs sm:text-base">{t("pages.attendance.tabs.records")}</span>
@@ -251,8 +251,8 @@ const Attendance = () => {
                 >
                   <div className="space-y-4 sm:space-y-6">
                     <div className="text-center space-y-1 sm:space-y-2">
-                      <h3 className="text-lg sm:text-xl font-semibold text-black">{t("pages.attendance.recordTitle")}</h3>
-                      <p className="text-black text-sm sm:text-base">{t("pages.attendance.recordDesc")}</p>
+                      <h3 className="text-lg sm:text-xl font-semibold text-foreground">{t("pages.attendance.recordTitle")}</h3>
+                      <p className="text-foreground text-sm sm:text-base">{t("pages.attendance.recordDesc")}</p>
                     </div>
                     <AttendanceForm />
                   </div>
@@ -264,8 +264,8 @@ const Attendance = () => {
                 >
                   <div className="space-y-4 sm:space-y-6">
                     <div className="text-center space-y-1 sm:space-y-2">
-                      <h3 className="text-lg sm:text-xl font-semibold text-black">{t("pages.attendance.historyTitle")}</h3>
-                      <p className="text-black text-sm sm:text-base">{t("pages.attendance.historyDesc")}</p>
+                      <h3 className="text-lg sm:text-xl font-semibold text-foreground">{t("pages.attendance.historyTitle")}</h3>
+                      <p className="text-foreground text-sm sm:text-base">{t("pages.attendance.historyDesc")}</p>
                     </div>
                     <AttendanceTable />
                   </div>

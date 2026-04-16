@@ -154,7 +154,7 @@ export function AttendanceDataTable(
       <div className="flex justify-center items-center h-48">
         <div className="flex flex-col items-center gap-2">
           <Loader2 className="h-8 w-8 animate-spin text-purple-500" />
-          <p className="text-sm text-black">Loading attendance records...</p>
+          <p className="text-sm text-foreground">Loading attendance records...</p>
         </div>
       </div>
     );
@@ -210,7 +210,7 @@ export function AttendanceDataTable(
                     {format(parseISO(record.date), "PPP")}
                   </TableCell>
                   <TableCell className="text-gray-900 flex items-center gap-2">
-                    <Clock className="h-4 w-4 text-black" />
+                    <Clock className="h-4 w-4 text-foreground" />
                     {formatTime(record.time)}
                   </TableCell>
                   <TableCell className="text-gray-900">
@@ -222,7 +222,7 @@ export function AttendanceDataTable(
                   <TableCell>
                     <StatusBadge status={record.status as StatusType} />
                   </TableCell>
-                  <TableCell className="max-w-[200px] text-black">
+                  <TableCell className="max-w-[200px] text-foreground">
                     <div className="flex items-center gap-2">
                       <span className="truncate flex-1">{record.notes || "No notes"}</span>
                       {isAdmin && (

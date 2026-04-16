@@ -33,25 +33,30 @@ export const DashboardStats = () => {
       ).length || 0;
 
       const total = data?.length || 0;
-      const completionRate = total
-        ? Math.round((excellentOrGood / total) * 100)
-        : 0;
-
-      return completionRate;
+      return total ? Math.round((excellentOrGood / total) * 100) : 0;
     },
   });
 
   const { data: attendanceRate } = useQuery({
     queryKey: ["attendanceRate"],
-    queryFn: () => {
-      return 92;
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("attendance")
+        .select("status");
+      if (!data || data.length === 0) return 0;
+      const present = data.filter((a) => a.status?.toLowerCase() === "present").length;
+      return Math.round((present / data.length) * 100);
     },
   });
 
   const { data: activeClasses } = useQuery({
     queryKey: ["activeClasses"],
-    queryFn: () => {
-      return 8;
+    queryFn: async () => {
+      const { count } = await supabase
+        .from("classes")
+        .select("*", { count: "exact", head: true })
+        .eq("status", "active");
+      return count || 0;
     },
   });
 
@@ -63,19 +68,16 @@ export const DashboardStats = () => {
         title={t("pages.dashboard.stats.totalStudents")}
         value={studentsCount?.toString() || "0"}
         icon={<Users className={iconClass} size={24} />}
-        trend={{ value: 12, isPositive: true }}
       />
       <StatsCard
         title={t("pages.dashboard.stats.averageAttendance")}
-        value={`${attendanceRate}%`}
+        value={attendanceRate !== undefined ? `${attendanceRate}%` : "—"}
         icon={<Clock className={iconClass} size={24} />}
-        trend={{ value: 3, isPositive: true }}
       />
       <StatsCard
         title={t("pages.dashboard.stats.completionRate")}
         value={`${progressStats || 0}%`}
         icon={<GraduationCap className={iconClass} size={24} />}
-        trend={{ value: 5, isPositive: true }}
       />
       <StatsCard
         title={t("pages.dashboard.stats.activeClasses")}

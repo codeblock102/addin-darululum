@@ -36,7 +36,7 @@ export function AttendanceFormHeader() {
           </TooltipProvider>
         </div>
       </div>
-      <CardDescription className="text-black">
+      <CardDescription className="text-foreground">
         {t("pages.attendance.recordDesc", "Record attendance for selected students with custom timing and reasons")}
       </CardDescription>
     </CardHeader>

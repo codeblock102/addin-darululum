@@ -466,7 +466,7 @@ export const AttendanceForm = () => {
             {t("pages.attendance.dialog.desc", "The following parents will receive attendance emails:")}
           </AlertDialogDescription>
         </AlertDialogHeader>
-        <div className="max-h-64 overflow-auto text-sm text-black">
+        <div className="max-h-64 overflow-auto text-sm text-foreground">
           {Object.entries(previewMap).length === 0 ? (
             <p>{t("pages.attendance.dialog.none", "No recipients found.")}</p>
           ) : (

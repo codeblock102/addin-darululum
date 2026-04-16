@@ -29,7 +29,7 @@ export function AttendanceTableHeader() {
           </Tooltip>
         </TooltipProvider>
       </div>
-      <CardDescription className="text-black">
+      <CardDescription className="text-foreground">
         View and manage attendance records for all students
       </CardDescription>
     </CardHeader>

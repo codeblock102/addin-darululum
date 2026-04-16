@@ -41,13 +41,13 @@ export function AttendanceFilters({
           placeholder="Search students..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full sm:w-[300px] bg-white text-black border-gray-300 focus:ring-2 focus:ring-[hsl(142.8,64.2%,24.1%)] focus:border-[hsl(142.8,64.2%,24.1%)]"
+          className="w-full sm:w-[300px] bg-white text-foreground border-gray-300 focus:ring-2 focus:ring-[hsl(142.8,64.2%,24.1%)] focus:border-[hsl(142.8,64.2%,24.1%)]"
         />
         <Select value={statusFilter || "all"} onValueChange={(value) => setStatusFilter(value === "all" ? null : value)}>
-          <SelectTrigger className="justify-start text-left sm:w-[180px] bg-white text-black border-gray-300 hover:bg-gray-100">
+          <SelectTrigger className="justify-start text-left sm:w-[180px] bg-white text-foreground border-gray-300 hover:bg-gray-100">
             <SelectValue placeholder="All Statuses" />
           </SelectTrigger>
-          <SelectContent className="bg-white text-black border-gray-200">
+          <SelectContent className="bg-white text-foreground border-gray-200">
             <SelectItem value="all">All Statuses</SelectItem>
             <SelectItem value="present">Present</SelectItem>
             <SelectItem value="absent">Absent</SelectItem>
@@ -65,7 +65,7 @@ export function AttendanceFilters({
               variant="outline"
               className={cn(
                 "justify-start text-left sm:w-[180px] bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200 border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-600",
-                !dateFilter && "text-black",
+                !dateFilter && "text-foreground",
               )}
             >
               <CalendarIcon className="mr-2 h-4 w-4" />
@@ -101,7 +101,7 @@ export function AttendanceFilters({
             setStatusFilter(null);
             setDateFilter(null);
           }}
-          className="bg-white text-black border-gray-200 hover:bg-gray-100"
+          className="bg-white text-foreground border-gray-200 hover:bg-gray-100"
         >
           Clear Filters
         </Button>

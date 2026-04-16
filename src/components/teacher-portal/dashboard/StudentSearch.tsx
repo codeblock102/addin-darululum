@@ -8,10 +8,8 @@ import {
   CardTitle,
 } from "@/components/ui/card.tsx";
 import { Input } from "@/components/ui/input.tsx";
-import { Button as _Button } from "@/components/ui/button.tsx";
 import { Loader2, Search, UserRound, Users } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { AddStudentDialog as _AddStudentDialog } from "../students/AddStudentDialog.tsx";
 import { useI18n } from "@/contexts/I18nContext.tsx";
 import { useTeacherClasses } from "@/hooks/useTeacherClasses.ts";
 
@@ -151,7 +149,7 @@ export const StudentSearch = (
         </div>
 
         {isLoading && (
-          <div className="flex items-center gap-2 text-sm text-black p-3 bg-gray-50 rounded-lg border border-gray-200">
+          <div className="flex items-center gap-2 text-sm text-muted-foreground p-3 bg-gray-50 rounded-lg border border-gray-200">
             <Loader2 className="h-4 w-4 animate-spin text-[hsl(142.8,64.2%,24.1%)]" />
             <span>{t("pages.teacherPortal.studentSearch.loading", "Loading students...")}</span>
           </div>
@@ -161,7 +159,7 @@ export const StudentSearch = (
           <div className="space-y-2">
             {filteredStudents.length > 0 ? (
               <div className="space-y-2">
-                <div className="text-xs font-medium text-black uppercase tracking-wider">{t("pages.teacherPortal.studentSearch.foundPrefix", "Found")} {filteredStudents.length} {filteredStudents.length !== 1 ? t("pages.teacherPortal.studentSearch.studentsPlural", "students") : t("pages.teacherPortal.studentSearch.studentSingular", "student")}</div>
+                <div className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{t("pages.teacherPortal.studentSearch.foundPrefix", "Found")} {filteredStudents.length} {filteredStudents.length !== 1 ? t("pages.teacherPortal.studentSearch.studentsPlural", "students") : t("pages.teacherPortal.studentSearch.studentSingular", "student")}</div>
                 {filteredStudents.map((student) => (
                   <div
                     key={student.id}
@@ -171,7 +169,7 @@ export const StudentSearch = (
                     <div className="p-2 bg-[hsl(142.8,64.2%,24.1%)]/10 rounded-lg group-hover:bg-[hsl(142.8,64.2%,24.1%)]/20 transition-colors duration-200">
                       <UserRound className="h-4 w-4 text-[hsl(142.8,64.2%,24.1%)]" />
                     </div>
-                    <span className="font-medium text-black group-hover:text-[hsl(142.8,64.2%,24.1%)] transition-colors duration-200">
+                    <span className="font-medium text-muted-foreground group-hover:text-[hsl(142.8,64.2%,24.1%)] transition-colors duration-200">
                       {student.name}
                     </span>
                   </div>
@@ -180,8 +178,8 @@ export const StudentSearch = (
             ) : (
               <div className="text-center p-6 bg-gray-50 rounded-lg border border-gray-200">
                 <Users className="h-8 w-8 text-gray-400 mx-auto mb-2" />
-                <div className="text-sm text-black">{t("pages.teacherPortal.studentSearch.nonePrefix", "No students found for")} "<span className="font-medium">{searchQuery}</span>"</div>
-                <div className="text-xs text-black mt-1">{t("pages.teacherPortal.studentSearch.noneHint", "Try a different search term")}</div>
+                <div className="text-sm text-muted-foreground">{t("pages.teacherPortal.studentSearch.nonePrefix", "No students found for")} "<span className="font-medium">{searchQuery}</span>"</div>
+                <div className="text-xs text-muted-foreground mt-1">{t("pages.teacherPortal.studentSearch.noneHint", "Try a different search term")}</div>
               </div>
             )}
           </div>
@@ -190,8 +188,8 @@ export const StudentSearch = (
         {!searchQuery && !isLoading && (
           <div className="text-center p-6 bg-gray-50 rounded-lg border border-gray-200">
             <Search className="h-8 w-8 text-gray-400 mx-auto mb-2" />
-            <div className="text-sm text-black">{isAdmin ? t("pages.teacherPortal.studentSearch.emptyAdmin", "Search for students to manage") : t("pages.teacherPortal.studentSearch.empty", "Search for your students")}</div>
-            <div className="text-xs text-black mt-1">{t("pages.teacherPortal.studentSearch.emptyHint", "Start typing a student's name above")}</div>
+            <div className="text-sm text-muted-foreground">{isAdmin ? t("pages.teacherPortal.studentSearch.emptyAdmin", "Search for students to manage") : t("pages.teacherPortal.studentSearch.empty", "Search for your students")}</div>
+            <div className="text-xs text-muted-foreground mt-1">{t("pages.teacherPortal.studentSearch.emptyHint", "Start typing a student's name above")}</div>
           </div>
         )}
       </CardContent>

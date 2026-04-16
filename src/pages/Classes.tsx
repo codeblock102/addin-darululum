@@ -159,7 +159,7 @@ export default function Classes() {
           <div className="flex justify-end mb-4">
             <DialogTrigger asChild>
               <Button
-                className="bg-amber-500 hover:bg-amber-600 text-black px-4 py-2 sm:px-6 sm:py-3 text-sm sm:text-base"
+                className="bg-amber-500 hover:bg-amber-600 text-foreground px-4 py-2 sm:px-6 sm:py-3 text-sm sm:text-base"
                 onClick={() => handleOpenClassDialog()}
               >
                 <Plus className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />

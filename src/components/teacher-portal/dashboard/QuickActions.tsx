@@ -99,7 +99,7 @@ export const QuickActions = ({ teacherId: _teacherId, isAdmin = false }: QuickAc
                 <div className="text-sm font-semibold text-gray-800 group-hover:text-[hsl(142.8,64.2%,24.1%)] transition-colors duration-200">
                   {action.title}
                 </div>
-                <div className="text-xs text-black mt-1">
+                <div className="text-xs text-muted-foreground mt-1">
                   {action.description}
                 </div>
               </div>

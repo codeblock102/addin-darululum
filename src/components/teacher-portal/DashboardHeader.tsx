@@ -67,7 +67,7 @@ export const DashboardHeader = (
                       <BookOpen className="h-5 w-5 sm:h-6 sm:w-6 text-[hsl(142.8,64.2%,24.1%)] flex-shrink-0" />
                     )}
                   </h1>
-                  <p className="text-base text-black">{isAdmin ? t("pages.teacherPortal.header.adminSubtitle") : t("pages.teacherPortal.header.teacherSubtitle")}</p>
+                  <p className="text-base text-foreground">{isAdmin ? t("pages.teacherPortal.header.adminSubtitle") : t("pages.teacherPortal.header.teacherSubtitle")}</p>
                 </div>
 
                 {/* Assigned Classes */}
@@ -83,7 +83,7 @@ export const DashboardHeader = (
                     isLoadingClasses ? (
                       <div className="flex items-center gap-2">
                         <Loader2 className="h-4 w-4 animate-spin text-[hsl(142.8,64.2%,24.1%)]" />
-                        <span className="text-sm text-black">{t("pages.teacherPortal.header.loadingClasses")}</span>
+                        <span className="text-sm text-foreground">{t("pages.teacherPortal.header.loadingClasses")}</span>
                       </div>
                     ) : (
                       <div className="flex flex-wrap items-center gap-2">
@@ -96,7 +96,7 @@ export const DashboardHeader = (
                           </span>
                         ))}
                         {(!classes || classes.length === 0) && (
-                          <span className="text-sm text-black italic">{t("pages.teacherPortal.header.noClasses")}</span>
+                          <span className="text-sm text-foreground italic">{t("pages.teacherPortal.header.noClasses")}</span>
                         )}
                       </div>
                     )
@@ -109,13 +109,13 @@ export const DashboardHeader = (
             {/* Mobile contact info */}
             <div className="sm:hidden w-full space-y-2 mt-4">
               {teacher.email && (
-                <div className="flex items-center gap-2 text-sm text-black bg-gray-50 p-3 rounded-lg border border-gray-200">
+                <div className="flex items-center gap-2 text-sm text-foreground bg-gray-50 p-3 rounded-lg border border-gray-200">
                   <Mail className="h-4 w-4 text-gray-500 flex-shrink-0" />
                   <span className="truncate">{teacher.email}</span>
                 </div>
               )}
               {teacher.phone && (
-                <div className="flex items-center gap-2 text-sm text-black bg-gray-50 p-3 rounded-lg border border-gray-200">
+                <div className="flex items-center gap-2 text-sm text-foreground bg-gray-50 p-3 rounded-lg border border-gray-200">
                   <Phone className="h-4 w-4 text-gray-500 flex-shrink-0" />
                   <span>{teacher.phone}</span>
                 </div>
@@ -127,7 +127,7 @@ export const DashboardHeader = (
               <div className="mt-4 pt-4 border-t border-gray-200">
                 <div className="flex items-start gap-3">
                   <User className="h-4 w-4 text-gray-500 mt-0.5 flex-shrink-0" />
-                  <p className="text-sm text-black leading-relaxed">
+                  <p className="text-sm text-foreground leading-relaxed">
                     {teacher.bio}
                   </p>
                 </div>

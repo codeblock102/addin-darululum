@@ -23,7 +23,6 @@ import {
   BookOpen,
   ChevronLeft,
   ChevronRight,
-  Menu as _Menu,
   ShieldCheck,
   X,
 } from "lucide-react";
@@ -248,11 +247,6 @@ export const Sidebar = (
           )}
           style={{ overflowY: "auto" }}
         >
-          {/* DEBUG: Log navItems for admin */}
-          {isAdmin && (() => {
-            console.log("Admin NavItems being passed to SidebarNav:", navItems);
-            return null;
-          })()}
           <SidebarNav items={navItems} isAdmin={isAdmin} isOpen={isOpen} />
         </div>
 

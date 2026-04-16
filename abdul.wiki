@@ -1,0 +1,218 @@
+# Abdul's Wiki — Darul Ulum Montreal Platform
+
+> Living documentation. Update this file whenever architecture or major features change.
+
+---
+
+## What This App Is
+
+**Darul Ulum Montreal** is a web-based management platform for an Islamic Quran school (madrassah) in Montreal. It serves three distinct user types: **Admins**, **Teachers**, and **Parents**.
+
+The core purpose: track every student's Quran memorization journey, monitor attendance, enable teacher-parent communication, and give admins full visibility into school performance.
+
+**Live URL:** https://app.daralulummontreal.com/
+
+---
+
+## Tech Stack
+
+| Layer | Technology |
+|---|---|
+| Frontend | React 18 + Vite + TypeScript |
+| UI Components | shadcn/ui + Radix UI primitives |
+| Styling | TailwindCSS 3.4 |
+| State / Data | TanStack React Query 5 |
+| Forms | React Hook Form + Zod |
+| Routing | React Router 6 |
+| Charts | Recharts |
+| Animation | Framer Motion |
+| Backend | Supabase (Postgres + Auth + Storage + Edge Functions) |
+| Email | Resend API (via Supabase Edge Functions) |
+| Calendar | FullCalendar |
+
+---
+
+## User Roles
+
+### Admin
+- Full access to everything
+- Views live analytics dashboard (KPIs, at-risk students, alerts)
+- Manages teacher accounts, parent accounts, student roster
+- Can import students via CSV bulk upload
+- Views activity feed
+- Can manually invoke email notifications
+- Routes to `/dashboard` → teacher portal view with admin flag
+
+### Teacher
+- Logs student Quran progress (Dhor Book: surah, juz, ayat, quality, notes)
+- Takes attendance (bulk, per class/session)
+- Views at-risk students and performance analytics
+- Sends messages to parents (with email notification via Resend)
+- Creates and grades assignments
+- Views their class schedule
+- Routes to `/dashboard` → teacher portal
+
+### Parent
+- Views child's Quran progress, attendance history
+- Views and filters assignments/submissions
+- Messages the teacher (with email notification)
+- If linked to multiple children, uses child selector
+- Routes to `/parent`
+
+---
+
+## Page Map
+
+### Shared
+- `/auth` — Login/signup
+- `/reset-password` — Password reset
+
+### Admin Sub-pages (under `/admin`)
+- `/admin/parent-accounts` — Manage parent accounts
+- `/admin/bulk-student-import` — CSV student import
+- `/admin/teacher-schedules` — View teacher schedules
+- `/admin/setup` — First-time setup wizard
+- `/admin/roles` — Manual role assignment
+
+### Main App (protected, under `DashboardLayout`)
+- `/dashboard` — Role-based hub (Teacher Portal or Admin Portal)
+- `/parent` — Parent dashboard
+- `/parent/progress` — Child's Quran progress
+- `/parent/academics` — Assignments with status filtering
+- `/parent/attendance` — Attendance history
+- `/parent/messages` — Teacher messaging
+- `/students` — Student roster
+- `/students/:id` — Individual student profile
+- `/teachers` — Teacher roster
+- `/classes` — Class management
+- `/progress-book` — Dhor book entry (teacher)
+- `/attendance` — Bulk attendance form (teacher)
+- `/messages` — Teacher messaging
+- `/schedule` — Teacher schedule
+- `/teacher-accounts` — Manage teacher accounts (admin)
+- `/add-parent` — Link parent to student (teacher)
+- `/settings` — System settings
+- `/preferences` — User preferences
+- `/activity` — Activity feed (admin)
+- `/analytics` — Analytics dashboard (admin)
+
+### Dev-only (gated)
+- `/dev/seeder`, `/dev/create-demo`, `/dev/create-teacher-profile`, etc.
+
+---
+
+## Data Architecture
+
+### Key Supabase Tables
+| Table | Purpose |
+|---|---|
+| `profiles` | User profiles (all roles) — name, role, email, subject |
+| `students` | Student records — name, status, class_ids, madrassah_id |
+| `classes` | Class records — name, teacher_ids, current_students |
+| `progress` | Quran progress entries — surah, juz, ayat, quality, notes |
+| `attendance` | Attendance records — date, status, session, reason |
+| `teacher_assignments` | Assignments — title, due_date, status, student_ids |
+| `messages` | In-app messages — sender_id, recipient_id, message, read |
+| `parents` | Parent records — student_ids link |
+| `parent_children` | Parent→student linkage (legacy/fallback) |
+| `notifications` | In-app notification queue |
+| `analytics_metrics` | Pre-aggregated analytics data |
+
+### Row Level Security
+All tables have RLS policies. Teachers see only their students. Parents see only their children's data. Admins have full access.
+
+---
+
+## Email System
+
+All emails go through **Resend** via Supabase Edge Functions:
+
+| Function | When it fires |
+|---|---|
+| `send-teacher-message` | Teacher or parent sends an in-app message |
+| `attendance-absence-email` | Student marked absent (runs every 5 min via pg_cron) |
+| `daily-progress-email` | Daily summary of student progress to parents |
+| `send-parent-welcome-emails` | When a parent account is created |
+| `admin-send-email` | Admin manual email blast |
+
+Required env secrets: `RESEND_API_KEY`, `RESEND_FROM_EMAIL`, `APP_URL`, `LOGO_URL`
+
+---
+
+## Component Architecture
+
+```
+src/
+├── pages/               # Top-level route components
+│   ├── admin/           # Admin-specific pages
+│   ├── dev/             # Dev-only tools (gated)
+│   └── *.tsx            # Auth, Dashboard, Parent, Teacher pages
+├── components/
+│   ├── layouts/         # DashboardLayout, Sidebar, SidebarNav, SidebarUser
+│   ├── analytics/       # KPI cards, alert panels, metric views
+│   ├── attendance/      # Attendance form and table components
+│   ├── dhor-book/       # Quran progress recording (DhorBook, ClassroomRecords, etc.)
+│   ├── teacher-portal/  # Full teacher dashboard (tabs, students, assignments, grading)
+│   ├── parent/          # ChildSelector, ParentMessages
+│   ├── dashboard/       # DashboardStats, StatsCard, WeeklySchedule
+│   ├── shared/          # NotificationBell, FloatingDailyEmailButton
+│   ├── admin/           # Admin messaging, reports, settings, account management
+│   ├── students/        # Student list, dialog, form
+│   ├── teachers/        # Teacher list, dialog
+│   ├── classes/         # Class management
+│   └── ui/              # shadcn/ui wrapper components
+├── hooks/               # Custom React hooks (auth, RBAC, data fetching, analytics)
+├── services/analytics/  # KPI calculation, alert engine, aggregation jobs
+├── contexts/            # AuthContext, I18nContext
+├── types/               # TypeScript interfaces
+├── utils/               # Helper functions (Quran math, CSV, role checks)
+├── config/              # Navigation definitions
+├── i18n/                # Translation strings
+├── styles/              # Global CSS (theme, animations, components)
+└── integrations/supabase/ # Client setup and generated types
+```
+
+---
+
+## Analytics System
+
+The analytics layer has two modes:
+1. **Pre-aggregated** (admin dashboard): Daily aggregation job writes to `analytics_metrics`. Feeds the admin KPI dashboard.
+2. **Live** (teacher portal): Hooks like `useTeacherStudentMetrics` calculate at-risk scores per student in real-time from `progress` + `attendance` tables.
+
+**At-risk scoring** (composite):
+- Attendance rate < threshold → attendance risk flag
+- No progress entry in 7+ days → stagnant flag
+- Both → "at-risk" label in teacher dashboard
+
+**Essential KPIs** (admin overview):
+1. Students on track
+2. At-risk students
+3. Teachers with at-risk students
+4. Session reliability (attendance %)
+5. Memorization velocity
+6. Retention rate
+7. Active students
+
+---
+
+## Navigation Config
+
+`src/config/navigation.ts` defines nav items per role:
+- **adminNavItems** — 11 items (Dashboard, Analytics, Students, Teachers, Classes, ProgressBook, Attendance, ParentAccounts, BulkImport, TeacherSchedules, Settings)
+- **teacherNavItems** — 8 items (filtered by capability: attendance, progress, assignments)
+- **parentNavItems** — 6 items (ParentDashboard, AddParent, Messages, QuranProgress, Academics, Attendance)
+
+---
+
+## I18n
+
+Custom I18n context (not react-i18next). Translation keys in `src/i18n/translations.ts`. Falls back to key string if translation missing. Language stored in localStorage.
+
+---
+
+## Change Log
+
+| Date | Summary | See Also |
+|---|---|---|
+| 2026-04-15 | Initial wiki creation; UI cleanup; debug log removal; real data for DashboardStats, TodayStudents, RecentActivity | handoff.md |
