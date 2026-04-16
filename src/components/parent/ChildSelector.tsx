@@ -1,3 +1,4 @@
+import { Users } from "lucide-react";
 import { ParentChildStudent } from "@/hooks/useParentChildren.ts";
 
 interface ChildSelectorProps {
@@ -8,8 +9,16 @@ interface ChildSelectorProps {
 }
 
 export const ChildSelector = ({ children, selectedId, onSelect, isLoading }: ChildSelectorProps) => {
-  if (isLoading) return <span className="text-sm text-muted-foreground">Loading children...</span>;
-  if (!children.length) return <span className="text-sm text-muted-foreground">No linked children found.</span>;
+  if (isLoading) return <span className="text-sm text-muted-foreground">Loading...</span>;
+  if (!children.length) return (
+    <div className="flex flex-col items-center justify-center py-16 text-center">
+      <div className="p-4 bg-gray-100 rounded-full mb-4">
+        <Users className="h-8 w-8 text-gray-400" />
+      </div>
+      <p className="text-sm font-medium text-gray-700 mb-1">No children linked to your account</p>
+      <p className="text-xs text-gray-400">Please contact the school admin to link your children.</p>
+    </div>
+  );
 
   return (
     <div className="flex gap-2 overflow-x-auto whitespace-nowrap pb-1">
