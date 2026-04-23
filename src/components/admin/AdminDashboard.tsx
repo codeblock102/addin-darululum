@@ -55,19 +55,42 @@ const MetricCard = ({
       <button
         type="button"
         onClick={onClick}
-        className="rounded-2xl p-6 text-left hover:opacity-95 transition-opacity"
-        style={{
-          background: "linear-gradient(135deg, #0d4a23 0%, #166534 100%)",
-        }}
+        className="rounded-2xl p-6 text-left hover:opacity-95 transition-opacity relative overflow-hidden"
+        style={{ background: "linear-gradient(135deg, #052e16 0%, #14532d 55%, #166534 100%)" }}
       >
-        <div className="flex items-start justify-between mb-4">
-          <p className="text-green-200 text-sm font-medium">{label}</p>
-          <span className="w-7 h-7 rounded-full bg-white/20 flex items-center justify-center">
-            <ArrowUpRight className="h-3.5 w-3.5 text-white" />
-          </span>
+        {/* Decorative background orbs */}
+        <div
+          className="absolute -right-6 -top-6 w-32 h-32 rounded-full pointer-events-none"
+          style={{ background: "rgba(255,255,255,0.06)" }}
+        />
+        <div
+          className="absolute right-4 -bottom-8 w-24 h-24 rounded-full pointer-events-none"
+          style={{ background: "rgba(255,255,255,0.04)" }}
+        />
+
+        <div className="relative">
+          <div className="flex items-start justify-between mb-4">
+            <p
+              className="text-sm font-medium"
+              style={{ color: "#86efac" }}
+            >
+              {label}
+            </p>
+            <span
+              className="w-7 h-7 rounded-full flex items-center justify-center"
+              style={{ background: "rgba(255,255,255,0.18)" }}
+            >
+              <ArrowUpRight className="h-3.5 w-3.5" style={{ color: "#fff" }} />
+            </span>
+          </div>
+          <p
+            className="text-5xl font-bold mb-3"
+            style={{ color: "#ffffff" }}
+          >
+            {value}
+          </p>
+          {badge}
         </div>
-        <p className="text-5xl font-bold text-white mb-3">{value}</p>
-        {badge}
       </button>
     );
   }
@@ -81,7 +104,7 @@ const MetricCard = ({
       <div className="flex items-start justify-between mb-4">
         <p className="text-gray-500 text-sm font-medium">{label}</p>
         <span className="w-7 h-7 rounded-full border border-gray-200 flex items-center justify-center">
-          <ArrowUpRight className="h-3.5 w-3.5 text-gray-500" />
+          <ArrowUpRight className="h-3.5 w-3.5 text-gray-400" />
         </span>
       </div>
       <p className="text-5xl font-bold text-gray-900 mb-3">{value}</p>
@@ -96,13 +119,16 @@ const Pill = ({
   icon,
   label,
   className,
+  style,
 }: {
   icon: React.ReactNode;
   label: string;
-  className: string;
+  className?: string;
+  style?: React.CSSProperties;
 }) => (
   <div
-    className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 ${className}`}
+    className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 ${className ?? ""}`}
+    style={style}
   >
     {icon}
     <span className="text-xs font-medium">{label}</span>
@@ -449,8 +475,8 @@ export const AdminDashboard = () => {
             onClick={() => navigate("/students")}
             badge={
               <Pill
-                className="bg-white/20 text-green-100"
-                icon={<TrendingUp className="h-3 w-3" />}
+                style={{ background: "rgba(255,255,255,0.18)", color: "#ffffff" }}
+                icon={<TrendingUp className="h-3 w-3" style={{ color: "#bbf7d0" }} />}
                 label={
                   onTrackCount > 0
                     ? `${onTrackCount} on track`
