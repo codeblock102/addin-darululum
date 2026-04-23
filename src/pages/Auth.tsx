@@ -1,36 +1,9 @@
-/**
- * @file src/pages/Auth.tsx
- * @summary This file defines the authentication page component for user login.
- *
- * It provides a form for users to sign in using their email and password.
- * The component handles the sign-in process using Supabase authentication, displays error messages,
- * and redirects users based on their role (admin or teacher) or to a role setup page if no role is defined.
- *
- * Key Features:
- * - Email and password input fields.
- * - Show/hide password functionality.
- * - Loading state indication during sign-in.
- * - Error message display for failed login attempts.
- * - Role-based redirection after successful login:
- *   - Admins are redirected to `/dashboard`.
- *   - Teachers are redirected to `/dashboard`.
- *   - Users without a defined role (or not found as a teacher) are redirected to `/role-setup`.
- * - Uses `useAuth` context for session refresh and `useToast` for notifications.
- */
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client.ts";
 import { Button } from "@/components/ui/button.tsx";
 import { Input } from "@/components/ui/input.tsx";
 import { useToast } from "@/components/ui/use-toast.ts";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader as _CardHeader,
-  CardTitle,
-} from "@/components/ui/card.tsx";
 import { Label } from "@/components/ui/label.tsx";
 import {
   AlertTriangle,
@@ -39,34 +12,10 @@ import {
   Loader2,
   LockKeyhole,
   Mail,
-  Shield,
 } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth.ts";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert.tsx";
 import DumLogo from "@/assets/Logo-01.jpg";
 
-/**
- * @component Auth
- * @description Renders the user authentication (login) page.
- *
- * This component provides a user interface for email/password login.
- * It interacts with Supabase for authentication, handles user feedback (loading states, errors, success toasts),
- * and navigates the user to the appropriate part of the application upon successful authentication.
- *
- * State Management:
- *  - `email`: Stores the content of the email input field.
- *  - `password`: Stores the content of the password input field.
- *  - `isLoading`: Boolean to indicate if the sign-in process is active.
- *  - `showPassword`: Boolean to toggle password visibility.
- *  - `errorMessage`: Stores error messages to be displayed to the user.
- *
- * Hooks:
- *  - `useNavigate`: For programmatic navigation after login.
- *  - `useToast`: For displaying toast notifications.
- *  - `useAuth`: For accessing `refreshSession` to update auth state post-login.
- *
- * @returns {JSX.Element} The rendered authentication page with a login form.
- */
 const Auth = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -77,39 +26,20 @@ const Auth = () => {
   const { toast } = useToast();
   const { refreshSession } = useAuth();
 
-  /**
-   * @function handleSignIn
-   * @description Handles the user sign-in process when the login form is submitted.
-   * It prevents the default form submission, sets loading states, and calls Supabase `signInWithPassword`.
-   * After a successful sign-in, it refreshes the session, checks the user's role (admin or teacher),
-   * and navigates them accordingly. Displays errors using state and toasts.
-   *
-   * Input:
-   *  - `e`: React.FormEvent, the form submission event.
-   *
-   * Output:
-   *  - Navigates the user to `/dashboard` or `/role-setup` on success.
-   *  - Sets `errorMessage` and shows a toast on failure.
-   * @async
-   */
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setErrorMessage(null);
 
     try {
-      const { data, error: signInError } = await supabase.auth
-        .signInWithPassword({
-          email,
-          password,
-        });
+      const { data, error: signInError } = await supabase.auth.signInWithPassword({ email, password });
 
       if (signInError) {
-        if (signInError.message.includes("Invalid login credentials")) {
-          setErrorMessage("Invalid email or password. Please try again.");
-        } else {
-          setErrorMessage(signInError.message);
-        }
+        setErrorMessage(
+          signInError.message.includes("Invalid login credentials")
+            ? "Invalid email or password. Please try again."
+            : signInError.message
+        );
         throw signInError;
       }
 
@@ -124,17 +54,13 @@ const Auth = () => {
         await supabase.auth.getUser();
 
       if (refreshedUserError || !refreshedUser) {
-        setErrorMessage(
-          "Login failed. Could not retrieve user details after session refresh.",
-        );
+        setErrorMessage("Login failed. Could not retrieve user details after session refresh.");
         if (refreshedUserError) throw refreshedUserError;
         throw new Error("Refreshed user is null after session refresh.");
       }
 
-      // Simplified, strict DB-first routing by auth id only
       const userId = refreshedUser.id;
 
-      // 1) profiles.role by id
       const { data: profileRow, error: profileError } = await supabase
         .from("profiles")
         .select("role")
@@ -143,17 +69,12 @@ const Auth = () => {
 
       if (profileError) {
         console.error("Error fetching profile role:", profileError.message);
-      } else if (profileRow?.role === "admin") {
-        toast({ title: "Login Successful", description: "Welcome back, Admin! Redirecting..." });
-        navigate("/dashboard");
-        return;
-      } else if (profileRow?.role === "teacher") {
-        toast({ title: "Login Successful", description: "Welcome back, Teacher! Redirecting..." });
+      } else if (profileRow?.role === "admin" || profileRow?.role === "teacher") {
+        toast({ title: "Welcome back!", description: "Redirecting to your dashboard..." });
         navigate("/dashboard");
         return;
       }
 
-      // 2) parents by id
       const { data: parentRow, error: parentError } = await supabase
         .from("parents")
         .select("id")
@@ -163,26 +84,17 @@ const Auth = () => {
       if (parentError) {
         console.error("Error checking parents:", parentError.message);
       } else if (parentRow?.id) {
-        toast({ title: "Login Successful", description: "Welcome! Redirecting to Parent Portal..." });
+        toast({ title: "Welcome back!", description: "Redirecting to Parent Portal..." });
         navigate("/parent");
         return;
       }
 
-      toast({
-        title: "Login Successful",
-        description: "Redirecting to dashboard...",
-      });
+      toast({ title: "Welcome back!", description: "Redirecting..." });
       navigate("/dashboard");
     } catch (error) {
-      const message = error instanceof Error
-        ? error.message
-        : "An unexpected error occurred during login. Please try again.";
+      const message = error instanceof Error ? error.message : "An unexpected error occurred.";
       console.error("Authentication error:", message);
-      toast({
-        title: "Login Error",
-        description: errorMessage || message,
-        variant: "destructive",
-      });
+      toast({ title: "Login Error", description: errorMessage || message, variant: "destructive" });
     } finally {
       setIsLoading(false);
     }
@@ -191,171 +103,184 @@ const Auth = () => {
   const handleForgotPassword = async () => {
     setErrorMessage(null);
     if (!email) {
-      setErrorMessage("Please enter your email above, then click 'Forgot password?'");
+      setErrorMessage("Enter your email above first, then click 'Forgot password?'");
       return;
     }
     setIsLoading(true);
     try {
-      const redirectTo = `${globalThis.location.origin}/reset-password`;
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo,
+        redirectTo: `${globalThis.location.origin}/reset-password`,
       });
       if (error) throw error;
-      toast({ title: "Reset link sent", description: "Check your email for the reset link." });
+      toast({ title: "Reset link sent", description: "Check your email for the password reset link." });
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : "Failed to send reset email.";
-      setErrorMessage(message);
+      setErrorMessage(err instanceof Error ? err.message : "Failed to send reset email.");
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[hsl(142.8,64.2%,22%)] p-4">
-      <div className="w-full max-w-md">
-        <Card className="bg-white shadow-xl border-0 rounded-2xl overflow-hidden">
-          {/* Header */}
-          <div className="bg-[hsl(142.8,64.2%,22%)] px-8 py-8 text-center">
-            {/* Logo */}
-            <div className="flex justify-center mb-5">
-              <div className="bg-white rounded-xl p-3 shadow-sm w-[200px] sm:w-[240px]">
-                <img
-                  src={DumLogo}
-                  alt="Dār Al-Ulūm Montréal Logo"
-                  className="w-full h-auto object-contain"
+    <div className="min-h-screen flex">
+      {/* ── Left panel — branding ─────────────────────────────────────────── */}
+      <div className="hidden lg:flex lg:w-[52%] relative flex-col items-center justify-center overflow-hidden"
+        style={{ background: "linear-gradient(160deg, #0d4a23 0%, #166534 45%, #15803d 100%)" }}>
+
+        {/* Geometric Islamic pattern overlay */}
+        <div className="absolute inset-0 opacity-[0.07]"
+          style={{
+            backgroundImage: `url("data:image/svg+xml,%3Csvg width='80' height='80' viewBox='0 0 80 80' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='1'%3E%3Cpath d='M40 0L53.66 26.34 80 40 53.66 53.66 40 80 26.34 53.66 0 40 26.34 26.34z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+            backgroundSize: "80px 80px",
+          }} />
+
+        {/* Glow orbs */}
+        <div className="absolute top-1/4 -left-20 w-80 h-80 bg-emerald-400/20 rounded-full blur-3xl" />
+        <div className="absolute bottom-1/4 -right-20 w-80 h-80 bg-emerald-600/20 rounded-full blur-3xl" />
+
+        {/* Content */}
+        <div className="relative z-10 flex flex-col items-center text-center px-12 max-w-lg">
+          {/* Logo */}
+          <div className="bg-white rounded-2xl p-4 shadow-2xl mb-10 w-56">
+            <img src={DumLogo} alt="Dār Al-Ulūm Montréal" className="w-full h-auto object-contain" />
+          </div>
+
+          <h1 className="text-4xl font-bold text-white mb-3 leading-tight">
+            Dār Al-Ulūm<br />Montréal
+          </h1>
+          <p className="text-emerald-200 text-lg mb-12 leading-relaxed">
+            Islamic Education Management System
+          </p>
+
+          {/* Feature pills */}
+          <div className="flex flex-col gap-3 w-full">
+            {[
+              { label: "Student Progress Tracking" },
+              { label: "Attendance Management" },
+              { label: "Parent Communication" },
+            ].map((f) => (
+              <div key={f.label}
+                className="flex items-center gap-3 bg-white/10 backdrop-blur-sm rounded-xl px-5 py-3 border border-white/15">
+                <div className="w-2 h-2 bg-emerald-300 rounded-full flex-shrink-0" />
+                <span className="text-white/90 text-sm font-medium">{f.label}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Footer credit */}
+        <p className="absolute bottom-6 text-emerald-300/50 text-xs">
+          © {new Date().getFullYear()} Dār Al-Ulūm Montréal
+        </p>
+      </div>
+
+      {/* ── Right panel — form ────────────────────────────────────────────── */}
+      <div className="flex-1 flex flex-col items-center justify-center bg-gray-50 px-6 py-12">
+
+        {/* Mobile logo */}
+        <div className="lg:hidden mb-8">
+          <div className="bg-white rounded-xl p-3 shadow-md w-44 mx-auto">
+            <img src={DumLogo} alt="Dār Al-Ulūm Montréal" className="w-full h-auto object-contain" />
+          </div>
+        </div>
+
+        <div className="w-full max-w-sm">
+          {/* Heading */}
+          <div className="mb-8">
+            <h2 className="text-2xl font-bold text-gray-900">Welcome back</h2>
+            <p className="text-gray-500 text-sm mt-1">Sign in to your account to continue</p>
+          </div>
+
+          {/* Error */}
+          {errorMessage && (
+            <div className="mb-5 flex items-start gap-3 bg-red-50 border border-red-200 rounded-xl px-4 py-3">
+              <AlertTriangle className="h-4 w-4 text-red-500 mt-0.5 flex-shrink-0" />
+              <p className="text-sm text-red-700">{errorMessage}</p>
+            </div>
+          )}
+
+          <form onSubmit={handleSignIn} className="space-y-5">
+            {/* Email */}
+            <div className="space-y-1.5">
+              <Label htmlFor="email" className="text-sm font-medium text-gray-700">
+                Email address
+              </Label>
+              <div className="relative">
+                <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="you@daralulummontreal.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="pl-10 h-11 bg-white border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500 transition-all"
+                  required
+                  autoComplete="email"
                 />
               </div>
             </div>
-            <CardTitle className="text-2xl font-bold text-white mb-1">
-              Dār Al-Ulūm Montréal
-            </CardTitle>
-            <CardDescription className="text-white/70 text-sm">
-              Secure access to your educational portal
-            </CardDescription>
-          </div>
 
-          <CardContent className="p-8">
-            {errorMessage && (
-              <Alert
-                variant="destructive"
-                className="mb-6 bg-red-50 border-red-200 text-red-800 rounded-xl"
-              >
-                <AlertTriangle className="h-4 w-4 text-red-600" />
-                <AlertTitle className="font-semibold">Authentication Error</AlertTitle>
-                <AlertDescription className="text-sm">{errorMessage}</AlertDescription>
-              </Alert>
-            )}
-            
-            <form onSubmit={handleSignIn} className="space-y-6">
-              <div className="space-y-3">
-                <Label htmlFor="email" className="text-gray-700 font-semibold text-sm">
-                  Email Address
-                </Label>
-                <div className="relative group">
-                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                    <Mail className="h-5 w-5 text-gray-400 group-focus-within:text-[hsl(142.8,64.2%,24.1%)] transition-colors duration-200" />
-                  </div>
-                  <Input
-                    id="email"
-                    type="email"
-                    placeholder="Enter your email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="pl-12 pr-4 h-12 bg-gray-50 border-gray-200 text-gray-900 placeholder-gray-500 focus:ring-2 focus:ring-[hsl(142.8,64.2%,24.1%)] focus:border-[hsl(142.8,64.2%,24.1%)] transition-all duration-200 rounded-xl"
-                    required
-                    autoComplete="email"
-                  />
-                </div>
-              </div>
-              
-              <div className="space-y-3">
-                <Label htmlFor="password" className="text-gray-700 font-semibold text-sm">
+            {/* Password */}
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between">
+                <Label htmlFor="password" className="text-sm font-medium text-gray-700">
                   Password
                 </Label>
-                <div className="relative group">
-                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                    <LockKeyhole className="h-5 w-5 text-gray-400 group-focus-within:text-[hsl(142.8,64.2%,24.1%)] transition-colors duration-200" />
-                  </div>
-                  <Input
-                    id="password"
-                    type={showPassword ? "text" : "password"}
-                    placeholder="Enter your password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="pl-12 pr-12 h-12 bg-gray-50 border-gray-200 text-gray-900 placeholder-gray-500 focus:ring-2 focus:ring-[hsl(142.8,64.2%,24.1%)] focus:border-[hsl(142.8,64.2%,24.1%)] transition-all duration-200 rounded-xl"
-                    required
-                    autoComplete="current-password"
-                  />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8 p-0 text-gray-400 hover:text-[hsl(142.8,64.2%,24.1%)] hover:bg-gray-100 rounded-lg transition-all duration-200"
-                    onClick={() => setShowPassword(!showPassword)}
-                    aria-label={showPassword ? "Hide password" : "Show password"}
-                  >
-                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                  </Button>
-                </div>
-              </div>
-
-              {/* Forgot Password Link */}
-              <div className="flex justify-end">
                 <button
                   type="button"
-                  className="text-sm text-[hsl(142.8,64.2%,24.1%)] hover:text-[hsl(142.8,64.2%,32%)] font-medium transition-colors duration-200"
                   onClick={handleForgotPassword}
+                  className="text-xs text-emerald-700 hover:text-emerald-800 font-medium transition-colors"
                 >
-                  Forgot your password?
+                  Forgot password?
                 </button>
               </div>
-
-              {/* Sign In Button */}
-              <Button
-                type="submit"
-                className="w-full h-12 bg-gradient-to-r from-[hsl(142.8,64.2%,24.1%)] to-[hsl(142.8,64.2%,28%)] hover:from-[hsl(142.8,64.2%,28%)] hover:to-[hsl(142.8,64.2%,32%)] text-white font-semibold text-lg rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
-                disabled={isLoading}
-              >
-                {isLoading ? (
-                  <>
-                    <Loader2 className="mr-3 h-5 w-5 animate-spin" />
-                    Authenticating...
-                  </>
-                ) : (
-                  <>
-                    <Shield className="mr-3 h-5 w-5" />
-                    Sign In
-                  </>
-                )}
-              </Button>
-            </form>
-          </CardContent>
-
-          {/* Footer */}
-          <CardFooter className="p-6 bg-gray-50 border-t border-gray-100">
-            <div className="w-full text-center space-y-3">
-              <div className="flex items-center justify-center space-x-2 text-gray-500">
-                <div className="w-2 h-2 bg-emerald-400 rounded-full"></div>
-                <span className="text-xs font-medium">Secure Connection</span>
-                <div className="w-2 h-2 bg-emerald-400 rounded-full"></div>
-              </div>
-              
-              <p className="text-xs text-gray-500">
-                &copy; {new Date().getFullYear()} Dār Al-Ulūm Montréal. All rights reserved.
-              </p>
-              
-              <p className="text-xs text-gray-500">
-                Need assistance?{" "}
-                <a
-                  href="mailto:support@darululum-montreal.com"
-                  className="text-[hsl(142.8,64.2%,24.1%)] hover:text-[hsl(142.8,64.2%,32%)] font-medium transition-colors duration-200"
+              <div className="relative">
+                <LockKeyhole className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
+                <Input
+                  id="password"
+                  type={showPassword ? "text" : "password"}
+                  placeholder="••••••••"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="pl-10 pr-10 h-11 bg-white border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500 transition-all"
+                  required
+                  autoComplete="current-password"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                  aria-label={showPassword ? "Hide password" : "Show password"}
                 >
-                  Contact Support
-                </a>
-              </p>
+                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              </div>
             </div>
-          </CardFooter>
-        </Card>
+
+            {/* Submit */}
+            <Button
+              type="submit"
+              disabled={isLoading}
+              className="w-full h-11 bg-emerald-700 hover:bg-emerald-800 text-white font-semibold rounded-xl shadow-sm transition-all disabled:opacity-50 mt-2"
+            >
+              {isLoading ? (
+                <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Signing in...</>
+              ) : (
+                "Sign in"
+              )}
+            </Button>
+          </form>
+
+          {/* Bottom note */}
+          <div className="mt-8 pt-6 border-t border-gray-200 text-center">
+            <p className="text-xs text-gray-400">
+              Need help?{" "}
+              <a href="mailto:mufti.zain@daralulummontreal.com"
+                className="text-emerald-700 hover:text-emerald-800 font-medium transition-colors">
+                Contact your administrator
+              </a>
+            </p>
+          </div>
+        </div>
       </div>
     </div>
   );

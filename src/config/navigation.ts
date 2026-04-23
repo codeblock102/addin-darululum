@@ -21,7 +21,7 @@ import {
   School,
   Settings,
   Users,
-  UserCircle2 as _UserCircle2,
+  UserCircle,
   UserCheck,
   Activity as ActivityIcon,
   BarChart3,
@@ -108,6 +108,12 @@ export const adminNavItems: NavItem[] = [
     icon: Settings,
     description: "System configuration",
   },
+  {
+    href: "/profile",
+    label: "nav.profile",
+    icon: UserCircle,
+    description: "Your profile and account settings",
+  },
 ];
 
 /**
@@ -167,6 +173,12 @@ export const teacherNavItems: NavItem[] = [
     icon: Settings,
     description: "Account preferences",
   },
+  {
+    href: "/profile",
+    label: "nav.profile",
+    icon: UserCircle,
+    description: "Your profile and account settings",
+  },
 ];
 
 /**
@@ -210,5 +222,11 @@ export const parentNavItems: NavItem[] = [
     label: "nav.attendance",
     icon: Clock,
     description: "Attendance history",
+  },
+  {
+    href: "/profile",
+    label: "nav.profile",
+    icon: UserCircle,
+    description: "Your profile and account settings",
   },
 ];

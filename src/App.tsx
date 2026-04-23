@@ -51,6 +51,7 @@ import ResetPassword from "@/pages/ResetPassword.tsx";
 import TeacherAddParent from "@/pages/TeacherAddParent.tsx";
 import TeacherMessages from "@/pages/TeacherMessages.tsx";
 import ParentMessages from "@/pages/ParentMessages.tsx";
+import Profile from "@/pages/Profile.tsx";
 
 /**
  * @component App
@@ -229,6 +230,7 @@ function App() {
             />
             <Route path="/settings" element={<Settings />} />
             <Route path="/preferences" element={<Preferences />} />
+            <Route path="/profile" element={<Profile />} />
           </Route>
         </Routes>
       </BrowserRouter>
