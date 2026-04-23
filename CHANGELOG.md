@@ -1,3 +1,10 @@
+## [1.1.5](https://github.com/Adekunes/addin-darululum/compare/v1.1.4...v1.1.5) (2026-04-23)
+
+
+### Bug Fixes
+
+* **ci:** exclude no-import-prefix in Deno 2.x lint on dev/main ([cd4a231](https://github.com/Adekunes/addin-darululum/commit/cd4a2317e9432965a060ccb8f625e8d83be0f83f))
+
 ## [1.1.4](https://github.com/codeblock102/addin-darululum/compare/v1.1.3...v1.1.4) (2026-03-11)
 
 
