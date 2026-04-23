@@ -24,7 +24,9 @@ jobs:
           deno-version: v2.x
 
       - name: Lint
-        run: deno lint supabase/functions/
+        # Edge functions use legacy https:// imports (Deno 1.x style, required by Supabase).
+        # Exclude no-import-prefix so Deno 2.x doesn't reject them.
+        run: deno lint --rules-exclude=no-import-prefix supabase/functions/
 
       - name: Format check
         run: deno fmt --check supabase/functions/
