@@ -22,6 +22,7 @@ import { TeacherDashboard } from "@/components/teacher-portal/TeacherDashboard.t
 import { LoadingState } from "@/components/teacher-portal/LoadingState.tsx";
 import { AccessDenied } from "@/components/teacher-portal/AccessDenied.tsx";
 import { ProfileNotFound } from "@/components/teacher-portal/ProfileNotFound.tsx";
+import { AdminDashboard } from "@/components/admin/AdminDashboard.tsx";
 import { Teacher } from "@/types/teacher.ts";
 import { useRBAC } from "@/hooks/useRBAC.ts";
 import { Navigate } from "react-router-dom";
@@ -151,18 +152,9 @@ const Dashboard = () => {
     );
   }
 
-  // If user is admin, they should be able to view the teacher portal with a generic profile
+  // Admin users get the dedicated admin dashboard (Donezo-style)
   if (isAdmin) {
-    const adminViewProfile: Teacher = {
-      id: session?.user?.id ?? "fallback-admin-id",
-      name: "Admin View",
-      subject: "Administration",
-      email: session?.user?.email || "admin@example.com",
-      bio: "Viewing the teacher portal as an administrator",
-      phone: "",
-    };
-
-    return <TeacherDashboard teacher={adminViewProfile} isAdmin={true} />;
+    return <AdminDashboard />;
   }
 
   // Parents should never see the teacher portal — send them to their own dashboard

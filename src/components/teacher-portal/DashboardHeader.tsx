@@ -6,13 +6,14 @@ interface DashboardHeaderProps {
   teacher: Teacher;
   classes?: { id: string; name: string; subject: string }[];
   isLoadingClasses: boolean;
+  isAdmin?: boolean;
 }
 
 export const DashboardHeader = (
-  { teacher, classes, isLoadingClasses }: DashboardHeaderProps,
+  { teacher, classes, isLoadingClasses, isAdmin: isAdminProp }: DashboardHeaderProps,
 ) => {
   const { t } = useI18n();
-  const isAdmin = teacher.subject === "Administration";
+  const isAdmin = isAdminProp ?? teacher.subject === "Administration";
 
   const initials = teacher.name
     .split(" ")
