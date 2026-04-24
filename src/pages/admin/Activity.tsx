@@ -10,9 +10,9 @@ import { Calendar } from "@/components/ui/calendar.tsx";
 import { useQuery } from "@tanstack/react-query";
 import { ResponsiveContainer, LineChart, Line, CartesianGrid, XAxis, YAxis, Tooltip, BarChart, Bar, Legend, PieChart, Pie, Cell } from "recharts";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select.tsx";
-import { Loader2, Activity as ActivityIcon, Mail, MessageSquare, BookOpen, CheckSquare, Users, TrendingUp, AlertTriangle, Award, CalendarIcon, Filter, X, BarChart3, ArrowRight } from "lucide-react";
+import { Loader2, Activity as ActivityIcon, Mail, MessageSquare, BookOpen, CheckSquare, Users, TrendingUp, AlertTriangle, Award, CalendarIcon, Filter, BarChart3, ArrowRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { format, subDays, startOfDay, endOfDay, startOfMonth, subMonths } from "date-fns";
+import { format, subDays, startOfDay, endOfDay, subMonths } from "date-fns";
 
 type ActivityItem = {
   id: string;

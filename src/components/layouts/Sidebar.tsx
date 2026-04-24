@@ -20,7 +20,6 @@ import { useEffect } from "react";
 import { useIsMobile } from "@/hooks/use-mobile.tsx";
 import { Button } from "@/components/ui/button.tsx";
 import {
-  BookOpen,
   ChevronLeft,
   ChevronRight,
   ShieldCheck,

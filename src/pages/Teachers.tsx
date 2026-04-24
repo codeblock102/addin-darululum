@@ -48,7 +48,7 @@ const Teachers = () => {
   const { session } = useAuth();
   const userId = session?.user?.id;
 
-  const { data: adminData, isLoading: isAdminDataLoading } = useQuery({
+  const { data: adminData } = useQuery({
     queryKey: ["adminDataForTeachersPage", userId],
     queryFn: async () => {
       if (!userId) return null;

@@ -18,7 +18,6 @@ import {
 } from "@/components/ui/alert-dialog.tsx";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs.tsx";
 import { AdminPageShell } from "@/components/admin/AdminPageShell.tsx";
-import { Users } from "lucide-react";
 
 const ParentAccounts = () => {
   const { toast } = useToast();

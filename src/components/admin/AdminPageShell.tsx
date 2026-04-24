@@ -13,14 +13,15 @@
  *   </AdminPageShell>
  */
 
+import { type ReactNode } from "react";
 import { cn } from "@/lib/utils.ts";
 
 interface AdminPageShellProps {
   title: string;
   subtitle?: string;
   /** Slot for top-right action buttons */
-  actions?: React.ReactNode;
-  children: React.ReactNode;
+  actions?: ReactNode;
+  children: ReactNode;
   className?: string;
   /** Remove max-w constraint for full-width pages */
   fullWidth?: boolean;
@@ -63,7 +64,7 @@ export const AdminPrimaryBtn = ({
   className,
 }: {
   onClick?: () => void;
-  children: React.ReactNode;
+  children: ReactNode;
   className?: string;
 }) => (
   <button
@@ -84,7 +85,7 @@ export const AdminSecondaryBtn = ({
   className,
 }: {
   onClick?: () => void;
-  children: React.ReactNode;
+  children: ReactNode;
   className?: string;
 }) => (
   <button
@@ -104,7 +105,7 @@ export const AdminSecondaryBtn = ({
 interface AdminStatCardProps {
   label: string;
   value: number | string;
-  icon: React.ReactNode;
+  icon: ReactNode;
   iconBg?: string;
   meta?: string;
   metaColor?: string;

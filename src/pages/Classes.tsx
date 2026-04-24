@@ -12,8 +12,6 @@ import { DeleteClassDialog } from "@/components/classes/components/DeleteClassDi
 import { useI18n } from "@/contexts/I18nContext.tsx";
 import { AdminPageShell, AdminPrimaryBtn } from "@/components/admin/AdminPageShell.tsx";
 
-// Use Dialog directly; components sanitize unsupported attributes
-const SafeDialog = Dialog;
 
 const fetchClasses = async () => {
   const { data: classes, error: classesError } = await supabase

@@ -14,7 +14,7 @@ interface DashboardLayoutProps {
 }
 
 export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
-  const { isAdmin, isTeacher, isParent, isLoading, hasCapability, isAttendanceTaker } = useRBAC();
+  const { isAdmin, isTeacher, isParent, isLoading } = useRBAC();
   const { setTheme } = useTheme();
   const isMobile = useIsMobile();
   const [sidebarOpen, setSidebarOpen] = useState(!isMobile);

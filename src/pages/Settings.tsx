@@ -30,7 +30,6 @@ const Settings = () => {
         <SettingsHeader isSaving={isLoading} onSave={handleSave} />
 
         <Tabs
-          defaultValue={activeTab}
           onValueChange={setActiveTab}
           value={activeTab}
           className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start"

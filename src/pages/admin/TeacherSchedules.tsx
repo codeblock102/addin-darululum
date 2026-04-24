@@ -59,7 +59,7 @@ export default function TeacherSchedules() {
     }
   }, [teacherList, selectedTeacherId]);
 
-  const { data: classes = [], isLoading: loadingClasses } = useQuery<ClassLite[]>({
+  const { data: classes = [] } = useQuery<ClassLite[]>({
     queryKey: ["admin-teacher-schedule-classes", selectedTeacherId],
     queryFn: async () => {
       if (!selectedTeacherId) return [];
