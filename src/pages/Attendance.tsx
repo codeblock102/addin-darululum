@@ -28,7 +28,6 @@ const Attendance = () => {
   const { t } = useI18n();
   const [selectedTab, setSelectedTab] = useState("take-attendance");
   const [longTermOpen, setLongTermOpen] = useState(false);
-  const isMobile = useIsMobile();
   const navigate = useNavigate();
   const { isAdmin, isAttendanceTaker, isLoading } = useRBAC();
 
