@@ -9,7 +9,7 @@
  * Loading states are managed to provide feedback to the user while data is being fetched.
  */
 import { useState } from "react";
-import { AdminHeader } from "@/components/admin/AdminHeader.tsx";
+import { AdminPageShell } from "@/components/admin/AdminPageShell.tsx";
 import { TeacherAccountsTable } from "@/components/admin/teacher-accounts/TeacherAccountsTable.tsx";
 import { TeacherAccountsLoading } from "@/components/admin/teacher-accounts/TeacherAccountsLoading.tsx";
 import { TeacherStatsCards } from "@/components/admin/teacher-accounts/TeacherStatsCards.tsx";
@@ -67,31 +67,33 @@ export default function TeacherAccounts() {
    * If the user is an admin and data is loaded, it displays the teacher account management interface.
    */
   return (
-    <div className="space-y-6">
-      <AdminHeader
-        title="Teacher Account Control Center"
-        description="Manage and monitor all teacher accounts in the system"
-      />
-
+    <AdminPageShell
+      title="Teacher Account Control Center"
+      subtitle="Manage and monitor all teacher accounts in the system"
+    >
       {(isLoading || isLoadingTeachers) ? <TeacherAccountsLoading /> : (
         <>
           {/* Stats Cards */}
           <TeacherStatsCards teachers={teachers} />
 
           {/* Search and Filter Controls */}
-          <TeacherSearchAndFilters
-            searchQuery={searchQuery}
-            statusFilter={statusFilter}
-            activityFilter={activityFilter}
-            onSearchChange={setSearchQuery}
-            onStatusFilterChange={setStatusFilter}
-            onActivityFilterChange={setActivityFilter}
-          />
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+            <TeacherSearchAndFilters
+              searchQuery={searchQuery}
+              statusFilter={statusFilter}
+              activityFilter={activityFilter}
+              onSearchChange={setSearchQuery}
+              onStatusFilterChange={setStatusFilter}
+              onActivityFilterChange={setActivityFilter}
+            />
+          </div>
 
           {/* Teacher Accounts Table */}
-          <TeacherAccountsTable teachers={filteredTeachers} />
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+            <TeacherAccountsTable teachers={filteredTeachers} />
+          </div>
         </>
       )}
-    </div>
+    </AdminPageShell>
   );
 }

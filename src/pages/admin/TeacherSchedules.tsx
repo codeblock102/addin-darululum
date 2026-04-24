@@ -3,10 +3,11 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client.ts";
 import { useAuth } from "@/hooks/use-auth.ts";
 import { useToast } from "@/hooks/use-toast.ts";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card.tsx";
 import { Label } from "@/components/ui/label.tsx";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select.tsx";
 import { ScheduleCalendar } from "@/components/teacher-portal/schedule/ScheduleCalendar.tsx";
+import { AdminPageShell } from "@/components/admin/AdminPageShell.tsx";
+import { Calendar } from "lucide-react";
 
 type TeacherLite = { id: string; name: string };
 
@@ -84,32 +85,36 @@ export default function TeacherSchedules() {
   }, [classes]);
 
   return (
-    <div className="space-y-4">
-      <Card>
-        <CardHeader>
-          <CardTitle>Teacher Schedules</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="max-w-md">
-            <Label>Select Teacher</Label>
-            <Select value={selectedTeacherId} onValueChange={(v) => setSelectedTeacherId(v)}>
-              <SelectTrigger className="mt-1">
-                <SelectValue placeholder={loadingTeachers ? "Loading teachers..." : "Choose a teacher"} />
-              </SelectTrigger>
-              <SelectContent>
-                {teacherList.map((t) => (
-                  <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+    <AdminPageShell
+      title="Teacher Schedules"
+      subtitle="View and manage weekly class schedules by teacher"
+    >
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+        <div className="px-6 py-5 border-b border-gray-100 flex items-center gap-3">
+          <div className="p-1.5 bg-green-50 rounded-lg">
+            <Calendar className="h-4 w-4 text-green-700" />
           </div>
-
-          <div className="h-[70vh]">
-            <ScheduleCalendar classes={calendarClasses as any} teacherId={selectedTeacherId} />
+          <div className="flex-1">
+            <div className="max-w-xs">
+              <Label className="text-xs font-medium text-gray-500 mb-1 block">Select Teacher</Label>
+              <Select value={selectedTeacherId} onValueChange={(v) => setSelectedTeacherId(v)}>
+                <SelectTrigger className="rounded-xl border-gray-200 h-9">
+                  <SelectValue placeholder={loadingTeachers ? "Loading teachers..." : "Choose a teacher"} />
+                </SelectTrigger>
+                <SelectContent>
+                  {teacherList.map((t) => (
+                    <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
-        </CardContent>
-      </Card>
-    </div>
+        </div>
+        <div className="p-6 h-[70vh]">
+          <ScheduleCalendar classes={calendarClasses as any} teacherId={selectedTeacherId} />
+        </div>
+      </div>
+    </AdminPageShell>
   );
 }
 

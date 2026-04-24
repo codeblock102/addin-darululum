@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client.ts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card.tsx";
+import { AdminPageShell } from "@/components/admin/AdminPageShell.tsx";
 import { Badge } from "@/components/ui/badge.tsx";
 import { Button } from "@/components/ui/button.tsx";
 import { Input } from "@/components/ui/input.tsx";
@@ -978,35 +979,34 @@ export default function Activity() {
   }, [studentMetrics]);
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-            <ActivityIcon className="h-6 w-6 text-gray-700" />
-            Admin Dashboard
-          </h1>
-          <p className="text-sm text-gray-600 mt-1">Track teacher actions and student progress</p>
-        </div>
+    <AdminPageShell
+      title="Activity Dashboard"
+      subtitle="Track teacher actions and student progress in real-time"
+      actions={
         <div className="flex items-center gap-2">
+          <span className="text-xs text-gray-400 bg-white border border-gray-200 rounded-xl px-3 py-2 font-medium">
+            <span className="inline-block w-1.5 h-1.5 rounded-full bg-green-500 mr-1.5 animate-pulse" />
+            Realtime
+          </span>
           <Button
             variant="outline"
             onClick={() => navigate("/analytics")}
-            className="flex items-center gap-2"
+            className="flex items-center gap-2 rounded-xl border-gray-200 text-sm"
           >
             <BarChart3 className="h-4 w-4" />
-            View Analytics
+            Analytics
             <ArrowRight className="h-4 w-4" />
           </Button>
-          <Badge variant="outline" className="text-xs">Realtime</Badge>
         </div>
-      </div>
+      }
+    >
+      <div className="space-y-6">
 
       {/* Filters */}
-      <Card className="border border-gray-200 bg-white">
-        <CardHeader className="border-b">
-          <CardTitle className="text-base flex items-center gap-2">
-            <Filter className="h-4 w-4" />
+      <Card className="border border-gray-100 bg-white rounded-2xl shadow-sm">
+        <CardHeader className="border-b border-gray-100">
+          <CardTitle className="text-base font-semibold text-gray-900 flex items-center gap-2">
+            <Filter className="h-4 w-4 text-gray-500" />
             Filters
           </CardTitle>
         </CardHeader>
@@ -1448,7 +1448,7 @@ export default function Activity() {
 
       {/* Activity Feed */}
       <div>
-        <h2 className="text-xl font-bold text-gray-900 mb-4">Activity Feed</h2>
+        <h2 className="text-base font-semibold text-gray-900 mb-4">Activity Feed</h2>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <Section title="Progress" type="progress" />
           <Section title="Attendance" type="attendance" />
@@ -1457,6 +1457,7 @@ export default function Activity() {
           <Section title="Emails" type="email" />
         </div>
       </div>
-    </div>
+      </div>
+    </AdminPageShell>
   );
 }

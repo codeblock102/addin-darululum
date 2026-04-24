@@ -6,8 +6,9 @@ import { useToast } from "@/hooks/use-toast.ts";
 import { Button } from "@/components/ui/button.tsx";
 import { Input } from "@/components/ui/input.tsx";
 import { Label } from "@/components/ui/label.tsx";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card.tsx";
 import { Progress } from "@/components/ui/progress.tsx";
+import { AdminPageShell } from "@/components/admin/AdminPageShell.tsx";
+import { Upload } from "lucide-react";
 
 type Row = Record<string, string>;
 
@@ -666,67 +667,77 @@ export default function BulkStudentImport() {
   }
 
   return (
-    <div className="p-4 max-w-5xl mx-auto">
-      <Card>
-        <CardHeader>
-          <CardTitle>Bulk Student Import</CardTitle>
-          <CardDescription>Upload a CSV/TSV with the specified headers. Students and their parent accounts will be created.</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
+    <AdminPageShell
+      title="Bulk Student Import"
+      subtitle="Upload a CSV/TSV to create students and their parent accounts in bulk"
+    >
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+        <div className="px-6 py-5 border-b border-gray-100 flex items-center gap-3">
+          <div className="p-1.5 bg-green-50 rounded-lg">
+            <Upload className="h-4 w-4 text-green-700" />
+          </div>
+          <div>
+            <h2 className="text-base font-semibold text-gray-900">Import File</h2>
+            <p className="text-sm text-gray-500 mt-0.5">Students and their parent accounts will be created from the uploaded file</p>
+          </div>
+        </div>
+
+        <div className="p-6 space-y-5">
           <div className="space-y-2">
-            <Label>CSV/TSV File</Label>
-            <Input type="file" accept=".csv,.tsv,.txt" onChange={onPickFile} disabled={isParsing || isImporting} />
+            <Label className="text-sm font-medium text-gray-700">CSV/TSV File</Label>
+            <Input type="file" accept=".csv,.tsv,.txt" onChange={onPickFile} disabled={isParsing || isImporting}
+              className="rounded-xl border-gray-200 bg-gray-50 focus:bg-white" />
           </div>
 
           {headers.length > 0 && (
-            <div className="text-sm">
-              <div className="font-medium mb-1">Detected headers:</div>
+            <div className="text-sm bg-gray-50 rounded-xl p-4 space-y-2">
+              <div className="font-medium text-gray-700">Detected headers:</div>
               <div className="flex flex-wrap gap-2">
                 {headers.map((h) => (
-                  <span key={h} className="px-2 py-1 rounded bg-muted text-muted-foreground">{h}</span>
+                  <span key={h} className="px-2 py-1 rounded-lg bg-white border border-gray-200 text-gray-600 text-xs">{h}</span>
                 ))}
               </div>
               {headerIssues.length > 0 && (
-                <div className="text-red-500 mt-2">Missing: {headerIssues.join(", ")}</div>
+                <div className="text-red-600 text-xs mt-1">⚠ Missing: {headerIssues.join(", ")}</div>
               )}
             </div>
           )}
 
           {rows.length > 0 && (
-            <div className="text-sm text-muted-foreground">{rows.length} rows parsed.</div>
+            <div className="text-sm text-gray-500">{rows.length} rows ready to import.</div>
           )}
 
           {isImporting && (
             <div className="space-y-2">
-              <Progress value={progress} />
-              <div className="text-sm text-muted-foreground">{progress}%</div>
+              <Progress value={progress} className="h-2" />
+              <div className="text-sm text-gray-500">{progress}% complete</div>
             </div>
           )}
 
           {results && (
-            <div className="space-y-2 text-sm">
-              <div>Result: {results.ok} succeeded, {results.failed} failed.</div>
+            <div className="space-y-3 text-sm bg-gray-50 rounded-xl p-4">
+              <div className="font-semibold text-gray-900">Import Result: {results.ok} succeeded, {results.failed} failed.</div>
               {rowResults.length > 0 && (
-                <div className="space-y-1">
-                  <div className="font-medium">Students</div>
+                <div className="space-y-2 text-gray-600">
+                  <div className="font-medium text-gray-700">Students</div>
                   <div>
                     Created: {rowResults.filter(r => r.studentCreated).length} | Skipped (already exists): {rowResults.filter(r => r.studentDuplicate).length} | Failed: {rowResults.filter(r => r.studentError && !r.studentCreated && !r.studentDuplicate).length}
                   </div>
                   {rowResults.some(r => r.studentError && !r.studentCreated && !r.studentDuplicate) && (
-                    <div className="text-red-500">Not created: {rowResults.filter(r => r.studentError && !r.studentCreated && !r.studentDuplicate).map(r => r.studentName).join(", ")}</div>
+                    <div className="text-red-600 text-xs">Not created: {rowResults.filter(r => r.studentError && !r.studentCreated && !r.studentDuplicate).map(r => r.studentName).join(", ")}</div>
                   )}
-                  <div className="font-medium mt-2">Parents</div>
+                  <div className="font-medium text-gray-700 mt-2">Parents</div>
                   <div>
                     Created/Updated: {rowResults.filter(r => r.parentCreated).length} | Failed: {rowResults.filter(r => r.parentAttempted && !r.parentCreated).length} | Skipped: {rowResults.filter(r => !r.parentAttempted && !!r.parentSkippedReason).length}
                   </div>
                   {rowResults.some(r => r.parentAttempted && !r.parentCreated) && (
-                    <div className="text-red-500">Parent creation failed for: {rowResults.filter(r => r.parentAttempted && !r.parentCreated).map(r => r.studentName).join(", ")}</div>
+                    <div className="text-red-600 text-xs">Parent creation failed for: {rowResults.filter(r => r.parentAttempted && !r.parentCreated).map(r => r.studentName).join(", ")}</div>
                   )}
                   {rowResults.some(r => !r.parentAttempted && !!r.parentSkippedReason) && (
-                    <div className="text-muted-foreground">Parent creation skipped for: {rowResults.filter(r => !r.parentAttempted && !!r.parentSkippedReason).map(r => `${r.studentName} (${r.parentSkippedReason})`).join(", ")}</div>
+                    <div className="text-gray-400 text-xs">Parent creation skipped for: {rowResults.filter(r => !r.parentAttempted && !!r.parentSkippedReason).map(r => `${r.studentName} (${r.parentSkippedReason})`).join(", ")}</div>
                   )}
                   {rowResults.some(r => r.parentError) && (
-                    <div className="text-muted-foreground">Common errors: {
+                    <div className="text-gray-400 text-xs">Common errors: {
                       Array.from(new Set(rowResults.filter(r => r.parentError).map(r => r.parentError))).slice(0, 5).join(" | ")
                     }</div>
                   )}
@@ -735,15 +746,19 @@ export default function BulkStudentImport() {
             </div>
           )}
 
-          <div className="flex gap-2">
-            <Button onClick={importAll} disabled={isParsing || isImporting || rows.length === 0}>Import</Button>
+          <div className="flex gap-2 pt-1">
+            <Button onClick={importAll} disabled={isParsing || isImporting || rows.length === 0}
+              className="rounded-xl bg-green-800 hover:bg-green-700 text-white">
+              {isImporting ? "Importing..." : "Import"}
+            </Button>
           </div>
-        </CardContent>
-      </Card>
-      <div className="mt-6 text-sm text-muted-foreground">
+        </div>
+      </div>
+
+      <div className="text-xs text-gray-400 px-1">
         Expected headers (any alias is accepted): {REQUIRED_FRIENDLY_HEADERS.join(" | ")}
       </div>
-    </div>
+    </AdminPageShell>
   );
 }
 

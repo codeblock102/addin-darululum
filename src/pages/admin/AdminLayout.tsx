@@ -42,22 +42,23 @@ const AdminLayout = () => {
 
   const navLinkClass = ({ isActive }: { isActive: boolean }) =>
     cn(
-      'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150',
+      'flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 relative',
       isActive
-        ? 'bg-amber-50 text-amber-700 border border-amber-200'
-        : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+        ? 'bg-green-50 text-green-800 font-semibold'
+        : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'
     );
 
   const SidebarContent = () => (
     <div className="flex flex-col h-full">
       {/* Brand header */}
-      <div className="flex items-center gap-3 px-5 h-16 border-b border-gray-200 flex-shrink-0">
-        <div className="p-1.5 bg-amber-100 rounded-lg">
-          <ShieldCheck className="h-5 w-5 text-amber-600" />
+      <div className="flex items-center gap-3 px-5 h-16 border-b border-gray-100 flex-shrink-0">
+        <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0"
+          style={{ background: "linear-gradient(135deg, #14532d, #166534)" }}>
+          <ShieldCheck className="h-4 w-4 text-white" />
         </div>
         <div className="min-w-0">
           <p className="text-sm font-semibold text-gray-900 leading-tight">Admin Panel</p>
-          <p className="text-xs text-gray-500">Dār Al-Ulūm Montréal</p>
+          <p className="text-xs text-gray-400">Dār Al-Ulūm Montréal</p>
         </div>
         {/* Close button — mobile only */}
         <button
@@ -86,10 +87,10 @@ const AdminLayout = () => {
       </nav>
 
       {/* Footer actions */}
-      <div className="px-3 py-4 border-t border-gray-200 space-y-1 flex-shrink-0">
+      <div className="px-3 py-4 border-t border-gray-100 space-y-1 flex-shrink-0">
         <Link
           to="/dashboard"
-          className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-all duration-150"
+          className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-500 hover:bg-gray-50 hover:text-gray-900 transition-all duration-150"
           onClick={() => setSidebarOpen(false)}
         >
           <Home className="h-4 w-4 flex-shrink-0" />
@@ -98,7 +99,7 @@ const AdminLayout = () => {
         <button
           type="button"
           onClick={handleLogout}
-          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-red-600 hover:bg-red-50 hover:text-red-700 transition-all duration-150"
+          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-red-600 hover:bg-red-50 hover:text-red-700 transition-all duration-150"
         >
           <LogOut className="h-4 w-4 flex-shrink-0" />
           Sign Out
@@ -108,7 +109,7 @@ const AdminLayout = () => {
   );
 
   return (
-    <div className="flex min-h-screen bg-gray-50 font-sans">
+    <div className="flex min-h-screen bg-[#f5f6fa] font-sans">
       {/* Mobile backdrop */}
       {sidebarOpen && (
         <div
@@ -121,7 +122,7 @@ const AdminLayout = () => {
       {/* Sidebar — desktop: static, mobile: overlay */}
       <aside
         className={cn(
-          'fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-gray-200 flex flex-col transform transition-transform duration-200 ease-in-out',
+          'fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-gray-100 flex flex-col transform transition-transform duration-200 ease-in-out',
           'md:relative md:translate-x-0 md:z-auto',
           sidebarOpen ? 'translate-x-0' : '-translate-x-full'
         )}
@@ -132,18 +133,19 @@ const AdminLayout = () => {
       {/* Main content */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Mobile top bar */}
-        <div className="md:hidden h-14 bg-white border-b border-gray-200 flex items-center px-4 gap-3 flex-shrink-0">
+        <div className="md:hidden h-14 bg-white border-b border-gray-100 flex items-center px-4 gap-3 flex-shrink-0">
           <button
             type="button"
             onClick={() => setSidebarOpen(true)}
-            className="text-gray-500 hover:text-gray-700 p-1.5 rounded-lg hover:bg-gray-100"
+            className="text-gray-500 hover:text-gray-700 p-1.5 rounded-lg hover:bg-gray-50"
             aria-label="Open sidebar"
           >
             <Menu className="h-5 w-5" />
           </button>
           <div className="flex items-center gap-2">
-            <div className="p-1 bg-amber-100 rounded-md">
-              <ShieldCheck className="h-4 w-4 text-amber-600" />
+            <div className="w-6 h-6 rounded-md flex items-center justify-center"
+              style={{ background: "linear-gradient(135deg, #14532d, #166534)" }}>
+              <ShieldCheck className="h-3.5 w-3.5 text-white" />
             </div>
             <span className="text-sm font-semibold text-gray-900">Admin Panel</span>
           </div>
