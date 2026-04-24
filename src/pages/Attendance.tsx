@@ -15,23 +15,12 @@ import {
   TabsTrigger,
 } from "@/components/ui/tabs.tsx";
 import {
-  BookOpen,
   CalendarCheck,
   CalendarDays,
-  Clock,
   TrendingUp,
   Users,
 } from "lucide-react";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card.tsx";
-import { Badge } from "@/components/ui/badge.tsx";
 import { Button } from "@/components/ui/button.tsx";
-import { useIsMobile } from "@/hooks/use-mobile.tsx";
 import { useI18n } from "@/contexts/I18nContext.tsx";
 import { AdminPageShell, AdminStatCard } from "@/components/admin/AdminPageShell.tsx";
 
@@ -152,138 +141,79 @@ const Attendance = () => {
         ))}
       </div>
 
-        {/* Main content card */}
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-          <div className="px-6 py-5 border-b border-gray-100 flex items-center justify-between">
-            <div>
-              <h2 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-                <div className="p-1.5 bg-green-50 rounded-lg">
-                  <Users className="h-4 w-4 text-green-700" />
-                </div>
-                {t("pages.attendance.dashboardTitle")}
-              </h2>
-              <p className="text-sm text-gray-500 mt-0.5">{t("pages.attendance.dashboardDesc")}</p>
-            </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setLongTermOpen(true)}
-              className="border-blue-200 text-blue-700 hover:bg-blue-50 rounded-xl"
-            >
-              <CalendarDays className="h-4 w-4 mr-1.5" />
-              Multi-day Absence
-            </Button>
-          </div>
-
-          {/* Long-term absence modal */}
-          <LongTermAbsenceModal open={longTermOpen} onClose={() => setLongTermOpen(false)} />
-
-          <div className="p-4 sm:p-6">
-            <AttendanceCutoffSettings />
-          </div>
-
-          <Tabs value={selectedTab} onValueChange={setSelectedTab} className="w-full">
-            <div className="border-b border-gray-100 px-6">
-              <TabsList className="bg-transparent p-0 h-auto gap-6 rounded-none">
-                <TabsTrigger
-                  value="take-attendance"
-                  className="flex items-center gap-2 py-3 px-0 text-sm font-medium rounded-none border-b-2 border-transparent data-[state=active]:border-green-700 data-[state=active]:text-green-800 text-gray-500 bg-transparent shadow-none"
-                >
-                  <CalendarCheck className="h-4 w-4" />
-                  <span>{t("pages.attendance.tabs.take")}</span>
-                </TabsTrigger>
-                <TabsTrigger
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-
-        {/* Mobile-optimized Main Content */}
-        <Card className="border border-gray-200 shadow-sm bg-white overflow-hidden">
-          <CardHeader className="bg-gray-50 border-b border-gray-200 p-4 sm:p-6">
-            <div className="flex flex-col gap-3 sm:gap-4">
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <CardTitle className="text-lg sm:text-2xl font-bold text-foreground flex items-center gap-2 sm:gap-3">
-                    <div className="p-1.5 sm:p-2 bg-green-100 rounded-md sm:rounded-lg text-green-700">
-                      <Users className="h-4 w-4 sm:h-5 sm:w-5" />
-                    </div>
-                    {t("pages.attendance.dashboardTitle")}
-                  </CardTitle>
-                  <CardDescription className="text-foreground mt-1 sm:mt-2 text-sm sm:text-base">{t("pages.attendance.dashboardDesc")}</CardDescription>
-                </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setLongTermOpen(true)}
-                  className="flex-shrink-0 border-blue-200 text-blue-700 hover:bg-blue-50"
-                >
-                  <CalendarDays className="h-4 w-4 mr-1.5" />
-                  Multi-day Absence
-                </Button>
+      {/* Main content card */}
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+        <div className="px-6 py-5 border-b border-gray-100 flex items-center justify-between">
+          <div>
+            <h2 className="text-base font-semibold text-gray-900 flex items-center gap-2">
+              <div className="p-1.5 bg-green-50 rounded-lg">
+                <Users className="h-4 w-4 text-green-700" />
               </div>
-            </div>
-          </CardHeader>
-
-          {/* Long-term absence modal */}
-          <LongTermAbsenceModal
-            open={longTermOpen}
-            onClose={() => setLongTermOpen(false)}
-          />
-
-          <CardContent className="p-0">
-            <div className="p-3 sm:p-6 lg:p-8 pt-4">
-              <AttendanceCutoffSettings />
-            </div>
-            <Tabs
-              value={selectedTab}
-              onValueChange={setSelectedTab}
-              className="w-full"
-            >
-              <div className="border-b border-gray-200 bg-gray-50">
-                <TabsList className="w-full h-auto p-0 bg-transparent grid grid-cols-2 rounded-none">
-                  <TabsTrigger
-                    value="take-attendance"
-                    className="flex items-center justify-center gap-1.5 sm:gap-3 py-3 sm:py-4 px-3 sm:px-6 text-sm sm:text-base font-medium transition-all duration-300 rounded-none border-b-2 border-transparent data-[state=active]:border-[hsl(142.8,64.2%,24.1%)] data-[state=active]:bg-[hsl(142.8,64.2%,24.1%)]/10 data-[state=active]:text-[hsl(142.8,64.2%,24.1%)] hover:bg-gray-100 text-foreground"
-                  >
-                    <CalendarCheck className="h-4 w-4 sm:h-5 sm:w-5" />
-                    <span className="text-xs sm:text-base">{t("pages.attendance.tabs.take")}</span>
-                  </TabsTrigger>
-                <TabsTrigger
-                  value="records"
-                  className="flex items-center gap-2 py-3 px-0 text-sm font-medium rounded-none border-b-2 border-transparent data-[state=active]:border-green-700 data-[state=active]:text-green-800 text-gray-500 bg-transparent shadow-none"
-                >
-                  <Users className="h-4 w-4" />
-                  <span>{t("pages.attendance.tabs.records")}</span>
-                </TabsTrigger>
-              </TabsList>
-            </div>
-
-            <div className="p-6">
-              <TabsContent value="take-attendance" className="mt-0">
-                <div className="space-y-4">
-                  <div className="text-center space-y-1">
-                    <h3 className="text-base font-semibold text-gray-900">{t("pages.attendance.recordTitle")}</h3>
-                    <p className="text-sm text-gray-500">{t("pages.attendance.recordDesc")}</p>
-                  </div>
-                  <AttendanceForm />
-                </div>
-              </TabsContent>
-
-              <TabsContent value="records" className="mt-0">
-                <div className="space-y-4">
-                  <div className="text-center space-y-1">
-                    <h3 className="text-base font-semibold text-gray-900">{t("pages.attendance.historyTitle")}</h3>
-                    <p className="text-sm text-gray-500">{t("pages.attendance.historyDesc")}</p>
-                  </div>
-                  <AttendanceTable />
-                </div>
-              </TabsContent>
-            </div>
-          </Tabs>
+              {t("pages.attendance.dashboardTitle")}
+            </h2>
+            <p className="text-sm text-gray-500 mt-0.5">{t("pages.attendance.dashboardDesc")}</p>
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setLongTermOpen(true)}
+            className="border-blue-200 text-blue-700 hover:bg-blue-50 rounded-xl"
+          >
+            <CalendarDays className="h-4 w-4 mr-1.5" />
+            Multi-day Absence
+          </Button>
         </div>
+
+        {/* Long-term absence modal */}
+        <LongTermAbsenceModal open={longTermOpen} onClose={() => setLongTermOpen(false)} />
+
+        <div className="p-4 sm:p-6">
+          <AttendanceCutoffSettings />
+        </div>
+
+        <Tabs value={selectedTab} onValueChange={setSelectedTab} className="w-full">
+          <div className="border-b border-gray-100 px-6">
+            <TabsList className="bg-transparent p-0 h-auto gap-6 rounded-none">
+              <TabsTrigger
+                value="take-attendance"
+                className="flex items-center gap-2 py-3 px-0 text-sm font-medium rounded-none border-b-2 border-transparent data-[state=active]:border-green-700 data-[state=active]:text-green-800 text-gray-500 bg-transparent shadow-none"
+              >
+                <CalendarCheck className="h-4 w-4" />
+                <span>{t("pages.attendance.tabs.take")}</span>
+              </TabsTrigger>
+              <TabsTrigger
+                value="records"
+                className="flex items-center gap-2 py-3 px-0 text-sm font-medium rounded-none border-b-2 border-transparent data-[state=active]:border-green-700 data-[state=active]:text-green-800 text-gray-500 bg-transparent shadow-none"
+              >
+                <Users className="h-4 w-4" />
+                <span>{t("pages.attendance.tabs.records")}</span>
+              </TabsTrigger>
+            </TabsList>
+          </div>
+
+          <div className="p-6">
+            <TabsContent value="take-attendance" className="mt-0">
+              <div className="space-y-4">
+                <div className="text-center space-y-1">
+                  <h3 className="text-base font-semibold text-gray-900">{t("pages.attendance.recordTitle")}</h3>
+                  <p className="text-sm text-gray-500">{t("pages.attendance.recordDesc")}</p>
+                </div>
+                <AttendanceForm />
+              </div>
+            </TabsContent>
+
+            <TabsContent value="records" className="mt-0">
+              <div className="space-y-4">
+                <div className="text-center space-y-1">
+                  <h3 className="text-base font-semibold text-gray-900">{t("pages.attendance.historyTitle")}</h3>
+                  <p className="text-sm text-gray-500">{t("pages.attendance.historyDesc")}</p>
+                </div>
+                <AttendanceTable />
+              </div>
+            </TabsContent>
+          </div>
+        </Tabs>
+      </div>
     </AdminPageShell>
   );
 };
