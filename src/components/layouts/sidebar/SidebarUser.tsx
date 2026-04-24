@@ -38,26 +38,16 @@ export const SidebarUser = ({ isAdmin, isOpen }: SidebarUserProps) => {
   // Collapsed state
   if (!isMobile && isOpen === false) {
     return (
-      <div className="p-2 border-t border-white/10">
+      <div className="p-2 border-t border-gray-100">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button
               variant="ghost"
-              className={cn(
-                "w-full h-12 p-2 hover:bg-white/5 transition-all duration-200 group",
-                "justify-center rounded-lg",
-              )}
+              className="w-full h-12 p-2 hover:bg-gray-50 transition-colors justify-center rounded-xl"
               title={userName}
             >
-              <Avatar className="h-8 w-8 border-2 border-white/20 group-hover:border-white/40 transition-all duration-200">
-                <AvatarFallback
-                  className={cn(
-                    "text-xs font-semibold",
-                    isAdmin
-                      ? "bg-amber-400 text-gray-900"
-                      : "bg-primary text-white",
-                  )}
-                >
+              <Avatar className="h-8 w-8">
+                <AvatarFallback className="text-xs font-semibold bg-green-100 text-green-800">
                   {userInitials}
                 </AvatarFallback>
               </Avatar>
@@ -114,52 +104,24 @@ export const SidebarUser = ({ isAdmin, isOpen }: SidebarUserProps) => {
 
   // Expanded state
   return (
-    <div
-      className={cn(
-        "p-3 sm:p-4",
-        isAdmin ? "border-t border-white/10" : "border-t border-gray-100",
-      )}
-    >
+    <div className="p-3 border-t border-gray-100">
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button
             variant="ghost"
-            className={cn(
-              "w-full justify-start h-auto p-3 transition-all duration-200",
-              isAdmin
-                ? "hover:bg-white/5 text-white"
-                : "hover:bg-gray-100/60 text-gray-700",
-              "hover:shadow-sm rounded-lg",
-            )}
+            className="w-full justify-start h-auto p-3 hover:bg-gray-50 transition-colors rounded-xl"
           >
             <div className="flex items-center gap-3 w-full">
-              <Avatar
-                className={cn(
-                  "h-10 w-10 border-2 transition-all duration-200",
-                  isAdmin ? "border-white/20" : "border-gray-200",
-                )}
-              >
-                <AvatarFallback
-                  className={cn(
-                    "text-sm font-semibold",
-                    isAdmin
-                      ? "bg-amber-400 text-gray-900"
-                      : "bg-primary text-white",
-                  )}
-                >
+              <Avatar className="h-9 w-9 flex-shrink-0">
+                <AvatarFallback className="text-sm font-semibold bg-green-100 text-green-800">
                   {userInitials}
                 </AvatarFallback>
               </Avatar>
-              <div className="flex flex-col items-start space-y-1 flex-1 min-w-0">
-                <p className="text-sm font-medium leading-none truncate w-full">
+              <div className="flex flex-col items-start flex-1 min-w-0">
+                <p className="text-sm font-semibold text-gray-900 leading-none truncate w-full">
                   {userName}
                 </p>
-                <p
-                  className={cn(
-                    "text-xs leading-none truncate w-full",
-                    isAdmin ? "text-gray-300" : "text-muted-foreground",
-                  )}
-                >
+                <p className="text-xs text-gray-400 leading-none truncate w-full mt-1">
                   {userEmail}
                 </p>
               </div>

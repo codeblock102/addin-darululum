@@ -4,14 +4,13 @@ import { supabase } from "@/integrations/supabase/client.ts";
 import { ClassDialog } from "@/components/classes/ClassDialog.tsx";
 import { ClassTable } from "@/components/classes/components/ClassTable.tsx";
 import { EnrollmentDialog } from "@/components/classes/components/EnrollmentDialog.tsx";
-import { Button } from "@/components/ui/button.tsx";
-import { Dialog, DialogTrigger } from "@/components/ui/dialog.tsx";
+import { Dialog } from "@/components/ui/dialog.tsx";
 import { SearchInput } from "@/components/table/SearchInput.tsx";
 import { Plus } from "lucide-react";
-import { AdminHeader } from "@/components/admin/AdminHeader.tsx";
 import { ClassFormData } from "@/components/classes/validation/classFormSchema.ts";
 import { DeleteClassDialog } from "@/components/classes/components/DeleteClassDialog.tsx";
 import { useI18n } from "@/contexts/I18nContext.tsx";
+import { AdminPageShell, AdminPrimaryBtn } from "@/components/admin/AdminPageShell.tsx";
 
 // Use Dialog directly; components sanitize unsupported attributes
 const SafeDialog = Dialog;
@@ -149,68 +148,57 @@ export default function Classes() {
   });
 
   return (
-    <div className="space-y-6 px-4 sm:px-6">
-        <AdminHeader
-          title={t("pages.classes.headerTitle")}
-          description={t("pages.classes.headerDesc")}
+    <AdminPageShell
+      title={t("pages.classes.headerTitle")}
+      subtitle={t("pages.classes.headerDesc")}
+      actions={
+        <AdminPrimaryBtn onClick={() => { handleOpenClassDialog(); setIsClassDialogOpen(true); }}>
+          <Plus className="h-4 w-4" />
+          {t("pages.classes.addClass")}
+        </AdminPrimaryBtn>
+      }
+    >
+      <Dialog open={isClassDialogOpen} onOpenChange={setIsClassDialogOpen}>
+        {isClassDialogOpen && (
+          <ClassDialog selectedClass={selectedClass} onClose={handleCloseClassDialog} />
+        )}
+      </Dialog>
+
+      {selectedClass && (
+        <EnrollmentDialog
+          classId={selectedClass.id}
+          open={isEnrollmentDialogOpen}
+          onOpenChange={setIsEnrollmentDialogOpen}
         />
+      )}
+      {selectedClass && (
+        <DeleteClassDialog
+          classId={selectedClass.id}
+          open={isDeleteDialogOpen}
+          onOpenChange={setIsDeleteDialogOpen}
+        />
+      )}
 
-        <SafeDialog open={isClassDialogOpen} onOpenChange={setIsClassDialogOpen}>
-          <div className="flex justify-end mb-4">
-            <DialogTrigger asChild>
-              <Button
-                className="bg-amber-500 hover:bg-amber-600 text-foreground px-4 py-2 sm:px-6 sm:py-3 text-sm sm:text-base"
-                onClick={() => handleOpenClassDialog()}
-              >
-                <Plus className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
-                {t("pages.classes.addClass")}
-              </Button>
-            </DialogTrigger>
-          </div>
-          {isClassDialogOpen && (
-            <ClassDialog
-              selectedClass={selectedClass}
-              onClose={handleCloseClassDialog}
-            />
-          )}
-        </SafeDialog>
-
-        {selectedClass && (
-          <EnrollmentDialog
-            classId={selectedClass.id}
-            open={isEnrollmentDialogOpen}
-            onOpenChange={setIsEnrollmentDialogOpen}
-          />
-        )}
-
-        {selectedClass && (
-          <DeleteClassDialog
-            classId={selectedClass.id}
-            open={isDeleteDialogOpen}
-            onOpenChange={setIsDeleteDialogOpen}
-          />
-        )}
-
-        <div className="glass-effect rounded-lg shadow-lg overflow-hidden">
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+        <div className="p-4 border-b border-gray-100">
           <SearchInput
             placeholder={t("pages.classes.searchPlaceholder")}
             value={searchQuery}
             onChange={setSearchQuery}
-            className="border-gray-700/30 bg-white/5 p-3 sm:p-4"
+            className="bg-gray-50 border-gray-200 rounded-xl"
           />
-          {isLoading && <p className="p-4">{t("pages.classes.loading")}</p>}
-          {isError && (
-            <p className="p-4 text-red-500">{t("pages.classes.errorPrefix")}{(error as Error).message}</p>
-          )}
-          {!isLoading && !isError && (
-            <ClassTable
-              classes={filteredClasses || []}
-              onEdit={handleOpenClassDialog}
-              onEnroll={handleOpenEnrollmentDialog}
-              onDelete={handleOpenDeleteDialog}
-            />
-          )}
         </div>
+        {isLoading && <p className="p-6 text-gray-500 text-sm">{t("pages.classes.loading")}</p>}
+        {isError && <p className="p-6 text-red-500 text-sm">{t("pages.classes.errorPrefix")}{(error as Error).message}</p>}
+        {!isLoading && !isError && (
+          <ClassTable
+            classes={filteredClasses || []}
+            onEdit={handleOpenClassDialog}
+            onEnroll={handleOpenEnrollmentDialog}
+            onDelete={handleOpenDeleteDialog}
+          />
+        )}
       </div>
+    </AdminPageShell>
   );
 }

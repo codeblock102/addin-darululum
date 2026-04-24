@@ -52,14 +52,14 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   return (
     <div
       className={cn(
-        "flex min-h-screen w-full overflow-hidden bg-gray-50",
-        isAdmin ? "admin-theme" : "teacher-theme",
+        "flex min-h-screen w-full overflow-hidden",
+        isAdmin ? "bg-[#f5f6fa] admin-theme" : "bg-gray-50 teacher-theme",
       )}
     >
       {/* Sidebar */}
       <div
         className={cn(
-          "fixed inset-y-0 left-0 z-40 bg-white border-r border-gray-200 shadow-sm",
+          "fixed inset-y-0 left-0 z-40 bg-white border-r border-gray-100 shadow-sm",
           isMobile ? `${sidebarWidthClass} -translate-x-full` : [
             sidebarOpen ? sidebarWidthClass : collapsedSidebarWidthClass,
             "transition-all duration-300 ease-in-out",
@@ -82,15 +82,9 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
         )}
       >
         <BackgroundPattern isAdmin={isAdmin}>
-          <div className="p-3 sm:p-4 md:p-6 h-full">
+          <div className="h-full">
             <div className="max-w-7xl mx-auto h-full">
-              {/* Role Badge - Hidden on mobile for cleaner look */}
-              {!isMobile && (
-                <RoleBadge isAdmin={isAdmin} isLoading={isLoading} />
-              )}
-              
-              {/* Main Content with enhanced mobile spacing */}
-              <div className="animate-fadeIn mt-2 sm:mt-4 md:mt-0 h-full">
+              <div className="animate-fadeIn h-full">
                 {children || <Outlet />}
               </div>
             </div>

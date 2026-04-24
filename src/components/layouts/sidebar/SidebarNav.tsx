@@ -78,12 +78,13 @@ export const SidebarNav = ({ items, isAdmin, isOpen }: SidebarNavProps) => {
   return (
     <nav
       className={cn(
-        "grid gap-1 transition-all duration-300",
-        (!isMobile && isOpen === false) ? "px-1" : "px-2",
+        "grid gap-0.5 transition-all duration-300",
+        (!isMobile && isOpen === false) ? "px-2" : "px-3",
       )}
     >
       {items.map((item, index) => {
         const isActive = isNavItemActive(item);
+        const collapsed = !isMobile && isOpen === false;
 
         return (
           <Link
@@ -91,56 +92,45 @@ export const SidebarNav = ({ items, isAdmin, isOpen }: SidebarNavProps) => {
             to={item.href}
             onClick={handleNavigation}
             className={cn(
-              "flex items-center rounded-lg text-sm font-medium transition-all duration-200 group relative",
-              (!isMobile && isOpen === false)
-                ? "justify-center p-3 mx-1 my-1"
-                : "gap-3 pl-3 pr-3 py-2.5",
-              isAdmin
-                ? (isActive
-                  ? "bg-white/15 text-amber-400 font-medium backdrop-blur-sm border-l-2 border-amber-500 shadow-sm"
-                  : "text-gray-300 hover:bg-white/10 hover:text-amber-400 border-l-2 border-transparent hover:shadow-sm")
-                : (isActive
-                  ? "bg-primary/10 text-primary font-medium border-l-2 border-primary shadow-sm"
-                  : "text-gray-700 hover:bg-primary/5 hover:text-primary border-l-2 border-transparent hover:shadow-sm"),
-              "hover:scale-[1.02] active:scale-[0.98]",
+              "flex items-center rounded-xl text-sm transition-colors duration-150 group relative",
+              collapsed ? "justify-center p-3" : "gap-3 px-3 py-2.5",
+              isActive
+                ? "bg-green-50 text-green-800 font-semibold"
+                : "text-gray-500 hover:bg-gray-50 hover:text-gray-900 font-medium",
             )}
-            title={(!isMobile && isOpen === false)
-              ? t(item.label)
-              : item.description}
+            title={collapsed ? t(item.label) : item.description}
           >
+            {/* Active left bar indicator */}
+            {!collapsed && isActive && (
+              <span
+                className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 rounded-r-full"
+                style={{ background: "#166534" }}
+              />
+            )}
+
             <item.icon
               className={cn(
-                "min-w-5 transition-all duration-200",
-                (!isMobile && isOpen === false) ? "h-5 w-5" : "h-4.5 w-4.5 sm:h-5 sm:w-5",
-                isAdmin
-                  ? (isActive
-                    ? "text-amber-400 drop-shadow-sm"
-                    : "text-gray-400 group-hover:text-amber-400")
-                  : (isActive
-                    ? "text-primary drop-shadow-sm"
-                    : "text-gray-500 group-hover:text-primary"),
+                "flex-shrink-0 transition-colors duration-150",
+                collapsed ? "h-5 w-5" : "h-4 w-4",
+                isActive ? "text-green-700" : "text-gray-400 group-hover:text-gray-600",
               )}
             />
-            {(isOpen !== false || isMobile) && (
-              <span className="truncate transition-all duration-300 font-medium">
-                {t(item.label)}
-              </span>
+
+            {!collapsed && (
+              <span className="truncate">{t(item.label)}</span>
             )}
 
-              {/* Unread badge for Messages routes */}
-              {typeof unreadCount === "number" && unreadCount > 0 && item.href && item.href.includes("/messages") && (
-                <span className="absolute right-2 top-1 inline-block h-2 w-2 rounded-full bg-red-600 shadow-sm" />
-              )}
+            {/* Unread badge */}
+            {typeof unreadCount === "number" && unreadCount > 0 &&
+              item.href?.includes("/messages") && (
+              <span className="absolute right-2.5 top-2.5 h-2 w-2 rounded-full bg-red-500" />
+            )}
 
             {/* Tooltip for collapsed state */}
-            {(!isMobile && isOpen === false) && (
-              <div
-                className={cn(
-                  "absolute left-full ml-2 px-2 py-1 bg-gray-900 text-white text-xs rounded shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 whitespace-nowrap",
-                  "before:content-[''] before:absolute before:right-full before:top-1/2 before:-translate-y-1/2 before:border-4 before:border-transparent before:border-r-gray-900",
-                )}
-              >
+            {collapsed && (
+              <div className="absolute left-full ml-3 px-2.5 py-1.5 bg-gray-900 text-white text-xs rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-150 z-50 whitespace-nowrap pointer-events-none">
                 {t(item.label)}
+                <span className="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-gray-900" />
               </div>
             )}
           </Link>
