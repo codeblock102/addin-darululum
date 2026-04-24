@@ -292,6 +292,7 @@ const ParentAccounts = () => {
                 </Button>
               </div>
             </div>
+          </div>
           </TabsContent>
 
           <TabsContent value="link" className="mt-0">
@@ -354,6 +355,7 @@ const ParentAccounts = () => {
                 </Button>
               </div>
             </div>
+          </div>
           </TabsContent>
 
           <TabsContent value="manage" className="mt-0">
@@ -399,6 +401,7 @@ const ParentAccounts = () => {
                 )}
               </div>
             </div>
+          </div>
           </TabsContent>
         </Tabs>
       </div>
