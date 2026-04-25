@@ -14,12 +14,7 @@ import {
   TabsList,
   TabsTrigger,
 } from "@/components/ui/tabs.tsx";
-import {
-  CalendarCheck,
-  CalendarDays,
-  TrendingUp,
-  Users,
-} from "lucide-react";
+import { CalendarCheck, CalendarDays, TrendingUp, Users } from "lucide-react";
 import { Button } from "@/components/ui/button.tsx";
 import { useI18n } from "@/contexts/I18nContext.tsx";
 import { AdminPageShell, AdminStatCard } from "@/components/admin/AdminPageShell.tsx";
@@ -33,16 +28,12 @@ const Attendance = () => {
 
   useEffect(() => {
     if (isLoading) return;
-    if (!isAdmin && !isAttendanceTaker) {
-      navigate("/");
-    }
+    if (!isAdmin && !isAttendanceTaker) navigate("/");
   }, [isLoading, isAdmin, isAttendanceTaker, navigate]);
 
-  // Dates
   const todayYmd = format(new Date(), "yyyy-MM-dd");
   const sevenDaysAgoYmd = format(subDays(new Date(), 6), "yyyy-MM-dd");
 
-  // Active students count
   const { data: activeStudentsCount = 0 } = useQuery({
     queryKey: ["active-students-count"],
     queryFn: async () => {
@@ -55,7 +46,6 @@ const Attendance = () => {
     },
   });
 
-  // Today's attendance records
   type TodayRow = { id: string; status: string };
   const { data: todayRows = [] } = useQuery<TodayRow[]>({
     queryKey: ["attendance-today", todayYmd],
@@ -69,7 +59,6 @@ const Attendance = () => {
     },
   });
 
-  // Last 7 days attendance records (including today)
   type WeekRow = { id: string; status: string };
   const { data: weekRows = [] } = useQuery<WeekRow[]>({
     queryKey: ["attendance-week", sevenDaysAgoYmd, todayYmd],
@@ -84,35 +73,12 @@ const Attendance = () => {
     },
   });
 
-  // Computations
   const attendedStatuses = new Set(["present", "late", "excused", "early_departure"]);
   const attendedToday = todayRows.filter((r) => attendedStatuses.has(r.status?.toLowerCase?.() || "")).length;
   const todayPct = activeStudentsCount > 0 ? Math.round((attendedToday / activeStudentsCount) * 1000) / 10 : 0;
-
   const weekAttended = weekRows.filter((r) => attendedStatuses.has(r.status?.toLowerCase?.() || "")).length;
   const weekTotal = weekRows.length;
   const weekPct = weekTotal > 0 ? Math.round((weekAttended / weekTotal) * 1000) / 10 : 0;
-
-  const statsCards = [
-    {
-      title: t("pages.attendance.statToday"),
-      value: `${attendedToday}/${activeStudentsCount}`,
-      percentage: `${todayPct.toFixed(1)}%`,
-      icon: Users,
-      color: "text-green-600",
-      bgColor: "bg-green-50 dark:bg-green-900/20",
-      borderColor: "border-green-200 dark:border-green-800",
-    },
-    {
-      title: t("pages.attendance.statWeek"),
-      value: `${weekAttended}/${weekTotal}`,
-      percentage: `${weekPct.toFixed(1)}%`,
-      icon: TrendingUp,
-      color: "text-blue-600",
-      bgColor: "bg-blue-50 dark:bg-blue-900/20",
-      borderColor: "border-blue-200 dark:border-blue-800",
-    },
-  ];
 
   return (
     <AdminPageShell
@@ -120,56 +86,52 @@ const Attendance = () => {
       subtitle={t("pages.attendance.headerDesc")}
       actions={
         <div className="flex items-center gap-2">
-          <span className="text-xs text-gray-400 bg-white border border-gray-200 rounded-xl px-3 py-2">
-            <CalendarCheck className="h-3.5 w-3.5 inline mr-1.5 text-green-600" />
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setLongTermOpen(true)}
+            className="border-gray-200 text-gray-700 hover:bg-gray-50 rounded-xl h-9 text-xs"
+          >
+            <CalendarDays className="h-3.5 w-3.5 mr-1.5" />
+            Multi-day Absence
+          </Button>
+          <span className="text-xs text-gray-400 bg-white border border-gray-200 rounded-xl px-3 py-2 h-9 flex items-center">
+            <CalendarCheck className="h-3.5 w-3.5 mr-1.5 text-green-600" />
             {new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}
           </span>
         </div>
       }
     >
-      {/* Stat cards */}
+      <LongTermAbsenceModal open={longTermOpen} onClose={() => setLongTermOpen(false)} />
+
+      {/* KPI strip */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-        {statsCards.map((stat, index) => (
-          <AdminStatCard
-            key={index}
-            label={stat.title}
-            value={`${stat.value} (${stat.percentage})`}
-            icon={<stat.icon className="h-4 w-4" style={{ color: index === 0 ? "#16a34a" : "#2563eb" }} />}
-            iconBg={index === 0 ? "bg-green-50" : "bg-blue-50"}
-          />
-        ))}
+        <AdminStatCard
+          label={t("pages.attendance.statToday")}
+          value={`${attendedToday} / ${activeStudentsCount}`}
+          meta={`${todayPct.toFixed(1)}% attendance rate`}
+          metaColor="text-green-700"
+          icon={<Users className="h-4 w-4 text-green-700" />}
+          iconBg="bg-green-50"
+        />
+        <AdminStatCard
+          label={t("pages.attendance.statWeek")}
+          value={`${weekAttended} / ${weekTotal}`}
+          meta={`${weekPct.toFixed(1)}% over last 7 days`}
+          metaColor="text-blue-600"
+          icon={<TrendingUp className="h-4 w-4 text-blue-600" />}
+          iconBg="bg-blue-50"
+        />
       </div>
 
-      {/* Main content card */}
+      {/* Main card */}
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-        <div className="px-6 py-5 border-b border-gray-100 flex items-center justify-between">
-          <div>
-            <h2 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-              <div className="p-1.5 bg-green-50 rounded-lg">
-                <Users className="h-4 w-4 text-green-700" />
-              </div>
-              {t("pages.attendance.dashboardTitle")}
-            </h2>
-            <p className="text-sm text-gray-500 mt-0.5">{t("pages.attendance.dashboardDesc")}</p>
-          </div>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setLongTermOpen(true)}
-            className="border-blue-200 text-blue-700 hover:bg-blue-50 rounded-xl"
-          >
-            <CalendarDays className="h-4 w-4 mr-1.5" />
-            Multi-day Absence
-          </Button>
-        </div>
-
-        {/* Long-term absence modal */}
-        <LongTermAbsenceModal open={longTermOpen} onClose={() => setLongTermOpen(false)} />
-
-        <div className="p-4 sm:p-6">
+        {/* Cutoff settings strip */}
+        <div className="px-6 py-4 border-b border-gray-100 bg-gray-50/50">
           <AttendanceCutoffSettings />
         </div>
 
+        {/* Tabs */}
         <Tabs value={selectedTab} onValueChange={setSelectedTab} className="w-full">
           <div className="border-b border-gray-100 px-6">
             <TabsList className="bg-transparent p-0 h-auto gap-6 rounded-none">
@@ -178,37 +140,24 @@ const Attendance = () => {
                 className="flex items-center gap-2 py-3 px-0 text-sm font-medium rounded-none border-b-2 border-transparent data-[state=active]:border-green-700 data-[state=active]:text-green-800 text-gray-500 bg-transparent shadow-none"
               >
                 <CalendarCheck className="h-4 w-4" />
-                <span>{t("pages.attendance.tabs.take")}</span>
+                {t("pages.attendance.tabs.take")}
               </TabsTrigger>
               <TabsTrigger
                 value="records"
                 className="flex items-center gap-2 py-3 px-0 text-sm font-medium rounded-none border-b-2 border-transparent data-[state=active]:border-green-700 data-[state=active]:text-green-800 text-gray-500 bg-transparent shadow-none"
               >
                 <Users className="h-4 w-4" />
-                <span>{t("pages.attendance.tabs.records")}</span>
+                {t("pages.attendance.tabs.records")}
               </TabsTrigger>
             </TabsList>
           </div>
 
           <div className="p-6">
             <TabsContent value="take-attendance" className="mt-0">
-              <div className="space-y-4">
-                <div className="text-center space-y-1">
-                  <h3 className="text-base font-semibold text-gray-900">{t("pages.attendance.recordTitle")}</h3>
-                  <p className="text-sm text-gray-500">{t("pages.attendance.recordDesc")}</p>
-                </div>
-                <AttendanceForm />
-              </div>
+              <AttendanceForm />
             </TabsContent>
-
             <TabsContent value="records" className="mt-0">
-              <div className="space-y-4">
-                <div className="text-center space-y-1">
-                  <h3 className="text-base font-semibold text-gray-900">{t("pages.attendance.historyTitle")}</h3>
-                  <p className="text-sm text-gray-500">{t("pages.attendance.historyDesc")}</p>
-                </div>
-                <AttendanceTable />
-              </div>
+              <AttendanceTable />
             </TabsContent>
           </div>
         </Tabs>
