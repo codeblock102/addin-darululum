@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client.ts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card.tsx";
-import { AdminPageShell } from "@/components/admin/AdminPageShell.tsx";
+import { AdminPageShell, AdminStatCard } from "@/components/admin/AdminPageShell.tsx";
 import { Badge } from "@/components/ui/badge.tsx";
 import { Button } from "@/components/ui/button.tsx";
 import { Input } from "@/components/ui/input.tsx";
