@@ -23,13 +23,15 @@ console.log(`RESEND_FROM_EMAIL is set: ${!!FROM_EMAIL}`);
 console.log("-------------------------");
 
 // --- Constants & Clients ---
-const DEFAULT_ORG_LOGO_URL = "https://depsfpodwaprzxffdcks.supabase.co/storage/v1/object/public/dum-logo/dum-logo.png";
+const DEFAULT_ORG_LOGO_URL =
+  "https://depsfpodwaprzxffdcks.supabase.co/storage/v1/object/public/dum-logo/dum-logo.png";
 const APP_URL = Deno.env.get("APP_URL") || "https://app.daralulummontreal.com/";
 // Note: Runtime secrets may change without a cold start. We'll re-read inside the handler as well.
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-student-ids",
+  "Access-Control-Allow-Headers":
+    "authorization, x-client-info, apikey, content-type, x-student-ids",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
   "Access-Control-Max-Age": "86400",
 };
@@ -133,10 +135,12 @@ function buildStatusNarrative(
         : `${safeName} left <strong>early</strong> on ${safeDate}.`;
       break;
     case "excused":
-      message = `${safeName} was marked <strong>${label}</strong> on ${safeDate}.`;
+      message =
+        `${safeName} was marked <strong>${label}</strong> on ${safeDate}.`;
       break;
     default:
-      message = `${safeName} was marked <strong>${label}</strong> on ${safeDate}.`;
+      message =
+        `${safeName} was marked <strong>${label}</strong> on ${safeDate}.`;
       break;
   }
 
@@ -188,11 +192,16 @@ serve(async (req: Request) => {
 
   // --- Handle Health Check Request ---
   if (req.method === "GET") {
-    try { console.log("[attendance-absence-email] GET health"); } catch (_) { /* noop */ }
-    return new Response(JSON.stringify({ ok: true, service: "attendance-absence-email" }), {
-      status: 200,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    try {
+      console.log("[attendance-absence-email] GET health");
+    } catch (_) { /* noop */ }
+    return new Response(
+      JSON.stringify({ ok: true, service: "attendance-absence-email" }),
+      {
+        status: 200,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      },
+    );
   }
 
   try {
@@ -204,7 +213,9 @@ serve(async (req: Request) => {
       const method = req.method;
       const ct = (req.headers.get("content-type") || "").toLowerCase();
       const hasAuth = !!req.headers.get("authorization");
-      console.log(`[Edge Fn] Request method=${method} content-type=${ct} hasAuth=${hasAuth}`);
+      console.log(
+        `[Edge Fn] Request method=${method} content-type=${ct} hasAuth=${hasAuth}`,
+      );
     } catch (_) { /* noop */ }
     let triggerSource = "manual";
     let timestamp = new Date().toISOString();
@@ -236,19 +247,39 @@ serve(async (req: Request) => {
       console.log("[Edge Fn] content-length:", contentLength);
       if (bodyText && bodyText.trim() !== "") {
         let parsed: any = null;
-        try { parsed = JSON.parse(bodyText); } catch (_) { /* noop */ }
-        if (parsed && typeof parsed === 'object') {
+        try {
+          parsed = JSON.parse(bodyText);
+        } catch (_) { /* noop */ }
+        if (parsed && typeof parsed === "object") {
           console.log("[Edge Fn] Parsed request body:", parsed);
-          console.log("[Edge Fn] parsed.student_ids specifically:", parsed.student_ids);
-          console.log("[Edge Fn] typeof parsed.student_ids:", typeof parsed.student_ids);
-          console.log("[Edge Fn] Array.isArray(parsed.student_ids):", Array.isArray(parsed.student_ids));
+          console.log(
+            "[Edge Fn] parsed.student_ids specifically:",
+            parsed.student_ids,
+          );
+          console.log(
+            "[Edge Fn] typeof parsed.student_ids:",
+            typeof parsed.student_ids,
+          );
+          console.log(
+            "[Edge Fn] Array.isArray(parsed.student_ids):",
+            Array.isArray(parsed.student_ids),
+          );
           triggerSource = parsed.source || triggerSource;
           timestamp = parsed.timestamp || timestamp;
           explicitMadrassahId = parsed.madrassah_id || null;
-          explicitStudentIds = Array.isArray(parsed.student_ids) ? parsed.student_ids : null;
-          console.log("[Edge Fn] explicitStudentIds after assignment:", explicitStudentIds);
-          explicitClassId = typeof parsed.class_id === 'string' ? parsed.class_id : null;
-          const maybeDate = typeof parsed.date === 'string' ? String(parsed.date).trim() : '';
+          explicitStudentIds = Array.isArray(parsed.student_ids)
+            ? parsed.student_ids
+            : null;
+          console.log(
+            "[Edge Fn] explicitStudentIds after assignment:",
+            explicitStudentIds,
+          );
+          explicitClassId = typeof parsed.class_id === "string"
+            ? parsed.class_id
+            : null;
+          const maybeDate = typeof parsed.date === "string"
+            ? String(parsed.date).trim()
+            : "";
           if (/^\d{4}-\d{2}-\d{2}$/.test(maybeDate)) {
             explicitDate = maybeDate;
           }
@@ -261,10 +292,13 @@ serve(async (req: Request) => {
       if (!explicitStudentIds || explicitStudentIds.length === 0) {
         const csv = req.headers.get("x-student-ids") || "";
         if (csv.trim() !== "") {
-          const ids = csv.split(',').map(s => s.trim()).filter(Boolean);
+          const ids = csv.split(",").map((s) => s.trim()).filter(Boolean);
           if (ids.length > 0) {
             explicitStudentIds = ids;
-            console.log("[Edge Fn] Parsed student_ids from header x-student-ids:", explicitStudentIds);
+            console.log(
+              "[Edge Fn] Parsed student_ids from header x-student-ids:",
+              explicitStudentIds,
+            );
           }
         }
       }
@@ -275,10 +309,13 @@ serve(async (req: Request) => {
           const url = new URL(req.url);
           const q = url.searchParams.get("student_ids");
           if (q) {
-            const ids = q.split(',').map(s => s.trim()).filter(Boolean);
+            const ids = q.split(",").map((s) => s.trim()).filter(Boolean);
             if (ids.length > 0) {
               explicitStudentIds = ids;
-              console.log("[Edge Fn] Parsed student_ids from query string:", explicitStudentIds);
+              console.log(
+                "[Edge Fn] Parsed student_ids from query string:",
+                explicitStudentIds,
+              );
             }
           }
           const qd = url.searchParams.get("date");
@@ -292,13 +329,17 @@ serve(async (req: Request) => {
     }
 
     // --- Validate Inputs ---
-    const isUuid = (s: string) => /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(s);
+    const isUuid = (s: string) =>
+      /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/
+        .test(s);
     if (explicitClassId && !isUuid(explicitClassId)) {
       explicitClassId = null;
     }
     console.log("[Edge Fn] student_ids before validation:", explicitStudentIds);
     if (explicitStudentIds && explicitStudentIds.length > 0) {
-      explicitStudentIds = explicitStudentIds.filter((id: any) => typeof id === 'string' && isUuid(id));
+      explicitStudentIds = explicitStudentIds.filter((id: any) =>
+        typeof id === "string" && isUuid(id)
+      );
       if (explicitStudentIds.length === 0) {
         explicitStudentIds = null;
       }
@@ -307,23 +348,29 @@ serve(async (req: Request) => {
 
     // --- Check Email Configuration (runtime) ---
     const RUNTIME_RESEND_API_KEY = Deno.env.get("RESEND_API_KEY") || "";
-    const RUNTIME_FROM_EMAIL =
-      Deno.env.get("RESEND_FROM_EMAIL") ||
+    const RUNTIME_FROM_EMAIL = Deno.env.get("RESEND_FROM_EMAIL") ||
       Deno.env.get("RESEND_FROM") ||
       Deno.env.get("EMAIL_FROM") ||
       "";
-    const resendClient = RUNTIME_RESEND_API_KEY ? new Resend(RUNTIME_RESEND_API_KEY) : null;
-    const emailSendingEnabled = Boolean(RUNTIME_RESEND_API_KEY && RUNTIME_FROM_EMAIL && resendClient);
+    const resendClient = RUNTIME_RESEND_API_KEY
+      ? new Resend(RUNTIME_RESEND_API_KEY)
+      : null;
+    const emailSendingEnabled = Boolean(
+      RUNTIME_RESEND_API_KEY && RUNTIME_FROM_EMAIL && resendClient,
+    );
     let emailConfigMessage = "Email service configured correctly.";
     if (!RUNTIME_RESEND_API_KEY && !RUNTIME_FROM_EMAIL) {
-      emailConfigMessage = "RESEND_API_KEY and RESEND_FROM_EMAIL secrets are not set (runtime).";
+      emailConfigMessage =
+        "RESEND_API_KEY and RESEND_FROM_EMAIL secrets are not set (runtime).";
     } else if (!RUNTIME_RESEND_API_KEY) {
       emailConfigMessage = "RESEND_API_KEY secret is not set (runtime).";
     } else if (!RUNTIME_FROM_EMAIL) {
       emailConfigMessage = "RESEND_FROM_EMAIL secret is not set (runtime).";
     }
     try {
-      console.log(`[email-config] enabled=${emailSendingEnabled} hasKey=${!!RUNTIME_RESEND_API_KEY} hasFrom=${!!RUNTIME_FROM_EMAIL}`);
+      console.log(
+        `[email-config] enabled=${emailSendingEnabled} hasKey=${!!RUNTIME_RESEND_API_KEY} hasFrom=${!!RUNTIME_FROM_EMAIL}`,
+      );
     } catch (_) { /* noop */ }
 
     // --- Initialize Supabase Clients ---
@@ -369,16 +416,24 @@ serve(async (req: Request) => {
       if (explicitClassId) {
         try {
           const { data: userData } = await supabaseUser.auth.getUser();
-          const userId = userData?.user?.id || '';
+          const userId = userData?.user?.id || "";
           const { data: cls, error: clsErr } = await supabaseService
             .from("classes")
             .select("id, current_students, teacher_ids")
             .eq("id", explicitClassId)
             .maybeSingle();
           if (clsErr) throw clsErr;
-          const teacherIds = Array.isArray((cls as any)?.teacher_ids) ? (cls as any).teacher_ids : [];
+          const teacherIds = Array.isArray((cls as any)?.teacher_ids)
+            ? (cls as any).teacher_ids
+            : [];
           if (userId && teacherIds.length > 0 && !teacherIds.includes(userId)) {
-            return new Response(JSON.stringify({ error: "not_authorized_for_class" }), { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+            return new Response(
+              JSON.stringify({ error: "not_authorized_for_class" }),
+              {
+                status: 403,
+                headers: { ...corsHeaders, "Content-Type": "application/json" },
+              },
+            );
           }
         } catch (_) {
           // If the class check fails, proceed without narrowing. Don't error the whole run.
@@ -392,23 +447,42 @@ serve(async (req: Request) => {
         .in("id", explicitStudentIds);
       if (studentsErr) throw studentsErr;
 
-      const activeStudents = (students || []).filter((s: any) => (s.status || 'active') === 'active');
+      const activeStudents = (students || []).filter((s: any) =>
+        (s.status || "active") === "active"
+      );
       const studentIds = activeStudents.map((s: any) => s.id);
 
       // If no active students, exit early.
       if (studentIds.length === 0) {
         const emptyPreview = preview ? { preview: true, recipients: {} } : {};
-        return new Response(JSON.stringify({ ok: true, scope: "teacher", date: effectiveYmd, emails_sent: 0, emails_skipped: 0, ...emptyPreview }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+        return new Response(
+          JSON.stringify({
+            ok: true,
+            scope: "teacher",
+            date: effectiveYmd,
+            emails_sent: 0,
+            emails_skipped: 0,
+            ...emptyPreview,
+          }),
+          {
+            status: 200,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          },
+        );
       }
 
-      const { data: attendanceRows, error: attendanceErr } = await supabaseService
-        .from("attendance")
-        .select("student_id, status, time")
-        .eq("date", effectiveYmd)
-        .in("student_id", studentIds);
+      const { data: attendanceRows, error: attendanceErr } =
+        await supabaseService
+          .from("attendance")
+          .select("student_id, status, time")
+          .eq("date", effectiveYmd)
+          .in("student_id", studentIds);
       if (attendanceErr) throw attendanceErr;
 
-      const statusByStudent = new Map<string, { status: string; time?: string | null }>();
+      const statusByStudent = new Map<
+        string,
+        { status: string; time?: string | null }
+      >();
       for (const row of (attendanceRows || [])) {
         const st = String((row as any)?.status || "").toLowerCase();
         if ((row as any)?.student_id) {
@@ -436,18 +510,24 @@ serve(async (req: Request) => {
           if (!email) return;
           const trimmed = String(email).trim().toLowerCase();
           if (trimmed && /.+@.+\..+/.test(trimmed)) {
-            console.log(`[DEBUG] Adding email: ${trimmed} for student ${student.id}`);
+            console.log(
+              `[DEBUG] Adding email: ${trimmed} for student ${student.id}`,
+            );
             recipientSet.add(trimmed);
           }
         };
 
         // Source 1: Direct guardian_email from students table
-        console.log(`[DEBUG] Checking source 1 (students.guardian_email) for student ${student.id}`);
+        console.log(
+          `[DEBUG] Checking source 1 (students.guardian_email) for student ${student.id}`,
+        );
         addEmail(student.guardian_email);
 
         // Source 2: `parents` table (student_ids array) -> fetch parent IDs, then emails from profiles
         try {
-          console.log(`[DEBUG] Checking source 2 (parents table) for student ${student.id}`);
+          console.log(
+            `[DEBUG] Checking source 2 (parents table) for student ${student.id}`,
+          );
           const studentUuid = student.id; // Keep as UUID, don't convert to string
 
           const { data: parents, error: parentsError } = await supabaseService
@@ -456,9 +536,16 @@ serve(async (req: Request) => {
             .contains("student_ids", [studentUuid]);
 
           if (parentsError) {
-            console.error(`[DEBUG] Error fetching parents for student ${studentUuid}:`, parentsError.message);
+            console.error(
+              `[DEBUG] Error fetching parents for student ${studentUuid}:`,
+              parentsError.message,
+            );
           } else {
-            console.log(`[DEBUG] Found ${(parents || []).length} parent rows for student ${studentUuid}`);
+            console.log(
+              `[DEBUG] Found ${
+                (parents || []).length
+              } parent rows for student ${studentUuid}`,
+            );
             console.log(`[DEBUG] Parent rows data:`, parents);
           }
 
@@ -466,28 +553,41 @@ serve(async (req: Request) => {
           console.log(`[DEBUG] Extracted parent IDs:`, parentIds);
 
           if (parentIds.length > 0) {
-            const { data: profiles, error: profilesError } = await supabaseService
-              .from("profiles")
-              .select("email, role")
-              .in("id", parentIds)
-              .eq("role", "parent");
-            
+            const { data: profiles, error: profilesError } =
+              await supabaseService
+                .from("profiles")
+                .select("email, role")
+                .in("id", parentIds)
+                .eq("role", "parent");
+
             if (profilesError) {
-              console.error(`[DEBUG] Error fetching profiles:`, profilesError.message);
+              console.error(
+                `[DEBUG] Error fetching profiles:`,
+                profilesError.message,
+              );
             } else {
-              console.log(`[DEBUG] Found ${(profiles || []).length} profile rows`);
+              console.log(
+                `[DEBUG] Found ${(profiles || []).length} profile rows`,
+              );
               console.log(`[DEBUG] Profile rows data:`, profiles);
             }
 
-            const parentEmails = (profiles || []).map((p: any) => p.email).filter(Boolean);
-            console.log(`[DEBUG] Final parent emails for student ${studentUuid}:`, parentEmails);
-            
+            const parentEmails = (profiles || []).map((p: any) => p.email)
+              .filter(Boolean);
+            console.log(
+              `[DEBUG] Final parent emails for student ${studentUuid}:`,
+              parentEmails,
+            );
+
             for (const email of parentEmails) {
               addEmail(email);
             }
           }
         } catch (e) {
-          console.error(`[DEBUG] Exception in parent email lookup for student ${student.id}:`, (e as Error).message);
+          console.error(
+            `[DEBUG] Exception in parent email lookup for student ${student.id}:`,
+            (e as Error).message,
+          );
         }
 
         // Note: Only using consolidated parents table for parent emails.
@@ -501,7 +601,10 @@ serve(async (req: Request) => {
           continue;
         }
 
-        if (recipients.length === 0) { emailsSkipped++; continue; }
+        if (recipients.length === 0) {
+          emailsSkipped++;
+          continue;
+        }
 
         // If email sending is disabled, skip but count it.
         if (!emailSendingEnabled) {
@@ -512,7 +615,9 @@ serve(async (req: Request) => {
         // Send the email.
         try {
           const statusLabel = getStatusLabel(status);
-          const emailBody = `${buildStatusNarrative(student.name, status, effectiveYmd, statusTime)}${buildPortalCtaHtml()}`;
+          const emailBody = `${
+            buildStatusNarrative(student.name, status, effectiveYmd, statusTime)
+          }${buildPortalCtaHtml()}`;
           await resendClient!.emails.send({
             from: RUNTIME_FROM_EMAIL!,
             to: recipients,
@@ -527,16 +632,38 @@ serve(async (req: Request) => {
 
       // --- STEP 5c: RETURN RESPONSE ---
       if (preview) {
-        return new Response(JSON.stringify({ ok: true, scope: "teacher", date: effectiveYmd, preview: true, email_sending_enabled: emailSendingEnabled, email_config_message: emailConfigMessage, recipients: previewRecipients }), {
-          status: 200,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
+        return new Response(
+          JSON.stringify({
+            ok: true,
+            scope: "teacher",
+            date: effectiveYmd,
+            preview: true,
+            email_sending_enabled: emailSendingEnabled,
+            email_config_message: emailConfigMessage,
+            recipients: previewRecipients,
+          }),
+          {
+            status: 200,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          },
+        );
       }
 
-      return new Response(JSON.stringify({ ok: true, scope: "teacher", date: effectiveYmd, email_sending_enabled: emailSendingEnabled, email_config_message: emailConfigMessage, emails_sent: emailsSent, emails_skipped: emailsSkipped }), {
-        status: 200,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      return new Response(
+        JSON.stringify({
+          ok: true,
+          scope: "teacher",
+          date: effectiveYmd,
+          email_sending_enabled: emailSendingEnabled,
+          email_config_message: emailConfigMessage,
+          emails_sent: emailsSent,
+          emails_skipped: emailsSkipped,
+        }),
+        {
+          status: 200,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
+      );
     }
 
     // =================================================================================
@@ -599,7 +726,9 @@ serve(async (req: Request) => {
         .eq("madrassah_id", setting.madrassah_id);
       if (studentsErr) throw studentsErr;
 
-      const activeStudents = (students || []).filter((s: any) => (s.status || 'active') === 'active');
+      const activeStudents = (students || []).filter((s: any) =>
+        (s.status || "active") === "active"
+      );
       if (activeStudents.length === 0) {
         // No students, update `last_sent_date` to prevent retries today and skip.
         await supabaseService
@@ -611,14 +740,18 @@ serve(async (req: Request) => {
 
       const studentIds = activeStudents.map((s: any) => s.id);
 
-      const { data: attendanceRows, error: attendanceErr } = await supabaseService
-        .from("attendance")
-        .select("student_id, status, time")
-        .eq("date", localYmd)
-        .in("student_id", studentIds);
+      const { data: attendanceRows, error: attendanceErr } =
+        await supabaseService
+          .from("attendance")
+          .select("student_id, status, time")
+          .eq("date", localYmd)
+          .in("student_id", studentIds);
       if (attendanceErr) throw attendanceErr;
 
-      const statusByStudent = new Map<string, { status: string; time?: string | null }>();
+      const statusByStudent = new Map<
+        string,
+        { status: string; time?: string | null }
+      >();
       for (const row of (attendanceRows || [])) {
         const st = String((row as any)?.status || "").toLowerCase();
         if ((row as any)?.student_id) {
@@ -652,7 +785,7 @@ serve(async (req: Request) => {
             .from("parents")
             .select("id, student_ids")
             .contains("student_ids", [studentUuid]);
-          
+
           const parentIds = (parents || []).map((p: any) => p.id);
           if (parentIds.length > 0) {
             const { data: profiles } = await supabaseService
@@ -696,7 +829,12 @@ serve(async (req: Request) => {
         // --- STEP 6d: COMPOSE AND SEND EMAIL ---
         const statusLabel = getStatusLabel(status);
         const subject = `Attendance Status: ${student.name} (${statusLabel})`;
-        const statusNarrative = buildStatusNarrative(student.name, status, localYmd, statusTime);
+        const statusNarrative = buildStatusNarrative(
+          student.name,
+          status,
+          localYmd,
+          statusTime,
+        );
         const html = `<!doctype html>
 <html><head><meta charset="utf-8"><style>
 body{font-family:Arial,Helvetica,sans-serif;background:#f6f7f9;margin:0;padding:0}
@@ -709,12 +847,14 @@ body{font-family:Arial,Helvetica,sans-serif;background:#f6f7f9;margin:0;padding:
   <div class="card">
     <div class="header"><h2>Attendance Status</h2></div>
     <div class="content">
-      <p>Assalamu alaikum ${htmlEscape(student.guardian_name || '')},</p>
+      <p>Assalamu alaikum ${htmlEscape(student.guardian_name || "")},</p>
       ${statusNarrative}
       <p>If your child is late or excused, please coordinate with the office as needed.</p>
       ${buildPortalCtaHtml()}
       <div style=\"text-align:center;margin-top:16px;\">
-        <img src=\"${Deno.env.get('ORG_LOGO_URL') || DEFAULT_ORG_LOGO_URL}\" alt=\"Dār Al-Ulūm Montréal\" style=\"max-width:180px;height:auto;\"/>
+        <img src=\"${
+          Deno.env.get("ORG_LOGO_URL") || DEFAULT_ORG_LOGO_URL
+        }\" alt=\"Dār Al-Ulūm Montréal\" style=\"max-width:180px;height:auto;\"/>
       </div>
       <p class="muted">This email was generated automatically by the madrassah attendance system.</p>
     </div>
@@ -739,7 +879,12 @@ body{font-family:Arial,Helvetica,sans-serif;background:#f6f7f9;margin:0;padding:
             if (is429) {
               await sleep(1500);
               try {
-                await resendClient.emails.send({ from: RUNTIME_FROM_EMAIL!, to: toEmail, subject, html });
+                await resendClient.emails.send({
+                  from: RUNTIME_FROM_EMAIL!,
+                  to: toEmail,
+                  subject,
+                  html,
+                });
                 successfulForStudent++;
                 emailsSent++;
                 continue;
@@ -771,7 +916,12 @@ body{font-family:Arial,Helvetica,sans-serif;background:#f6f7f9;margin:0;padding:
 
       totalEmailsSent += emailsSent;
       totalEmailsSkipped += emailsSkipped;
-      results.push({ madrassah_id: setting.madrassah_id, emailsSent, emailsSkipped, date: localYmd });
+      results.push({
+        madrassah_id: setting.madrassah_id,
+        emailsSent,
+        emailsSkipped,
+        date: localYmd,
+      });
     }
 
     // =================================================================================
@@ -783,45 +933,63 @@ body{font-family:Arial,Helvetica,sans-serif;background:#f6f7f9;margin:0;padding:
         .insert({
           trigger_source: triggerSource,
           triggered_at: timestamp,
-          status: 'completed',
+          status: "completed",
           emails_sent: totalEmailsSent,
           emails_skipped: totalEmailsSkipped,
-          message: `Attendance emails: sent ${totalEmailsSent}, skipped ${totalEmailsSkipped}`,
+          message:
+            `Attendance emails: sent ${totalEmailsSent}, skipped ${totalEmailsSkipped}`,
         });
     } catch (_) {
       // Ignore logging errors.
     }
 
     return new Response(
-      JSON.stringify({ message: "Attendance email run completed", triggerSource, timestamp, results }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 },
+      JSON.stringify({
+        message: "Attendance email run completed",
+        triggerSource,
+        timestamp,
+        results,
+      }),
+      {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 200,
+      },
     );
 
-  // =================================================================================
-  // STEP 8: GLOBAL ERROR HANDLING
-  // =================================================================================
+    // =================================================================================
+    // STEP 8: GLOBAL ERROR HANDLING
+    // =================================================================================
   } catch (error: any) {
     // Attempt to log the error to the database.
     try {
       const supabaseService = createClient(
         Deno.env.get("SUPABASE_URL") ?? "",
         Deno.env.get("SUPABASE_ANON_KEY") ?? "",
-        { global: { headers: { Authorization: `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}` } } },
+        {
+          global: {
+            headers: {
+              Authorization: `Bearer ${
+                Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")
+              }`,
+            },
+          },
+        },
       );
       await supabaseService.from("email_logs").insert({
-        trigger_source: 'unknown',
+        trigger_source: "unknown",
         triggered_at: new Date().toISOString(),
-        status: 'error',
-        message: error?.message || 'unknown error in attendance-absence-email'
+        status: "error",
+        message: error?.message || "unknown error in attendance-absence-email",
       });
     } catch (_) { /* noop */ }
 
     // Return a generic 500 error response.
-    return new Response(JSON.stringify({ error: error?.message || 'Unknown error' }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-      status: 500,
-    });
+    return new Response(
+      JSON.stringify({ error: error?.message || "Unknown error" }),
+      {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 500,
+      },
+    );
   }
 });
-
-

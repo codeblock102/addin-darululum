@@ -240,13 +240,13 @@ export const StudentGrid = ({
 
   if (isError) {
     console.error(error);
-    return <div className="flex justify-center items-center h-48 text-black"><AlertCircle className="mr-2"/> {t('pages.attendance.grid.error', 'Error loading students. See console for details.')}</div>;
+    return <div className="flex justify-center items-center h-48 text-foreground"><AlertCircle className="mr-2"/> {t('pages.attendance.grid.error', 'Error loading students. See console for details.')}</div>;
   }
 
   if (!user) {
     return (
       <Card className="flex items-center justify-center h-48">
-        <p className="text-black">{t('pages.attendance.grid.noUser', 'Could not identify user to fetch students.')}</p>
+        <p className="text-foreground">{t('pages.attendance.grid.noUser', 'Could not identify user to fetch students.')}</p>
       </Card>
     );
   }
@@ -255,7 +255,7 @@ export const StudentGrid = ({
     <Card>
       <CardHeader>
         <div className="flex justify-between items-center mb-4">
-          <CardTitle className="text-black">{t('pages.attendance.grid.selectStudents', 'Select Students')}</CardTitle>
+          <CardTitle className="text-foreground">{t('pages.attendance.grid.selectStudents', 'Select Students')}</CardTitle>
           <Button variant="outline" onClick={() => onSelectAll(studentList)}>
             {selectedStudents.size === filteredStudents.length && filteredStudents.length > 0 ? t('pages.attendance.grid.deselectAll', 'Deselect All') : t('pages.attendance.grid.selectAll', 'Select All')}
           </Button>
@@ -264,7 +264,7 @@ export const StudentGrid = ({
           placeholder={t('pages.attendance.grid.searchPlaceholder', 'Search students...')}
           value={searchQuery}
           onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchQuery(e.target.value)}
-          className="text-black"
+          className="text-foreground"
         />
       </CardHeader>
       <CardContent>
@@ -287,7 +287,7 @@ export const StudentGrid = ({
                       onStudentSelect(student.id);
                     }}
                   />
-                  <Label htmlFor={student.id} className="text-black font-medium cursor-pointer">
+                  <Label htmlFor={student.id} className="text-foreground font-medium cursor-pointer">
                     {student.name}
                   </Label>
                   {statusMap[student.id] && (
@@ -315,7 +315,7 @@ export const StudentGrid = ({
           </div>
         ) : (
           <div className="flex items-center justify-center h-48">
-            <p className="text-black">
+            <p className="text-foreground">
               {searchQuery ? t('pages.attendance.grid.noSearchResults', 'No students found for "{query}".').replace('{query}', searchQuery) : t('pages.attendance.grid.noStudents', 'No students found.')}
             </p>
           </div>

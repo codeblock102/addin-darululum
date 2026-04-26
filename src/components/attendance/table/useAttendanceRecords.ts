@@ -47,10 +47,12 @@ export function useAttendanceRecords() {
         .select(`
           id,
           date,
+          time,
           status,
           notes,
-          student:student_id(id, name),
-          class_schedule:class_id(class_name)
+          late_reason,
+          students:student_id(id, name),
+          classes:class_id(name)
         `)
         .order("date", { ascending: false });
 

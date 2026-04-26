@@ -1,7 +1,6 @@
 import React from "react";
 import { Card } from "@/components/ui/card.tsx";
 import { ArrowDown, ArrowUp } from "lucide-react";
-import { useUserRole } from "@/hooks/useUserRole.ts";
 
 interface TrendProps {
   value: number;
@@ -16,56 +15,28 @@ interface StatsCardProps {
 }
 
 export const StatsCard = ({ title, value, icon, trend }: StatsCardProps) => {
-  const { isAdmin } = useUserRole();
-
   return (
-    <Card
-      className={`stats-card ${isAdmin ? "glass-effect" : ""} overflow-hidden`}
-    >
-      <div className="p-6">
-        <div className="flex items-center justify-between">
-          <h3
-            className={`text-sm font-medium ${
-              isAdmin ? "text-amber-400" : "text-muted-foreground"
-            }`}
-          >
-            {title}
-          </h3>
+    <Card className="border border-gray-100 shadow-sm overflow-hidden">
+      <div className="p-5">
+        <div className="flex items-center justify-between mb-3">
+          <p className="text-sm font-medium text-muted-foreground">{title}</p>
           {icon && (
-            <div
-              className={`${
-                isAdmin ? "bg-amber-500/10 p-1.5 rounded-full" : ""
-              }`}
-            >
-              <div
-                className={`${
-                  isAdmin ? "text-amber-500" : "text-muted-foreground"
-                }`}
-              >
-                {icon}
-              </div>
+            <div className="p-2 bg-gray-100 rounded-lg text-gray-500">
+              {icon}
             </div>
           )}
         </div>
-        <div className={`mt-2 flex items-baseline`}>
-          <p
-            className={`text-2xl font-semibold ${isAdmin ? "text-white" : ""}`}
-          >
-            {value}
-          </p>
+        <div className="flex items-baseline gap-2">
+          <p className="text-2xl font-bold text-gray-900">{value}</p>
           {trend && (
             <span
-              className={`ml-2 text-xs flex items-center ${
-                trend.isPositive
-                  ? isAdmin ? "text-green-400" : "text-green-500"
-                  : isAdmin
-                  ? "text-red-400"
-                  : "text-red-500"
+              className={`text-xs flex items-center font-medium ${
+                trend.isPositive ? "text-green-600" : "text-red-500"
               }`}
             >
               {trend.isPositive
-                ? <ArrowUp className="mr-1 h-3 w-3" />
-                : <ArrowDown className="mr-1 h-3 w-3" />}
+                ? <ArrowUp className="mr-0.5 h-3 w-3" />
+                : <ArrowDown className="mr-0.5 h-3 w-3" />}
               {trend.value}%
             </span>
           )}

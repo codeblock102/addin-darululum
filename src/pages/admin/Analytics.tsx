@@ -11,6 +11,8 @@ import { ClassMetricsView } from "@/components/analytics/ClassMetricsView.tsx";
 import { AlertsPanel } from "@/components/analytics/AlertsPanel.tsx";
 import { useAnalyticsAlertsSummary } from "@/hooks/useAnalyticsAlertsSummary.ts";
 import { useSearchParams } from "react-router-dom";
+import { AdminPageShell } from "@/components/admin/AdminPageShell.tsx";
+import { AlertTriangle } from "lucide-react";
 
 export default function Analytics() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -25,61 +27,64 @@ export default function Analytics() {
   };
 
   return (
-    <div className="container mx-auto py-6 space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Analytics Dashboard</h1>
-          <p className="text-gray-600 mt-1">
-            Executive decision-making interface for your madrassah
-          </p>
-        </div>
-        {criticalAlerts.length > 0 && (
-          <div className="flex items-center gap-2 text-red-600">
-            <span className="font-semibold">{criticalAlerts.length} Critical Alerts</span>
+    <AdminPageShell
+      title="Analytics Dashboard"
+      subtitle="Executive decision-making interface for your madrassah"
+      actions={
+        criticalAlerts.length > 0 ? (
+          <div className="flex items-center gap-2 bg-red-50 border border-red-200 text-red-700 rounded-xl px-3 py-2 text-sm font-medium">
+            <AlertTriangle className="h-3.5 w-3.5" />
+            {criticalAlerts.length} Critical Alert{criticalAlerts.length !== 1 ? "s" : ""}
           </div>
-        )}
+        ) : undefined
+      }
+    >
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+        <Tabs value={tab} onValueChange={handleTabChange}>
+          <div className="border-b border-gray-100 px-6">
+            <TabsList className="bg-transparent p-0 h-auto gap-1 rounded-none flex">
+              {[
+                { value: "overview", label: "Overview" },
+                { value: "students", label: "Students" },
+                { value: "teachers", label: "Teachers" },
+                { value: "classes", label: "Classes" },
+                { value: "alerts", label: "Alerts & Risks", badge: activeAlerts.length > 0 ? activeAlerts.length : undefined },
+              ].map(({ value, label, badge }) => (
+                <TabsTrigger
+                  key={value}
+                  value={value}
+                  className="flex items-center gap-1.5 py-3 px-3 text-sm font-medium rounded-none border-b-2 border-transparent data-[state=active]:border-green-700 data-[state=active]:text-green-800 text-gray-500 bg-transparent shadow-none"
+                >
+                  {label}
+                  {badge !== undefined && (
+                    <span className="ml-1 bg-red-500 text-white text-xs rounded-full px-1.5 py-0.5 leading-none">
+                      {badge}
+                    </span>
+                  )}
+                </TabsTrigger>
+              ))}
+            </TabsList>
+          </div>
+
+          <div className="p-6">
+            <TabsContent value="overview" className="mt-0 space-y-6">
+              <OptimizedDashboard />
+            </TabsContent>
+            <TabsContent value="students" className="mt-0 space-y-6">
+              <StudentMetricsView />
+            </TabsContent>
+            <TabsContent value="teachers" className="mt-0 space-y-6">
+              <TeacherMetricsView />
+            </TabsContent>
+            <TabsContent value="classes" className="mt-0 space-y-6">
+              <ClassMetricsView />
+            </TabsContent>
+            <TabsContent value="alerts" className="mt-0 space-y-6">
+              <AlertsPanel />
+            </TabsContent>
+          </div>
+        </Tabs>
       </div>
-
-      {/* Main Content with Tabs */}
-      <Tabs value={tab} onValueChange={handleTabChange} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-5">
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="students">
-            Students
-          </TabsTrigger>
-          <TabsTrigger value="teachers">Teachers</TabsTrigger>
-          <TabsTrigger value="classes">Classes</TabsTrigger>
-          <TabsTrigger value="alerts">
-            Alerts & Risks
-            {activeAlerts.length > 0 && (
-              <span className="ml-2 bg-red-500 text-white text-xs rounded-full px-2 py-0.5">
-                {activeAlerts.length}
-              </span>
-            )}
-          </TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="overview" className="space-y-6">
-          <OptimizedDashboard />
-        </TabsContent>
-
-        <TabsContent value="students" className="space-y-6">
-          <StudentMetricsView />
-        </TabsContent>
-
-        <TabsContent value="teachers" className="space-y-6">
-          <TeacherMetricsView />
-        </TabsContent>
-
-        <TabsContent value="classes" className="space-y-6">
-          <ClassMetricsView />
-        </TabsContent>
-
-        <TabsContent value="alerts" className="space-y-6">
-          <AlertsPanel />
-        </TabsContent>
-      </Tabs>
-    </div>
+    </AdminPageShell>
   );
 }

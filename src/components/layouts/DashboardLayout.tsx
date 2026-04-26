@@ -6,9 +6,6 @@ import { BackgroundPattern } from "./dashboard/BackgroundPattern.tsx";
 import { RoleBadge } from "./dashboard/RoleBadge.tsx";
 import { useIsMobile } from "@/hooks/use-mobile.tsx";
 import { BottomNavigation } from "@/components/mobile/BottomNavigation.tsx";
-import { FloatingQuickEntryButton } from "@/components/shared/FloatingQuickEntryButton.tsx";
-import { FloatingAttendanceQuickEntryButton } from "@/components/shared/FloatingAttendanceQuickEntryButton.tsx";
-import { FloatingDailyEmailButton } from "@/components/shared/FloatingDailyEmailButton.tsx";
 import { Outlet } from "react-router-dom";
 import { cn } from "@/lib/utils.ts";
 import { useTheme } from "@/hooks/use-theme.ts";
@@ -17,22 +14,20 @@ interface DashboardLayoutProps {
 }
 
 export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
-  const { isAdmin, isTeacher, isParent, isLoading, hasCapability, isAttendanceTaker } = useRBAC();
+  const { isAdmin, isTeacher, isParent, isLoading } = useRBAC();
   const { setTheme } = useTheme();
   const isMobile = useIsMobile();
   const [sidebarOpen, setSidebarOpen] = useState(!isMobile);
 
   useEffect(() => {
     const root = document.documentElement;
+    root.classList.remove("dark");
     if ((isTeacher || isParent) && !isAdmin) {
-      root.classList.remove("dark");
       root.classList.add("teacher-theme");
-      setTheme("light");
-    } else if (isAdmin) {
+    } else {
       root.classList.remove("teacher-theme");
-      root.classList.add("dark");
-      setTheme("dark");
     }
+    setTheme("light");
   }, [isAdmin, isTeacher, isParent, setTheme]);
 
   useEffect(() => {
@@ -57,14 +52,14 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   return (
     <div
       className={cn(
-        "flex min-h-screen w-full overflow-hidden bg-gray-50",
-        isAdmin ? "admin-theme" : "teacher-theme",
+        "flex min-h-screen w-full overflow-hidden",
+        isAdmin ? "bg-[#f5f6fa] admin-theme" : "bg-gray-50 teacher-theme",
       )}
     >
       {/* Sidebar */}
       <div
         className={cn(
-          "fixed inset-y-0 left-0 z-40 bg-white border-r border-gray-200 shadow-sm",
+          "fixed inset-y-0 left-0 z-40 bg-white border-r border-gray-100 shadow-sm",
           isMobile ? `${sidebarWidthClass} -translate-x-full` : [
             sidebarOpen ? sidebarWidthClass : collapsedSidebarWidthClass,
             "transition-all duration-300 ease-in-out",
@@ -87,15 +82,9 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
         )}
       >
         <BackgroundPattern isAdmin={isAdmin}>
-          <div className="p-3 sm:p-4 md:p-6 h-full">
+          <div className="h-full">
             <div className="max-w-7xl mx-auto h-full">
-              {/* Role Badge - Hidden on mobile for cleaner look */}
-              {!isMobile && (
-                <RoleBadge isAdmin={isAdmin} isLoading={isLoading} />
-              )}
-              
-              {/* Main Content with enhanced mobile spacing */}
-              <div className="animate-fadeIn mt-2 sm:mt-4 md:mt-0 h-full">
+              <div className="animate-fadeIn h-full">
                 {children || <Outlet />}
               </div>
             </div>
@@ -108,26 +97,6 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
         <BottomNavigation />
       )}
 
-      {/* Floating Quick Entry Action (requires progress_access for teachers) */}
-      {!isLoading && (
-        (isAdmin || (isTeacher && hasCapability("progress_access"))) && (
-          <FloatingQuickEntryButton />
-        )
-      )}
-
-      {/* Floating Attendance Quick Entry (requires attendance_access for teachers) */}
-      {!isLoading && (
-        (isAdmin || (isTeacher && isAttendanceTaker)) && (
-          <FloatingAttendanceQuickEntryButton />
-        )
-      )}
-
-      {/* Floating Daily Progress Email (requires daily_progress_email capability for teachers) */}
-      {!isLoading && (
-        (isAdmin || (isTeacher && hasCapability("daily_progress_email"))) && (
-          <FloatingDailyEmailButton />
-        )
-      )}
     </div>
   );
 };

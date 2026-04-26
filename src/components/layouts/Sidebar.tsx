@@ -20,10 +20,8 @@ import { useEffect } from "react";
 import { useIsMobile } from "@/hooks/use-mobile.tsx";
 import { Button } from "@/components/ui/button.tsx";
 import {
-  BookOpen,
   ChevronLeft,
   ChevronRight,
-  Menu as _Menu,
   ShieldCheck,
   X,
 } from "lucide-react";
@@ -34,6 +32,7 @@ import { SidebarNav } from "./sidebar/SidebarNav.tsx";
 import { SidebarUser } from "./sidebar/SidebarUser.tsx";
 import { cn } from "@/lib/utils.ts";
 import { useI18n } from "@/contexts/I18nContext.tsx";
+import { NotificationBell } from "@/components/shared/NotificationBell.tsx";
 
 interface SidebarProps {
   /** Optional callback function to be invoked when the sidebar should be closed, typically on mobile. */
@@ -146,8 +145,7 @@ export const Sidebar = (
       >
         <div
           className={cn(
-            "flex h-14 sm:h-16 items-center transition-all duration-300 ease-in-out",
-            isAdmin ? "border-b border-gray-200" : "border-b border-gray-200",
+            "flex h-14 sm:h-16 items-center border-b border-gray-100 transition-all duration-300 ease-in-out",
             (!isMobile && isOpen === false)
               ? "justify-center px-2"
               : "justify-between px-4 sm:px-5",
@@ -155,76 +153,61 @@ export const Sidebar = (
         >
           {(isOpen !== false || isMobile) && (
             <Link
-              to="/dashboard"
-              className="flex items-center gap-2 font-semibold hover:opacity-80 transition-opacity"
+              to={isParent ? "/parent" : "/dashboard"}
+              className="flex items-center gap-2.5 hover:opacity-80 transition-opacity"
             >
-              {isAdmin
-                ? (
-                  <ShieldCheck className="h-5 w-5 sm:h-6 sm:w-6 text-amber-600 drop-shadow-sm" />
-                )
-                : (
-                  <BookOpen className="h-5 w-5 sm:h-6 sm:w-6 text-[hsl(142.8,64.2%,24.1%)] drop-shadow-sm" />
-                )}
-              <span
-                className={cn(
-                  "text-sm sm:text-base transition-all duration-300 whitespace-nowrap font-medium",
-                  isAdmin ? "text-gray-900" : "text-gray-900",
-                )}
-              >
-                {isAdmin ? t("portal.admin") : isParent ? t("portal.parent") : t("portal.teacher")}
+              <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0"
+                style={{ background: "linear-gradient(135deg, #14532d, #166534)" }}>
+                <ShieldCheck className="h-4 w-4 text-white" />
+              </div>
+              <span className="text-sm font-bold text-gray-900 whitespace-nowrap">
+                {isAdmin ? "Admin Portal" : isParent ? t("portal.parent") : t("portal.teacher")}
               </span>
             </Link>
           )}
 
-          {/* Collapsed state logo */}
+          {/* Collapsed state */}
           {!isMobile && isOpen === false && (
-            <Link
-              to="/dashboard"
-              className="flex items-center justify-center w-full hover:bg-gray-100 rounded-lg p-2 transition-all duration-200"
-              title={isAdmin ? t("portal.admin") : isParent ? t("portal.parent") : t("portal.teacher")}
-            >
-              {isAdmin
-                ? (
-                  <ShieldCheck className="h-6 w-6 text-amber-600 drop-shadow-sm" />
-                ) : <BookOpen className="h-6 w-6 text-[hsl(142.8,64.2%,24.1%)] drop-shadow-sm" />}
-            </Link>
+            <div className="flex flex-col items-center gap-2 w-full py-1">
+              <Link
+                to={isParent ? "/parent" : "/dashboard"}
+                className="flex items-center justify-center hover:bg-gray-50 rounded-xl p-2 transition-colors"
+                title={isAdmin ? "Admin Portal" : isParent ? t("portal.parent") : t("portal.teacher")}
+              >
+                <div className="w-7 h-7 rounded-lg flex items-center justify-center"
+                  style={{ background: "linear-gradient(135deg, #14532d, #166534)" }}>
+                  <ShieldCheck className="h-4 w-4 text-white" />
+                </div>
+              </Link>
+              {(isAdmin || isTeacher) && <NotificationBell collapsed={true} />}
+            </div>
           )}
 
           {!isMobile && toggleSidebar && isOpen !== false && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className={cn(
-                isAdmin
-                  ? "text-gray-700 hover:bg-gray-100 hover:text-amber-600"
-                  : "text-gray-700 hover:bg-gray-100 hover:text-[hsl(142.8,64.2%,24.1%)]",
-                "transition-all duration-300 hover:scale-105",
-              )}
-              onClick={toggleSidebar}
-              title="Collapse sidebar"
-            >
-              <ChevronLeft className="h-5 w-5" />
-              <span className="sr-only">Collapse sidebar</span>
-            </Button>
+            <div className="flex items-center gap-1">
+              {(isAdmin || isTeacher) && <NotificationBell collapsed={false} />}
+              <Button
+                variant="ghost"
+                size="icon"
+                className="text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors rounded-lg"
+                onClick={toggleSidebar}
+                title="Collapse sidebar"
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+            </div>
           )}
 
-          {/* Expand button for collapsed state */}
+          {/* Expand button */}
           {!isMobile && toggleSidebar && isOpen === false && (
             <Button
               variant="ghost"
               size="icon"
-              className={cn(
-                "absolute -right-3 top-1/2 -translate-y-1/2 z-10 rounded-full shadow-md border-2",
-                isAdmin
-                  ? "bg-white border-amber-200 text-amber-600 hover:bg-amber-50 hover:border-amber-300"
-                  : "bg-white border-[hsl(142.8,64.2%,24.1%)]/20 text-[hsl(142.8,64.2%,24.1%)] hover:bg-[hsl(142.8,64.2%,24.1%)]/5 hover:border-[hsl(142.8,64.2%,24.1%)]/40",
-                "transition-all duration-300 hover:scale-110",
-              )}
+              className="absolute -right-3 top-1/2 -translate-y-1/2 z-10 h-6 w-6 rounded-full bg-white border border-gray-200 shadow-sm text-gray-500 hover:text-green-700 hover:border-green-200 transition-colors"
               onClick={toggleSidebar}
               title="Expand sidebar"
             >
-              <ChevronRight className="h-4 w-4" />
-              <span className="sr-only">Expand sidebar</span>
+              <ChevronRight className="h-3 w-3" />
             </Button>
           )}
         </div>
@@ -234,13 +217,8 @@ export const Sidebar = (
             "flex-1 transition-all duration-300 overflow-x-hidden",
             (!isMobile && isOpen === false) ? "py-2" : "py-2 sm:py-4",
           )}
-          style={{ overflowY: isMobile ? "auto" : "hidden" }}
+          style={{ overflowY: "auto" }}
         >
-          {/* DEBUG: Log navItems for admin */}
-          {isAdmin && (() => {
-            console.log("Admin NavItems being passed to SidebarNav:", navItems);
-            return null;
-          })()}
           <SidebarNav items={navItems} isAdmin={isAdmin} isOpen={isOpen} />
         </div>
 

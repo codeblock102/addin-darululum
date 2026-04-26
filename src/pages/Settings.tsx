@@ -25,37 +25,31 @@ const Settings = () => {
   }
 
   return (
-    <div className="bg-gray-50/50 min-h-screen">
-      <div className="container mx-auto py-8 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-[#f5f6fa] p-6 md:p-8">
+      <div className="max-w-7xl mx-auto space-y-6">
         <SettingsHeader isSaving={isLoading} onSave={handleSave} />
 
         <Tabs
-          defaultValue={activeTab}
           onValueChange={setActiveTab}
           value={activeTab}
-          className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start mt-8"
+          className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start"
         >
           <div className="lg:col-span-3">
-            <div className="sticky top-20">
+            <div className="sticky top-6 bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
               <SettingsTabs />
             </div>
           </div>
 
           <div className="lg:col-span-9">
-            {settings
-              ? (
-                <SettingsContent
-                  settings={settings}
-                  updateSettings={updateSettings}
-                />
-              )
-              : (
-                <div className="flex items-center justify-center h-full bg-white p-12 rounded-lg shadow-sm">
-                  <p className="text-gray-500">
-                    Settings data is currently unavailable.
-                  </p>
-                </div>
-              )}
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+              {settings
+                ? <SettingsContent settings={settings} updateSettings={updateSettings} />
+                : (
+                  <div className="flex items-center justify-center p-16">
+                    <p className="text-gray-400 text-sm">Settings data is currently unavailable.</p>
+                  </div>
+                )}
+            </div>
           </div>
         </Tabs>
       </div>

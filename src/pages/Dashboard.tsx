@@ -19,12 +19,13 @@ import { useAuth } from "@/hooks/use-auth.ts";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client.ts";
 import { TeacherDashboard } from "@/components/teacher-portal/TeacherDashboard.tsx";
-import { useToast } from "@/components/ui/use-toast.ts";
 import { LoadingState } from "@/components/teacher-portal/LoadingState.tsx";
 import { AccessDenied } from "@/components/teacher-portal/AccessDenied.tsx";
 import { ProfileNotFound } from "@/components/teacher-portal/ProfileNotFound.tsx";
+import { AdminDashboard } from "@/components/admin/AdminDashboard.tsx";
 import { Teacher } from "@/types/teacher.ts";
 import { useRBAC } from "@/hooks/useRBAC.ts";
+import { Navigate } from "react-router-dom";
 
 /**
  * @component Dashboard
@@ -61,9 +62,8 @@ import { useRBAC } from "@/hooks/useRBAC.ts";
  */
 const Dashboard = () => {
   const { session, refreshSession } = useAuth();
-  const { toast } = useToast();
   const queryClient = useQueryClient();
-  const { isTeacher, isAdmin, isLoading: isRoleLoading } = useRBAC();
+  const { isTeacher, isAdmin, isParent, isLoading: isRoleLoading } = useRBAC();
 
   // Fetch teacher profile data - useQuery handles caching and refetching automatically
   const {
@@ -85,11 +85,8 @@ const Dashboard = () => {
 
       // Skip the query for admin users
       if (isAdmin) {
-        console.log("Admin user, skipping teacher profile query");
         return null;
       }
-
-      console.log("Fetching teacher profile for email:", session.user.email);
 
       const { data, error } = await supabase
         .from("profiles")
@@ -106,10 +103,8 @@ const Dashboard = () => {
       const profileData = data && data.length > 0 ? data[0] : null;
       
       if (data && data.length > 1) {
-        console.warn(`Warning: Found ${data.length} profiles for email ${session.user.email}. Using the first one.`, data);
+        console.warn("Warning: Found multiple profiles for this email. Using the first one.");
       }
-
-      console.log("Teacher profile fetch result:", profileData);
       return profileData ? (profileData as unknown as Teacher) : null;
     },
     enabled: !!session?.user?.email && !isAdmin, // Only enabled for non-admin users
@@ -130,15 +125,20 @@ const Dashboard = () => {
     await queryClient.invalidateQueries({ queryKey: ["teacher-profile", session?.user?.email] });
   };
 
-  if (error) {
-    console.error("Error loading teacher profile:", error);
-    toast({
-      title: "Error loading profile",
-      description:
-        "Could not load your teacher profile. Please try again later.",
-      variant: "destructive",
-    });
-    // Optionally, return an error component here if needed
+  if (error && !isAdmin) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+        <div className="w-full max-w-md text-center space-y-4">
+          <p className="text-destructive font-medium">Could not load your profile.</p>
+          <button
+            className="text-sm underline text-muted-foreground"
+            onClick={handleRefresh}
+          >
+            Try again
+          </button>
+        </div>
+      </div>
+    );
   }
 
   // Show loading state while checking roles or fetching teacher data
@@ -152,18 +152,14 @@ const Dashboard = () => {
     );
   }
 
-  // If user is admin, they should be able to view the teacher portal with a generic profile
+  // Admin users get the dedicated admin dashboard (Donezo-style)
   if (isAdmin) {
-    const adminViewProfile: Teacher = {
-      id: session?.user?.id ?? "fallback-admin-id",
-      name: "Admin View",
-      subject: "Administration",
-      email: session?.user?.email || "admin@example.com",
-      bio: "Viewing the teacher portal as an administrator",
-      phone: "",
-    };
+    return <AdminDashboard />;
+  }
 
-    return <TeacherDashboard teacher={adminViewProfile} isAdmin={true} />;
+  // Parents should never see the teacher portal — send them to their own dashboard
+  if (isParent && !isRoleLoading) {
+    return <Navigate to="/parent" replace />;
   }
 
   // Show profile not found if teacher data is missing (for non-admin users)

@@ -17,48 +17,6 @@
   @apply p-4;
 }
 
-/* Enhanced Card Styles */
-.enhanced-dashboard-card {
-  @apply bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100
-    dark:border-gray-700 transition-all duration-300 hover:shadow-xl
-    hover:-translate-y-1 p-6;
-}
-
-.enhanced-stats-grid {
-  @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8;
-}
-
-.enhanced-content-grid {
-  @apply grid grid-cols-1 lg:grid-cols-2 gap-6;
-}
-
-/* Enhanced Search Section */
-.enhanced-search-section {
-  @apply bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-gray-800
-    dark:to-gray-900 rounded-2xl p-6 border border-blue-100
-    dark:border-gray-700;
-}
-
-/* Enhanced Quick Actions Section */
-.enhanced-quick-actions {
-  @apply bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-gray-800
-    dark:to-gray-900 rounded-2xl p-6 border border-emerald-100
-    dark:border-gray-700;
-}
-
-/* Enhanced Today's Students Section */
-.enhanced-today-students {
-  @apply bg-gradient-to-br from-purple-50 to-pink-50 dark:from-gray-800
-    dark:to-gray-900 rounded-2xl p-6 border border-purple-100
-    dark:border-gray-700;
-}
-
-/* Enhanced Recent Activity Section */
-.enhanced-recent-activity {
-  @apply bg-gradient-to-br from-amber-50 to-orange-50 dark:from-gray-800
-    dark:to-gray-900 rounded-2xl p-6 border border-amber-100
-    dark:border-gray-700;
-}
 
 /* Custom scrollbar */
 ::-webkit-scrollbar {
@@ -172,17 +130,3 @@
   @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6;
 }
 
-/* Enhanced Mobile Responsiveness */
-@media (max-width: 640px) {
-  .enhanced-dashboard-card {
-    @apply rounded-xl p-4;
-  }
-
-  .enhanced-stats-grid {
-    @apply grid-cols-1 gap-4;
-  }
-
-  .enhanced-content-grid {
-    @apply grid-cols-1 gap-4;
-  }
-}

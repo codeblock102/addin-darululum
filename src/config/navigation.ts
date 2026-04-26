@@ -11,14 +11,17 @@
  */
 import {
   Book,
+  CalendarDays,
   Clock,
   ClipboardList,
   FileText,
   Home,
+  Library,
+  MessageSquare,
   School,
   Settings,
   Users,
-  UserCircle2 as _UserCircle2,
+  UserCircle,
   UserCheck,
   Activity as ActivityIcon,
   BarChart3,
@@ -40,13 +43,13 @@ export const adminNavItems: NavItem[] = [
   },
   {
     href: "/activity",
-    label: "Activity Feed",
+    label: "nav.activityFeed",
     icon: ActivityIcon,
     description: "Live app activity feed",
   },
   {
     href: "/analytics",
-    label: "Analytics",
+    label: "nav.analytics",
     icon: BarChart3,
     description: "Comprehensive analytics and metrics",
   },
@@ -66,7 +69,7 @@ export const adminNavItems: NavItem[] = [
   {
     href: "/classes",
     label: "nav.classes",
-    icon: School,
+    icon: Library,
     description: "Manage classes",
   },
   {
@@ -89,14 +92,14 @@ export const adminNavItems: NavItem[] = [
   },
   {
     href: "/admin/bulk-student-import",
-    label: "Bulk Student Import",
+    label: "nav.bulkStudentImport",
     icon: Users,
     description: "Upload CSV to add students",
   },
   {
     href: "/admin/teacher-schedules",
-    label: "Teacher Schedules",
-    icon: Clock,
+    label: "nav.teacherSchedules",
+    icon: CalendarDays,
     description: "View teachers' weekly schedules",
   },
   {
@@ -104,6 +107,12 @@ export const adminNavItems: NavItem[] = [
     label: "nav.settings",
     icon: Settings,
     description: "System configuration",
+  },
+  {
+    href: "/profile",
+    label: "nav.profile",
+    icon: UserCircle,
+    description: "Your profile and account settings",
   },
 ];
 
@@ -148,14 +157,14 @@ export const teacherNavItems: NavItem[] = [
   },
   {
     href: "/messages",
-    label: "Messages",
-    icon: FileText,
+    label: "nav.messages",
+    icon: MessageSquare,
     description: "Message parents of your class",
   },
   {
     href: "/schedule",
     label: "nav.schedule",
-    icon: Clock,
+    icon: CalendarDays,
     description: "View your class schedule",
   },
   {
@@ -163,6 +172,12 @@ export const teacherNavItems: NavItem[] = [
     label: "nav.preferences",
     icon: Settings,
     description: "Account preferences",
+  },
+  {
+    href: "/profile",
+    label: "nav.profile",
+    icon: UserCircle,
+    description: "Your profile and account settings",
   },
 ];
 
@@ -186,8 +201,8 @@ export const parentNavItems: NavItem[] = [
   },
   {
     href: "/parent/messages",
-    label: "Messages",
-    icon: FileText,
+    label: "nav.messages",
+    icon: MessageSquare,
     description: "Message your child's teacher",
   },
   {
@@ -207,5 +222,11 @@ export const parentNavItems: NavItem[] = [
     label: "nav.attendance",
     icon: Clock,
     description: "Attendance history",
+  },
+  {
+    href: "/profile",
+    label: "nav.profile",
+    icon: UserCircle,
+    description: "Your profile and account settings",
   },
 ];

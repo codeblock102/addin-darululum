@@ -1,7 +1,7 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client.ts";
 import { useAuth } from "@/hooks/use-auth.ts";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
 interface UserRole {
   role: string | null;
@@ -76,24 +76,16 @@ export const useRBAC = () => {
   const isAttendanceTaker = hasCapability("attendance_access");
   const isHifdhTeacher = (userRole?.subject || "").toLowerCase().includes("hifdh");
 
-  console.log(
-    "RBAC Hook - Role:",
-    userRole?.role,
-    "Admin:",
-    isAdmin,
-    "Teacher:",
-    isTeacher,
-    "Parent:",
-    isParent,
-    "Teacher ID:",
-    teacherId,
-  );
+  // Stable per-instance channel ID — survives re-renders but is unique
+  // across all useRBAC() callers so Supabase never sees a name collision.
+  const instanceId = useRef(`rbac-${Math.random().toString(36).slice(2, 9)}`);
 
   // Live update attendance_taker changes for current user
   useEffect(() => {
     if (!teacherId) return;
+    const channelName = `${instanceId.current}-${teacherId}`;
     const channel = supabase
-      .channel("rbac-profiles")
+      .channel(channelName)
       .on(
         "postgres_changes",
         {

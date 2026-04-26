@@ -128,8 +128,8 @@ export function AttendanceTable() {
       <CardHeader>
         <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
           <div>
-            <CardTitle className="text-black">Attendance History</CardTitle>
-            <CardDescription className="text-black">
+            <CardTitle className="text-foreground">Attendance History</CardTitle>
+            <CardDescription className="text-foreground">
               View and search past attendance records.
             </CardDescription>
           </div>
@@ -168,7 +168,7 @@ export function AttendanceTable() {
                 <Button
                   variant="outline"
                   className={cn(
-                    "w-full sm:w-[180px] justify-start text-left font-normal bg-white text-black border-gray-300 hover:bg-gray-50",
+                    "w-full sm:w-[180px] justify-start text-left font-normal bg-white text-foreground border-gray-300 hover:bg-gray-50",
                     !dateFilter && "text-muted-foreground"
                   )}
                 >

@@ -18,40 +18,27 @@ export const QuickActionCard: React.FC<QuickActionCardProps> = ({
   disabled = false,
   color = "blue",
 }) => {
-  const colorClasses = {
-    blue: "from-blue-500 to-indigo-600",
-    green: "from-emerald-500 to-emerald-600",
-    purple: "from-purple-500 to-purple-600",
-    amber: "from-amber-500 to-amber-600",
+  const iconColors = {
+    blue: "bg-blue-100 text-blue-600",
+    green: "bg-green-100 text-green-600",
+    purple: "bg-purple-100 text-purple-600",
+    amber: "bg-amber-100 text-amber-600",
   };
 
   return (
     <div
       onClick={disabled ? undefined : onClick}
       className={cn(
-        "quick-action-card",
+        "rounded-xl border border-gray-100 bg-white p-5 shadow-sm transition-all duration-150",
         disabled && "opacity-50 cursor-not-allowed",
-        !disabled && "cursor-pointer hover:shadow-xl hover:scale-105",
+        !disabled && "cursor-pointer hover:shadow-md hover:border-gray-200",
       )}
     >
-      <div className="relative z-10">
-        <div
-          className={cn(
-            "quick-action-icon",
-            `bg-gradient-to-br ${colorClasses[color]}`,
-          )}
-        >
-          {icon}
-        </div>
-
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mt-4 mb-2">
-          {title}
-        </h3>
-
-        <p className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed">
-          {description}
-        </p>
+      <div className={cn("inline-flex p-2.5 rounded-xl mb-4", iconColors[color])}>
+        {icon}
       </div>
+      <h3 className="text-sm font-semibold text-gray-900 mb-1">{title}</h3>
+      <p className="text-xs text-gray-500 leading-relaxed">{description}</p>
     </div>
   );
 };
@@ -67,16 +54,11 @@ interface QuickActionsGridProps {
   }>;
 }
 
-export const QuickActionsGrid: React.FC<QuickActionsGridProps> = (
-  { actions },
-) => {
+export const QuickActionsGrid: React.FC<QuickActionsGridProps> = ({ actions }) => {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
       {actions.map((action, index) => (
-        <QuickActionCard
-          key={index}
-          {...action}
-        />
+        <QuickActionCard key={index} {...action} />
       ))}
     </div>
   );
