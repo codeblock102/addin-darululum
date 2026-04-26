@@ -1,1 +1,0 @@
--- Add class_id to students table\nALTER TABLE public.students ADD COLUMN IF NOT EXISTS class_id UUID REFERENCES public.classes(id) ON DELETE SET NULL;
