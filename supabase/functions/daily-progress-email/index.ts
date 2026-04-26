@@ -1301,7 +1301,7 @@ serve(async (req: Request) => {
           trigger_source: "unknown",
           triggered_at: new Date().toISOString(),
           status: "error",
-          message: (error instanceof Error ? error.message : String(error)),
+          message: error instanceof Error ? error.message : String(error),
         });
     } catch (logError) {
       console.log("Could not log error to email_logs table:", logError);
@@ -1309,7 +1309,7 @@ serve(async (req: Request) => {
 
     return new Response(
       JSON.stringify({
-        error: (error instanceof Error ? error.message : String(error)),
+        error: error instanceof Error ? error.message : String(error),
       }),
       {
         headers: { ...corsHeaders, "Content-Type": "application/json" },

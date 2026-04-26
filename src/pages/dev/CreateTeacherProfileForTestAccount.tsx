@@ -65,7 +65,6 @@ const CreateTeacherProfileForTestAccount = () => {
 
             bio:
               "Islamic studies educator with expertise in Quranic teachings.",
-            role: "teacher",
           },
         ])
         .select("id, name, email, subject, bio, phone");
