@@ -9,6 +9,7 @@ import { BottomNavigation } from "@/components/mobile/BottomNavigation.tsx";
 import { Outlet } from "react-router-dom";
 import { cn } from "@/lib/utils.ts";
 import { useTheme } from "@/hooks/use-theme.ts";
+import { OnboardingModal } from "@/components/onboarding/OnboardingModal.tsx";
 interface DashboardLayoutProps {
   children?: React.ReactNode;
 }
@@ -96,6 +97,8 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
       {isMobile && !isLoading && (isTeacher || isAdmin || isParent) && (
         <BottomNavigation />
       )}
+
+      <OnboardingModal />
 
     </div>
   );

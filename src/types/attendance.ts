@@ -6,7 +6,8 @@ export type AttendanceStatus =
   | "absent"
   | "late"
   | "excused"
-  | "early_departure";
+  | "early_departure"
+  | "sick";
 
 export interface AttendanceRecord {
   id: string;

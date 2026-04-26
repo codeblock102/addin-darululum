@@ -7,6 +7,7 @@ import {
   Clock,
   Info,
   LogOut,
+  Thermometer,
   X,
 } from "lucide-react";
 import { cn } from "@/lib/utils.ts";
@@ -18,6 +19,7 @@ export type StatusType =
   | "late"
   | "excused"
   | "early_departure"
+  | "sick"
   // Teacher/user statuses
   | "active"
   | "suspended"
@@ -93,6 +95,12 @@ export function StatusBadge({
             className={cn("h-3 w-3", size === "lg" ? "h-4 w-4" : "")}
           />
         );
+      case "sick":
+        return (
+          <Thermometer
+            className={cn("h-3 w-3", size === "lg" ? "h-4 w-4" : "")}
+          />
+        );
       case "active":
       case "good":
       case "completed":
@@ -151,6 +159,8 @@ export function StatusBadge({
         return "bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-800";
       case "early_departure":
         return "bg-indigo-50 text-indigo-700 border-indigo-200 dark:bg-indigo-900/20 dark:text-indigo-400 dark:border-indigo-800";
+      case "sick":
+        return "bg-orange-50 text-orange-700 border-orange-200 dark:bg-orange-900/20 dark:text-orange-400 dark:border-orange-800";
 
       case "info":
       case "pending":
@@ -178,6 +188,8 @@ export function StatusBadge({
         return "Excused";
       case "early_departure":
         return "Early Departure";
+      case "sick":
+        return "Sick";
       case "active":
         return "Active";
       case "suspended":

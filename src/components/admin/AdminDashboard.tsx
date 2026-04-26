@@ -13,15 +13,19 @@ import {
   ArrowUpRight,
   BookOpen,
   Calendar,
+  CalendarX,
   CheckCircle2,
   ClipboardList,
   GraduationCap,
+  HelpCircle,
+  MapPin,
   Plus,
   TrendingUp,
   UserCheck,
   Users,
 } from "lucide-react";
 import { useAnalyticsSummary } from "@/hooks/useAnalyticsSummary.ts";
+import { useAuth } from "@/contexts/AuthContext.tsx";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -350,6 +354,7 @@ const StaffRow = ({ staff, idx }: { staff: StaffRow; idx: number }) => {
 
 export const AdminDashboard = () => {
   const navigate = useNavigate();
+  const { session } = useAuth();
   const { data: summary } = useAnalyticsSummary();
 
   // ── Data queries ────────────────────────────────────────────────────────────
@@ -402,6 +407,41 @@ export const AdminDashboard = () => {
     staleTime: 2 * 60 * 1000,
   });
 
+  const { data: absentToday = 0 } = useQuery({
+    queryKey: ["admin-absent-today"],
+    queryFn: async () => {
+      const today = new Date().toISOString().split("T")[0];
+      const { count } = await supabase
+        .from("attendance")
+        .select("id", { count: "exact", head: true })
+        .eq("date", today)
+        .in("status", ["absent", "excused", "sick"]);
+      return count ?? 0;
+    },
+    staleTime: 2 * 60 * 1000,
+  });
+
+  const { data: locationBreakdown = [] } = useQuery({
+    queryKey: ["admin-location-breakdown"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("students")
+        .select("section, grade")
+        .eq("status", "active");
+      if (!data) return [];
+      const map: Record<string, number> = {};
+      for (const s of data) {
+        const key = s.section || s.grade || "Unassigned";
+        map[key] = (map[key] ?? 0) + 1;
+      }
+      return Object.entries(map)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 5)
+        .map(([label, count]) => ({ label, count }));
+    },
+    staleTime: 5 * 60 * 1000,
+  });
+
   const { data: staffList = [] } = useQuery<StaffRow[]>({
     queryKey: ["admin-staff-list"],
     queryFn: async () => {
@@ -433,25 +473,43 @@ export const AdminDashboard = () => {
     day: "numeric",
   });
 
+  const adminName = session?.user?.user_metadata?.full_name
+    ?? session?.user?.email?.split("@")[0]
+    ?? "Admin";
+
+  const unmarkedToday = Math.max(0, studentCount - presentToday - absentToday);
+
   // ─────────────────────────────────────────────────────────────────────────
 
   return (
     <div className="min-h-screen bg-[#f5f6fa] p-6 md:p-8">
       <div className="max-w-7xl mx-auto space-y-6">
 
-        {/* ── Page Header ──────────────────────────────────────────────────── */}
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
-            <p className="text-gray-500 text-sm mt-1">
-              Manage students, staff and school operations
+        {/* ── Welcome Banner ────────────────────────────────────────────────── */}
+        <div
+          className="rounded-2xl p-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 relative overflow-hidden"
+          style={{ background: "linear-gradient(135deg, #052e16 0%, #14532d 55%, #166534 100%)" }}
+        >
+          <div
+            className="absolute -right-8 -top-8 w-40 h-40 rounded-full pointer-events-none"
+            style={{ background: "rgba(255,255,255,0.05)" }}
+          />
+          <div className="relative">
+            <p className="text-sm font-medium" style={{ color: "#86efac" }}>
+              {todayLabel}
+            </p>
+            <h1 className="text-2xl font-bold text-white mt-1">
+              Good {new Date().getHours() < 12 ? "morning" : new Date().getHours() < 17 ? "afternoon" : "evening"}, {adminName.split(" ")[0]} 👋
+            </h1>
+            <p className="text-green-200 text-sm mt-1">
+              Here's a summary of the school today.
             </p>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 relative">
             <button
               type="button"
               onClick={() => navigate("/students")}
-              className="flex items-center gap-2 bg-green-800 hover:bg-green-900 text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition-colors shadow-sm"
+              className="flex items-center gap-2 bg-white/20 hover:bg-white/30 text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition-colors"
             >
               <Plus className="h-4 w-4" />
               Add Student
@@ -459,7 +517,7 @@ export const AdminDashboard = () => {
             <button
               type="button"
               onClick={() => navigate("/students")}
-              className="flex items-center gap-2 border border-gray-200 bg-white hover:bg-gray-50 text-gray-700 text-sm font-semibold px-4 py-2.5 rounded-xl transition-colors"
+              className="flex items-center gap-2 bg-white hover:bg-gray-50 text-gray-800 text-sm font-semibold px-4 py-2.5 rounded-xl transition-colors"
             >
               View All
             </button>
@@ -491,7 +549,7 @@ export const AdminDashboard = () => {
             onClick={() => navigate("/attendance")}
             badge={
               <Pill
-                className="bg-blue-50 text-blue-700"
+                className="bg-green-50 text-green-700"
                 icon={<UserCheck className="h-3 w-3" />}
                 label={
                   attendanceRate > 0
@@ -502,29 +560,91 @@ export const AdminDashboard = () => {
             }
           />
           <MetricCard
-            label="Active Teachers"
-            value={totalTeachers}
-            onClick={() => navigate("/dashboard?tab=students")}
+            label="Today Absent"
+            value={absentToday}
+            onClick={() => navigate("/attendance")}
             badge={
               <Pill
-                className="bg-amber-50 text-amber-700"
-                icon={<GraduationCap className="h-3 w-3" />}
-                label="2 campuses"
+                className="bg-red-50 text-red-600"
+                icon={<CalendarX className="h-3 w-3" />}
+                label="absences today"
               />
             }
           />
           <MetricCard
-            label="Active Classes"
-            value={classCount}
-            onClick={() => navigate("/classes")}
+            label="Unmarked Today"
+            value={unmarkedToday}
+            onClick={() => navigate("/attendance")}
             badge={
               <Pill
-                className="bg-purple-50 text-purple-700"
-                icon={<BookOpen className="h-3 w-3" />}
-                label="All subjects"
+                className="bg-amber-50 text-amber-700"
+                icon={<HelpCircle className="h-3 w-3" />}
+                label="need marking"
               />
             }
           />
+        </div>
+
+        {/* ── Location / Grade Breakdown ────────────────────────────────────── */}
+        {locationBreakdown.length > 0 && (
+          <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
+            <div className="flex items-center gap-2 mb-4">
+              <MapPin className="h-4 w-4 text-gray-400" />
+              <h2 className="text-base font-semibold text-gray-900">Enrolment by Location / Grade</h2>
+            </div>
+            <div className="space-y-3">
+              {locationBreakdown.map(({ label, count }) => {
+                const pct = totalStudents > 0 ? Math.round((count / totalStudents) * 100) : 0;
+                return (
+                  <div key={label}>
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-sm text-gray-700 font-medium">{label}</span>
+                      <span className="text-sm font-semibold text-gray-900">{count} <span className="text-gray-400 font-normal text-xs">({pct}%)</span></span>
+                    </div>
+                    <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                      <div
+                        className="h-full rounded-full"
+                        style={{ width: `${pct}%`, background: "linear-gradient(90deg,#16a34a,#14532d)" }}
+                      />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* ── Staff Count Banner ────────────────────────────────────────────── */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+          <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm flex items-center gap-4">
+            <div className="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center">
+              <GraduationCap className="h-5 w-5 text-amber-600" />
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-gray-900">{totalTeachers}</p>
+              <p className="text-sm text-gray-500">Staff Members</p>
+            </div>
+          </div>
+          <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm flex items-center gap-4">
+            <div className="w-10 h-10 rounded-xl bg-purple-50 flex items-center justify-center">
+              <BookOpen className="h-5 w-5 text-purple-600" />
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-gray-900">{classCount}</p>
+              <p className="text-sm text-gray-500">Active Classes</p>
+            </div>
+          </div>
+          <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm flex items-center gap-4">
+            <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center">
+              <UserCheck className="h-5 w-5 text-blue-600" />
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-gray-900">
+                {attendanceRate > 0 ? `${Math.round(attendanceRate)}%` : "—"}
+              </p>
+              <p className="text-sm text-gray-500">Attendance Rate</p>
+            </div>
+          </div>
         </div>
 
         {/* ── Chart + Alerts ────────────────────────────────────────────────── */}

@@ -888,7 +888,7 @@ export type Database = {
     };
     Functions: {};
     Enums: {
-      attendance_status: "present" | "absent" | "late" | "excused" | "early_departure";
+      attendance_status: "present" | "absent" | "late" | "excused" | "early_departure" | "sick";
       mastery_level: "not_started" | "in_progress" | "memorized" | "mastered";
       quality_rating:
         | "excellent"
@@ -1032,7 +1032,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      attendance_status: ["present", "absent", "late", "excused", "early_departure"],
+      attendance_status: ["present", "absent", "late", "excused", "early_departure", "sick"],
       mastery_level: ["not_started", "in_progress", "memorized", "mastered"],
       quality_rating: ["excellent", "good", "average", "needsWork", "horrible"],
       quarter_revised: [
