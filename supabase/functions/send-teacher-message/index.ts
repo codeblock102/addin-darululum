@@ -4,7 +4,8 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers":
+    "authorization, x-client-info, apikey, content-type",
 };
 
 function jsonResponse(status: number, body: Record<string, unknown>) {
@@ -21,25 +22,36 @@ async function handler(req: Request) {
   }
 
   try {
-    const { recipients, subject, body, fromName, senderId } = (await req.json().catch(() => ({}))) as {
-      recipients?: string[];
-      subject?: string;
-      body?: string;
-      fromName?: string;
-      senderId?: string;
-    };
+    const { recipients, subject, body, fromName, senderId } =
+      (await req.json().catch(() => ({}))) as {
+        recipients?: string[];
+        subject?: string;
+        body?: string;
+        fromName?: string;
+        senderId?: string;
+      };
 
-    const list = Array.isArray(recipients) ? recipients.filter((e) => typeof e === "string" && e.includes("@")) : [];
+    const list = Array.isArray(recipients)
+      ? recipients.filter((e) => typeof e === "string" && e.includes("@"))
+      : [];
     if (list.length === 0) {
-      return jsonResponse(400, { ok: false, error: "No valid recipient emails provided" });
+      return jsonResponse(400, {
+        ok: false,
+        error: "No valid recipient emails provided",
+      });
     }
 
     const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY") || "";
     const RESEND_FROM_EMAIL = Deno.env.get("RESEND_FROM_EMAIL") || "";
-    const LOGO_URL = Deno.env.get("LOGO_URL") || "https://depsfpodwaprzxffdcks.supabase.co/storage/v1/object/public/dum-logo/dum-logo.png";
-    const APP_URL = Deno.env.get("APP_URL") || "https://app.daralulummontreal.com/";
+    const LOGO_URL = Deno.env.get("LOGO_URL") ||
+      "https://depsfpodwaprzxffdcks.supabase.co/storage/v1/object/public/dum-logo/dum-logo.png";
+    const APP_URL = Deno.env.get("APP_URL") ||
+      "https://app.daralulummontreal.com/";
     if (!RESEND_API_KEY || !RESEND_FROM_EMAIL) {
-      return jsonResponse(500, { ok: false, error: "Email service not configured" });
+      return jsonResponse(500, {
+        ok: false,
+        error: "Email service not configured",
+      });
     }
 
     // Build portal CTA button HTML
@@ -65,7 +77,9 @@ async function handler(req: Request) {
     const safeBody = (body || "").toString();
 
     // Build standardized subject/body using sender details when possible
-    let displayName = fromName && fromName.trim().length > 0 ? fromName.trim() : "Sender";
+    let displayName = fromName && fromName.trim().length > 0
+      ? fromName.trim()
+      : "Sender";
     let senderLine = displayName;
 
     try {
@@ -73,18 +87,27 @@ async function handler(req: Request) {
       const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
       if (supabaseUrl && serviceRoleKey && senderId) {
         const sClient = createClient(supabaseUrl, serviceRoleKey);
-        const { data: prof } = await sClient.from("profiles").select("id, name, role, subject").eq("id", senderId).maybeSingle();
+        const { data: prof } = await sClient.from("profiles").select(
+          "id, name, role, subject",
+        ).eq("id", senderId).maybeSingle();
         if (prof?.name) displayName = prof.name;
         if (prof?.role === "teacher") {
           const subjTaught = (prof as any).subject as string | null;
-          senderLine = subjTaught && subjTaught.length > 0 ? `${displayName}, ${subjTaught} teacher` : `${displayName} (teacher)`;
+          senderLine = subjTaught && subjTaught.length > 0
+            ? `${displayName}, ${subjTaught} teacher`
+            : `${displayName} (teacher)`;
         } else {
           // Try to resolve child's name for parent
-          const { data: parentRow } = await sClient.from("parents").select("student_ids").eq("id", senderId).maybeSingle();
-          const childIds = (parentRow?.student_ids as string[] | undefined) || [];
+          const { data: parentRow } = await sClient.from("parents").select(
+            "student_ids",
+          ).eq("id", senderId).maybeSingle();
+          const childIds = (parentRow?.student_ids as string[] | undefined) ||
+            [];
           if (childIds.length > 0) {
             const firstId = childIds[0];
-            const { data: child } = await sClient.from("students").select("name").eq("id", firstId).maybeSingle();
+            const { data: child } = await sClient.from("students").select(
+              "name",
+            ).eq("id", firstId).maybeSingle();
             if (child?.name) senderLine = `${child.name}'s parent`;
           } else {
             senderLine = `${displayName} (parent)`;
@@ -137,12 +160,18 @@ async function handler(req: Request) {
       }
     }
 
-    return jsonResponse(200, { ok: true, sent, attempted: list.length, errors });
+    return jsonResponse(200, {
+      ok: true,
+      sent,
+      attempted: list.length,
+      errors,
+    });
   } catch (e) {
-    return jsonResponse(500, { ok: false, error: e instanceof Error ? e.message : String(e) });
+    return jsonResponse(500, {
+      ok: false,
+      error: e instanceof Error ? e.message : String(e),
+    });
   }
 }
 
 serve(handler);
-
-

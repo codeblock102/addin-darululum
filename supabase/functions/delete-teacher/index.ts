@@ -3,11 +3,14 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.8";
 import { corsHeaders } from "../create-admin/cors.ts";
 
 const supabaseUrl = Deno.env.get("SUPABASE_URL") || Deno.env.get("API_URL");
-const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || Deno.env.get("SERVICE_KEY");
+const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ||
+  Deno.env.get("SERVICE_KEY");
 const anonKey = Deno.env.get("SUPABASE_ANON_KEY") || serviceRoleKey;
 
 if (!supabaseUrl || !serviceRoleKey) {
-  console.error("Missing environment variables: SUPABASE_URL/API_URL or SUPABASE_SERVICE_ROLE_KEY/SERVICE_KEY");
+  console.error(
+    "Missing environment variables: SUPABASE_URL/API_URL or SUPABASE_SERVICE_ROLE_KEY/SERVICE_KEY",
+  );
 }
 
 serve(async (req: Request) => {
@@ -26,10 +29,13 @@ serve(async (req: Request) => {
     const { userId } = await req.json();
 
     if (!userId || typeof userId !== "string") {
-      return new Response(JSON.stringify({ error: "Missing or invalid userId" }), {
-        status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      return new Response(
+        JSON.stringify({ error: "Missing or invalid userId" }),
+        {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
+      );
     }
 
     // Verify caller is an admin using the bearer token
@@ -45,7 +51,8 @@ serve(async (req: Request) => {
     const supabaseAuth = createClient(supabaseUrl!, anonKey!, {
       global: { headers: { Authorization: authHeader } },
     });
-    const { data: caller, error: callerErr } = await supabaseAuth.auth.getUser();
+    const { data: caller, error: callerErr } = await supabaseAuth.auth
+      .getUser();
     if (callerErr || !caller?.user?.id) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
         status: 401,
@@ -77,19 +84,29 @@ serve(async (req: Request) => {
     try {
       // Delete progress entries authored by this teacher (teacher_id or contributor_id)
       // Note: This removes history as requested; adjust to SET NULL if needed.
-      await admin.from("progress").delete().or(`teacher_id.eq.${userId},contributor_id.eq.${userId}`);
+      await admin.from("progress").delete().or(
+        `teacher_id.eq.${userId},contributor_id.eq.${userId}`,
+      );
     } catch (_cleanupErr2) {
       // ignore cleanup errors
     }
 
     // 2) Delete the teacher's profile (will cascade to dependent tables with FK ON DELETE CASCADE)
-    const { error: profileDelErr } = await admin.from("profiles").delete().eq("id", userId);
+    const { error: profileDelErr } = await admin.from("profiles").delete().eq(
+      "id",
+      userId,
+    );
     if (profileDelErr) {
       console.error("Error deleting teacher profile:", profileDelErr);
-      return new Response(JSON.stringify({ error: `Failed to delete profile: ${profileDelErr.message}` }), {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      return new Response(
+        JSON.stringify({
+          error: `Failed to delete profile: ${profileDelErr.message}`,
+        }),
+        {
+          status: 500,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
+      );
     }
 
     // 3) Delete the auth user (ignore not found)
@@ -114,5 +131,3 @@ serve(async (req: Request) => {
     });
   }
 });
-
-

@@ -33,16 +33,23 @@ serve(async (req: Request) => {
 
   try {
     if (!RESEND_API_KEY || !RESEND_FROM_EMAIL) {
-      return new Response(JSON.stringify({ error: "Email sender not configured" }), {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      return new Response(
+        JSON.stringify({ error: "Email sender not configured" }),
+        {
+          status: 500,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
+      );
     }
 
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_ANON_KEY") ?? "",
-      { global: { headers: { Authorization: req.headers.get("Authorization") ?? "" } } },
+      {
+        global: {
+          headers: { Authorization: req.headers.get("Authorization") ?? "" },
+        },
+      },
     );
 
     const { data: userData } = await supabase.auth.getUser();
@@ -87,10 +94,13 @@ serve(async (req: Request) => {
     let html: string = String(payload.html || "").trim();
 
     if (toList.length === 0 || !subject || !html) {
-      return new Response(JSON.stringify({ error: "Missing to/subject/html" }), {
-        status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      return new Response(
+        JSON.stringify({ error: "Missing to/subject/html" }),
+        {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
+      );
     }
 
     // Append portal CTA button to HTML (before closing body/html tags if present, or at the end)
@@ -108,10 +118,19 @@ serve(async (req: Request) => {
 
     for (const to of toList) {
       try {
-        await resend.emails.send({ from: RESEND_FROM_EMAIL, to, subject, html });
+        await resend.emails.send({
+          from: RESEND_FROM_EMAIL,
+          to,
+          subject,
+          html,
+        });
         results.push({ to, status: "sent" });
       } catch (e) {
-        results.push({ to, status: "failed", error: e instanceof Error ? e.message : String(e) });
+        results.push({
+          to,
+          status: "failed",
+          error: e instanceof Error ? e.message : String(e),
+        });
       }
     }
 
@@ -120,11 +139,14 @@ serve(async (req: Request) => {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (error) {
-    return new Response(JSON.stringify({ error: error instanceof Error ? error.message : String(error) }), {
-      status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    return new Response(
+      JSON.stringify({
+        error: error instanceof Error ? error.message : String(error),
+      }),
+      {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      },
+    );
   }
 });
-
-
