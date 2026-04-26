@@ -11,7 +11,7 @@ import { format, eachDayOfInterval, parseISO, isWeekend } from "date-fns";
 import { CalendarDays, Loader2 } from "lucide-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client.ts";
-import { useToast } from "@/hooks/use-toast.ts";
+import { useToast } from "@/components/ui/use-toast.ts";
 
 import {
   Dialog,

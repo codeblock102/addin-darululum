@@ -1,0 +1,1 @@
+ALTER TABLE public.classes DROP CONSTRAINT IF EXISTS classes_teacher_id_fkey; ALTER TABLE public.classes DROP COLUMN IF EXISTS teacher_id; CREATE TABLE public.class_teachers (class_id UUID NOT NULL REFERENCES public.classes(id) ON DELETE CASCADE, teacher_id UUID NOT NULL REFERENCES public.teachers(id) ON DELETE CASCADE, PRIMARY KEY (class_id, teacher_id));
