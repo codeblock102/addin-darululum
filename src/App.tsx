@@ -47,6 +47,7 @@ import ParentAccounts from "@/pages/admin/ParentAccounts.tsx";
 import BulkStudentImport from "@/pages/admin/BulkStudentImport.tsx";
 import Activity from "@/pages/admin/Activity.tsx";
 import ResetPassword from "@/pages/ResetPassword.tsx";
+import SchoolCalendar from "@/pages/SchoolCalendar.tsx";
 import TeacherAddParent from "@/pages/TeacherAddParent.tsx";
 import TeacherMessages from "@/pages/TeacherMessages.tsx";
 import ParentMessages from "@/pages/ParentMessages.tsx";
@@ -208,6 +209,7 @@ function App() {
               }
             />
             <Route path="/schedule" element={<TeacherSchedule />} />
+            <Route path="/calendar" element={<SchoolCalendar />} />
             <Route
               path="/teacher-accounts"
               element={

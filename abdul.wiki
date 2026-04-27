@@ -94,6 +94,7 @@ The core purpose: track every student's Quran memorization journey, monitor atte
 - `/settings` — System settings
 - `/preferences` — User preferences
 - `/activity` — Activity feed (admin)
+- `/calendar` — School calendar (events, holidays, PD days) — all roles
 
 ### Dev-only (gated)
 - `/dev/seeder`, `/dev/create-demo`, `/dev/create-teacher-profile`, etc.
@@ -133,6 +134,8 @@ All emails go through **Resend** via Supabase Edge Functions:
 | `daily-progress-email` | Daily summary of student progress to parents |
 | `send-parent-welcome-emails` | When a parent account is created |
 | `admin-send-email` | Admin manual email blast |
+| `send-late-arrival-alert` | When a student is marked late (POST `{ student_id, date, time }`) |
+| `send-assignment-notification` | When a new assignment is created — notifies linked parents (POST `{ assignment_id, type }`) |
 
 Required env secrets: `RESEND_API_KEY`, `RESEND_FROM_EMAIL`, `APP_URL`, `LOGO_URL`
 
@@ -208,6 +211,7 @@ Custom I18n context (not react-i18next). Translation keys in `src/i18n/translati
 
 | Date | Summary | See Also |
 |---|---|---|
+| 2026-04-27 | 6 features: contact pop-up, CSV export, unexcused warnings, late arrivals alert, school calendar, assignment notifications; `school_events` table migration; 2 new edge functions | handoff.md |
 | 2026-04-26 (s2) | Analytics removal; attendance redesign (watchlist + heatmap); DailyPromptModal; Settings toggle | handoff.md |
 | 2026-04-26 | 5 DUM Application Feedback features (onboarding, admin dashboard, Health IEP, Staff HRIS, sick status); schedule seed | handoff.md |
 | 2026-04-16 | Absence reasons, multi-day modal, student dossier, profile page | handoff.md |

@@ -25,6 +25,7 @@ import {
 import { Button } from "@/components/ui/button.tsx";
 import { useI18n } from "@/contexts/I18nContext.tsx";
 import { AdminStatCard } from "@/components/admin/AdminPageShell.tsx";
+import { StudentContactPopover } from "@/components/attendance/StudentContactPopover.tsx";
 import { cn } from "@/lib/utils.ts";
 
 // ─── Watchlist ────────────────────────────────────────────────────────────────
@@ -36,6 +37,7 @@ interface WatchlistRow {
   absence_count: number;
   streak: number;
   last_present: string | null;
+  unexcused_count: number;
 }
 
 const WatchlistView = () => {
@@ -48,7 +50,7 @@ const WatchlistView = () => {
       // Get all absence records last 30 days
       const { data: abs } = await supabase
         .from("attendance")
-        .select("student_id, date, status")
+        .select("student_id, date, status, late_reason")
         .gte("date", thirtyAgo)
         .lte("date", today)
         .in("status", ["absent", "sick", "excused"]);
@@ -56,11 +58,12 @@ const WatchlistView = () => {
       if (!abs || abs.length === 0) return [];
 
       // Group by student
-      const byStudent: Record<string, { dates: string[]; statuses: string[] }> = {};
+      const byStudent: Record<string, { dates: string[]; statuses: string[]; reasons: (string | null)[] }> = {};
       for (const r of abs) {
-        if (!byStudent[r.student_id]) byStudent[r.student_id] = { dates: [], statuses: [] };
+        if (!byStudent[r.student_id]) byStudent[r.student_id] = { dates: [], statuses: [], reasons: [] };
         byStudent[r.student_id].dates.push(r.date);
         byStudent[r.student_id].statuses.push(r.status);
+        byStudent[r.student_id].reasons.push((r as any).late_reason ?? null);
       }
 
       // Only keep students with 2+ absences
@@ -112,14 +115,24 @@ const WatchlistView = () => {
         lastPresentMap[sid] = lastPresent;
       }
 
-      return students.map((s) => ({
-        student_id: s.id,
-        name: s.name ?? "Unknown",
-        class_name: s.class_name,
-        absence_count: byStudent[s.id]?.dates.length ?? 0,
-        streak: streakMap[s.id] ?? 0,
-        last_present: lastPresentMap[s.id] ?? null,
-      })).sort((a, b) => b.absence_count - a.absence_count);
+      return students.map((s) => {
+        const entry = byStudent[s.id];
+        // Unexcused = absent status with no reason filed
+        const unexcused = entry
+          ? entry.statuses.filter(
+              (st, i) => st === "absent" && !entry.reasons[i],
+            ).length
+          : 0;
+        return {
+          student_id: s.id,
+          name: s.name ?? "Unknown",
+          class_name: s.class_name,
+          absence_count: entry?.dates.length ?? 0,
+          streak: streakMap[s.id] ?? 0,
+          last_present: lastPresentMap[s.id] ?? null,
+          unexcused_count: unexcused,
+        };
+      }).sort((a, b) => b.absence_count - a.absence_count);
     },
     staleTime: 5 * 60 * 1000,
   });
@@ -144,8 +157,33 @@ const WatchlistView = () => {
     );
   }
 
+  const unexcusedStudents = rows.filter((r) => r.unexcused_count > 0);
+
   return (
-    <div className="space-y-3">
+    <div className="space-y-4">
+      {/* ── Unexcused absence warning panel ── */}
+      {unexcusedStudents.length > 0 && (
+        <div className="rounded-xl border border-orange-200 bg-orange-50 px-4 py-3">
+          <div className="flex items-center gap-2 mb-2">
+            <AlertTriangle className="h-4 w-4 text-orange-600 flex-shrink-0" />
+            <p className="text-sm font-semibold text-orange-800">
+              {unexcusedStudents.length} student{unexcusedStudents.length !== 1 ? "s" : ""} with unexcused absences
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {unexcusedStudents.map((r) => (
+              <div
+                key={r.student_id}
+                className="flex items-center gap-1.5 px-2.5 py-1 bg-white rounded-lg border border-orange-200 text-xs"
+              >
+                <span className="font-medium text-gray-800">{r.name}</span>
+                <span className="text-orange-600 font-bold">·{r.unexcused_count}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       <p className="text-xs text-gray-500 font-medium uppercase tracking-wide">
         {rows.length} student{rows.length !== 1 ? "s" : ""} flagged · last 30 days
       </p>
@@ -164,12 +202,22 @@ const WatchlistView = () => {
               {r.name.charAt(0).toUpperCase()}
             </div>
             <div className="min-w-0">
-              <p className="text-sm font-semibold text-gray-900 truncate">{r.name}</p>
+              <StudentContactPopover
+                studentId={r.student_id}
+                studentName={r.name}
+                status="absent"
+              />
               <p className="text-xs text-gray-500">{r.class_name ?? "No class"}</p>
             </div>
           </div>
 
           <div className="flex items-center gap-3 flex-shrink-0">
+            {r.unexcused_count > 0 && (
+              <div className="flex items-center gap-1 px-2 py-1 bg-orange-50 rounded-lg">
+                <AlertTriangle className="h-3.5 w-3.5 text-orange-500" />
+                <span className="text-xs font-semibold text-orange-600">{r.unexcused_count} unexcused</span>
+              </div>
+            )}
             {r.streak >= 2 && (
               <div className="flex items-center gap-1 px-2 py-1 bg-red-50 rounded-lg">
                 <Flame className="h-3.5 w-3.5 text-red-500" />
@@ -359,13 +407,13 @@ const Attendance = () => {
     },
   });
 
-  type TodayRow = { id: string; status: string };
+  type TodayRow = { id: string; status: string; student_id?: string; students?: { id: string; name: string } | null };
   const { data: todayRows = [] } = useQuery<TodayRow[]>({
     queryKey: ["attendance-today", todayYmd],
     queryFn: async () => {
       const { data } = await supabase
         .from("attendance")
-        .select("id, status")
+        .select("id, status, student_id, students(id, name)")
         .eq("date", todayYmd);
       return (data ?? []) as TodayRow[];
     },
@@ -513,6 +561,36 @@ const Attendance = () => {
             {todayPct.toFixed(1)}%
           </span>
         </div>
+
+        {/* ── Late Arrivals Alert ──────────────────────────────────────────── */}
+        {lateToday > 0 && (
+          <div className="bg-white rounded-2xl border border-amber-200 shadow-sm px-5 py-4">
+            <div className="flex items-center gap-2 mb-3">
+              <div className="w-7 h-7 rounded-lg bg-amber-50 flex items-center justify-center">
+                <Clock className="h-4 w-4 text-amber-600" />
+              </div>
+              <p className="text-sm font-semibold text-amber-800">
+                {lateToday} late arrival{lateToday !== 1 ? "s" : ""} today
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {todayRows
+                .filter((r) => sl(r.status) === "late" && r.students)
+                .map((r) => (
+                  <div
+                    key={r.id}
+                    className="flex items-center gap-1.5 px-2.5 py-1 bg-amber-50 rounded-lg border border-amber-200"
+                  >
+                    <StudentContactPopover
+                      studentId={r.students!.id}
+                      studentName={r.students!.name}
+                      status="late"
+                    />
+                  </div>
+                ))}
+            </div>
+          </div>
+        )}
 
         {/* ── Main Card ────────────────────────────────────────────────────── */}
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">

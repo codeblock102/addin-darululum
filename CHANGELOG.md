@@ -1,3 +1,22 @@
+## [1.4.0] (2026-04-27)
+
+### New Features
+
+* **attendance:** student contact info pop-up — clicking an absent/late/sick student's name in the Watchlist or Records tab opens a popover with guardian name, phone, and email (click-to-call / click-to-email); `StudentContactPopover` component queries on demand
+* **attendance:** CSV export — "Export CSV" button in the Records tab header downloads the currently filtered records (date, time, student, class, status, reason, notes)
+* **attendance:** unexcused absence warnings panel — orange alert banner at top of Watchlist tab when any students have absences with no reason filed; each row also shows an "N unexcused" chip
+* **attendance:** late arrivals alert panel — amber card appears on the Attendance page header when any students are marked late today, listing names with click-to-contact popovers
+* **attendance:** `send-late-arrival-alert` edge function — notifies admin emails when a student is marked late (POST `{ student_id, attendance_id, date, time }`)
+* **calendar:** new School Calendar page (`/calendar`) — monthly grid + upcoming sidebar, supports event types: Holiday, Break, PD Day, Exam, Event; admin CRUD; `school_events` table with RLS seeded with 2025–26 dates
+* **assignments:** `send-assignment-notification` edge function — fires on assignment creation, emails all linked parents with assignment title, description, due date, and a link to the parent portal
+* **navigation:** School Calendar added to admin and teacher sidebars; `nav.calendar` translation key added (EN + FR)
+
+### Database
+
+* **migration:** `create_school_events.sql` — `school_events` table (UUID PK, title, event_type enum, start/end date, color, RLS) with starter seed data for 2025–26
+
+---
+
 ## [1.3.0] (2026-04-26)
 
 ### Removed

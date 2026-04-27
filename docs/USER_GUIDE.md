@@ -73,6 +73,14 @@ Two tabs:
 - View all classes with schedule, teacher, capacity, and status
 - Create or edit classes; the `time_slots` field stores the full weekly schedule in structured JSONB
 
+### School Calendar (`/calendar`)
+
+Monthly calendar grid showing school events, holidays, PD days, exams, and custom events.
+- **Admins** can create, edit, and delete events via the **Add Event** button
+- **Teachers and parents** can view all events (read-only)
+- Click any day to see events scheduled for that date
+- Upcoming events (next 60 days) listed in the right sidebar
+
 ### Attendance (`/attendance`)
 
 Three modes:
@@ -82,6 +90,14 @@ Three modes:
 - **Records** — search and filter all past attendance entries
 
 **Absence reasons** (Mozaïk-style categories): Activities, Legal, Family, Health, Other — shown for absent/excused/late statuses.
+
+**Contact pop-up:** In the Watchlist and Records tabs, clicking an absent/late/sick student's name opens a popover with the guardian name, phone (click-to-call), and email (click-to-email).
+
+**Unexcused warning:** The Watchlist tab shows an orange alert when students have absences filed with no reason. Each student row also shows an "N unexcused" chip.
+
+**Late arrivals panel:** When any students are marked late today, an amber alert card appears above the tab strip listing their names with click-to-contact.
+
+**Export CSV:** The Records tab header has an "Export CSV" button that downloads the currently filtered records.
 
 ### Progress Book (`/progress-book`)
 

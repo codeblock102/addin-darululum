@@ -23,6 +23,7 @@ import { Label } from "@/components/ui/label.tsx";
 import { Clock, Loader2, Pencil } from "lucide-react";
 import { absenceReasonLabel } from "@/components/attendance/AbsenceReasonSelect.tsx";
 import { StatusBadge, StatusType } from "@/components/ui/status-badge.tsx";
+import { StudentContactPopover } from "@/components/attendance/StudentContactPopover.tsx";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client.ts";
 import { useToast } from "@/hooks/use-toast.ts";
@@ -218,8 +219,16 @@ export function AttendanceDataTable(
                     <Clock className="h-4 w-4 text-foreground" />
                     {formatTime(record.time)}
                   </TableCell>
-                  <TableCell className="text-gray-900">
-                    {record.students?.name || "Unknown Student"}
+                  <TableCell>
+                    {record.students ? (
+                      <StudentContactPopover
+                        studentId={record.students.id}
+                        studentName={record.students.name}
+                        status={record.status}
+                      />
+                    ) : (
+                      <span className="text-gray-900">Unknown Student</span>
+                    )}
                   </TableCell>
                   <TableCell className="text-gray-900">
                     {record.classes?.name || "N/A"}

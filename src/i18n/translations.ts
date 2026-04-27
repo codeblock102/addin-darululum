@@ -32,6 +32,7 @@ const en: Dict = {
     messages: "Messages",
     bulkStudentImport: "Bulk Student Import",
     teacherSchedules: "Teacher Schedules",
+    calendar: "School Calendar",
     profile: "Profile",
   },
   portal: {
@@ -745,6 +746,7 @@ const fr: Dict = {
     messages: "Messages",
     bulkStudentImport: "Importation d'élèves en masse",
     teacherSchedules: "Horaires des enseignants",
+    calendar: "Calendrier scolaire",
     profile: "Profil",
   },
   portal: {

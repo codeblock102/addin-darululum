@@ -26,10 +26,12 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover.tsx";
-import { CalendarIcon } from "lucide-react";
+import { CalendarIcon, Download } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils.ts";
 import { useRBAC } from "@/hooks/useRBAC.ts";
+import { exportAttendanceAsCSV } from "@/utils/exportUtils.ts";
+import { useToast } from "@/hooks/use-toast.ts";
 
 interface AttendanceRecord {
   id: string;
@@ -45,6 +47,7 @@ interface AttendanceRecord {
 
 export function AttendanceTable() {
   const { isAdmin } = useRBAC();
+  const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedSection, setSelectedSection] = useState<string>("all");
   const [dateFilter, setDateFilter] = useState<Date | null>(null);
@@ -123,6 +126,20 @@ export function AttendanceTable() {
   
   const hasFilters = searchQuery.length > 0 || selectedSection !== "all" || dateFilter !== null || selectedStatus !== "all";
 
+  const handleExport = () => {
+    const exportRows = filteredRecords.map((r) => ({
+      date: r.date,
+      time: r.time,
+      student_name: r.students?.name ?? "Unknown",
+      class_name: r.classes?.name ?? "N/A",
+      status: r.status,
+      absence_reason: (r as any).late_reason ?? null,
+      notes: r.notes ?? null,
+    }));
+    const suffix = dateFilter ? `-${format(dateFilter, "yyyy-MM-dd")}` : "";
+    exportAttendanceAsCSV(exportRows, toast, `attendance${suffix}.csv`);
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -133,6 +150,15 @@ export function AttendanceTable() {
               View and search past attendance records.
             </CardDescription>
           </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleExport}
+            className="flex items-center gap-1.5 border-green-200 text-green-700 hover:bg-green-50 hover:text-green-800 flex-shrink-0"
+          >
+            <Download className="h-4 w-4" />
+            Export CSV
+          </Button>
           <div className="w-full sm:w-auto flex flex-col sm:flex-row gap-3">
             {uniqueSections.length > 0 && (
               <Select value={selectedSection} onValueChange={setSelectedSection}>

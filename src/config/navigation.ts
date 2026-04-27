@@ -24,6 +24,7 @@ import {
   UserCircle,
   UserCheck,
   Activity as ActivityIcon,
+  Calendar,
 } from "lucide-react"; // Simplified imports based on usage
 import { NavItem } from "@/types/navigation.ts";
 
@@ -76,6 +77,12 @@ export const adminNavItems: NavItem[] = [
     label: "nav.attendance",
     icon: FileText,
     description: "Track attendance records",
+  },
+  {
+    href: "/calendar",
+    label: "nav.calendar",
+    icon: Calendar,
+    description: "School events, holidays, and PD days",
   },
   {
     href: "/admin/parent-accounts",
@@ -159,6 +166,12 @@ export const teacherNavItems: NavItem[] = [
     label: "nav.schedule",
     icon: CalendarDays,
     description: "View your class schedule",
+  },
+  {
+    href: "/calendar",
+    label: "nav.calendar",
+    icon: Calendar,
+    description: "School events and holidays",
   },
   {
     href: "/preferences",
