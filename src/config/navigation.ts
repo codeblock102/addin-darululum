@@ -24,7 +24,6 @@ import {
   UserCircle,
   UserCheck,
   Activity as ActivityIcon,
-  BarChart3,
 } from "lucide-react"; // Simplified imports based on usage
 import { NavItem } from "@/types/navigation.ts";
 
@@ -46,12 +45,6 @@ export const adminNavItems: NavItem[] = [
     label: "nav.activityFeed",
     icon: ActivityIcon,
     description: "Live app activity feed",
-  },
-  {
-    href: "/analytics",
-    label: "nav.analytics",
-    icon: BarChart3,
-    description: "Comprehensive analytics and metrics",
   },
   // Removed Add Parent from admin nav; only parents should invite other parents
   {

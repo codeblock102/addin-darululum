@@ -242,7 +242,7 @@ export const executiveKPIs: KPIDefinition[] = [
     comparisonPeriod: "none",
     drillDown: {
       enabled: true,
-      route: "/analytics?tab=alerts",
+      route: "/attendance",
     },
   },
   {

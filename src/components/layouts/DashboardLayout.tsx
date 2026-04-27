@@ -10,6 +10,7 @@ import { Outlet } from "react-router-dom";
 import { cn } from "@/lib/utils.ts";
 import { useTheme } from "@/hooks/use-theme.ts";
 import { OnboardingModal } from "@/components/onboarding/OnboardingModal.tsx";
+import { DailyPromptModal } from "@/components/onboarding/DailyPromptModal.tsx";
 interface DashboardLayoutProps {
   children?: React.ReactNode;
 }
@@ -99,6 +100,7 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
       )}
 
       <OnboardingModal />
+      <DailyPromptModal />
 
     </div>
   );

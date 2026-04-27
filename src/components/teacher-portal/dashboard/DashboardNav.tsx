@@ -22,7 +22,6 @@ export const useActiveTab = () => {
         "progress-book",
         "attendance",
         "schedule",
-        "performance",
         "messages",
         "assignments",
       ].includes(tabParam)

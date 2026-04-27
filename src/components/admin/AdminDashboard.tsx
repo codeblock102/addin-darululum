@@ -24,9 +24,7 @@ import {
   UserCheck,
   Users,
 } from "lucide-react";
-import { useAnalyticsSummary } from "@/hooks/useAnalyticsSummary.ts";
 import { useAuth } from "@/contexts/AuthContext.tsx";
-
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 interface StaffRow {
@@ -355,8 +353,6 @@ const StaffRow = ({ staff, idx }: { staff: StaffRow; idx: number }) => {
 export const AdminDashboard = () => {
   const navigate = useNavigate();
   const { session } = useAuth();
-  const { data: summary } = useAnalyticsSummary();
-
   // ── Data queries ────────────────────────────────────────────────────────────
 
   const { data: studentCount = 0 } = useQuery({
@@ -458,12 +454,12 @@ export const AdminDashboard = () => {
 
   // ── Derived values ─────────────────────────────────────────────────────────
 
-  const totalStudents = studentCount || summary?.total_active_students || 0;
-  const totalTeachers = teacherCount || summary?.total_active_teachers || 0;
-  const attendanceRate = summary?.overall_attendance_rate ?? 0;
-  const atRiskCount = summary?.at_risk_students_count ?? 0;
-  const onTrackCount = summary?.students_on_track_count ?? 0;
-  const onTrackPct = summary?.students_on_track_percentage ?? 0;
+  const totalStudents = studentCount;
+  const totalTeachers = teacherCount;
+  const attendanceRate = studentCount > 0 ? Math.round((presentToday / studentCount) * 100) : 0;
+  const atRiskCount = 0;
+  const onTrackCount = presentToday;
+  const onTrackPct = attendanceRate;
 
   // ── Today label ────────────────────────────────────────────────────────────
 

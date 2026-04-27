@@ -1,132 +1,54 @@
 # Custom Hooks Reference
 
-This document describes all custom React hooks in `src/hooks/`.
+All custom hooks live in `src/hooks/`. This document describes their purpose, parameters, and return shapes.
 
 ---
 
 ## Authentication & Authorization
 
-### `useRBAC`
-**File:** `src/hooks/useRBAC.ts`
+### `useAuth`
+**File:** `src/hooks/use-auth.ts`
 
-Role-based access control helper.
+Provides access to `AuthContext` values.
 
-**Returns:**
-```ts
-{
-  isAdmin: boolean;
-  isTeacher: boolean;
-  canAccess: (resource: string) => boolean;
-}
-```
-
-**Usage:** Use in components to conditionally render admin-only UI or guard actions.
+**Returns:** `{ user, session, signOut }`
 
 ---
 
 ### `useUserRole`
 **File:** `src/hooks/useUserRole.ts`
 
-Fetches the current authenticated user's role from the `profiles` table.
+Fetches the current user's role from the `profiles` table.
 
-**Returns:** `{ role: "admin" | "teacher" | null, isLoading: boolean }`
+**Returns:** `{ role: "admin" | "teacher" | "parent" | null, isLoading: boolean }`
 
 ---
 
-### `use-auth`
-**File:** `src/hooks/use-auth.ts`
+### `useRBAC`
+**File:** `src/hooks/useRBAC.ts`
 
-Provides access to the `AuthContext` values (user, session, signOut).
+Role-based access control helper. Derives `isAdmin`, `isTeacher`, `isParent`, `isAttendanceTaker` from the current session. Also exposes `hasCapability(cap)` for fine-grained feature access.
+
+**Returns:**
+```ts
+{
+  isAdmin: boolean;
+  isTeacher: boolean;
+  isParent: boolean;
+  isAttendanceTaker: boolean;
+  hasCapability: (cap: string) => boolean;
+  isLoading: boolean;
+}
+```
 
 ---
 
 ## Data Hooks
 
-### `useAnalyticsData`
-**File:** `src/hooks/useAnalyticsData.ts`
-
-Fetches all analytics data for a teacher's portal.
-
-**Parameters:** `teacherId: string`
-
-**Returns:**
-```ts
-{
-  data: {
-    qualityDistribution: { quality: string; count: number }[];
-    timeProgress: { date: string; count: number }[];
-    studentProgress: { name: string; verses: number }[];
-    dailyActivity: { name: string; count: number }[];
-  };
-  isLoading: boolean;
-  error: Error | null;
-}
-```
-
-**Query key:** `["teacher-analytics", teacherId]`
-
----
-
-### `useTeacherMessages`
-**File:** `src/hooks/useTeacherMessages.ts`
-
-Fetches inbox and sent messages for a teacher from the `communications` table.
-
-**Parameters:** `teacherId: string`
-
-**Returns:**
-```ts
-{
-  inboxMessages: Message[];
-  sentMessages: Message[];
-  recipients: { id: string; name: string; type: string }[];
-  inboxLoading: boolean;
-  sentLoading: boolean;
-  recipientsLoading: boolean;
-  refetchMessages: () => void;
-  unreadCount: number;
-}
-```
-
-**Query keys:** `["teacher-inbox", teacherId]`, `["teacher-sent", teacherId]`
-
----
-
-### `useAdminMessages`
-**File:** `src/hooks/useAdminMessages.ts`
-
-Fetches received and sent messages for the admin from the `communications` table. Admin-sent messages are identified by `sender_id = null`.
-
-**Returns:**
-```ts
-{
-  receivedMessages: Message[];
-  sentMessages: Message[];
-  receivedLoading: boolean;
-  sentLoading: boolean;
-  refetchMessages: () => void;
-}
-```
-
-**Query keys:** `["admin-inbox"]`, `["admin-sent"]`
-
----
-
-### `useLeaderboardData`
-**File:** `src/hooks/useLeaderboardData.ts`
-
-Fetches student leaderboard data (Juz mastery rankings).
-
-**Parameters:** `teacherId?: string`
-
-**Returns:** Leaderboard entries sorted by mastery score.
-
----
-
 ### `useTeacherSummary`
 **File:** `src/hooks/useTeacherSummary.ts`
 
-Fetches summary statistics for a teacher's dashboard (student count, recent activity, etc.).
+Summary KPIs for the teacher dashboard (student count, recent activity counts).
 
 **Parameters:** `teacherId: string`
 
@@ -139,17 +61,47 @@ Fetches and manages teacher account data for the admin teacher accounts page.
 
 ---
 
+### `useLeaderboardData`
+**File:** `src/hooks/useLeaderboardData.ts`
+
+Fetches student leaderboard rankings (Juz mastery).
+
+**Parameters:** `teacherId?: string`
+
+---
+
 ### `useSettings`
 **File:** `src/hooks/useSettings.ts`
 
-Fetches and updates admin/app settings from Supabase.
+Reads and writes application settings from Supabase (`app_settings` table).
 
 ---
 
 ### `useTeacherStatus`
 **File:** `src/hooks/useTeacherStatus.ts`
 
-Fetches the active/inactive status of teachers.
+Fetches teacher active/away/busy status.
+
+---
+
+### `useParentChildren`
+**File:** `src/hooks/useParentChildren.ts`
+
+Fetches all students linked to the current parent via `parent_children`.
+
+---
+
+### `useTeacherClasses`
+**File:** `src/hooks/useTeacherClasses.ts`
+
+Fetches classes and schedule data for a teacher. Used in the schedule view.
+
+---
+
+### `useTeacherStudentMetrics`
+**File:** `src/hooks/useTeacherStudentMetrics.ts`
+
+Live at-risk scoring for teacher's students. Flags students with low attendance or no progress in 7+ days. Used in `DashboardOverview` alert banner.
 
 ---
 
@@ -158,41 +110,41 @@ Fetches the active/inactive status of teachers.
 ### `useRealtimeMessages`
 **File:** `src/hooks/useRealtimeMessages.ts`
 
-Sets up Supabase real-time subscriptions for a teacher's message inbox. Automatically invalidates `["teacher-inbox", teacherId]` query and shows toast notifications when new messages arrive.
+Supabase real-time subscription for a teacher's message inbox. Invalidates `["teacher-inbox", teacherId]` and shows toast on new messages.
 
 **Parameters:** `teacherId: string`
-
-**Side effects:** Creates 3 Supabase channels; cleans them up on unmount.
 
 ---
 
 ### `useRealtimeAdminMessages`
 **File:** `src/hooks/useRealtimeAdminMessages.ts`
 
-Sets up Supabase real-time subscriptions for admin messages.
+Real-time subscription for admin messages.
 
 ---
 
 ### `useRealtimeLeaderboard`
 **File:** `src/hooks/useRealtimeLeaderboard.ts`
 
-Sets up real-time subscription on `juz_mastery` table for live leaderboard updates.
+Real-time subscription on `juz_mastery` for live leaderboard updates.
 
 ---
 
-### `useRealtimeAnalytics`
-**File:** `src/hooks/useRealtimeAnalytics.ts`
+## UI / UX Hooks
 
-Sets up real-time subscription on `progress` table for live analytics updates.
+### `usePageHelp`
+**File:** `src/hooks/usePageHelp.ts`
+
+Reads and writes the Page Assistance setting from `localStorage`. Defaults to `true` (enabled). Used by `DailyPromptModal` and wired to the Settings → User Experience toggle.
+
+**Returns:** `{ enabled: boolean, toggle: (value: boolean) => void }`
 
 ---
 
-## UI Hooks
-
-### `use-toast`
+### `useToast`
 **File:** `src/hooks/use-toast.ts`
 
-shadcn/ui toast notification hook. Returns `toast()` function for triggering notifications.
+shadcn/ui toast hook.
 
 **Usage:**
 ```tsx
@@ -200,22 +152,38 @@ const { toast } = useToast();
 toast({ title: "Saved", description: "Changes saved successfully." });
 ```
 
-### `use-mobile`
+---
+
+### `useMobile`
 **File:** `src/hooks/use-mobile.tsx`
 
-Returns `true` if the viewport is considered mobile width.
+Returns `true` when viewport width is below the mobile breakpoint.
 
-### `use-sidebar`
+---
+
+### `useSidebar`
 **File:** `src/hooks/use-sidebar.ts`
 
-Manages sidebar open/collapsed state.
+Sidebar open/collapsed state management.
 
-### `use-theme`
+---
+
+### `useTheme`
 **File:** `src/hooks/use-theme.ts`
 
-Returns current theme and `setTheme` function. Theme is persisted in localStorage.
+Current theme and `setTheme` function. Persisted in localStorage via `next-themes`.
 
-### `useDashboardNavigation`
-**File:** `src/hooks/useDashboardNavigation.ts`
+---
 
-Provides navigation helpers for dashboard pages.
+## i18n
+
+### `useI18n`
+**File:** `src/contexts/I18nContext.tsx` (exported as hook)
+
+Returns `{ t, locale, setLocale }`. `t(key, fallback)` looks up translation keys from `src/i18n/translations.ts`.
+
+**Usage:**
+```tsx
+const { t } = useI18n();
+<span>{t("pages.attendance.status.sick", "Sick")}</span>
+```

@@ -1,3 +1,40 @@
+## [1.3.0] (2026-04-26)
+
+### Removed
+* **analytics:** removed entire analytics dashboard — deleted 11 components, 6 hooks, 6 service files, types, page, and `NotificationBell`. `EmptyState` preserved as shared component.
+* **analytics:** removed `TeacherAnalytics` and `TeacherStudentInsights` from teacher portal; removed `performance` tab from teacher dashboard
+
+### New Features
+* **attendance:** full page redesign — green gradient welcome banner (matching admin dashboard), 4 stat cards, live progress bar, and four tabs: Roll Call, **Watchlist** (students with 2+ absences in 30 days with streak badges), **Heatmap** (30-day school-wide attendance rate grid, color-coded), Records
+* **daily-prompt:** `DailyPromptModal` fires once per calendar day per account on first app open; role-aware (Admin, Teacher, Parent) with 4 actionable checklist items; respects Settings → Page Assistance toggle
+* **settings:** added Page Assistance toggle to Settings → User Experience; controls whether the daily prompt fires
+
+### Bug Fixes
+* **admin-dashboard:** removed broken `useAnalyticsSummary` import; attendance rate now derived directly from existing daily queries
+* **teacher-dashboard:** removed broken `TeacherAnalytics` import and stale `performance` tab case
+* **dashboard-overview:** fixed broken `/dashboard?tab=performance` link → `/attendance`
+* **activity:** fixed broken `/analytics` navigate → `/attendance`
+* **onboarding:** updated admin step 4 from deleted "Analytics dashboard" to "Attendance & Reports"
+
+---
+
+## [1.2.0] (2026-04-26)
+
+### New Features
+
+* **onboarding:** role-specific 5-step onboarding modal fires on first login for Admin, Teacher, and Parent; persisted via localStorage `dum_onboarded_{userId}`
+* **admin-dashboard:** personalized welcome banner with time-based greeting and live date
+* **admin-dashboard:** Today Absent card — counts absent/excused/sick students for today
+* **admin-dashboard:** Unmarked Today card — total active students minus marked today
+* **admin-dashboard:** Enrolment by Location/Grade breakdown with bar chart
+* **admin-dashboard:** Staff / Classes / Attendance Rate mini-summary row
+* **health-iep:** new Health & IEP tab on student detail pages; inline-editable health card number, medical condition, allergies, health notes, IEP toggle, and accommodations textarea
+* **staff-hris:** Staff Directory tab on Teachers page — searchable staff cards with role badge, subject/grade chips, bio preview, email and phone links
+* **attendance:** added "Sick" status (with thermometer icon) to single-attendance radio group, bulk attendance select, status badge component, and Postgres `attendance_status` enum
+* **schedules:** `seed_dum_schedules_v10.sql` — idempotent PL/pgSQL migration seeding all 12 class schedules (KG → Secondary 1 & 3) from Scheduling V10 PDF
+
+---
+
 ## [1.1.5](https://github.com/codeblock102/addin-darululum/compare/v1.1.4...v1.1.5) (2026-03-21)
 
 

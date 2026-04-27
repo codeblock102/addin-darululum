@@ -32,7 +32,6 @@ import { SidebarNav } from "./sidebar/SidebarNav.tsx";
 import { SidebarUser } from "./sidebar/SidebarUser.tsx";
 import { cn } from "@/lib/utils.ts";
 import { useI18n } from "@/contexts/I18nContext.tsx";
-import { NotificationBell } from "@/components/shared/NotificationBell.tsx";
 
 interface SidebarProps {
   /** Optional callback function to be invoked when the sidebar should be closed, typically on mobile. */
@@ -179,14 +178,12 @@ export const Sidebar = (
                   <ShieldCheck className="h-4 w-4 text-white" />
                 </div>
               </Link>
-              {(isAdmin || isTeacher) && <NotificationBell collapsed={true} />}
             </div>
           )}
 
           {!isMobile && toggleSidebar && isOpen !== false && (
             <div className="flex items-center gap-1">
-              {(isAdmin || isTeacher) && <NotificationBell collapsed={false} />}
-              <Button
+<Button
                 variant="ghost"
                 size="icon"
                 className="text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors rounded-lg"

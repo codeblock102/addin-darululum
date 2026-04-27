@@ -24,7 +24,7 @@ export const DashboardOverview = ({ teacherId, isAdmin = false }: DashboardOverv
       {(atRiskCount > 0 || stagnantCount > 0) && (
         <button
           type="button"
-          onClick={() => navigate("/dashboard?tab=performance")}
+          onClick={() => navigate("/attendance")}
           className="w-full rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-left transition-colors hover:bg-red-100"
         >
           <div className="flex items-start gap-3">
@@ -37,10 +37,10 @@ export const DashboardOverview = ({ teacherId, isAdmin = false }: DashboardOverv
               </p>
               <p className="text-xs text-red-600 mt-0.5">
                 {atRiskCount > 0 && stagnantCount > 0
-                  ? `${atRiskCount} at-risk · ${stagnantCount} stagnant — click to view Performance tab`
+                  ? `${atRiskCount} at-risk · ${stagnantCount} stagnant — click to view Attendance`
                   : atRiskCount > 0
-                  ? "Low attendance or no recent progress — click to view Performance tab"
-                  : "No progress logged in 7+ days — click to view Performance tab"}
+                  ? "Low attendance or no recent progress — click to view Attendance"
+                  : "No progress logged in 7+ days — click to view Attendance"}
               </p>
             </div>
           </div>

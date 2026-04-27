@@ -49,9 +49,9 @@ const ADMIN_STEPS: OnboardingStep[] = [
   },
   {
     icon: <GraduationCap className="h-6 w-6 text-green-600" />,
-    title: "Analytics & Reports",
+    title: "Attendance & Reports",
     description:
-      "The Analytics dashboard shows live KPIs: at-risk students, attendance trends, and progress rates across all classes.",
+      "The Attendance Monitor shows live roll call, an absence watchlist with streak tracking, and a 30-day heatmap of school-wide attendance rates.",
   },
   {
     icon: <CheckCircle2 className="h-6 w-6 text-green-600" />,
