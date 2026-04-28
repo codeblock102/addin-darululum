@@ -1,3 +1,25 @@
+## [1.5.0] (2026-04-27)
+
+### UI Redesign — Luxury Pass
+
+* **sidebar:** removed cheap left-border active indicator; replaced with full `bg-green-50` pill + `shadow-sm`; avatar upgraded to `bg-[#052e16] text-white` (dark brand green); header now shows "Dār Al-Ulūm" wordmark with small-caps role sub-label ("ADMIN" / "TEACHER PORTAL"); role chip added below email in expanded user section
+* **dashboard:** `MetricCard` default variant redesigned — tinted card backgrounds by semantic type (`bg-green-50/60`, `bg-red-50/60`, `bg-amber-50/60`); icon in `w-10 h-10 rounded-xl` container; KPI numbers bumped to `text-4xl font-black tracking-tight`; labels to `text-xs font-semibold uppercase tracking-widest text-gray-400`; section headers given `border-l-2 border-green-600 pl-3` accent; mini stat row numbers to `text-3xl font-black`; removed badge/subLabel duplication on attendance metric cards
+* **students:** icon+title page header strip; colored avatar circles by initial range (8 color bands); table headers uppercase; row hover `bg-green-50/30`; action column uses icon button; removed emoji hint bar
+* **teachers:** same page header strip; table redesigned with uppercase headers, row hover, icon action buttons (pencil/trash); fixed pre-existing 5-header/6-cell column mismatch
+* **classes:** same page header strip; `ClassTable` actions converted to icon buttons (pencil, users, trash2) with appropriate hover colors
+* **AdminPageShell:** page header refactored to full-width `bg-white border-b` strip with colored icon container; `AdminPrimaryBtn` uses gradient inline style to defeat `.admin-theme` CSS override
+* **schedule calendar:** custom toolbar with green pill active view button, `bg-gray-50` nav group, Google Calendar link; `headerToolbar={false}`; CSS overrides for lighter grid, green today column, now-indicator
+
+---
+
+## [1.4.1] (2026-04-27)
+
+### Bug Fixes
+
+* **ui:** fix all green banner text rendering dark — `.admin-theme h1` and `.teacher-theme h1/p/span/div` CSS rules have higher specificity (0,1,1) than Tailwind utility classes (0,1,0), silently overriding `text-white` / `text-green-200`; fixed by replacing those classes with `style={{ color: "white" }}` / `style={{ color: "#bbf7d0" }}` on all text, icons, and buttons inside green gradient banners across `AdminDashboard.tsx`, `Attendance.tsx`, `SchoolCalendar.tsx`, and `TeacherSchedule.tsx`
+
+---
+
 ## [1.4.0] (2026-04-27)
 
 ### New Features

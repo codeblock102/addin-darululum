@@ -37,13 +37,26 @@ interface StaffRow {
 
 // ─── Metric Card ──────────────────────────────────────────────────────────────
 
+type ColorScheme = "green" | "red" | "amber" | "blue" | "default";
+
 interface MetricCardProps {
   label: string;
   value: number | string;
   badge: React.ReactNode;
   onClick: () => void;
   variant?: "primary" | "default";
+  colorScheme?: ColorScheme;
+  icon?: React.ReactNode;
+  subLabel?: string;
 }
+
+const colorSchemeMap: Record<ColorScheme, { card: string; iconBg: string; iconColor: string }> = {
+  green: { card: "bg-green-50/60", iconBg: "bg-green-100", iconColor: "text-green-700" },
+  red: { card: "bg-red-50/60", iconBg: "bg-red-100", iconColor: "text-red-600" },
+  amber: { card: "bg-amber-50/60", iconBg: "bg-amber-100", iconColor: "text-amber-600" },
+  blue: { card: "bg-blue-50/60", iconBg: "bg-blue-100", iconColor: "text-blue-600" },
+  default: { card: "bg-white", iconBg: "bg-gray-100", iconColor: "text-gray-500" },
+};
 
 const MetricCard = ({
   label,
@@ -51,6 +64,9 @@ const MetricCard = ({
   badge,
   onClick,
   variant = "default",
+  colorScheme = "default",
+  icon,
+  subLabel,
 }: MetricCardProps) => {
   if (variant === "primary") {
     return (
@@ -97,19 +113,33 @@ const MetricCard = ({
     );
   }
 
+  const scheme = colorSchemeMap[colorScheme];
+
   return (
     <button
       type="button"
       onClick={onClick}
-      className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm text-left hover:shadow-md transition-shadow"
+      className={`${scheme.card} rounded-2xl p-6 border border-transparent hover:border-gray-100 text-left hover:shadow-md transition-all`}
     >
       <div className="flex items-start justify-between mb-4">
-        <p className="text-gray-500 text-sm font-medium">{label}</p>
+        {icon
+          ? (
+            <span className={`w-10 h-10 rounded-xl flex items-center justify-center ${scheme.iconBg}`}>
+              <span className={scheme.iconColor}>{icon}</span>
+            </span>
+          )
+          : (
+            <p className="text-xs font-semibold uppercase tracking-widest text-gray-400">{label}</p>
+          )}
         <span className="w-7 h-7 rounded-full border border-gray-200 flex items-center justify-center">
           <ArrowUpRight className="h-3.5 w-3.5 text-gray-400" />
         </span>
       </div>
-      <p className="text-5xl font-bold text-gray-900 mb-3">{value}</p>
+      {icon && (
+        <p className="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-1">{label}</p>
+      )}
+      <p className="text-4xl font-black text-gray-900 tracking-tight mb-2">{value}</p>
+      {subLabel && <p className="text-sm text-gray-500 mb-2">{subLabel}</p>}
       {badge}
     </button>
   );
@@ -162,7 +192,7 @@ const AttendanceChart = ({
   return (
     <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-base font-semibold text-gray-900">
+        <h2 className="text-base font-bold text-gray-900 tracking-tight border-l-2 border-green-600 pl-3">
           Attendance Analytics
         </h2>
         <span className="text-xs text-gray-400">This week</span>
@@ -230,7 +260,7 @@ const ProgressDonut = ({
 
   return (
     <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
-      <h2 className="text-base font-semibold text-gray-900 mb-5">
+      <h2 className="text-base font-bold text-gray-900 tracking-tight border-l-2 border-green-600 pl-3 mb-5">
         Student Progress
       </h2>
 
@@ -494,10 +524,10 @@ export const AdminDashboard = () => {
             <p className="text-sm font-medium" style={{ color: "#86efac" }}>
               {todayLabel}
             </p>
-            <h1 className="text-2xl font-bold text-white mt-1">
+            <h1 className="text-2xl font-bold mt-1" style={{ color: "white" }}>
               Good {new Date().getHours() < 12 ? "morning" : new Date().getHours() < 17 ? "afternoon" : "evening"}, {adminName.split(" ")[0]} 👋
             </h1>
-            <p className="text-green-200 text-sm mt-1">
+            <p className="text-sm mt-1" style={{ color: "#bbf7d0" }}>
               Here's a summary of the school today.
             </p>
           </div>
@@ -505,9 +535,10 @@ export const AdminDashboard = () => {
             <button
               type="button"
               onClick={() => navigate("/students")}
-              className="flex items-center gap-2 bg-white/20 hover:bg-white/30 text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition-colors"
+              className="flex items-center gap-2 bg-white/20 hover:bg-white/30 text-sm font-semibold px-4 py-2.5 rounded-xl transition-colors"
+              style={{ color: "white" }}
             >
-              <Plus className="h-4 w-4" />
+              <Plus className="h-4 w-4" style={{ color: "white" }} />
               Add Student
             </button>
             <button
@@ -542,51 +573,38 @@ export const AdminDashboard = () => {
           <MetricCard
             label="Today Present"
             value={presentToday}
+            colorScheme="green"
+            icon={<UserCheck className="h-5 w-5" />}
+            subLabel={attendanceRate > 0 ? `${Math.round(attendanceRate)}% attendance rate` : "Mark attendance"}
             onClick={() => navigate("/attendance")}
-            badge={
-              <Pill
-                className="bg-green-50 text-green-700"
-                icon={<UserCheck className="h-3 w-3" />}
-                label={
-                  attendanceRate > 0
-                    ? `${Math.round(attendanceRate)}% rate`
-                    : "Mark attendance"
-                }
-              />
-            }
+            badge={null}
           />
           <MetricCard
             label="Today Absent"
             value={absentToday}
+            colorScheme="red"
+            icon={<CalendarX className="h-5 w-5" />}
+            subLabel="absences today"
             onClick={() => navigate("/attendance")}
-            badge={
-              <Pill
-                className="bg-red-50 text-red-600"
-                icon={<CalendarX className="h-3 w-3" />}
-                label="absences today"
-              />
-            }
+            badge={null}
           />
           <MetricCard
             label="Unmarked Today"
             value={unmarkedToday}
+            colorScheme="amber"
+            icon={<HelpCircle className="h-5 w-5" />}
+            subLabel="students need marking"
             onClick={() => navigate("/attendance")}
-            badge={
-              <Pill
-                className="bg-amber-50 text-amber-700"
-                icon={<HelpCircle className="h-3 w-3" />}
-                label="need marking"
-              />
-            }
+            badge={null}
           />
         </div>
 
         {/* ── Location / Grade Breakdown ────────────────────────────────────── */}
         {locationBreakdown.length > 0 && (
           <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
-            <div className="flex items-center gap-2 mb-4">
+            <div className="flex items-center gap-3 mb-4">
               <MapPin className="h-4 w-4 text-gray-400" />
-              <h2 className="text-base font-semibold text-gray-900">Enrolment by Location / Grade</h2>
+              <h2 className="text-base font-bold text-gray-900 tracking-tight border-l-2 border-green-600 pl-3">Enrolment by Location / Grade</h2>
             </div>
             <div className="space-y-3">
               {locationBreakdown.map(({ label, count }) => {
@@ -613,32 +631,32 @@ export const AdminDashboard = () => {
         {/* ── Staff Count Banner ────────────────────────────────────────────── */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
           <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm flex items-center gap-4">
-            <div className="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center flex-shrink-0">
               <GraduationCap className="h-5 w-5 text-amber-600" />
             </div>
             <div>
-              <p className="text-2xl font-bold text-gray-900">{totalTeachers}</p>
-              <p className="text-sm text-gray-500">Staff Members</p>
+              <p className="text-3xl font-black text-gray-900">{totalTeachers}</p>
+              <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest">Staff Members</p>
             </div>
           </div>
           <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm flex items-center gap-4">
-            <div className="w-10 h-10 rounded-xl bg-purple-50 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-xl bg-purple-50 flex items-center justify-center flex-shrink-0">
               <BookOpen className="h-5 w-5 text-purple-600" />
             </div>
             <div>
-              <p className="text-2xl font-bold text-gray-900">{classCount}</p>
-              <p className="text-sm text-gray-500">Active Classes</p>
+              <p className="text-3xl font-black text-gray-900">{classCount}</p>
+              <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest">Active Classes</p>
             </div>
           </div>
           <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm flex items-center gap-4">
-            <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center flex-shrink-0">
               <UserCheck className="h-5 w-5 text-blue-600" />
             </div>
             <div>
-              <p className="text-2xl font-bold text-gray-900">
+              <p className="text-3xl font-black text-gray-900">
                 {attendanceRate > 0 ? `${Math.round(attendanceRate)}%` : "—"}
               </p>
-              <p className="text-sm text-gray-500">Attendance Rate</p>
+              <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest">Attendance Rate</p>
             </div>
           </div>
         </div>
@@ -652,7 +670,7 @@ export const AdminDashboard = () => {
           {/* Alerts Panel */}
           <div className="lg:col-span-2 bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
             <div className="flex items-center justify-between mb-5">
-              <h2 className="text-base font-semibold text-gray-900">Alerts</h2>
+              <h2 className="text-base font-bold text-gray-900 tracking-tight border-l-2 border-green-600 pl-3">Alerts</h2>
               <button
                 type="button"
                 onClick={() => navigate("/dashboard?tab=performance")}
@@ -734,7 +752,7 @@ export const AdminDashboard = () => {
           {/* Staff list */}
           <div className="lg:col-span-3 bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
             <div className="flex items-center justify-between mb-5">
-              <h2 className="text-base font-semibold text-gray-900">Staff</h2>
+              <h2 className="text-base font-bold text-gray-900 tracking-tight border-l-2 border-green-600 pl-3">Staff</h2>
               <button
                 type="button"
                 onClick={() => navigate("/dashboard?tab=students")}

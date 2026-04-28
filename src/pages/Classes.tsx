@@ -6,7 +6,7 @@ import { ClassTable } from "@/components/classes/components/ClassTable.tsx";
 import { EnrollmentDialog } from "@/components/classes/components/EnrollmentDialog.tsx";
 import { Dialog } from "@/components/ui/dialog.tsx";
 import { SearchInput } from "@/components/table/SearchInput.tsx";
-import { Plus } from "lucide-react";
+import { Plus, BookOpen } from "lucide-react";
 import { ClassFormData } from "@/components/classes/validation/classFormSchema.ts";
 import { DeleteClassDialog } from "@/components/classes/components/DeleteClassDialog.tsx";
 import { useI18n } from "@/contexts/I18nContext.tsx";
@@ -149,6 +149,8 @@ export default function Classes() {
     <AdminPageShell
       title={t("pages.classes.headerTitle")}
       subtitle={t("pages.classes.headerDesc")}
+      icon={<BookOpen className="h-5 w-5 text-green-700" />}
+      iconBg="bg-green-50"
       actions={
         <AdminPrimaryBtn onClick={() => { handleOpenClassDialog(); setIsClassDialogOpen(true); }}>
           <Plus className="h-4 w-4" />

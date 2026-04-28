@@ -78,7 +78,7 @@ export const SidebarNav = ({ items, isAdmin, isOpen }: SidebarNavProps) => {
   return (
     <nav
       className={cn(
-        "grid gap-0.5 transition-all duration-300",
+        "grid gap-1 transition-all duration-300",
         (!isMobile && isOpen === false) ? "px-2" : "px-3",
       )}
     >
@@ -95,19 +95,11 @@ export const SidebarNav = ({ items, isAdmin, isOpen }: SidebarNavProps) => {
               "flex items-center rounded-xl text-sm transition-colors duration-150 group relative",
               collapsed ? "justify-center p-3" : "gap-3 px-3 py-2.5",
               isActive
-                ? "bg-green-50 text-green-800 font-semibold"
-                : "text-gray-500 hover:bg-gray-50 hover:text-gray-900 font-medium",
+                ? "bg-green-50 text-green-900 font-semibold shadow-sm"
+                : "text-gray-500 hover:bg-gray-50 hover:text-gray-700 font-medium",
             )}
             title={collapsed ? t(item.label) : item.description}
           >
-            {/* Active left bar indicator */}
-            {!collapsed && isActive && (
-              <span
-                className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 rounded-r-full"
-                style={{ background: "#166534" }}
-              />
-            )}
-
             <item.icon
               className={cn(
                 "flex-shrink-0 transition-colors duration-150",

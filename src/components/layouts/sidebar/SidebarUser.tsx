@@ -38,16 +38,16 @@ export const SidebarUser = ({ isAdmin, isOpen }: SidebarUserProps) => {
   // Collapsed state
   if (!isMobile && isOpen === false) {
     return (
-      <div className="p-2 border-t border-gray-100">
+      <div className="pt-2 pb-2 px-2 border-t border-gray-100">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button
               variant="ghost"
-              className="w-full h-12 p-2 hover:bg-gray-50 transition-colors justify-center rounded-xl"
+              className="w-full h-12 p-2 hover:bg-green-50/50 transition-colors justify-center rounded-xl"
               title={userName}
             >
               <Avatar className="h-8 w-8">
-                <AvatarFallback className="text-xs font-semibold bg-green-100 text-green-800">
+                <AvatarFallback className="text-xs font-semibold bg-[#052e16] text-white">
                   {userInitials}
                 </AvatarFallback>
               </Avatar>
@@ -104,16 +104,16 @@ export const SidebarUser = ({ isAdmin, isOpen }: SidebarUserProps) => {
 
   // Expanded state
   return (
-    <div className="p-3 border-t border-gray-100">
+    <div className="pt-2 pb-3 px-3 border-t border-gray-100">
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button
             variant="ghost"
-            className="w-full justify-start h-auto p-3 hover:bg-gray-50 transition-colors rounded-xl"
+            className="w-full justify-start h-auto p-3 hover:bg-green-50/50 transition-colors rounded-xl"
           >
             <div className="flex items-center gap-3 w-full">
               <Avatar className="h-9 w-9 flex-shrink-0">
-                <AvatarFallback className="text-sm font-semibold bg-green-100 text-green-800">
+                <AvatarFallback className="text-sm font-semibold bg-[#052e16] text-white">
                   {userInitials}
                 </AvatarFallback>
               </Avatar>
@@ -124,6 +124,9 @@ export const SidebarUser = ({ isAdmin, isOpen }: SidebarUserProps) => {
                 <p className="text-xs text-gray-400 leading-none truncate w-full mt-1">
                   {userEmail}
                 </p>
+                <span className="text-[9px] font-semibold uppercase tracking-widest text-gray-400 mt-1">
+                  {isAdmin ? "Admin" : "Teacher"}
+                </span>
               </div>
             </div>
           </Button>

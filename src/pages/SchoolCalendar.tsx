@@ -292,16 +292,17 @@ export default function SchoolCalendar() {
           <div className="absolute right-8 -bottom-10 w-28 h-28 rounded-full pointer-events-none" style={{ background: "rgba(255,255,255,0.04)" }} />
           <div className="relative">
             <p className="text-sm font-medium" style={{ color: "#86efac" }}>{todayLabel}</p>
-            <h1 className="text-2xl font-bold text-white mt-1">School Calendar</h1>
-            <p className="text-green-200 text-sm mt-1">Events, holidays, and PD days</p>
+            <h1 className="text-2xl font-bold mt-1" style={{ color: "white" }}>School Calendar</h1>
+            <p className="text-sm mt-1" style={{ color: "#bbf7d0" }}>Events, holidays, and PD days</p>
           </div>
           {isAdmin && (
             <div className="relative">
               <Button
                 onClick={() => { setEditingEvent(null); setDialogOpen(true); }}
-                className="flex items-center gap-2 bg-white/20 hover:bg-white/30 text-white border-0 rounded-xl font-semibold"
+                className="flex items-center gap-2 bg-white/20 hover:bg-white/30 border-0 rounded-xl font-semibold"
+                style={{ color: "white" }}
               >
-                <Plus className="h-4 w-4" />
+                <Plus className="h-4 w-4" style={{ color: "white" }} />
                 Add Event
               </Button>
             </div>

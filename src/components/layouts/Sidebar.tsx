@@ -144,7 +144,7 @@ export const Sidebar = (
       >
         <div
           className={cn(
-            "flex h-14 sm:h-16 items-center border-b border-gray-100 transition-all duration-300 ease-in-out",
+            "flex h-14 sm:h-16 items-center border-b border-gray-100/80 bg-gray-50/50 transition-all duration-300 ease-in-out",
             (!isMobile && isOpen === false)
               ? "justify-center px-2"
               : "justify-between px-4 sm:px-5",
@@ -155,13 +155,18 @@ export const Sidebar = (
               to={isParent ? "/parent" : "/dashboard"}
               className="flex items-center gap-2.5 hover:opacity-80 transition-opacity"
             >
-              <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0"
+              <div className="w-7 h-7 rounded-xl flex items-center justify-center flex-shrink-0"
                 style={{ background: "linear-gradient(135deg, #14532d, #166534)" }}>
                 <ShieldCheck className="h-4 w-4 text-white" />
               </div>
-              <span className="text-sm font-bold text-gray-900 whitespace-nowrap">
-                {isAdmin ? "Admin Portal" : isParent ? t("portal.parent") : t("portal.teacher")}
-              </span>
+              <div className="flex flex-col">
+                <span className="text-sm font-bold text-gray-900 whitespace-nowrap leading-tight">
+                  Dār Al-Ulūm
+                </span>
+                <span className="text-[10px] font-semibold uppercase tracking-widest text-gray-400 leading-tight">
+                  {isAdmin ? "Admin" : isParent ? t("portal.parent") : t("portal.teacher")}
+                </span>
+              </div>
             </Link>
           )}
 
@@ -171,9 +176,9 @@ export const Sidebar = (
               <Link
                 to={isParent ? "/parent" : "/dashboard"}
                 className="flex items-center justify-center hover:bg-gray-50 rounded-xl p-2 transition-colors"
-                title={isAdmin ? "Admin Portal" : isParent ? t("portal.parent") : t("portal.teacher")}
+                title={isAdmin ? "Admin" : isParent ? t("portal.parent") : t("portal.teacher")}
               >
-                <div className="w-7 h-7 rounded-lg flex items-center justify-center"
+                <div className="w-7 h-7 rounded-xl flex items-center justify-center"
                   style={{ background: "linear-gradient(135deg, #14532d, #166534)" }}>
                   <ShieldCheck className="h-4 w-4 text-white" />
                 </div>

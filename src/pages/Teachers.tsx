@@ -210,6 +210,8 @@ const Teachers = () => {
     <AdminPageShell
       title={t("pages.teachers.headerTitle")}
       subtitle={t("pages.teachers.headerDesc")}
+      icon={<UserPlus className="h-5 w-5 text-green-700" />}
+      iconBg="bg-green-50"
       actions={
         <AdminPrimaryBtn onClick={handleCreateTeacher}>
           <UserPlus className="h-4 w-4" />

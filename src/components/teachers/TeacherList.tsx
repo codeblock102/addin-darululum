@@ -236,20 +236,20 @@ export const TeacherList = ({
       {/* Desktop table (large screens only) */}
       <div className="hidden lg:block overflow-x-auto">
         <Table className="min-w-[720px]">
-        <TableHeader>
+        <TableHeader className="bg-gray-50/60">
           <TableRow>
-            <TableHead>Name</TableHead>
-            <TableHead>Subject</TableHead>
-            <TableHead>Students</TableHead>
-            <TableHead>Contact</TableHead>
-            <TableHead className="text-right">Actions</TableHead>
+            <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-400 py-4 px-4">Name</TableHead>
+            <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-400 py-4 px-4">Subject</TableHead>
+            <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-400 py-4 px-4">Students</TableHead>
+            <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-400 py-4 px-4">Contact</TableHead>
+            <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-400 py-4 px-4 text-right">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {isLoading
             ? (
               <TableRow>
-                <TableCell colSpan={6} className="text-center py-10">
+                <TableCell colSpan={5} className="text-center py-10">
                   <div className="flex justify-center items-center">
                     <Loader2 className="h-6 w-6 animate-spin mr-2" />
                     <span>Loading teachers...</span>
@@ -260,7 +260,7 @@ export const TeacherList = ({
             : filteredTeachers?.length === 0
             ? (
               <TableRow>
-                <TableCell colSpan={6} className="text-center py-10">
+                <TableCell colSpan={5} className="text-center py-10 text-gray-500">
                   {searchQuery
                     ? "No teachers found matching your search."
                     : "No teachers found. Add your first teacher!"}
@@ -268,100 +268,97 @@ export const TeacherList = ({
               </TableRow>
             )
             : filteredTeachers?.map((teacher) => (
-              <TableRow key={teacher.id} className="hover:bg-gray-50">
-                <TableCell className="font-medium">{teacher.name}</TableCell>
-                <TableCell>
-                  <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200">
+              <TableRow key={teacher.id} className="hover:bg-green-50/30 cursor-pointer transition-colors duration-100">
+                <TableCell className="py-4 px-4 font-medium text-gray-900">{teacher.name}</TableCell>
+                <TableCell className="py-4 px-4">
+                  <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200 rounded-full px-2.5 py-0.5 text-xs font-semibold">
                     {teacher.subject}
                   </Badge>
                 </TableCell>
-                <TableCell>
+                <TableCell className="py-4 px-4">
                   <div className="flex items-center">
                     <Users className="h-4 w-4 mr-1 text-gray-400" />
-                    <span>{teacher.students}</span>
+                    <span className="text-gray-700">{teacher.students}</span>
                   </div>
                 </TableCell>
-                <TableCell>
+                <TableCell className="py-4 px-4">
                   {teacher.email
                     ? (
                       <a
                         href={`mailto:${teacher.email}`}
-                        className="text-emerald-700 hover:text-emerald-800 hover:underline"
+                        className="text-emerald-700 hover:text-emerald-800 hover:underline text-sm"
                       >
                         {teacher.email}
                       </a>
                     )
-                    : "N/A"}
+                    : <span className="text-gray-400">N/A</span>}
                 </TableCell>
-                <TableCell>{teacher.phone || "N/A"}</TableCell>
-                <TableCell className="text-right space-x-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => onEdit(teacher)}
-                    title="Edit teacher"
-                    className="border-gray-300 hover:bg-gray-100"
-                  >
-                    <Pencil className="h-4 w-4" />
-                  </Button>
-                  <AlertDialog
-                    open={teacherToDelete === teacher.id}
-                    onOpenChange={(open) => {
-                      if (!open) setTeacherToDelete(null);
-                    }}
-                  >
-                    <AlertDialogTrigger asChild>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="text-red-600 border-gray-300 hover:bg-red-50"
-                        onClick={() => setTeacherToDelete(teacher.id)}
-                        title="Delete teacher"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>Delete Teacher</AlertDialogTitle>
-                        <AlertDialogDescription>
-                          Are you sure you want to delete{" "}
-                          {teacher.name}? This action cannot be undone.
-                          {teacher.students > 0 && (
-                            <div className="mt-2 bg-amber-50 p-2 border border-amber-200 rounded-md text-amber-800">
-                              <div className="flex items-center">
-                                <UserCheck className="h-4 w-4 mr-2" />
-                                <span className="font-medium">Warning:</span>
-                              </div>
-                              <p className="mt-1">
-                                This teacher has {teacher.students}{" "}
-                                student{teacher.students !== 1 ? "s" : ""}{" "}
-                                assigned. Deleting this teacher will remove
-                                these assignments.
-                              </p>
-                            </div>
-                          )}
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction
-                          onClick={() => handleDelete(teacher.id)}
-                          className="bg-red-600 hover:bg-red-700"
-                          disabled={isProcessing}
+                <TableCell className="py-4 px-4 text-right">
+                  <div className="flex items-center justify-end gap-1">
+                    <button
+                      className="p-2 rounded-lg hover:bg-gray-100 transition-colors text-gray-400 hover:text-gray-700"
+                      onClick={() => onEdit(teacher)}
+                      title="Edit teacher"
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </button>
+                    <AlertDialog
+                      open={teacherToDelete === teacher.id}
+                      onOpenChange={(open) => {
+                        if (!open) setTeacherToDelete(null);
+                      }}
+                    >
+                      <AlertDialogTrigger asChild>
+                        <button
+                          className="p-2 rounded-lg hover:bg-red-50 transition-colors text-gray-400 hover:text-red-600"
+                          onClick={() => setTeacherToDelete(teacher.id)}
+                          title="Delete teacher"
                         >
-                          {isProcessing
-                            ? (
-                              <>
-                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                Deleting...
-                              </>
-                            )
-                            : "Delete"}
-                        </AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Delete Teacher</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Are you sure you want to delete{" "}
+                            {teacher.name}? This action cannot be undone.
+                            {teacher.students > 0 && (
+                              <div className="mt-2 bg-amber-50 p-2 border border-amber-200 rounded-md text-amber-800">
+                                <div className="flex items-center">
+                                  <UserCheck className="h-4 w-4 mr-2" />
+                                  <span className="font-medium">Warning:</span>
+                                </div>
+                                <p className="mt-1">
+                                  This teacher has {teacher.students}{" "}
+                                  student{teacher.students !== 1 ? "s" : ""}{" "}
+                                  assigned. Deleting this teacher will remove
+                                  these assignments.
+                                </p>
+                              </div>
+                            )}
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={() => handleDelete(teacher.id)}
+                            className="bg-red-600 hover:bg-red-700"
+                            disabled={isProcessing}
+                          >
+                            {isProcessing
+                              ? (
+                                <>
+                                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                  Deleting...
+                                </>
+                              )
+                              : "Delete"}
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </div>
                 </TableCell>
               </TableRow>
             ))}

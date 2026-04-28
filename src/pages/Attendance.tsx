@@ -471,8 +471,8 @@ const Attendance = () => {
 
           <div className="relative">
             <p className="text-sm font-medium" style={{ color: "#86efac" }}>{todayLabel}</p>
-            <h1 className="text-2xl font-bold text-white mt-1">Attendance Monitor</h1>
-            <p className="text-green-200 text-sm mt-1">
+            <h1 className="text-2xl font-bold mt-1" style={{ color: "white" }}>Attendance Monitor</h1>
+            <p className="text-sm mt-1" style={{ color: "#bbf7d0" }}>
               {unmarked > 0
                 ? `${unmarked} student${unmarked !== 1 ? "s" : ""} not yet marked today`
                 : todayRows.length > 0
@@ -483,8 +483,8 @@ const Attendance = () => {
 
           <div className="flex items-center gap-2 relative flex-wrap">
             {absentToday + sickToday > 0 && (
-              <div className="flex items-center gap-2 bg-red-500/20 border border-red-400/30 text-white text-xs font-semibold px-3 py-2 rounded-xl">
-                <AlertTriangle className="h-3.5 w-3.5 text-red-300" />
+              <div className="flex items-center gap-2 bg-red-500/20 border border-red-400/30 text-xs font-semibold px-3 py-2 rounded-xl" style={{ color: "white" }}>
+                <AlertTriangle className="h-3.5 w-3.5" style={{ color: "#fca5a5" }} />
                 {absentToday + sickToday} absent today
               </div>
             )}
@@ -492,17 +492,19 @@ const Attendance = () => {
               variant="ghost"
               size="sm"
               onClick={() => setSettingsOpen(true)}
-              className="bg-white/15 hover:bg-white/25 text-white border-0 rounded-xl h-9 w-9 p-0"
+              className="bg-white/15 hover:bg-white/25 border-0 rounded-xl h-9 w-9 p-0"
+              style={{ color: "white" }}
               title="Attendance settings"
             >
-              <Settings className="h-4 w-4" />
+              <Settings className="h-4 w-4" style={{ color: "white" }} />
             </Button>
             <button
               type="button"
               onClick={() => setLongTermOpen(true)}
-              className="flex items-center gap-2 bg-white/20 hover:bg-white/30 text-white text-sm font-semibold px-4 py-2 rounded-xl transition-colors"
+              className="flex items-center gap-2 bg-white/20 hover:bg-white/30 text-sm font-semibold px-4 py-2 rounded-xl transition-colors"
+              style={{ color: "white" }}
             >
-              <CalendarDays className="h-3.5 w-3.5" />
+              <CalendarDays className="h-3.5 w-3.5" style={{ color: "white" }} />
               Multi-day Absence
             </button>
           </div>
