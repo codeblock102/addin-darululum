@@ -4,6 +4,70 @@ This file is **non-negotiable**. Every meaningful change must be logged here.
 
 ---
 
+## 2026-04-28 (session 2) — Edge function deployment + pg_cron
+
+**What:**
+- Deployed 4 new edge functions to live Supabase project (`depsfpodwaprzxffdcks`), all ACTIVE:
+  - `send-assignment-graded` (v1) — POST `{ assignment_id }`, emails parents when assignment is graded
+  - `send-assignment-overdue` (v1) — no body, scans all overdue ungraded assignments, emails parents; de-duplicates via `notifications` table
+  - `send-enrollment-confirmation` (v1) — POST `{ student_id }`, emails all admins when a new student is added
+  - `send-class-announcement` (v1) — POST `{ announcement_id }`, emails all class parents, updates `sent_to_count`
+- Scheduled `send-assignment-overdue` via pg_cron: runs daily at **08:00 UTC** (`0 8 * * *`), cron job id 34
+
+**Why:**
+- All 4 functions were already written in the previous session; this session completed the deployment step
+- pg_cron automates daily overdue checks without manual invocation
+
+**Files changed:**
+- `supabase/functions/send-assignment-graded/index.ts` (deployed)
+- `supabase/functions/send-assignment-overdue/index.ts` (deployed)
+- `supabase/functions/send-enrollment-confirmation/index.ts` (deployed)
+- `supabase/functions/send-class-announcement/index.ts` (deployed)
+
+**Pending:**
+- Wire `send-enrollment-confirmation` call into `StudentDialog.tsx` on student create success
+- Wire `send-assignment-graded` call into `TeacherAssignments.tsx` when status changes to `graded`
+- Wire `send-class-announcement` call into `AnnouncementComposer.tsx` on announcement submit
+
+---
+
+## 2026-04-28 (session 1) — 6 features + teacher portal luxury overhaul + sorting + pill tabs
+
+**What:**
+- **Teacher portal luxury overhaul:** `DashboardHeader` replaced with green gradient banner (`linear-gradient(135deg, #052e16, #14532d, #166534)`) with live stat chips (My Students, Today Absent, Week Schedule); admin variant uses amber gradient with Full Access/User Management badges; all text uses inline `style={{ color }}` to defeat CSS specificity
+- **TeacherTabs:** converted from `border-b-2` underline tabs to pill buttons (same pattern as Attendance); added Announcements tab (Megaphone icon) and My Absences tab (CalendarOff icon)
+- **DashboardOverview:** 4 tinted stat cards (My Students green, Today Absent red, Assignments Pending amber, Progress Today blue); `text-4xl font-black` KPI numbers; `TaskWidget` inserted between stat cards and at-risk banner
+- **QuickActions:** section accent header (`border-l-2 border-green-600`), green hover on action buttons
+- **Task list:** `teacher_tasks` table + RLS; `TaskManager` admin component (grouped by teacher, inline create, priority/status badges); `TaskWidget` teacher compact view (pending tasks, priority dots, overdue red, mark-done); admin `/tasks` route + nav item (CheckSquare icon)
+- **Class Announcements:** `announcements` table + RLS; `AnnouncementComposer` teacher component (class selector, compose form, last-10 history with sent count); Announcements tab in teacher portal
+- **Absence requests:** `absence_requests` table + RLS; `AbsenceRequestForm` teacher (date range, reason, notes, history + status badges); `AbsenceRequestsPanel` admin (filter pills, approve/reject with inline note, full table); admin `/absence-requests` route + nav item (CalendarOff icon)
+- **Assignment graded notification:** `send-assignment-graded` edge function written
+- **Assignment overdue notification:** `send-assignment-overdue` edge function written (daily pg_cron)
+- **Enrollment confirmation:** `send-enrollment-confirmation` edge function written
+- **Student status filter:** pill buttons on Students page (All/Active/Inactive/Vacation/Hospitalized/Suspended/Graduated)
+- **Sortable tables:** `SortableHead` component + sort state on Students (name, section, status severity, enrollment_date), Teachers (name, subject, students count), Parent Accounts (name, children count)
+- **Pill tab fix:** Attendance page and Parent Accounts page converted from shadcn `TabsTrigger` to plain `<button>` elements — fixes blue underline caused by Radix `data-[state=active]` CSS leaking through
+- **SidebarUser fix:** expanded dropdown navigation items were missing `onClick` handlers
+
+**DB migrations applied to live Supabase:**
+- `20260428120000_create_teacher_tasks.sql`
+- `20260428120001_create_announcements.sql`
+- `20260428130000_create_absence_requests.sql`
+
+**Files changed (key):**
+- NEW: `src/components/admin/TaskManager.tsx`, `src/components/teacher-portal/TaskWidget.tsx`, `src/components/teacher-portal/AnnouncementComposer.tsx`, `src/components/teacher-portal/AbsenceRequestForm.tsx`, `src/components/admin/AbsenceRequestsPanel.tsx`
+- MODIFIED: `src/components/teacher-portal/DashboardHeader.tsx`, `src/components/teacher-portal/TeacherTabs.tsx`, `src/components/teacher-portal/dashboard/DashboardOverview.tsx`, `src/components/teacher-portal/dashboard/QuickActions.tsx`
+- MODIFIED: `src/pages/Students.tsx` (status filter), `src/pages/Attendance.tsx` (pill tabs), `src/pages/admin/ParentAccounts.tsx` (pill tabs + sort)
+- MODIFIED: `src/components/students/StudentList.tsx`, `src/components/teachers/TeacherList.tsx` (sortable headers)
+- MODIFIED: `src/config/navigation.ts`, `src/App.tsx` (new routes)
+- NEW: `supabase/functions/send-assignment-graded/index.ts`, `supabase/functions/send-assignment-overdue/index.ts`, `supabase/functions/send-enrollment-confirmation/index.ts`, `supabase/functions/send-class-announcement/index.ts`
+- NEW: `supabase/migrations/20260428120000_create_teacher_tasks.sql`, `supabase/migrations/20260428120001_create_announcements.sql`, `supabase/migrations/20260428130000_create_absence_requests.sql`
+
+**Pending (from this session):**
+- Wire edge function calls into frontend components (StudentDialog, TeacherAssignments, AnnouncementComposer) — see session 2 notes
+
+---
+
 ## 2026-04-26 (session 2) — Analytics removal, attendance redesign, daily prompt system
 
 **What:**
