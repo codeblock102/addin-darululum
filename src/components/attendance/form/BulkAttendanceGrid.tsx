@@ -189,6 +189,7 @@ export function BulkAttendanceGrid({ form }: BulkAttendanceGridProps) {
                     <SelectItem value="late">{t("pages.attendance.status.late", "Late")}</SelectItem>
                     <SelectItem value="excused">{t("pages.attendance.status.excused", "Excused")}</SelectItem>
                     <SelectItem value="early_departure">{t("pages.attendance.status.earlyDeparture", "Early Departure")}</SelectItem>
+                    <SelectItem value="sick">{t("pages.attendance.status.sick", "Sick")}</SelectItem>
                   </SelectContent>
                 </Select>
 

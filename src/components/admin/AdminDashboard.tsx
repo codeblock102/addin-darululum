@@ -13,16 +13,18 @@ import {
   ArrowUpRight,
   BookOpen,
   Calendar,
+  CalendarX,
   CheckCircle2,
   ClipboardList,
   GraduationCap,
+  HelpCircle,
+  MapPin,
   Plus,
   TrendingUp,
   UserCheck,
   Users,
 } from "lucide-react";
-import { useAnalyticsSummary } from "@/hooks/useAnalyticsSummary.ts";
-
+import { useAuth } from "@/contexts/AuthContext.tsx";
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 interface StaffRow {
@@ -35,13 +37,26 @@ interface StaffRow {
 
 // ─── Metric Card ──────────────────────────────────────────────────────────────
 
+type ColorScheme = "green" | "red" | "amber" | "blue" | "default";
+
 interface MetricCardProps {
   label: string;
   value: number | string;
   badge: React.ReactNode;
   onClick: () => void;
   variant?: "primary" | "default";
+  colorScheme?: ColorScheme;
+  icon?: React.ReactNode;
+  subLabel?: string;
 }
+
+const colorSchemeMap: Record<ColorScheme, { card: string; iconBg: string; iconColor: string }> = {
+  green: { card: "bg-green-50/60", iconBg: "bg-green-100", iconColor: "text-green-700" },
+  red: { card: "bg-red-50/60", iconBg: "bg-red-100", iconColor: "text-red-600" },
+  amber: { card: "bg-amber-50/60", iconBg: "bg-amber-100", iconColor: "text-amber-600" },
+  blue: { card: "bg-blue-50/60", iconBg: "bg-blue-100", iconColor: "text-blue-600" },
+  default: { card: "bg-white", iconBg: "bg-gray-100", iconColor: "text-gray-500" },
+};
 
 const MetricCard = ({
   label,
@@ -49,6 +64,9 @@ const MetricCard = ({
   badge,
   onClick,
   variant = "default",
+  colorScheme = "default",
+  icon,
+  subLabel,
 }: MetricCardProps) => {
   if (variant === "primary") {
     return (
@@ -95,19 +113,33 @@ const MetricCard = ({
     );
   }
 
+  const scheme = colorSchemeMap[colorScheme];
+
   return (
     <button
       type="button"
       onClick={onClick}
-      className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm text-left hover:shadow-md transition-shadow"
+      className={`${scheme.card} rounded-2xl p-6 border border-transparent hover:border-gray-100 text-left hover:shadow-md transition-all`}
     >
       <div className="flex items-start justify-between mb-4">
-        <p className="text-gray-500 text-sm font-medium">{label}</p>
+        {icon
+          ? (
+            <span className={`w-10 h-10 rounded-xl flex items-center justify-center ${scheme.iconBg}`}>
+              <span className={scheme.iconColor}>{icon}</span>
+            </span>
+          )
+          : (
+            <p className="text-xs font-semibold uppercase tracking-widest text-gray-400">{label}</p>
+          )}
         <span className="w-7 h-7 rounded-full border border-gray-200 flex items-center justify-center">
           <ArrowUpRight className="h-3.5 w-3.5 text-gray-400" />
         </span>
       </div>
-      <p className="text-5xl font-bold text-gray-900 mb-3">{value}</p>
+      {icon && (
+        <p className="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-1">{label}</p>
+      )}
+      <p className="text-4xl font-black text-gray-900 tracking-tight mb-2">{value}</p>
+      {subLabel && <p className="text-sm text-gray-500 mb-2">{subLabel}</p>}
       {badge}
     </button>
   );
@@ -160,7 +192,7 @@ const AttendanceChart = ({
   return (
     <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-base font-semibold text-gray-900">
+        <h2 className="text-base font-bold text-gray-900 tracking-tight border-l-2 border-green-600 pl-3">
           Attendance Analytics
         </h2>
         <span className="text-xs text-gray-400">This week</span>
@@ -228,7 +260,7 @@ const ProgressDonut = ({
 
   return (
     <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
-      <h2 className="text-base font-semibold text-gray-900 mb-5">
+      <h2 className="text-base font-bold text-gray-900 tracking-tight border-l-2 border-green-600 pl-3 mb-5">
         Student Progress
       </h2>
 
@@ -350,8 +382,7 @@ const StaffRow = ({ staff, idx }: { staff: StaffRow; idx: number }) => {
 
 export const AdminDashboard = () => {
   const navigate = useNavigate();
-  const { data: summary } = useAnalyticsSummary();
-
+  const { session } = useAuth();
   // ── Data queries ────────────────────────────────────────────────────────────
 
   const { data: studentCount = 0 } = useQuery({
@@ -402,6 +433,41 @@ export const AdminDashboard = () => {
     staleTime: 2 * 60 * 1000,
   });
 
+  const { data: absentToday = 0 } = useQuery({
+    queryKey: ["admin-absent-today"],
+    queryFn: async () => {
+      const today = new Date().toISOString().split("T")[0];
+      const { count } = await supabase
+        .from("attendance")
+        .select("id", { count: "exact", head: true })
+        .eq("date", today)
+        .in("status", ["absent", "excused", "sick"]);
+      return count ?? 0;
+    },
+    staleTime: 2 * 60 * 1000,
+  });
+
+  const { data: locationBreakdown = [] } = useQuery({
+    queryKey: ["admin-location-breakdown"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("students")
+        .select("section, grade")
+        .eq("status", "active");
+      if (!data) return [];
+      const map: Record<string, number> = {};
+      for (const s of data) {
+        const key = s.section || s.grade || "Unassigned";
+        map[key] = (map[key] ?? 0) + 1;
+      }
+      return Object.entries(map)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 5)
+        .map(([label, count]) => ({ label, count }));
+    },
+    staleTime: 5 * 60 * 1000,
+  });
+
   const { data: staffList = [] } = useQuery<StaffRow[]>({
     queryKey: ["admin-staff-list"],
     queryFn: async () => {
@@ -418,12 +484,12 @@ export const AdminDashboard = () => {
 
   // ── Derived values ─────────────────────────────────────────────────────────
 
-  const totalStudents = studentCount || summary?.total_active_students || 0;
-  const totalTeachers = teacherCount || summary?.total_active_teachers || 0;
-  const attendanceRate = summary?.overall_attendance_rate ?? 0;
-  const atRiskCount = summary?.at_risk_students_count ?? 0;
-  const onTrackCount = summary?.students_on_track_count ?? 0;
-  const onTrackPct = summary?.students_on_track_percentage ?? 0;
+  const totalStudents = studentCount;
+  const totalTeachers = teacherCount;
+  const attendanceRate = studentCount > 0 ? Math.round((presentToday / studentCount) * 100) : 0;
+  const atRiskCount = 0;
+  const onTrackCount = presentToday;
+  const onTrackPct = attendanceRate;
 
   // ── Today label ────────────────────────────────────────────────────────────
 
@@ -433,33 +499,52 @@ export const AdminDashboard = () => {
     day: "numeric",
   });
 
+  const adminName = session?.user?.user_metadata?.full_name
+    ?? session?.user?.email?.split("@")[0]
+    ?? "Admin";
+
+  const unmarkedToday = Math.max(0, studentCount - presentToday - absentToday);
+
   // ─────────────────────────────────────────────────────────────────────────
 
   return (
     <div className="min-h-screen bg-[#f5f6fa] p-6 md:p-8">
       <div className="max-w-7xl mx-auto space-y-6">
 
-        {/* ── Page Header ──────────────────────────────────────────────────── */}
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
-            <p className="text-gray-500 text-sm mt-1">
-              Manage students, staff and school operations
+        {/* ── Welcome Banner ────────────────────────────────────────────────── */}
+        <div
+          className="rounded-2xl p-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 relative overflow-hidden"
+          style={{ background: "linear-gradient(135deg, #052e16 0%, #14532d 55%, #166534 100%)" }}
+        >
+          <div
+            className="absolute -right-8 -top-8 w-40 h-40 rounded-full pointer-events-none"
+            style={{ background: "rgba(255,255,255,0.05)" }}
+          />
+          <div className="relative">
+            <p className="text-sm font-medium" style={{ color: "#86efac" }}>
+              {todayLabel}
+            </p>
+            <h1 className="text-2xl font-bold mt-1" style={{ color: "white" }}>
+              Good {new Date().getHours() < 12 ? "morning" : new Date().getHours() < 17 ? "afternoon" : "evening"}, {adminName.split(" ")[0]} 👋
+            </h1>
+            <p className="text-sm mt-1" style={{ color: "#bbf7d0" }}>
+              Here's a summary of the school today.
             </p>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 relative">
             <button
               type="button"
               onClick={() => navigate("/students")}
-              className="flex items-center gap-2 bg-green-800 hover:bg-green-900 text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition-colors shadow-sm"
+              className="flex items-center gap-2 bg-white/20 hover:bg-white/30 text-sm font-semibold px-4 py-2.5 rounded-xl transition-colors"
+              style={{ color: "white" }}
             >
-              <Plus className="h-4 w-4" />
+              <Plus className="h-4 w-4" style={{ color: "white" }} />
               Add Student
             </button>
             <button
               type="button"
               onClick={() => navigate("/students")}
-              className="flex items-center gap-2 border border-gray-200 bg-white hover:bg-gray-50 text-gray-700 text-sm font-semibold px-4 py-2.5 rounded-xl transition-colors"
+              className="flex items-center gap-2 bg-white hover:bg-gray-50 text-gray-800 text-sm font-semibold px-4 py-2.5 rounded-xl transition-colors"
             >
               View All
             </button>
@@ -488,43 +573,92 @@ export const AdminDashboard = () => {
           <MetricCard
             label="Today Present"
             value={presentToday}
+            colorScheme="green"
+            icon={<UserCheck className="h-5 w-5" />}
+            subLabel={attendanceRate > 0 ? `${Math.round(attendanceRate)}% attendance rate` : "Mark attendance"}
             onClick={() => navigate("/attendance")}
-            badge={
-              <Pill
-                className="bg-blue-50 text-blue-700"
-                icon={<UserCheck className="h-3 w-3" />}
-                label={
-                  attendanceRate > 0
-                    ? `${Math.round(attendanceRate)}% rate`
-                    : "Mark attendance"
-                }
-              />
-            }
+            badge={null}
           />
           <MetricCard
-            label="Active Teachers"
-            value={totalTeachers}
-            onClick={() => navigate("/dashboard?tab=students")}
-            badge={
-              <Pill
-                className="bg-amber-50 text-amber-700"
-                icon={<GraduationCap className="h-3 w-3" />}
-                label="2 campuses"
-              />
-            }
+            label="Today Absent"
+            value={absentToday}
+            colorScheme="red"
+            icon={<CalendarX className="h-5 w-5" />}
+            subLabel="absences today"
+            onClick={() => navigate("/attendance")}
+            badge={null}
           />
           <MetricCard
-            label="Active Classes"
-            value={classCount}
-            onClick={() => navigate("/classes")}
-            badge={
-              <Pill
-                className="bg-purple-50 text-purple-700"
-                icon={<BookOpen className="h-3 w-3" />}
-                label="All subjects"
-              />
-            }
+            label="Unmarked Today"
+            value={unmarkedToday}
+            colorScheme="amber"
+            icon={<HelpCircle className="h-5 w-5" />}
+            subLabel="students need marking"
+            onClick={() => navigate("/attendance")}
+            badge={null}
           />
+        </div>
+
+        {/* ── Location / Grade Breakdown ────────────────────────────────────── */}
+        {locationBreakdown.length > 0 && (
+          <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
+            <div className="flex items-center gap-3 mb-4">
+              <MapPin className="h-4 w-4 text-gray-400" />
+              <h2 className="text-base font-bold text-gray-900 tracking-tight border-l-2 border-green-600 pl-3">Enrolment by Location / Grade</h2>
+            </div>
+            <div className="space-y-3">
+              {locationBreakdown.map(({ label, count }) => {
+                const pct = totalStudents > 0 ? Math.round((count / totalStudents) * 100) : 0;
+                return (
+                  <div key={label}>
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-sm text-gray-700 font-medium">{label}</span>
+                      <span className="text-sm font-semibold text-gray-900">{count} <span className="text-gray-400 font-normal text-xs">({pct}%)</span></span>
+                    </div>
+                    <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                      <div
+                        className="h-full rounded-full"
+                        style={{ width: `${pct}%`, background: "linear-gradient(90deg,#16a34a,#14532d)" }}
+                      />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* ── Staff Count Banner ────────────────────────────────────────────── */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+          <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm flex items-center gap-4">
+            <div className="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center flex-shrink-0">
+              <GraduationCap className="h-5 w-5 text-amber-600" />
+            </div>
+            <div>
+              <p className="text-3xl font-black text-gray-900">{totalTeachers}</p>
+              <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest">Staff Members</p>
+            </div>
+          </div>
+          <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm flex items-center gap-4">
+            <div className="w-10 h-10 rounded-xl bg-purple-50 flex items-center justify-center flex-shrink-0">
+              <BookOpen className="h-5 w-5 text-purple-600" />
+            </div>
+            <div>
+              <p className="text-3xl font-black text-gray-900">{classCount}</p>
+              <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest">Active Classes</p>
+            </div>
+          </div>
+          <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm flex items-center gap-4">
+            <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center flex-shrink-0">
+              <UserCheck className="h-5 w-5 text-blue-600" />
+            </div>
+            <div>
+              <p className="text-3xl font-black text-gray-900">
+                {attendanceRate > 0 ? `${Math.round(attendanceRate)}%` : "—"}
+              </p>
+              <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest">Attendance Rate</p>
+            </div>
+          </div>
         </div>
 
         {/* ── Chart + Alerts ────────────────────────────────────────────────── */}
@@ -536,7 +670,7 @@ export const AdminDashboard = () => {
           {/* Alerts Panel */}
           <div className="lg:col-span-2 bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
             <div className="flex items-center justify-between mb-5">
-              <h2 className="text-base font-semibold text-gray-900">Alerts</h2>
+              <h2 className="text-base font-bold text-gray-900 tracking-tight border-l-2 border-green-600 pl-3">Alerts</h2>
               <button
                 type="button"
                 onClick={() => navigate("/dashboard?tab=performance")}
@@ -618,7 +752,7 @@ export const AdminDashboard = () => {
           {/* Staff list */}
           <div className="lg:col-span-3 bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
             <div className="flex items-center justify-between mb-5">
-              <h2 className="text-base font-semibold text-gray-900">Staff</h2>
+              <h2 className="text-base font-bold text-gray-900 tracking-tight border-l-2 border-green-600 pl-3">Staff</h2>
               <button
                 type="button"
                 onClick={() => navigate("/dashboard?tab=students")}

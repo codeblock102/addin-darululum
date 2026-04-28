@@ -2,6 +2,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client.ts";
 import { useAuth } from "@/hooks/use-auth.ts";
 import { useEffect, useRef } from "react";
+import { useProxy } from "@/contexts/ProxyContext.tsx";
 
 interface UserRole {
   role: string | null;
@@ -13,6 +14,7 @@ interface UserRole {
 export const useRBAC = () => {
   const { session } = useAuth();
   const queryClient = useQueryClient();
+  const { proxy } = useProxy();
 
   const { data: userRole, isLoading } = useQuery<UserRole | null>({
     queryKey: ["user-role", session?.user?.id],
@@ -64,10 +66,12 @@ export const useRBAC = () => {
     enabled: !!session?.user?.id,
   });
 
-  const isAdmin = userRole?.role === "admin";
-  const isTeacher = userRole?.role === "teacher";
-  const isParent = userRole?.role === "parent";
-  const teacherId = userRole?.teacher_id;
+  // When an admin is proxying, override role + userId for UI rendering.
+  // The real Supabase JWT stays unchanged so RLS/data access remains admin-level.
+  const isAdmin = proxy.active ? false : userRole?.role === "admin";
+  const isTeacher = proxy.active ? proxy.role === "teacher" : userRole?.role === "teacher";
+  const isParent = proxy.active ? proxy.role === "parent" : userRole?.role === "parent";
+  const teacherId = proxy.active ? proxy.userId : userRole?.teacher_id;
   // Attendance access driven by capability
   const capabilities: string[] = Array.isArray(userRole?.capabilities)
     ? (userRole?.capabilities as unknown as string[])

@@ -36,6 +36,7 @@ The core purpose: track every student's Quran memorization journey, monitor atte
 
 ### Admin
 - Full access to everything
+- Can proxy into any teacher or parent account ("View As") — amber banner shows during proxy, Exit button restores admin view; eye icon on Teachers page and Parent Accounts page
 - Views live analytics dashboard (KPIs, at-risk students, alerts)
 - Manages teacher accounts, parent accounts, student roster
 - Can import students via CSV bulk upload
@@ -94,7 +95,7 @@ The core purpose: track every student's Quran memorization journey, monitor atte
 - `/settings` — System settings
 - `/preferences` — User preferences
 - `/activity` — Activity feed (admin)
-- `/analytics` — Analytics dashboard (admin)
+- `/calendar` — School calendar (events, holidays, PD days) — all roles
 
 ### Dev-only (gated)
 - `/dev/seeder`, `/dev/create-demo`, `/dev/create-teacher-profile`, etc.
@@ -134,6 +135,8 @@ All emails go through **Resend** via Supabase Edge Functions:
 | `daily-progress-email` | Daily summary of student progress to parents |
 | `send-parent-welcome-emails` | When a parent account is created |
 | `admin-send-email` | Admin manual email blast |
+| `send-late-arrival-alert` | When a student is marked late (POST `{ student_id, date, time }`) |
+| `send-assignment-notification` | When a new assignment is created — notifies linked parents (POST `{ assignment_id, type }`) |
 
 Required env secrets: `RESEND_API_KEY`, `RESEND_FROM_EMAIL`, `APP_URL`, `LOGO_URL`
 
@@ -149,13 +152,14 @@ src/
 │   └── *.tsx            # Auth, Dashboard, Parent, Teacher pages
 ├── components/
 │   ├── layouts/         # DashboardLayout, Sidebar, SidebarNav, SidebarUser
-│   ├── analytics/       # KPI cards, alert panels, metric views
-│   ├── attendance/      # Attendance form and table components
+│   ├── analytics/       # EmptyState (shared empty state component)
+│   ├── attendance/      # Attendance form, table, watchlist, heatmap components
 │   ├── dhor-book/       # Quran progress recording (DhorBook, ClassroomRecords, etc.)
 │   ├── teacher-portal/  # Full teacher dashboard (tabs, students, assignments, grading)
+│   ├── onboarding/      # OnboardingModal (first login), DailyPromptModal (once/day)
 │   ├── parent/          # ChildSelector, ParentMessages
 │   ├── dashboard/       # DashboardStats, StatsCard, WeeklySchedule
-│   ├── shared/          # NotificationBell, FloatingDailyEmailButton
+│   ├── shared/          # FloatingDailyEmailButton, PageHelpBanner
 │   ├── admin/           # Admin messaging, reports, settings, account management
 │   ├── students/        # Student list, dialog, form
 │   ├── teachers/        # Teacher list, dialog
@@ -174,25 +178,18 @@ src/
 
 ---
 
-## Analytics System
+## Attendance System
 
-The analytics layer has two modes:
-1. **Pre-aggregated** (admin dashboard): Daily aggregation job writes to `analytics_metrics`. Feeds the admin KPI dashboard.
-2. **Live** (teacher portal): Hooks like `useTeacherStudentMetrics` calculate at-risk scores per student in real-time from `progress` + `attendance` tables.
+The attendance page is the primary monitoring surface. Key features:
 
-**At-risk scoring** (composite):
-- Attendance rate < threshold → attendance risk flag
-- No progress entry in 7+ days → stagnant flag
-- Both → "at-risk" label in teacher dashboard
+- **Roll Call tab** — `AttendanceForm` selects class + date, marks status per student (present, absent, late, sick, excused, early_departure). Cutoff time enforced server-side.
+- **Watchlist tab** — queries last 30 days, surfaces students with 2+ absences with consecutive-day streak badge and last-seen date.
+- **Heatmap tab** — 30-day grid of school-wide daily attendance rate. Color bands: ≥90% green, 75–89% light green, 60–74% amber, <60% red.
+- **Records tab** — `AttendanceTable` shows full attendance log with filters.
+- **Multi-day Absence** — `LongTermAbsenceModal` creates one excused record per weekday in a date range.
 
-**Essential KPIs** (admin overview):
-1. Students on track
-2. At-risk students
-3. Teachers with at-risk students
-4. Session reliability (attendance %)
-5. Memorization velocity
-6. Retention rate
-7. Active students
+**At-risk (teacher portal only):**
+`useTeacherStudentMetrics` flags students with low attendance rate or no progress in 7+ days. Shown in `DashboardOverview` alert banner.
 
 ---
 
@@ -215,4 +212,11 @@ Custom I18n context (not react-i18next). Translation keys in `src/i18n/translati
 
 | Date | Summary | See Also |
 |---|---|---|
+| 2026-04-27 (s4) | Admin proxy/impersonation feature (ProxyContext, eye button on teachers+parents, amber banner, useRBAC override); nav cleanup (section groups, Profile/Settings moved to user dropdown, trimmed teacher+parent nav) | handoff.md |
+| 2026-04-27 (s3) | Full luxury UI redesign: sidebar pill active state + dark avatar + wordmark; tinted dashboard stat cards (green/red/amber) + 4xl KPI numbers + section header accents; icon page headers on Students/Teachers/Classes; colored avatar circles + icon action buttons in all tables; AdminPageShell gradient button fix | handoff.md |
+| 2026-04-27 (s2) | Bug fix: green banner text now uses inline styles to defeat CSS theme specificity (`.admin-theme`/`.teacher-theme` were overriding `text-white`); all 4 green banner pages fixed | handoff.md |
+| 2026-04-27 | 6 features: contact pop-up, CSV export, unexcused warnings, late arrivals alert, school calendar, assignment notifications; `school_events` table migration; 2 new edge functions | handoff.md |
+| 2026-04-26 (s2) | Analytics removal; attendance redesign (watchlist + heatmap); DailyPromptModal; Settings toggle | handoff.md |
+| 2026-04-26 | 5 DUM Application Feedback features (onboarding, admin dashboard, Health IEP, Staff HRIS, sick status); schedule seed | handoff.md |
+| 2026-04-16 | Absence reasons, multi-day modal, student dossier, profile page | handoff.md |
 | 2026-04-15 | Initial wiki creation; UI cleanup; debug log removal; real data for DashboardStats, TodayStudents, RecentActivity | handoff.md |

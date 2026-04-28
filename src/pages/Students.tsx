@@ -182,6 +182,8 @@ const Students = () => {
     <AdminPageShell
       title={t("pages.students.title")}
       subtitle={t("pages.students.subtitle")}
+      icon={<Users className="h-5 w-5 text-green-700" />}
+      iconBg="bg-green-50"
       actions={
         (isAdmin || isTeacher) ? (
           <AdminPrimaryBtn onClick={handleAddStudent}>

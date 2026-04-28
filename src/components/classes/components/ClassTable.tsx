@@ -6,9 +6,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table.tsx";
-import { Button } from "@/components/ui/button.tsx";
 import { Badge } from "@/components/ui/badge.tsx";
 import { Card, CardContent } from "@/components/ui/card.tsx";
+import { Pencil, Users, Trash2 } from "lucide-react";
 import { ClassFormData } from "@/components/classes/validation/classFormSchema.ts";
 
 interface ClassTableProps {
@@ -34,7 +34,7 @@ export const ClassTable = ({
   onDelete,
 }: ClassTableProps) => {
   return (
-    <div className="rounded-md border shadow-sm overflow-hidden">
+    <div className="overflow-hidden">
       {/* Card list for mobile and tablets */}
       <div className="lg:hidden space-y-3 p-4">
         {classes.length === 0 ? (
@@ -73,16 +73,28 @@ export const ClassTable = ({
                       <span className="ml-3">Capacity: {classItem.capacity ?? "-"}</span>
                     </div>
                   </div>
-                  <div className="shrink-0 flex flex-col gap-2">
-                    <Button variant="outline" size="sm" onClick={() => onEdit(classItem)}>
-                      Edit
-                    </Button>
-                    <Button variant="outline" size="sm" onClick={() => onEnroll(classItem)}>
-                      Manage
-                    </Button>
-                    <Button variant="destructive" size="sm" onClick={() => onDelete(classItem)}>
-                      Delete
-                    </Button>
+                  <div className="shrink-0 flex items-center gap-1">
+                    <button
+                      className="p-2 rounded-lg hover:bg-gray-100 transition-colors text-gray-400 hover:text-gray-700"
+                      onClick={() => onEdit(classItem)}
+                      title="Edit class"
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </button>
+                    <button
+                      className="p-2 rounded-lg hover:bg-gray-100 transition-colors text-gray-400 hover:text-gray-700"
+                      onClick={() => onEnroll(classItem)}
+                      title="Manage students"
+                    >
+                      <Users className="h-4 w-4" />
+                    </button>
+                    <button
+                      className="p-2 rounded-lg hover:bg-red-50 transition-colors text-gray-400 hover:text-red-600"
+                      onClick={() => onDelete(classItem)}
+                      title="Delete class"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
                   </div>
                 </div>
               </CardContent>
@@ -93,58 +105,61 @@ export const ClassTable = ({
 
       {/* Table for large screens */}
       <Table className="hidden lg:table">
-        <TableHeader className="bg-primary/5">
+        <TableHeader className="bg-gray-50/60">
           <TableRow>
-            <TableHead>Class Name</TableHead>
-            <TableHead>Teacher</TableHead>
-            <TableHead>Subject</TableHead>
-            <TableHead>Section</TableHead>
-            <TableHead>Students</TableHead>
-            <TableHead>Capacity</TableHead>
-            <TableHead>Actions</TableHead>
+            <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-400 py-4 px-4">Class Name</TableHead>
+            <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-400 py-4 px-4">Teacher</TableHead>
+            <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-400 py-4 px-4">Subject</TableHead>
+            <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-400 py-4 px-4">Section</TableHead>
+            <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-400 py-4 px-4">Students</TableHead>
+            <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-400 py-4 px-4">Capacity</TableHead>
+            <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-400 py-4 px-4">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {classes.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={7} className="h-24 text-center">
+              <TableCell colSpan={7} className="h-24 text-center text-gray-500">
                 No classes found.
               </TableCell>
             </TableRow>
           ) : (
             classes.map((classItem) => (
-              <TableRow key={classItem.id}>
-                <TableCell>{classItem.name}</TableCell>
-                <TableCell>
+              <TableRow
+                key={classItem.id}
+                className="hover:bg-green-50/30 cursor-pointer transition-colors duration-100"
+              >
+                <TableCell className="py-4 px-4 font-medium text-gray-900">{classItem.name}</TableCell>
+                <TableCell className="py-4 px-4 text-gray-700">
                   {classItem.teachers?.map((t) => t.name).join(", ") || "N/A"}
                 </TableCell>
-                <TableCell>{classItem.subject || "N/A"}</TableCell>
-                <TableCell>{classItem.section || "N/A"}</TableCell>
-                <TableCell>{classItem.studentCount}</TableCell>
-                <TableCell>{classItem.capacity}</TableCell>
-                <TableCell>
-                  <div className="flex gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
+                <TableCell className="py-4 px-4">{classItem.subject || "N/A"}</TableCell>
+                <TableCell className="py-4 px-4">{classItem.section || "N/A"}</TableCell>
+                <TableCell className="py-4 px-4">{classItem.studentCount}</TableCell>
+                <TableCell className="py-4 px-4">{classItem.capacity}</TableCell>
+                <TableCell className="py-4 px-4">
+                  <div className="flex items-center gap-1">
+                    <button
+                      className="p-2 rounded-lg hover:bg-gray-100 transition-colors text-gray-400 hover:text-gray-700"
                       onClick={() => onEdit(classItem)}
+                      title="Edit class"
                     >
-                      Edit
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
+                      <Pencil className="h-4 w-4" />
+                    </button>
+                    <button
+                      className="p-2 rounded-lg hover:bg-gray-100 transition-colors text-gray-400 hover:text-gray-700"
                       onClick={() => onEnroll(classItem)}
+                      title="Manage students"
                     >
-                      Manage Students
-                    </Button>
-                    <Button
-                      variant="destructive"
-                      size="sm"
+                      <Users className="h-4 w-4" />
+                    </button>
+                    <button
+                      className="p-2 rounded-lg hover:bg-red-50 transition-colors text-gray-400 hover:text-red-600"
                       onClick={() => onDelete(classItem)}
+                      title="Delete class"
                     >
-                      Delete
-                    </Button>
+                      <Trash2 className="h-4 w-4" />
+                    </button>
                   </div>
                 </TableCell>
               </TableRow>
@@ -154,4 +169,4 @@ export const ClassTable = ({
       </Table>
     </div>
   );
-}; 
+};

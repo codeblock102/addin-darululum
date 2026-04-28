@@ -21,6 +21,10 @@ interface AdminPageShellProps {
   subtitle?: string;
   /** Slot for top-right action buttons */
   actions?: ReactNode;
+  /** Optional Lucide icon element to show in the header strip icon container */
+  icon?: ReactNode;
+  /** Background color class for the icon container, e.g. "bg-green-50" */
+  iconBg?: string;
   children: ReactNode;
   className?: string;
   /** Remove max-w constraint for full-width pages */
@@ -31,26 +35,37 @@ export const AdminPageShell = ({
   title,
   subtitle,
   actions,
+  icon,
+  iconBg = "bg-green-50",
   children,
   className,
   fullWidth = false,
 }: AdminPageShellProps) => (
-  <div className="min-h-screen bg-[#f5f6fa] p-6 md:p-8">
-    <div className={cn(fullWidth ? "w-full" : "max-w-7xl mx-auto", "space-y-6", className)}>
-      {/* Page header */}
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">{title}</h1>
-          {subtitle && (
-            <p className="text-gray-500 text-sm mt-1">{subtitle}</p>
+  <div className="min-h-screen bg-[#f5f6fa]">
+    {/* Luxury page header strip */}
+    <div className="bg-white border-b border-gray-100 px-6 sm:px-8 py-6">
+      <div className={cn(fullWidth ? "w-full" : "max-w-7xl mx-auto", "flex items-center justify-between gap-4")}>
+        <div className="flex items-center gap-4">
+          {icon && (
+            <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center shrink-0", iconBg)}>
+              {icon}
+            </div>
           )}
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight" style={{ color: "#111827" }}>{title}</h1>
+            {subtitle && (
+              <p className="text-sm mt-0.5" style={{ color: "#6b7280" }}>{subtitle}</p>
+            )}
+          </div>
         </div>
         {actions && (
-          <div className="flex items-center gap-3 flex-wrap">{actions}</div>
+          <div className="flex items-center gap-3 flex-wrap shrink-0">{actions}</div>
         )}
       </div>
+    </div>
 
-      {/* Page content */}
+    {/* Page content */}
+    <div className={cn(fullWidth ? "w-full" : "max-w-7xl mx-auto", "space-y-6 p-6 md:p-8", className)}>
       {children}
     </div>
   </div>
@@ -71,9 +86,10 @@ export const AdminPrimaryBtn = ({
     type="button"
     onClick={onClick}
     className={cn(
-      "flex items-center gap-2 bg-green-800 hover:bg-green-900 text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition-colors shadow-sm",
+      "flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-colors shadow-sm",
       className,
     )}
+    style={{ background: "linear-gradient(135deg, #052e16 0%, #166534 100%)", color: "#ffffff" }}
   >
     {children}
   </button>

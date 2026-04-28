@@ -16,6 +16,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Teacher } from "@/types/teacher.ts";
 import { TeacherProfilesTab } from "@/components/teachers/TeacherProfilesTab.tsx";
 import { TeacherStatsSection } from "@/components/teachers/TeacherStatsSection.tsx";
+import { StaffHRIS } from "@/components/teachers/StaffHRIS.tsx";
 import { useAuth } from "@/contexts/AuthContext.tsx";
 import { useI18n } from "@/contexts/I18nContext.tsx";
 
@@ -209,6 +210,8 @@ const Teachers = () => {
     <AdminPageShell
       title={t("pages.teachers.headerTitle")}
       subtitle={t("pages.teachers.headerDesc")}
+      icon={<UserPlus className="h-5 w-5 text-green-700" />}
+      iconBg="bg-green-50"
       actions={
         <AdminPrimaryBtn onClick={handleCreateTeacher}>
           <UserPlus className="h-4 w-4" />
@@ -228,6 +231,12 @@ const Teachers = () => {
               >
                 {t("pages.teachers.tabProfiles")}
               </TabsTrigger>
+              <TabsTrigger
+                value="hris"
+                className="rounded-lg text-sm data-[state=active]:bg-white data-[state=active]:text-green-800 data-[state=active]:shadow-sm"
+              >
+                Staff Directory
+              </TabsTrigger>
             </TabsList>
           </div>
           <TabsContent value="profiles" className="p-6">
@@ -235,6 +244,9 @@ const Teachers = () => {
               onEditTeacher={handleEditTeacher}
               madrassahId={adminData?.madrassah_id}
             />
+          </TabsContent>
+          <TabsContent value="hris" className="p-6">
+            <StaffHRIS madrassahId={adminData?.madrassah_id} />
           </TabsContent>
         </Tabs>
       </div>

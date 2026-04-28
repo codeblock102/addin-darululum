@@ -78,62 +78,67 @@ export const SidebarNav = ({ items, isAdmin, isOpen }: SidebarNavProps) => {
   return (
     <nav
       className={cn(
-        "grid gap-0.5 transition-all duration-300",
+        "flex flex-col gap-0.5 transition-all duration-300",
         (!isMobile && isOpen === false) ? "px-2" : "px-3",
       )}
     >
       {items.map((item, index) => {
         const isActive = isNavItemActive(item);
         const collapsed = !isMobile && isOpen === false;
+        const showSection = !collapsed && !!item.section;
 
         return (
-          <Link
-            key={index}
-            to={item.href}
-            onClick={handleNavigation}
-            className={cn(
-              "flex items-center rounded-xl text-sm transition-colors duration-150 group relative",
-              collapsed ? "justify-center p-3" : "gap-3 px-3 py-2.5",
-              isActive
-                ? "bg-green-50 text-green-800 font-semibold"
-                : "text-gray-500 hover:bg-gray-50 hover:text-gray-900 font-medium",
-            )}
-            title={collapsed ? t(item.label) : item.description}
-          >
-            {/* Active left bar indicator */}
-            {!collapsed && isActive && (
-              <span
-                className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 rounded-r-full"
-                style={{ background: "#166534" }}
-              />
-            )}
-
-            <item.icon
-              className={cn(
-                "flex-shrink-0 transition-colors duration-150",
-                collapsed ? "h-5 w-5" : "h-4 w-4",
-                isActive ? "text-green-700" : "text-gray-400 group-hover:text-gray-600",
-              )}
-            />
-
-            {!collapsed && (
-              <span className="truncate">{t(item.label)}</span>
-            )}
-
-            {/* Unread badge */}
-            {typeof unreadCount === "number" && unreadCount > 0 &&
-              item.href?.includes("/messages") && (
-              <span className="absolute right-2.5 top-2.5 h-2 w-2 rounded-full bg-red-500" />
-            )}
-
-            {/* Tooltip for collapsed state */}
-            {collapsed && (
-              <div className="absolute left-full ml-3 px-2.5 py-1.5 bg-gray-900 text-white text-xs rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-150 z-50 whitespace-nowrap pointer-events-none">
-                {t(item.label)}
-                <span className="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-gray-900" />
+          <div key={index}>
+            {/* Section label */}
+            {showSection && (
+              <div className={cn("pb-1 px-1", index === 0 ? "pt-0" : "pt-4")}>
+                <span className="text-[10px] font-semibold uppercase tracking-widest text-gray-400">
+                  {item.section}
+                </span>
               </div>
             )}
-          </Link>
+
+            <Link
+              to={item.href}
+              onClick={handleNavigation}
+              className={cn(
+                "flex items-center rounded-xl text-sm transition-colors duration-150 group relative",
+                collapsed ? "justify-center p-3" : "gap-3 px-3 py-2.5",
+                isActive
+                  ? "bg-green-50 text-green-900 font-semibold shadow-sm"
+                  : "text-gray-500 hover:bg-gray-50 hover:text-gray-700 font-medium",
+              )}
+              title={collapsed ? t(item.label) : item.description}
+            >
+              <item.icon
+                className={cn(
+                  "flex-shrink-0 transition-colors duration-150",
+                  collapsed ? "h-5 w-5" : "h-4 w-4",
+                  isActive ? "text-green-700" : "text-gray-400 group-hover:text-gray-600",
+                )}
+              />
+
+              {!collapsed && (
+                <span className="truncate flex-1">{t(item.label)}</span>
+              )}
+
+              {/* Unread badge — shows count now */}
+              {typeof unreadCount === "number" && unreadCount > 0 &&
+                item.href?.includes("/messages") && (
+                <span className="min-w-[18px] h-[18px] rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center px-1">
+                  {unreadCount > 9 ? "9+" : unreadCount}
+                </span>
+              )}
+
+              {/* Tooltip for collapsed state */}
+              {collapsed && (
+                <div className="absolute left-full ml-3 px-2.5 py-1.5 bg-gray-900 text-white text-xs rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-150 z-50 whitespace-nowrap pointer-events-none">
+                  {t(item.label)}
+                  <span className="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-gray-900" />
+                </div>
+              )}
+            </Link>
+          </div>
         );
       })}
     </nav>

@@ -18,9 +18,14 @@ import {
 } from "@/components/ui/alert-dialog.tsx";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs.tsx";
 import { AdminPageShell } from "@/components/admin/AdminPageShell.tsx";
+import { useProxy } from "@/contexts/ProxyContext.tsx";
+import { useNavigate } from "react-router-dom";
+import { Eye } from "lucide-react";
 
 const ParentAccounts = () => {
   const { toast } = useToast();
+  const { startProxy } = useProxy();
+  const navigate = useNavigate();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -388,6 +393,13 @@ const ParentAccounts = () => {
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => { startProxy(p.id, "parent", p.name, p.email); navigate("/parent"); }}
+                        title="View app as this parent"
+                        className="p-2 rounded-lg hover:bg-blue-50 transition-colors text-gray-400 hover:text-blue-600"
+                      >
+                        <Eye className="h-4 w-4" />
+                      </button>
                       <Button variant="outline" size="sm" onClick={() => openPasswordDialogFor(p)}
                         className="rounded-xl border-gray-200 text-gray-700 hover:bg-gray-50">
                         Change Password

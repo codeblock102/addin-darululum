@@ -1001,11 +1001,11 @@ export default function Activity() {
           </span>
           <Button
             variant="outline"
-            onClick={() => navigate("/analytics")}
+            onClick={() => navigate("/attendance")}
             className="flex items-center gap-2 rounded-xl border-gray-200 text-sm h-9"
           >
             <BarChart3 className="h-4 w-4" />
-            Analytics
+            Attendance
             <ArrowRight className="h-4 w-4" />
           </Button>
         </div>

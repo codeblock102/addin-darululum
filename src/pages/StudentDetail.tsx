@@ -15,12 +15,13 @@ import {
   TabsList,
   TabsTrigger,
 } from "@/components/ui/tabs.tsx";
-import { ArrowLeft, BookOpen, FolderOpen, RefreshCw, UserRound } from "lucide-react";
+import { ArrowLeft, BookOpen, FolderOpen, Heart, RefreshCw, UserRound } from "lucide-react";
 import { StudentProgressChart } from "@/components/students/StudentProgressChart.tsx";
 import { Skeleton } from "@/components/ui/skeleton.tsx";
 import { NewProgressEntry } from "@/components/students/NewProgressEntry.tsx";
 import { StudentDossier } from "@/components/students/StudentDossier.tsx";
-import { useToast } from "@/components/ui/use-toast.ts";
+import { StudentHealthIEP } from "@/components/students/StudentHealthIEP.tsx";
+import { useToast } from "@/hooks/use-toast.ts";
 import { DhorBook } from "@/components/dhor-book/DhorBook.tsx";
 
 import { useAuth } from "@/contexts/AuthContext.tsx";
@@ -271,6 +272,10 @@ const StudentDetail = () => {
             <FolderOpen className="w-4 h-4 mr-2" />
             Dossier
           </TabsTrigger>
+          <TabsTrigger value="health">
+            <Heart className="w-4 h-4 mr-2" />
+            Health & IEP
+          </TabsTrigger>
         </TabsList>
         <TabsContent value="dhor-book">
           <DhorBook
@@ -292,6 +297,9 @@ const StudentDetail = () => {
         </TabsContent>
         <TabsContent value="dossier">
           <StudentDossier studentId={student.id} student={student} />
+        </TabsContent>
+        <TabsContent value="health">
+          <StudentHealthIEP studentId={student.id} isAdmin={isAdmin} />
         </TabsContent>
       </Tabs>
     </div>

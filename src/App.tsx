@@ -14,6 +14,7 @@
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { Toaster } from "@/components/ui/toaster.tsx";
 import { ThemeProvider } from "@/components/theme-provider.tsx";
+import { ProxyProvider } from "@/contexts/ProxyContext.tsx";
 import Index from "@/pages/Index.tsx";
 import NotFound from "@/pages/NotFound.tsx";
 import Students from "@/pages/Students.tsx";
@@ -46,8 +47,8 @@ import ParentAttendance from "@/pages/ParentAttendance.tsx";
 import ParentAccounts from "@/pages/admin/ParentAccounts.tsx";
 import BulkStudentImport from "@/pages/admin/BulkStudentImport.tsx";
 import Activity from "@/pages/admin/Activity.tsx";
-import Analytics from "@/pages/admin/Analytics.tsx";
 import ResetPassword from "@/pages/ResetPassword.tsx";
+import SchoolCalendar from "@/pages/SchoolCalendar.tsx";
 import TeacherAddParent from "@/pages/TeacherAddParent.tsx";
 import TeacherMessages from "@/pages/TeacherMessages.tsx";
 import ParentMessages from "@/pages/ParentMessages.tsx";
@@ -78,6 +79,7 @@ import Profile from "@/pages/Profile.tsx";
 function App() {
   return (
     <ThemeProvider defaultTheme="light" storageKey="vite-ui-theme">
+      <ProxyProvider>
       <BrowserRouter>
         <Routes>
           <Route path="/auth" element={<Auth />} />
@@ -112,17 +114,6 @@ function App() {
               <ProtectedRoute>
                 <DashboardLayout>
                   <Activity />
-                </DashboardLayout>
-              </ProtectedRoute>
-            }
-          />
-          {/* Admin Analytics in main sidebar (not inside Admin Panel) */}
-          <Route
-            path="/analytics"
-            element={
-              <ProtectedRoute requireAdmin>
-                <DashboardLayout>
-                  <Analytics />
                 </DashboardLayout>
               </ProtectedRoute>
             }
@@ -220,6 +211,7 @@ function App() {
               }
             />
             <Route path="/schedule" element={<TeacherSchedule />} />
+            <Route path="/calendar" element={<SchoolCalendar />} />
             <Route
               path="/teacher-accounts"
               element={
@@ -234,6 +226,7 @@ function App() {
           </Route>
         </Routes>
       </BrowserRouter>
+      </ProxyProvider>
       <Toaster />
     </ThemeProvider>
   );

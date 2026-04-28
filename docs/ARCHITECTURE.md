@@ -1,25 +1,28 @@
-# Architecture Overview
+# Architecture — Dār Al-Ulūm Montréal Management System
 
 ## Project Summary
 
-Addin Darululum is a Madrassah (Islamic school) student management system. It allows administrators to manage students, teachers, classes, and attendance, while teachers can record daily Quran memorization progress, track attendance, and communicate via messaging.
+A full-stack Islamic school management platform for Dār Al-Ulūm Montréal. Administrators manage students, teachers, classes, and schedules; teachers record Quran memorization progress and attendance; parents have a read-only view of their child's data.
 
 ---
 
 ## Technology Stack
 
 | Layer | Technology | Purpose |
-|-------|-----------|---------|
-| Frontend framework | React 18 | UI rendering |
-| Build tool | Vite | Development server and bundling |
-| Language | TypeScript | Type-safe JavaScript |
-| Routing | react-router-dom v6 | Client-side navigation |
-| Server state | TanStack Query (React Query v5) | Data fetching, caching, invalidation |
-| Backend/Database | Supabase | PostgreSQL database, Auth, real-time subscriptions |
-| UI components | shadcn/ui + Tailwind CSS | Accessible component library |
+|---|---|---|
+| Frontend | React 18 + TypeScript | UI rendering |
+| Build | Vite 5 | Dev server and bundling |
+| Routing | React Router v6 | Client-side navigation |
+| Server state | TanStack React Query 5 | Data fetching, caching, invalidation |
+| Backend | Supabase (Postgres + Auth + RLS) | Database, authentication, edge functions |
+| UI | shadcn/ui + Radix + Tailwind CSS 3.4 | Accessible component library |
+| Icons | Lucide React | Icon set |
+| Animation | Framer Motion | Transitions and micro-interactions |
 | Charts | Recharts | Data visualization |
-| Forms | react-hook-form + Zod | Form state management and validation |
+| Calendar | FullCalendar (`@fullcalendar/react`) | Schedule views |
+| Forms | react-hook-form + Zod | Form state and validation |
 | Notifications | shadcn Toaster + Sonner | Toast notifications |
+| Scheduling | `pg_cron` | Daily automated email digests |
 
 ---
 
@@ -27,100 +30,108 @@ Addin Darululum is a Madrassah (Islamic school) student management system. It al
 
 ```
 src/
-├── App.tsx                         # Root component: routes and providers
-├── main.tsx                        # Entry point
+├── App.tsx                           # Root: routes and providers
+├── main.tsx                          # Entry point
 │
-├── pages/                          # Route-level page components
-│   ├── Index.tsx                   # Home page (role-based redirect)
-│   ├── Auth.tsx                    # Login/signup page
-│   ├── Dashboard.tsx               # Admin or teacher dashboard
-│   ├── Students.tsx                # Student list (admin)
-│   ├── StudentDetail.tsx           # Individual student detail
-│   ├── Teachers.tsx                # Teacher list (admin)
-│   ├── TeacherAccounts.tsx         # Teacher account management
-│   ├── Classes.tsx                 # Class management
-│   ├── ProgressBook.tsx            # Dhor book / progress entries
-│   ├── Attendance.tsx              # Attendance management
-│   ├── Settings.tsx                # Admin settings
-│   ├── Preferences.tsx             # Teacher preferences
-│   └── admin/                      # Admin-only utility pages
-│       ├── DatabaseSeeder.tsx
-│       ├── SetupAdmin.tsx
-│       └── ManualRoleSetup.tsx
+├── pages/                            # Route-level page components
+│   ├── Index.tsx                     # Home (role-based redirect)
+│   ├── Auth.tsx                      # Login page
+│   ├── Dashboard.tsx                 # Admin/teacher dashboard
+│   ├── Students.tsx                  # Student list
+│   ├── StudentDetail.tsx             # Student detail (tabs: Profile, Dossier, Health & IEP)
+│   ├── Teachers.tsx                  # Teacher list + Staff Directory tab
+│   ├── Classes.tsx                   # Class management
+│   ├── Attendance.tsx                # Attendance management
+│   ├── ProgressBook.tsx              # Dhor book / progress entries
+│   ├── Profile.tsx                   # User profile settings (/profile)
+│   ├── Settings.tsx                  # Admin settings
+│   ├── Preferences.tsx               # Teacher preferences
+│   ├── TeacherSchedule.tsx           # Teacher schedule view
+│   ├── Parent.tsx                    # Parent dashboard
+│   ├── ParentProgress.tsx
+│   ├── ParentAttendance.tsx
+│   ├── ParentAcademics.tsx
+│   └── admin/                        # Admin-only utility pages
+│       ├── Activity.tsx
+│       ├── ParentAccounts.tsx
+│       ├── BulkStudentImport.tsx
+│       ├── TeacherSchedules.tsx
+│       └── dev/                      # Dev/diagnostic tools (admin-gated)
 │
 ├── components/
-│   ├── layouts/                    # App shell (sidebar, header, layout wrapper)
-│   │   ├── DashboardLayout.tsx     # Outer layout with sidebar
-│   │   ├── Sidebar.tsx             # Main navigation sidebar
-│   │   ├── sidebar/                # Sidebar sub-components
-│   │   └── dashboard/              # Dashboard layout sub-components
+│   ├── layouts/
+│   │   ├── DashboardLayout.tsx       # Outer shell — includes OnboardingModal
+│   │   └── Sidebar.tsx               # Main navigation sidebar
 │   │
-│   ├── auth/                       # Auth guards
-│   │   └── ProtectedRoute.tsx      # Wraps routes requiring authentication
+│   ├── onboarding/
+│   │   └── OnboardingModal.tsx       # First-login role-specific walkthrough
 │   │
-│   ├── admin/                      # Admin portal components
-│   │   ├── AdminDashboard.tsx      # Admin dashboard entry point
-│   │   ├── AdminStatsCards.tsx     # Stats summary cards
-│   │   ├── messaging/              # Admin messaging system
-│   │   ├── settings/               # Admin settings panels
-│   │   └── teacher-accounts/       # Teacher account creation
+│   ├── auth/
+│   │   └── ProtectedRoute.tsx        # Auth guard (requireAdmin/Teacher/Parent props)
 │   │
-│   ├── teacher-portal/             # Teacher portal components
-│   │   ├── TeacherDashboard.tsx    # Teacher home dashboard
-│   │   ├── TeacherAnalytics.tsx    # Analytics charts and stats
-│   │   ├── TeacherAttendance.tsx   # Attendance recording
-│   │   ├── analytics/              # Chart sub-components
-│   │   ├── attendance/             # Attendance sub-components
-│   │   ├── dashboard/              # Dashboard sub-components
-│   │   ├── messaging/              # Teacher messaging
-│   │   └── students/               # Student views for teachers
+│   ├── admin/
+│   │   ├── AdminDashboard.tsx        # Welcome banner, stats, enrolment breakdown
+│   │   ├── AdminStatsCards.tsx       # Stat card components
+│   │   ├── messaging/                # Admin messaging hub
+│   │   ├── settings/                 # Settings panels
+│   │   └── teacher-accounts/         # Teacher account management
 │   │
-│   ├── dhor-book/                  # Progress book (Dhor Book)
-│   │   ├── DhorBookEntryForm.tsx   # Main entry form
-│   │   ├── ClassroomRecords.tsx    # Classroom records view
-│   │   ├── entry-form/             # Entry form sub-components (tabs, fields)
-│   │   └── classroom/              # Classroom sub-components
+│   ├── students/
+│   │   ├── StudentHealthIEP.tsx      # Health & IEP tab (inline editable)
+│   │   └── StudentDossier.tsx        # Mozaïk-style dossier tab
 │   │
-│   ├── students/                   # Student management
-│   ├── teachers/                   # Teacher management
-│   │   └── dialog/                 # Teacher dialog sub-components
-│   ├── attendance/                 # Attendance components
-│   ├── classes/                    # Class management components
-│   ├── dashboard/                  # Shared dashboard components
-│   ├── progress/                   # Progress tracking components
-│   ├── student-progress/           # Student progress display
-│   ├── mobile/                     # Mobile-specific components
-│   └── ui/                         # shadcn/ui base components
-│
-├── hooks/                          # Custom React hooks
-│   ├── useRBAC.ts                  # Role-based access control
-│   ├── useUserRole.ts              # Current user role
-│   ├── useAnalyticsData.ts         # Teacher analytics data
-│   ├── useTeacherMessages.ts       # Teacher inbox/sent messages
-│   ├── useAdminMessages.ts         # Admin inbox/sent messages
-│   ├── useRealtimeMessages.ts      # Real-time message subscriptions
-│   ├── useLeaderboardData.ts       # Student leaderboard
-│   ├── useTeacherSummary.ts        # Teacher dashboard summary
-│   └── ...
+│   ├── teachers/
+│   │   └── StaffHRIS.tsx             # Staff Directory tab (searchable)
+│   │
+│   ├── attendance/
+│   │   ├── AttendanceForm.tsx        # Single attendance entry
+│   │   ├── LongTermAbsenceModal.tsx  # Multi-day absence date-range dialog
+│   │   ├── AbsenceReasonSelect.tsx   # Mozaïk-style grouped reason dropdown
+│   │   ├── form/
+│   │   │   ├── AttendanceStatusRadioGroup.tsx  # Includes sick status
+│   │   │   ├── BulkAttendanceGrid.tsx          # Bulk attendance (includes sick)
+│   │   │   └── ReasonSelector.tsx
+│   │   └── table/
+│   │       ├── AttendanceDataTable.tsx
+│   │       └── useAttendanceRecords.ts
+│   │
+│   ├── teacher-portal/               # Teacher dashboard, analytics, schedule, messaging
+│   ├── dhor-book/                    # Progress book entry and classroom view
+│   ├── classes/                      # Class CRUD dialog and list
+│   ├── progress/                     # Progress tables, charts, stats
+│   ├── student-progress/             # Student overview, exports
+│   ├── shared/                       # Floating buttons, nav menu, notification bell
+│   └── ui/
+│       ├── status-badge.tsx          # Includes sick status (orange/thermometer)
+│       └── ...                       # shadcn/Radix components
 │
 ├── contexts/
-│   └── AuthContext.tsx             # Authentication state provider
+│   ├── AuthContext.tsx               # Session state, sign-out, refresh
+│   └── I18nContext.tsx               # Translations and language selection
+│
+├── hooks/                            # Custom hooks (see HOOKS.md)
 │
 ├── integrations/
 │   └── supabase/
-│       ├── client.ts               # Supabase client instance
-│       └── types.ts                # Auto-generated DB types
+│       ├── client.ts                 # Typed Supabase client
+│       └── types.ts                  # Generated DB types (includes sick in attendance_status)
 │
-├── types/                          # TypeScript type definitions
-│   ├── progress.ts                 # Progress, Message, JuzRevision types
-│   ├── attendance.ts               # Attendance types
-│   ├── teacher.ts                  # Teacher types
-│   ├── navigation.ts               # Sidebar navigation types
+├── types/
+│   ├── attendance.ts                 # AttendanceStatus union (includes "sick")
+│   ├── attendance-form.ts
 │   └── ...
 │
-├── utils/                          # Utility functions
-├── config/                         # App configuration
-└── styles/                         # Global CSS
+├── config/
+│   └── navigation.ts                 # Role-specific sidebar definitions
+│
+└── utils/                            # Date, string, Quran mapping, CSV/export helpers
+
+supabase/
+├── functions/                        # Edge functions
+└── migrations/                       # SQL migrations
+    ├── add_sick_attendance_status.sql
+    ├── add_student_dossier_fields.sql
+    └── seed_dum_schedules_v10.sql    # Run in SQL editor to populate schedules
 ```
 
 ---
@@ -140,49 +151,52 @@ ProtectedRoute checks AuthContext
            ▼
          useUserRole() queries profiles table
            │
-           ├── role = "admin" → AdminDashboard, full access
-           └── role = "teacher" → TeacherDashboard, restricted access
+           ├── role = "admin"   → AdminDashboard + full access
+           ├── role = "teacher" → TeacherDashboard + restricted access
+           └── role = "parent"  → ParentDashboard + read-only child data
 ```
 
 - **AuthContext** (`src/contexts/AuthContext.tsx`): Wraps the app, listens to `supabase.auth.onAuthStateChange`, provides `user`, `session`, and `signOut`.
-- **ProtectedRoute** (`src/components/auth/ProtectedRoute.tsx`): Redirects unauthenticated users to `/auth`. Optionally accepts `requireAdmin` prop.
-- **useRBAC** (`src/hooks/useRBAC.ts`): Returns `isAdmin`, `isTeacher`, and permission-check helpers.
+- **ProtectedRoute** (`src/components/auth/ProtectedRoute.tsx`): Redirects unauthenticated users to `/auth`. Accepts `requireAdmin`, `requireTeacher`, `requireParent` props. On timeout → redirects to `/auth` (no bypass button).
+- **useRBAC** (`src/hooks/useRBAC.ts`): Returns `isAdmin`, `isTeacher`, `isParent`, and permission-check helpers.
 - **useUserRole** (`src/hooks/useUserRole.ts`): Fetches the current user's role from the `profiles` table.
 
 ---
 
 ## Database Schema
 
-The Supabase PostgreSQL database has the following key tables:
-
 | Table | Purpose |
-|-------|---------|
-| `profiles` | User accounts with role (admin/teacher), name, email |
-| `students` | Student records (deprecated, migrated to `students_teachers`) |
-| `students_teachers` | Student records with teacher assignments |
-| `teachers` | Additional teacher profile data |
-| `classes` | Class definitions with section, grade, status |
-| `attendance` | Daily attendance records per student |
-| `progress` | Daily Quran memorization progress entries |
-| `juz` | Juz mastery records per student |
-| `juz_revisions` | Individual revision records for each Juz |
-| `juz_mastery` | Juz mastery levels per student |
-| `communications` | Messaging between teachers and admin |
+|---|---|
+| `madrassahs` | School locations/branches |
+| `profiles` | Auth-linked users (admin / teacher / parent) with role, capabilities, subject, grade, bio |
+| `students` | Student records with demographics, guardian info, health fields, IEP fields |
+| `classes` | Classes with JSONB `time_slots` for weekly schedules |
+| `attendance` | Daily attendance — status: present \| absent \| late \| excused \| early_departure \| **sick** |
+| `progress` | Quran lesson entries (Hifz / Nazirah / Qaida) |
+| `sabaq_para` | Sabaq-para tracking per juz |
+| `juz_revisions` | Dhor book — revision sessions per juz/quarter |
+| `parent_children` | Parent ↔ student mapping |
+| `roles / role_permissions` | RBAC model — granular permissions shaping `capabilities` JSONB |
+| `communications` | Teacher ↔ admin messaging |
+| `email_logs` | Daily digest send history |
+| `app_settings` | Application-level configuration |
 
-### communications table
-```
-id            uuid (PK)
-message       text
-sender_id     uuid | null   -- null = admin message
-recipient_id  uuid
-read          boolean
-created_at    timestamptz
-message_type  text          -- "direct" | "announcement" | "feedback"
-category      text          -- "academic" | "administrative" | "general"
-parent_message_id  uuid     -- for threading
-sender_name   text
-recipient_name text
-read_at       timestamptz
+### Key Enums
+- `attendance_status`: present | absent | late | excused | early_departure | **sick**
+- `student_status`: active | inactive
+- `lesson_type`: hifz | nazirah | qaida
+- `quality_rating`: excellent | good | average | needsWork | horrible
+
+### time_slots JSONB format (classes table)
+```json
+{
+  "days": ["monday", "wednesday"],
+  "start_time": "09:00",
+  "end_time": "09:45",
+  "teacher_ids": ["uuid"],
+  "subject": "Quran",
+  "room": "Room 1"
+}
 ```
 
 ---
@@ -190,64 +204,55 @@ read_at       timestamptz
 ## State Management
 
 | Type | Tool | Usage |
-|------|------|-------|
-| Server/async state | TanStack Query | All Supabase data fetching |
-| Real-time updates | Supabase Realtime + TanStack Query invalidation | Messaging, leaderboard |
-| Form state | react-hook-form | All forms (Dhor Book entry, Teacher dialog, etc.) |
-| Local UI state | React `useState` | Tabs, toggles, modal open state |
-| Auth state | React Context (`AuthContext`) | Current user session |
-| Theme | React Context (`ThemeProvider`) | Light/dark mode, persisted in localStorage |
-
----
-
-## Routing Structure
-
-```
-/auth                           Login page (public)
-/create-demo-account            Demo account creation (public)
-/setup-admin                    Admin setup utility (public)
-/role-setup                     Manual role assignment (public)
-
-Protected (requires auth):
-/                               Home (redirects based on role)
-/dashboard                      Admin or Teacher dashboard
-/students                       Student list (admin)
-/students/:id                   Student detail (admin)
-/teachers                       Teacher list (admin-only)
-/teacher-accounts               Teacher account management (admin-only)
-/classes                        Class management
-/progress-book                  Dhor Book entry and records
-/attendance                     Attendance management
-/settings                       Admin settings
-/preferences                    Teacher preferences
-/admin/database-seeder          Database seeding utility (admin)
-```
-
----
-
-## Real-time Subscriptions
-
-| Hook | Table Watched | Purpose |
-|------|--------------|---------|
-| `useRealtimeMessages` | `communications` | New inbox messages for teacher |
-| `useRealtimeAdminMessages` | `communications` | New messages for admin |
-| `useRealtimeLeaderboard` | `juz_mastery` | Live leaderboard updates |
-| `useRealtimeAnalytics` | `progress` | Analytics data updates |
-
-All real-time hooks use `supabase.channel()` with `postgres_changes` and invalidate TanStack Query caches on events.
+|---|---|---|
+| Server/async state | TanStack React Query 5 | All Supabase data fetching |
+| Real-time updates | Supabase Realtime + Query invalidation | Messaging, leaderboard, analytics |
+| Form state | react-hook-form + Zod | All forms |
+| Local UI state | React `useState` | Tabs, toggles, modals |
+| Auth state | React Context (AuthContext) | Current user session |
+| Onboarding state | localStorage | `dum_onboarded_{userId}` — one-time flag |
+| Theme | React Context (ThemeProvider) | Light/dark, persisted in localStorage |
 
 ---
 
 ## Key Patterns
 
 ### Data Fetching
-All data fetching is done via TanStack Query `useQuery` hooks. Query keys follow the pattern `["entity-name", id]` to allow targeted cache invalidation.
+All async data via TanStack Query `useQuery`. Query keys follow `["entity", id]` to allow targeted cache invalidation after mutations.
 
 ### Mutations
-Data mutations use TanStack Query `useMutation` or direct `supabase.from(...).insert/update/delete` calls followed by `queryClient.invalidateQueries()`.
+`useMutation` or direct `supabase.from(...).upsert/insert/update` followed by `queryClient.invalidateQueries()`.
 
 ### Forms
-All forms use `react-hook-form` with Zod schema validation via `zodResolver`. Form schemas are co-located with their components (or extracted to a `*Schema.ts` file for larger forms).
+`react-hook-form` + Zod (`zodResolver`). Schemas co-located with components or extracted to `*Schema.ts` files.
 
-### Component Splitting
-Large page components are split into smaller focused sub-components. Each directory contains an `index.ts` barrel file for clean imports.
+### i18n
+All user-visible strings wrapped with `t("key", "fallback")` from `useI18n()`. Translation keys defined in `src/i18n/translations.ts`.
+
+### RBAC
+Database: RLS policies on all tables keyed to `auth.uid()` and `madrassah_id`.
+Frontend: `useRBAC` and `useUserRole` gate UI elements and route access.
+
+---
+
+## Real-time Subscriptions
+
+| Hook | Table Watched | Purpose |
+|---|---|---|
+| `useRealtimeMessages` | `communications` | New inbox messages for teacher |
+| `useRealtimeAdminMessages` | `communications` | New messages for admin |
+| `useRealtimeLeaderboard` | `juz_mastery` | Live leaderboard updates |
+| `useRealtimeAnalytics` | `progress` | Analytics data updates |
+
+All hooks use `supabase.channel()` with `postgres_changes` and invalidate React Query caches on events.
+
+---
+
+## Security Notes
+
+- No `localStorage` role bypass — role always resolved from live Supabase session
+- No client-side `supabase.auth.admin.*` calls — admin operations are Edge Function-only
+- No PII in `console.log` — logs scrubbed; only `console.error`/`console.warn` remain
+- Explicit column selects on all sensitive queries (no `.select('*')` on profiles/students)
+- Dev/diagnostic routes gated behind `requireAdmin`
+- ProtectedRoute timeout → redirect to `/auth`, no bypass button
