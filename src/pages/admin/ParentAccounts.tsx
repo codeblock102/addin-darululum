@@ -16,11 +16,11 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog.tsx";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs.tsx";
+import { Tabs, TabsContent } from "@/components/ui/tabs.tsx";
 import { AdminPageShell } from "@/components/admin/AdminPageShell.tsx";
 import { useProxy } from "@/contexts/ProxyContext.tsx";
 import { useNavigate } from "react-router-dom";
-import { Eye } from "lucide-react";
+import { ArrowDown, ArrowUp, Eye } from "lucide-react";
 
 const ParentAccounts = () => {
   const { toast } = useToast();
@@ -58,17 +58,30 @@ const ParentAccounts = () => {
     },
   });
 
+  const [activeTab, setActiveTab] = useState<"create" | "link" | "manage">("create");
   const [parentSearch, setParentSearch] = useState("");
+  const [parentSortKey, setParentSortKey] = useState<"name" | "children">("name");
+  const [parentSortDir, setParentSortDir] = useState<"asc" | "desc">("asc");
   type ParentMin = { id: string; name: string; email: string; student_ids: string[] };
   type StudentMin = { id: string; name: string };
 
+  const toggleParentSort = (key: "name" | "children") => {
+    if (key === parentSortKey) setParentSortDir((d) => (d === "asc" ? "desc" : "asc"));
+    else { setParentSortKey(key); setParentSortDir("asc"); }
+  };
+
   const filteredParents = useMemo(() => {
     const q = parentSearch.trim().toLowerCase();
-    if (!q) return parents || [];
-    return (parents || []).filter((p: ParentMin) =>
-      (p.name || "").toLowerCase().includes(q) || (p.email || "").toLowerCase().includes(q)
+    const list = (parents || []).filter((p: ParentMin) =>
+      !q || (p.name || "").toLowerCase().includes(q) || (p.email || "").toLowerCase().includes(q)
     );
-  }, [parents, parentSearch]);
+    return list.slice().sort((a: ParentMin, b: ParentMin) => {
+      let cmp = 0;
+      if (parentSortKey === "name") cmp = (a.name || "").localeCompare(b.name || "");
+      else cmp = (a.student_ids?.length ?? 0) - (b.student_ids?.length ?? 0);
+      return parentSortDir === "asc" ? cmp : -cmp;
+    });
+  }, [parents, parentSearch, parentSortKey, parentSortDir]);
 
   const [selectedExistingParentId, setSelectedExistingParentId] = useState<string>("");
   const [linkStudentIds, setLinkStudentIds] = useState<string[]>([]);
@@ -227,23 +240,23 @@ const ParentAccounts = () => {
       subtitle="Create and manage parent/guardian accounts and student links"
     >
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-        <Tabs defaultValue="create">
-          <div className="border-b border-gray-100 px-6">
-            <TabsList className="bg-transparent p-0 h-auto gap-6 rounded-none">
-              {[
-                { value: "create", label: "Create" },
-                { value: "link", label: "Link" },
-                { value: "manage", label: "Manage" },
-              ].map(({ value, label }) => (
-                <TabsTrigger
-                  key={value}
-                  value={value}
-                  className="flex items-center gap-2 py-3 px-0 text-sm font-medium rounded-none border-b-2 border-transparent data-[state=active]:border-green-700 data-[state=active]:text-green-800 text-gray-500 bg-transparent shadow-none"
+        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as typeof activeTab)}>
+          <div className="border-b border-gray-100 px-4 py-3">
+            <div className="inline-flex items-center gap-0.5 bg-gray-100/70 p-1 rounded-xl">
+              {(["create", "link", "manage"] as const).map((val) => (
+                <button
+                  key={val}
+                  onClick={() => setActiveTab(val)}
+                  className={`px-3 py-1.5 text-sm font-medium rounded-lg transition-all duration-150 border-0 outline-none capitalize ${
+                    activeTab === val
+                      ? "bg-green-700 text-white shadow-sm"
+                      : "text-gray-500 hover:text-gray-800 hover:bg-gray-100 bg-transparent"
+                  }`}
                 >
-                  {label}
-                </TabsTrigger>
+                  {val}
+                </button>
               ))}
-            </TabsList>
+            </div>
           </div>
 
           <TabsContent value="create" className="mt-0">
@@ -370,7 +383,28 @@ const ParentAccounts = () => {
                 <Label>Search</Label>
                 <Input value={parentSearch} onChange={(e) => setParentSearch(e.target.value)} placeholder="Search by name or email" />
               </div>
-              <div className="flex items-center justify-end">
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-1 text-xs text-gray-500">
+                  <span className="font-medium">Sort:</span>
+                  {(["name", "children"] as const).map((key) => (
+                    <button
+                      key={key}
+                      onClick={() => toggleParentSort(key)}
+                      className={`inline-flex items-center gap-0.5 px-2 py-1 rounded-md transition-colors capitalize ${
+                        parentSortKey === key
+                          ? "bg-green-100 text-green-800 font-semibold"
+                          : "hover:bg-gray-100 text-gray-500"
+                      }`}
+                    >
+                      {key}
+                      {parentSortKey === key && (
+                        parentSortDir === "asc"
+                          ? <ArrowUp className="h-3 w-3" />
+                          : <ArrowDown className="h-3 w-3" />
+                      )}
+                    </button>
+                  ))}
+                </div>
                 <Button variant="outline" onClick={handleSendWelcomeEmails} disabled={isSendingWelcome}
                   className="rounded-xl border-green-200 text-green-800 hover:bg-green-50">
                   {isSendingWelcome ? "Sending..." : "Send Welcome Email"}
