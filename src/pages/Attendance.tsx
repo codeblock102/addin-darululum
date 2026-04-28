@@ -8,7 +8,7 @@ import { AttendanceForm } from "@/components/attendance/AttendanceForm.tsx";
 import { AttendanceTable } from "@/components/attendance/AttendanceTable.tsx";
 import { AttendanceCutoffSettings } from "@/components/attendance/AttendanceCutoffSettings.tsx";
 import { LongTermAbsenceModal } from "@/components/attendance/LongTermAbsenceModal.tsx";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs.tsx";
+import { Tabs, TabsContent } from "@/components/ui/tabs.tsx";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog.tsx";
 import {
   AlertTriangle,
@@ -372,7 +372,12 @@ const HeatmapView = () => {
 
 // ─── Main Page ────────────────────────────────────────────────────────────────
 
-const TAB_TRIGGER = "flex items-center gap-2 py-3 px-0 text-sm font-medium rounded-none border-b-2 border-transparent data-[state=active]:border-green-700 data-[state=active]:text-green-800 text-gray-500 bg-transparent shadow-none";
+const tabCls = (active: boolean) =>
+  `flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-lg transition-all duration-150 border-0 outline-none ${
+    active
+      ? "bg-green-700 text-white shadow-sm"
+      : "text-gray-500 hover:text-gray-800 hover:bg-gray-100 bg-transparent"
+  }`;
 
 const Attendance = () => {
   const { t } = useI18n();
@@ -597,25 +602,25 @@ const Attendance = () => {
         {/* ── Main Card ────────────────────────────────────────────────────── */}
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
           <Tabs value={selectedTab} onValueChange={setSelectedTab}>
-            <div className="border-b border-gray-100 px-6 overflow-x-auto">
-              <TabsList className="bg-transparent p-0 h-auto gap-6 rounded-none flex-nowrap">
-                <TabsTrigger value="take-attendance" className={TAB_TRIGGER}>
+            <div className="border-b border-gray-100 px-4 py-3 overflow-x-auto">
+              <div className="inline-flex items-center gap-0.5 bg-gray-100/70 p-1 rounded-xl">
+                <button className={tabCls(selectedTab === "take-attendance")} onClick={() => setSelectedTab("take-attendance")}>
                   <CalendarCheck className="h-4 w-4" />
-                  {t("pages.attendance.tabs.take")}
-                </TabsTrigger>
-                <TabsTrigger value="watchlist" className={TAB_TRIGGER}>
+                  {t("pages.attendance.tabs.take", "Take Attendance")}
+                </button>
+                <button className={tabCls(selectedTab === "watchlist")} onClick={() => setSelectedTab("watchlist")}>
                   <AlertTriangle className="h-4 w-4" />
                   Watchlist
-                </TabsTrigger>
-                <TabsTrigger value="heatmap" className={TAB_TRIGGER}>
+                </button>
+                <button className={tabCls(selectedTab === "heatmap")} onClick={() => setSelectedTab("heatmap")}>
                   <TrendingUp className="h-4 w-4" />
                   Heatmap
-                </TabsTrigger>
-                <TabsTrigger value="records" className={TAB_TRIGGER}>
+                </button>
+                <button className={tabCls(selectedTab === "records")} onClick={() => setSelectedTab("records")}>
                   <List className="h-4 w-4" />
-                  {t("pages.attendance.tabs.records")}
-                </TabsTrigger>
-              </TabsList>
+                  {t("pages.attendance.tabs.records", "Records")}
+                </button>
+              </div>
             </div>
 
             <div className="p-5 sm:p-6">
