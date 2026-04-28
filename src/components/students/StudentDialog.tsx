@@ -450,6 +450,15 @@ export const StudentDialog = (
           // Non-fatal: ignore parent creation error here
         }
 
+        // Fire-and-forget: notify admins of new enrollment
+        if (created?.id) {
+          supabase.functions.invoke("send-enrollment-confirmation", {
+            body: { student_id: created.id },
+          }).catch(() => {
+            // Non-fatal: ignore notification error
+          });
+        }
+
         toast({
           title: "Success",
           description: "Student added successfully",

@@ -749,6 +749,14 @@ const AssignmentSubmissions = ({ assignmentId, classIds, explicitStudentIds }: {
         );
       if (error) throw error;
       await queryClient.invalidateQueries({ queryKey: cacheKey as unknown as string[] });
+      // Fire-and-forget: notify parents when assignment is graded
+      if (partial.status === "graded") {
+        supabase.functions.invoke("send-assignment-graded", {
+          body: { assignment_id: assignmentId },
+        }).catch(() => {
+          // Non-fatal: ignore notification error
+        });
+      }
       // Brief saved indicator
       setRecentlySavedIds((prev) => new Set(prev).add(studentId));
       setTimeout(() => {

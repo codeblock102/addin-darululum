@@ -53,6 +53,8 @@ import TeacherAddParent from "@/pages/TeacherAddParent.tsx";
 import TeacherMessages from "@/pages/TeacherMessages.tsx";
 import ParentMessages from "@/pages/ParentMessages.tsx";
 import Profile from "@/pages/Profile.tsx";
+import Tasks from "@/pages/Tasks.tsx";
+import AbsenceRequests from "@/pages/AbsenceRequests.tsx";
 
 /**
  * @component App
@@ -114,6 +116,16 @@ function App() {
               <ProtectedRoute>
                 <DashboardLayout>
                   <Activity />
+                </DashboardLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/absence-requests"
+            element={
+              <ProtectedRoute requireAdmin>
+                <DashboardLayout>
+                  <AbsenceRequests />
                 </DashboardLayout>
               </ProtectedRoute>
             }
@@ -223,6 +235,14 @@ function App() {
             <Route path="/settings" element={<Settings />} />
             <Route path="/preferences" element={<Preferences />} />
             <Route path="/profile" element={<Profile />} />
+            <Route
+              path="/tasks"
+              element={
+                <ProtectedRoute requireAdmin>
+                  <Tasks />
+                </ProtectedRoute>
+              }
+            />
           </Route>
         </Routes>
       </BrowserRouter>

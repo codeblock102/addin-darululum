@@ -1,6 +1,8 @@
 import {
   Book,
   CalendarDays,
+  CalendarOff,
+  CheckSquare,
   Clock,
   ClipboardList,
   FileText,
@@ -79,17 +81,29 @@ export const adminNavItems: NavItem[] = [
 
   // ── Admin Tools ───────────────────────────────────────────────────────────
   {
+    href: "/tasks",
+    label: "nav.tasks",
+    icon: CheckSquare,
+    description: "Assign and track teacher tasks",
+    section: "Admin",
+  },
+  {
     href: "/admin/parent-accounts",
     label: "nav.parentAccounts",
     icon: UserCheck,
     description: "Manage parent accounts",
-    section: "Admin",
   },
   {
     href: "/admin/bulk-student-import",
     label: "nav.bulkStudentImport",
     icon: Users,
     description: "Upload CSV to add students",
+  },
+  {
+    href: "/absence-requests",
+    label: "nav.absenceRequests",
+    icon: CalendarOff,
+    description: "Review teacher absence requests",
   },
   {
     href: "/activity",

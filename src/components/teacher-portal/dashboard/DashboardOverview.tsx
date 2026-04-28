@@ -7,6 +7,7 @@ import { RecentActivity } from "./RecentActivity";
 import { useTeacherStudentMetrics } from "@/hooks/useTeacherStudentMetrics.ts";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client.ts";
+import { TaskWidget } from "../TaskWidget";
 
 interface DashboardOverviewProps {
   teacherId?: string;
@@ -162,6 +163,11 @@ export const DashboardOverview = ({ teacherId, isAdmin = false }: DashboardOverv
             </div>
           ))}
         </div>
+      )}
+
+      {/* Task widget */}
+      {!isAdmin && teacherId && (
+        <TaskWidget teacherId={teacherId} />
       )}
 
       {/* At-risk alert banner */}
