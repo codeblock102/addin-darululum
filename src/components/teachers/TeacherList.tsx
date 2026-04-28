@@ -22,11 +22,41 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog.tsx";
-import { Eye, Loader2, Pencil, Trash2, UserCheck, Users } from "lucide-react";
+import { ArrowDown, ArrowUp, ArrowUpDown, Eye, Loader2, Pencil, Trash2, UserCheck, Users } from "lucide-react";
 import { useProxy } from "@/contexts/ProxyContext.tsx";
 import { useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge.tsx";
 import { Card, CardContent } from "@/components/ui/card.tsx";
+
+type TeacherSortKey = "name" | "subject" | "students";
+type SortDir = "asc" | "desc";
+
+interface SortableHeadProps {
+  label: string;
+  sortKey: TeacherSortKey;
+  current: TeacherSortKey;
+  dir: SortDir;
+  onSort: (k: TeacherSortKey) => void;
+  className?: string;
+}
+const SortableHead = ({ label, sortKey, current, dir, onSort, className }: SortableHeadProps) => {
+  const active = current === sortKey;
+  return (
+    <TableHead className={className}>
+      <button
+        onClick={() => onSort(sortKey)}
+        className={`inline-flex items-center gap-1 text-xs font-semibold uppercase tracking-wider transition-colors ${
+          active ? "text-green-700" : "text-gray-400 hover:text-gray-600"
+        }`}
+      >
+        {label}
+        {active
+          ? dir === "asc" ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />
+          : <ArrowUpDown className="h-3 w-3 opacity-40" />}
+      </button>
+    </TableHead>
+  );
+};
 
 interface Teacher {
   id: string;
@@ -56,6 +86,13 @@ export const TeacherList = ({
   const navigate = useNavigate();
   const [isProcessing, setIsProcessing] = useState(false);
   const [teacherToDelete, setTeacherToDelete] = useState<string | null>(null);
+  const [sortKey, setSortKey] = useState<TeacherSortKey>("name");
+  const [sortDir, setSortDir] = useState<SortDir>("asc");
+
+  const handleSort = (key: TeacherSortKey) => {
+    if (key === sortKey) setSortDir((d) => (d === "asc" ? "desc" : "asc"));
+    else { setSortKey(key); setSortDir("asc"); }
+  };
 
   const handleViewAs = (teacher: Teacher) => {
     startProxy(teacher.id, "teacher", teacher.name, teacher.email || "");
@@ -134,10 +171,19 @@ export const TeacherList = ({
       setTeacherToDelete(null);
     }
   };
-  const filteredTeachers = teachers?.filter((teacher) =>
-    teacher.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    teacher.subject.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredTeachers = teachers
+    ?.filter((teacher) =>
+      teacher.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      teacher.subject.toLowerCase().includes(searchQuery.toLowerCase())
+    )
+    ?.slice()
+    ?.sort((a, b) => {
+      let cmp = 0;
+      if (sortKey === "name") cmp = a.name.localeCompare(b.name);
+      else if (sortKey === "subject") cmp = (a.subject || "").localeCompare(b.subject || "");
+      else if (sortKey === "students") cmp = a.students - b.students;
+      return sortDir === "asc" ? cmp : -cmp;
+    });
   if (error) {
     return (
       <Card className="border-red-200 bg-red-50">
@@ -245,9 +291,9 @@ export const TeacherList = ({
         <Table className="min-w-[720px]">
         <TableHeader className="bg-gray-50/60">
           <TableRow>
-            <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-400 py-4 px-4">Name</TableHead>
-            <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-400 py-4 px-4">Subject</TableHead>
-            <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-400 py-4 px-4">Students</TableHead>
+            <SortableHead label="Name" sortKey="name" current={sortKey} dir={sortDir} onSort={handleSort} className="py-4 px-4" />
+            <SortableHead label="Subject" sortKey="subject" current={sortKey} dir={sortDir} onSort={handleSort} className="py-4 px-4" />
+            <SortableHead label="Students" sortKey="students" current={sortKey} dir={sortDir} onSort={handleSort} className="py-4 px-4" />
             <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-400 py-4 px-4">Contact</TableHead>
             <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-400 py-4 px-4 text-right">Actions</TableHead>
           </TableRow>

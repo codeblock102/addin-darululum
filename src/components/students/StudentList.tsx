@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Badge } from "@/components/ui/badge.tsx";
 import {
   Table,
@@ -7,7 +8,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table.tsx";
-import { Edit, Users, Calendar } from "lucide-react";
+import { Edit, Users, Calendar, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton.tsx";
 
 interface Student {
@@ -31,6 +32,18 @@ interface StudentListProps {
   onEditStudent?: (student: Student) => void;
 }
 
+type SortKey = "name" | "section" | "status" | "enrollment_date";
+type SortDir = "asc" | "desc";
+
+const STATUS_ORDER: Record<string, number> = {
+  active: 0,
+  vacation: 1,
+  hospitalized: 2,
+  suspended: 3,
+  graduated: 4,
+  inactive: 5,
+};
+
 const getStatusColorClass = (status: string) => {
   switch (status) {
     case "active": return "bg-green-100 text-green-800 hover:bg-green-200";
@@ -43,7 +56,6 @@ const getStatusColorClass = (status: string) => {
   }
 };
 
-/** Returns a consistent bg color class based on the first letter of the name. */
 const getAvatarBgClass = (name: string): string => {
   const ch = (name.charAt(0) || "A").toUpperCase();
   if ("ABC".includes(ch)) return "bg-green-700";
@@ -53,7 +65,37 @@ const getAvatarBgClass = (name: string): string => {
   if ("MNO".includes(ch)) return "bg-rose-700";
   if ("PQR".includes(ch)) return "bg-cyan-700";
   if ("STU".includes(ch)) return "bg-indigo-700";
-  return "bg-teal-700"; // V–Z
+  return "bg-teal-700";
+};
+
+interface SortableHeadProps {
+  label: string;
+  sortKey: SortKey;
+  current: SortKey;
+  dir: SortDir;
+  onSort: (key: SortKey) => void;
+  className?: string;
+}
+
+const SortableHead = ({ label, sortKey, current, dir, onSort, className }: SortableHeadProps) => {
+  const active = current === sortKey;
+  return (
+    <TableHead className={className}>
+      <button
+        onClick={() => onSort(sortKey)}
+        className={`inline-flex items-center gap-1 text-xs font-semibold uppercase tracking-wider transition-colors ${
+          active ? "text-green-700" : "text-gray-400 hover:text-gray-600"
+        }`}
+      >
+        {label}
+        {active
+          ? dir === "asc"
+            ? <ArrowUp className="h-3 w-3" />
+            : <ArrowDown className="h-3 w-3" />
+          : <ArrowUpDown className="h-3 w-3 opacity-40" />}
+      </button>
+    </TableHead>
+  );
 };
 
 export const StudentList = ({
@@ -61,6 +103,18 @@ export const StudentList = ({
   isLoading,
   onEditStudent,
 }: StudentListProps) => {
+  const [sortKey, setSortKey] = useState<SortKey>("name");
+  const [sortDir, setSortDir] = useState<SortDir>("asc");
+
+  const handleSort = (key: SortKey) => {
+    if (key === sortKey) {
+      setSortDir((d) => (d === "asc" ? "desc" : "asc"));
+    } else {
+      setSortKey(key);
+      setSortDir("asc");
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="space-y-2 p-4">
@@ -81,20 +135,74 @@ export const StudentList = ({
     );
   }
 
+  const sorted = [...students].sort((a, b) => {
+    let cmp = 0;
+    switch (sortKey) {
+      case "name":
+        cmp = (a.name || "").localeCompare(b.name || "");
+        break;
+      case "section":
+        cmp = (a.section || "").localeCompare(b.section || "");
+        break;
+      case "status":
+        cmp = (STATUS_ORDER[a.status] ?? 99) - (STATUS_ORDER[b.status] ?? 99);
+        break;
+      case "enrollment_date": {
+        const da = a.enrollment_date ? new Date(a.enrollment_date).getTime() : 0;
+        const db = b.enrollment_date ? new Date(b.enrollment_date).getTime() : 0;
+        cmp = da - db;
+        break;
+      }
+    }
+    return sortDir === "asc" ? cmp : -cmp;
+  });
+
   return (
     <Table>
       <TableHeader className="bg-gray-50/60">
         <TableRow>
-          <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-400 py-4 px-4 w-[250px]">Student</TableHead>
-          <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-400 py-4 px-4">Section</TableHead>
-          <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-400 py-4 px-4">Guardian</TableHead>
-          <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-400 py-4 px-4">Status</TableHead>
-          <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-400 py-4 px-4">Enrollment Date</TableHead>
-          <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-400 py-4 px-4 text-right">Actions</TableHead>
+          <SortableHead
+            label="Student"
+            sortKey="name"
+            current={sortKey}
+            dir={sortDir}
+            onSort={handleSort}
+            className="py-4 px-4 w-[250px]"
+          />
+          <SortableHead
+            label="Section"
+            sortKey="section"
+            current={sortKey}
+            dir={sortDir}
+            onSort={handleSort}
+            className="py-4 px-4"
+          />
+          <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-400 py-4 px-4">
+            Guardian
+          </TableHead>
+          <SortableHead
+            label="Status"
+            sortKey="status"
+            current={sortKey}
+            dir={sortDir}
+            onSort={handleSort}
+            className="py-4 px-4"
+          />
+          <SortableHead
+            label="Enrollment Date"
+            sortKey="enrollment_date"
+            current={sortKey}
+            dir={sortDir}
+            onSort={handleSort}
+            className="py-4 px-4"
+          />
+          <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-400 py-4 px-4 text-right">
+            Actions
+          </TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
-        {students.map((student) => (
+        {sorted.map((student) => (
           <TableRow
             key={student.id}
             className="hover:bg-green-50/30 cursor-pointer transition-colors duration-100"
