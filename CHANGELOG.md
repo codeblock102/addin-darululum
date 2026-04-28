@@ -1,3 +1,15 @@
+## [1.9.0] (2026-04-28)
+
+### Deployment
+* **edge-functions:** deployed all 4 new edge functions to live Supabase project (`depsfpodwaprzxffdcks`) — all ACTIVE
+  - `send-assignment-graded` (v1)
+  - `send-assignment-overdue` (v1)
+  - `send-enrollment-confirmation` (v1)
+  - `send-class-announcement` (v1)
+* **pg_cron:** scheduled `send-assignment-overdue` to run daily at 08:00 UTC (cron schedule id 34) — `0 8 * * *`
+
+---
+
 ## [1.8.0] (2026-04-28)
 
 ### New Features

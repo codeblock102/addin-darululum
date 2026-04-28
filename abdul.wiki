@@ -116,8 +116,11 @@ The core purpose: track every student's Quran memorization journey, monitor atte
 | `messages` | In-app messages — sender_id, recipient_id, message, read |
 | `parents` | Parent records — student_ids link |
 | `parent_children` | Parent→student linkage (legacy/fallback) |
-| `notifications` | In-app notification queue |
+| `notifications` | In-app notification queue; also used for overdue-email de-duplication (assignment_id + recipient_id + date) |
 | `analytics_metrics` | Pre-aggregated analytics data |
+| `teacher_tasks` | Tasks assigned by admin to teachers — priority (low/medium/high/urgent), status (pending/in_progress/done), due_date, notes |
+| `announcements` | Class announcements from teachers — title, message, class_id, sent_to_count |
+| `absence_requests` | Teacher absence requests — date range, reason, status (pending/approved/rejected), admin_note, reviewed_by |
 
 ### Row Level Security
 All tables have RLS policies. Teachers see only their students. Parents see only their children's data. Admins have full access.
@@ -137,6 +140,10 @@ All emails go through **Resend** via Supabase Edge Functions:
 | `admin-send-email` | Admin manual email blast |
 | `send-late-arrival-alert` | When a student is marked late (POST `{ student_id, date, time }`) |
 | `send-assignment-notification` | When a new assignment is created — notifies linked parents (POST `{ assignment_id, type }`) |
+| `send-assignment-graded` | When a teacher grades an assignment (POST `{ assignment_id }`) — emails all linked parents |
+| `send-assignment-overdue` | Daily at 08:00 UTC via pg_cron — scans overdue ungraded assignments, emails parents; de-duped via `notifications` table |
+| `send-enrollment-confirmation` | When a new student is added (POST `{ student_id }`) — emails all admin accounts |
+| `send-class-announcement` | When teacher broadcasts a class announcement (POST `{ announcement_id }`) — emails all class parents, updates `sent_to_count` |
 
 Required env secrets: `RESEND_API_KEY`, `RESEND_FROM_EMAIL`, `APP_URL`, `LOGO_URL`
 
@@ -212,7 +219,8 @@ Custom I18n context (not react-i18next). Translation keys in `src/i18n/translati
 
 | Date | Summary | See Also |
 |---|---|---|
-| 2026-04-28 (s2) | 6 features: assignment graded/overdue notifications, enrollment confirmation email, student status filter, task list (admin→teacher), class announcements broadcast, teacher absence request flow; teacher portal luxury overhaul (gradient banner, pill tabs, stat cards) | handoff.md |
+| 2026-04-28 (s3) | Deployed 4 edge functions to live Supabase (send-assignment-graded, send-assignment-overdue, send-enrollment-confirmation, send-class-announcement); pg_cron daily overdue job scheduled at 08:00 UTC | handoff.md |
+| 2026-04-28 (s2) | 6 features: assignment graded/overdue notifications, enrollment confirmation email, student status filter, task list (admin→teacher), class announcements broadcast, teacher absence request flow; teacher portal luxury overhaul (gradient banner, pill tabs, stat cards); 3 DB migrations applied | handoff.md |
 | 2026-04-28 | Sortable table headers (Students, Teachers, Parent Accounts); attendance + parent-accounts tabs converted to pill buttons (fix blue underline); SidebarUser expanded dropdown navigation fix | handoff.md |
 | 2026-04-27 (s4) | Admin proxy/impersonation feature (ProxyContext, eye button on teachers+parents, amber banner, useRBAC override); nav cleanup (section groups, Profile/Settings moved to user dropdown, trimmed teacher+parent nav) | handoff.md |
 | 2026-04-27 (s3) | Full luxury UI redesign: sidebar pill active state + dark avatar + wordmark; tinted dashboard stat cards (green/red/amber) + 4xl KPI numbers + section header accents; icon page headers on Students/Teachers/Classes; colored avatar circles + icon action buttons in all tables; AdminPageShell gradient button fix | handoff.md |
