@@ -1,4 +1,3 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card.tsx";
 import { Calendar, MessageSquare, Plus, Users, Settings, BarChart3, Zap } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useRBAC } from "@/hooks/useRBAC.ts";
@@ -81,24 +80,30 @@ export const QuickActions = ({ teacherId: _teacherId, isAdmin = false }: QuickAc
   const actions = isAdmin ? adminActions : teacherActions;
 
   return (
-    <Card className="border border-gray-100 shadow-sm">
-      <CardHeader className="pb-3">
-        <CardTitle className="flex items-center gap-2 text-base font-semibold text-gray-800">
-          <Zap className="h-4 w-4 text-amber-500" />
-          {isAdmin
-            ? t("pages.teacherPortal.quickActions.systemActions", "System Actions")
-            : t("pages.teacherPortal.quickActions.quickActions", "Quick Actions")}
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
+    <div>
+      {/* Section accent header */}
+      <div className="flex items-center gap-2 mb-4">
+        <div className="border-l-2 border-green-600 pl-3">
+          <p className="text-sm font-bold text-gray-800">
+            <span className="inline-flex items-center gap-1.5">
+              <Zap className="h-3.5 w-3.5 text-amber-500" />
+              {isAdmin
+                ? t("pages.teacherPortal.quickActions.systemActions", "System Actions")
+                : t("pages.teacherPortal.quickActions.quickActions", "Quick Actions")}
+            </span>
+          </p>
+        </div>
+      </div>
+
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
         <div className="grid grid-cols-2 gap-2">
           {actions.map((action, index) => (
             <button
               key={index}
               onClick={action.action}
               className={cn(
-                "flex flex-col items-start gap-2.5 p-3.5 rounded-xl border border-gray-100 bg-white",
-                "hover:border-gray-200 hover:shadow-sm transition-all duration-150 text-left group",
+                "flex flex-col items-start gap-2.5 p-4 rounded-xl border border-gray-100 bg-white",
+                "hover:border-green-200 hover:bg-green-50/30 transition-all duration-150 text-left group",
               )}
             >
               <div className={cn("p-2 rounded-lg", action.iconClass)}>
@@ -113,7 +118,7 @@ export const QuickActions = ({ teacherId: _teacherId, isAdmin = false }: QuickAc
             </button>
           ))}
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 };

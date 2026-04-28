@@ -1,6 +1,8 @@
 import { Teacher } from "@/types/teacher.ts";
-import { BookOpen, Mail, Loader2, ShieldCheck } from "lucide-react";
+import { Loader2, ShieldCheck, Users, UserX, CalendarDays } from "lucide-react";
 import { useI18n } from "@/contexts/I18nContext.tsx";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client.ts";
 
 interface DashboardHeaderProps {
   teacher: Teacher;
@@ -9,108 +11,204 @@ interface DashboardHeaderProps {
   isAdmin?: boolean;
 }
 
+function getGreeting(): string {
+  const hour = new Date().getHours();
+  if (hour < 12) return "Good morning";
+  if (hour < 17) return "Good afternoon";
+  return "Good evening";
+}
+
+function formatDate(): string {
+  return new Date().toLocaleDateString("en-US", {
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+}
+
 export const DashboardHeader = (
   { teacher, classes, isLoadingClasses, isAdmin: isAdminProp }: DashboardHeaderProps,
 ) => {
   const { t } = useI18n();
   const isAdmin = isAdminProp ?? teacher.subject === "Administration";
 
-  const initials = teacher.name
-    .split(" ")
-    .slice(0, 2)
-    .map((w) => w[0])
-    .join("")
-    .toUpperCase();
+  const today = new Date().toISOString().split("T")[0];
+
+  // Query: my students count
+  const { data: studentCountData, isLoading: loadingStudents } = useQuery({
+    queryKey: ["teacher-student-count", teacher.id],
+    queryFn: async () => {
+      const { count, error } = await supabase
+        .from("students_teachers")
+        .select("*", { count: "exact", head: true })
+        .eq("teacher_id", teacher.id);
+      if (error) throw error;
+      return count ?? 0;
+    },
+    enabled: !isAdmin && !!teacher.id,
+  });
+
+  // Query: today absent count (needs student ids first)
+  const { data: studentIds } = useQuery({
+    queryKey: ["teacher-student-ids", teacher.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("students_teachers")
+        .select("student_id")
+        .eq("teacher_id", teacher.id);
+      if (error) throw error;
+      return (data ?? []).map((r) => r.student_id);
+    },
+    enabled: !isAdmin && !!teacher.id,
+  });
+
+  const { data: absentCountData, isLoading: loadingAbsent } = useQuery({
+    queryKey: ["teacher-today-absent", teacher.id, today],
+    queryFn: async () => {
+      if (!studentIds || studentIds.length === 0) return 0;
+      const { count, error } = await supabase
+        .from("attendance")
+        .select("*", { count: "exact", head: true })
+        .eq("date", today)
+        .in("status", ["absent", "sick"])
+        .in("student_id", studentIds);
+      if (error) throw error;
+      return count ?? 0;
+    },
+    enabled: !isAdmin && !!teacher.id && !!studentIds,
+  });
+
+  const studentCount = studentCountData ?? 0;
+  const absentCount = absentCountData ?? 0;
+  const classCount = classes?.length ?? 0;
+
+  const bannerStyle = {
+    background: "linear-gradient(135deg, #052e16 0%, #14532d 60%, #166534 100%)",
+  };
 
   return (
-    <div className="mb-6 rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden">
-      <div className="p-5 sm:p-6">
-        <div className="flex items-start gap-4">
-          {/* Avatar */}
-          <div
-            className={`flex-shrink-0 w-12 h-12 rounded-xl flex items-center justify-center font-semibold text-sm ${
-              isAdmin
-                ? "bg-amber-100 text-amber-700"
-                : "bg-green-100 text-green-700"
-            }`}
-          >
-            {isAdmin
-              ? <ShieldCheck className="h-6 w-6" />
-              : <span>{initials}</span>}
-          </div>
+    <div
+      className="mb-6 rounded-2xl overflow-hidden shadow-lg"
+      style={bannerStyle}
+    >
+      <div className="px-6 py-6 sm:px-8 sm:py-7">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-5">
 
-          {/* Content */}
+          {/* Left side */}
           <div className="flex-1 min-w-0">
-            <div className="flex flex-wrap items-center gap-2 mb-1">
-              <h1 className="text-lg font-semibold text-gray-900 truncate">
-                {isAdmin
-                  ? t("pages.teacherPortal.header.adminTitle")
-                  : `${t("pages.teacherPortal.header.teacherWelcomePrefix")}, ${teacher.name}`}
-              </h1>
-              <span
-                className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium ${
-                  isAdmin
-                    ? "bg-amber-100 text-amber-700"
-                    : "bg-green-100 text-green-700"
-                }`}
-              >
-                {isAdmin ? "Admin" : "Teacher"}
-              </span>
-            </div>
-            <p className="text-sm text-gray-500 mb-3">
-              {isAdmin
-                ? t("pages.teacherPortal.header.adminSubtitle")
-                : t("pages.teacherPortal.header.teacherSubtitle")}
-            </p>
-
-            {/* Classes / capabilities row */}
             {isAdmin
               ? (
-                <div className="flex flex-wrap gap-1.5">
-                  <span className="px-2 py-1 bg-amber-50 text-amber-700 rounded-md text-xs font-medium border border-amber-100">
-                    {t("pages.teacherPortal.header.adminBadges.fullAccess")}
+                <>
+                  <div className="flex items-center gap-3 mb-1">
+                    <ShieldCheck className="h-6 w-6 flex-shrink-0" style={{ color: "#86efac" }} />
+                    <h1
+                      className="text-2xl font-black tracking-tight"
+                      style={{ color: "white" }}
+                    >
+                      {t("pages.teacherPortal.header.adminTitle")}
+                    </h1>
+                  </div>
+                  <p className="text-sm mb-3" style={{ color: "#bbf7d0" }}>
+                    {formatDate()}
+                  </p>
+                  <span
+                    className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold"
+                    style={{ background: "rgba(255,255,255,0.15)", color: "white" }}
+                  >
+                    <ShieldCheck className="h-3 w-3" />
+                    Full Access · Administrator
                   </span>
-                  <span className="px-2 py-1 bg-blue-50 text-blue-700 rounded-md text-xs font-medium border border-blue-100">
-                    {t("pages.teacherPortal.header.adminBadges.userManagement")}
-                  </span>
-                  <span className="px-2 py-1 bg-green-50 text-green-700 rounded-md text-xs font-medium border border-green-100">
-                    {t("pages.teacherPortal.header.adminBadges.dataAnalytics")}
-                  </span>
-                </div>
-              )
-              : isLoadingClasses
-              ? (
-                <div className="flex items-center gap-2 text-sm text-gray-400">
-                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                  <span>{t("pages.teacherPortal.header.loadingClasses")}</span>
-                </div>
+                </>
               )
               : (
-                <div className="flex flex-wrap items-center gap-1.5">
-                  <BookOpen className="h-3.5 w-3.5 text-gray-400 flex-shrink-0" />
-                  {classes && classes.length > 0
-                    ? classes.map((c) => (
-                      <span
-                        key={c.id}
-                        className="px-2 py-1 bg-gray-100 text-gray-700 rounded-md text-xs font-medium"
-                      >
-                        {c.name}
-                      </span>
-                    ))
-                    : (
-                      <span className="text-xs text-gray-400 italic">
-                        {t("pages.teacherPortal.header.noClasses")}
-                      </span>
-                    )}
-                </div>
+                <>
+                  <p className="text-sm font-medium mb-0.5" style={{ color: "#86efac" }}>
+                    {getGreeting()}
+                  </p>
+                  <h1
+                    className="text-2xl font-black tracking-tight mb-1"
+                    style={{ color: "white" }}
+                  >
+                    {teacher.name}
+                  </h1>
+                  <p className="text-sm mb-3" style={{ color: "#bbf7d0" }}>
+                    {formatDate()}
+                  </p>
+                  {teacher.subject && (
+                    <span
+                      className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold"
+                      style={{ background: "rgba(255,255,255,0.15)", color: "white" }}
+                    >
+                      {teacher.subject}
+                    </span>
+                  )}
+                </>
               )}
           </div>
 
-          {/* Email — desktop only, right-aligned */}
-          {teacher.email && (
-            <div className="hidden sm:flex items-center gap-1.5 text-xs text-gray-400 flex-shrink-0">
-              <Mail className="h-3.5 w-3.5" />
-              <span className="truncate max-w-[160px]">{teacher.email}</span>
+          {/* Right side — stat chips (desktop only, teacher only) */}
+          {!isAdmin && (
+            <div className="hidden sm:flex items-center gap-3 flex-shrink-0">
+              {/* My Students */}
+              <div
+                className="flex flex-col items-center px-5 py-3 rounded-xl"
+                style={{ background: "rgba(255,255,255,0.12)" }}
+              >
+                <div className="flex items-center gap-1.5 mb-1">
+                  <Users className="h-3.5 w-3.5" style={{ color: "#86efac" }} />
+                  <span className="text-xs font-semibold uppercase tracking-widest" style={{ color: "#86efac" }}>
+                    My Students
+                  </span>
+                </div>
+                {loadingStudents
+                  ? <Loader2 className="h-5 w-5 animate-spin" style={{ color: "white" }} />
+                  : (
+                    <span className="text-2xl font-black" style={{ color: "white" }}>
+                      {studentCount}
+                    </span>
+                  )}
+              </div>
+
+              {/* Today Absent */}
+              <div
+                className="flex flex-col items-center px-5 py-3 rounded-xl"
+                style={{ background: "rgba(255,255,255,0.12)" }}
+              >
+                <div className="flex items-center gap-1.5 mb-1">
+                  <UserX className="h-3.5 w-3.5" style={{ color: "#fca5a5" }} />
+                  <span className="text-xs font-semibold uppercase tracking-widest" style={{ color: "#fca5a5" }}>
+                    Today Absent
+                  </span>
+                </div>
+                {loadingAbsent
+                  ? <Loader2 className="h-5 w-5 animate-spin" style={{ color: "white" }} />
+                  : (
+                    <span className="text-2xl font-black" style={{ color: "white" }}>
+                      {absentCount}
+                    </span>
+                  )}
+              </div>
+
+              {/* Week Schedule */}
+              <div
+                className="flex flex-col items-center px-5 py-3 rounded-xl"
+                style={{ background: "rgba(255,255,255,0.12)" }}
+              >
+                <div className="flex items-center gap-1.5 mb-1">
+                  <CalendarDays className="h-3.5 w-3.5" style={{ color: "#93c5fd" }} />
+                  <span className="text-xs font-semibold uppercase tracking-widest" style={{ color: "#93c5fd" }}>
+                    Week Schedule
+                  </span>
+                </div>
+                {isLoadingClasses
+                  ? <Loader2 className="h-5 w-5 animate-spin" style={{ color: "white" }} />
+                  : (
+                    <span className="text-2xl font-black" style={{ color: "white" }}>
+                      {classCount}
+                    </span>
+                  )}
+              </div>
             </div>
           )}
         </div>
