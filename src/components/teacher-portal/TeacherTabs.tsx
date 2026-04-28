@@ -2,8 +2,10 @@ import { useNavigate } from "react-router-dom";
 import {
   BookOpen,
   CalendarDays,
+  CalendarOff,
   ClipboardList,
   LineChart,
+  Megaphone,
   MessageSquare,
   Users,
 } from "lucide-react";
@@ -61,6 +63,16 @@ export const TeacherTabs = ({ activeTab, onTabChange }: TeacherTabsProps) => {
       id: "messages",
       label: t("pages.teacherPortal.tabs.messages", "Messages"),
       icon: <MessageSquare className="h-4 w-4" />,
+    },
+    {
+      id: "absences",
+      label: t("pages.teacherPortal.tabs.absences", "My Absences"),
+      icon: <CalendarOff className="h-4 w-4" />,
+    },
+    {
+      id: "announcements",
+      label: "Announcements",
+      icon: <Megaphone className="h-4 w-4" />,
     },
   ]
     // Attendance: admin or capability

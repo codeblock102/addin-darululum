@@ -9,6 +9,8 @@ import { TeacherDhorBook } from "./TeacherDhorBook.tsx";
 import { TeacherAssignments } from "./TeacherAssignments.tsx";
 import { TeacherAttendance } from "./TeacherAttendance.tsx";
 import { useRBAC } from "@/hooks/useRBAC.ts";
+import { AbsenceRequestForm } from "./AbsenceRequestForm.tsx";
+import { AnnouncementComposer } from "./AnnouncementComposer.tsx";
 
 interface TeacherDashboardProps {
   teacher: Teacher;
@@ -39,6 +41,10 @@ export const TeacherDashboard = (
         return isAdmin || hasCapability("assignments_access") ? <TeacherAssignments teacherId={teacher.id} /> : <DashboardOverview teacherId={teacher.id} isAdmin={isAdmin} />;
       case "attendance":
         return <TeacherAttendance />;
+      case "absences":
+        return <AbsenceRequestForm teacherId={teacher.id} />;
+      case "announcements":
+        return <AnnouncementComposer teacherId={teacher.id} />;
       default:
         return <DashboardOverview teacherId={teacher.id} isAdmin={isAdmin} />;
     }

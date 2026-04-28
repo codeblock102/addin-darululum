@@ -1,3 +1,24 @@
+## [1.8.0] (2026-04-28)
+
+### New Features
+
+* **notifications:** `send-assignment-graded` edge function -- fires when teacher marks an assignment graded; emails all linked parents with student name, assignment title, and link to parent portal
+* **notifications:** `send-assignment-overdue` edge function -- daily pg_cron job; queries all past-due ungraded assignments and emails parents; soft de-duplicates via `notifications` table
+* **notifications:** `send-enrollment-confirmation` edge function -- fires on new student creation; emails all admin accounts with student name, section, guardian info, and enrollment date
+* **notifications:** wired enrollment confirmation into `StudentDialog.tsx` and graded notification into `TeacherAssignments.tsx` (both fire-and-forget)
+* **students:** status filter pill buttons on Students page -- All / Active / Inactive / Vacation / Hospitalized / Suspended / Graduated; stacks with existing search and section filters
+* **tasks:** `teacher_tasks` table + RLS (admins see all; teachers see/update own); `TaskManager` admin component (grouped by teacher, inline create form, priority/status badges, delete/complete actions); `TaskWidget` teacher component (pending tasks with priority dots, overdue highlighting, mark-done); admin `/tasks` route + nav item
+* **announcements:** `announcements` table + RLS; `send-class-announcement` edge function (resolves class students -> parents -> Resend emails, updates `sent_to_count`); `AnnouncementComposer` teacher component (class selector, compose form, sent history); new Announcements tab in teacher portal
+* **absence-requests:** `absence_requests` table + RLS; `AbsenceRequestForm` teacher component (date range, reason, notes, history with status badges); `AbsenceRequestsPanel` admin component (filter by status, approve/reject with inline admin note, full table); admin `/absence-requests` route + nav item; new My Absences tab in teacher portal
+* **teacher-portal:** full luxury overhaul -- `DashboardHeader` replaced with green gradient banner (greeting, live student/absent/class chips); `TeacherTabs` converted to pill buttons; `DashboardOverview` gains 4 tinted stat cards (My Students, Today Absent, Assignments Pending, Progress Today); `QuickActions` gets section accent header and green hover treatment
+
+### Database Migrations
+* `20260428120000_create_teacher_tasks.sql`
+* `20260428120001_create_announcements.sql`
+* `20260428130000_create_absence_requests.sql`
+
+---
+
 ## [1.7.0] (2026-04-28)
 
 ### New Features

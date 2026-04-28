@@ -71,6 +71,7 @@ const Students = () => {
   const { t } = useI18n();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedSection, setSelectedSection] = useState<string>("all");
+  const [selectedStatus, setSelectedStatus] = useState<string>("all");
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const { session } = useAuth();
@@ -145,6 +146,16 @@ const Students = () => {
 
   const uniqueSections = Array.from(new Set(students.map(s => s.section).filter(Boolean))).sort();
 
+  const STATUS_FILTERS: { value: string; label: string }[] = [
+    { value: "all", label: "All" },
+    { value: "active", label: "Active" },
+    { value: "inactive", label: "Inactive" },
+    { value: "vacation", label: "Vacation" },
+    { value: "hospitalized", label: "Hospitalized" },
+    { value: "suspended", label: "Suspended" },
+    { value: "graduated", label: "Graduated" },
+  ];
+
   const filteredStudents = students.filter(
     (student) => {
       const sectionMatch =
@@ -154,11 +165,14 @@ const Students = () => {
           ? !student.section
           : student.section === selectedSection;
 
+      const statusMatch =
+        selectedStatus === "all" || student.status === selectedStatus;
+
       const searchMatch =
         student.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         (student.guardian_name || "").toLowerCase().includes(searchQuery.toLowerCase());
 
-      return sectionMatch && searchMatch;
+      return sectionMatch && statusMatch && searchMatch;
     }
   );
 
@@ -252,6 +266,21 @@ const Students = () => {
                 </SelectContent>
               </Select>
             )}
+          </div>
+          <div className="inline-flex items-center gap-1.5 flex-wrap mt-3">
+            {STATUS_FILTERS.map((filter) => (
+              <button
+                key={filter.value}
+                onClick={() => setSelectedStatus(filter.value)}
+                className={
+                  selectedStatus === filter.value
+                    ? "px-3 py-1 rounded-full text-xs font-medium bg-green-700 text-white shadow-sm transition-colors"
+                    : "px-3 py-1 rounded-full text-xs font-medium text-gray-500 hover:bg-gray-100 bg-white border border-gray-200 transition-colors"
+                }
+              >
+                {filter.label}
+              </button>
+            ))}
           </div>
         </div>
         <div className="p-0">
