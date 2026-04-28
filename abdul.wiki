@@ -212,6 +212,7 @@ Custom I18n context (not react-i18next). Translation keys in `src/i18n/translati
 
 | Date | Summary | See Also |
 |---|---|---|
+| 2026-04-28 | Sortable table headers (Students, Teachers, Parent Accounts); attendance + parent-accounts tabs converted to pill buttons (fix blue underline); SidebarUser expanded dropdown navigation fix | handoff.md |
 | 2026-04-27 (s4) | Admin proxy/impersonation feature (ProxyContext, eye button on teachers+parents, amber banner, useRBAC override); nav cleanup (section groups, Profile/Settings moved to user dropdown, trimmed teacher+parent nav) | handoff.md |
 | 2026-04-27 (s3) | Full luxury UI redesign: sidebar pill active state + dark avatar + wordmark; tinted dashboard stat cards (green/red/amber) + 4xl KPI numbers + section header accents; icon page headers on Students/Teachers/Classes; colored avatar circles + icon action buttons in all tables; AdminPageShell gradient button fix | handoff.md |
 | 2026-04-27 (s2) | Bug fix: green banner text now uses inline styles to defeat CSS theme specificity (`.admin-theme`/`.teacher-theme` were overriding `text-white`); all 4 green banner pages fixed | handoff.md |

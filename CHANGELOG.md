@@ -1,3 +1,20 @@
+## [1.7.0] (2026-04-28)
+
+### New Features
+
+* **tables:** sortable column headers on Students, Teachers, and Parent Accounts — click any sortable header to toggle asc/desc; active column turns green with ↑/↓ arrow, inactive columns show neutral ⇅
+* **students:** sortable by Name (A→Z), Section (A→Z), Status (severity order: active→inactive), Enrollment Date (chronological)
+* **teachers:** sortable by Name, Subject, Students count
+* **parent-accounts:** sort toggle (Name / Children count) above the parent list in the Manage tab
+
+### Bug Fixes
+
+* **tabs:** replaced `shadcn TabsTrigger` with custom pill buttons on Attendance page — `data-[state=active]` CSS from the Radix base component was leaking a blue underline regardless of overrides; all tabs now use a consistent `bg-green-700 text-white` pill for active state
+* **tabs:** same pill treatment applied to Parent Accounts page tabs (Create / Link / Manage)
+* **sidebar-user:** wired `onClick(() => navigate(...))` to Profile and Settings items in the expanded dropdown — the collapsed state had handlers but the expanded (desktop) state was missing them
+
+---
+
 ## [1.6.0] (2026-04-27)
 
 ### New Features
