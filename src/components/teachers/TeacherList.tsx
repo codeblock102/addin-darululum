@@ -22,7 +22,9 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog.tsx";
-import { Loader2, Pencil, Trash2, UserCheck, Users } from "lucide-react";
+import { Eye, Loader2, Pencil, Trash2, UserCheck, Users } from "lucide-react";
+import { useProxy } from "@/contexts/ProxyContext.tsx";
+import { useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge.tsx";
 import { Card, CardContent } from "@/components/ui/card.tsx";
 
@@ -48,12 +50,17 @@ export const TeacherList = ({
   onEdit,
   madrassahId,
 }: TeacherListProps) => {
-  const {
-    toast,
-  } = useToast();
+  const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { startProxy } = useProxy();
+  const navigate = useNavigate();
   const [isProcessing, setIsProcessing] = useState(false);
   const [teacherToDelete, setTeacherToDelete] = useState<string | null>(null);
+
+  const handleViewAs = (teacher: Teacher) => {
+    startProxy(teacher.id, "teacher", teacher.name, teacher.email || "");
+    navigate("/dashboard");
+  };
   const {
     data: teachers,
     isLoading,
@@ -295,6 +302,13 @@ export const TeacherList = ({
                 </TableCell>
                 <TableCell className="py-4 px-4 text-right">
                   <div className="flex items-center justify-end gap-1">
+                    <button
+                      className="p-2 rounded-lg hover:bg-blue-50 transition-colors text-gray-400 hover:text-blue-600"
+                      onClick={() => handleViewAs(teacher)}
+                      title="View app as this teacher"
+                    >
+                      <Eye className="h-4 w-4" />
+                    </button>
                     <button
                       className="p-2 rounded-lg hover:bg-gray-100 transition-colors text-gray-400 hover:text-gray-700"
                       onClick={() => onEdit(teacher)}

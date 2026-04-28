@@ -36,6 +36,7 @@ The core purpose: track every student's Quran memorization journey, monitor atte
 
 ### Admin
 - Full access to everything
+- Can proxy into any teacher or parent account ("View As") — amber banner shows during proxy, Exit button restores admin view; eye icon on Teachers page and Parent Accounts page
 - Views live analytics dashboard (KPIs, at-risk students, alerts)
 - Manages teacher accounts, parent accounts, student roster
 - Can import students via CSV bulk upload
@@ -211,6 +212,7 @@ Custom I18n context (not react-i18next). Translation keys in `src/i18n/translati
 
 | Date | Summary | See Also |
 |---|---|---|
+| 2026-04-27 (s4) | Admin proxy/impersonation feature (ProxyContext, eye button on teachers+parents, amber banner, useRBAC override); nav cleanup (section groups, Profile/Settings moved to user dropdown, trimmed teacher+parent nav) | handoff.md |
 | 2026-04-27 (s3) | Full luxury UI redesign: sidebar pill active state + dark avatar + wordmark; tinted dashboard stat cards (green/red/amber) + 4xl KPI numbers + section header accents; icon page headers on Students/Teachers/Classes; colored avatar circles + icon action buttons in all tables; AdminPageShell gradient button fix | handoff.md |
 | 2026-04-27 (s2) | Bug fix: green banner text now uses inline styles to defeat CSS theme specificity (`.admin-theme`/`.teacher-theme` were overriding `text-white`); all 4 green banner pages fixed | handoff.md |
 | 2026-04-27 | 6 features: contact pop-up, CSV export, unexcused warnings, late arrivals alert, school calendar, assignment notifications; `school_events` table migration; 2 new edge functions | handoff.md |

@@ -12,6 +12,7 @@ import { LogOut, Settings, User } from "lucide-react";
 import { cn } from "@/lib/utils.ts";
 import { useIsMobile } from "@/hooks/use-mobile.tsx";
 import { useI18n } from "@/contexts/I18nContext.tsx";
+import { useNavigate } from "react-router-dom";
 
 interface SidebarUserProps {
   isAdmin: boolean;
@@ -22,6 +23,7 @@ export const SidebarUser = ({ isAdmin, isOpen }: SidebarUserProps) => {
   const { session, signOut } = useAuth();
   const isMobile = useIsMobile();
   const { t } = useI18n();
+  const navigate = useNavigate();
 
   if (!session?.user) return null;
 
@@ -80,13 +82,13 @@ export const SidebarUser = ({ isAdmin, isOpen }: SidebarUserProps) => {
               </div>
             </div>
             <DropdownMenuSeparator />
-            <DropdownMenuItem className="cursor-pointer">
+            <DropdownMenuItem className="cursor-pointer" onClick={() => navigate("/profile")}>
               <User className="mr-2 h-4 w-4" />
               <span>{t("nav.profile", "Profile")}</span>
             </DropdownMenuItem>
-            <DropdownMenuItem className="cursor-pointer">
+            <DropdownMenuItem className="cursor-pointer" onClick={() => navigate(isAdmin ? "/settings" : "/preferences")}>
               <Settings className="mr-2 h-4 w-4" />
-              <span>{t("nav.settings")}</span>
+              <span>{t("nav.settings", "Settings")}</span>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem

@@ -1,3 +1,21 @@
+## [1.6.0] (2026-04-27)
+
+### New Features
+
+* **proxy:** admin "View As" impersonation — admin can browse the entire app as any teacher or parent without changing the Supabase auth session; JWT stays admin-level so full RLS access is preserved; proxied role overrides `useRBAC` returns (`isAdmin/isTeacher/isParent/teacherId`); amber banner persists at top of layout with "Viewing as [Name] (Role) — Exit" button; eye icon on every teacher row and parent account row; navigates to the appropriate dashboard on proxy start
+* **proxy:** `ProxyContext.tsx` — `ProxyProvider` + `useProxy` hook with `startProxy(userId, role, name, email)` and `exitProxy()` actions; wired into `App.tsx`, `useRBAC.ts`, and `DashboardLayout.tsx`
+
+### Navigation Cleanup
+
+* **admin nav:** removed `Profile` and `Settings` from sidebar nav (both now reachable via user dropdown at bottom); grouped remaining 11 items into sections: People (Students, Teachers, Classes), Operations (Progress Book, Attendance, Calendar, Teacher Schedules), Admin (Parent Accounts, Bulk Import, Activity Feed)
+* **teacher nav:** removed `My Students` (redundant tab in Dashboard), `Profile`, and `Preferences` from nav; grouped 7 remaining items into sections: Daily (Attendance, Progress Book, Assignments), Communication (Messages, Schedule, Calendar)
+* **parent nav:** removed `Add Parent` and `Profile` from nav; trimmed to 5 essential items
+* **SidebarNav:** renders `section` labels as `text-[10px] uppercase tracking-widest text-gray-400` dividers; unread message badge now shows count (`9+` cap) instead of a dot
+* **SidebarUser dropdown:** Profile and Settings menu items now navigate correctly (`/profile`, `/settings` for admin, `/preferences` for teacher)
+* **NavItem type:** added optional `section?: string` field
+
+---
+
 ## [1.5.0] (2026-04-27)
 
 ### UI Redesign — Luxury Pass

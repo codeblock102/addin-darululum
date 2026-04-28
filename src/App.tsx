@@ -14,6 +14,7 @@
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { Toaster } from "@/components/ui/toaster.tsx";
 import { ThemeProvider } from "@/components/theme-provider.tsx";
+import { ProxyProvider } from "@/contexts/ProxyContext.tsx";
 import Index from "@/pages/Index.tsx";
 import NotFound from "@/pages/NotFound.tsx";
 import Students from "@/pages/Students.tsx";
@@ -78,6 +79,7 @@ import Profile from "@/pages/Profile.tsx";
 function App() {
   return (
     <ThemeProvider defaultTheme="light" storageKey="vite-ui-theme">
+      <ProxyProvider>
       <BrowserRouter>
         <Routes>
           <Route path="/auth" element={<Auth />} />
@@ -224,6 +226,7 @@ function App() {
           </Route>
         </Routes>
       </BrowserRouter>
+      </ProxyProvider>
       <Toaster />
     </ThemeProvider>
   );
