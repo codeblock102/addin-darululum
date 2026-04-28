@@ -134,13 +134,13 @@ export const SidebarUser = ({ isAdmin, isOpen }: SidebarUserProps) => {
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent side="top" align="end" className="w-56">
-          <DropdownMenuItem className="cursor-pointer">
+          <DropdownMenuItem className="cursor-pointer" onClick={() => navigate("/profile")}>
             <User className="mr-2 h-4 w-4" />
             <span>{t("nav.profile", "Profile")}</span>
           </DropdownMenuItem>
-          <DropdownMenuItem className="cursor-pointer">
+          <DropdownMenuItem className="cursor-pointer" onClick={() => navigate(isAdmin ? "/settings" : "/preferences")}>
             <Settings className="mr-2 h-4 w-4" />
-            <span>{t("nav.settings")}</span>
+            <span>{t("nav.settings", "Settings")}</span>
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem
