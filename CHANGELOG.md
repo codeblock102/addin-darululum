@@ -1,3 +1,53 @@
+# [1.2.0](https://github.com/Adekunes/Tadween/compare/v1.1.5...v1.2.0) (2026-04-29)
+
+
+### Bug Fixes
+
+* add @fullcalendar/core as direct dep + update deno.lock ([9815ed0](https://github.com/Adekunes/Tadween/commit/9815ed0fb222d8bada5fa5a2257d158627d1214a))
+* **admin:** fix metric card contrast — use inline styles for white text on green gradient ([28764b5](https://github.com/Adekunes/Tadween/commit/28764b57cdc73349efd62d7f8d841f85293990f3))
+* analytics NaN, parent access denied, sidebar scroll, activity feed removal ([10138bb](https://github.com/Adekunes/Tadween/commit/10138bbbe07b2f04c1e9c7e8fcd4b7197e5ae945))
+* **ci:** add deno install before deno task build ([c5a28bf](https://github.com/Adekunes/Tadween/commit/c5a28bf3d18083bcd785acc67a0ed9a577aee8a1))
+* **ci:** exclude no-import-prefix in Deno 2.x lint on dev/main ([a85cd88](https://github.com/Adekunes/Tadween/commit/a85cd8888fdd1a7ce5b8f0420bc8db00c590cb3b))
+* **ci:** exclude no-import-prefix rule in Deno 2.x lint ([0e92e52](https://github.com/Adekunes/Tadween/commit/0e92e529dc880c844223694473f37ee0f664c5dd))
+* gate dev routes, fix /add-parent guard, clean ParentAcademics debug code ([fbcf8ca](https://github.com/Adekunes/Tadween/commit/fbcf8ca9fe8c31f441d5d870d575a8f055736bc9))
+* import AdminStatCard in Activity.tsx ([9731988](https://github.com/Adekunes/Tadween/commit/97319889d1e64f2f693264daf19500742a5828c4))
+* major UI cleanup — remove floating buttons, clean icon squares, fix data bugs ([dac468d](https://github.com/Adekunes/Tadween/commit/dac468d5b6c86a58d615435e09234183449b82d9))
+* make Deno lint and format pass in CI ([87aee1f](https://github.com/Adekunes/Tadween/commit/87aee1fdcf5020d3840344ad55fcccc987009d5d))
+* regenerate deno.lock — stale esm.sh hash for realtime-js ([0cb29c9](https://github.com/Adekunes/Tadween/commit/0cb29c9cd109be44420e1883b1d90f46ddd42095))
+* remove PII console logs, add Dashboard error state, remove redundant ProtectedRoute wrappers ([3813a53](https://github.com/Adekunes/Tadween/commit/3813a53e885f093c6863bd4aadefcdfcc7fa448d))
+* replace shadcn TabsTrigger with custom pill buttons on Attendance page ([b28b3b3](https://github.com/Adekunes/Tadween/commit/b28b3b3339a828e7e566bdc3f4a5976f12d7daaa))
+* resolve all CI pipeline failures ([5a59a25](https://github.com/Adekunes/Tadween/commit/5a59a2527bd5cab4df6e2c43dc5c115e88a4a012))
+* resolve CI failures -- deno fmt + missing use-toast re-export ([1d7fb33](https://github.com/Adekunes/Tadween/commit/1d7fb33c42d42b59cca98eae63231e1385a16922))
+* resolve dark UI across all admin pages by switching to light theme ([e8a7f54](https://github.com/Adekunes/Tadween/commit/e8a7f548d9c2adc27193427dacd952d359a5fe63))
+* resolve post-merge issues on dev ([e304fee](https://github.com/Adekunes/Tadween/commit/e304fee69ee219131227b7c57c6f4f3da49a144e))
+* UI cleanup, real data, dead code removal, and documentation ([3251f11](https://github.com/Adekunes/Tadween/commit/3251f1196184e136aa6b68357629cea5c817d255))
+* UI polish — parent empty state, progress book icon, recent activity separator ([24572d7](https://github.com/Adekunes/Tadween/commit/24572d7121ca31f32f95279dd9e817877faaafd2))
+* ui/ux polish — admin mobile layout, empty states, loading consistency, nav icons and i18n ([656258e](https://github.com/Adekunes/Tadween/commit/656258eefe3f5b7f56bad54a65a173082aa1aa64))
+* update CI to use Node.js for frontend, Deno 2.x for edge functions only ([94766ef](https://github.com/Adekunes/Tadween/commit/94766ef037ada74ad9bc738f7796494b98a2eda7))
+* use Deno for frontend CI instead of Node/npm ([837c816](https://github.com/Adekunes/Tadween/commit/837c8161180e5f6c998abfcc8c34fd134a9d1513))
+* wire onClick handlers to Profile/Settings in expanded sidebar user dropdown ([3892fcd](https://github.com/Adekunes/Tadween/commit/3892fcdf08754a3e517914831a1db76693e4d6ea))
+
+
+### Features
+
+* 6 new features -- notifications, task list, announcements, absence requests, teacher portal overhaul ([97dc124](https://github.com/Adekunes/Tadween/commit/97dc124c668c5cd48db55877df1bdcc7c755872d))
+* 6 new features — contact pop-up, CSV export, unexcused warnings, late alerts, school calendar, assignment notifications ([1e17dbd](https://github.com/Adekunes/Tadween/commit/1e17dbdcdaae76b0e5ded073495788e7e9462437))
+* add in-app notification system with bell in sidebar ([2774786](https://github.com/Adekunes/Tadween/commit/2774786f9039ccacaffe51af42e53a913911be4a))
+* admin proxy impersonation + nav cleanup ([06e8a08](https://github.com/Adekunes/Tadween/commit/06e8a08a481bfb200ab0b5a204e087ddf188ee01))
+* **admin:** Donezo-style admin dashboard ([5cc7838](https://github.com/Adekunes/Tadween/commit/5cc7838a9913c6a36a0b5464f0d7089a023afcad)), closes [#f5f6fa](https://github.com/Adekunes/Tadween/issues/f5f6fa)
+* **design:** apply Donezo design system to all admin views ([7ad5bb7](https://github.com/Adekunes/Tadween/commit/7ad5bb7879c5c37453d7a643c8c6e1a6b354680b)), closes [#f5f6fa](https://github.com/Adekunes/Tadween/issues/f5f6fa) [#f5f6fa](https://github.com/Adekunes/Tadween/issues/f5f6fa)
+* full luxury overhaul of teacher portal ([a7e5374](https://github.com/Adekunes/Tadween/commit/a7e5374330743bd246fa3592325da299c8b62abb))
+* full luxury UI redesign — sidebar, dashboard, tables, page headers ([3ba2a2c](https://github.com/Adekunes/Tadween/commit/3ba2a2cb3176a6116ef6e59ad9111f7d92514949))
+* implement 5 features from DUM Application Feedback spec ([02db29f](https://github.com/Adekunes/Tadween/commit/02db29f977735eaa621e4164db03315e0d308517))
+* merge claude/amazing-swirles — full UI redesign + CI/Deno fix ([13d8e51](https://github.com/Adekunes/Tadween/commit/13d8e516493d1f9da0670f4acb4e337a58e937d6))
+* profile page, error boundary, login redesign, useRBAC channel fix ([7118073](https://github.com/Adekunes/Tadween/commit/71180735e14f6f8a4ce6243c15d38f3967c541d9))
+* redesign attendance, add daily prompts, remove analytics dashboard ([ba01c6d](https://github.com/Adekunes/Tadween/commit/ba01c6db74036e5297289c3682cb3bcdfffcb888))
+* seed full class schedules from Scheduling V10 PDF ([5cfc56e](https://github.com/Adekunes/Tadween/commit/5cfc56ebc52f92002c138702fb5a0032d362c36e))
+* sortable column headers on Students, Teachers, and Parent Accounts ([865a1e3](https://github.com/Adekunes/Tadween/commit/865a1e34b37fb8acef20d098c1e47c7b41d5b635))
+* structured absence reasons + multi-day absence modal ([b26aec0](https://github.com/Adekunes/Tadween/commit/b26aec01eb3e3c32987a70fb00847000f782525a))
+* student dossier tab + DB migration for extended student fields ([a49a6bc](https://github.com/Adekunes/Tadween/commit/a49a6bc7633821082be22008127b92c11dff187f))
+* **teacher:** live per-student metrics and at-risk alerting ([0878063](https://github.com/Adekunes/Tadween/commit/08780639558b1c51ab2db36c48f23422231c46ee))
+
 ## [1.9.0] (2026-04-28)
 
 ### Deployment
