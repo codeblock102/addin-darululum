@@ -3,7 +3,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button.tsx";
 import { UserPlus } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog.tsx";
-import { useToast } from "@/hooks/use-toast.ts";
+import { useToast } from "@/components/ui/use-toast.ts";
 import { StudentForm } from "./StudentForm.tsx";
 import { useStudentSubmit } from "./useStudentSubmit.ts";
 import { StudentFormData } from "./studentTypes.ts";

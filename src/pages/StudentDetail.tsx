@@ -15,10 +15,12 @@ import {
   TabsList,
   TabsTrigger,
 } from "@/components/ui/tabs.tsx";
-import { ArrowLeft, BookOpen, RefreshCw, UserRound } from "lucide-react";
+import { ArrowLeft, BookOpen, FolderOpen, Heart, RefreshCw, UserRound } from "lucide-react";
 import { StudentProgressChart } from "@/components/students/StudentProgressChart.tsx";
 import { Skeleton } from "@/components/ui/skeleton.tsx";
 import { NewProgressEntry } from "@/components/students/NewProgressEntry.tsx";
+import { StudentDossier } from "@/components/students/StudentDossier.tsx";
+import { StudentHealthIEP } from "@/components/students/StudentHealthIEP.tsx";
 import { useToast } from "@/hooks/use-toast.ts";
 import { DhorBook } from "@/components/dhor-book/DhorBook.tsx";
 
@@ -53,7 +55,7 @@ const StudentDetail = () => {
 
         const { data, error } = await supabase
           .from("students")
-          .select("*")
+          .select("id, name, grade, gender, section, class_ids, guardian_name, guardian_email, guardian_contact, secondary_guardian_email, permanent_code, health_card, date_of_birth, street, city, province, postal_code, madrassah_id, created_at")
           .eq("id", id)
           .single();
 
@@ -88,7 +90,7 @@ const StudentDetail = () => {
 
       const { data, error } = await supabase
         .from("progress")
-        .select("*")
+        .select("id, student_id, date, current_surah, current_ayah, memorization_quality, notes, teacher_id")
         .eq("student_id", id)
         .order("date", { ascending: false });
 
@@ -266,6 +268,14 @@ const StudentDetail = () => {
             <RefreshCw className="w-4 h-4 mr-2" />
             Revision History
           </TabsTrigger>
+          <TabsTrigger value="dossier">
+            <FolderOpen className="w-4 h-4 mr-2" />
+            Dossier
+          </TabsTrigger>
+          <TabsTrigger value="health">
+            <Heart className="w-4 h-4 mr-2" />
+            Health & IEP
+          </TabsTrigger>
         </TabsList>
         <TabsContent value="dhor-book">
           <DhorBook
@@ -284,6 +294,12 @@ const StudentDetail = () => {
               </p>
             </div>
           )}
+        </TabsContent>
+        <TabsContent value="dossier">
+          <StudentDossier studentId={student.id} student={student} />
+        </TabsContent>
+        <TabsContent value="health">
+          <StudentHealthIEP studentId={student.id} isAdmin={isAdmin} />
         </TabsContent>
       </Tabs>
     </div>

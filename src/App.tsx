@@ -14,6 +14,7 @@
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { Toaster } from "@/components/ui/toaster.tsx";
 import { ThemeProvider } from "@/components/theme-provider.tsx";
+import { ProxyProvider } from "@/contexts/ProxyContext.tsx";
 import Index from "@/pages/Index.tsx";
 import NotFound from "@/pages/NotFound.tsx";
 import Students from "@/pages/Students.tsx";
@@ -29,15 +30,15 @@ import { ProtectedRoute } from "@/components/auth/ProtectedRoute.tsx";
 import { DashboardLayout } from "@/components/layouts/DashboardLayout.tsx";
 import Settings from "@/pages/Settings.tsx";
 import Preferences from "@/pages/Preferences.tsx";
-import CreateDemoAccount from "@/pages/CreateDemoAccount.tsx";
-import CreateTeacherProfileForTestAccount from "@/pages/CreateTeacherProfileForTestAccount.tsx";
-import DatabaseSeeder from "@/pages/admin/DatabaseSeeder.tsx";
+import CreateDemoAccount from "@/pages/dev/CreateDemoAccount.tsx";
+import CreateTeacherProfileForTestAccount from "@/pages/dev/CreateTeacherProfileForTestAccount.tsx";
+import DatabaseSeeder from "@/pages/dev/DatabaseSeeder.tsx";
 import TeacherSchedules from "@/pages/admin/TeacherSchedules.tsx";
 import SetupAdmin from "@/pages/admin/SetupAdmin.tsx";
-import ManualRoleSetup from "@/pages/admin/ManualRoleSetup.tsx";
+import ManualRoleSetup from "@/pages/dev/ManualRoleSetup.tsx";
 import AdminLayout from "@/pages/admin/AdminLayout.tsx";
-import AdminAccessDiagnostic from "@/pages/admin/AdminAccessDiagnostic.tsx";
-import DevAdminManagement from "@/pages/DevAdminManagement.tsx";
+import AdminAccessDiagnostic from "@/pages/dev/AdminAccessDiagnostic.tsx";
+import DevAdminManagement from "@/pages/dev/DevAdminManagement.tsx";
 import TeacherSchedule from "@/pages/TeacherSchedule.tsx";
 import Parent from "@/pages/Parent.tsx";
 import ParentProgress from "@/pages/ParentProgress.tsx";
@@ -46,11 +47,14 @@ import ParentAttendance from "@/pages/ParentAttendance.tsx";
 import ParentAccounts from "@/pages/admin/ParentAccounts.tsx";
 import BulkStudentImport from "@/pages/admin/BulkStudentImport.tsx";
 import Activity from "@/pages/admin/Activity.tsx";
-import Analytics from "@/pages/admin/Analytics.tsx";
 import ResetPassword from "@/pages/ResetPassword.tsx";
+import SchoolCalendar from "@/pages/SchoolCalendar.tsx";
 import TeacherAddParent from "@/pages/TeacherAddParent.tsx";
 import TeacherMessages from "@/pages/TeacherMessages.tsx";
 import ParentMessages from "@/pages/ParentMessages.tsx";
+import Profile from "@/pages/Profile.tsx";
+import Tasks from "@/pages/Tasks.tsx";
+import AbsenceRequests from "@/pages/AbsenceRequests.tsx";
 
 /**
  * @component App
@@ -76,14 +80,15 @@ import ParentMessages from "@/pages/ParentMessages.tsx";
  */
 function App() {
   return (
-    <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
+    <ThemeProvider defaultTheme="light" storageKey="vite-ui-theme">
+      <ProxyProvider>
       <BrowserRouter>
         <Routes>
           <Route path="/auth" element={<Auth />} />
           <Route path="/reset-password" element={<ResetPassword />} />
-          <Route path="/create-demo-account" element={<CreateDemoAccount />} />
-          <Route path="/create-teacher-profile" element={<CreateTeacherProfileForTestAccount />} />
-          <Route path="/admin-diagnostic" element={<AdminAccessDiagnostic />} />
+          <Route path="/create-demo-account" element={<ProtectedRoute requireAdmin><CreateDemoAccount /></ProtectedRoute>} />
+          <Route path="/create-teacher-profile" element={<ProtectedRoute requireAdmin><CreateTeacherProfileForTestAccount /></ProtectedRoute>} />
+          <Route path="/admin-diagnostic" element={<ProtectedRoute requireAdmin><AdminAccessDiagnostic /></ProtectedRoute>} />
           <Route path="*" element={<NotFound />} />
 
           {/* Admin Routes */}
@@ -115,13 +120,12 @@ function App() {
               </ProtectedRoute>
             }
           />
-          {/* Admin Analytics in main sidebar (not inside Admin Panel) */}
           <Route
-            path="/analytics"
+            path="/absence-requests"
             element={
               <ProtectedRoute requireAdmin>
                 <DashboardLayout>
-                  <Analytics />
+                  <AbsenceRequests />
                 </DashboardLayout>
               </ProtectedRoute>
             }
@@ -193,7 +197,7 @@ function App() {
             />
             <Route path="/classes" element={<Classes />} />
             <Route path="/progress-book" element={<ProgressBook />} />
-            <Route path="/add-parent" element={<ProtectedRoute requireParent><TeacherAddParent /></ProtectedRoute>} />
+            <Route path="/add-parent" element={<ProtectedRoute requireTeacher><TeacherAddParent /></ProtectedRoute>} />
             <Route
               path="/attendance"
               element={
@@ -219,6 +223,7 @@ function App() {
               }
             />
             <Route path="/schedule" element={<TeacherSchedule />} />
+            <Route path="/calendar" element={<SchoolCalendar />} />
             <Route
               path="/teacher-accounts"
               element={
@@ -229,9 +234,19 @@ function App() {
             />
             <Route path="/settings" element={<Settings />} />
             <Route path="/preferences" element={<Preferences />} />
+            <Route path="/profile" element={<Profile />} />
+            <Route
+              path="/tasks"
+              element={
+                <ProtectedRoute requireAdmin>
+                  <Tasks />
+                </ProtectedRoute>
+              }
+            />
           </Route>
         </Routes>
       </BrowserRouter>
+      </ProxyProvider>
       <Toaster />
     </ThemeProvider>
   );

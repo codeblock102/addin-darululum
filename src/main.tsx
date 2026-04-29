@@ -16,17 +16,20 @@ import "./index.css";
 import { AuthProvider } from "@/contexts/AuthContext.tsx";
 import { I18nProvider } from "@/contexts/I18nContext.tsx";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { ErrorBoundary } from "@/components/ErrorBoundary.tsx";
 // Apply the React patch to filter out data-lov-id attributes
 // reactPatches removed: component-level sanitizing handles data-lov-id
 
 const queryClient = new QueryClient();
 
 createRoot(document.getElementById("root")!).render(
-  <QueryClientProvider client={queryClient}>
-    <AuthProvider>
-      <I18nProvider>
-        <App />
-      </I18nProvider>
-    </AuthProvider>
-  </QueryClientProvider>,
+  <ErrorBoundary>
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <I18nProvider>
+          <App />
+        </I18nProvider>
+      </AuthProvider>
+    </QueryClientProvider>
+  </ErrorBoundary>,
 );

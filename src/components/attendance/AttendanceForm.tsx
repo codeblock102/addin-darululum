@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import { Form } from "@/components/ui/form.tsx";
-import { useToast } from "@/hooks/use-toast.ts";
+import { useToast } from "@/components/ui/use-toast.ts";
 import { DateSelector } from "./form/DateSelector.tsx";
 import { NotesField } from "./form/NotesField.tsx";
+import { ReasonSelector } from "./form/ReasonSelector.tsx";
 import { useAttendanceSubmit } from "./form/useAttendanceSubmit.ts";
 import { StudentGrid } from "./form/StudentGrid.tsx";
 import { BulkActions } from "./form/BulkActions.tsx";
@@ -143,68 +144,6 @@ export const AttendanceForm = () => {
     if (!student_ids || student_ids.length === 0) return;
     setPendingStatus(status);
 
-    // =================================================================================
-    // STEP 3a: DEBUG LOGGING FOR STAGING
-    // =================================================================================
-    console.log(`%c[Attendance Queue] Staging status "${status}" for ${student_ids.length} students. Fetching details...`, 'color: blue; font-weight: bold;');
-
-    try {
-      // 1. Fetch student names for logging.
-      const { data: students, error: studentsError } = await supabase
-        .from('students')
-        .select('id, name')
-        .in('id', student_ids);
-
-      if (studentsError) throw studentsError;
-      const studentNameMap = new Map(students.map(s => [s.id, s.name]));
-
-      // 2. Use the edge function's preview mode to get parent emails without sending.
-      const { data: sessionData } = await supabase.auth.getSession();
-      const accessToken = sessionData.session?.access_token || "";
-      const date = form.getValues().date as Date;
-      const ymd = date ? `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}` : new Date().toISOString().split('T')[0];
-      const body = {
-        source: "manual-teacher-debug",
-        student_ids,
-        date: ymd,
-        class_id: classId !== "all" ? classId : undefined,
-        preview: true
-      };
-
-      // Use direct fetch to avoid any client invoke quirks
-      const previewResp = await fetch(`${SUPABASE_URL}/functions/v1/attendance-absence-email`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: accessToken ? `Bearer ${accessToken}` : "",
-          apikey: SUPABASE_PUBLISHABLE_KEY,
-          // Provide student IDs also via header as a fallback for body parsing issues
-          "x-student-ids": student_ids.join(','),
-        },
-        body: JSON.stringify(body),
-      });
-      const previewText = await previewResp.text();
-      let previewJson: unknown = {};
-      try { previewJson = JSON.parse(previewText || '{}'); } catch { previewJson = {}; }
-      type PreviewResponse = { recipients?: Record<string, string[]> };
-      const recipients = (previewJson as PreviewResponse).recipients || {};
-
-      // 3. Log the combined information to the console.
-      console.log("%c--- Student Queue Details ---", 'color: blue; font-weight: bold;');
-      student_ids.forEach(id => {
-        console.log({
-          studentId: id,
-          studentName: studentNameMap.get(id) || "Unknown Name",
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-          parentEmails: (recipients as Record<string, string[]>)[id] || [],
-        });
-      });
-      console.log("%c--------------------------", 'color: blue; font-weight: bold;');
-
-    } catch (e) {
-      const message = formatErrorMessage(e);
-      console.error("[Attendance Queue] Error fetching debug info:", message);
-    }
   };
 
   /**
@@ -232,7 +171,7 @@ export const AttendanceForm = () => {
           time: formVals?.time,
           status: pendingStatus,
           notes: formVals?.notes,
-          late_reason: pendingStatus === 'late' ? (formVals?.late_reason || null) : null,
+          late_reason: ['late', 'absent', 'excused'].includes(pendingStatus) ? (formVals?.late_reason || null) : null,
           class_id: classId !== "all" ? classId : null,
         }));
         const { error: upsertErr } = await supabase.from('attendance').upsert(records, { onConflict: 'student_id,date' });
@@ -246,7 +185,6 @@ export const AttendanceForm = () => {
       const body = { source: "manual-teacher", student_ids: studentIds, date: ymd, class_id: classId !== "all" ? classId : undefined, force: true };
 
       // Use direct fetch to ensure body reaches the Edge Function
-      console.log("[Attendance UI] Sending via fetch with body:", body);
       let result: unknown = null;
       const resp = await fetch(`${SUPABASE_URL}/functions/v1/attendance-absence-email`, {
         method: "POST",
@@ -259,16 +197,12 @@ export const AttendanceForm = () => {
         },
         body: JSON.stringify(body),
       });
-      console.log("[Attendance UI] Fetch response status:", resp.status);
       try {
         const rawText = await resp.text();
-        console.log("[Attendance UI] Fetch response text:", rawText);
         result = resp.ok ? JSON.parse(rawText) : null;
-      } catch (e) {
-        console.error("[Attendance UI] Fetch failed to parse JSON:", e);
+      } catch {
         result = null;
       }
-      console.log("[Attendance UI] Final result object being processed:", result);
       
       // --- Handle Function Response ---
       type EmailResult = { emails_sent?: number; email_sending_enabled?: boolean; email_config_message?: string };
@@ -509,15 +443,16 @@ export const AttendanceForm = () => {
           </Card>
         )}
 
-        {/* --- Additional Notes Card --- */}
+        {/* --- Absence Reason Card (shown for absent, excused, late) --- */}
         <Card>
           <CardHeader>
-            <CardTitle>{t("pages.attendance.form.notes.title", "Additional Notes")}</CardTitle>
+            <CardTitle>{t("pages.attendance.form.reason.title", "Absence / Late Reason")}</CardTitle>
             <CardDescription>
-              {t("pages.attendance.form.notes.desc", "Add any relevant notes for this attendance record.")}
+              {t("pages.attendance.form.reason.desc", "Select a reason when marking a student absent, excused, or late.")}
             </CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="space-y-4">
+            <ReasonSelector form={form} />
             <NotesField form={form} />
           </CardContent>
         </Card>
@@ -533,7 +468,7 @@ export const AttendanceForm = () => {
             {t("pages.attendance.dialog.desc", "The following parents will receive attendance emails:")}
           </AlertDialogDescription>
         </AlertDialogHeader>
-        <div className="max-h-64 overflow-auto text-sm text-black">
+        <div className="max-h-64 overflow-auto text-sm text-foreground">
           {Object.entries(previewMap).length === 0 ? (
             <p>{t("pages.attendance.dialog.none", "No recipients found.")}</p>
           ) : (

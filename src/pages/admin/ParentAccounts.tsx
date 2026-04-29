@@ -1,7 +1,6 @@
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client.ts";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card.tsx";
 import { Button } from "@/components/ui/button.tsx";
 import { Input } from "@/components/ui/input.tsx";
 import { Label } from "@/components/ui/label.tsx";
@@ -17,10 +16,16 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog.tsx";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs.tsx";
+import { Tabs, TabsContent } from "@/components/ui/tabs.tsx";
+import { AdminPageShell } from "@/components/admin/AdminPageShell.tsx";
+import { useProxy } from "@/contexts/ProxyContext.tsx";
+import { useNavigate } from "react-router-dom";
+import { ArrowDown, ArrowUp, Eye } from "lucide-react";
 
 const ParentAccounts = () => {
   const { toast } = useToast();
+  const { startProxy } = useProxy();
+  const navigate = useNavigate();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -53,17 +58,30 @@ const ParentAccounts = () => {
     },
   });
 
+  const [activeTab, setActiveTab] = useState<"create" | "link" | "manage">("create");
   const [parentSearch, setParentSearch] = useState("");
+  const [parentSortKey, setParentSortKey] = useState<"name" | "children">("name");
+  const [parentSortDir, setParentSortDir] = useState<"asc" | "desc">("asc");
   type ParentMin = { id: string; name: string; email: string; student_ids: string[] };
   type StudentMin = { id: string; name: string };
 
+  const toggleParentSort = (key: "name" | "children") => {
+    if (key === parentSortKey) setParentSortDir((d) => (d === "asc" ? "desc" : "asc"));
+    else { setParentSortKey(key); setParentSortDir("asc"); }
+  };
+
   const filteredParents = useMemo(() => {
     const q = parentSearch.trim().toLowerCase();
-    if (!q) return parents || [];
-    return (parents || []).filter((p: ParentMin) =>
-      (p.name || "").toLowerCase().includes(q) || (p.email || "").toLowerCase().includes(q)
+    const list = (parents || []).filter((p: ParentMin) =>
+      !q || (p.name || "").toLowerCase().includes(q) || (p.email || "").toLowerCase().includes(q)
     );
-  }, [parents, parentSearch]);
+    return list.slice().sort((a: ParentMin, b: ParentMin) => {
+      let cmp = 0;
+      if (parentSortKey === "name") cmp = (a.name || "").localeCompare(b.name || "");
+      else cmp = (a.student_ids?.length ?? 0) - (b.student_ids?.length ?? 0);
+      return parentSortDir === "asc" ? cmp : -cmp;
+    });
+  }, [parents, parentSearch, parentSortKey, parentSortDir]);
 
   const [selectedExistingParentId, setSelectedExistingParentId] = useState<string>("");
   const [linkStudentIds, setLinkStudentIds] = useState<string[]>([]);
@@ -217,20 +235,34 @@ const ParentAccounts = () => {
   };
 
   return (
-    <div className="space-y-6">
-      <Tabs defaultValue="create">
-        <TabsList className="grid grid-cols-3">
-          <TabsTrigger value="create">Create</TabsTrigger>
-          <TabsTrigger value="link">Link</TabsTrigger>
-          <TabsTrigger value="manage">Manage</TabsTrigger>
-        </TabsList>
+    <AdminPageShell
+      title="Parent Accounts"
+      subtitle="Create and manage parent/guardian accounts and student links"
+    >
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as typeof activeTab)}>
+          <div className="border-b border-gray-100 px-4 py-3">
+            <div className="inline-flex items-center gap-0.5 bg-gray-100/70 p-1 rounded-xl">
+              {(["create", "link", "manage"] as const).map((val) => (
+                <button
+                  key={val}
+                  onClick={() => setActiveTab(val)}
+                  className={`px-3 py-1.5 text-sm font-medium rounded-lg transition-all duration-150 border-0 outline-none capitalize ${
+                    activeTab === val
+                      ? "bg-green-700 text-white shadow-sm"
+                      : "text-gray-500 hover:text-gray-800 hover:bg-gray-100 bg-transparent"
+                  }`}
+                >
+                  {val}
+                </button>
+              ))}
+            </div>
+          </div>
 
-        <TabsContent value="create">
-          <Card>
-            <CardHeader>
-              <CardTitle>Create Parent Account</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
+          <TabsContent value="create" className="mt-0">
+            <div className="p-6 space-y-4">
+              <h3 className="text-base font-semibold text-gray-900">Create Parent Account</h3>
+              <div className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
                   <Label>Name</Label>
@@ -271,18 +303,19 @@ const ParentAccounts = () => {
               </div>
 
               <div className="flex justify-end">
-                <Button type="button" onClick={handleCreate} disabled={isSubmitting}>Create Parent</Button>
+                <Button type="button" onClick={handleCreate} disabled={isSubmitting}
+                  className="rounded-xl bg-green-800 hover:bg-green-700 text-white">
+                  Create Parent
+                </Button>
               </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
+            </div>
+          </div>
+          </TabsContent>
 
-        <TabsContent value="link">
-          <Card>
-            <CardHeader>
-              <CardTitle>Link Existing Parent to Students</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
+          <TabsContent value="link" className="mt-0">
+            <div className="p-6 space-y-4">
+              <h3 className="text-base font-semibold text-gray-900">Link Existing Parent to Students</h3>
+              <div className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="md:col-span-2">
                   <Label>Find Parent</Label>
@@ -333,30 +366,53 @@ const ParentAccounts = () => {
               </div>
 
               <div className="flex justify-end">
-                <Button type="button" onClick={handleLinkExisting} disabled={linkIsSubmitting}>Link Parent</Button>
+                <Button type="button" onClick={handleLinkExisting} disabled={linkIsSubmitting}
+                  className="rounded-xl bg-green-800 hover:bg-green-700 text-white">
+                  Link Parent
+                </Button>
               </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
+            </div>
+          </div>
+          </TabsContent>
 
-        <TabsContent value="manage">
-          <Card>
-            <CardHeader>
-              <CardTitle>Manage Existing Parents</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
+          <TabsContent value="manage" className="mt-0">
+            <div className="p-6 space-y-4">
+              <h3 className="text-base font-semibold text-gray-900">Manage Existing Parents</h3>
+              <div className="space-y-4">
               <div>
                 <Label>Search</Label>
                 <Input value={parentSearch} onChange={(e) => setParentSearch(e.target.value)} placeholder="Search by name or email" />
               </div>
-              <div className="flex items-center justify-end">
-                <Button variant="secondary" onClick={handleSendWelcomeEmails} disabled={isSendingWelcome}>
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-1 text-xs text-gray-500">
+                  <span className="font-medium">Sort:</span>
+                  {(["name", "children"] as const).map((key) => (
+                    <button
+                      key={key}
+                      onClick={() => toggleParentSort(key)}
+                      className={`inline-flex items-center gap-0.5 px-2 py-1 rounded-md transition-colors capitalize ${
+                        parentSortKey === key
+                          ? "bg-green-100 text-green-800 font-semibold"
+                          : "hover:bg-gray-100 text-gray-500"
+                      }`}
+                    >
+                      {key}
+                      {parentSortKey === key && (
+                        parentSortDir === "asc"
+                          ? <ArrowUp className="h-3 w-3" />
+                          : <ArrowDown className="h-3 w-3" />
+                      )}
+                    </button>
+                  ))}
+                </div>
+                <Button variant="outline" onClick={handleSendWelcomeEmails} disabled={isSendingWelcome}
+                  className="rounded-xl border-green-200 text-green-800 hover:bg-green-50">
                   {isSendingWelcome ? "Sending..." : "Send Welcome Email"}
                 </Button>
               </div>
               <div className="grid grid-cols-1 gap-2">
                 {(filteredParents || []).map((p: ParentMin) => (
-                  <div key={p.id} className="flex items-center justify-between rounded border px-3 py-2">
+                  <div key={p.id} className="flex items-center justify-between rounded-xl border border-gray-100 px-4 py-3">
                     <div className="flex items-center gap-3">
                       <input
                         type="checkbox"
@@ -365,24 +421,35 @@ const ParentAccounts = () => {
                         aria-label={`Select ${p.name}`}
                       />
                       <div>
-                      <div className="font-medium">{p.name}</div>
-                      <div className="text-sm text-muted-foreground">{p.email}</div>
-                      <div className="text-xs text-muted-foreground">Children: {(p.student_ids || []).length}</div>
+                        <div className="font-medium text-gray-900">{p.name}</div>
+                        <div className="text-sm text-gray-500">{p.email}</div>
+                        <div className="text-xs text-gray-400">Children: {(p.student_ids || []).length}</div>
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
-                      <Button variant="secondary" onClick={() => openPasswordDialogFor(p)}>Change Password</Button>
+                      <button
+                        onClick={() => { startProxy(p.id, "parent", p.name, p.email); navigate("/parent"); }}
+                        title="View app as this parent"
+                        className="p-2 rounded-lg hover:bg-blue-50 transition-colors text-gray-400 hover:text-blue-600"
+                      >
+                        <Eye className="h-4 w-4" />
+                      </button>
+                      <Button variant="outline" size="sm" onClick={() => openPasswordDialogFor(p)}
+                        className="rounded-xl border-gray-200 text-gray-700 hover:bg-gray-50">
+                        Change Password
+                      </Button>
                     </div>
                   </div>
                 ))}
                 {filteredParents && filteredParents.length === 0 && (
-                  <div className="px-3 py-2 text-sm text-muted-foreground">No parents found.</div>
+                  <div className="px-3 py-4 text-sm text-gray-400 text-center">No parents found.</div>
                 )}
               </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
+            </div>
+          </div>
+          </TabsContent>
+        </Tabs>
+      </div>
 
       {/* Change Password Dialog */}
       <AlertDialog open={pwdDialogOpen} onOpenChange={setPwdDialogOpen}>
@@ -404,13 +471,13 @@ const ParentAccounts = () => {
           </div>
           <AlertDialogFooter>
             <AlertDialogCancel onClick={() => setNewParentPassword("")}>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleChangePassword} className="bg-amber-600 hover:bg-amber-700" disabled={isChangingPassword}>
+            <AlertDialogAction onClick={handleChangePassword} className="bg-green-800 hover:bg-green-700" disabled={isChangingPassword}>
               {isChangingPassword ? "Saving..." : "Save"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </div>
+    </AdminPageShell>
   );
 };
 

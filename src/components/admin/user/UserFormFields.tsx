@@ -1,4 +1,4 @@
-import { FormErrors, UserFormData } from "@/types/adminUser.ts";
+import { FormErrors, UserFormData } from "@/types/user.ts";
 import { Input } from "@/components/ui/input.tsx";
 import { Label } from "@/components/ui/label.tsx";
 import {

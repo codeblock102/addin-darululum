@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge.tsx";
 import { Separator } from "@/components/ui/separator.tsx";
 import { useTeacherClasses } from "@/hooks/useTeacherClasses.ts";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client.ts";
+import { supabase, SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY } from "@/integrations/supabase/client.ts";
 import { useToast } from "@/components/ui/use-toast.ts";
 import { Calendar, CheckCircle2, Clock, FileUp, Trash2, Upload, MessageSquare as _MessageSquare, MessageSquarePlus, MessageSquareText, Loader2, Save } from "lucide-react";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog.tsx";
@@ -220,6 +220,23 @@ export const TeacherAssignments = ({ teacherId }: TeacherAssignmentsProps) => {
       await queryClient.invalidateQueries({ queryKey: ["teacher-assignment-submissions"] });
       resetForm();
       toast({ title: t("pages.teacherPortal.assignments.toastCreated", "Assignment created"), description: t("pages.teacherPortal.assignments.toastSaved", "Saved to database.") });
+
+      // Fire-and-forget: notify parents via edge function
+      if (assignmentId) {
+        try {
+          const { data: sessionData } = await supabase.auth.getSession();
+          const token = sessionData.session?.access_token ?? "";
+          fetch(`${SUPABASE_URL}/functions/v1/send-assignment-notification`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: token ? `Bearer ${token}` : "",
+              apikey: SUPABASE_PUBLISHABLE_KEY,
+            },
+            body: JSON.stringify({ assignment_id: assignmentId, type: "new" }),
+          }).catch(() => { /* silent — email is non-critical */ });
+        } catch { /* ignore */ }
+      }
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : String(err);
       toast({ title: t("pages.teacherPortal.assignments.toastCreateFailed", "Failed to create assignment"), description: message || t("pages.teacherPortal.assignments.toastCreateFailedDesc", "Check that migrations are applied and you are logged in."), variant: "destructive" });
@@ -732,6 +749,14 @@ const AssignmentSubmissions = ({ assignmentId, classIds, explicitStudentIds }: {
         );
       if (error) throw error;
       await queryClient.invalidateQueries({ queryKey: cacheKey as unknown as string[] });
+      // Fire-and-forget: notify parents when assignment is graded
+      if (partial.status === "graded") {
+        supabase.functions.invoke("send-assignment-graded", {
+          body: { assignment_id: assignmentId },
+        }).catch(() => {
+          // Non-fatal: ignore notification error
+        });
+      }
       // Brief saved indicator
       setRecentlySavedIds((prev) => new Set(prev).add(studentId));
       setTimeout(() => {

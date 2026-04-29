@@ -13,7 +13,7 @@
 import { ReactNode, useContext, useEffect, useState } from "react";
 import { Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client.ts";
-import { useToast } from "@/hooks/use-toast.ts";
+import { useToast } from "@/components/ui/use-toast.ts";
 import { AuthContext } from "@/types/auth.ts";
 
 /**

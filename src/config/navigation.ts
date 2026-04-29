@@ -1,36 +1,28 @@
-/**
- * @file src/config/navigation.ts
- * @summary This file defines the navigation structures for different user roles in the application.
- *
- * It exports arrays of `NavItem` objects, which are used to build the sidebar navigation menus.
- * Each `NavItem` typically includes a path (`href`), a display label, an icon, a description, and an optional `exact` flag for route matching.
- * - `adminNavItems`: Defines the navigation links available to users with an admin role.
- * - `teacherNavItems`: Defines the navigation links available to users with a teacher role.
- *
- * Icons are imported from the `lucide-react` library.
- */
 import {
   Book,
+  CalendarDays,
+  CalendarOff,
+  CheckSquare,
   Clock,
   ClipboardList,
   FileText,
   Home,
+  Library,
+  MessageSquare,
   School,
-  Settings,
   Users,
-  UserCircle2 as _UserCircle2,
   UserCheck,
   Activity as ActivityIcon,
-  BarChart3,
-} from "lucide-react"; // Simplified imports based on usage
+  Calendar,
+} from "lucide-react";
 import { NavItem } from "@/types/navigation.ts";
 
 /**
- * @const adminNavItems
- * @description Navigation items for the admin sidebar.
- * Defines the primary navigation links available to administrators.
+ * Admin nav — grouped into sections.
+ * Profile and Settings live in the user dropdown, not here.
  */
 export const adminNavItems: NavItem[] = [
+  // ── Core ──────────────────────────────────────────────────────────────────
   {
     href: "/dashboard",
     label: "nav.dashboard",
@@ -38,24 +30,14 @@ export const adminNavItems: NavItem[] = [
     description: "Overview of all activities",
     exact: true,
   },
-  {
-    href: "/activity",
-    label: "Activity Feed",
-    icon: ActivityIcon,
-    description: "Live app activity feed",
-  },
-  {
-    href: "/analytics",
-    label: "Analytics",
-    icon: BarChart3,
-    description: "Comprehensive analytics and metrics",
-  },
-  // Removed Add Parent from admin nav; only parents should invite other parents
+
+  // ── People ────────────────────────────────────────────────────────────────
   {
     href: "/students",
     label: "nav.students",
     icon: Users,
     description: "Manage student profiles",
+    section: "People",
   },
   {
     href: "/teachers",
@@ -66,20 +48,44 @@ export const adminNavItems: NavItem[] = [
   {
     href: "/classes",
     label: "nav.classes",
-    icon: School,
+    icon: Library,
     description: "Manage classes",
   },
+
+  // ── Operations ────────────────────────────────────────────────────────────
   {
     href: "/progress-book",
     label: "nav.progressBook",
     icon: Book,
     description: "Student progress tracker",
+    section: "Operations",
   },
   {
     href: "/attendance",
     label: "nav.attendance",
     icon: FileText,
     description: "Track attendance records",
+  },
+  {
+    href: "/calendar",
+    label: "nav.calendar",
+    icon: Calendar,
+    description: "School events, holidays, and PD days",
+  },
+  {
+    href: "/admin/teacher-schedules",
+    label: "nav.teacherSchedules",
+    icon: CalendarDays,
+    description: "View teachers' weekly schedules",
+  },
+
+  // ── Admin Tools ───────────────────────────────────────────────────────────
+  {
+    href: "/tasks",
+    label: "nav.tasks",
+    icon: CheckSquare,
+    description: "Assign and track teacher tasks",
+    section: "Admin",
   },
   {
     href: "/admin/parent-accounts",
@@ -89,29 +95,27 @@ export const adminNavItems: NavItem[] = [
   },
   {
     href: "/admin/bulk-student-import",
-    label: "Bulk Student Import",
+    label: "nav.bulkStudentImport",
     icon: Users,
     description: "Upload CSV to add students",
   },
   {
-    href: "/admin/teacher-schedules",
-    label: "Teacher Schedules",
-    icon: Clock,
-    description: "View teachers' weekly schedules",
+    href: "/absence-requests",
+    label: "nav.absenceRequests",
+    icon: CalendarOff,
+    description: "Review teacher absence requests",
   },
   {
-    href: "/settings",
-    label: "nav.settings",
-    icon: Settings,
-    description: "System configuration",
+    href: "/activity",
+    label: "nav.activityFeed",
+    icon: ActivityIcon,
+    description: "Live app activity feed",
   },
 ];
 
 /**
- * @const teacherNavItems
- * @description Navigation items for the teacher sidebar.
- * Defines the primary navigation links available to teachers.
- * Updated to use consistent routes and provide direct access to attendance.
+ * Teacher nav — trimmed. Profile/Preferences are in the user dropdown.
+ * "My Students" removed (it's a tab inside Dashboard — redundant).
  */
 export const teacherNavItems: NavItem[] = [
   {
@@ -121,12 +125,14 @@ export const teacherNavItems: NavItem[] = [
     description: "Teacher dashboard",
     exact: true,
   },
-  // Removed Add Parent from teacher nav; only parents should invite other parents
+
+  // ── Daily ─────────────────────────────────────────────────────────────────
   {
-    href: "/dashboard?tab=students",
-    label: "nav.myStudents",
-    icon: Users,
-    description: "Manage your students",
+    href: "/attendance",
+    label: "nav.attendance",
+    icon: Clock,
+    description: "Track student attendance",
+    section: "Daily",
   },
   {
     href: "/dashboard?tab=progress-book",
@@ -140,35 +146,31 @@ export const teacherNavItems: NavItem[] = [
     icon: ClipboardList,
     description: "Create and track assignments",
   },
-  {
-    href: "/attendance",
-    label: "nav.attendance",
-    icon: Clock,
-    description: "Track student attendance",
-  },
+
+  // ── Communication ─────────────────────────────────────────────────────────
   {
     href: "/messages",
-    label: "Messages",
-    icon: FileText,
+    label: "nav.messages",
+    icon: MessageSquare,
     description: "Message parents of your class",
+    section: "Communication",
   },
   {
     href: "/schedule",
     label: "nav.schedule",
-    icon: Clock,
+    icon: CalendarDays,
     description: "View your class schedule",
   },
   {
-    href: "/preferences",
-    label: "nav.preferences",
-    icon: Settings,
-    description: "Account preferences",
+    href: "/calendar",
+    label: "nav.calendar",
+    icon: Calendar,
+    description: "School events and holidays",
   },
 ];
 
 /**
- * @const parentNavItems
- * @description Navigation items for the parent sidebar.
+ * Parent nav — essentials only.
  */
 export const parentNavItems: NavItem[] = [
   {
@@ -179,22 +181,16 @@ export const parentNavItems: NavItem[] = [
     exact: true,
   },
   {
-    href: "/add-parent",
-    label: "nav.addParent",
-    icon: Users,
-    description: "Add another guardian for your child",
-  },
-  {
-    href: "/parent/messages",
-    label: "Messages",
-    icon: FileText,
-    description: "Message your child's teacher",
-  },
-  {
     href: "/parent/progress",
     label: "nav.quranProgress",
     icon: Book,
     description: "View memorization and revision",
+  },
+  {
+    href: "/parent/attendance",
+    label: "nav.attendance",
+    icon: Clock,
+    description: "Attendance history",
   },
   {
     href: "/parent/academics",
@@ -203,9 +199,9 @@ export const parentNavItems: NavItem[] = [
     description: "Assessments and grades",
   },
   {
-    href: "/parent/attendance",
-    label: "nav.attendance",
-    icon: Clock,
-    description: "Attendance history",
+    href: "/parent/messages",
+    label: "nav.messages",
+    icon: MessageSquare,
+    description: "Message your child's teacher",
   },
 ];

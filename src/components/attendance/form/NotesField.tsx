@@ -22,7 +22,7 @@ export function NotesField({ form }: NotesFieldProps) {
       name="notes"
       render={({ field }) => (
         <FormItem>
-          <FormLabel className="text-black">
+          <FormLabel className="text-foreground">
             {t("pages.attendance.form.notes.title", "Additional Notes")}
           </FormLabel>
           <FormControl>

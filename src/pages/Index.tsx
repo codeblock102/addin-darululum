@@ -29,8 +29,6 @@ export default function Index() {
         .maybeSingle();
 
       if (data) {
-        console.log("Found teacher profile, redirecting");
-        localStorage.setItem("userRole", "teacher");
         navigate("/teacher-portal");
       } else {
         // Check for parent via parent_teachers by auth id (requires session)
@@ -40,8 +38,6 @@ export default function Index() {
           ? await supabase.from("parent_teachers").select("id").eq("id", uid).maybeSingle()
           : ({ data: null } as { data: { id?: string } | null });
         if (parentData?.id) {
-          console.log("Found parent profile, redirecting");
-          localStorage.setItem("userRole", "parent");
           navigate("/parent");
         } else {
           // No specific role found, show the dashboard navigation options
@@ -56,9 +52,8 @@ export default function Index() {
   }, [navigate]);
 
   useEffect(() => {
-    // Set a maximum timeout for the loading state (even shorter timeout)
+    // Set a maximum timeout for the loading state
     const timeoutId = setTimeout(() => {
-      console.log("Timeout reached, showing escape options");
       setIsLoading(false);
       setErrorOccurred(true);
     }, 1000); // 1 second timeout for better UX
@@ -66,7 +61,6 @@ export default function Index() {
     // Direct access to auth page - should always be immediately available
     const authPath = globalThis.location.pathname;
     if (authPath === "/auth") {
-      console.log("On auth page, clearing timeout");
       setIsLoading(false);
       clearTimeout(timeoutId);
       return;
@@ -78,37 +72,15 @@ export default function Index() {
       const isAdmin = session.user.user_metadata?.role === "admin";
 
       if (isAdmin) {
-        console.log("User is admin based on metadata, redirecting");
-        localStorage.setItem("userRole", "admin");
         navigate("/dashboard");
         clearTimeout(timeoutId);
         return;
       }
-      // Try to redirect based on local storage role if available
-      const role = localStorage.getItem("userRole");
-      if (role === "admin") {
-        console.log("Found admin role in localStorage, redirecting");
-        navigate("/dashboard");
-        clearTimeout(timeoutId);
-        return;
-      } else if (role === "teacher") {
-        console.log("Found teacher role in localStorage, redirecting");
-        navigate("/teacher-portal");
-        clearTimeout(timeoutId);
-        return;
-      } else if (role === "parent") {
-        console.log("Found parent role in localStorage, redirecting");
-        navigate("/parent");
-        clearTimeout(timeoutId);
-        return;
-      } else {
-        // If no role found but user is logged in, check email for teacher profile
-        // This could be a first-time login or cache was cleared
-        checkTeacherProfile(session.user.email);
-      }
+
+      // No localStorage shortcut — always resolve role from the database
+      checkTeacherProfile(session.user.email);
     } else {
       // If user is not logged in, redirect to auth page
-      console.log("No session detected, redirecting to auth");
       navigate("/auth");
       clearTimeout(timeoutId);
       return;
@@ -123,12 +95,10 @@ export default function Index() {
   };
 
   const handleGoToAdmin = () => {
-    localStorage.setItem("userRole", "admin");
     navigate("/admin");
   };
 
   const handleGoToTeacher = () => {
-    localStorage.setItem("userRole", "teacher");
     navigate("/teacher-portal");
   };
 

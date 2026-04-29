@@ -1,112 +1,124 @@
-import { Button } from "@/components/ui/button.tsx";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card.tsx";
-import { Calendar, MessageSquare, Plus, Users, Settings, BarChart3 } from "lucide-react";
+import { Calendar, MessageSquare, Plus, Users, Settings, BarChart3, Zap } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useRBAC } from "@/hooks/useRBAC.ts";
 import { useI18n } from "@/contexts/I18nContext.tsx";
+import { cn } from "@/lib/utils.ts";
 
 interface QuickActionsProps {
   teacherId: string;
   isAdmin?: boolean;
 }
 
+type Action = {
+  title: string;
+  icon: React.ElementType;
+  action: () => void;
+  iconClass: string;
+  description: string;
+};
+
 export const QuickActions = ({ teacherId: _teacherId, isAdmin = false }: QuickActionsProps) => {
   const navigate = useNavigate();
   const { isAttendanceTaker } = useRBAC();
   const { t } = useI18n();
 
-  const teacherActions = [
+  const teacherActions: Action[] = [
     {
       title: t("pages.teacherPortal.quickActions.addStudent", "Add Student"),
       icon: Plus,
       action: () => navigate("/dashboard?tab=students"),
-      color: "bg-blue-500 hover:bg-blue-600",
+      iconClass: "bg-blue-100 text-blue-600",
       description: t("pages.teacherPortal.quickActions.addStudentDesc", "Register new students"),
     },
-    isAttendanceTaker && {
+    ...(isAttendanceTaker ? [{
       title: t("pages.teacherPortal.quickActions.takeAttendance", "Take Attendance"),
       icon: Calendar,
       action: () => navigate("/attendance"),
-      color: "bg-green-500 hover:bg-green-600",
+      iconClass: "bg-green-100 text-green-600",
       description: t("pages.teacherPortal.quickActions.takeAttendanceDesc", "Mark daily attendance"),
-    },
+    }] : []),
     {
       title: t("pages.teacherPortal.quickActions.viewStudents", "View Students"),
       icon: Users,
       action: () => navigate("/dashboard?tab=students"),
-      color: "bg-purple-500 hover:bg-purple-600",
+      iconClass: "bg-purple-100 text-purple-600",
       description: t("pages.teacherPortal.quickActions.viewStudentsDesc", "Browse student list"),
     },
   ];
 
-  const adminActions = [
+  const adminActions: Action[] = [
     {
       title: t("pages.teacherPortal.quickActions.userManagement", "User Management"),
       icon: Users,
       action: () => navigate("/teachers"),
-      color: "bg-[hsl(142.8,64.2%,24.1%)] hover:bg-[hsl(142.8,64.2%,28%)]",
+      iconClass: "bg-green-100 text-green-600",
       description: t("pages.teacherPortal.quickActions.userManagementDesc", "Manage teachers & students"),
     },
     {
       title: t("pages.teacherPortal.quickActions.systemAnalytics", "System Analytics"),
       icon: BarChart3,
       action: () => navigate("/admin"),
-      color: "bg-blue-500 hover:bg-blue-600",
+      iconClass: "bg-blue-100 text-blue-600",
       description: t("pages.teacherPortal.quickActions.systemAnalyticsDesc", "View system statistics"),
     },
     {
       title: t("pages.teacherPortal.quickActions.parentAccounts", "Parent Accounts"),
       icon: MessageSquare,
       action: () => navigate("/admin/parent-accounts"),
-      color: "bg-green-500 hover:bg-green-600",
+      iconClass: "bg-teal-100 text-teal-600",
       description: t("pages.teacherPortal.quickActions.parentAccountsDesc", "Manage parent access"),
     },
     {
       title: t("pages.teacherPortal.quickActions.settings", "Settings"),
       icon: Settings,
       action: () => navigate("/settings"),
-      color: "bg-purple-500 hover:bg-purple-600",
+      iconClass: "bg-gray-100 text-gray-600",
       description: t("pages.teacherPortal.quickActions.settingsDesc", "System configuration"),
     },
   ];
 
-  type Action = { title: string; icon: typeof Users; action: () => void; color: string; description: string };
-  const actions: Action[] = (isAdmin ? adminActions : teacherActions).filter((a): a is Action => Boolean(a));
+  const actions = isAdmin ? adminActions : teacherActions;
 
   return (
-    <Card className="border border-gray-200 shadow-sm bg-white hover:shadow-md transition-all duration-200">
-      <CardHeader className={`pb-3 ${isAdmin ? 'pb-2' : 'pb-3'}`}>
-        <CardTitle className={`flex items-center gap-3 font-semibold text-gray-800 ${isAdmin ? 'text-base' : 'text-lg'}`}>
-          <div className={`p-2 bg-[hsl(142.8,64.2%,24.1%)]/10 rounded-lg ${isAdmin ? 'p-1.5' : 'p-2'}`}>
-            <Calendar className={`text-[hsl(142.8,64.2%,24.1%)] ${isAdmin ? 'h-4 w-4' : 'h-5 w-5'}`} />
-          </div>
-          {isAdmin ? t("pages.teacherPortal.quickActions.systemActions", "System Actions") : t("pages.teacherPortal.quickActions.quickActions", "Quick Actions")}
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+    <div>
+      {/* Section accent header */}
+      <div className="flex items-center gap-2 mb-4">
+        <div className="border-l-2 border-green-600 pl-3">
+          <p className="text-sm font-bold text-gray-800">
+            <span className="inline-flex items-center gap-1.5">
+              <Zap className="h-3.5 w-3.5 text-amber-500" />
+              {isAdmin
+                ? t("pages.teacherPortal.quickActions.systemActions", "System Actions")
+                : t("pages.teacherPortal.quickActions.quickActions", "Quick Actions")}
+            </span>
+          </p>
+        </div>
+      </div>
+
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+        <div className="grid grid-cols-2 gap-2">
           {actions.map((action, index) => (
-            <Button
+            <button
               key={index}
-              variant="outline"
-              className="h-24 flex flex-col items-center justify-center gap-2 border-2 border-gray-200 hover:border-[hsl(142.8,64.2%,24.1%)] hover:shadow-sm transition-all duration-200 bg-white hover:bg-gray-50 group"
               onClick={action.action}
+              className={cn(
+                "flex flex-col items-start gap-2.5 p-4 rounded-xl border border-gray-100 bg-white",
+                "hover:border-green-200 hover:bg-green-50/30 transition-all duration-150 text-left group",
+              )}
             >
-              <div className={`p-2 rounded-lg ${action.color} text-white group-hover:scale-105 transition-transform duration-200`}>
-                <action.icon className="h-5 w-5" />
+              <div className={cn("p-2 rounded-lg", action.iconClass)}>
+                <action.icon className="h-4 w-4" />
               </div>
-              <div className="text-center">
-                <div className="text-sm font-semibold text-gray-800 group-hover:text-[hsl(142.8,64.2%,24.1%)] transition-colors duration-200">
+              <div>
+                <p className="text-xs font-semibold text-gray-800 group-hover:text-gray-900">
                   {action.title}
-                </div>
-                <div className="text-xs text-black mt-1">
-                  {action.description}
-                </div>
+                </p>
+                <p className="text-xs text-gray-400 mt-0.5">{action.description}</p>
               </div>
-            </Button>
+            </button>
           ))}
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 };

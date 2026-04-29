@@ -1,7 +1,8 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client.ts";
 import { useAuth } from "@/hooks/use-auth.ts";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
+import { useProxy } from "@/contexts/ProxyContext.tsx";
 
 interface UserRole {
   role: string | null;
@@ -13,6 +14,7 @@ interface UserRole {
 export const useRBAC = () => {
   const { session } = useAuth();
   const queryClient = useQueryClient();
+  const { proxy } = useProxy();
 
   const { data: userRole, isLoading } = useQuery<UserRole | null>({
     queryKey: ["user-role", session?.user?.id],
@@ -64,10 +66,12 @@ export const useRBAC = () => {
     enabled: !!session?.user?.id,
   });
 
-  const isAdmin = userRole?.role === "admin";
-  const isTeacher = userRole?.role === "teacher";
-  const isParent = userRole?.role === "parent";
-  const teacherId = userRole?.teacher_id;
+  // When an admin is proxying, override role + userId for UI rendering.
+  // The real Supabase JWT stays unchanged so RLS/data access remains admin-level.
+  const isAdmin = proxy.active ? false : userRole?.role === "admin";
+  const isTeacher = proxy.active ? proxy.role === "teacher" : userRole?.role === "teacher";
+  const isParent = proxy.active ? proxy.role === "parent" : userRole?.role === "parent";
+  const teacherId = proxy.active ? proxy.userId : userRole?.teacher_id;
   // Attendance access driven by capability
   const capabilities: string[] = Array.isArray(userRole?.capabilities)
     ? (userRole?.capabilities as unknown as string[])
@@ -76,24 +80,16 @@ export const useRBAC = () => {
   const isAttendanceTaker = hasCapability("attendance_access");
   const isHifdhTeacher = (userRole?.subject || "").toLowerCase().includes("hifdh");
 
-  console.log(
-    "RBAC Hook - Role:",
-    userRole?.role,
-    "Admin:",
-    isAdmin,
-    "Teacher:",
-    isTeacher,
-    "Parent:",
-    isParent,
-    "Teacher ID:",
-    teacherId,
-  );
+  // Stable per-instance channel ID — survives re-renders but is unique
+  // across all useRBAC() callers so Supabase never sees a name collision.
+  const instanceId = useRef(`rbac-${Math.random().toString(36).slice(2, 9)}`);
 
   // Live update attendance_taker changes for current user
   useEffect(() => {
     if (!teacherId) return;
+    const channelName = `${instanceId.current}-${teacherId}`;
     const channel = supabase
-      .channel("rbac-profiles")
+      .channel(channelName)
       .on(
         "postgres_changes",
         {

@@ -21,10 +21,12 @@ import { Textarea } from "@/components/ui/textarea.tsx";
 import { Input } from "@/components/ui/input.tsx";
 import { Label } from "@/components/ui/label.tsx";
 import { Clock, Loader2, Pencil } from "lucide-react";
+import { absenceReasonLabel } from "@/components/attendance/AbsenceReasonSelect.tsx";
 import { StatusBadge, StatusType } from "@/components/ui/status-badge.tsx";
+import { StudentContactPopover } from "@/components/attendance/StudentContactPopover.tsx";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client.ts";
-import { useToast } from "@/hooks/use-toast.ts";
+import { useToast } from "@/components/ui/use-toast.ts";
 
 type AttendanceRecord = {
   id: string;
@@ -32,6 +34,7 @@ type AttendanceRecord = {
   time?: string | null;
   status: string;
   notes?: string;
+  late_reason?: string | null;
   students: {
     id: string;
     name: string;
@@ -154,7 +157,7 @@ export function AttendanceDataTable(
       <div className="flex justify-center items-center h-48">
         <div className="flex flex-col items-center gap-2">
           <Loader2 className="h-8 w-8 animate-spin text-purple-500" />
-          <p className="text-sm text-black">Loading attendance records...</p>
+          <p className="text-sm text-foreground">Loading attendance records...</p>
         </div>
       </div>
     );
@@ -199,6 +202,9 @@ export function AttendanceDataTable(
                   Status
                 </TableHead>
                 <TableHead className="text-purple-700 dark:text-purple-300">
+                  Reason
+                </TableHead>
+                <TableHead className="text-purple-700 dark:text-purple-300">
                   Notes
                 </TableHead>
               </TableRow>
@@ -210,11 +216,19 @@ export function AttendanceDataTable(
                     {format(parseISO(record.date), "PPP")}
                   </TableCell>
                   <TableCell className="text-gray-900 flex items-center gap-2">
-                    <Clock className="h-4 w-4 text-black" />
+                    <Clock className="h-4 w-4 text-foreground" />
                     {formatTime(record.time)}
                   </TableCell>
-                  <TableCell className="text-gray-900">
-                    {record.students?.name || "Unknown Student"}
+                  <TableCell>
+                    {record.students ? (
+                      <StudentContactPopover
+                        studentId={record.students.id}
+                        studentName={record.students.name}
+                        status={record.status}
+                      />
+                    ) : (
+                      <span className="text-gray-900">Unknown Student</span>
+                    )}
                   </TableCell>
                   <TableCell className="text-gray-900">
                     {record.classes?.name || "N/A"}
@@ -222,7 +236,10 @@ export function AttendanceDataTable(
                   <TableCell>
                     <StatusBadge status={record.status as StatusType} />
                   </TableCell>
-                  <TableCell className="max-w-[200px] text-black">
+                  <TableCell className="text-gray-600 text-sm max-w-[160px] truncate">
+                    {absenceReasonLabel(record.late_reason)}
+                  </TableCell>
+                  <TableCell className="max-w-[200px] text-foreground">
                     <div className="flex items-center gap-2">
                       <span className="truncate flex-1">{record.notes || "No notes"}</span>
                       {isAdmin && (

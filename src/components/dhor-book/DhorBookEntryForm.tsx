@@ -142,7 +142,6 @@ export function DhorBookEntryForm(
         const end = totalAyat;
 
         if (end && end > 0) {
-          console.log(`[DhorBook] Ayat options from DB totals for Surah ${selectedSurah}: 1-${end}`);
           const ayatArray = Array.from({ length: end - start + 1 }, (_, i) => start + i);
           setAyatOptions(ayatArray);
           // Do not set start_ayat here to avoid overriding pending value. Let the post-options effect handle it.
@@ -222,7 +221,6 @@ export function DhorBookEntryForm(
         };
         const match = (juzData || []).find((j) => surahInJuz(j.surah_list, pendingSurahToSelect));
         if (match && match.juz_number !== selectedJuz) {
-          console.log("[DhorBook] Auto-switching Juz to contain pending surah", { from: selectedJuz, to: match.juz_number, pendingSurahToSelect });
           setSelectedJuz(match.juz_number);
         }
       }
@@ -252,7 +250,6 @@ export function DhorBookEntryForm(
         const end = totalAyat;
 
         if (end && end > 0) {
-          console.log(`[DhorBook] Nazirah ayat options from DB totals for Surah ${nazSelectedSurah}: 1-${end}`);
           const ayatArray = Array.from({ length: end - start + 1 }, (_, i) => start + i);
           setNazAyatOptions(ayatArray);
           const preferredNazStart = (pendingNazStartAyat && pendingNazStartAyat >= start && pendingNazStartAyat <= end)
@@ -432,10 +429,6 @@ export function DhorBookEntryForm(
           return;
         }
 
-        console.group("[DhorBook] Prefill from previous sabaq");
-        console.log("studentId:", studentId);
-        console.log("raw previous row:", prev);
-
         // Prefer the explicit end_surah as the starting surah for the next entry; fallback to current_surah
         const lastEndSurah: number | undefined = (prev as unknown as { end_surah?: number }).end_surah ?? (prev as unknown as { current_surah?: number }).current_surah;
         const startAyatRaw: number | undefined = (prev as unknown as { start_ayat?: number }).start_ayat;
@@ -448,17 +441,7 @@ export function DhorBookEntryForm(
         if (lastEndAyat === undefined && startAyatRaw !== undefined) {
           lastEndAyat = (versesMem && versesMem > 0) ? (startAyatRaw + versesMem - 1) : startAyatRaw;
         }
-        console.log("derived values:", {
-          lastEndSurah,
-          startAyatRaw,
-          endAyatRaw,
-          versesMem,
-          pagesMem,
-          lastEndAyat,
-        });
         if (!lastEndSurah || !lastEndAyat) {
-          console.warn("[DhorBook] Missing lastEndSurah or lastEndAyat; skipping prefill");
-          console.groupEnd();
           return;
         }
 
@@ -510,8 +493,6 @@ export function DhorBookEntryForm(
           setSelectedJuz(nextJuz);
         }
 
-        console.log("resolved next values:", { nextSurah, nextAyat, nextJuz });
-
         // Defer setting surah until surah list for the juz is loaded to avoid resets
         setPendingSurahToSelect(nextSurah);
 
@@ -534,13 +515,8 @@ export function DhorBookEntryForm(
           quran_format: inferredQuranFormat ?? (currentValues.quran_format ?? "13"),
           start_ayat: nextAyat, // temporary until ayah options load
         } as typeof currentValues;
-        console.log("applying RHF reset with:", nextRHFValues);
         form.reset(nextRHFValues);
-
-        console.log("setting pending values:", { pendingSurahToSelect: nextSurah, pendingAyat: nextAyat });
         setPendingStartAyat(nextAyat);
-
-        console.groupEnd();
       } catch (e) {
         console.error("[DhorBook] Unexpected error pre-filling from previous sabaq:", e);
       }
@@ -552,7 +528,6 @@ export function DhorBookEntryForm(
   }, [studentId, isOpen]);
 
   function handleSubmit(data: DailyActivityFormValues) {
-    console.log("Form data from RHF (DailyActivityFormValues):", data);
     if (!date) {
       toast({
         title: "Error",
@@ -566,10 +541,6 @@ export function DhorBookEntryForm(
       entry_date: format(date, "yyyy-MM-dd"),
       pages_memorized: calculatedPages,
     };
-    console.log(
-      "Final payload for onSubmit (DhorBookCombinedFormData):",
-      JSON.stringify(finalPayload, null, 2),
-    );
     onSubmit(finalPayload);
   }
 
@@ -669,7 +640,6 @@ export function DhorBookEntryForm(
                           console.warn("[DhorBook] Ignoring invalid Juz value:", value);
                           return;
                         }
-                        console.log(`Selected Juz: ${juzNumber}`);
                         field.onChange(juzNumber);
                         setSelectedJuz(juzNumber);
                         setSelectedSurah(null);
@@ -717,7 +687,6 @@ export function DhorBookEntryForm(
                           console.warn("[DhorBook] Ignoring invalid Surah value:", value);
                           return;
                         }
-                        console.log(`Selected Surah: ${surahNumber}`);
                         field.onChange(surahNumber);
                         setSelectedSurah(surahNumber);
                       }}
@@ -838,7 +807,6 @@ export function DhorBookEntryForm(
                           console.warn("[DhorBook] Ignoring invalid Start Ayat value:", value);
                           return;
                         }
-                        console.log(`Selected Start Ayat: ${ayatNumber}`);
                         field.onChange(ayatNumber);
                         // Reset end ayat when start changes
                         form.setValue("end_ayat", undefined);
@@ -893,7 +861,6 @@ export function DhorBookEntryForm(
                           console.warn("[DhorBook] Ignoring invalid End Ayat value:", value);
                           return;
                         }
-                        console.log(`Selected End Ayat: ${ayatNumber}`);
                         field.onChange(ayatNumber);
                       }}
                       value={field.value?.toString()}

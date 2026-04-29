@@ -1,23 +1,12 @@
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
-import { format, parseISO } from "date-fns";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export function formatDate(dateString: string, formatString = "PPP"): string {
-  if (!dateString) return "N/A";
-  try {
-    const date = typeof dateString === "string"
-      ? parseISO(dateString)
-      : new Date(dateString);
-    return format(date, formatString);
-  } catch (error) {
-    console.error("Error formatting date:", error);
-    return "Invalid date";
-  }
-}
+// Re-export formatDate from dateUtils for consistency
+export { formatDate } from "@/utils/dateUtils.ts";
 
 export function truncateText(text: string, maxLength: number): string {
   if (!text) return "";

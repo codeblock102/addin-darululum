@@ -10,6 +10,7 @@ import {
 import { UserExperienceSettings } from "@/types/settings.ts";
 import { SettingsCard } from "./SettingsCard.tsx";
 import { UserCheck } from "lucide-react";
+import { usePageHelp } from "@/hooks/usePageHelp.ts";
 
 interface UserExperienceSettingsSectionProps {
   settings: UserExperienceSettings;
@@ -19,6 +20,8 @@ interface UserExperienceSettingsSectionProps {
 export function UserExperienceSettingsSection(
   { settings, onUpdate }: UserExperienceSettingsSectionProps,
 ) {
+  const { enabled: pageHelpEnabled, toggle: togglePageHelp } = usePageHelp();
+
   const handleChange = <K extends keyof UserExperienceSettings>(
     key: K,
     value: UserExperienceSettings[K],
@@ -33,6 +36,22 @@ export function UserExperienceSettingsSection(
       icon={<UserCheck className="h-5 w-5" />}
     >
       <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <Label htmlFor="page-help" className="font-medium">
+              Page Assistance
+            </Label>
+            <p className="text-sm text-muted-foreground">
+              Show contextual tips and guides on each page
+            </p>
+          </div>
+          <Switch
+            id="page-help"
+            checked={pageHelpEnabled}
+            onCheckedChange={togglePageHelp}
+          />
+        </div>
+
         <div className="flex items-center justify-between">
           <div>
             <Label htmlFor="guided-tours" className="font-medium">

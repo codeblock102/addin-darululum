@@ -34,14 +34,20 @@ serve(async (req: Request) => {
 
     if (profileError) {
       console.error("Error deleting profile:", profileError);
-      return new Response(JSON.stringify({ error: `Failed to delete profile: ${profileError.message}` }), {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      return new Response(
+        JSON.stringify({
+          error: `Failed to delete profile: ${profileError.message}`,
+        }),
+        {
+          status: 500,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
+      );
     }
-    
+
     // Step 2: Delete the auth user.
-    const { data: authData, error: authError } = await supabaseAdmin.auth.admin.deleteUser(userId);
+    const { data: authData, error: authError } = await supabaseAdmin.auth.admin
+      .deleteUser(userId);
 
     // If the user is not found, it's not an error for deletion.
     if (authError && authError.message !== "User not found") {
@@ -52,10 +58,13 @@ serve(async (req: Request) => {
       });
     }
 
-    return new Response(JSON.stringify({ message: "Admin deleted successfully" }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-      status: 200,
-    });
+    return new Response(
+      JSON.stringify({ message: "Admin deleted successfully" }),
+      {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 200,
+      },
+    );
   } catch (error) {
     console.error("Unhandled error:", error);
     return new Response(JSON.stringify({ error: (error as Error).message }), {
@@ -63,4 +72,4 @@ serve(async (req: Request) => {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
-}); 
+});

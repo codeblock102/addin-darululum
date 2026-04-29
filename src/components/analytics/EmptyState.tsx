@@ -1,31 +1,18 @@
-/**
- * Reusable Empty State Component
- * Displays a message when data exists but is empty or unavailable
- */
-
-import { AlertCircle } from "lucide-react";
+import { type ReactNode } from "react";
+import { InboxIcon } from "lucide-react";
 
 interface EmptyStateProps {
-  message?: string;
+  message: string;
   description?: string;
-  icon?: React.ReactNode;
-  className?: string;
+  icon?: ReactNode;
 }
 
-export function EmptyState({
-  message = "No data available",
-  description,
-  icon,
-  className = "",
-}: EmptyStateProps) {
-  return (
-    <div className={`flex flex-col items-center justify-center py-12 space-y-4 ${className}`}>
-      {icon || <AlertCircle className="h-8 w-8 text-gray-400" />}
-      <p className="text-gray-600 font-medium">{message}</p>
-      {description && (
-        <p className="text-sm text-gray-500 max-w-md text-center">{description}</p>
-      )}
+export const EmptyState = ({ message, description, icon }: EmptyStateProps) => (
+  <div className="flex flex-col items-center justify-center py-12 text-center gap-3">
+    <div className="w-12 h-12 rounded-2xl bg-gray-100 flex items-center justify-center text-gray-400">
+      {icon ?? <InboxIcon className="h-6 w-6" />}
     </div>
-  );
-}
-
+    <p className="text-sm font-semibold text-gray-700">{message}</p>
+    {description && <p className="text-xs text-gray-400 max-w-xs">{description}</p>}
+  </div>
+);

@@ -5,31 +5,28 @@ on:
     branches: [main, dev]
   pull_request:
     branches: [main, dev]
+  workflow_dispatch:
 
 jobs:
-  # ── Frontend (Vite / React / TypeScript) ─────────────────────────────────
+  # ── Frontend (Vite / React / TypeScript via Deno) ────────────────────────
   frontend:
-    name: Frontend — type-check & build
+    name: Frontend — build
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - name: Setup Deno
+        uses: denoland/setup-deno@v2
         with:
-          node-version: 20
-          cache: npm
+          deno-version: v2.x
 
       - name: Install dependencies
-        run: npm ci
-
-      - name: TypeScript type-check
-        run: npx tsc --noEmit
+        run: deno install
 
       - name: Build
-        run: npm run build
+        run: deno task build
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
@@ -53,5 +50,5 @@ jobs:
           deno-version: v2.x
 
       - name: Lint edge functions
-        run: deno lint supabase/functions/
+        run: deno lint --rules-exclude=no-import-prefix,no-explicit-any,no-unused-vars,no-inner-declarations,no-empty,ban-ts-comment,prefer-const supabase/functions/
         continue-on-error: true

@@ -38,7 +38,12 @@ serve(async (req: Request) => {
     } catch (_) { /* ignore */ }
 
     // Get target parents (flat fields only)
-    type ParentRow = { id: string; name: string; email: string; student_ids: string[] };
+    type ParentRow = {
+      id: string;
+      name: string;
+      email: string;
+      student_ids: string[];
+    };
     let parents: ParentRow[] | null = null;
     let parentsError: unknown = null;
     if (targetParentIds.length > 0) {
@@ -59,8 +64,12 @@ serve(async (req: Request) => {
     }
 
     if (parentsError) {
-      const msg = (parentsError as { message?: string } | null)?.message || "Unknown error";
-      console.error("[send-parent-welcome-emails] failed to fetch parents:", msg);
+      const msg = (parentsError as { message?: string } | null)?.message ||
+        "Unknown error";
+      console.error(
+        "[send-parent-welcome-emails] failed to fetch parents:",
+        msg,
+      );
       return new Response(JSON.stringify({ error: msg }), {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -68,14 +77,17 @@ serve(async (req: Request) => {
     }
 
     if (!parents || parents.length === 0) {
-      return new Response(JSON.stringify({ 
-        message: "No parents found to send emails to",
-        emailsSent: 0,
-        emailsSkipped: 0
-      }), {
-        status: 200,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      return new Response(
+        JSON.stringify({
+          message: "No parents found to send emails to",
+          emailsSent: 0,
+          emailsSkipped: 0,
+        }),
+        {
+          status: 200,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
+      );
     }
 
     // Build student name map from all referenced student_ids
@@ -96,70 +108,107 @@ serve(async (req: Request) => {
           .in("id", Array.from(allStudentIds));
         if (!studsError && Array.isArray(studs)) {
           for (const s of studs) {
-            if (s?.id) studentIdToName.set(String(s.id), String(s.name || "student"));
+            if (s?.id) {
+              studentIdToName.set(String(s.id), String(s.name || "student"));
+            }
           }
         } else if (studsError) {
-          console.error("[send-parent-welcome-emails] failed to fetch students:", studsError.message);
+          console.error(
+            "[send-parent-welcome-emails] failed to fetch students:",
+            studsError.message,
+          );
         }
       } catch (e) {
-        console.error("[send-parent-welcome-emails] unexpected error fetching students:", (e as Error)?.message || String(e));
+        console.error(
+          "[send-parent-welcome-emails] unexpected error fetching students:",
+          (e as Error)?.message || String(e),
+        );
       }
     }
 
     // Get email configuration
     const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
     const RESEND_FROM_EMAIL = Deno.env.get("RESEND_FROM_EMAIL");
-    const APP_URL = Deno.env.get("APP_URL") || "https://app.daralulummontreal.com/";
+    const APP_URL = Deno.env.get("APP_URL") ||
+      "https://app.daralulummontreal.com/";
 
     if (!RESEND_API_KEY || !RESEND_FROM_EMAIL) {
       console.error("[send-parent-welcome-emails] missing email configuration");
-      return new Response(JSON.stringify({ error: "Email configuration missing" }), {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      return new Response(
+        JSON.stringify({ error: "Email configuration missing" }),
+        {
+          status: 500,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
+      );
     }
 
     const resend = new Resend(RESEND_API_KEY);
     const RATE_LIMIT_INTERVAL_MS = 500; // 2 requests/second
     const MAX_RATE_LIMIT_RETRIES = 5;
 
-    const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+    const sleep = (ms: number) =>
+      new Promise((resolve) => setTimeout(resolve, ms));
 
     const isRateLimitError = (err: unknown): boolean => {
       try {
         if (!err) return false;
-        type RateErrorShape = { statusCode?: number; name?: unknown; message?: unknown };
+        type RateErrorShape = {
+          statusCode?: number;
+          name?: unknown;
+          message?: unknown;
+        };
         const e = err as RateErrorShape;
-        if (typeof e.statusCode === "number" && e.statusCode === 429) return true;
-        if (typeof e.name === "string" && /rate.?limit/i.test(e.name)) return true;
-        if (typeof e.message === "string" && /(429|too many requests|rate.?limit)/i.test(e.message)) return true;
+        if (typeof e.statusCode === "number" && e.statusCode === 429) {
+          return true;
+        }
+        if (typeof e.name === "string" && /rate.?limit/i.test(e.name)) {
+          return true;
+        }
+        if (
+          typeof e.message === "string" &&
+          /(429|too many requests|rate.?limit)/i.test(e.message)
+        ) return true;
       } catch (_) { /* ignore */ }
       return false;
     };
 
     const getRetryAfterMs = (err: unknown, fallbackMs: number): number => {
       try {
-        type HeadersLike = { get?: (name: string) => string | null } | Record<string, unknown>;
+        type HeadersLike =
+          | { get?: (name: string) => string | null }
+          | Record<string, unknown>;
         type ResponseLike = { headers?: HeadersLike };
         type ErrorWithResponse = { response?: ResponseLike };
         const { response } = (err as ErrorWithResponse) || {};
         const headers = response?.headers;
 
         let headerValue: unknown = undefined;
-        if (headers && typeof (headers as { get?: unknown }).get === "function") {
+        if (
+          headers && typeof (headers as { get?: unknown }).get === "function"
+        ) {
           const get = (headers as { get: (name: string) => string | null }).get;
           headerValue = get("retry-after");
-        } else if (headers && typeof headers === "object" && "retry-after" in (headers as Record<string, unknown>)) {
-          headerValue = (headers as Record<string, unknown>)["retry-after"]; 
+        } else if (
+          headers && typeof headers === "object" &&
+          "retry-after" in (headers as Record<string, unknown>)
+        ) {
+          headerValue = (headers as Record<string, unknown>)["retry-after"];
         }
 
-        const seconds = typeof headerValue === "string" ? Number(headerValue) : NaN;
-        if (!Number.isNaN(seconds) && seconds > 0) return Math.min(seconds * 1000, 10_000);
+        const seconds = typeof headerValue === "string"
+          ? Number(headerValue)
+          : NaN;
+        if (!Number.isNaN(seconds) && seconds > 0) {
+          return Math.min(seconds * 1000, 10_000);
+        }
       } catch (_) { /* ignore */ }
       return fallbackMs;
     };
 
-    const sendEmailWithRetry = async (payload: { from: string; to: string; subject: string; html: string }) => {
+    const sendEmailWithRetry = async (
+      payload: { from: string; to: string; subject: string; html: string },
+    ) => {
       let attempt = 0;
       // base backoff ~750ms, exponential with cap and jitter
       const baseMs = 750;
@@ -169,11 +218,16 @@ serve(async (req: Request) => {
         } catch (e) {
           attempt += 1;
           if (isRateLimitError(e) && attempt <= MAX_RATE_LIMIT_RETRIES) {
-            const expBackoff = Math.min(baseMs * Math.pow(2, attempt - 1), 8000);
+            const expBackoff = Math.min(
+              baseMs * Math.pow(2, attempt - 1),
+              8000,
+            );
             const withRetryAfter = getRetryAfterMs(e, expBackoff);
             const jitter = Math.floor(Math.random() * 200);
             const waitMs = withRetryAfter + jitter;
-            console.warn(`[send-parent-welcome-emails] 429 rate-limited, retrying in ${waitMs}ms (attempt ${attempt}/${MAX_RATE_LIMIT_RETRIES})`);
+            console.warn(
+              `[send-parent-welcome-emails] 429 rate-limited, retrying in ${waitMs}ms (attempt ${attempt}/${MAX_RATE_LIMIT_RETRIES})`,
+            );
             await sleep(waitMs);
             continue;
           }
@@ -197,14 +251,17 @@ serve(async (req: Request) => {
         // Get student names for this parent via pre-fetched map
         const studentNames = Array.isArray(parent.student_ids)
           ? parent.student_ids
-              .map((id: string) => studentIdToName.get(id))
-              .filter((n: string | undefined): n is string => Boolean(n))
+            .map((id: string) => studentIdToName.get(id))
+            .filter((n: string | undefined): n is string => Boolean(n))
           : [];
-        
-        const list = studentNames.length > 0 ? studentNames.join(", ") : "your student";
+
+        const list = studentNames.length > 0
+          ? studentNames.join(", ")
+          : "your student";
 
         // Create email HTML
-        const html = `<!doctype html><html><body style="font-family:Arial,sans-serif; line-height: 1.6; color: #333;">
+        const html =
+          `<!doctype html><html><body style="font-family:Arial,sans-serif; line-height: 1.6; color: #333;">
           <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
             <h2 style="color: #0f766e; border-bottom: 2px solid #0f766e; padding-bottom: 10px;">
               Welcome to Dār Al-Ulūm Montréal Parent Portal
@@ -236,18 +293,21 @@ serve(async (req: Request) => {
           from: RESEND_FROM_EMAIL,
           to: parent.email.trim(),
           subject: "Your Parent Portal Account - Dār Al-Ulūm Montréal",
-          html
+          html,
         });
 
         // Pace to 2 requests/second
         await sleep(RATE_LIMIT_INTERVAL_MS);
 
         emailsSent++;
-        console.log(`[send-parent-welcome-emails] sent email to ${parent.email}`);
-
+        console.log(
+          `[send-parent-welcome-emails] sent email to ${parent.email}`,
+        );
       } catch (emailError) {
         emailsSkipped++;
-        const errorMsg = `Failed to send email to ${parent.email}: ${(emailError as Error).message}`;
+        const errorMsg = `Failed to send email to ${parent.email}: ${
+          (emailError as Error).message
+        }`;
         errors.push(errorMsg);
         console.error(`[send-parent-welcome-emails] ${errorMsg}`);
       }
@@ -263,26 +323,39 @@ serve(async (req: Request) => {
           status: emailsSent > 0 ? "completed" : "error",
           emails_sent: emailsSent,
           emails_skipped: emailsSkipped,
-          message: `Admin manually sent welcome emails. Sent: ${emailsSent}, Skipped: ${emailsSkipped}${errors.length > 0 ? `. Errors: ${errors.slice(0, 3).join('; ')}` : ''}`,
-          activity_status: emailsSent > 0 ? "success" : "error"
+          message:
+            `Admin manually sent welcome emails. Sent: ${emailsSent}, Skipped: ${emailsSkipped}${
+              errors.length > 0
+                ? `. Errors: ${errors.slice(0, 3).join("; ")}`
+                : ""
+            }`,
+          activity_status: emailsSent > 0 ? "success" : "error",
         });
     } catch (logError) {
-      console.error("[send-parent-welcome-emails] failed to log activity:", (logError as Error).message);
+      console.error(
+        "[send-parent-welcome-emails] failed to log activity:",
+        (logError as Error).message,
+      );
     }
 
-    return new Response(JSON.stringify({
-      message: "Welcome emails sent successfully",
-      emailsSent,
-      emailsSkipped,
-      totalParents: parents.length,
-      errors: errors.slice(0, 5) // Return first 5 errors for debugging
-    }), {
-      status: 200,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
-
+    return new Response(
+      JSON.stringify({
+        message: "Welcome emails sent successfully",
+        emailsSent,
+        emailsSkipped,
+        totalParents: parents.length,
+        errors: errors.slice(0, 5), // Return first 5 errors for debugging
+      }),
+      {
+        status: 200,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      },
+    );
   } catch (error) {
-    console.error("[send-parent-welcome-emails] unhandled error:", (error as Error)?.message || String(error));
+    console.error(
+      "[send-parent-welcome-emails] unhandled error:",
+      (error as Error)?.message || String(error),
+    );
     return new Response(JSON.stringify({ error: (error as Error).message }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },

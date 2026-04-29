@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client.ts";
-import { useToast } from "@/hooks/use-toast.ts";
+import { useToast } from "@/components/ui/use-toast.ts";
 import { Button } from "@/components/ui/button.tsx";
 import {
   Table,
@@ -22,9 +22,41 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog.tsx";
-import { Loader2, Pencil, Trash2, UserCheck, Users } from "lucide-react";
+import { ArrowDown, ArrowUp, ArrowUpDown, Eye, Loader2, Pencil, Trash2, UserCheck, Users } from "lucide-react";
+import { useProxy } from "@/contexts/ProxyContext.tsx";
+import { useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge.tsx";
 import { Card, CardContent } from "@/components/ui/card.tsx";
+
+type TeacherSortKey = "name" | "subject" | "students";
+type SortDir = "asc" | "desc";
+
+interface SortableHeadProps {
+  label: string;
+  sortKey: TeacherSortKey;
+  current: TeacherSortKey;
+  dir: SortDir;
+  onSort: (k: TeacherSortKey) => void;
+  className?: string;
+}
+const SortableHead = ({ label, sortKey, current, dir, onSort, className }: SortableHeadProps) => {
+  const active = current === sortKey;
+  return (
+    <TableHead className={className}>
+      <button
+        onClick={() => onSort(sortKey)}
+        className={`inline-flex items-center gap-1 text-xs font-semibold uppercase tracking-wider transition-colors ${
+          active ? "text-green-700" : "text-gray-400 hover:text-gray-600"
+        }`}
+      >
+        {label}
+        {active
+          ? dir === "asc" ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />
+          : <ArrowUpDown className="h-3 w-3 opacity-40" />}
+      </button>
+    </TableHead>
+  );
+};
 
 interface Teacher {
   id: string;
@@ -48,12 +80,24 @@ export const TeacherList = ({
   onEdit,
   madrassahId,
 }: TeacherListProps) => {
-  const {
-    toast,
-  } = useToast();
+  const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { startProxy } = useProxy();
+  const navigate = useNavigate();
   const [isProcessing, setIsProcessing] = useState(false);
   const [teacherToDelete, setTeacherToDelete] = useState<string | null>(null);
+  const [sortKey, setSortKey] = useState<TeacherSortKey>("name");
+  const [sortDir, setSortDir] = useState<SortDir>("asc");
+
+  const handleSort = (key: TeacherSortKey) => {
+    if (key === sortKey) setSortDir((d) => (d === "asc" ? "desc" : "asc"));
+    else { setSortKey(key); setSortDir("asc"); }
+  };
+
+  const handleViewAs = (teacher: Teacher) => {
+    startProxy(teacher.id, "teacher", teacher.name, teacher.email || "");
+    navigate("/dashboard");
+  };
   const {
     data: teachers,
     isLoading,
@@ -127,10 +171,19 @@ export const TeacherList = ({
       setTeacherToDelete(null);
     }
   };
-  const filteredTeachers = teachers?.filter((teacher) =>
-    teacher.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    teacher.subject.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredTeachers = teachers
+    ?.filter((teacher) =>
+      teacher.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      teacher.subject.toLowerCase().includes(searchQuery.toLowerCase())
+    )
+    ?.slice()
+    ?.sort((a, b) => {
+      let cmp = 0;
+      if (sortKey === "name") cmp = a.name.localeCompare(b.name);
+      else if (sortKey === "subject") cmp = (a.subject || "").localeCompare(b.subject || "");
+      else if (sortKey === "students") cmp = a.students - b.students;
+      return sortDir === "asc" ? cmp : -cmp;
+    });
   if (error) {
     return (
       <Card className="border-red-200 bg-red-50">
@@ -236,20 +289,20 @@ export const TeacherList = ({
       {/* Desktop table (large screens only) */}
       <div className="hidden lg:block overflow-x-auto">
         <Table className="min-w-[720px]">
-        <TableHeader>
+        <TableHeader className="bg-gray-50/60">
           <TableRow>
-            <TableHead>Name</TableHead>
-            <TableHead>Subject</TableHead>
-            <TableHead>Students</TableHead>
-            <TableHead>Contact</TableHead>
-            <TableHead className="text-right">Actions</TableHead>
+            <SortableHead label="Name" sortKey="name" current={sortKey} dir={sortDir} onSort={handleSort} className="py-4 px-4" />
+            <SortableHead label="Subject" sortKey="subject" current={sortKey} dir={sortDir} onSort={handleSort} className="py-4 px-4" />
+            <SortableHead label="Students" sortKey="students" current={sortKey} dir={sortDir} onSort={handleSort} className="py-4 px-4" />
+            <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-400 py-4 px-4">Contact</TableHead>
+            <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-400 py-4 px-4 text-right">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {isLoading
             ? (
               <TableRow>
-                <TableCell colSpan={6} className="text-center py-10">
+                <TableCell colSpan={5} className="text-center py-10">
                   <div className="flex justify-center items-center">
                     <Loader2 className="h-6 w-6 animate-spin mr-2" />
                     <span>Loading teachers...</span>
@@ -260,7 +313,7 @@ export const TeacherList = ({
             : filteredTeachers?.length === 0
             ? (
               <TableRow>
-                <TableCell colSpan={6} className="text-center py-10">
+                <TableCell colSpan={5} className="text-center py-10 text-gray-500">
                   {searchQuery
                     ? "No teachers found matching your search."
                     : "No teachers found. Add your first teacher!"}
@@ -268,100 +321,104 @@ export const TeacherList = ({
               </TableRow>
             )
             : filteredTeachers?.map((teacher) => (
-              <TableRow key={teacher.id} className="hover:bg-gray-50">
-                <TableCell className="font-medium">{teacher.name}</TableCell>
-                <TableCell>
-                  <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200">
+              <TableRow key={teacher.id} className="hover:bg-green-50/30 cursor-pointer transition-colors duration-100">
+                <TableCell className="py-4 px-4 font-medium text-gray-900">{teacher.name}</TableCell>
+                <TableCell className="py-4 px-4">
+                  <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200 rounded-full px-2.5 py-0.5 text-xs font-semibold">
                     {teacher.subject}
                   </Badge>
                 </TableCell>
-                <TableCell>
+                <TableCell className="py-4 px-4">
                   <div className="flex items-center">
                     <Users className="h-4 w-4 mr-1 text-gray-400" />
-                    <span>{teacher.students}</span>
+                    <span className="text-gray-700">{teacher.students}</span>
                   </div>
                 </TableCell>
-                <TableCell>
+                <TableCell className="py-4 px-4">
                   {teacher.email
                     ? (
                       <a
                         href={`mailto:${teacher.email}`}
-                        className="text-emerald-700 hover:text-emerald-800 hover:underline"
+                        className="text-emerald-700 hover:text-emerald-800 hover:underline text-sm"
                       >
                         {teacher.email}
                       </a>
                     )
-                    : "N/A"}
+                    : <span className="text-gray-400">N/A</span>}
                 </TableCell>
-                <TableCell>{teacher.phone || "N/A"}</TableCell>
-                <TableCell className="text-right space-x-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => onEdit(teacher)}
-                    title="Edit teacher"
-                    className="border-gray-300 hover:bg-gray-100"
-                  >
-                    <Pencil className="h-4 w-4" />
-                  </Button>
-                  <AlertDialog
-                    open={teacherToDelete === teacher.id}
-                    onOpenChange={(open) => {
-                      if (!open) setTeacherToDelete(null);
-                    }}
-                  >
-                    <AlertDialogTrigger asChild>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="text-red-600 border-gray-300 hover:bg-red-50"
-                        onClick={() => setTeacherToDelete(teacher.id)}
-                        title="Delete teacher"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>Delete Teacher</AlertDialogTitle>
-                        <AlertDialogDescription>
-                          Are you sure you want to delete{" "}
-                          {teacher.name}? This action cannot be undone.
-                          {teacher.students > 0 && (
-                            <div className="mt-2 bg-amber-50 p-2 border border-amber-200 rounded-md text-amber-800">
-                              <div className="flex items-center">
-                                <UserCheck className="h-4 w-4 mr-2" />
-                                <span className="font-medium">Warning:</span>
-                              </div>
-                              <p className="mt-1">
-                                This teacher has {teacher.students}{" "}
-                                student{teacher.students !== 1 ? "s" : ""}{" "}
-                                assigned. Deleting this teacher will remove
-                                these assignments.
-                              </p>
-                            </div>
-                          )}
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction
-                          onClick={() => handleDelete(teacher.id)}
-                          className="bg-red-600 hover:bg-red-700"
-                          disabled={isProcessing}
+                <TableCell className="py-4 px-4 text-right">
+                  <div className="flex items-center justify-end gap-1">
+                    <button
+                      className="p-2 rounded-lg hover:bg-blue-50 transition-colors text-gray-400 hover:text-blue-600"
+                      onClick={() => handleViewAs(teacher)}
+                      title="View app as this teacher"
+                    >
+                      <Eye className="h-4 w-4" />
+                    </button>
+                    <button
+                      className="p-2 rounded-lg hover:bg-gray-100 transition-colors text-gray-400 hover:text-gray-700"
+                      onClick={() => onEdit(teacher)}
+                      title="Edit teacher"
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </button>
+                    <AlertDialog
+                      open={teacherToDelete === teacher.id}
+                      onOpenChange={(open) => {
+                        if (!open) setTeacherToDelete(null);
+                      }}
+                    >
+                      <AlertDialogTrigger asChild>
+                        <button
+                          className="p-2 rounded-lg hover:bg-red-50 transition-colors text-gray-400 hover:text-red-600"
+                          onClick={() => setTeacherToDelete(teacher.id)}
+                          title="Delete teacher"
                         >
-                          {isProcessing
-                            ? (
-                              <>
-                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                Deleting...
-                              </>
-                            )
-                            : "Delete"}
-                        </AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Delete Teacher</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Are you sure you want to delete{" "}
+                            {teacher.name}? This action cannot be undone.
+                            {teacher.students > 0 && (
+                              <div className="mt-2 bg-amber-50 p-2 border border-amber-200 rounded-md text-amber-800">
+                                <div className="flex items-center">
+                                  <UserCheck className="h-4 w-4 mr-2" />
+                                  <span className="font-medium">Warning:</span>
+                                </div>
+                                <p className="mt-1">
+                                  This teacher has {teacher.students}{" "}
+                                  student{teacher.students !== 1 ? "s" : ""}{" "}
+                                  assigned. Deleting this teacher will remove
+                                  these assignments.
+                                </p>
+                              </div>
+                            )}
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={() => handleDelete(teacher.id)}
+                            className="bg-red-600 hover:bg-red-700"
+                            disabled={isProcessing}
+                          >
+                            {isProcessing
+                              ? (
+                                <>
+                                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                  Deleting...
+                                </>
+                              )
+                              : "Delete"}
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </div>
                 </TableCell>
               </TableRow>
             ))}

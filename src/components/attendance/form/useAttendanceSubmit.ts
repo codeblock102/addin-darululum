@@ -5,7 +5,7 @@ import { z } from "zod";
 import { format } from "date-fns";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client.ts";
-import { useToast } from "@/hooks/use-toast.ts";
+import { useToast } from "@/components/ui/use-toast.ts";
 import { AttendanceFormValues } from "@/types/attendance-form.ts";
 import { useI18n } from "@/contexts/I18nContext.tsx";
 import { formatErrorMessage } from "@/utils/formatErrorMessage.ts";
@@ -131,7 +131,7 @@ export function useAttendanceSubmit(
         time: formData.time,
         status: status,
         notes: formData.notes,
-        late_reason: status === 'late' ? formData.late_reason : null,
+        late_reason: ['late', 'absent', 'excused'].includes(status) ? formData.late_reason : null,
         class_id: formData.class_id || null,
       }));
 

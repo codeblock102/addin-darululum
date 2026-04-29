@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button.tsx";
 import { Card, CardContent } from "@/components/ui/card.tsx";
 import { DailyActivityEntry } from "@/types/dhor-book.ts";
 import { Tables } from "@/integrations/supabase/types.ts";
-import { useToast } from "@/hooks/use-toast.ts";
+import { useToast } from "@/components/ui/use-toast.ts";
 import { AttendanceRecord } from "@/types/attendance.ts";
 
 export interface ExportOptionsProps {

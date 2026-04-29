@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useToast } from "@/hooks/use-toast.ts";
+import { useToast } from "@/components/ui/use-toast.ts";
 import { JuzRevisionEntry, RevisionFormValues } from "@/types/dhor-book.ts";
 import { supabase } from "@/integrations/supabase/client.ts";
 

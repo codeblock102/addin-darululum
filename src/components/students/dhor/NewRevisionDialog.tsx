@@ -18,7 +18,7 @@ import {
   SelectValue,
 } from "@/components/ui/select.tsx";
 import { supabase } from "@/integrations/supabase/client.ts";
-import { useToast } from "@/hooks/use-toast.ts";
+import { useToast } from "@/components/ui/use-toast.ts";
 
 interface NewRevisionDialogProps {
   open: boolean;

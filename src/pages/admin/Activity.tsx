@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client.ts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card.tsx";
+import { AdminPageShell, AdminStatCard } from "@/components/admin/AdminPageShell.tsx";
 import { Badge } from "@/components/ui/badge.tsx";
 import { Button } from "@/components/ui/button.tsx";
 import { Input } from "@/components/ui/input.tsx";
@@ -9,9 +10,9 @@ import { Calendar } from "@/components/ui/calendar.tsx";
 import { useQuery } from "@tanstack/react-query";
 import { ResponsiveContainer, LineChart, Line, CartesianGrid, XAxis, YAxis, Tooltip, BarChart, Bar, Legend, PieChart, Pie, Cell } from "recharts";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select.tsx";
-import { Loader2, Activity as ActivityIcon, Mail, MessageSquare, BookOpen, CheckSquare, Users, TrendingUp, AlertTriangle, Award, CalendarIcon, Filter, X, BarChart3, ArrowRight } from "lucide-react";
+import { Loader2, Activity as ActivityIcon, Mail, MessageSquare, BookOpen, CheckSquare, Users, TrendingUp, AlertTriangle, Award, CalendarIcon, Filter, BarChart3, ArrowRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { format, subDays, startOfDay, endOfDay, startOfMonth, subMonths } from "date-fns";
+import { format, subDays, startOfDay, endOfDay, subMonths } from "date-fns";
 
 type ActivityItem = {
   id: string;
@@ -583,8 +584,8 @@ export default function Activity() {
       });
       const isAtRisk = attendanceRate < 70 || averageQuality < 2.5 || recentProgress.length === 0;
 
-      // Top performer criteria: attendance >= 90% AND average quality >= 4 AND recent progress
-      const isTopPerformer = attendanceRate >= 90 && averageQuality >= 4 && recentProgress.length > 0;
+      // Top performer criteria: attendance >= 75% AND average quality >= 3.5 AND recent progress
+      const isTopPerformer = attendanceRate >= 75 && averageQuality >= 3.5 && recentProgress.length > 0;
 
       return {
         id: student.id,
@@ -612,25 +613,20 @@ export default function Activity() {
     const submissions = dashboardData.submissions || [];
     const students = dashboardData.students || [];
 
-    // Teacher actions
+    // Teacher actions — count all progress entries, attendance records, and assignments
+    // (contributor_id / teacher_id may be null on older records, so we count totals)
     const teacherActions = new Map<string, number>();
     progress.forEach((p: any) => {
-      const teacherId = p.contributor_id || p.teacher_id;
-      if (teacherId) {
-        teacherActions.set(teacherId, (teacherActions.get(teacherId) || 0) + 1);
-      }
+      const teacherId = p.contributor_id || p.teacher_id || "__unattributed__";
+      teacherActions.set(teacherId, (teacherActions.get(teacherId) || 0) + 1);
     });
     attendance.forEach((a: any) => {
-      const teacherId = a.teacher_id;
-      if (teacherId) {
-        teacherActions.set(teacherId, (teacherActions.get(teacherId) || 0) + 1);
-      }
+      const teacherId = (a.classes?.teacher_ids?.[0]) || a.teacher_id || "__unattributed__";
+      teacherActions.set(teacherId, (teacherActions.get(teacherId) || 0) + 1);
     });
     assignments.forEach((a: any) => {
-      const teacherId = a.teacher_id;
-      if (teacherId) {
-        teacherActions.set(teacherId, (teacherActions.get(teacherId) || 0) + 1);
-      }
+      const teacherId = a.teacher_id || "__unattributed__";
+      teacherActions.set(teacherId, (teacherActions.get(teacherId) || 0) + 1);
     });
     const totalTeacherActions = Array.from(teacherActions.values()).reduce((a, b) => a + b, 0);
 
@@ -982,486 +978,367 @@ export default function Activity() {
     return studentMetrics.filter((s) => s.isTopPerformer).slice(0, 10);
   }, [studentMetrics]);
 
+  // Type config for feed items
+  const typeConfig: Record<ActivityItem["type"], { dot: string; iconBg: string; label: string }> = {
+    progress:   { dot: "#16a34a", iconBg: "bg-green-50",  label: "Progress"   },
+    attendance: { dot: "#2563eb", iconBg: "bg-blue-50",   label: "Attendance" },
+    assignment: { dot: "#7c3aed", iconBg: "bg-violet-50", label: "Assignment" },
+    message:    { dot: "#9333ea", iconBg: "bg-purple-50", label: "Message"    },
+    email:      { dot: "#ea580c", iconBg: "bg-orange-50", label: "Email"      },
+  };
+
+  const selectCls = "h-9 rounded-xl border-gray-200 bg-gray-50 text-sm focus:bg-white";
+
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-            <ActivityIcon className="h-6 w-6 text-gray-700" />
-            Admin Dashboard
-          </h1>
-          <p className="text-sm text-gray-600 mt-1">Track teacher actions and student progress</p>
-        </div>
+    <AdminPageShell
+      title="Activity Dashboard"
+      subtitle="Track teacher actions and student progress in real-time"
+      actions={
         <div className="flex items-center gap-2">
+          <span className="flex items-center gap-1.5 text-xs text-gray-500 bg-white border border-gray-200 rounded-xl px-3 py-2 font-medium">
+            <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse inline-block" />
+            Live
+          </span>
           <Button
             variant="outline"
-            onClick={() => navigate("/analytics")}
-            className="flex items-center gap-2"
+            onClick={() => navigate("/attendance")}
+            className="flex items-center gap-2 rounded-xl border-gray-200 text-sm h-9"
           >
             <BarChart3 className="h-4 w-4" />
-            View Analytics
+            Attendance
             <ArrowRight className="h-4 w-4" />
           </Button>
-          <Badge variant="outline" className="text-xs">Realtime</Badge>
         </div>
-      </div>
-
-      {/* Filters */}
-      <Card className="border border-gray-200 bg-white">
-        <CardHeader className="border-b">
-          <CardTitle className="text-base flex items-center gap-2">
-            <Filter className="h-4 w-4" />
+      }
+    >
+      {/* ── Compact filter bar ─────────────────────────────────────── */}
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm px-5 py-4">
+        <div className="flex flex-wrap items-end gap-3">
+          <div className="flex items-center gap-1.5 text-xs font-medium text-gray-500 mb-0.5 self-end pb-2">
+            <Filter className="h-3.5 w-3.5" />
             Filters
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="pt-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
-            {/* Time Range */}
-            <div className="space-y-2">
-              <label className="text-xs font-medium text-gray-700">Time Range</label>
-              <Select value={timeRange} onValueChange={(v) => setTimeRange(v as TimeRange)}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="today">Today</SelectItem>
-                  <SelectItem value="7days">Last 7 days</SelectItem>
-                  <SelectItem value="30days">Last 30 days</SelectItem>
-                  <SelectItem value="3months">Last 3 months</SelectItem>
-                  <SelectItem value="custom">Custom Range</SelectItem>
-                </SelectContent>
-              </Select>
-              {timeRange === "custom" && (
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button variant="outline" className="w-full justify-start text-left font-normal">
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {customDateRange.from && customDateRange.to
-                        ? `${format(customDateRange.from, "MMM dd")} - ${format(customDateRange.to, "MMM dd")}`
-                        : "Select range"}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="range"
-                      selected={{ from: customDateRange.from, to: customDateRange.to }}
-                      onSelect={(range) => {
-                        if (range?.from && range?.to) {
-                          setCustomDateRange({ from: range.from, to: range.to });
-                        }
-                      }}
-                      numberOfMonths={2}
-                    />
-                  </PopoverContent>
-                </Popover>
-              )}
-            </div>
+          </div>
 
-            {/* Teacher Filter */}
-            <div className="space-y-2">
-              <label className="text-xs font-medium text-gray-700">Teacher</label>
-              <Select value={selectedTeacher} onValueChange={setSelectedTeacher}>
-                <SelectTrigger>
-                  <SelectValue placeholder="All Teachers" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Teachers</SelectItem>
-                  {Object.entries(teacherMap)
-                    .sort((a, b) => (a[1].name || "").localeCompare(b[1].name || ""))
-                    .map(([id, t]) => (
-                      <SelectItem key={id} value={id}>
-                        {t.name}{t.section ? ` (${t.section})` : ""}
-                      </SelectItem>
-                    ))}
-                </SelectContent>
-              </Select>
-            </div>
+          {/* Time range */}
+          <div className="space-y-1">
+            <p className="text-xs text-gray-400 font-medium">Period</p>
+            <Select value={timeRange} onValueChange={(v) => setTimeRange(v as TimeRange)}>
+              <SelectTrigger className={selectCls} style={{ minWidth: 130 }}>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="today">Today</SelectItem>
+                <SelectItem value="7days">Last 7 days</SelectItem>
+                <SelectItem value="30days">Last 30 days</SelectItem>
+                <SelectItem value="3months">Last 3 months</SelectItem>
+                <SelectItem value="custom">Custom</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
 
-            {/* Student Filter */}
-            <div className="space-y-2">
-              <label className="text-xs font-medium text-gray-700">Student</label>
-              <Select
-                value={selectedStudent}
-                onValueChange={setSelectedStudent}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="All Students" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Students</SelectItem>
-                  {availableStudents
-                    .filter((s) =>
-                      !studentSearchQuery || s.name.toLowerCase().includes(studentSearchQuery.toLowerCase())
-                    )
-                    .map((student) => (
-                      <SelectItem key={student.id} value={student.id}>
-                        {student.name}
-                      </SelectItem>
-                    ))}
-                </SelectContent>
-              </Select>
-              {availableStudents.length > 10 && (
-                <Input
-                  placeholder="Search students..."
-                  value={studentSearchQuery}
-                  onChange={(e) => setStudentSearchQuery(e.target.value)}
-                  className="mt-2"
-                />
-              )}
-            </div>
-
-            {/* Class Filter */}
-            <div className="space-y-2">
-              <label className="text-xs font-medium text-gray-700">Class</label>
-              <Select value={selectedClass} onValueChange={setSelectedClass}>
-                <SelectTrigger>
-                  <SelectValue placeholder="All Classes" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Classes</SelectItem>
-                  {availableClasses.map((c) => (
-                    <SelectItem key={c} value={c}>{c}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Section Filter */}
-            <div className="space-y-2">
-              <label className="text-xs font-medium text-gray-700">Section</label>
-              <Select value={selectedSection} onValueChange={setSelectedSection}>
-                <SelectTrigger>
-                  <SelectValue placeholder="All Sections" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Sections</SelectItem>
-                  {availableSections.map((s) => (
-                    <SelectItem key={s} value={s}>{s}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Activity Type Filter */}
-            <div className="space-y-2">
-              <label className="text-xs font-medium text-gray-700">Activity Types</label>
+          {timeRange === "custom" && (
+            <div className="space-y-1">
+              <p className="text-xs text-gray-400 font-medium">Date range</p>
               <Popover>
                 <PopoverTrigger asChild>
-                  <Button variant="outline" className="w-full justify-start text-left font-normal">
-                    {selectedActivityTypes.length === 5 ? "All Types" : `${selectedActivityTypes.length} selected`}
+                  <Button variant="outline" className="h-9 rounded-xl border-gray-200 text-sm bg-gray-50">
+                    <CalendarIcon className="mr-2 h-3.5 w-3.5" />
+                    {customDateRange.from && customDateRange.to
+                      ? `${format(customDateRange.from, "MMM dd")} – ${format(customDateRange.to, "MMM dd")}`
+                      : "Pick range"}
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-auto p-2" align="start">
-                  <div className="space-y-2">
-                    {["progress", "attendance", "assignment", "message", "email"].map((type) => (
-                      <label key={type} className="flex items-center space-x-2 cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={selectedActivityTypes.includes(type)}
-                          onChange={(e) => {
-                            if (e.target.checked) {
-                              setSelectedActivityTypes([...selectedActivityTypes, type]);
-                            } else {
-                              setSelectedActivityTypes(selectedActivityTypes.filter((t) => t !== type));
-                            }
-                          }}
-                          className="rounded"
-                        />
-                        <span className="text-sm capitalize">{type}</span>
-                      </label>
-                    ))}
-                  </div>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="range"
+                    selected={{ from: customDateRange.from, to: customDateRange.to }}
+                    onSelect={(range) => { if (range?.from && range?.to) setCustomDateRange({ from: range.from, to: range.to }); }}
+                    numberOfMonths={2}
+                  />
                 </PopoverContent>
               </Popover>
             </div>
+          )}
+
+          {/* Teacher */}
+          <div className="space-y-1">
+            <p className="text-xs text-gray-400 font-medium">Teacher</p>
+            <Select value={selectedTeacher} onValueChange={setSelectedTeacher}>
+              <SelectTrigger className={selectCls} style={{ minWidth: 140 }}>
+                <SelectValue placeholder="All teachers" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All teachers</SelectItem>
+                {Object.entries(teacherMap).sort((a, b) => (a[1].name || "").localeCompare(b[1].name || "")).map(([id, t]) => (
+                  <SelectItem key={id} value={id}>{t.name}{t.section ? ` (${t.section})` : ""}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
-        </CardContent>
-      </Card>
 
-      {/* Summary Cards */}
+          {/* Student */}
+          <div className="space-y-1">
+            <p className="text-xs text-gray-400 font-medium">Student</p>
+            <Select value={selectedStudent} onValueChange={setSelectedStudent}>
+              <SelectTrigger className={selectCls} style={{ minWidth: 140 }}>
+                <SelectValue placeholder="All students" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All students</SelectItem>
+                {availableStudents.filter(s => !studentSearchQuery || s.name.toLowerCase().includes(studentSearchQuery.toLowerCase())).map(s => (
+                  <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Section */}
+          {availableSections.length > 0 && (
+            <div className="space-y-1">
+              <p className="text-xs text-gray-400 font-medium">Section</p>
+              <Select value={selectedSection} onValueChange={setSelectedSection}>
+                <SelectTrigger className={selectCls} style={{ minWidth: 120 }}>
+                  <SelectValue placeholder="All sections" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All sections</SelectItem>
+                  {availableSections.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+
+          {/* Type filter chips */}
+          <div className="space-y-1 ml-auto">
+            <p className="text-xs text-gray-400 font-medium">Activity type</p>
+            <div className="flex items-center gap-1.5">
+              {(["progress", "attendance", "assignment", "message", "email"] as ActivityItem["type"][]).map((type) => {
+                const cfg = typeConfig[type];
+                const active = selectedActivityTypes.includes(type);
+                return (
+                  <button
+                    key={type}
+                    type="button"
+                    onClick={() => setSelectedActivityTypes(active
+                      ? selectedActivityTypes.filter(t => t !== type)
+                      : [...selectedActivityTypes, type]
+                    )}
+                    className={`h-9 px-3 rounded-xl text-xs font-medium transition-colors border ${
+                      active ? "text-white border-transparent" : "text-gray-500 bg-gray-50 border-gray-200 hover:bg-gray-100"
+                    }`}
+                    style={active ? { background: cfg.dot, borderColor: cfg.dot } : {}}
+                  >
+                    {cfg.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ── KPI cards ──────────────────────────────────────────────── */}
       {summaryMetrics && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <Card className="border border-gray-200 bg-white">
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">Teacher Actions</p>
-                  <p className="text-2xl font-bold text-gray-900 mt-1">{summaryMetrics.totalTeacherActions}</p>
-                </div>
-                <Users className="h-8 w-8 text-blue-600" />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="border border-gray-200 bg-white">
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">Progress Entries</p>
-                  <p className="text-2xl font-bold text-gray-900 mt-1">{summaryMetrics.totalProgressEntries}</p>
-                </div>
-                <BookOpen className="h-8 w-8 text-green-600" />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="border border-gray-200 bg-white">
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">Attendance Rate</p>
-                  <p className="text-2xl font-bold text-gray-900 mt-1">{summaryMetrics.averageAttendanceRate}%</p>
-                </div>
-                <CheckSquare className="h-8 w-8 text-emerald-600" />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="border border-gray-200 bg-white">
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">Assignment Completion</p>
-                  <p className="text-2xl font-bold text-gray-900 mt-1">{summaryMetrics.assignmentCompletionRate}%</p>
-                </div>
-                <TrendingUp className="h-8 w-8 text-purple-600" />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="border border-gray-200 bg-white">
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">At-Risk Students</p>
-                  <p className="text-2xl font-bold text-red-600 mt-1">{summaryMetrics.atRiskStudentsCount}</p>
-                </div>
-                <AlertTriangle className="h-8 w-8 text-red-600" />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="border border-gray-200 bg-white">
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">Top Performers</p>
-                  <p className="text-2xl font-bold text-green-600 mt-1">{summaryMetrics.topPerformersCount}</p>
-                </div>
-                <Award className="h-8 w-8 text-yellow-600" />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="border border-gray-200 bg-white">
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">Average Quality</p>
-                  <p className="text-2xl font-bold text-gray-900 mt-1">{summaryMetrics.averageQuality.toFixed(1)}</p>
-                </div>
-                <TrendingUp className="h-8 w-8 text-blue-600" />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="border border-gray-200 bg-white">
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">Attendance Marks</p>
-                  <p className="text-2xl font-bold text-gray-900 mt-1">{summaryMetrics.totalAttendanceMarks}</p>
-                </div>
-                <CheckSquare className="h-8 w-8 text-emerald-600" />
-              </div>
-            </CardContent>
-          </Card>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-5">
+          <AdminStatCard
+            label="Teacher Actions"
+            value={summaryMetrics.totalTeacherActions}
+            icon={<Users className="h-4 w-4 text-blue-600" />}
+            iconBg="bg-blue-50"
+            meta={`${summaryMetrics.totalProgressEntries} progress + ${summaryMetrics.totalAttendanceMarks} attendance`}
+          />
+          <AdminStatCard
+            label="Avg Attendance"
+            value={`${summaryMetrics.averageAttendanceRate}%`}
+            icon={<CheckSquare className="h-4 w-4 text-emerald-600" />}
+            iconBg="bg-emerald-50"
+            meta={`${summaryMetrics.totalAttendanceMarks} records`}
+          />
+          <AdminStatCard
+            label="Avg Quality"
+            value={summaryMetrics.averageQuality.toFixed(1)}
+            icon={<TrendingUp className="h-4 w-4 text-violet-600" />}
+            iconBg="bg-violet-50"
+            meta="out of 5.0"
+          />
+          <AdminStatCard
+            label="At-Risk Students"
+            value={summaryMetrics.atRiskStudentsCount}
+            icon={<AlertTriangle className="h-4 w-4 text-red-500" />}
+            iconBg="bg-red-50"
+            meta={`${summaryMetrics.topPerformersCount} top performers`}
+            metaColor="text-green-600"
+          />
         </div>
       )}
 
-      {/* Charts */}
+      {/* ── Main content row ───────────────────────────────────────── */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+        {/* Unified activity feed */}
+        <div className="lg:col-span-2 bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden flex flex-col">
+          <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+            <div>
+              <h2 className="text-base font-semibold text-gray-900">Activity Feed</h2>
+              <p className="text-xs text-gray-400 mt-0.5">{items.length} events in selected period</p>
+            </div>
+            {isLoading && <Loader2 className="h-4 w-4 animate-spin text-gray-400" />}
+          </div>
+
+          <div className="overflow-y-auto" style={{ maxHeight: 560 }}>
+            {isLoading && items.length === 0 ? (
+              <div className="flex items-center justify-center py-16 text-gray-400 gap-2">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                <span className="text-sm">Loading activity…</span>
+              </div>
+            ) : items.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-16 text-gray-400">
+                <ActivityIcon className="h-8 w-8 mb-3 opacity-30" />
+                <p className="text-sm">No activity in this period</p>
+              </div>
+            ) : (
+              <ul>
+                {items.slice(0, 60).map((it, i) => {
+                  const cfg = typeConfig[it.type];
+                  return (
+                    <li key={it.id} className={`flex items-start gap-4 px-6 py-3.5 hover:bg-gray-50 transition-colors ${i !== 0 ? "border-t border-gray-50" : ""}`}>
+                      {/* Dot + icon */}
+                      <div className="flex-shrink-0 mt-0.5">
+                        <div className={`w-8 h-8 rounded-xl flex items-center justify-center ${cfg.iconBg}`}>
+                          {iconFor(it.type)}
+                        </div>
+                      </div>
+                      {/* Content */}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="text-xs font-semibold uppercase tracking-wide" style={{ color: cfg.dot }}>
+                            {cfg.label}
+                          </span>
+                          <span className="text-xs text-gray-400 whitespace-nowrap flex-shrink-0">
+                            {format(new Date(it.created_at), "MMM d, HH:mm")}
+                          </span>
+                        </div>
+                        <p className="text-sm text-gray-800 font-medium mt-0.5 truncate">{it.title}</p>
+                        <p className="text-xs text-gray-500 mt-0.5 break-words leading-relaxed">{it.description}</p>
+                      </div>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+          </div>
+        </div>
+
+        {/* Sidebar: at-risk + top performers */}
+        <div className="space-y-5">
+          {/* At-risk */}
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+            <div className="px-5 py-4 border-b border-gray-100 flex items-center gap-2">
+              <div className="p-1.5 bg-red-50 rounded-lg">
+                <AlertTriangle className="h-4 w-4 text-red-500" />
+              </div>
+              <div>
+                <h3 className="text-sm font-semibold text-gray-900">At-Risk Students</h3>
+                <p className="text-xs text-gray-400">&lt;70% attendance or low quality</p>
+              </div>
+            </div>
+            {atRiskStudents.length === 0 ? (
+              <div className="py-8 text-center text-sm text-gray-400">None found 🎉</div>
+            ) : (
+              <ul>
+                {atRiskStudents.map((s, i) => (
+                  <li key={s.id} className={`flex items-center justify-between px-5 py-3 hover:bg-gray-50 ${i !== 0 ? "border-t border-gray-50" : ""}`}>
+                    <div>
+                      <p className="text-sm font-medium text-gray-900">{s.name}</p>
+                      <p className="text-xs text-gray-400 mt-0.5">{s.attendanceRate}% attend · {s.averageQuality.toFixed(1)} quality</p>
+                    </div>
+                    <span className="text-xs font-semibold text-red-600 bg-red-50 px-2 py-1 rounded-lg">Risk</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+
+          {/* Top performers */}
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+            <div className="px-5 py-4 border-b border-gray-100 flex items-center gap-2">
+              <div className="p-1.5 bg-yellow-50 rounded-lg">
+                <Award className="h-4 w-4 text-yellow-500" />
+              </div>
+              <div>
+                <h3 className="text-sm font-semibold text-gray-900">Top Performers</h3>
+                <p className="text-xs text-gray-400">≥75% attendance & quality ≥3.5</p>
+              </div>
+            </div>
+            {topPerformers.length === 0 ? (
+              <div className="py-8 text-center text-sm text-gray-400">No data yet</div>
+            ) : (
+              <ul>
+                {topPerformers.map((s, i) => (
+                  <li key={s.id} className={`flex items-center justify-between px-5 py-3 hover:bg-gray-50 ${i !== 0 ? "border-t border-gray-50" : ""}`}>
+                    <div>
+                      <p className="text-sm font-medium text-gray-900">{s.name}</p>
+                      <p className="text-xs text-gray-400 mt-0.5">{s.attendanceRate}% · {s.pagesMemorized} pages · {s.averageQuality.toFixed(1)} quality</p>
+                    </div>
+                    <span className="text-xs font-semibold text-yellow-700 bg-yellow-50 px-2 py-1 rounded-lg">Top</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* ── Charts row ─────────────────────────────────────────────── */}
       {chartData && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Daily Progress & Attendance */}
-          <Card className="border border-gray-200 bg-white">
-            <CardHeader className="border-b">
-              <CardTitle className="text-base">Progress & Attendance Over Time</CardTitle>
-            </CardHeader>
-            <CardContent style={{ height: 300 }} className="pt-4">
-              {chartData.dailySeries.length > 0 && chartData.dailySeries[0].day !== "No data" ? (
+          {/* Progress & Attendance timeline */}
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+            <div className="px-6 py-4 border-b border-gray-100">
+              <h3 className="text-sm font-semibold text-gray-900">Progress & Attendance Over Time</h3>
+            </div>
+            <div className="p-6" style={{ height: 280 }}>
+              {chartData.dailySeries[0]?.day !== "No data" ? (
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={chartData.dailySeries}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="day" />
-                    <YAxis />
-                    <Tooltip />
-                    <Legend />
-                    <Line type="monotone" dataKey="progress" stroke="#2563eb" name="Progress Entries" />
-                    <Line type="monotone" dataKey="attendance" stroke="#059669" name="Attendance Marks" />
+                    <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" />
+                    <XAxis dataKey="day" tick={{ fontSize: 11, fill: "#9ca3af" }} axisLine={false} tickLine={false} />
+                    <YAxis tick={{ fontSize: 11, fill: "#9ca3af" }} axisLine={false} tickLine={false} />
+                    <Tooltip contentStyle={{ borderRadius: 12, border: "1px solid #f3f4f6", fontSize: 12 }} />
+                    <Legend wrapperStyle={{ fontSize: 12 }} />
+                    <Line type="monotone" dataKey="progress" stroke="#16a34a" strokeWidth={2} dot={false} name="Progress" />
+                    <Line type="monotone" dataKey="attendance" stroke="#2563eb" strokeWidth={2} dot={false} name="Attendance" />
                   </LineChart>
                 </ResponsiveContainer>
               ) : (
-                <div className="flex items-center justify-center h-full text-gray-500">
-                  No data available for the selected time range
-                </div>
+                <div className="flex items-center justify-center h-full text-sm text-gray-400">No data for this period</div>
               )}
-            </CardContent>
-          </Card>
+            </div>
+          </div>
 
-          {/* Teacher Activity */}
-          <Card className="border border-gray-200 bg-white">
-            <CardHeader className="border-b">
-              <CardTitle className="text-base">Teacher Activity</CardTitle>
-            </CardHeader>
-            <CardContent style={{ height: 300 }} className="pt-4">
-              {chartData.teacherActivity.length > 0 && chartData.teacherActivity[0].id !== "none" ? (
+          {/* Teacher activity */}
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+            <div className="px-6 py-4 border-b border-gray-100">
+              <h3 className="text-sm font-semibold text-gray-900">Teacher Activity</h3>
+            </div>
+            <div className="p-6" style={{ height: 280 }}>
+              {chartData.teacherActivity[0]?.id !== "none" ? (
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={chartData.teacherActivity} layout="vertical">
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis type="number" />
-                    <YAxis dataKey="name" type="category" width={120} />
-                    <Tooltip />
-                    <Legend />
-                    <Bar dataKey="totalActions" fill="#2563eb" name="Total Actions" />
+                  <BarChart data={chartData.teacherActivity} layout="vertical" margin={{ left: 8 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" horizontal={false} />
+                    <XAxis type="number" tick={{ fontSize: 11, fill: "#9ca3af" }} axisLine={false} tickLine={false} />
+                    <YAxis dataKey="name" type="category" width={100} tick={{ fontSize: 11, fill: "#6b7280" }} axisLine={false} tickLine={false} />
+                    <Tooltip contentStyle={{ borderRadius: 12, border: "1px solid #f3f4f6", fontSize: 12 }} />
+                    <Bar dataKey="totalActions" fill="#166534" radius={[0, 4, 4, 0]} name="Actions" />
                   </BarChart>
                 </ResponsiveContainer>
               ) : (
-                <div className="flex items-center justify-center h-full text-gray-500">
-                  No teacher activity data available
-                </div>
+                <div className="flex items-center justify-center h-full text-sm text-gray-400">No teacher activity yet</div>
               )}
-            </CardContent>
-          </Card>
-
-          {/* Quality Distribution */}
-          <Card className="border border-gray-200 bg-white">
-            <CardHeader className="border-b">
-              <CardTitle className="text-base">Quality Distribution</CardTitle>
-            </CardHeader>
-            <CardContent style={{ height: 300 }} className="pt-4">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={[{ name: "Quality", ...chartData.qualityDistribution }]}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="name" />
-                  <YAxis />
-                  <Tooltip />
-                  <Legend />
-                  <Bar dataKey="excellent" fill="#16a34a" name="Excellent" />
-                  <Bar dataKey="good" fill="#22c55e" name="Good" />
-                  <Bar dataKey="average" fill="#f59e0b" name="Average" />
-                  <Bar dataKey="needsWork" fill="#ef4444" name="Needs Work" />
-                  <Bar dataKey="horrible" fill="#991b1b" name="Horrible" />
-                </BarChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-
-          {/* Attendance Mix */}
-          <Card className="border border-gray-200 bg-white">
-            <CardHeader className="border-b">
-              <CardTitle className="text-base">Attendance Status Mix</CardTitle>
-            </CardHeader>
-            <CardContent style={{ height: 300 }} className="pt-4">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    dataKey="value"
-                    data={chartData.attendanceMix}
-                    cx="50%"
-                    cy="50%"
-                    outerRadius={80}
-                    label
-                  >
-                    {chartData.attendanceMix.map((_, idx) => (
-                      <Cell key={idx} fill={["#10b981", "#ef4444", "#f59e0b", "#6366f1"][idx % 4]} />
-                    ))}
-                  </Pie>
-                  <Tooltip />
-                  <Legend />
-                </PieChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </div>
       )}
-
-      {/* At-Risk Students & Top Performers */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* At-Risk Students */}
-        <Card className="border border-red-200 bg-white">
-          <CardHeader className="border-b bg-red-50">
-            <CardTitle className="text-base flex items-center gap-2 text-red-700">
-              <AlertTriangle className="h-4 w-4" />
-              At-Risk Students
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-0">
-            {atRiskStudents.length === 0 ? (
-              <div className="py-6 text-center text-gray-600 text-sm">No at-risk students found.</div>
-            ) : (
-              <ul className="divide-y">
-                {atRiskStudents.map((student) => (
-                  <li key={student.id} className="p-4 hover:bg-gray-50">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <div className="font-medium text-gray-900">{student.name}</div>
-                        <div className="text-sm text-gray-600 mt-1">
-                          Attendance: {student.attendanceRate}% • Quality: {student.averageQuality.toFixed(1)}
-                        </div>
-                      </div>
-                      <Badge variant="destructive">At Risk</Badge>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Top Performers */}
-        <Card className="border border-green-200 bg-white">
-          <CardHeader className="border-b bg-green-50">
-            <CardTitle className="text-base flex items-center gap-2 text-green-700">
-              <Award className="h-4 w-4" />
-              Top Performers
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-0">
-            {topPerformers.length === 0 ? (
-              <div className="py-6 text-center text-gray-600 text-sm">No top performers found.</div>
-            ) : (
-              <ul className="divide-y">
-                {topPerformers.map((student) => (
-                  <li key={student.id} className="p-4 hover:bg-gray-50">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <div className="font-medium text-gray-900">{student.name}</div>
-                        <div className="text-sm text-gray-600 mt-1">
-                          Attendance: {student.attendanceRate}% • Quality: {student.averageQuality.toFixed(1)} • {student.pagesMemorized} pages
-                        </div>
-                      </div>
-                      <Badge variant="default" className="bg-yellow-500">Top Performer</Badge>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Activity Feed */}
-      <div>
-        <h2 className="text-xl font-bold text-gray-900 mb-4">Activity Feed</h2>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <Section title="Progress" type="progress" />
-          <Section title="Attendance" type="attendance" />
-          <Section title="Assignments" type="assignment" />
-          <Section title="Messages" type="message" />
-          <Section title="Emails" type="email" />
-        </div>
-      </div>
-    </div>
+    </AdminPageShell>
   );
 }

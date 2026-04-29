@@ -7,7 +7,9 @@ const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 const anonKey = Deno.env.get("SUPABASE_ANON_KEY");
 
 if (!supabaseUrl || !serviceRoleKey) {
-  console.error("[purge-parents-students] Missing env SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY");
+  console.error(
+    "[purge-parents-students] Missing env SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY",
+  );
 }
 
 serve(async (req: Request) => {
@@ -28,7 +30,11 @@ serve(async (req: Request) => {
     // Parse body
     const raw = await req.text();
     let body: any = {};
-    try { body = raw ? JSON.parse(raw) : {}; } catch (_) { body = {}; }
+    try {
+      body = raw ? JSON.parse(raw) : {};
+    } catch (_) {
+      body = {};
+    }
 
     let targetMadrassahId: string | null = body?.madrassah_id ?? null;
     const purgeAllRequested = Boolean(body?.purge_all === true);
@@ -41,7 +47,9 @@ serve(async (req: Request) => {
       try {
         const callerAuth = req.headers.get("Authorization") || "";
         if (callerAuth) {
-          const caller = createClient(supabaseUrl!, anonKey, { global: { headers: { Authorization: callerAuth } } });
+          const caller = createClient(supabaseUrl!, anonKey, {
+            global: { headers: { Authorization: callerAuth } },
+          });
           const { data: me } = await caller.auth.getUser();
           const callerId = me.user?.id;
           if (callerId) {
@@ -50,7 +58,9 @@ serve(async (req: Request) => {
               .select("madrassah_id, role")
               .eq("id", callerId)
               .maybeSingle();
-            if (profile?.madrassah_id) targetMadrassahId = profile.madrassah_id as string;
+            if (profile?.madrassah_id) {
+              targetMadrassahId = profile.madrassah_id as string;
+            }
             if (profile?.role) callerRole = String(profile.role);
           }
         }
@@ -84,7 +94,10 @@ serve(async (req: Request) => {
         const { data: parents } = await admin.from("parents").select("id");
         (parents || []).forEach((p: { id: string }) => parentIdSet.add(p.id));
       } else {
-        const { data: parents } = await admin.from("parents").select("id").eq("madrassah_id", targetMadrassahId);
+        const { data: parents } = await admin.from("parents").select("id").eq(
+          "madrassah_id",
+          targetMadrassahId,
+        );
         (parents || []).forEach((p: { id: string }) => parentIdSet.add(p.id));
       }
     }
@@ -95,7 +108,10 @@ serve(async (req: Request) => {
         const { data: students } = await admin.from("students").select("id");
         (students || []).forEach((s: { id: string }) => studentIdSet.add(s.id));
       } else {
-        const { data: students } = await admin.from("students").select("id").eq("madrassah_id", targetMadrassahId);
+        const { data: students } = await admin.from("students").select("id").eq(
+          "madrassah_id",
+          targetMadrassahId,
+        );
         (students || []).forEach((s: { id: string }) => studentIdSet.add(s.id));
       }
     }
@@ -127,7 +143,10 @@ serve(async (req: Request) => {
     // Delete links first
     try {
       if (deleteStudents && studentIds.length > 0) {
-        await admin.from("parent_children").delete().in("student_id", studentIds);
+        await admin.from("parent_children").delete().in(
+          "student_id",
+          studentIds,
+        );
       }
       if (deleteParents && parentIds.length > 0) {
         await admin.from("parent_children").delete().in("parent_id", parentIds);
@@ -136,19 +155,112 @@ serve(async (req: Request) => {
 
     // Delete dependent student data first to satisfy FKs (only if deleting students)
     if (deleteStudents) {
-      try { if (studentIds.length > 0) await admin.from("attendance").delete().in("student_id", studentIds); else if (scopeAll) await admin.from("attendance").delete().neq("id", ""); } catch (_) {}
-      try { if (studentIds.length > 0) await admin.from("progress").delete().in("student_id", studentIds); else if (scopeAll) await admin.from("progress").delete().neq("id", ""); } catch (_) {}
-      try { if (studentIds.length > 0) await admin.from("juz_revisions").delete().in("student_id", studentIds); else if (scopeAll) await admin.from("juz_revisions").delete().neq("id", ""); } catch (_) {}
-      try { if (studentIds.length > 0) await admin.from("juz_mastery").delete().in("student_id", studentIds); else if (scopeAll) await admin.from("juz_mastery").delete().neq("id", ""); } catch (_) {}
-      try { if (studentIds.length > 0) await admin.from("parent_comments").delete().in("student_id", studentIds); else if (scopeAll) await admin.from("parent_comments").delete().neq("id", ""); } catch (_) {}
-      try { if (studentIds.length > 0) await admin.from("student_dhor_summaries").delete().in("student_id", studentIds); else if (scopeAll) await admin.from("student_dhor_summaries").delete().neq("id", ""); } catch (_) {}
+      try {
+        if (studentIds.length > 0) {
+          await admin.from("attendance").delete().in("student_id", studentIds);
+        } else if (scopeAll) {
+          await admin.from("attendance").delete().neq("id", "");
+        }
+      } catch (_) {}
+      try {
+        if (studentIds.length > 0) {
+          await admin.from("progress").delete().in("student_id", studentIds);
+        } else if (scopeAll) {
+          await admin.from("progress").delete().neq("id", "");
+        }
+      } catch (_) {}
+      try {
+        if (studentIds.length > 0) {
+          await admin.from("juz_revisions").delete().in(
+            "student_id",
+            studentIds,
+          );
+        } else if (scopeAll) {
+          await admin.from("juz_revisions").delete().neq("id", "");
+        }
+      } catch (_) {}
+      try {
+        if (studentIds.length > 0) {
+          await admin.from("juz_mastery").delete().in("student_id", studentIds);
+        } else if (scopeAll) {
+          await admin.from("juz_mastery").delete().neq("id", "");
+        }
+      } catch (_) {}
+      try {
+        if (studentIds.length > 0) {
+          await admin.from("parent_comments").delete().in(
+            "student_id",
+            studentIds,
+          );
+        } else if (scopeAll) {
+          await admin.from("parent_comments").delete().neq("id", "");
+        }
+      } catch (_) {}
+      try {
+        if (studentIds.length > 0) {
+          await admin.from("student_dhor_summaries").delete().in(
+            "student_id",
+            studentIds,
+          );
+        } else if (scopeAll) {
+          await admin.from("student_dhor_summaries").delete().neq("id", "");
+        }
+      } catch (_) {}
       // Custom tables (if present in schema)
-      try { if (studentIds.length > 0) await admin.from("difficult_ayahs").delete().in("student_id", studentIds); else if (scopeAll) await admin.from("difficult_ayahs").delete().neq("id", ""); } catch (_) {}
-      try { if (studentIds.length > 0) await admin.from("revision_schedule").delete().in("student_id", studentIds); else if (scopeAll) await admin.from("revision_schedule").delete().neq("id", ""); } catch (_) {}
-      try { if (studentIds.length > 0) await admin.from("student_assignments").delete().in("student_id", studentIds); else if (scopeAll) await admin.from("student_assignments").delete().neq("id", ""); } catch (_) {}
-      try { if (studentIds.length > 0) await admin.from("teacher_assignment_submissions").delete().in("student_id", studentIds); else if (scopeAll) await admin.from("teacher_assignment_submissions").delete().neq("id", ""); } catch (_) {}
+      try {
+        if (studentIds.length > 0) {
+          await admin.from("difficult_ayahs").delete().in(
+            "student_id",
+            studentIds,
+          );
+        } else if (scopeAll) {
+          await admin.from("difficult_ayahs").delete().neq("id", "");
+        }
+      } catch (_) {}
+      try {
+        if (studentIds.length > 0) {
+          await admin.from("revision_schedule").delete().in(
+            "student_id",
+            studentIds,
+          );
+        } else if (scopeAll) {
+          await admin.from("revision_schedule").delete().neq("id", "");
+        }
+      } catch (_) {}
+      try {
+        if (studentIds.length > 0) {
+          await admin.from("student_assignments").delete().in(
+            "student_id",
+            studentIds,
+          );
+        } else if (scopeAll) {
+          await admin.from("student_assignments").delete().neq("id", "");
+        }
+      } catch (_) {}
+      try {
+        if (studentIds.length > 0) {
+          await admin.from("teacher_assignment_submissions").delete().in(
+            "student_id",
+            studentIds,
+          );
+        } else if (scopeAll) {
+          await admin.from("teacher_assignment_submissions").delete().neq(
+            "id",
+            "",
+          );
+        }
+      } catch (_) {}
       // Name-based join table cleanup
-      try { if (studentNames.length > 0) await admin.from("students_teachers").delete().in("student_name", studentNames); else if (scopeAll) await admin.from("students_teachers").delete().neq("id", ""); } catch (_) {}
+      try {
+        if (studentNames.length > 0) {
+          await admin.from("students_teachers").delete().in(
+            "student_name",
+            studentNames,
+          );
+        } else if (scopeAll) {
+          await admin.from("students_teachers").delete().neq("id", "");
+        }
+      } catch (_) {}
     }
 
     // Delete parents table rows
@@ -156,10 +268,14 @@ serve(async (req: Request) => {
     try {
       if (deleteParents) {
         if (parentIds.length > 0) {
-          const { count } = await admin.from("parents").delete({ count: "exact" }).in("id", parentIds);
+          const { count } = await admin.from("parents").delete({
+            count: "exact",
+          }).in("id", parentIds);
           parentsDeleted = count ?? parentsDeleted;
         } else if (scopeAll) {
-          const { count } = await admin.from("parents").delete({ count: "exact" }).neq("id", "");
+          const { count } = await admin.from("parents").delete({
+            count: "exact",
+          }).neq("id", "");
           parentsDeleted = count ?? parentsDeleted;
         }
       }
@@ -172,7 +288,10 @@ serve(async (req: Request) => {
           await admin.from("profiles").delete().in("id", parentIds);
         }
         if (!scopeAll && targetMadrassahId) {
-          await admin.from("profiles").delete().eq("role", "parent").eq("madrassah_id", targetMadrassahId);
+          await admin.from("profiles").delete().eq("role", "parent").eq(
+            "madrassah_id",
+            targetMadrassahId,
+          );
         } else if (scopeAll) {
           await admin.from("profiles").delete().eq("role", "parent");
         }
@@ -184,10 +303,14 @@ serve(async (req: Request) => {
     try {
       if (deleteStudents) {
         if (studentIds.length > 0) {
-          const { count } = await admin.from("students").delete({ count: "exact" }).in("id", studentIds);
+          const { count } = await admin.from("students").delete({
+            count: "exact",
+          }).in("id", studentIds);
           studentsDeleted = count ?? studentsDeleted;
         } else if (scopeAll) {
-          const { count } = await admin.from("students").delete({ count: "exact" }).neq("id", "");
+          const { count } = await admin.from("students").delete({
+            count: "exact",
+          }).neq("id", "");
           studentsDeleted = count ?? studentsDeleted;
         }
       }
@@ -215,15 +338,21 @@ serve(async (req: Request) => {
         authDeleted,
         options: { deleteParents, deleteStudents },
       }),
-      { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      {
+        status: 200,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      },
     );
   } catch (error) {
-    try { console.error("[purge-parents-students] error:", (error as Error)?.message || String(error)); } catch (_) {}
+    try {
+      console.error(
+        "[purge-parents-students] error:",
+        (error as Error)?.message || String(error),
+      );
+    } catch (_) {}
     return new Response(JSON.stringify({ error: (error as Error).message }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
 });
-
-

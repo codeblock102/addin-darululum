@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { supabase, SUPABASE_URL } from "@/integrations/supabase/client.ts";
 import { StudentFormData } from "./studentTypes.ts";
-import { getErrorMessage } from "@/utils/stringUtils.ts";
+import { formatErrorMessage } from "@/utils/formatErrorMessage.ts";
 
 interface UseStudentSubmitProps {
   teacherId: string;
@@ -108,7 +108,7 @@ export const useStudentSubmit = ({
           if (createError) throw createError;
           studentId = created?.id ?? null;
         } catch (err) {
-          const msg = getErrorMessage(err, "");
+          const msg = formatErrorMessage(err);
           if (/guardian2_/i.test(msg) || /secondary_guardian_/i.test(msg) || /column .* does not exist/i.test(msg)) {
             const { secondary_guardian_name: _gn, secondary_guardian_phone: _gp, secondary_guardian_whatsapp: _gw, ...cleaned } = submission;
             const { data: created2, error: retryError } = await supabase
@@ -156,7 +156,7 @@ export const useStudentSubmit = ({
           if (updateError) throw updateError;
           studentId = existingStudent.id;
         } catch (err) {
-          const msg = getErrorMessage(err, "");
+          const msg = formatErrorMessage(err);
           if (/guardian2_/i.test(msg) || /secondary_guardian_/i.test(msg) || /column .* does not exist/i.test(msg)) {
             const { secondary_guardian_name: _gn, secondary_guardian_phone: _gp, secondary_guardian_whatsapp: _gw, ...cleanedUpdate } = updateSubmission;
             const { error: retryUpdateError } = await supabase
@@ -245,7 +245,7 @@ export const useStudentSubmit = ({
       onSuccess?.();
     } catch (error: unknown) {
       console.error("Failed to add student:", error);
-      const errorMessage = getErrorMessage(error, "Failed to add student");
+      const errorMessage = formatErrorMessage(error) || "Failed to add student";
       onError?.(new Error(errorMessage));
     } finally {
       setIsProcessing(false);

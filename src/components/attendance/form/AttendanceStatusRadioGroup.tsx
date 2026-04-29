@@ -1,4 +1,4 @@
-import { CalendarCheck, CalendarX, Clock, LogOut } from "lucide-react";
+import { CalendarCheck, CalendarX, Clock, LogOut, Thermometer } from "lucide-react";
 import { AttendanceStatus } from "@/types/attendance.ts";
 import {
   FormControl,
@@ -32,7 +32,7 @@ export function AttendanceStatusRadioGroup(
       name="status"
       render={({ field }) => (
         <FormItem className="space-y-3">
-          <FormLabel className="text-black">
+          <FormLabel className="text-foreground">
             {t("pages.attendance.form.status", "Attendance Status")}
           </FormLabel>
           <FormControl>
@@ -110,6 +110,20 @@ export function AttendanceStatusRadioGroup(
                 >
                   <LogOut className="h-4 w-4 mr-2 text-indigo-600" />
                   {t("pages.attendance.status.earlyDeparture", "Early Departure")}
+                </label>
+              </div>
+              <div className="flex items-center space-x-2 p-2 rounded-md transition-colors">
+                <RadioGroupItem
+                  value="sick"
+                  id="sick"
+                  className="text-purple-600 border-gray-400 focus:ring-purple-500"
+                />
+                <label
+                  htmlFor="sick"
+                  className="flex items-center text-gray-900 dark:text-gray-100 font-medium cursor-pointer"
+                >
+                  <Thermometer className="h-4 w-4 mr-2 text-orange-500" />
+                  {t("pages.attendance.status.sick", "Sick")}
                 </label>
               </div>
             </RadioGroup>

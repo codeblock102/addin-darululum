@@ -1,0 +1,232 @@
+# Abdul's Wiki — Darul Ulum Montreal Platform
+
+> Living documentation. Update this file whenever architecture or major features change.
+
+---
+
+## What This App Is
+
+**Darul Ulum Montreal** is a web-based management platform for an Islamic Quran school (madrassah) in Montreal. It serves three distinct user types: **Admins**, **Teachers**, and **Parents**.
+
+The core purpose: track every student's Quran memorization journey, monitor attendance, enable teacher-parent communication, and give admins full visibility into school performance.
+
+**Live URL:** https://app.daralulummontreal.com/
+
+---
+
+## Tech Stack
+
+| Layer | Technology |
+|---|---|
+| Frontend | React 18 + Vite + TypeScript |
+| UI Components | shadcn/ui + Radix UI primitives |
+| Styling | TailwindCSS 3.4 |
+| State / Data | TanStack React Query 5 |
+| Forms | React Hook Form + Zod |
+| Routing | React Router 6 |
+| Charts | Recharts |
+| Animation | Framer Motion |
+| Backend | Supabase (Postgres + Auth + Storage + Edge Functions) |
+| Email | Resend API (via Supabase Edge Functions) |
+| Calendar | FullCalendar |
+
+---
+
+## User Roles
+
+### Admin
+- Full access to everything
+- Can proxy into any teacher or parent account ("View As") — amber banner shows during proxy, Exit button restores admin view; eye icon on Teachers page and Parent Accounts page
+- Views live analytics dashboard (KPIs, at-risk students, alerts)
+- Manages teacher accounts, parent accounts, student roster
+- Can import students via CSV bulk upload
+- Views activity feed
+- Can manually invoke email notifications
+- Routes to `/dashboard` → teacher portal view with admin flag
+
+### Teacher
+- Logs student Quran progress (Dhor Book: surah, juz, ayat, quality, notes)
+- Takes attendance (bulk, per class/session)
+- Views at-risk students and performance analytics
+- Sends messages to parents (with email notification via Resend)
+- Creates and grades assignments
+- Views their class schedule
+- Routes to `/dashboard` → teacher portal
+
+### Parent
+- Views child's Quran progress, attendance history
+- Views and filters assignments/submissions
+- Messages the teacher (with email notification)
+- If linked to multiple children, uses child selector
+- Routes to `/parent`
+
+---
+
+## Page Map
+
+### Shared
+- `/auth` — Login/signup
+- `/reset-password` — Password reset
+
+### Admin Sub-pages (under `/admin`)
+- `/admin/parent-accounts` — Manage parent accounts
+- `/admin/bulk-student-import` — CSV student import
+- `/admin/teacher-schedules` — View teacher schedules
+- `/admin/setup` — First-time setup wizard
+- `/admin/roles` — Manual role assignment
+
+### Main App (protected, under `DashboardLayout`)
+- `/dashboard` — Role-based hub (Teacher Portal or Admin Portal)
+- `/parent` — Parent dashboard
+- `/parent/progress` — Child's Quran progress
+- `/parent/academics` — Assignments with status filtering
+- `/parent/attendance` — Attendance history
+- `/parent/messages` — Teacher messaging
+- `/students` — Student roster
+- `/students/:id` — Individual student profile
+- `/teachers` — Teacher roster
+- `/classes` — Class management
+- `/progress-book` — Dhor book entry (teacher)
+- `/attendance` — Bulk attendance form (teacher)
+- `/messages` — Teacher messaging
+- `/schedule` — Teacher schedule
+- `/teacher-accounts` — Manage teacher accounts (admin)
+- `/add-parent` — Link parent to student (teacher)
+- `/settings` — System settings
+- `/preferences` — User preferences
+- `/activity` — Activity feed (admin)
+- `/calendar` — School calendar (events, holidays, PD days) — all roles
+
+### Dev-only (gated)
+- `/dev/seeder`, `/dev/create-demo`, `/dev/create-teacher-profile`, etc.
+
+---
+
+## Data Architecture
+
+### Key Supabase Tables
+| Table | Purpose |
+|---|---|
+| `profiles` | User profiles (all roles) — name, role, email, subject |
+| `students` | Student records — name, status, class_ids, madrassah_id |
+| `classes` | Class records — name, teacher_ids, current_students |
+| `progress` | Quran progress entries — surah, juz, ayat, quality, notes |
+| `attendance` | Attendance records — date, status, session, reason |
+| `teacher_assignments` | Assignments — title, due_date, status, student_ids |
+| `messages` | In-app messages — sender_id, recipient_id, message, read |
+| `parents` | Parent records — student_ids link |
+| `parent_children` | Parent→student linkage (legacy/fallback) |
+| `notifications` | In-app notification queue; also used for overdue-email de-duplication (assignment_id + recipient_id + date) |
+| `analytics_metrics` | Pre-aggregated analytics data |
+| `teacher_tasks` | Tasks assigned by admin to teachers — priority (low/medium/high/urgent), status (pending/in_progress/done), due_date, notes |
+| `announcements` | Class announcements from teachers — title, message, class_id, sent_to_count |
+| `absence_requests` | Teacher absence requests — date range, reason, status (pending/approved/rejected), admin_note, reviewed_by |
+
+### Row Level Security
+All tables have RLS policies. Teachers see only their students. Parents see only their children's data. Admins have full access.
+
+---
+
+## Email System
+
+All emails go through **Resend** via Supabase Edge Functions:
+
+| Function | When it fires |
+|---|---|
+| `send-teacher-message` | Teacher or parent sends an in-app message |
+| `attendance-absence-email` | Student marked absent (runs every 5 min via pg_cron) |
+| `daily-progress-email` | Daily summary of student progress to parents |
+| `send-parent-welcome-emails` | When a parent account is created |
+| `admin-send-email` | Admin manual email blast |
+| `send-late-arrival-alert` | When a student is marked late (POST `{ student_id, date, time }`) |
+| `send-assignment-notification` | When a new assignment is created — notifies linked parents (POST `{ assignment_id, type }`) |
+| `send-assignment-graded` | When a teacher grades an assignment (POST `{ assignment_id }`) — emails all linked parents |
+| `send-assignment-overdue` | Daily at 08:00 UTC via pg_cron — scans overdue ungraded assignments, emails parents; de-duped via `notifications` table |
+| `send-enrollment-confirmation` | When a new student is added (POST `{ student_id }`) — emails all admin accounts |
+| `send-class-announcement` | When teacher broadcasts a class announcement (POST `{ announcement_id }`) — emails all class parents, updates `sent_to_count` |
+
+Required env secrets: `RESEND_API_KEY`, `RESEND_FROM_EMAIL`, `APP_URL`, `LOGO_URL`
+
+---
+
+## Component Architecture
+
+```
+src/
+├── pages/               # Top-level route components
+│   ├── admin/           # Admin-specific pages
+│   ├── dev/             # Dev-only tools (gated)
+│   └── *.tsx            # Auth, Dashboard, Parent, Teacher pages
+├── components/
+│   ├── layouts/         # DashboardLayout, Sidebar, SidebarNav, SidebarUser
+│   ├── analytics/       # EmptyState (shared empty state component)
+│   ├── attendance/      # Attendance form, table, watchlist, heatmap components
+│   ├── dhor-book/       # Quran progress recording (DhorBook, ClassroomRecords, etc.)
+│   ├── teacher-portal/  # Full teacher dashboard (tabs, students, assignments, grading)
+│   ├── onboarding/      # OnboardingModal (first login), DailyPromptModal (once/day)
+│   ├── parent/          # ChildSelector, ParentMessages
+│   ├── dashboard/       # DashboardStats, StatsCard, WeeklySchedule
+│   ├── shared/          # FloatingDailyEmailButton, PageHelpBanner
+│   ├── admin/           # Admin messaging, reports, settings, account management
+│   ├── students/        # Student list, dialog, form
+│   ├── teachers/        # Teacher list, dialog
+│   ├── classes/         # Class management
+│   └── ui/              # shadcn/ui wrapper components
+├── hooks/               # Custom React hooks (auth, RBAC, data fetching, analytics)
+├── services/analytics/  # KPI calculation, alert engine, aggregation jobs
+├── contexts/            # AuthContext, I18nContext
+├── types/               # TypeScript interfaces
+├── utils/               # Helper functions (Quran math, CSV, role checks)
+├── config/              # Navigation definitions
+├── i18n/                # Translation strings
+├── styles/              # Global CSS (theme, animations, components)
+└── integrations/supabase/ # Client setup and generated types
+```
+
+---
+
+## Attendance System
+
+The attendance page is the primary monitoring surface. Key features:
+
+- **Roll Call tab** — `AttendanceForm` selects class + date, marks status per student (present, absent, late, sick, excused, early_departure). Cutoff time enforced server-side.
+- **Watchlist tab** — queries last 30 days, surfaces students with 2+ absences with consecutive-day streak badge and last-seen date.
+- **Heatmap tab** — 30-day grid of school-wide daily attendance rate. Color bands: ≥90% green, 75–89% light green, 60–74% amber, <60% red.
+- **Records tab** — `AttendanceTable` shows full attendance log with filters.
+- **Multi-day Absence** — `LongTermAbsenceModal` creates one excused record per weekday in a date range.
+
+**At-risk (teacher portal only):**
+`useTeacherStudentMetrics` flags students with low attendance rate or no progress in 7+ days. Shown in `DashboardOverview` alert banner.
+
+---
+
+## Navigation Config
+
+`src/config/navigation.ts` defines nav items per role:
+- **adminNavItems** — 11 items (Dashboard, Analytics, Students, Teachers, Classes, ProgressBook, Attendance, ParentAccounts, BulkImport, TeacherSchedules, Settings)
+- **teacherNavItems** — 8 items (filtered by capability: attendance, progress, assignments)
+- **parentNavItems** — 6 items (ParentDashboard, AddParent, Messages, QuranProgress, Academics, Attendance)
+
+---
+
+## I18n
+
+Custom I18n context (not react-i18next). Translation keys in `src/i18n/translations.ts`. Falls back to key string if translation missing. Language stored in localStorage.
+
+---
+
+## Change Log
+
+| Date | Summary | See Also |
+|---|---|---|
+| 2026-04-28 (s3) | Deployed 4 edge functions to live Supabase (send-assignment-graded, send-assignment-overdue, send-enrollment-confirmation, send-class-announcement); pg_cron daily overdue job scheduled at 08:00 UTC | handoff.md |
+| 2026-04-28 (s2) | 6 features: assignment graded/overdue notifications, enrollment confirmation email, student status filter, task list (admin→teacher), class announcements broadcast, teacher absence request flow; teacher portal luxury overhaul (gradient banner, pill tabs, stat cards); 3 DB migrations applied | handoff.md |
+| 2026-04-28 | Sortable table headers (Students, Teachers, Parent Accounts); attendance + parent-accounts tabs converted to pill buttons (fix blue underline); SidebarUser expanded dropdown navigation fix | handoff.md |
+| 2026-04-27 (s4) | Admin proxy/impersonation feature (ProxyContext, eye button on teachers+parents, amber banner, useRBAC override); nav cleanup (section groups, Profile/Settings moved to user dropdown, trimmed teacher+parent nav) | handoff.md |
+| 2026-04-27 (s3) | Full luxury UI redesign: sidebar pill active state + dark avatar + wordmark; tinted dashboard stat cards (green/red/amber) + 4xl KPI numbers + section header accents; icon page headers on Students/Teachers/Classes; colored avatar circles + icon action buttons in all tables; AdminPageShell gradient button fix | handoff.md |
+| 2026-04-27 (s2) | Bug fix: green banner text now uses inline styles to defeat CSS theme specificity (`.admin-theme`/`.teacher-theme` were overriding `text-white`); all 4 green banner pages fixed | handoff.md |
+| 2026-04-27 | 6 features: contact pop-up, CSV export, unexcused warnings, late arrivals alert, school calendar, assignment notifications; `school_events` table migration; 2 new edge functions | handoff.md |
+| 2026-04-26 (s2) | Analytics removal; attendance redesign (watchlist + heatmap); DailyPromptModal; Settings toggle | handoff.md |
+| 2026-04-26 | 5 DUM Application Feedback features (onboarding, admin dashboard, Health IEP, Staff HRIS, sick status); schedule seed | handoff.md |
+| 2026-04-16 | Absence reasons, multi-day modal, student dossier, profile page | handoff.md |
+| 2026-04-15 | Initial wiki creation; UI cleanup; debug log removal; real data for DashboardStats, TodayStudents, RecentActivity | handoff.md |
