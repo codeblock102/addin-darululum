@@ -12,15 +12,16 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { Resend } from "https://esm.sh/resend@2.0.0";
 
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
-const FROM_EMAIL = Deno.env.get("RESEND_FROM_EMAIL") || "noreply@daralulummontreal.com";
+const FROM_EMAIL = Deno.env.get("RESEND_FROM_EMAIL") ||
+  "noreply@daralulummontreal.com";
 const APP_URL = Deno.env.get("APP_URL") || "https://app.daralulummontreal.com";
-const LOGO_URL =
-  Deno.env.get("LOGO_URL") ||
+const LOGO_URL = Deno.env.get("LOGO_URL") ||
   "https://depsfpodwaprzxffdcks.supabase.co/storage/v1/object/public/dum-logo/dum-logo.png";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers":
+    "authorization, x-client-info, apikey, content-type",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
@@ -48,7 +49,9 @@ serve(async (req) => {
     // Fetch student details
     const { data: student, error: sErr } = await supabase
       .from("students")
-      .select("id, name, section, enrollment_date, guardian_name, guardian_contact")
+      .select(
+        "id, name, section, enrollment_date, guardian_name, guardian_contact",
+      )
       .eq("id", student_id)
       .single();
 
@@ -71,18 +74,21 @@ serve(async (req) => {
 
     if (admins.length === 0) {
       return new Response(
-        JSON.stringify({ message: "No admin emails found — skipped.", sent: 0 }),
+        JSON.stringify({
+          message: "No admin emails found — skipped.",
+          sent: 0,
+        }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
 
     const enrollmentDateStr = student.enrollment_date
       ? new Date(student.enrollment_date).toLocaleDateString("en-CA", {
-          weekday: "long",
-          year: "numeric",
-          month: "long",
-          day: "numeric",
-        })
+        weekday: "long",
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      })
       : "Not specified";
 
     const resend = new Resend(RESEND_API_KEY);
@@ -117,25 +123,37 @@ serve(async (req) => {
                   <p style="margin:0 0 4px;font-size:13px;color:#166534;font-weight:600;text-transform:uppercase;letter-spacing:.05em;">Student Information</p>
                   <p style="margin:0;font-size:18px;font-weight:700;color:#1f2937;">${student.name}</p>
                   <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:12px;">
-                    ${student.section ? `
+                    ${
+      student.section
+        ? `
                     <tr>
                       <td style="font-size:13px;color:#6b7280;padding:3px 0;width:140px;">Section</td>
                       <td style="font-size:13px;color:#1f2937;font-weight:500;">${student.section}</td>
-                    </tr>` : ""}
+                    </tr>`
+        : ""
+    }
                     <tr>
                       <td style="font-size:13px;color:#6b7280;padding:3px 0;width:140px;">Enrollment Date</td>
                       <td style="font-size:13px;color:#1f2937;font-weight:500;">${enrollmentDateStr}</td>
                     </tr>
-                    ${student.guardian_name ? `
+                    ${
+      student.guardian_name
+        ? `
                     <tr>
                       <td style="font-size:13px;color:#6b7280;padding:3px 0;width:140px;">Guardian Name</td>
                       <td style="font-size:13px;color:#1f2937;font-weight:500;">${student.guardian_name}</td>
-                    </tr>` : ""}
-                    ${student.guardian_contact ? `
+                    </tr>`
+        : ""
+    }
+                    ${
+      student.guardian_contact
+        ? `
                     <tr>
                       <td style="font-size:13px;color:#6b7280;padding:3px 0;width:140px;">Guardian Contact</td>
                       <td style="font-size:13px;color:#1f2937;font-weight:500;">${student.guardian_contact}</td>
-                    </tr>` : ""}
+                    </tr>`
+        : ""
+    }
                   </table>
                 </td>
               </tr>
@@ -182,7 +200,10 @@ serve(async (req) => {
     console.error("Unexpected error:", err);
     return new Response(
       JSON.stringify({ error: String(err) }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      },
     );
   }
 });

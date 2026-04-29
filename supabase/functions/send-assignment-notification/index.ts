@@ -13,14 +13,16 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { Resend } from "https://esm.sh/resend@2.0.0";
 
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
-const FROM_EMAIL = Deno.env.get("RESEND_FROM_EMAIL") || "noreply@daralulummontreal.com";
+const FROM_EMAIL = Deno.env.get("RESEND_FROM_EMAIL") ||
+  "noreply@daralulummontreal.com";
 const APP_URL = Deno.env.get("APP_URL") || "https://app.daralulummontreal.com";
 const LOGO_URL = Deno.env.get("LOGO_URL") ||
   "https://depsfpodwaprzxffdcks.supabase.co/storage/v1/object/public/dum-logo/dum-logo.png";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers":
+    "authorization, x-client-info, apikey, content-type",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
@@ -48,7 +50,9 @@ serve(async (req) => {
     // Fetch the assignment
     const { data: assignment, error: aErr } = await supabase
       .from("teacher_assignments")
-      .select("id, title, description, due_date, teacher_id, student_ids, class_ids")
+      .select(
+        "id, title, description, due_date, teacher_id, student_ids, class_ids",
+      )
       .eq("id", assignment_id)
       .single();
 
@@ -118,11 +122,11 @@ serve(async (req) => {
     const isNew = type === "new";
     const dueDateStr = assignment.due_date
       ? new Date(assignment.due_date).toLocaleDateString("en-CA", {
-          weekday: "long",
-          year: "numeric",
-          month: "long",
-          day: "numeric",
-        })
+        weekday: "long",
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      })
       : null;
 
     const subjectLine = isNew
@@ -151,22 +155,31 @@ serve(async (req) => {
         <tr>
           <td style="padding:28px 32px;">
             <p style="margin:0 0 16px;font-size:15px;color:#374151;">
-              ${isNew
-                ? `Your child has been given a new assignment by <strong>${teacherName}</strong>.`
-                : `A reminder that your child has an assignment due soon from <strong>${teacherName}</strong>.`
-              }
+              ${
+      isNew
+        ? `Your child has been given a new assignment by <strong>${teacherName}</strong>.`
+        : `A reminder that your child has an assignment due soon from <strong>${teacherName}</strong>.`
+    }
             </p>
             <table width="100%" cellpadding="0" cellspacing="0" style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;overflow:hidden;">
               <tr>
                 <td style="padding:16px 20px;">
                   <p style="margin:0 0 4px;font-size:13px;color:#166534;font-weight:600;text-transform:uppercase;letter-spacing:.05em;">Assignment</p>
                   <p style="margin:0;font-size:18px;font-weight:700;color:#1f2937;">${assignment.title}</p>
-                  ${assignment.description ? `<p style="margin:8px 0 0;font-size:14px;color:#4b5563;">${assignment.description}</p>` : ""}
-                  ${dueDateStr ? `
+                  ${
+      assignment.description
+        ? `<p style="margin:8px 0 0;font-size:14px;color:#4b5563;">${assignment.description}</p>`
+        : ""
+    }
+                  ${
+      dueDateStr
+        ? `
                   <div style="margin-top:12px;display:flex;align-items:center;gap:8px;">
                     <span style="font-size:13px;color:#92400e;font-weight:600;">Due:</span>
                     <span style="font-size:13px;color:#1f2937;">${dueDateStr}</span>
-                  </div>` : ""}
+                  </div>`
+        : ""
+    }
                 </td>
               </tr>
             </table>
@@ -217,7 +230,10 @@ serve(async (req) => {
     console.error("Unexpected error:", err);
     return new Response(
       JSON.stringify({ error: String(err) }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      },
     );
   }
 });

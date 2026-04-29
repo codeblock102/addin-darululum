@@ -10,14 +10,16 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { Resend } from "https://esm.sh/resend@2.0.0";
 
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
-const FROM_EMAIL = Deno.env.get("RESEND_FROM_EMAIL") || "noreply@daralulummontreal.com";
+const FROM_EMAIL = Deno.env.get("RESEND_FROM_EMAIL") ||
+  "noreply@daralulummontreal.com";
 const APP_URL = Deno.env.get("APP_URL") || "https://app.daralulummontreal.com";
 const LOGO_URL = Deno.env.get("LOGO_URL") ||
   "https://depsfpodwaprzxffdcks.supabase.co/storage/v1/object/public/dum-logo/dum-logo.png";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers":
+    "authorization, x-client-info, apikey, content-type",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
@@ -76,11 +78,11 @@ serve(async (req) => {
     const resend = new Resend(RESEND_API_KEY);
     const formattedDate = date
       ? new Date(date).toLocaleDateString("en-CA", {
-          weekday: "long",
-          year: "numeric",
-          month: "long",
-          day: "numeric",
-        })
+        weekday: "long",
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      })
       : "today";
     const formattedTime = time
       ? time.substring(0, 5) // HH:mm
@@ -113,7 +115,11 @@ serve(async (req) => {
                 <td style="padding:16px 20px;">
                   <p style="margin:0 0 6px;font-size:13px;color:#92400e;font-weight:600;text-transform:uppercase;letter-spacing:.05em;">Student</p>
                   <p style="margin:0;font-size:16px;font-weight:700;color:#1f2937;">${student.name}</p>
-                  ${time ? `<p style="margin:6px 0 0;font-size:13px;color:#6b7280;">Arrived at <strong>${formattedTime}</strong></p>` : ""}
+                  ${
+      time
+        ? `<p style="margin:6px 0 0;font-size:13px;color:#6b7280;">Arrived at <strong>${formattedTime}</strong></p>`
+        : ""
+    }
                 </td>
               </tr>
             </table>
@@ -150,7 +156,10 @@ serve(async (req) => {
       console.error("Resend error:", emailError);
       return new Response(
         JSON.stringify({ error: "Failed to send email", details: emailError }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        {
+          status: 500,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
       );
     }
 
@@ -162,7 +171,10 @@ serve(async (req) => {
     console.error("Unexpected error:", err);
     return new Response(
       JSON.stringify({ error: String(err) }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      },
     );
   }
 });

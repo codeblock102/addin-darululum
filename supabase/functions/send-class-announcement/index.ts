@@ -27,14 +27,18 @@ async function handler(req: Request) {
     };
 
     if (!announcement_id) {
-      return jsonResponse(400, { ok: false, error: "announcement_id is required" });
+      return jsonResponse(400, {
+        ok: false,
+        error: "announcement_id is required",
+      });
     }
 
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL") || "";
     const SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
     const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY") || "";
     const RESEND_FROM_EMAIL = Deno.env.get("RESEND_FROM_EMAIL") || "";
-    const APP_URL = Deno.env.get("APP_URL") || "https://app.daralulummontreal.com/";
+    const APP_URL = Deno.env.get("APP_URL") ||
+      "https://app.daralulummontreal.com/";
     const LOGO_URL = Deno.env.get("LOGO_URL") ||
       "https://depsfpodwaprzxffdcks.supabase.co/storage/v1/object/public/dum-logo/dum-logo.png";
 
@@ -42,7 +46,10 @@ async function handler(req: Request) {
       return jsonResponse(500, { ok: false, error: "Supabase not configured" });
     }
     if (!RESEND_API_KEY || !RESEND_FROM_EMAIL) {
-      return jsonResponse(500, { ok: false, error: "Email service not configured" });
+      return jsonResponse(500, {
+        ok: false,
+        error: "Email service not configured",
+      });
     }
 
     const sClient = createClient(SUPABASE_URL, SERVICE_ROLE_KEY);
@@ -64,7 +71,8 @@ async function handler(req: Request) {
       .select("name")
       .eq("id", announcement.teacher_id)
       .maybeSingle();
-    const teacherName = (teacherProfile as { name?: string } | null)?.name ?? "Teacher";
+    const teacherName = (teacherProfile as { name?: string } | null)?.name ??
+      "Teacher";
 
     // 2. Fetch class — get current_students array
     const { data: classRow, error: classErr } = await sClient
@@ -77,8 +85,10 @@ async function handler(req: Request) {
       return jsonResponse(404, { ok: false, error: "Class not found" });
     }
 
-    const className = announcement.class_name || (classRow as { name?: string }).name || "Class";
-    const currentStudents: string[] = (classRow as { current_students?: string[] }).current_students ?? [];
+    const className = announcement.class_name ||
+      (classRow as { name?: string }).name || "Class";
+    const currentStudents: string[] =
+      (classRow as { current_students?: string[] }).current_students ?? [];
 
     if (currentStudents.length === 0) {
       // Update sent count to 0 and return
@@ -86,7 +96,11 @@ async function handler(req: Request) {
         .from("announcements")
         .update({ sent_to_count: 0 })
         .eq("id", announcement_id);
-      return jsonResponse(200, { ok: true, sent: 0, message: "No students enrolled in this class" });
+      return jsonResponse(200, {
+        ok: true,
+        sent: 0,
+        message: "No students enrolled in this class",
+      });
     }
 
     // 3. For each student, find parent via parents table where student_ids contains the student_id
@@ -99,7 +113,9 @@ async function handler(req: Request) {
         .select("id, student_ids")
         .contains("student_ids", [studentId]);
 
-      const rows = (parentRows ?? []) as Array<{ id: string; student_ids: string[] }>;
+      const rows = (parentRows ?? []) as Array<
+        { id: string; student_ids: string[] }
+      >;
 
       for (const parent of rows) {
         if (seenParentIds.has(parent.id)) continue;
@@ -125,7 +141,11 @@ async function handler(req: Request) {
         .from("announcements")
         .update({ sent_to_count: 0 })
         .eq("id", announcement_id);
-      return jsonResponse(200, { ok: true, sent: 0, message: "No parent emails found" });
+      return jsonResponse(200, {
+        ok: true,
+        sent: 0,
+        message: "No parent emails found",
+      });
     }
 
     // 5. Send emails via Resend
@@ -186,7 +206,12 @@ async function handler(req: Request) {
       .update({ sent_to_count: sent })
       .eq("id", announcement_id);
 
-    return jsonResponse(200, { ok: true, sent, attempted: parentEmails.length, errors });
+    return jsonResponse(200, {
+      ok: true,
+      sent,
+      attempted: parentEmails.length,
+      errors,
+    });
   } catch (e) {
     return jsonResponse(500, {
       ok: false,
