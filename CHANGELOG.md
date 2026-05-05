@@ -1,3 +1,10 @@
+## [1.7.4](https://github.com/Adekunes/Tadween/compare/v1.7.3...v1.7.4) (2026-05-05)
+
+
+### Bug Fixes
+
+* force all hero text white — replace <a> with buttons, fix Add Progress trigger ([7d25e06](https://github.com/Adekunes/Tadween/commit/7d25e06f4807208334f9fef0740a546549da8207))
+
 ## [1.7.3](https://github.com/Adekunes/Tadween/compare/v1.7.2...v1.7.3) (2026-05-05)
 
 
