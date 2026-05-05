@@ -1,3 +1,10 @@
+## [1.7.5](https://github.com/Adekunes/Tadween/compare/v1.7.4...v1.7.5) (2026-05-05)
+
+
+### Bug Fixes
+
+* complete teacher deletion — nuke all related rows + auth user ([cd601af](https://github.com/Adekunes/Tadween/commit/cd601afe90f7eec59b38b25731f1b59cd39e7b39))
+
 ## [1.7.4](https://github.com/Adekunes/Tadween/compare/v1.7.3...v1.7.4) (2026-05-05)
 
 
