@@ -37,9 +37,13 @@ export const NewProgressEntry = ({
       onOpenChange={handleOpenChange}
     >
       <DialogTrigger asChild>
-        <Button>
-          <BookOpen className="mr-2" />
-          Add Progress
+        <Button
+          style={{ backgroundColor: "rgba(255,255,255,0.15)", color: "#ffffff", borderColor: "rgba(255,255,255,0.3)" }}
+          variant="outline"
+          className="hover:opacity-90 font-semibold"
+        >
+          <BookOpen className="mr-2 h-4 w-4" style={{ color: "#ffffff" }} />
+          <span style={{ color: "#ffffff" }}>Add Progress</span>
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">

@@ -221,7 +221,7 @@ const StudentDetail = () => {
         </button>
 
         {/* Log Progress button */}
-        <div className="absolute top-4 right-4">
+        <div className="absolute top-4 right-4" style={{ color: "#ffffff" }}>
           <NewProgressEntry
             studentId={student.id}
             open={isDialogOpen}
@@ -274,24 +274,34 @@ const StudentDetail = () => {
           </div>
 
           {/* Quick contact strip */}
-          <div className="flex flex-col gap-2 shrink-0 text-right">
+          <div className="flex flex-col gap-2 shrink-0 text-right" style={{ color: "#ffffff" }}>
             {student.guardian_name && (
               <div className="flex items-center gap-1.5 text-sm font-bold justify-end" style={{ color: "#ffffff" }}>
-                <User2 className="h-3.5 w-3.5" style={{ color: "rgba(255,255,255,0.6)" }} />
-                <span>{student.guardian_name}</span>
+                <User2 className="h-3.5 w-3.5" style={{ color: "rgba(255,255,255,0.55)" }} />
+                <span style={{ color: "#ffffff" }}>{student.guardian_name}</span>
               </div>
             )}
             {student.guardian_contact && (
-              <a href={`tel:${student.guardian_contact}`} className="flex items-center gap-1.5 text-sm font-semibold justify-end hover:opacity-80 transition-opacity" style={{ color: "#ffffff" }}>
-                <Phone className="h-3.5 w-3.5" style={{ color: "rgba(255,255,255,0.6)" }} />
-                <span>{student.guardian_contact}</span>
-              </a>
+              <button
+                type="button"
+                onClick={() => window.open(`tel:${student.guardian_contact}`)}
+                className="flex items-center gap-1.5 text-sm font-semibold justify-end hover:opacity-80 transition-opacity bg-transparent border-0 p-0 cursor-pointer"
+                style={{ color: "#ffffff" }}
+              >
+                <Phone className="h-3.5 w-3.5" style={{ color: "rgba(255,255,255,0.55)" }} />
+                <span style={{ color: "#ffffff" }}>{student.guardian_contact}</span>
+              </button>
             )}
             {student.guardian_email && (
-              <a href={`mailto:${student.guardian_email}`} className="flex items-center gap-1.5 text-sm font-semibold justify-end hover:opacity-80 transition-opacity" style={{ color: "#ffffff" }}>
-                <Mail className="h-3.5 w-3.5" style={{ color: "rgba(255,255,255,0.6)" }} />
-                <span className="truncate max-w-[200px]">{student.guardian_email}</span>
-              </a>
+              <button
+                type="button"
+                onClick={() => window.open(`mailto:${student.guardian_email}`)}
+                className="flex items-center gap-1.5 text-sm font-semibold justify-end hover:opacity-80 transition-opacity bg-transparent border-0 p-0 cursor-pointer"
+                style={{ color: "#ffffff" }}
+              >
+                <Mail className="h-3.5 w-3.5" style={{ color: "rgba(255,255,255,0.55)" }} />
+                <span className="truncate max-w-[200px]" style={{ color: "#ffffff" }}>{student.guardian_email}</span>
+              </button>
             )}
           </div>
         </div>
