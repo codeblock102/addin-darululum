@@ -1,3 +1,10 @@
+## [1.3.1](https://github.com/Adekunes/Tadween/compare/v1.3.0...v1.3.1) (2026-05-05)
+
+
+### Bug Fixes
+
+* attendance vertical list + email automation fixes ([2020b44](https://github.com/Adekunes/Tadween/commit/2020b44a64235023e2442eac5a5a3d553fa77123))
+
 # [1.3.0](https://github.com/Adekunes/Tadween/compare/v1.2.0...v1.3.0) (2026-05-05)
 
 
