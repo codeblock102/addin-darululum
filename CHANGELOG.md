@@ -1,3 +1,10 @@
+## [1.7.1](https://github.com/Adekunes/Tadween/compare/v1.7.0...v1.7.1) (2026-05-05)
+
+
+### Bug Fixes
+
+* make student profile hero text fully solid white like dashboard ([b9a9719](https://github.com/Adekunes/Tadween/commit/b9a97197e9444fb920b9b3a8af8fe79c46c7e49e))
+
 # [1.7.0](https://github.com/Adekunes/Tadween/compare/v1.6.1...v1.7.0) (2026-05-05)
 
 
