@@ -214,7 +214,7 @@ const StudentDetail = () => {
         {/* Back button */}
         <button
           onClick={() => navigate("/students")}
-          className="absolute top-4 left-4 flex items-center gap-1.5 text-white/90 hover:text-white text-sm font-semibold transition-colors bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-lg"
+          className="absolute top-4 left-4 flex items-center gap-1.5 text-white text-sm font-semibold transition-colors bg-black/20 hover:bg-black/30 px-3 py-1.5 rounded-lg"
         >
           <ArrowLeft className="h-4 w-4" /> Students
         </button>
@@ -229,37 +229,37 @@ const StudentDetail = () => {
           />
         </div>
 
-        <div className="px-6 pt-16 pb-6 flex flex-col sm:flex-row items-start sm:items-end gap-5">
+        <div className="px-6 pt-16 pb-7 flex flex-col sm:flex-row items-start sm:items-end gap-5">
           {/* Avatar */}
-          <div className="w-20 h-20 rounded-2xl bg-white/25 border-2 border-white/50 flex items-center justify-center text-white font-bold text-2xl shrink-0 shadow-lg">
+          <div className="w-20 h-20 rounded-2xl bg-black/20 border-2 border-white/40 flex items-center justify-center text-white font-bold text-2xl shrink-0 shadow-lg">
             {getInitials(student.name)}
           </div>
 
           {/* Name + meta */}
           <div className="flex-1 min-w-0">
-            <h1 className="text-2xl sm:text-3xl font-bold text-white leading-tight truncate drop-shadow-sm">
+            <h1 className="text-2xl sm:text-3xl font-bold text-white leading-tight truncate">
               {student.name}
             </h1>
-            <div className="flex flex-wrap items-center gap-2 mt-2.5">
+            <div className="flex flex-wrap items-center gap-2 mt-3">
               {student.section && (
-                <span className="text-xs font-bold bg-white/25 text-white border border-white/30 px-2.5 py-1 rounded-full">
+                <span className="text-xs font-bold bg-black/20 text-white px-3 py-1 rounded-full">
                   {capitalize(student.section)}
                 </span>
               )}
               {student.grade && (
-                <span className="text-xs font-bold bg-white/25 text-white border border-white/30 px-2.5 py-1 rounded-full">
+                <span className="text-xs font-bold bg-black/20 text-white px-3 py-1 rounded-full">
                   Grade {student.grade}
                 </span>
               )}
-              <span className={`text-xs font-bold px-2.5 py-1 rounded-full border ${
+              <span className={`text-xs font-bold px-3 py-1 rounded-full ${
                 student.status === "active"
-                  ? "bg-emerald-400/25 text-emerald-100 border-emerald-400/40"
-                  : "bg-red-400/25 text-red-100 border-red-400/40"
+                  ? "bg-emerald-500/40 text-white"
+                  : "bg-red-500/40 text-white"
               }`}>
                 {student.status === "active" ? "✓ Active" : "Inactive"}
               </span>
               {enrolledYear && (
-                <span className="text-xs font-medium text-white/70 bg-white/10 px-2 py-1 rounded-full">
+                <span className="text-xs font-semibold text-white/80 px-3 py-1 rounded-full bg-black/15">
                   Enrolled {enrolledYear}
                 </span>
               )}
@@ -269,26 +269,26 @@ const StudentDetail = () => {
           {/* Quick contact strip */}
           <div className="flex flex-col gap-2 shrink-0 text-right">
             {student.guardian_name && (
-              <div className="flex items-center gap-1.5 text-white text-sm font-semibold justify-end">
-                <User2 className="h-3.5 w-3.5 text-white/70" />
+              <div className="flex items-center gap-1.5 text-white text-sm font-bold justify-end">
+                <User2 className="h-3.5 w-3.5 text-white/60" />
                 <span>{student.guardian_name}</span>
               </div>
             )}
             {student.guardian_contact && (
               <a
                 href={`tel:${student.guardian_contact}`}
-                className="flex items-center gap-1.5 text-white/90 hover:text-white text-sm font-medium justify-end transition-colors"
+                className="flex items-center gap-1.5 text-white text-sm font-semibold justify-end hover:text-white/80 transition-colors"
               >
-                <Phone className="h-3.5 w-3.5 text-white/70" />
+                <Phone className="h-3.5 w-3.5 text-white/60" />
                 <span>{student.guardian_contact}</span>
               </a>
             )}
             {student.guardian_email && (
               <a
                 href={`mailto:${student.guardian_email}`}
-                className="flex items-center gap-1.5 text-white/90 hover:text-white text-sm font-medium justify-end transition-colors"
+                className="flex items-center gap-1.5 text-white text-sm font-semibold justify-end hover:text-white/80 transition-colors"
               >
-                <Mail className="h-3.5 w-3.5 text-white/70" />
+                <Mail className="h-3.5 w-3.5 text-white/60" />
                 <span className="truncate max-w-[200px]">{student.guardian_email}</span>
               </a>
             )}
