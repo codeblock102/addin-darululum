@@ -1,3 +1,10 @@
+## [1.6.1](https://github.com/Adekunes/Tadween/compare/v1.6.0...v1.6.1) (2026-05-05)
+
+
+### Bug Fixes
+
+* improve text contrast and readability on student profile page ([ccf9f1c](https://github.com/Adekunes/Tadween/commit/ccf9f1c98dcd1519aca0477eb99fe0fcde2f0c2f))
+
 # [1.6.0](https://github.com/Adekunes/Tadween/compare/v1.5.0...v1.6.0) (2026-05-05)
 
 
