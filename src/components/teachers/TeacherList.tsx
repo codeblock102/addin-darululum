@@ -62,6 +62,7 @@ interface Teacher {
   id: string;
   name: string;
   subject: string;
+  location?: string | null;
   section?: string | null;
   grade?: number | null;
   bio?: string;
@@ -106,7 +107,7 @@ export const TeacherList = ({
     queryKey: ["profiles", madrassahId, "role", "teacher"],
     queryFn: async () => {
       let query = supabase.from("profiles").select(
-        "id, name, subject, section, grade, email, phone, bio, capabilities",
+        "id, name, subject, location, section, grade, email, phone, bio, capabilities",
       ).eq("role", "teacher");
 
       if (madrassahId) {
@@ -172,10 +173,14 @@ export const TeacherList = ({
     }
   };
   const filteredTeachers = teachers
-    ?.filter((teacher) =>
-      teacher.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      teacher.subject.toLowerCase().includes(searchQuery.toLowerCase())
-    )
+    ?.filter((teacher) => {
+      const q = searchQuery.toLowerCase();
+      return (
+        teacher.name.toLowerCase().includes(q) ||
+        (teacher.subject ?? "").toLowerCase().includes(q) ||
+        (teacher.location ?? "").toLowerCase().includes(q)
+      );
+    })
     ?.slice()
     ?.sort((a, b) => {
       let cmp = 0;
@@ -298,6 +303,7 @@ export const TeacherList = ({
           <TableRow>
             <SortableHead label="Name" sortKey="name" current={sortKey} dir={sortDir} onSort={handleSort} className="py-4 px-4" />
             <SortableHead label="Subject" sortKey="subject" current={sortKey} dir={sortDir} onSort={handleSort} className="py-4 px-4" />
+            <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-400 py-4 px-4">Location</TableHead>
             <SortableHead label="Students" sortKey="students" current={sortKey} dir={sortDir} onSort={handleSort} className="py-4 px-4" />
             <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-400 py-4 px-4">Contact</TableHead>
             <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-400 py-4 px-4 text-right">Actions</TableHead>
@@ -307,7 +313,7 @@ export const TeacherList = ({
           {isLoading
             ? (
               <TableRow>
-                <TableCell colSpan={5} className="text-center py-10">
+                <TableCell colSpan={6} className="text-center py-10">
                   <div className="flex justify-center items-center">
                     <Loader2 className="h-6 w-6 animate-spin mr-2" />
                     <span>Loading teachers...</span>
@@ -330,8 +336,13 @@ export const TeacherList = ({
                 <TableCell className="py-4 px-4 font-medium text-gray-900">{teacher.name}</TableCell>
                 <TableCell className="py-4 px-4">
                   <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200 rounded-full px-2.5 py-0.5 text-xs font-semibold">
-                    {teacher.subject}
+                    {teacher.subject || <span className="text-gray-400 italic">—</span>}
                   </Badge>
+                </TableCell>
+                <TableCell className="py-4 px-4">
+                  {teacher.location
+                    ? <span className="text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200 rounded-full px-2.5 py-0.5">{teacher.location}</span>
+                    : <span className="text-gray-400 text-sm">—</span>}
                 </TableCell>
                 <TableCell className="py-4 px-4">
                   <div className="flex items-center">
