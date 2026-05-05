@@ -4,6 +4,31 @@ This file is **non-negotiable**. Every meaningful change must be logged here.
 
 ---
 
+## 2026-05-05 (s2) — Student profile redesign + HubSpot contact popup
+
+**What:**
+- **Student profile page (`StudentDetail.tsx`)** — complete visual overhaul:
+  - Hero gradient banner (`#0f4c35 → #0f766e`), back button top-left, Log Progress top-right
+  - 80×80px rounded-2xl avatar with initials, name, section/grade/status badges
+  - Quick contact strip on right side (guardian name, phone link, email link)
+  - 4 color-coded stat cards: Progress Entries (blue), Latest Surah (green), 30-day Attendance (amber, new query), Date of Birth (purple)
+  - Progress chart shown conditionally only when entries exist
+  - Tabs cleaned up: removed placeholder "Revision History" tab, kept 3: Progress Book, Dossier, Health & IEP
+- **HubSpot-style contact popup (`StudentContactPopover.tsx`)** — complete redesign:
+  - Slate gradient header with circular avatar + student name/section/grade
+  - 4 quick-action row: Email, Call, Message, Profile (each icon + text label)
+  - Guardian contact rows: name, phone, email
+  - `iconTrigger` prop — shows ⓘ Info button in StudentGrid rows (shows for all students, not just absent)
+- **Per-student notes in BulkAttendanceGrid** — Note/Email/Call HubSpot-style buttons on each row; expandable notes input below each student row; notes stored per-student and sent with attendance mutation
+
+**Files changed:**
+- `src/pages/StudentDetail.tsx` — full redesign
+- `src/components/attendance/StudentContactPopover.tsx` — full redesign (HubSpot style)
+- `src/components/attendance/form/BulkAttendanceGrid.tsx` — per-student notes + action buttons
+- `src/components/attendance/form/StudentGrid.tsx` — added StudentContactPopover iconTrigger per row
+
+---
+
 ## 2026-05-05 — Attendance list + email automation fixes
 
 **What:**
