@@ -216,10 +216,44 @@ Custom I18n context (not react-i18next). Translation keys in `src/i18n/translati
 
 ---
 
+## Known Gotchas & Lessons Learned
+
+> Read this before touching any green banner/hero or deletion logic.
+
+### 1. CSS Theme overrides `text-white` — ALWAYS use inline styles on green banners
+`.admin-theme` and `.teacher-theme` global CSS rules override Tailwind color classes including `text-white`. **Rule: any text inside a green gradient hero/banner MUST use `style={{ color: "#ffffff" }}`**. Tailwind classes alone will render as dark theme colors.
+Additionally, `<a>` link elements are styled by the theme with high specificity — even inline `style={{ color }}` can lose on anchor tags. **Replace `<a href="tel:">` / `<a href="mailto:">` with `<button onClick={() => window.open(...)}>` inside hero banners.**
+
+### 2. Dark overlays on dark backgrounds = invisible
+`bg-black/20` on a dark green background (#052e16) is basically invisible. For pill badges, avatars, and buttons on any dark green hero, use `bg-white/20` (light-on-dark) not `bg-black/20` (dark-on-dark).
+
+### 3. Student profile hero gradient must match dashboard
+Dashboard uses `linear-gradient(135deg, #052e16 0%, #14532d 50%, #166534 100%)`. The student profile was using a lighter teal gradient (`#0f4c35→#0f766e`) which looked washed out. Always use the same dark gradient for consistency.
+
+### 4. delete-teacher must clean classes.teacher_ids array
+The `classes` table stores `teacher_ids` as a Postgres array. Deleting the profile row does NOT automatically remove the UUID from that array. The edge function must manually fetch all classes containing the teacher ID and filter it out before profile deletion, otherwise the teacher ghost-ID stays in classes.
+
+### 5. git push always requires shallow-fetch workaround
+The repo has a corrupt `refs/stash 2` object. Every push session requires:
+```bash
+git fetch --depth=1 origin main
+git fetch --unshallow origin main
+git merge origin/main --no-edit
+git push origin main
+```
+Never use `git pull --rebase` or plain `git fetch` — they both fail with `fatal: bad object refs/stash 2`.
+
+### 6. Release bot adds commits between every push
+Between any two pushes, an automated release bot commits a `CHANGELOG.md` update to `origin/main`. Always merge before pushing or the push will be rejected. This is expected behavior — don't try to fix it.
+
+---
+
 ## Change Log
 
 | Date | Summary | See Also |
 |---|---|---|
+| 2026-05-05 (s5) | Teacher deletion fixed — delete-teacher edge function rewritten to nuke all related rows (classes array, progress, comms, tasks, absences, announcements, attendance, profile, auth); redeployed live | handoff.md |
+| 2026-05-05 (s4) | Student profile hero white text: 3 attempts needed — bg-black/20 invisible on dark bg → bg-white/20 still theme-overridden → inline style={{ color:'#fff' }} + replaced <a> with <button> to bypass link CSS; NewProgressEntry trigger styled white; gradient matched to dashboard (#052e16→#166534) | handoff.md |
 | 2026-05-05 (s3) | Messages page full layout redesign (compose card, avatar rows, chat-bubble thread dialog); student profile hero text fully solid white (bg-black/20 badges, no opacity fades); stat card + tab label polish | handoff.md |
 | 2026-05-05 (s2) | Student profile page complete redesign (hero gradient, stat cards, conditional chart, clean tabs); HubSpot-style contact popover (StudentContactPopover); per-student notes + action buttons in BulkAttendanceGrid | handoff.md |
 | 2026-05-05 | Attendance grid → numbered vertical list (StudentGrid + BulkAttendanceGrid); daily-progress-email cron fixed (verify_jwt=false deployed, schedule 0 20 * * *, dead job removed); attendance-absence-email also fixed (verify_jwt=false) | handoff.md |

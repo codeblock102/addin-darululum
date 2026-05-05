@@ -4,6 +4,34 @@ This file is **non-negotiable**. Every meaningful change must be logged here.
 
 ---
 
+## 2026-05-05 (s5) — Teacher deletion fixed (full DB wipe)
+
+**What:**
+- `supabase/functions/delete-teacher/index.ts` — complete rewrite and redeploy. Old version was missing cleanup of several tables causing FK constraint failures silently.
+- Now deletes in order: `classes.teacher_ids` array (filter out teacher UUID from every class), `classes.current_teacher_id`, `students_teachers`, `progress`, `communications`, `teacher_tasks`, `absence_requests`, `announcements`, `attendance`, `profiles`, then Supabase Auth user. Every step is best-effort (try/catch) so a missing table never blocks the delete.
+- **Deployed live** to project `depsfpodwaprzxffdcks` via `npx supabase functions deploy delete-teacher`
+
+**Files changed:**
+- `supabase/functions/delete-teacher/index.ts` — full rewrite
+
+---
+
+## 2026-05-05 (s4) — Student profile hero: force white text via inline styles + fix Add Progress button
+
+**What:**
+- **Root cause identified**: `.admin-theme` / `.teacher-theme` CSS was overriding `text-white` Tailwind classes — same issue previously fixed on dashboard. Tailwind classes lose; inline `style={{ color: "#ffffff" }}` wins.
+- **Mistake made (s3→s4)**: First attempt used `bg-black/20` for badges/avatar on dark green background → invisible dark-on-dark. Fixed to `bg-white/20`.
+- **Mistake made (s4→s4 retry)**: Switching to `bg-white/20` + Tailwind `text-white` still didn't work because theme CSS has higher specificity on `<a>` link elements. Fixed by replacing all `<a href="tel:">` and `<a href="mailto:">` with `<button onClick={() => window.open(...)}>` — buttons don't inherit link color rules.
+- **`NewProgressEntry` trigger** (`src/components/students/NewProgressEntry.tsx`) — changed from plain `<Button>` to `variant="outline"` with `style={{ backgroundColor: "rgba(255,255,255,0.15)", color: "#ffffff" }}` so it shows white on the dark hero.
+- **Gradient corrected**: was `#0f4c35→#0f766e` (lighter teal); changed to `#052e16→#14532d→#166534` — matches dashboard banner exactly.
+- **All text** in hero now uses `style={{ color: "#ffffff" }}` inline on every element individually.
+
+**Files changed:**
+- `src/pages/StudentDetail.tsx` — gradient, inline styles on all hero elements, `<a>` → `<button>`
+- `src/components/students/NewProgressEntry.tsx` — trigger button styled white for hero context
+
+---
+
 ## 2026-05-05 (s3) — UI polish: messages layout + student profile text contrast
 
 **What:**
