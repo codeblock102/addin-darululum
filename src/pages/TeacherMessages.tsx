@@ -891,20 +891,45 @@ export default function TeacherMessages() {
     }
   };
 
+  // Helper: get initials from a label
+  const getInitials = (label: string) =>
+    label.split(" ").map((w) => w[0]).filter(Boolean).slice(0, 2).join("").toUpperCase() || "?";
+
+  // Unread count
+  const unreadCount = (inbox || []).filter((m) => !m.read).length;
+
   return (
-    <div className="space-y-4">
-      <Card>
-        <CardHeader>
-          <CardTitle>Message Parents</CardTitle>
-          <CardDescription>Send a message to a specific parent or to all parents of your students.</CardDescription>
+    <div className="space-y-6 max-w-5xl mx-auto">
+
+      {/* ── PAGE HEADER ─────────────────────────────────────────── */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Messages</h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">Communicate with parents directly</p>
+        </div>
+        {unreadCount > 0 && (
+          <span className="inline-flex items-center gap-1.5 bg-blue-600 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-sm">
+            <span className="h-1.5 w-1.5 rounded-full bg-white/80" />
+            {unreadCount} unread
+          </span>
+        )}
+      </div>
+
+      {/* ── COMPOSE CARD ────────────────────────────────────────── */}
+      <Card className="shadow-sm border-gray-200 dark:border-gray-700">
+        <CardHeader className="pb-4 border-b border-gray-100 dark:border-gray-700">
+          <CardTitle className="text-base font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+            <Send className="h-4 w-4 text-emerald-600" />
+            New Message
+          </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="space-y-2">
-              <Label>Recipient</Label>
+        <CardContent className="pt-5 space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-1.5">
+              <Label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">To</Label>
               <Select value={selectedRecipientId} onValueChange={setSelectedRecipientId} disabled={parentsLoading || studentsLoading}>
-                <SelectTrigger>
-                  <SelectValue placeholder={parentsLoading ? "Loading recipients..." : ((mergedRecipientOptions || []).length > 0 ? "Select recipient" : "No recipients found")} />
+                <SelectTrigger className="h-10">
+                  <SelectValue placeholder={parentsLoading ? "Loading…" : ((mergedRecipientOptions || []).length > 0 ? "Select recipient" : "No recipients found")} />
                 </SelectTrigger>
                 <SelectContent>
                   {(mergedRecipientOptions || []).map((r) => (
@@ -916,54 +941,81 @@ export default function TeacherMessages() {
                 </SelectContent>
               </Select>
             </div>
-            <div className="md:col-span-2 space-y-2">
-              <Label>Subject</Label>
-              <Input value={subject} onChange={(e) => setSubject(e.target.value)} placeholder="Subject" />
-              <Label>Message</Label>
-              <Textarea ref={messageRef} rows={5} value={messageText} onChange={(e) => setMessageText(e.target.value)} placeholder="Type your message..." />
+            <div className="space-y-1.5">
+              <Label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Subject</Label>
+              <Input value={subject} onChange={(e) => setSubject(e.target.value)} placeholder="Enter subject…" className="h-10" />
             </div>
           </div>
+          <div className="space-y-1.5">
+            <Label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Message</Label>
+            <Textarea
+              ref={messageRef}
+              rows={4}
+              value={messageText}
+              onChange={(e) => setMessageText(e.target.value)}
+              placeholder="Write your message to the parent…"
+              className="resize-none"
+            />
+          </div>
           <div className="flex justify-end">
-            <Button onClick={handleSend} disabled={isSendingDisabled || sending}>
-              {sending ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Send className="h-4 w-4 mr-2" />}
-              {sending ? "Sending" : "Send"}
+            <Button
+              onClick={handleSend}
+              disabled={isSendingDisabled || sending}
+              className="bg-emerald-700 hover:bg-emerald-800 text-white gap-2"
+            >
+              {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+              {sending ? "Sending…" : "Send Message"}
             </Button>
           </div>
         </CardContent>
       </Card>
 
-      <div className="flex items-center justify-end gap-3">
-        <div className="w-64">
-          <Label>Parent</Label>
+      {/* ── FILTER ROW ──────────────────────────────────────────── */}
+      <div className="flex items-center justify-between">
+        <p className="text-sm font-semibold text-gray-700 dark:text-gray-300">Conversations</p>
+        <div className="flex items-center gap-2">
+          <Label className="text-xs text-gray-500 whitespace-nowrap">Filter by parent:</Label>
           <Select value={filterParentId} onValueChange={setFilterParentId}>
-            <SelectTrigger>
+            <SelectTrigger className="h-8 w-52 text-xs">
               <SelectValue placeholder="All parents" />
             </SelectTrigger>
             <SelectContent>
               {parentFilterOptions.map((opt) => (
-                <SelectItem key={opt.id} value={opt.id}>{opt.label}</SelectItem>
+                <SelectItem key={opt.id} value={opt.id} className="text-xs">{opt.label}</SelectItem>
               ))}
             </SelectContent>
           </Select>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <Card>
-          <CardHeader>
-            <CardTitle>Inbox</CardTitle>
-            <CardDescription>Messages sent to you</CardDescription>
+      {/* ── INBOX + SENT ────────────────────────────────────────── */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+
+        {/* INBOX */}
+        <Card className="shadow-sm border-gray-200 dark:border-gray-700">
+          <CardHeader className="pb-3 border-b border-gray-100 dark:border-gray-700">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-sm font-semibold text-gray-900 dark:text-gray-100">Inbox</CardTitle>
+              {unreadCount > 0 && (
+                <span className="text-[10px] font-bold bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300 px-2 py-0.5 rounded-full">
+                  {unreadCount} new
+                </span>
+              )}
+            </div>
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-0">
             {inboxLoading ? (
-              <div className="flex items-center justify-center py-6"><Loader2 className="h-5 w-5 animate-spin mr-2" />Loading...</div>
+              <div className="flex items-center justify-center py-10 text-sm text-gray-500">
+                <Loader2 className="h-4 w-4 animate-spin mr-2" />Loading…
+              </div>
+            ) : (filteredInbox || []).length === 0 ? (
+              <div className="py-10 text-center text-sm text-gray-400">No messages yet</div>
             ) : (
-              <ul className="space-y-3">
+              <ul className="divide-y divide-gray-100 dark:divide-gray-700">
                 {(filteredInbox || []).map((m) => {
                   const isParent = senderIdToLabel.parentMap.has(m.sender_id);
-                  let senderLabel = senderIdToLabel.profMap.get(m.sender_id) || m.sender_id;
+                  let senderLabel = senderIdToLabel.profMap.get(m.sender_id) || "Parent";
                   if (isParent) {
-                    // Try to resolve a child linked to this parent that is also in one of the teacher's classes
                     const parent = (parentSenderRows || []).find((p) => p.id === m.sender_id);
                     const classStudentIds = new Set<string>((students || []).map((s) => s.id));
                     const kids = Array.from(new Set((parent?.student_ids || []).filter(Boolean))) as string[];
@@ -974,59 +1026,49 @@ export default function TeacherMessages() {
                   return (
                     <li
                       key={m.id}
-                      className="p-3 border rounded-md text-sm hover:bg-muted/50 cursor-pointer transition-colors"
+                      className={`flex items-start gap-3 px-4 py-3.5 cursor-pointer transition-colors hover:bg-gray-50 dark:hover:bg-gray-800/50 ${!m.read ? "bg-blue-50/60 dark:bg-blue-900/10" : ""}`}
                       onClick={() => openThreadWithPeer(m.sender_id, true)}
                     >
-                      <div className="flex items-center justify-between gap-2">
-                        <button
-                          type="button"
-                          className="text-xs font-medium underline underline-offset-2 hover:opacity-80"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setSelectedRecipientId(m.sender_id);
-                            setSubject((prev) => {
-                              const current = prev.trim();
-                              if (current.toUpperCase().startsWith("RE:")) return current;
-                              const base = current || "";
-                              return base ? `RE: ${base}` : "RE:";
-                            });
-                            setReplyParentId(m.id);
-                            setTimeout(() => messageRef.current?.focus(), 0);
-                          }}
-                        >
-                          {senderLabel}
-                        </button>
-                        <div className="text-muted-foreground text-xs">{new Date(m.created_at).toLocaleString()}</div>
+                      {/* Avatar */}
+                      <div className="w-9 h-9 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center shrink-0 text-xs font-bold text-slate-600 dark:text-slate-300">
+                        {getInitials(senderLabel)}
                       </div>
-                      {!m.read && (
-                        <div className="mt-1">
-                          <span className="inline-block h-2 w-2 rounded-full bg-blue-600 align-middle" />
-                          <span className="sr-only">Unread</span>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between gap-2">
+                          <span className={`text-sm font-semibold text-gray-900 dark:text-gray-100 truncate ${!m.read ? "text-blue-700 dark:text-blue-300" : ""}`}>
+                            {senderLabel}
+                            {!m.read && <span className="ml-1.5 inline-block h-1.5 w-1.5 rounded-full bg-blue-500 align-middle" />}
+                          </span>
+                          <span className="text-[10px] text-gray-400 shrink-0">{new Date(m.created_at).toLocaleDateString()}</span>
                         </div>
-                      )}
-                      <div className="mt-1 text-sm font-medium truncate max-w-[80%]">{m.subject ? `Subject: ${m.subject}` : ''}</div>
-                      <div className="mt-1 truncate">{m.message}</div>
+                        {m.subject && <p className="text-xs font-medium text-gray-700 dark:text-gray-300 truncate mt-0.5">{m.subject}</p>}
+                        <p className="text-xs text-gray-500 dark:text-gray-400 truncate mt-0.5">{m.message}</p>
+                      </div>
                     </li>
                   );
                 })}
-                {(filteredInbox || []).length === 0 && <div className="text-center text-muted-foreground py-6">No messages</div>}
               </ul>
             )}
           </CardContent>
         </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle>Sent</CardTitle>
-            <CardDescription>Messages you sent</CardDescription>
+
+        {/* SENT */}
+        <Card className="shadow-sm border-gray-200 dark:border-gray-700">
+          <CardHeader className="pb-3 border-b border-gray-100 dark:border-gray-700">
+            <CardTitle className="text-sm font-semibold text-gray-900 dark:text-gray-100">Sent</CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-0">
             {sentLoading ? (
-              <div className="flex items-center justify-center py-6"><Loader2 className="h-5 w-5 animate-spin mr-2" />Loading...</div>
+              <div className="flex items-center justify-center py-10 text-sm text-gray-500">
+                <Loader2 className="h-4 w-4 animate-spin mr-2" />Loading…
+              </div>
+            ) : (filteredSent || []).length === 0 ? (
+              <div className="py-10 text-center text-sm text-gray-400">No sent messages</div>
             ) : (
-              <ul className="space-y-3">
+              <ul className="divide-y divide-gray-100 dark:divide-gray-700">
                 {(filteredSent || []).map((m) => {
                   const isParent = recipientIdToLabel.parentMap.has(m.recipient_id);
-                  let recipientLabel = recipientIdToLabel.profMap.get(m.recipient_id) || m.recipient_id;
+                  let recipientLabel = recipientIdToLabel.profMap.get(m.recipient_id) || "Parent";
                   if (isParent) {
                     const parent = (parentRecipientRows || []).find((p) => p.id === m.recipient_id);
                     const classStudentIds = new Set<string>((students || []).map((s) => s.id));
@@ -1038,74 +1080,92 @@ export default function TeacherMessages() {
                   return (
                     <li
                       key={m.id}
-                      className="p-3 border rounded-md text-sm hover:bg-muted/50 cursor-pointer transition-colors"
+                      className="flex items-start gap-3 px-4 py-3.5 cursor-pointer transition-colors hover:bg-gray-50 dark:hover:bg-gray-800/50"
                       onClick={() => setOpenThreadPeerId(m.recipient_id)}
                     >
-                      <div className="flex items-center justify-between gap-2">
-                        <span className="text-xs font-medium">To: {recipientLabel}</span>
-                        <div className="text-muted-foreground text-xs">{new Date(m.created_at).toLocaleString()}</div>
+                      {/* Avatar */}
+                      <div className="w-9 h-9 rounded-full bg-emerald-100 dark:bg-emerald-900/40 flex items-center justify-center shrink-0 text-xs font-bold text-emerald-700 dark:text-emerald-300">
+                        {getInitials(recipientLabel)}
                       </div>
-                      {m.subject && <div className="mt-1 text-sm font-medium truncate">Subject: {m.subject}</div>}
-                      <div className="mt-1 truncate">{m.message}</div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate">To: {recipientLabel}</span>
+                          <span className="text-[10px] text-gray-400 shrink-0">{new Date(m.created_at).toLocaleDateString()}</span>
+                        </div>
+                        {m.subject && <p className="text-xs font-medium text-gray-700 dark:text-gray-300 truncate mt-0.5">{m.subject}</p>}
+                        <p className="text-xs text-gray-500 dark:text-gray-400 truncate mt-0.5">{m.message}</p>
+                      </div>
                     </li>
                   );
                 })}
-                {(filteredSent || []).length === 0 && <div className="text-center text-muted-foreground py-6">No messages</div>}
               </ul>
             )}
           </CardContent>
         </Card>
       </div>
+
+      {/* ── THREAD DIALOG ───────────────────────────────────────── */}
       <Dialog open={!!openThreadPeerId} onOpenChange={(v) => {
-        if (!v) {
-          setOpenThreadPeerId(null);
-          setThreadReplyText("");
-          setThreadReplySubject("");
-        }
+        if (!v) { setOpenThreadPeerId(null); setThreadReplyText(""); setThreadReplySubject(""); }
       }}>
-        <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col">
-          <DialogHeader>
-            <DialogTitle>Conversation</DialogTitle>
+        <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col p-0 gap-0 overflow-hidden rounded-2xl">
+          <DialogHeader className="px-5 py-4 border-b border-gray-100 dark:border-gray-700 shrink-0">
+            <DialogTitle className="text-base font-bold text-gray-900 dark:text-gray-100">Conversation</DialogTitle>
           </DialogHeader>
-          <div className="space-y-3 flex-1 overflow-auto min-h-0 mb-4">
-            {(threadMessages || []).map((tm) => (
-              <div key={tm.id} className="p-3 border rounded-md text-sm">
-                <div className="flex items-center justify-between gap-2">
-                  <span className="text-xs font-medium">{tm.sender_id === teacherId ? "You" : "Parent"}</span>
-                  <div className="text-muted-foreground text-xs">{new Date(tm.created_at).toLocaleString()}</div>
-                </div>
-                {tm.subject && <div className="mt-1 text-sm font-medium">Subject: {tm.subject}</div>}
-                <div className="mt-1 whitespace-pre-wrap">{tm.message}</div>
-              </div>
-            ))}
-            {(threadMessages || []).length === 0 && <div className="text-center text-muted-foreground py-6">No messages</div>}
+
+          {/* Messages */}
+          <div className="flex-1 overflow-y-auto min-h-0 px-5 py-4 space-y-3 bg-gray-50 dark:bg-gray-900">
+            {(threadMessages || []).length === 0 ? (
+              <div className="text-center text-sm text-gray-400 py-10">No messages in this conversation</div>
+            ) : (
+              (threadMessages || []).map((tm) => {
+                const isMe = tm.sender_id === teacherId;
+                return (
+                  <div key={tm.id} className={`flex ${isMe ? "justify-end" : "justify-start"}`}>
+                    <div className={`max-w-[75%] rounded-2xl px-4 py-3 shadow-sm ${
+                      isMe
+                        ? "bg-emerald-700 text-white rounded-br-sm"
+                        : "bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-gray-700 rounded-bl-sm"
+                    }`}>
+                      {tm.subject && (
+                        <p className={`text-[10px] font-semibold uppercase tracking-wide mb-1 ${isMe ? "text-emerald-200" : "text-gray-400"}`}>
+                          {tm.subject}
+                        </p>
+                      )}
+                      <p className="text-sm leading-relaxed whitespace-pre-wrap">{tm.message}</p>
+                      <p className={`text-[10px] mt-1.5 ${isMe ? "text-emerald-200" : "text-gray-400"}`}>
+                        {isMe ? "You" : "Parent"} · {new Date(tm.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                      </p>
+                    </div>
+                  </div>
+                );
+              })
+            )}
           </div>
-          <div className="border-t pt-4 space-y-3">
-            <div className="space-y-2">
-              <Label>Subject</Label>
-              <Input 
-                value={threadReplySubject} 
-                onChange={(e) => setThreadReplySubject(e.target.value)} 
-                placeholder="Subject (optional)" 
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>Reply</Label>
-              <Textarea 
+
+          {/* Reply box */}
+          <div className="border-t border-gray-100 dark:border-gray-700 px-5 py-4 space-y-3 shrink-0 bg-white dark:bg-gray-900">
+            <Input
+              value={threadReplySubject}
+              onChange={(e) => setThreadReplySubject(e.target.value)}
+              placeholder="Subject (optional)"
+              className="h-9 text-sm"
+            />
+            <div className="flex gap-2 items-end">
+              <Textarea
                 ref={threadReplyRef}
-                rows={4} 
-                value={threadReplyText} 
-                onChange={(e) => setThreadReplyText(e.target.value)} 
-                placeholder="Type your reply..." 
+                rows={3}
+                value={threadReplyText}
+                onChange={(e) => setThreadReplyText(e.target.value)}
+                placeholder="Type your reply…"
+                className="resize-none flex-1 text-sm"
               />
-            </div>
-            <div className="flex justify-end">
-              <Button 
-                onClick={handleThreadReply} 
+              <Button
+                onClick={handleThreadReply}
                 disabled={!threadReplyText.trim() || sending || !openThreadPeerId}
+                className="bg-emerald-700 hover:bg-emerald-800 text-white shrink-0 h-10 px-4"
               >
-                {sending ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Send className="h-4 w-4 mr-2" />}
-                {sending ? "Sending" : "Send Reply"}
+                {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
               </Button>
             </div>
           </div>
