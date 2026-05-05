@@ -220,6 +220,8 @@ Custom I18n context (not react-i18next). Translation keys in `src/i18n/translati
 
 | Date | Summary | See Also |
 |---|---|---|
+| 2026-05-05 (s3) | Messages page full layout redesign (compose card, avatar rows, chat-bubble thread dialog); student profile hero text fully solid white (bg-black/20 badges, no opacity fades); stat card + tab label polish | handoff.md |
+| 2026-05-05 (s2) | Student profile page complete redesign (hero gradient, stat cards, conditional chart, clean tabs); HubSpot-style contact popover (StudentContactPopover); per-student notes + action buttons in BulkAttendanceGrid | handoff.md |
 | 2026-05-05 | Attendance grid → numbered vertical list (StudentGrid + BulkAttendanceGrid); daily-progress-email cron fixed (verify_jwt=false deployed, schedule 0 20 * * *, dead job removed); attendance-absence-email also fixed (verify_jwt=false) | handoff.md |
 | 2026-05-03 | Secretary feedback: calendar audience (all/teachers/parents), upcoming events on teacher + parent dashboards, teacher location field, attendance vertical list, Sr. Salma null-crash fix; DB: profiles.location + school_events.audience columns | handoff.md |
 | 2026-04-28 (s3) | Deployed 4 edge functions to live Supabase (send-assignment-graded, send-assignment-overdue, send-enrollment-confirmation, send-class-announcement); pg_cron daily overdue job scheduled at 08:00 UTC | handoff.md |

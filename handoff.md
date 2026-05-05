@@ -4,6 +4,30 @@ This file is **non-negotiable**. Every meaningful change must be logged here.
 
 ---
 
+## 2026-05-05 (s3) — UI polish: messages layout + student profile text contrast
+
+**What:**
+- **Teacher messages page (`TeacherMessages.tsx`)** — full layout redesign:
+  - Page header with "Messages" title + unread count badge
+  - Compose card: 2-col grid (To + Subject), full-width textarea, green "Send Message" button
+  - Inbox/Sent conversation rows: avatar circle with initials, sender name bold, subject line, message preview truncated, date right-aligned. Unread inbox rows tinted blue with blue dot
+  - Thread dialog: chat-bubble style (your messages right/green, parent left/white), inline reply box at bottom with subject input + send button side-by-side
+  - Filter row moved above conversations (clean, compact)
+- **Student profile hero text contrast (`StudentDetail.tsx`)** — matched dashboard style:
+  - All `bg-white/*` badge overlays → `bg-black/20` (solid dark tint, same as dashboard buttons)
+  - All `text-white/*` opacity fades → fully solid `text-white`
+  - Contact strip (guardian name, phone, email) → `font-bold`/`font-semibold`, no opacity
+  - Back button → `bg-black/20 hover:bg-black/30`
+  - Avatar → `bg-black/20` with `border-white/40`
+- **Stat card labels** — uppercase tracking-wide, `text-gray-500`, clearer than `text-muted-foreground`
+- **Tab triggers** — explicit `font-semibold` + active state text color added
+
+**Files changed:**
+- `src/pages/TeacherMessages.tsx` — full layout redesign (logic unchanged)
+- `src/pages/StudentDetail.tsx` — hero contrast + stat card + tab text fixes
+
+---
+
 ## 2026-05-05 (s2) — Student profile redesign + HubSpot contact popup
 
 **What:**
