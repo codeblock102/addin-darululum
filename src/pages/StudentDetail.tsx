@@ -53,6 +53,13 @@ function getInitials(name: string) {
     .toUpperCase();
 }
 
+function capitalize(str: string) {
+  return str
+    .split(/[\s_-]+/)
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+    .join(" ");
+}
+
 function StatCard({
   icon,
   label,
@@ -79,9 +86,9 @@ function StatCard({
           {icon}
         </div>
         <div className="min-w-0">
-          <p className="text-xs text-muted-foreground font-medium">{label}</p>
-          <p className="text-lg font-bold text-foreground leading-tight">{value}</p>
-          {sub && <p className="text-[11px] text-muted-foreground">{sub}</p>}
+          <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">{label}</p>
+          <p className="text-xl font-bold text-gray-900 dark:text-gray-100 leading-tight mt-0.5">{value}</p>
+          {sub && <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{sub}</p>}
         </div>
       </CardContent>
     </Card>
@@ -207,7 +214,7 @@ const StudentDetail = () => {
         {/* Back button */}
         <button
           onClick={() => navigate("/students")}
-          className="absolute top-4 left-4 flex items-center gap-1.5 text-white/80 hover:text-white text-sm font-medium transition-colors"
+          className="absolute top-4 left-4 flex items-center gap-1.5 text-white/90 hover:text-white text-sm font-semibold transition-colors bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-lg"
         >
           <ArrowLeft className="h-4 w-4" /> Students
         </button>
@@ -222,65 +229,67 @@ const StudentDetail = () => {
           />
         </div>
 
-        <div className="px-6 pt-14 pb-6 flex flex-col sm:flex-row items-start sm:items-end gap-4">
+        <div className="px-6 pt-16 pb-6 flex flex-col sm:flex-row items-start sm:items-end gap-5">
           {/* Avatar */}
-          <div className="w-20 h-20 rounded-2xl bg-white/15 border-2 border-white/30 flex items-center justify-center text-white font-bold text-2xl shrink-0 shadow-lg">
+          <div className="w-20 h-20 rounded-2xl bg-white/25 border-2 border-white/50 flex items-center justify-center text-white font-bold text-2xl shrink-0 shadow-lg">
             {getInitials(student.name)}
           </div>
 
           {/* Name + meta */}
           <div className="flex-1 min-w-0">
-            <h1 className="text-2xl sm:text-3xl font-bold text-white leading-tight truncate">
+            <h1 className="text-2xl sm:text-3xl font-bold text-white leading-tight truncate drop-shadow-sm">
               {student.name}
             </h1>
-            <div className="flex flex-wrap items-center gap-2 mt-2">
+            <div className="flex flex-wrap items-center gap-2 mt-2.5">
               {student.section && (
-                <span className="text-xs font-semibold bg-white/20 text-white px-2.5 py-1 rounded-full">
-                  {student.section}
+                <span className="text-xs font-bold bg-white/25 text-white border border-white/30 px-2.5 py-1 rounded-full">
+                  {capitalize(student.section)}
                 </span>
               )}
               {student.grade && (
-                <span className="text-xs font-semibold bg-white/20 text-white px-2.5 py-1 rounded-full">
+                <span className="text-xs font-bold bg-white/25 text-white border border-white/30 px-2.5 py-1 rounded-full">
                   Grade {student.grade}
                 </span>
               )}
-              <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${
+              <span className={`text-xs font-bold px-2.5 py-1 rounded-full border ${
                 student.status === "active"
-                  ? "bg-emerald-400/30 text-emerald-100"
-                  : "bg-red-400/30 text-red-100"
+                  ? "bg-emerald-400/25 text-emerald-100 border-emerald-400/40"
+                  : "bg-red-400/25 text-red-100 border-red-400/40"
               }`}>
                 {student.status === "active" ? "✓ Active" : "Inactive"}
               </span>
               {enrolledYear && (
-                <span className="text-xs text-white/60">Enrolled {enrolledYear}</span>
+                <span className="text-xs font-medium text-white/70 bg-white/10 px-2 py-1 rounded-full">
+                  Enrolled {enrolledYear}
+                </span>
               )}
             </div>
           </div>
 
           {/* Quick contact strip */}
-          <div className="flex flex-col gap-1.5 shrink-0 text-right">
+          <div className="flex flex-col gap-2 shrink-0 text-right">
             {student.guardian_name && (
-              <div className="flex items-center gap-1.5 text-white/80 text-xs justify-end">
-                <User2 className="h-3 w-3" />
+              <div className="flex items-center gap-1.5 text-white text-sm font-semibold justify-end">
+                <User2 className="h-3.5 w-3.5 text-white/70" />
                 <span>{student.guardian_name}</span>
               </div>
             )}
             {student.guardian_contact && (
               <a
                 href={`tel:${student.guardian_contact}`}
-                className="flex items-center gap-1.5 text-white/80 hover:text-white text-xs justify-end transition-colors"
+                className="flex items-center gap-1.5 text-white/90 hover:text-white text-sm font-medium justify-end transition-colors"
               >
-                <Phone className="h-3 w-3" />
+                <Phone className="h-3.5 w-3.5 text-white/70" />
                 <span>{student.guardian_contact}</span>
               </a>
             )}
             {student.guardian_email && (
               <a
                 href={`mailto:${student.guardian_email}`}
-                className="flex items-center gap-1.5 text-white/80 hover:text-white text-xs justify-end transition-colors"
+                className="flex items-center gap-1.5 text-white/90 hover:text-white text-sm font-medium justify-end transition-colors"
               >
-                <Mail className="h-3 w-3" />
-                <span className="truncate max-w-[180px]">{student.guardian_email}</span>
+                <Mail className="h-3.5 w-3.5 text-white/70" />
+                <span className="truncate max-w-[200px]">{student.guardian_email}</span>
               </a>
             )}
           </div>
@@ -328,7 +337,7 @@ const StudentDetail = () => {
               Progress Overview
             </CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="pt-2">
             <StudentProgressChart progress={progressEntries} />
           </CardContent>
         </Card>
@@ -337,15 +346,15 @@ const StudentDetail = () => {
       {/* ── TABS ───────────────────────────────────────────── */}
       <Tabs defaultValue="dhor-book" className="w-full">
         <TabsList className="h-auto p-1 bg-gray-100 dark:bg-gray-800 rounded-xl flex flex-wrap gap-1">
-          <TabsTrigger value="dhor-book" className="rounded-lg data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700 data-[state=active]:shadow-sm">
+          <TabsTrigger value="dhor-book" className="rounded-lg text-sm font-semibold text-gray-600 dark:text-gray-400 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700 data-[state=active]:text-gray-900 dark:data-[state=active]:text-gray-100 data-[state=active]:shadow-sm">
             <BookOpen className="w-4 h-4 mr-1.5" />
             Progress Book
           </TabsTrigger>
-          <TabsTrigger value="dossier" className="rounded-lg data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700 data-[state=active]:shadow-sm">
+          <TabsTrigger value="dossier" className="rounded-lg text-sm font-semibold text-gray-600 dark:text-gray-400 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700 data-[state=active]:text-gray-900 dark:data-[state=active]:text-gray-100 data-[state=active]:shadow-sm">
             <FolderOpen className="w-4 h-4 mr-1.5" />
             Dossier
           </TabsTrigger>
-          <TabsTrigger value="health" className="rounded-lg data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700 data-[state=active]:shadow-sm">
+          <TabsTrigger value="health" className="rounded-lg text-sm font-semibold text-gray-600 dark:text-gray-400 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700 data-[state=active]:text-gray-900 dark:data-[state=active]:text-gray-100 data-[state=active]:shadow-sm">
             <Heart className="w-4 h-4 mr-1.5" />
             Health & IEP
           </TabsTrigger>
