@@ -4,6 +4,33 @@ This file is **non-negotiable**. Every meaningful change must be logged here.
 
 ---
 
+## 2026-05-05 — Attendance list + email automation fixes
+
+**What:**
+- **Attendance vertical list (both components)** — `StudentGrid.tsx` (main per-student attendance form, the grid the secretary screenshotted) and `BulkAttendanceGrid.tsx` (bulk tab) both converted from multi-column card grids to compact numbered vertical lists. Each row: row number → checkbox → student name → status badge. Alternating white/gray rows, blue highlight on select.
+- **Daily progress email automation** — fixed so emails fire automatically every day at 4:00pm EDT without manual button press:
+  - `daily-progress-email` redeployed with `verify_jwt = false` confirmed live
+  - `attendance-absence-email` redeployed with `verify_jwt = false` (was getting 401 on every 5-min cron hit)
+  - pg_cron `daily-progress-email-job` rescheduled from `30 20 * * *` → `0 20 * * *` (exactly 4pm EDT)
+  - Dead broken `send_daily_parent_report` pg_cron job deleted (had fake placeholder URL + `Bearer <YOUR_SECRET>`, never worked)
+- **Sr. Salma** — null-safe fix was already deployed to main from previous session; she appears in teacher list. If not visible, hard refresh (`Cmd+Shift+R`) resolves cache.
+
+**Files changed:**
+- `src/components/attendance/form/StudentGrid.tsx` — vertical list layout, numbered rows
+- `src/components/attendance/form/BulkAttendanceGrid.tsx` — vertical list, removed Card/Avatar/getInitials
+- `supabase/config.toml` — `attendance-absence-email` added with `verify_jwt = false`
+
+**DB changes (applied to live):**
+- pg_cron job `daily-progress-email-job` rescheduled to `0 20 * * *`
+- pg_cron job `send_daily_parent_report` deleted
+- Both `daily-progress-email` and `attendance-absence-email` edge functions redeployed
+
+**Pending:**
+- Test account cleanup (`admin@admin.com`, `woman@gmail.com`, Asim Maliki) — must be done manually in Supabase Auth dashboard (prohibited action)
+- Secretary shared design screenshots in Asana "dum app" project — Asana auth was down, not checked yet
+
+---
+
 ## 2026-05-03 — Secretary feedback: 6 frontend changes + DB migrations
 
 **What:**
