@@ -1,3 +1,15 @@
+# [1.3.0](https://github.com/Adekunes/Tadween/compare/v1.2.0...v1.3.0) (2026-05-05)
+
+
+### Bug Fixes
+
+* TeacherList — location column, null-safe filter, colSpan 6 ([485b81d](https://github.com/Adekunes/Tadween/commit/485b81de1f6b9162b19e9ba3fba642725c1c8e52))
+
+
+### Features
+
+* secretary feedback -- calendar audience, events on dashboards, teacher location, attendance list ([0baf54f](https://github.com/Adekunes/Tadween/commit/0baf54f1ad5fad819fb6ffdafc7e7efdb1d4b029))
+
 ## [2.0.0] (2026-05-03)
 
 ### Features
