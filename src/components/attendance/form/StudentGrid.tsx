@@ -12,6 +12,7 @@ import { Checkbox } from '../../ui/checkbox.tsx';
 import { Input } from '../../ui/input.tsx';
 import { Label } from '../../ui/label.tsx';
 import { useI18n } from '@/contexts/I18nContext.tsx';
+import { StudentContactPopover } from '../StudentContactPopover.tsx';
 
 type Student = Database['public']['Tables']['students']['Row'];
 
@@ -310,6 +311,14 @@ export const StudentGrid = ({
                     {stagedStatus}
                   </span>
                 )}
+                <span onClick={(e) => e.stopPropagation()}>
+                  <StudentContactPopover
+                    studentId={student.id}
+                    studentName={student.name}
+                    status={statusMap[student.id]}
+                    iconTrigger
+                  />
+                </span>
               </div>
             ))}
           </div>
