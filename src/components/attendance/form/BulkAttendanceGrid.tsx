@@ -8,9 +8,8 @@ import { Button } from "@/components/ui/button.tsx";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select.tsx";
 import { Input } from "@/components/ui/input.tsx";
 import { Badge } from "@/components/ui/badge.tsx";
-import { Loader2, Users, CheckSquare } from "lucide-react";
+import { Loader2, Users, CheckSquare, FileText, Phone, Mail } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area.tsx";
-
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form.tsx";
 import { UseFormReturn } from "react-hook-form";
 import { AttendanceFormValues } from "@/types/attendance-form.ts";
@@ -23,51 +22,54 @@ interface BulkAttendanceGridProps {
   form: UseFormReturn<AttendanceFormValues>;
 }
 
-interface BulkAttendanceData {
-  student_ids: string[];
+interface AttendanceRecord {
+  student_id: string;
+  date: string;
   status: string;
   time: string;
-  date: string;
   notes?: string;
-  late_reason?: string;
+  late_reason?: string | null;
 }
 
 export function BulkAttendanceGrid({ form }: BulkAttendanceGridProps) {
   const [selectedStudents, setSelectedStudents] = useState<Set<string>>(new Set());
   const [bulkStatus, setBulkStatus] = useState<string>("");
   const [bulkTime, setBulkTime] = useState<string>(format(new Date(), "HH:mm"));
-  const [bulkNotes, setBulkNotes] = useState<string>("");
   const [bulkLateReason, setBulkLateReason] = useState<string>("");
+
+  // Per-student notes state
+  const [studentNotes, setStudentNotes] = useState<Map<string, string>>(new Map());
+  const [expandedNotes, setExpandedNotes] = useState<Set<string>>(new Set());
+
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { t } = useI18n();
 
-  const { data: students, isLoading } = useQuery<{ id: string; name: string; status: string }[]>({
+  const { data: students, isLoading } = useQuery<{ id: string; name: string; guardian_contact?: string; guardian_email?: string }[]>({
     queryKey: ["all-students-bulk"],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("students")
-        .select("id, name, status")
+        .select("id, name, status, guardian_contact, guardian_email")
         .eq("status", "active")
         .order("name", { ascending: true });
-
-      if (error) {
-        console.error("Error fetching students for bulk attendance:", error);
-        throw error;
-      }
-      return (data || []) as { id: string; name: string; status: string }[];
+      if (error) throw error;
+      return (data || []) as { id: string; name: string; guardian_contact?: string; guardian_email?: string }[];
     },
   });
 
   const bulkAttendanceMutation = useMutation({
-    mutationFn: async (data: BulkAttendanceData) => {
-      const attendanceRecords = Array.from(selectedStudents).map(studentId => ({
+    mutationFn: async () => {
+      const currentDate = form.getValues("date") as Date;
+      const dateStr = format(currentDate, "yyyy-MM-dd");
+
+      const attendanceRecords: AttendanceRecord[] = Array.from(selectedStudents).map(studentId => ({
         student_id: studentId,
-        date: data.date,
-        status: data.status,
-        time: data.time,
-        notes: data.notes,
-        late_reason: data.status === "late" ? data.late_reason : null,
+        date: dateStr,
+        status: bulkStatus,
+        time: bulkTime,
+        notes: studentNotes.get(studentId) || undefined,
+        late_reason: bulkStatus === "late" ? (bulkLateReason || null) : null,
       }));
 
       const { error } = await supabase
@@ -84,8 +86,9 @@ export function BulkAttendanceGrid({ form }: BulkAttendanceGridProps) {
       });
       setSelectedStudents(new Set());
       setBulkStatus("");
-      setBulkNotes("");
       setBulkLateReason("");
+      setStudentNotes(new Map());
+      setExpandedNotes(new Set());
       queryClient.invalidateQueries({ queryKey: ["attendance"] });
     },
     onError: (error: unknown) => {
@@ -98,51 +101,45 @@ export function BulkAttendanceGrid({ form }: BulkAttendanceGridProps) {
   });
 
   const handleStudentToggle = (studentId: string, checked: boolean) => {
-    const newSelected = new Set(selectedStudents);
-    if (checked) {
-      newSelected.add(studentId);
-    } else {
-      newSelected.delete(studentId);
-    }
-    setSelectedStudents(newSelected);
+    const next = new Set(selectedStudents);
+    checked ? next.add(studentId) : next.delete(studentId);
+    setSelectedStudents(next);
   };
 
   const handleSelectAll = (checked: boolean | string) => {
     if (checked === true && students) {
-      setSelectedStudents(new Set(students.map((s: { id: string }) => s.id)));
+      setSelectedStudents(new Set(students.map(s => s.id)));
     } else {
       setSelectedStudents(new Set());
     }
   };
 
-  const handleBulkSubmit = () => {
+  const toggleNoteRow = (studentId: string) => {
+    const next = new Set(expandedNotes);
+    next.has(studentId) ? next.delete(studentId) : next.add(studentId);
+    setExpandedNotes(next);
+  };
+
+  const setNote = (studentId: string, value: string) => {
+    const next = new Map(studentNotes);
+    if (value) {
+      next.set(studentId, value);
+    } else {
+      next.delete(studentId);
+    }
+    setStudentNotes(next);
+  };
+
+  const handleSubmit = () => {
     if (selectedStudents.size === 0) {
-      toast({
-        title: t("pages.attendance.bulk.noneSelectedTitle", "No students selected"),
-        description: t("pages.attendance.bulk.noneSelectedDesc", "Please select at least one student"),
-        variant: "destructive",
-      });
+      toast({ title: t("pages.attendance.bulk.noneSelectedTitle", "No students selected"), description: t("pages.attendance.bulk.noneSelectedDesc", "Please select at least one student"), variant: "destructive" });
       return;
     }
-
     if (!bulkStatus) {
-      toast({
-        title: t("pages.attendance.bulk.statusRequiredTitle", "Status required"),
-        description: t("pages.attendance.bulk.statusRequiredDesc", "Please select an attendance status"),
-        variant: "destructive",
-      });
+      toast({ title: t("pages.attendance.bulk.statusRequiredTitle", "Status required"), description: t("pages.attendance.bulk.statusRequiredDesc", "Please select an attendance status"), variant: "destructive" });
       return;
     }
-
-    const currentDate = form.getValues("date") as Date;
-    bulkAttendanceMutation.mutate({
-      student_ids: Array.from(selectedStudents),
-      status: bulkStatus,
-      time: bulkTime,
-      date: format(currentDate, "yyyy-MM-dd"),
-      notes: bulkNotes,
-      late_reason: bulkLateReason,
-    });
+    bulkAttendanceMutation.mutate();
   };
 
   if (isLoading) {
@@ -170,7 +167,7 @@ export function BulkAttendanceGrid({ form }: BulkAttendanceGridProps) {
                 className="data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600"
               />
               <span className="text-sm font-medium text-foreground">
-                {selectedStudents.size > 0 
+                {selectedStudents.size > 0
                   ? t("pages.attendance.bulk.selectedCount", "{count} students selected").replace("{count}", String(selectedStudents.size))
                   : t("pages.attendance.bulk.selectPrompt", "Select students for bulk attendance")}
               </span>
@@ -208,15 +205,8 @@ export function BulkAttendanceGrid({ form }: BulkAttendanceGridProps) {
                   />
                 )}
 
-                <Input
-                  placeholder={t("pages.attendance.bulk.notes", "Notes")}
-                  value={bulkNotes}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setBulkNotes(e.target.value)}
-                  className="w-[140px] h-9"
-                />
-
                 <Button
-                  onClick={handleBulkSubmit}
+                  onClick={handleSubmit}
                   disabled={bulkAttendanceMutation.isPending}
                   className="h-9 bg-blue-600 hover:bg-blue-700"
                 >
@@ -233,7 +223,7 @@ export function BulkAttendanceGrid({ form }: BulkAttendanceGridProps) {
         </CardContent>
       </Card>
 
-      {/* Student Grid */}
+      {/* Student List */}
       <FormField
         control={form.control}
         name="student_id"
@@ -244,32 +234,116 @@ export function BulkAttendanceGrid({ form }: BulkAttendanceGridProps) {
               {t("pages.attendance.bulk.gridLabel", "Select Students for Bulk Attendance")}
             </FormLabel>
             <FormControl>
-              <ScrollArea className="h-96 w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm">
+              <ScrollArea className="h-[480px] w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm">
                 <div className="divide-y divide-gray-100 dark:divide-gray-700">
-                  {students?.map((student: { id: string; name: string }, idx: number) => (
-                    <div
-                      key={student.id}
-                      onClick={() => handleStudentToggle(student.id, !selectedStudents.has(student.id))}
-                      className={`flex items-center gap-3 px-3 py-2.5 cursor-pointer transition-colors ${
-                        selectedStudents.has(student.id)
-                          ? "bg-blue-50 dark:bg-blue-900/30"
-                          : idx % 2 === 0
-                            ? "bg-white dark:bg-gray-900"
-                            : "bg-gray-50 dark:bg-gray-800"
-                      }`}
-                    >
-                      <span className="text-xs text-gray-400 w-6 text-right shrink-0 select-none">{idx + 1}</span>
-                      <Checkbox
-                        checked={selectedStudents.has(student.id)}
-                        onCheckedChange={(checked) => handleStudentToggle(student.id, !!checked)}
-                        className="data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600"
-                      />
-                      <span className="flex-1 text-sm font-medium text-foreground">{student.name}</span>
-                      {selectedStudents.has(student.id) && (
-                        <CheckSquare className="h-4 w-4 text-blue-600 shrink-0" />
-                      )}
-                    </div>
-                  ))}
+                  {students?.map((student, idx) => {
+                    const isSelected = selectedStudents.has(student.id);
+                    const noteOpen = expandedNotes.has(student.id);
+                    const note = studentNotes.get(student.id) || "";
+
+                    return (
+                      <div key={student.id}>
+                        {/* Main row */}
+                        <div
+                          className={`flex items-center gap-3 px-3 py-2.5 transition-colors ${
+                            isSelected
+                              ? "bg-blue-50 dark:bg-blue-900/30"
+                              : idx % 2 === 0
+                                ? "bg-white dark:bg-gray-900"
+                                : "bg-gray-50 dark:bg-gray-800"
+                          }`}
+                        >
+                          {/* Row number */}
+                          <span className="text-xs text-gray-400 w-6 text-right shrink-0 select-none">{idx + 1}</span>
+
+                          {/* Checkbox */}
+                          <Checkbox
+                            checked={isSelected}
+                            onCheckedChange={(checked) => handleStudentToggle(student.id, !!checked)}
+                            className="data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600"
+                          />
+
+                          {/* Name */}
+                          <span className="flex-1 text-sm font-medium text-foreground cursor-pointer" onClick={() => handleStudentToggle(student.id, !isSelected)}>
+                            {student.name}
+                          </span>
+
+                          {/* Selected checkmark */}
+                          {isSelected && <CheckSquare className="h-4 w-4 text-blue-500 shrink-0" />}
+
+                          {/* Note indicator */}
+                          {note && !noteOpen && (
+                            <span className="text-[10px] text-amber-600 bg-amber-50 rounded px-1.5 py-0.5 font-medium shrink-0">note</span>
+                          )}
+
+                          {/* HubSpot-style action buttons */}
+                          <div className="flex items-center gap-0.5 shrink-0 ml-1">
+                            {/* Note */}
+                            <button
+                              type="button"
+                              onClick={() => toggleNoteRow(student.id)}
+                              className={`flex flex-col items-center gap-0.5 px-2 py-1.5 rounded text-[10px] font-medium transition-colors min-w-[36px] ${
+                                noteOpen || note
+                                  ? "text-amber-600 bg-amber-50 dark:bg-amber-900/20"
+                                  : "text-gray-400 hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/20"
+                              }`}
+                              title="Add note"
+                            >
+                              <FileText className="h-3.5 w-3.5" />
+                              <span>Note</span>
+                            </button>
+
+                            {/* Email */}
+                            <button
+                              type="button"
+                              onClick={() => student.guardian_email && window.open(`mailto:${student.guardian_email}`)}
+                              disabled={!student.guardian_email}
+                              className={`flex flex-col items-center gap-0.5 px-2 py-1.5 rounded text-[10px] font-medium transition-colors min-w-[36px] ${
+                                student.guardian_email
+                                  ? "text-gray-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20"
+                                  : "text-gray-200 dark:text-gray-700 cursor-not-allowed"
+                              }`}
+                              title={student.guardian_email || "No email on file"}
+                            >
+                              <Mail className="h-3.5 w-3.5" />
+                              <span>Email</span>
+                            </button>
+
+                            {/* Call */}
+                            <button
+                              type="button"
+                              onClick={() => student.guardian_contact && window.open(`tel:${student.guardian_contact}`)}
+                              disabled={!student.guardian_contact}
+                              className={`flex flex-col items-center gap-0.5 px-2 py-1.5 rounded text-[10px] font-medium transition-colors min-w-[36px] ${
+                                student.guardian_contact
+                                  ? "text-gray-400 hover:text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20"
+                                  : "text-gray-200 dark:text-gray-700 cursor-not-allowed"
+                              }`}
+                              title={student.guardian_contact || "No phone on file"}
+                            >
+                              <Phone className="h-3.5 w-3.5" />
+                              <span>Call</span>
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Expandable notes row */}
+                        {noteOpen && (
+                          <div className={`px-12 py-2 border-t border-dashed border-gray-200 dark:border-gray-700 ${
+                            idx % 2 === 0 ? "bg-white dark:bg-gray-900" : "bg-gray-50 dark:bg-gray-800"
+                          }`}>
+                            <Input
+                              placeholder={`Note for ${student.name}…`}
+                              value={note}
+                              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNote(student.id, e.target.value)}
+                              className="h-8 text-xs border-amber-200 focus-visible:ring-amber-400 bg-amber-50/50 dark:bg-amber-900/10"
+                              autoFocus
+                            />
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
                 {(!students || students.length === 0) && (
                   <div className="text-center py-8 text-foreground">
@@ -283,7 +357,7 @@ export function BulkAttendanceGrid({ form }: BulkAttendanceGridProps) {
         )}
       />
 
-      {/* Selected Students Summary */}
+      {/* Selection summary */}
       {selectedStudents.size > 0 && (
         <Card className="border-green-200 bg-green-50/50">
           <CardContent className="p-4">
@@ -296,11 +370,14 @@ export function BulkAttendanceGrid({ form }: BulkAttendanceGridProps) {
                 <span className="text-sm text-foreground">
                   {t("pages.attendance.bulk.ready", "Ready for bulk attendance recording")}
                 </span>
+                {studentNotes.size > 0 && (
+                  <span className="text-xs text-amber-600 font-medium">· {studentNotes.size} note{studentNotes.size > 1 ? "s" : ""}</span>
+                )}
               </div>
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => setSelectedStudents(new Set())}
+                onClick={() => { setSelectedStudents(new Set()); setStudentNotes(new Map()); setExpandedNotes(new Set()); }}
                 className="text-foreground hover:text-gray-800"
               >
                 {t("pages.attendance.bulk.clear", "Clear Selection")}
