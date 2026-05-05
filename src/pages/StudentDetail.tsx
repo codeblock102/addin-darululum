@@ -209,12 +209,12 @@ const StudentDetail = () => {
     <div className="space-y-6">
       {/* ── HERO HEADER ─────────────────────────────────────── */}
       <div className="relative rounded-2xl overflow-hidden shadow-md"
-        style={{ background: "linear-gradient(135deg, #0f4c35 0%, #1a6b4a 50%, #0f766e 100%)" }}>
+        style={{ background: "linear-gradient(135deg, #052e16 0%, #14532d 50%, #166534 100%)" }}>
 
         {/* Back button */}
         <button
           onClick={() => navigate("/students")}
-          className="absolute top-4 left-4 flex items-center gap-1.5 text-white text-sm font-semibold transition-colors bg-black/20 hover:bg-black/30 px-3 py-1.5 rounded-lg"
+          className="absolute top-4 left-4 flex items-center gap-1.5 text-white text-sm font-semibold transition-colors bg-white/15 hover:bg-white/25 px-3 py-1.5 rounded-lg"
         >
           <ArrowLeft className="h-4 w-4" /> Students
         </button>
@@ -231,7 +231,7 @@ const StudentDetail = () => {
 
         <div className="px-6 pt-16 pb-7 flex flex-col sm:flex-row items-start sm:items-end gap-5">
           {/* Avatar */}
-          <div className="w-20 h-20 rounded-2xl bg-black/20 border-2 border-white/40 flex items-center justify-center text-white font-bold text-2xl shrink-0 shadow-lg">
+          <div className="w-20 h-20 rounded-2xl bg-white/20 border-2 border-white/40 flex items-center justify-center text-white font-bold text-2xl shrink-0 shadow-lg">
             {getInitials(student.name)}
           </div>
 
@@ -242,24 +242,24 @@ const StudentDetail = () => {
             </h1>
             <div className="flex flex-wrap items-center gap-2 mt-3">
               {student.section && (
-                <span className="text-xs font-bold bg-black/20 text-white px-3 py-1 rounded-full">
+                <span className="text-xs font-bold bg-white/20 text-white border border-white/25 px-3 py-1 rounded-full">
                   {capitalize(student.section)}
                 </span>
               )}
               {student.grade && (
-                <span className="text-xs font-bold bg-black/20 text-white px-3 py-1 rounded-full">
+                <span className="text-xs font-bold bg-white/20 text-white border border-white/25 px-3 py-1 rounded-full">
                   Grade {student.grade}
                 </span>
               )}
-              <span className={`text-xs font-bold px-3 py-1 rounded-full ${
+              <span className={`text-xs font-bold px-3 py-1 rounded-full border ${
                 student.status === "active"
-                  ? "bg-emerald-500/40 text-white"
-                  : "bg-red-500/40 text-white"
+                  ? "bg-emerald-400/30 text-white border-emerald-400/40"
+                  : "bg-red-400/30 text-white border-red-400/40"
               }`}>
                 {student.status === "active" ? "✓ Active" : "Inactive"}
               </span>
               {enrolledYear && (
-                <span className="text-xs font-semibold text-white/80 px-3 py-1 rounded-full bg-black/15">
+                <span className="text-xs font-semibold text-white/70 px-3 py-1 rounded-full bg-white/10 border border-white/15">
                   Enrolled {enrolledYear}
                 </span>
               )}
@@ -270,25 +270,25 @@ const StudentDetail = () => {
           <div className="flex flex-col gap-2 shrink-0 text-right">
             {student.guardian_name && (
               <div className="flex items-center gap-1.5 text-white text-sm font-bold justify-end">
-                <User2 className="h-3.5 w-3.5 text-white/60" />
+                <User2 className="h-3.5 w-3.5 text-white/50" />
                 <span>{student.guardian_name}</span>
               </div>
             )}
             {student.guardian_contact && (
               <a
                 href={`tel:${student.guardian_contact}`}
-                className="flex items-center gap-1.5 text-white text-sm font-semibold justify-end hover:text-white/80 transition-colors"
+                className="flex items-center gap-1.5 text-white text-sm font-semibold justify-end hover:opacity-80 transition-opacity"
               >
-                <Phone className="h-3.5 w-3.5 text-white/60" />
+                <Phone className="h-3.5 w-3.5 text-white/50" />
                 <span>{student.guardian_contact}</span>
               </a>
             )}
             {student.guardian_email && (
               <a
                 href={`mailto:${student.guardian_email}`}
-                className="flex items-center gap-1.5 text-white text-sm font-semibold justify-end hover:text-white/80 transition-colors"
+                className="flex items-center gap-1.5 text-white text-sm font-semibold justify-end hover:opacity-80 transition-opacity"
               >
-                <Mail className="h-3.5 w-3.5 text-white/60" />
+                <Mail className="h-3.5 w-3.5 text-white/50" />
                 <span className="truncate max-w-[200px]">{student.guardian_email}</span>
               </a>
             )}
