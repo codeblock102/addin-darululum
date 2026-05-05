@@ -214,7 +214,8 @@ const StudentDetail = () => {
         {/* Back button */}
         <button
           onClick={() => navigate("/students")}
-          className="absolute top-4 left-4 flex items-center gap-1.5 text-white text-sm font-semibold transition-colors bg-white/15 hover:bg-white/25 px-3 py-1.5 rounded-lg"
+          style={{ color: "#ffffff", backgroundColor: "rgba(255,255,255,0.15)" }}
+          className="absolute top-4 left-4 flex items-center gap-1.5 text-sm font-semibold transition-colors px-3 py-1.5 rounded-lg hover:opacity-90"
         >
           <ArrowLeft className="h-4 w-4" /> Students
         </button>
@@ -231,35 +232,41 @@ const StudentDetail = () => {
 
         <div className="px-6 pt-16 pb-7 flex flex-col sm:flex-row items-start sm:items-end gap-5">
           {/* Avatar */}
-          <div className="w-20 h-20 rounded-2xl bg-white/20 border-2 border-white/40 flex items-center justify-center text-white font-bold text-2xl shrink-0 shadow-lg">
+          <div
+            className="w-20 h-20 rounded-2xl flex items-center justify-center font-bold text-2xl shrink-0 shadow-lg"
+            style={{ backgroundColor: "rgba(255,255,255,0.15)", border: "2px solid rgba(255,255,255,0.35)", color: "#ffffff" }}
+          >
             {getInitials(student.name)}
           </div>
 
           {/* Name + meta */}
           <div className="flex-1 min-w-0">
-            <h1 className="text-2xl sm:text-3xl font-bold text-white leading-tight truncate">
+            <h1 className="text-2xl sm:text-3xl font-bold leading-tight truncate" style={{ color: "#ffffff" }}>
               {student.name}
             </h1>
             <div className="flex flex-wrap items-center gap-2 mt-3">
               {student.section && (
-                <span className="text-xs font-bold bg-white/20 text-white border border-white/25 px-3 py-1 rounded-full">
+                <span className="text-xs font-bold px-3 py-1 rounded-full" style={{ color: "#ffffff", backgroundColor: "rgba(255,255,255,0.18)", border: "1px solid rgba(255,255,255,0.3)" }}>
                   {capitalize(student.section)}
                 </span>
               )}
               {student.grade && (
-                <span className="text-xs font-bold bg-white/20 text-white border border-white/25 px-3 py-1 rounded-full">
+                <span className="text-xs font-bold px-3 py-1 rounded-full" style={{ color: "#ffffff", backgroundColor: "rgba(255,255,255,0.18)", border: "1px solid rgba(255,255,255,0.3)" }}>
                   Grade {student.grade}
                 </span>
               )}
-              <span className={`text-xs font-bold px-3 py-1 rounded-full border ${
-                student.status === "active"
-                  ? "bg-emerald-400/30 text-white border-emerald-400/40"
-                  : "bg-red-400/30 text-white border-red-400/40"
-              }`}>
+              <span
+                className="text-xs font-bold px-3 py-1 rounded-full"
+                style={{
+                  color: "#ffffff",
+                  backgroundColor: student.status === "active" ? "rgba(74,222,128,0.25)" : "rgba(248,113,113,0.25)",
+                  border: student.status === "active" ? "1px solid rgba(74,222,128,0.4)" : "1px solid rgba(248,113,113,0.4)",
+                }}
+              >
                 {student.status === "active" ? "✓ Active" : "Inactive"}
               </span>
               {enrolledYear && (
-                <span className="text-xs font-semibold text-white/70 px-3 py-1 rounded-full bg-white/10 border border-white/15">
+                <span className="text-xs font-semibold px-3 py-1 rounded-full" style={{ color: "rgba(255,255,255,0.75)", backgroundColor: "rgba(255,255,255,0.1)" }}>
                   Enrolled {enrolledYear}
                 </span>
               )}
@@ -269,26 +276,20 @@ const StudentDetail = () => {
           {/* Quick contact strip */}
           <div className="flex flex-col gap-2 shrink-0 text-right">
             {student.guardian_name && (
-              <div className="flex items-center gap-1.5 text-white text-sm font-bold justify-end">
-                <User2 className="h-3.5 w-3.5 text-white/50" />
+              <div className="flex items-center gap-1.5 text-sm font-bold justify-end" style={{ color: "#ffffff" }}>
+                <User2 className="h-3.5 w-3.5" style={{ color: "rgba(255,255,255,0.6)" }} />
                 <span>{student.guardian_name}</span>
               </div>
             )}
             {student.guardian_contact && (
-              <a
-                href={`tel:${student.guardian_contact}`}
-                className="flex items-center gap-1.5 text-white text-sm font-semibold justify-end hover:opacity-80 transition-opacity"
-              >
-                <Phone className="h-3.5 w-3.5 text-white/50" />
+              <a href={`tel:${student.guardian_contact}`} className="flex items-center gap-1.5 text-sm font-semibold justify-end hover:opacity-80 transition-opacity" style={{ color: "#ffffff" }}>
+                <Phone className="h-3.5 w-3.5" style={{ color: "rgba(255,255,255,0.6)" }} />
                 <span>{student.guardian_contact}</span>
               </a>
             )}
             {student.guardian_email && (
-              <a
-                href={`mailto:${student.guardian_email}`}
-                className="flex items-center gap-1.5 text-white text-sm font-semibold justify-end hover:opacity-80 transition-opacity"
-              >
-                <Mail className="h-3.5 w-3.5 text-white/50" />
+              <a href={`mailto:${student.guardian_email}`} className="flex items-center gap-1.5 text-sm font-semibold justify-end hover:opacity-80 transition-opacity" style={{ color: "#ffffff" }}>
+                <Mail className="h-3.5 w-3.5" style={{ color: "rgba(255,255,255,0.6)" }} />
                 <span className="truncate max-w-[200px]">{student.guardian_email}</span>
               </a>
             )}
