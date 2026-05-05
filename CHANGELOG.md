@@ -1,3 +1,10 @@
+# [1.4.0](https://github.com/Adekunes/Tadween/compare/v1.3.1...v1.4.0) (2026-05-05)
+
+
+### Features
+
+* HubSpot-style student contact popover on attendance list ([15e242d](https://github.com/Adekunes/Tadween/commit/15e242d0d3d0b6a473e047d85525b0f7b7200f93))
+
 ## [1.3.1](https://github.com/Adekunes/Tadween/compare/v1.3.0...v1.3.1) (2026-05-05)
 
 
