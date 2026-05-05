@@ -4,6 +4,38 @@ This file is **non-negotiable**. Every meaningful change must be logged here.
 
 ---
 
+## 2026-05-03 — Secretary feedback: 6 frontend changes + DB migrations
+
+**What:**
+- **Calendar audience selector** — Added `audience` column to `school_events` (`all` | `teachers` | `parents`; DEFAULT `'all'`). `EventDialog` shows a new "Audience" dropdown with icons. Audience badge shown on event cards in sidebar and upcoming list.
+- **Events on teacher dashboard** — `DashboardOverview.tsx` now queries upcoming events filtered by `audience IN ('all','teachers')` and shows next 5 as a widget between the task list and at-risk banner.
+- **Events on parent dashboard** — `Parent.tsx` now queries upcoming events filtered by `audience IN ('all','parents')` and shows them between the stat cards and Recent Attendance section.
+- **Teacher location field** — `profiles.location TEXT` column added via SQL. `TeacherDialog` has a new "Location / Room" input, included in both create upsert and update payloads. `TeacherList` desktop column + mobile card both show the location as a blue pill badge.
+- **Attendance vertical list** — `BulkAttendanceGrid.tsx` student selector changed from 3-column card grid to a compact vertical list with row numbers and alternating striped backgrounds.
+- **Sr. Salma null-crash fix** — `TeacherList.tsx` search filter used `teacher.subject.toLowerCase()` which threw when subject is null. Fixed with `(teacher.subject ?? "")`. Sr. Salma now appears in the list.
+
+**DB changes (applied to live):**
+```sql
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS location TEXT;
+ALTER TABLE public.school_events ADD COLUMN IF NOT EXISTS audience TEXT DEFAULT 'all'
+  CHECK (audience IN ('all', 'teachers', 'parents'));
+```
+
+**Files changed:**
+- `src/pages/SchoolCalendar.tsx` — Audience type, state, selector, payload, badge display
+- `src/pages/Parent.tsx` — Upcoming events widget
+- `src/components/teacher-portal/dashboard/DashboardOverview.tsx` — Upcoming events widget
+- `src/components/teachers/TeacherList.tsx` — Location column (desktop) + card (mobile), null-safe search
+- `src/components/teachers/TeacherDialog.tsx` — Location field, schema, reset, update/upsert payloads
+- `src/components/attendance/form/BulkAttendanceGrid.tsx` — Vertical list layout
+- `CHANGELOG.md`, `handoff.md` — This entry
+
+**Pending / not done:**
+- Test account cleanup (`admin@admin.com`, `woman@gmail.com`) — user must delete from Supabase Auth dashboard (prohibited action)
+- Default daily task "Attendance (St. Laurent side)" was seeded in previous session
+
+---
+
 ## 2026-04-28 (session 2) — Edge function deployment + pg_cron
 
 **What:**

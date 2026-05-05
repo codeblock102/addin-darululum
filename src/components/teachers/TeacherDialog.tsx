@@ -46,6 +46,7 @@ const teacherSchema = z.object({
   subject: z.string().min(2, {
     message: "Subject must be at least 2 characters.",
   }).optional(),
+  location: z.string().optional().nullable(),
   grade: z.coerce.number().int().positive().optional().nullable(),
   section: z.string({
     required_error: "Please select a section for the teacher.",
@@ -138,6 +139,7 @@ export const TeacherDialog = (
       email: null,
       phone: null,
       subject: "",
+      location: null,
       section: "",
       grade: null,
       bio: null,
@@ -165,6 +167,7 @@ export const TeacherDialog = (
         email: selectedTeacher.email || null,
         phone: selectedTeacher.phone || null,
         subject: selectedTeacher.subject || "",
+        location: (selectedTeacher as unknown as { location?: string | null }).location || null,
         section: selectedTeacher.section || "",
         grade: selectedTeacher.grade || null,
         bio: selectedTeacher.bio || null,
@@ -180,6 +183,7 @@ export const TeacherDialog = (
         email: null,
         phone: null,
         subject: "",
+        location: null,
         section: "",
         grade: null,
         bio: null,
@@ -253,6 +257,7 @@ export const TeacherDialog = (
             email: values.email || null,
             phone: values.phone || null,
             subject: values.subject || "",
+            location: values.location || null,
             bio: values.bio || null,
             section: values.section,
             grade: values.grade || null,
@@ -334,6 +339,7 @@ export const TeacherDialog = (
             role: 'teacher',
             phone: values.phone || null,
             subject: values.subject || "",
+            location: values.location || null,
             bio: values.bio || null,
             section: values.section,
             madrassah_id: madrassahId,
@@ -473,6 +479,24 @@ export const TeacherDialog = (
                   )}
                 />
               </div>
+
+              <FormField
+                control={form.control}
+                name="location"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Location / Room</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="e.g. Room 3, St. Laurent side"
+                        {...field}
+                        value={field.value || ""}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
               <FormField
                 control={form.control}

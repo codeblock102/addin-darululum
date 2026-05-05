@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { AlertTriangle, Users, UserX, ClipboardList, TrendingUp } from "lucide-react";
+import { AlertTriangle, Users, UserX, ClipboardList, TrendingUp, CalendarDays, GraduationCap, Coffee, Palmtree, Star, BookOpen } from "lucide-react";
 import { StudentSearch } from "./StudentSearch";
 import { QuickActions } from "./QuickActions";
 import { TodayStudents } from "./TodayStudents";
@@ -8,6 +8,15 @@ import { useTeacherStudentMetrics } from "@/hooks/useTeacherStudentMetrics.ts";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client.ts";
 import { TaskWidget } from "../TaskWidget";
+import { format, parseISO } from "date-fns";
+
+const EVENT_TYPE_MAP: Record<string, { label: string; color: string; icon: React.ReactNode }> = {
+  holiday:  { label: "Holiday",  color: "#16a34a", icon: <Palmtree className="h-3.5 w-3.5" /> },
+  break:    { label: "Break",    color: "#0ea5e9", icon: <Coffee className="h-3.5 w-3.5" /> },
+  pd_day:   { label: "PD Day",   color: "#8b5cf6", icon: <GraduationCap className="h-3.5 w-3.5" /> },
+  exam:     { label: "Exam",     color: "#f59e0b", icon: <BookOpen className="h-3.5 w-3.5" /> },
+  event:    { label: "Event",    color: "#ec4899", icon: <Star className="h-3.5 w-3.5" /> },
+};
 
 interface DashboardOverviewProps {
   teacherId?: string;
@@ -99,6 +108,23 @@ export const DashboardOverview = ({ teacherId, isAdmin = false }: DashboardOverv
     enabled: !isAdmin && !!teacherId,
   });
 
+  // Upcoming school events (teachers see "all" and "teachers" audience)
+  const { data: upcomingEvents = [] } = useQuery({
+    queryKey: ["dashboard-upcoming-events-teacher"],
+    queryFn: async () => {
+      const today = new Date().toISOString().split("T")[0];
+      const { data, error } = await supabase
+        .from("school_events")
+        .select("id, title, event_type, start_date, end_date, color, audience")
+        .gte("start_date", today)
+        .in("audience", ["all", "teachers"])
+        .order("start_date", { ascending: true })
+        .limit(5);
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+
   const stats = [
     {
       label: "My Students",
@@ -168,6 +194,46 @@ export const DashboardOverview = ({ teacherId, isAdmin = false }: DashboardOverv
       {/* Task widget */}
       {!isAdmin && teacherId && (
         <TaskWidget teacherId={teacherId} />
+      )}
+
+      {/* Upcoming school events */}
+      {upcomingEvents.length > 0 && (
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+          <div className="flex items-center gap-2 mb-3">
+            <div className="w-8 h-8 rounded-xl bg-green-50 flex items-center justify-center">
+              <CalendarDays className="h-4 w-4 text-green-700" />
+            </div>
+            <h3 className="text-sm font-bold text-gray-900">Upcoming School Events</h3>
+          </div>
+          <div className="space-y-2">
+            {upcomingEvents.map((ev: { id: string; title: string; event_type: string; start_date: string; end_date?: string | null; color?: string | null; audience?: string }) => {
+              const cfg = EVENT_TYPE_MAP[ev.event_type] ?? EVENT_TYPE_MAP.event;
+              return (
+                <div key={ev.id} className="flex items-center gap-3 py-2 border-b border-gray-50 last:border-0">
+                  <div
+                    className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0"
+                    style={{ background: `${cfg.color}22`, color: cfg.color }}
+                  >
+                    {cfg.icon}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-medium text-gray-900 truncate">{ev.title}</p>
+                    <p className="text-xs text-gray-400">
+                      {format(parseISO(ev.start_date), "MMM d")}
+                      {ev.end_date && ev.end_date !== ev.start_date && ` – ${format(parseISO(ev.end_date), "MMM d")}`}
+                    </p>
+                  </div>
+                  <span
+                    className="text-[10px] font-semibold px-1.5 py-0.5 rounded flex-shrink-0"
+                    style={{ background: `${cfg.color}22`, color: cfg.color }}
+                  >
+                    {cfg.label}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
       )}
 
       {/* At-risk alert banner */}

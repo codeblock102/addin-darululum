@@ -225,6 +225,11 @@ export const TeacherList = ({
                       </Badge>
                       <span className="flex items-center gap-1 text-gray-500"><Users className="h-4 w-4" />{teacher.students}</span>
                     </div>
+                    {teacher.location && (
+                      <div className="mt-1">
+                        <span className="text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200 rounded-full px-2 py-0.5">{teacher.location}</span>
+                      </div>
+                    )}
                     <div className="mt-2 text-sm">
                       {teacher.email ? (
                         <a href={`mailto:${teacher.email}`} className="text-emerald-700 hover:underline break-all">{teacher.email}</a>

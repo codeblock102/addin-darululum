@@ -6,8 +6,17 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client.ts";
 import { useQuery } from "@tanstack/react-query";
 import { Tables } from "@/types/supabase.ts";
-import { BookOpen, CalendarCheck, ClipboardList, TrendingUp } from "lucide-react";
+import { BookOpen, CalendarCheck, CalendarDays, ClipboardList, Coffee, GraduationCap, Heart, Palmtree, Star, TrendingUp } from "lucide-react";
 import { EmptyState } from "@/components/analytics/EmptyState.tsx";
+import { format, parseISO } from "date-fns";
+
+const PARENT_EVENT_TYPE_MAP: Record<string, { label: string; color: string; icon: React.ReactNode }> = {
+  holiday:  { label: "Holiday",  color: "#16a34a", icon: <Palmtree className="h-3.5 w-3.5" /> },
+  break:    { label: "Break",    color: "#0ea5e9", icon: <Coffee className="h-3.5 w-3.5" /> },
+  pd_day:   { label: "PD Day",   color: "#8b5cf6", icon: <GraduationCap className="h-3.5 w-3.5" /> },
+  exam:     { label: "Exam",     color: "#f59e0b", icon: <BookOpen className="h-3.5 w-3.5" /> },
+  event:    { label: "Event",    color: "#ec4899", icon: <Star className="h-3.5 w-3.5" /> },
+};
 
 const statusColor = (status: string) => {
   switch (status?.toLowerCase()) {
@@ -72,6 +81,23 @@ const Parent = () => {
       return data || [];
     },
     enabled: !!selectedStudentId,
+  });
+
+  // Upcoming school events for parents
+  const { data: upcomingEvents = [] } = useQuery({
+    queryKey: ["parent-upcoming-events"],
+    queryFn: async () => {
+      const today = new Date().toISOString().split("T")[0];
+      const { data, error } = await supabase
+        .from("school_events")
+        .select("id, title, event_type, start_date, end_date, color, audience")
+        .gte("start_date", today)
+        .in("audience", ["all", "parents"])
+        .order("start_date", { ascending: true })
+        .limit(5);
+      if (error) throw error;
+      return data ?? [];
+    },
   });
 
   // Derived stats
@@ -162,6 +188,53 @@ const Parent = () => {
                 </CardContent>
               </Card>
             </div>
+
+            {/* Upcoming school events */}
+            {upcomingEvents.length > 0 && (
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <CalendarDays className="h-4 w-4 text-green-700" />
+                    Upcoming School Events
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-2">
+                    {upcomingEvents.map((ev: { id: string; title: string; event_type: string; start_date: string; end_date?: string | null; color?: string | null; audience?: string }) => {
+                      const cfg = PARENT_EVENT_TYPE_MAP[ev.event_type] ?? PARENT_EVENT_TYPE_MAP.event;
+                      return (
+                        <div key={ev.id} className="flex items-center gap-3 py-2 border-b border-gray-50 last:border-0">
+                          <div
+                            className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0"
+                            style={{ background: `${cfg.color}22`, color: cfg.color }}
+                          >
+                            {cfg.icon}
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <p className="text-sm font-medium text-gray-900 truncate">{ev.title}</p>
+                            <p className="text-xs text-muted-foreground">
+                              {format(parseISO(ev.start_date), "MMM d")}
+                              {ev.end_date && ev.end_date !== ev.start_date && ` – ${format(parseISO(ev.end_date), "MMM d")}`}
+                            </p>
+                          </div>
+                          <span
+                            className="text-[10px] font-semibold px-1.5 py-0.5 rounded flex-shrink-0"
+                            style={{ background: `${cfg.color}22`, color: cfg.color }}
+                          >
+                            {cfg.label}
+                          </span>
+                          {ev.audience === "parents" && (
+                            <span className="inline-flex items-center gap-0.5 text-[10px] font-medium px-1.5 py-0.5 rounded bg-pink-50 text-pink-600 flex-shrink-0">
+                              <Heart className="h-3 w-3" />
+                            </span>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
 
             {/* Recent attendance */}
             <Card>

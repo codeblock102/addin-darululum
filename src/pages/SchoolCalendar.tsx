@@ -36,12 +36,16 @@ import {
   BookOpen,
   Coffee,
   Palmtree,
+  Users,
+  Heart,
 } from "lucide-react";
 import { cn } from "@/lib/utils.ts";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
 type EventType = "holiday" | "pd_day" | "exam" | "event" | "break";
+
+type Audience = "all" | "teachers" | "parents";
 
 interface SchoolEvent {
   id: string;
@@ -52,9 +56,18 @@ interface SchoolEvent {
   end_date?: string | null;
   all_day: boolean;
   color?: string | null;
+  audience: Audience;
   created_by?: string | null;
   created_at: string;
 }
+
+const AUDIENCE_OPTIONS: { value: Audience; label: string; icon: React.ReactNode; color: string }[] = [
+  { value: "all",      label: "Everyone",      icon: <Users className="h-3.5 w-3.5" />,       color: "#6366f1" },
+  { value: "teachers", label: "Teachers Only", icon: <GraduationCap className="h-3.5 w-3.5" />, color: "#0ea5e9" },
+  { value: "parents",  label: "Parents Only",  icon: <Heart className="h-3.5 w-3.5" />,        color: "#ec4899" },
+];
+
+const audienceConfig = (a: Audience) => AUDIENCE_OPTIONS.find((o) => o.value === a) ?? AUDIENCE_OPTIONS[0];
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
@@ -87,6 +100,7 @@ function EventDialog({ event, open, onClose }: EventDialogProps) {
   const [eventType, setEventType]   = useState<EventType>(event?.event_type ?? "event");
   const [startDate, setStartDate]   = useState(event?.start_date ?? format(new Date(), "yyyy-MM-dd"));
   const [endDate, setEndDate]       = useState(event?.end_date ?? "");
+  const [audience, setAudience]     = useState<Audience>(event?.audience ?? "all");
 
   // Reset when event changes
   const reset = () => {
@@ -95,6 +109,7 @@ function EventDialog({ event, open, onClose }: EventDialogProps) {
     setEventType(event?.event_type ?? "event");
     setStartDate(event?.start_date ?? format(new Date(), "yyyy-MM-dd"));
     setEndDate(event?.end_date ?? "");
+    setAudience(event?.audience ?? "all");
   };
 
   const saveMutation = useMutation({
@@ -106,6 +121,7 @@ function EventDialog({ event, open, onClose }: EventDialogProps) {
         start_date: startDate,
         end_date: endDate || null,
         color: typeConfig(eventType).color,
+        audience,
       };
       if (isEdit) {
         const { error } = await supabase.from("school_events").update(payload).eq("id", event!.id);
@@ -155,6 +171,24 @@ function EventDialog({ event, open, onClose }: EventDialogProps) {
                     <div className="flex items-center gap-2">
                       <span style={{ color: t.color }}>{t.icon}</span>
                       {t.label}
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-1.5">
+            <Label>Audience</Label>
+            <Select value={audience} onValueChange={(v) => setAudience(v as Audience)}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {AUDIENCE_OPTIONS.map((o) => (
+                  <SelectItem key={o.value} value={o.value}>
+                    <div className="flex items-center gap-2">
+                      <span style={{ color: o.color }}>{o.icon}</span>
+                      {o.label}
                     </div>
                   </SelectItem>
                 ))}
@@ -478,12 +512,23 @@ export default function SchoolCalendar() {
                               {e.description && (
                                 <p className="text-xs text-gray-500 mt-0.5 line-clamp-2">{e.description}</p>
                               )}
-                              <span
-                                className="inline-block text-[10px] font-medium px-1.5 py-0.5 rounded mt-1"
-                                style={{ background: `${cfg.color}22`, color: cfg.color }}
-                              >
-                                {cfg.label}
-                              </span>
+                              <div className="flex items-center gap-1 mt-1 flex-wrap">
+                                <span
+                                  className="inline-block text-[10px] font-medium px-1.5 py-0.5 rounded"
+                                  style={{ background: `${cfg.color}22`, color: cfg.color }}
+                                >
+                                  {cfg.label}
+                                </span>
+                                {e.audience && e.audience !== "all" && (
+                                  <span
+                                    className="inline-flex items-center gap-0.5 text-[10px] font-medium px-1.5 py-0.5 rounded"
+                                    style={{ background: `${audienceConfig(e.audience).color}22`, color: audienceConfig(e.audience).color }}
+                                  >
+                                    {audienceConfig(e.audience).icon}
+                                    {audienceConfig(e.audience).label}
+                                  </span>
+                                )}
+                              </div>
                             </div>
                           </div>
                           {isAdmin && (
@@ -543,12 +588,22 @@ export default function SchoolCalendar() {
                             {e.end_date && e.end_date !== e.start_date && ` – ${format(parseISO(e.end_date), "MMM d")}`}
                           </p>
                         </div>
-                        <span
-                          className="text-[10px] font-semibold px-1.5 py-0.5 rounded flex-shrink-0"
-                          style={{ background: `${cfg.color}22`, color: cfg.color }}
-                        >
-                          {cfg.label}
-                        </span>
+                        <div className="flex flex-col items-end gap-0.5 flex-shrink-0">
+                          <span
+                            className="text-[10px] font-semibold px-1.5 py-0.5 rounded"
+                            style={{ background: `${cfg.color}22`, color: cfg.color }}
+                          >
+                            {cfg.label}
+                          </span>
+                          {e.audience && e.audience !== "all" && (
+                            <span
+                              className="inline-flex items-center gap-0.5 text-[10px] font-medium px-1.5 py-0.5 rounded"
+                              style={{ background: `${audienceConfig(e.audience).color}22`, color: audienceConfig(e.audience).color }}
+                            >
+                              {audienceConfig(e.audience).icon}
+                            </span>
+                          )}
+                        </div>
                       </div>
                     );
                   })}

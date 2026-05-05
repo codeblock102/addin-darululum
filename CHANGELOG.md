@@ -1,3 +1,20 @@
+## [2.0.0] (2026-05-03)
+
+### Features
+
+* **calendar-audience:** `school_events.audience` column (`all` | `teachers` | `parents`); `EventDialog` now has an Audience selector (Everyone / Teachers Only / Parents Only) with icon chips; audience badge shown on event cards in the sidebar and upcoming list
+* **teacher-dashboard-events:** upcoming school events widget on teacher `DashboardOverview` — queries events with `audience IN ('all','teachers')`, shows next 5 with type icon + date range
+* **parent-dashboard-events:** upcoming school events widget on `Parent.tsx` — queries events with `audience IN ('all','parents')`, shows next 5; parents-only events show a ❤️ badge
+* **teacher-location:** `profiles.location` column surfaced everywhere — `TeacherDialog` now has a Location / Room input field (persisted on create and update); `TeacherList` desktop table shows a blue pill badge; `TeacherList` mobile cards also show the location badge
+* **attendance-vertical-list:** `BulkAttendanceGrid` student selector rewritten from a 3-column card grid to a compact vertical list — row number, avatar, name, alternating row backgrounds, selected rows highlight in blue, ✓ checkmark on right
+* **teacher-location-search:** null-safe search filter on `TeacherList` — `(teacher.subject ?? "")` and `(teacher.location ?? "")` prevent runtime crash when fields are null (fixes Sr. Salma not appearing)
+
+### Bug Fixes
+
+* **teacher-list-null-crash:** `teacher.subject.toLowerCase()` threw when `subject` is null; fixed with optional-chaining
+
+---
+
 ## [1.9.0] (2026-04-28)
 
 ### Deployment
