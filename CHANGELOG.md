@@ -1,3 +1,10 @@
+## [1.7.3](https://github.com/Adekunes/Tadween/compare/v1.7.2...v1.7.3) (2026-05-05)
+
+
+### Bug Fixes
+
+* force white text in student profile hero via inline styles ([716ca80](https://github.com/Adekunes/Tadween/commit/716ca8063a659df0826dba8fae3f9e4388552214))
+
 ## [1.7.2](https://github.com/Adekunes/Tadween/compare/v1.7.1...v1.7.2) (2026-05-05)
 
 
