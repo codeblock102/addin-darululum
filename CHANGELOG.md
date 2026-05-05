@@ -1,3 +1,10 @@
+# [1.6.0](https://github.com/Adekunes/Tadween/compare/v1.5.0...v1.6.0) (2026-05-05)
+
+
+### Features
+
+* redesign student profile page with hero header and stat cards ([41a7954](https://github.com/Adekunes/Tadween/commit/41a7954d3aa512e5bf516c523bdb254a873426db))
+
 # [1.5.0](https://github.com/Adekunes/Tadween/compare/v1.4.0...v1.5.0) (2026-05-05)
 
 
