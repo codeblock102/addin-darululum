@@ -1,3 +1,10 @@
+## [1.7.2](https://github.com/Adekunes/Tadween/compare/v1.7.1...v1.7.2) (2026-05-05)
+
+
+### Bug Fixes
+
+* match student profile hero to dashboard — same dark green gradient + white overlays ([b034098](https://github.com/Adekunes/Tadween/commit/b034098a6895576cbedf7efc05a9ed658b310759)), closes [#166534](https://github.com/Adekunes/Tadween/issues/166534)
+
 ## [1.7.1](https://github.com/Adekunes/Tadween/compare/v1.7.0...v1.7.1) (2026-05-05)
 
 
