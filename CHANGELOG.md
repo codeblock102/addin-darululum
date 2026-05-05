@@ -1,3 +1,10 @@
+# [1.7.0](https://github.com/Adekunes/Tadween/compare/v1.6.1...v1.7.0) (2026-05-05)
+
+
+### Features
+
+* redesign teacher messages page layout ([ed8c125](https://github.com/Adekunes/Tadween/commit/ed8c1250ea7cdfc7cf60eea7657c522b71f2edcc))
+
 ## [1.6.1](https://github.com/Adekunes/Tadween/compare/v1.6.0...v1.6.1) (2026-05-05)
 
 
