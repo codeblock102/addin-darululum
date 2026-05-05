@@ -3,7 +3,6 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client.ts";
 import { Card, CardContent } from "@/components/ui/card.tsx";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar.tsx";
 import { Checkbox } from "@/components/ui/checkbox.tsx";
 import { Button } from "@/components/ui/button.tsx";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select.tsx";
@@ -11,9 +10,9 @@ import { Input } from "@/components/ui/input.tsx";
 import { Badge } from "@/components/ui/badge.tsx";
 import { Loader2, Users, CheckSquare } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area.tsx";
+
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form.tsx";
 import { UseFormReturn } from "react-hook-form";
-import { getInitials } from "@/utils/stringUtils.ts";
 import { AttendanceFormValues } from "@/types/attendance-form.ts";
 import { format } from "date-fns";
 import { useToast } from "@/components/ui/use-toast.ts";
@@ -245,41 +244,31 @@ export function BulkAttendanceGrid({ form }: BulkAttendanceGridProps) {
               {t("pages.attendance.bulk.gridLabel", "Select Students for Bulk Attendance")}
             </FormLabel>
             <FormControl>
-              <ScrollArea className="h-96 w-full rounded-lg border-2 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm p-4">
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                  {students?.map((student: { id: string; name: string }) => (
-                    <Card
+              <ScrollArea className="h-96 w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm">
+                <div className="divide-y divide-gray-100 dark:divide-gray-700">
+                  {students?.map((student: { id: string; name: string }, idx: number) => (
+                    <div
                       key={student.id}
-                      className={`cursor-pointer transition-all duration-200 hover:shadow-lg border-2 ${
-                        selectedStudents.has(student.id)
-                          ? "ring-2 ring-blue-500 bg-blue-50 dark:bg-blue-900/30 border-blue-500 shadow-md"
-                          : "hover:bg-gray-50 dark:hover:bg-gray-700 border-gray-200 dark:border-gray-600 hover:border-blue-300"
-                      }`}
                       onClick={() => handleStudentToggle(student.id, !selectedStudents.has(student.id))}
+                      className={`flex items-center gap-3 px-3 py-2.5 cursor-pointer transition-colors ${
+                        selectedStudents.has(student.id)
+                          ? "bg-blue-50 dark:bg-blue-900/30"
+                          : idx % 2 === 0
+                            ? "bg-white dark:bg-gray-900"
+                            : "bg-gray-50 dark:bg-gray-800"
+                      }`}
                     >
-                      <CardContent className="p-4">
-                        <div className="flex items-center space-x-3">
-                          <Checkbox
-                            checked={selectedStudents.has(student.id)}
-                            onChange={() => {}} // Handled by card click
-                            className="data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600"
-                          />
-                          <Avatar className="h-10 w-10">
-                            <AvatarFallback className="bg-purple-100 text-purple-600 dark:bg-purple-900 dark:text-purple-300 font-medium">
-                              {getInitials(student.name)}
-                            </AvatarFallback>
-                          </Avatar>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm text-foreground">
-                              {student.name}
-                            </p>
-                            <p className="text-xs text-foreground">
-                              {t("pages.attendance.bulk.activeStudent", "Active Student")}
-                            </p>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
+                      <span className="text-xs text-gray-400 w-6 text-right shrink-0 select-none">{idx + 1}</span>
+                      <Checkbox
+                        checked={selectedStudents.has(student.id)}
+                        onCheckedChange={(checked) => handleStudentToggle(student.id, !!checked)}
+                        className="data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600"
+                      />
+                      <span className="flex-1 text-sm font-medium text-foreground">{student.name}</span>
+                      {selectedStudents.has(student.id) && (
+                        <CheckSquare className="h-4 w-4 text-blue-600 shrink-0" />
+                      )}
+                    </div>
                   ))}
                 </div>
                 {(!students || students.length === 0) && (

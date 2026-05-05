@@ -269,47 +269,47 @@ export const StudentGrid = ({
       </CardHeader>
       <CardContent>
         {filteredStudents.length > 0 ? (
-          <div className="grid grid-cols-[repeat(auto-fit,minmax(12rem,1fr))] gap-4">
-            {filteredStudents.map((student) => (
+          <div className="divide-y divide-gray-100 dark:divide-gray-700 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+            {filteredStudents.map((student, idx) => (
               <div
                 key={student.id}
-                className={`w-full p-3 border rounded-lg cursor-pointer transition-all flex items-center space-x-3 ${
+                onClick={() => onStudentSelect(student.id)}
+                className={`flex items-center gap-3 px-3 py-2.5 cursor-pointer transition-colors ${
                   selectedStudents.has(student.id)
-                    ? 'bg-blue-100 dark:bg-blue-900 border-blue-400'
-                    : 'bg-slate-50 border-slate-200'
+                    ? 'bg-blue-50 dark:bg-blue-900/30'
+                    : idx % 2 === 0
+                      ? 'bg-white dark:bg-gray-900'
+                      : 'bg-gray-50 dark:bg-gray-800'
                 }`}
               >
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id={student.id}
-                    checked={selectedStudents.has(student.id)}
-                    onCheckedChange={() => {
-                      onStudentSelect(student.id);
-                    }}
-                  />
-                  <Label htmlFor={student.id} className="text-foreground font-medium cursor-pointer">
-                    {student.name}
-                  </Label>
-                  {statusMap[student.id] && (
-                    <span className={`ml-2 text-[10px] px-2 py-0.5 rounded-full uppercase tracking-wide ${statusBadgeClasses(statusMap[student.id])}`}>
-                      {statusMap[student.id]}
-                      {statusMap[student.id] === 'late' && (
-                        (() => {
-                          const mins = computeLateMinutes(timeMap[student.id], classStartHm || undefined);
-                          const parts: string[] = [];
-                          if (typeof mins === 'number' && mins > 0) parts.push(`${mins}m`);
-                          if (timeMap[student.id]) parts.push(`${timeMap[student.id]}`);
-                          return parts.length ? ` · ${parts.join(' · ')}` : '';
-                        })()
-                      )}
-                    </span>
-                  )}
-                  {selectedStudents.has(student.id) && stagedStatus && (
-                    <span className="ml-2 text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 uppercase tracking-wide">
-                      {stagedStatus}
-                    </span>
-                  )}
-                </div>
+                <span className="text-xs text-gray-400 w-6 text-right shrink-0 select-none">{idx + 1}</span>
+                <Checkbox
+                  id={student.id}
+                  checked={selectedStudents.has(student.id)}
+                  onCheckedChange={() => onStudentSelect(student.id)}
+                />
+                <Label htmlFor={student.id} className="flex-1 text-sm font-medium text-foreground cursor-pointer">
+                  {student.name}
+                </Label>
+                {statusMap[student.id] && (
+                  <span className={`text-[10px] px-2 py-0.5 rounded-full uppercase tracking-wide shrink-0 ${statusBadgeClasses(statusMap[student.id])}`}>
+                    {statusMap[student.id]}
+                    {statusMap[student.id] === 'late' && (
+                      (() => {
+                        const mins = computeLateMinutes(timeMap[student.id], classStartHm || undefined);
+                        const parts: string[] = [];
+                        if (typeof mins === 'number' && mins > 0) parts.push(`${mins}m`);
+                        if (timeMap[student.id]) parts.push(`${timeMap[student.id]}`);
+                        return parts.length ? ` · ${parts.join(' · ')}` : '';
+                      })()
+                    )}
+                  </span>
+                )}
+                {selectedStudents.has(student.id) && stagedStatus && (
+                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 uppercase tracking-wide shrink-0">
+                    {stagedStatus}
+                  </span>
+                )}
               </div>
             ))}
           </div>
