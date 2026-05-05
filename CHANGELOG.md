@@ -1,3 +1,10 @@
+# [1.5.0](https://github.com/Adekunes/Tadween/compare/v1.4.0...v1.5.0) (2026-05-05)
+
+
+### Features
+
+* per-student Note/Email/Call buttons + inline notes on attendance list ([e02061a](https://github.com/Adekunes/Tadween/commit/e02061ab67036447b05629abf4c58fe61fc5a846))
+
 # [1.4.0](https://github.com/Adekunes/Tadween/compare/v1.3.1...v1.4.0) (2026-05-05)
 
 
