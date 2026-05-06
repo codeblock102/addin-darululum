@@ -4,6 +4,28 @@ This file is **non-negotiable**. Every meaningful change must be logged here.
 
 ---
 
+## 2026-05-06 — Sr. Salma promoted to admin (Saint-Laurent)
+
+**What:**
+- Promoted Sr. Salma (`salma@daralulummontreal.com`) from `teacher` to `admin` via direct DB update
+- Set `madrassah_id = '7183e19f-753b-4663-9bb4-6e05287d5afa'` (Dār Al-Ulūm Montréal) — was null
+- Updated `auth.users.raw_user_meta_data` role to `"admin"` for consistency
+
+**SQL applied (live):**
+```sql
+UPDATE public.profiles
+SET role = 'admin', madrassah_id = '7183e19f-753b-4663-9bb4-6e05287d5afa'
+WHERE id = '61d50d06-442b-4269-923f-818d7ae861f7';
+
+UPDATE auth.users
+SET raw_user_meta_data = raw_user_meta_data || '{"role": "admin"}'::jsonb
+WHERE id = '61d50d06-442b-4269-923f-818d7ae861f7';
+```
+
+**Note:** The school has one madrassah — Sr. Salma sees all students (both locations), same as Mufti Zain and Ibrahim Toure. Location-scoped admin views would require a separate feature.
+
+---
+
 ## 2026-05-05 (s5) — Teacher deletion fixed (full DB wipe)
 
 **What:**
