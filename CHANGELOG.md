@@ -1,3 +1,10 @@
+# [1.8.0](https://github.com/Adekunes/Tadween/compare/v1.7.5...v1.8.0) (2026-05-06)
+
+
+### Features
+
+* section-scoped staff, email redesign, docs update ([92d196e](https://github.com/Adekunes/Tadween/commit/92d196ebb7f23753d7641e9e58cdc3763fa5485e))
+
 ## [1.7.5](https://github.com/Adekunes/Tadween/compare/v1.7.4...v1.7.5) (2026-05-05)
 
 
