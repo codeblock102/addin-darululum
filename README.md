@@ -28,9 +28,11 @@ A full-stack school management platform for Dār Al-Ulūm Montréal, built to ma
 - **Parent portal** — read-only access to child's progress, attendance, and academics
 - **Admin tools** — bulk student import, parent account provisioning, role setup, database seeder
 
-### Recently Added (v1.1)
+### Recently Added
 | Feature | Where to find it |
 |---|---|
+| **Section-scoped access** | Teachers and admins with `profiles.section` set only see students from that section; attendance section dropdown auto-locks |
+| **Stunning email redesign** | Both `attendance-absence-email` and `daily-progress-email` edge functions use gradient headers, status-colored banners, and clean card layouts |
 | **Guided onboarding** | Fires on first login for every role (Admin / Teacher / Parent); role-specific 5-step modal |
 | **Admin dashboard stats** | `/dashboard` — personalized welcome, Today Absent card, Unmarked Today card, Enrolment by Location/Grade breakdown |
 | **Health & IEP tab** | `/students/:id` → Health & IEP tab — health card #, medical conditions, allergies, IEP toggle |
@@ -46,7 +48,9 @@ A full-stack school management platform for Dār Al-Ulūm Montréal, built to ma
 School location/branch. Key fields: `id`, `name`, `location`, `section[]`.
 
 ### profiles
-Auth-linked user (admin / teacher / parent). Key fields: `id`, `email`, `name`, `role`, `madrassah_id`, `capabilities` (JSONB), `subject`, `grade`, `bio`, `phone`.
+Auth-linked user (admin / teacher / parent). Key fields: `id`, `email`, `name`, `role`, `madrassah_id`, `section`, `capabilities` (JSONB), `subject`, `grade`, `bio`, `phone`.
+
+> **`section` field:** When set on a teacher or admin profile, restricts that user's student visibility to only students with the matching `section` value. Used to scope DUM staff to their location (e.g. `'women'` = Saint-Laurent, `'Henri-Bourassa'` = men's campus).
 
 ### students
 Student record. Key fields: `id`, `name`, `status`, `current_juz`, `guardian_name`, `guardian_email`, `guardian_contact`, `section`, `grade`, `date_of_birth`, `madrassah_id`.  
@@ -178,8 +182,8 @@ supabase/
 | `admin-send-email` | Send admin-initiated emails |
 | `create-parent` | Create parent profile and link to children |
 | `purge-parents-students` | Clean duplicate parent/child links |
-| `daily-progress-email` | Scheduled digest to guardians at 4:30 PM EST via `pg_cron` |
-| `attendance-absence-email` | Absence notifications to guardians |
+| `daily-progress-email` | Scheduled digest to guardians + principal summary at 4:30 PM EST via `pg_cron`; gradient green email design with per-student Sabaq tables and academic updates |
+| `attendance-absence-email` | Absence/attendance notifications to guardians; per-status color coding (present=green, absent=red, late=amber, excused=purple, early_departure=orange, sick=cyan) |
 | `teacher_schedule_pdf` | Render teacher weekly schedules to PDF |
 | `dhor_book_utils` | Dhor book computation helpers |
 
@@ -189,12 +193,23 @@ CORS shared utilities: `supabase/functions/_shared/cors.ts`.
 
 ## Security Model (RBAC + RLS)
 
-- **Admin** — full access to all rows where `madrassah_id` matches their profile
-- **Teacher** — access to students they teach; attendance/progress for those students
+- **Admin (unrestricted)** — full access to all students where `madrassah_id` matches; `profiles.section = null`
+- **Admin (section-scoped)** — access limited to students where `students.section` matches `profiles.section`
+- **Teacher (unrestricted)** — access to students in their assigned classes; attendance/progress for those students
+- **Teacher (section-scoped)** — same as above, additionally filtered to `students.section = profiles.section`; attendance section dropdown auto-locks and hides
 - **Parent** — read-only access to students linked via `parent_children`
 - **Service role** — edge functions use service role key for provisioning and scheduled jobs
 
-Frontend enforcement via `useRBAC` and `useUserRole`. Database enforcement via Postgres RLS policies (see migrations).
+Frontend enforcement via `useRBAC`, `useUserRole`, and `useStudentsQuery`. Database enforcement via Postgres RLS policies (see migrations).
+
+### Current DUM Staff Roles (as of 2026-05-06)
+
+| Name | Role | Section | Access |
+|---|---|---|---|
+| Mufti Zain | admin | null | All students |
+| Maimoona Ansari | admin | null | All students |
+| Sr. Salma | teacher | women | Saint-Laurent students only |
+| Ibrahim Toure | teacher | Henri-Bourassa | Henri-Bourassa students only |
 
 ---
 
@@ -262,6 +277,7 @@ Run the contents of `supabase/migrations/seed_dum_schedules_v10.sql` in the **Su
 | Juz | One of 30 divisions of the Quran |
 | Surah / Ayah | Chapter / verse |
 | IEP | Individualized Education Plan |
+| Section | Location/gender grouping — `'women'` = Saint-Laurent, `'Henri-Bourassa'` = men's campus |
 
 ---
 

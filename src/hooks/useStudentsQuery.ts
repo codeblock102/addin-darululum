@@ -51,6 +51,7 @@ export interface UseStudentsQueryOptions {
 interface UserData {
   madrassah_id: string | null;
   role: string | null;
+  section: string | null;
 }
 
 interface StudentsQueryResult {
@@ -89,7 +90,7 @@ export function useStudentsQuery(options: UseStudentsQueryOptions = {}) {
       // Get user profile
       const { data: userData } = await supabase
         .from("profiles")
-        .select("madrassah_id, role")
+        .select("madrassah_id, role, section")
         .eq("id", userId)
         .single();
 
@@ -100,12 +101,16 @@ export function useStudentsQuery(options: UseStudentsQueryOptions = {}) {
       const isAdmin = userData.role === "admin" || forceAdminMode;
       const isTeacher = userData.role === "teacher";
 
-      // Admin: fetch all students in madrassah
+      // Admin: fetch all students in madrassah (optionally scoped to a section)
       if (isAdmin) {
         let query = supabase
           .from("students")
           .select(fields)
           .eq("madrassah_id", userData.madrassah_id);
+
+        if (userData.section) {
+          query = query.eq("section", userData.section);
+        }
 
         if (activeOnly) {
           query = query.eq("status", "active");

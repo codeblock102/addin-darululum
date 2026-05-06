@@ -175,6 +175,100 @@ function htmlEscape(str: string): string {
   }[c] as string));
 }
 
+const STATUS_STYLES_MAP: Record<string, { color: string; bg: string; border: string; label: string }> = {
+  present:         { color: "#059669", bg: "#f0fdf4", border: "#34d399", label: "Present" },
+  absent:          { color: "#dc2626", bg: "#fef2f2", border: "#f87171", label: "Absent" },
+  late:            { color: "#d97706", bg: "#fffbeb", border: "#fbbf24", label: "Late" },
+  excused:         { color: "#7c3aed", bg: "#faf5ff", border: "#a78bfa", label: "Excused" },
+  early_departure: { color: "#ea580c", bg: "#fff7ed", border: "#fb923c", label: "Early Departure" },
+  sick:            { color: "#0891b2", bg: "#f0f9ff", border: "#38bdf8", label: "Sick" },
+};
+const DEFAULT_STATUS_STYLE = { color: "#6b7280", bg: "#f9fafb", border: "#d1d5db", label: "Not Marked" };
+
+function buildAttendanceEmailHtml(p: {
+  studentName: string; guardianName: string; status: string;
+  dateYmd: string; time?: string | null; logoUrl: string; appUrl: string;
+}): string {
+  const st = STATUS_STYLES_MAP[p.status] ?? DEFAULT_STATUS_STYLE;
+  const safeStudent  = htmlEscape(p.studentName || "Student");
+  const safeGuardian = htmlEscape(p.guardianName || "");
+  const safeDate     = htmlEscape(p.dateYmd);
+  const dispTime     = p.time ? formatDisplayTime(p.time) : null;
+  const timeStr      = dispTime ? ` at ${htmlEscape(dispTime)}` : "";
+  let narrative: string;
+  switch (p.status) {
+    case "present":         narrative = `<strong>${safeStudent}</strong> attended class and was marked <strong>Present</strong> on ${safeDate}.`; break;
+    case "absent":          narrative = `<strong>${safeStudent}</strong> was marked <strong>Absent</strong> on ${safeDate}. If this is unexpected, please contact the school office. We hope everything is well.`; break;
+    case "late":            narrative = `<strong>${safeStudent}</strong> arrived <strong>late${timeStr}</strong> on ${safeDate}. Please encourage timely arrival to avoid missing lessons.`; break;
+    case "early_departure": narrative = `<strong>${safeStudent}</strong> was marked for <strong>Early Departure${timeStr}</strong> on ${safeDate}.`; break;
+    case "excused":         narrative = `<strong>${safeStudent}</strong> was marked <strong>Excused</strong> on ${safeDate}. The absence has been recorded by the school.`; break;
+    case "sick":            narrative = `<strong>${safeStudent}</strong> was marked <strong>Sick</strong> on ${safeDate}. We wish them a speedy recovery and look forward to their return.`; break;
+    default:                narrative = `<strong>${safeStudent}</strong> has not been marked yet for ${safeDate}. Please contact the school if you have any concerns.`;
+  }
+  return `<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:0;background-color:#f3f4f6;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#f3f4f6;padding:32px 16px;">
+<tr><td align="center">
+<table cellpadding="0" cellspacing="0" border="0" style="max-width:600px;width:100%;background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08);">
+  <tr>
+    <td align="center" style="background:linear-gradient(135deg,#052e16 0%,#14532d 55%,#166534 100%);padding:32px 40px 24px;">
+      <img src="${p.logoUrl}" alt="Dar Al-Ulum Montreal" width="76" style="border-radius:8px;display:block;margin:0 auto 14px;">
+      <p style="margin:0;color:#ffffff;font-size:20px;font-weight:700;">D&#257;r Al-Ul&#363;m Montr&#233;al</p>
+      <p style="margin:6px 0 0;color:#86efac;font-size:11px;font-weight:600;letter-spacing:1.8px;text-transform:uppercase;">Attendance Notification</p>
+    </td>
+  </tr>
+  <tr>
+    <td style="background-color:${st.bg};border-bottom:3px solid ${st.border};padding:22px 40px;">
+      <table cellpadding="0" cellspacing="0" border="0"><tr>
+        <td style="vertical-align:middle;padding-right:16px;">
+          <table cellpadding="0" cellspacing="0" border="0"><tr>
+            <td style="background:${st.color};border-radius:99px;padding:6px 18px;">
+              <p style="margin:0;color:#ffffff;font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;white-space:nowrap;">${st.label}</p>
+            </td>
+          </tr></table>
+        </td>
+        <td style="vertical-align:middle;border-left:2px solid ${st.border};padding-left:16px;">
+          <p style="margin:0;color:#111827;font-size:18px;font-weight:700;">${safeStudent}</p>
+          <p style="margin:4px 0 0;color:#6b7280;font-size:13px;">${safeDate}${timeStr ? " &nbsp;&middot;&nbsp;" + timeStr : ""}</p>
+        </td>
+      </tr></table>
+    </td>
+  </tr>
+  <tr>
+    <td style="padding:32px 40px 24px;">
+      <p style="margin:0 0 12px;color:#111827;font-size:16px;">Assalamu alaikum${safeGuardian ? ` <strong>${safeGuardian}</strong>` : ""},</p>
+      <p style="margin:0 0 28px;color:#4b5563;font-size:15px;line-height:1.65;">${narrative}</p>
+      <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:28px;"><tr><td style="border-top:1px solid #e5e7eb;">&nbsp;</td></tr></table>
+      <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:24px;">
+        <tr><td align="center">
+          <a href="${p.appUrl}" target="_blank" rel="noopener noreferrer"
+             style="display:inline-block;background:#059669;color:#ffffff;text-decoration:none;font-weight:700;font-size:15px;padding:14px 36px;border-radius:8px;">
+            View Parent Portal &rarr;
+          </a>
+        </td></tr>
+        <tr><td align="center" style="padding-top:8px;">
+          <a href="${p.appUrl}" style="color:#059669;font-size:12px;text-decoration:none;">${p.appUrl}</a>
+        </td></tr>
+      </table>
+      <p style="margin:0;color:#9ca3af;font-size:12px;text-align:center;line-height:1.6;">Questions? Contact the school office directly.<br>Please do not reply to this automated email.</p>
+    </td>
+  </tr>
+  <tr>
+    <td style="background:#f9fafb;border-top:1px solid #e5e7eb;padding:18px 40px;text-align:center;">
+      <p style="margin:0 0 2px;color:#374151;font-size:12px;font-weight:600;">D&#257;r Al-Ul&#363;m Montr&#233;al</p>
+      <p style="margin:0;color:#9ca3af;font-size:11px;">Automated message &middot; Attendance System</p>
+    </td>
+  </tr>
+</table>
+<p style="color:#9ca3af;font-size:11px;margin:14px 0 0;text-align:center;">&copy; D&#257;r Al-Ul&#363;m Montr&#233;al</p>
+</td></tr>
+</table>
+</body>
+</html>`;
+}
+
 // Simple async sleep/delay function.
 function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -615,14 +709,20 @@ serve(async (req: Request) => {
         // Send the email.
         try {
           const statusLabel = getStatusLabel(status);
-          const emailBody = `${
-            buildStatusNarrative(student.name, status, effectiveYmd, statusTime)
-          }${buildPortalCtaHtml()}`;
+          const emailHtmlTeacher = buildAttendanceEmailHtml({
+            studentName: student.name,
+            guardianName: (student as any).guardian_name || "",
+            status,
+            dateYmd: effectiveYmd,
+            time: statusTime,
+            logoUrl: Deno.env.get("ORG_LOGO_URL") || DEFAULT_ORG_LOGO_URL,
+            appUrl: APP_URL,
+          });
           await resendClient!.emails.send({
             from: RUNTIME_FROM_EMAIL!,
             to: recipients,
-            subject: `Attendance Status - ${student.name} (${statusLabel})`,
-            html: emailBody,
+            subject: `Attendance – ${student.name} (${statusLabel})`,
+            html: emailHtmlTeacher,
           });
           emailsSent += recipients.length;
         } catch {
@@ -828,38 +928,16 @@ serve(async (req: Request) => {
 
         // --- STEP 6d: COMPOSE AND SEND EMAIL ---
         const statusLabel = getStatusLabel(status);
-        const subject = `Attendance Status: ${student.name} (${statusLabel})`;
-        const statusNarrative = buildStatusNarrative(
-          student.name,
+        const subject = `Attendance – ${student.name} (${statusLabel})`;
+        const html = buildAttendanceEmailHtml({
+          studentName: student.name,
+          guardianName: (student as any).guardian_name || "",
           status,
-          localYmd,
-          statusTime,
-        );
-        const html = `<!doctype html>
-<html><head><meta charset="utf-8"><style>
-body{font-family:Arial,Helvetica,sans-serif;background:#f6f7f9;margin:0;padding:0}
-.card{max-width:640px;margin:24px auto;background:#fff;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,.05);overflow:hidden}
-.header{background:#0f766e;color:#fff;padding:16px 20px}
-.content{padding:20px;color:#111827}
-.muted{color:#6b7280;font-size:12px;margin-top:16px}
-</style></head>
-<body>
-  <div class="card">
-    <div class="header"><h2>Attendance Status</h2></div>
-    <div class="content">
-      <p>Assalamu alaikum ${htmlEscape(student.guardian_name || "")},</p>
-      ${statusNarrative}
-      <p>If your child is late or excused, please coordinate with the office as needed.</p>
-      ${buildPortalCtaHtml()}
-      <div style=\"text-align:center;margin-top:16px;\">
-        <img src=\"${
-          Deno.env.get("ORG_LOGO_URL") || DEFAULT_ORG_LOGO_URL
-        }\" alt=\"Dār Al-Ulūm Montréal\" style=\"max-width:180px;height:auto;\"/>
-      </div>
-      <p class="muted">This email was generated automatically by the madrassah attendance system.</p>
-    </div>
-  </div>
-</body></html>`;
+          dateYmd: localYmd,
+          time: statusTime,
+          logoUrl: Deno.env.get("ORG_LOGO_URL") || DEFAULT_ORG_LOGO_URL,
+          appUrl: APP_URL,
+        });
 
         let successfulForStudent = 0;
         for (const toEmail of Array.from(recipientSet)) {

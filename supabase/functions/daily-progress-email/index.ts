@@ -634,13 +634,13 @@ serve(async (req: Request) => {
 
       // Sabaq/progress table for this class
       let classProgressHtml = `
-        <table border="0" cellpadding="0" cellspacing="0" style="width: 100%; border-collapse: collapse;">
+        <table border="0" cellpadding="0" cellspacing="0" style="width:100%;border-collapse:collapse;border:1px solid #e5e7eb;border-radius:8px;overflow:hidden;">
           <thead>
-            <tr>
-              <th style="padding: 8px; border-bottom: 1px solid #ddd; background-color: #f2f2f2; text-align: left;">Student</th>
-              <th style="padding: 8px; border-bottom: 1px solid #ddd; background-color: #f2f2f2; text-align: left;">Lesson</th>
-              <th style="padding: 8px; border-bottom: 1px solid #ddd; background-color: #f2f2f2; text-align: left;">Pages Memorized</th>
-              <th style="padding: 8px; border-bottom: 1px solid #ddd; background-color: #f2f2f2; text-align: left;">Quality</th>
+            <tr style="background:#f0fdf4;">
+              <th style="padding:10px 14px;border-bottom:1px solid #d1fae5;text-align:left;font-size:12px;font-weight:700;color:#166534;text-transform:uppercase;letter-spacing:0.5px;">Student</th>
+              <th style="padding:10px 14px;border-bottom:1px solid #d1fae5;text-align:left;font-size:12px;font-weight:700;color:#166534;text-transform:uppercase;letter-spacing:0.5px;">Lesson</th>
+              <th style="padding:10px 14px;border-bottom:1px solid #d1fae5;text-align:left;font-size:12px;font-weight:700;color:#166534;text-transform:uppercase;letter-spacing:0.5px;">Pages</th>
+              <th style="padding:10px 14px;border-bottom:1px solid #d1fae5;text-align:left;font-size:12px;font-weight:700;color:#166534;text-transform:uppercase;letter-spacing:0.5px;">Quality</th>
             </tr>
           </thead>
           <tbody>`;
@@ -653,11 +653,11 @@ serve(async (req: Request) => {
         const progresses = entry.progresses || [];
         for (const p of progresses) {
           classProgressHtml += `
-            <tr>
-              <td style="padding: 8px; border-bottom: 1px solid #eee;">${student.name}</td>
-              <td style="padding: 8px; border-bottom: 1px solid #eee;">Surah ${p.current_surah}:${p.start_ayat}-${p.end_ayat}</td>
-              <td style="padding: 8px; border-bottom: 1px solid #eee;">${p.pages_memorized}</td>
-              <td style="padding: 8px; border-bottom: 1px solid #eee;">${p.memorization_quality}</td>
+            <tr style="background:#ffffff;">
+              <td style="padding:10px 14px;border-bottom:1px solid #f3f4f6;font-size:14px;color:#111827;font-weight:500;">${student.name}</td>
+              <td style="padding:10px 14px;border-bottom:1px solid #f3f4f6;font-size:14px;color:#111827;">Surah ${p.current_surah}:${p.start_ayat}&ndash;${p.end_ayat}</td>
+              <td style="padding:10px 14px;border-bottom:1px solid #f3f4f6;font-size:14px;color:#111827;font-weight:600;">${p.pages_memorized}</td>
+              <td style="padding:10px 14px;border-bottom:1px solid #f3f4f6;font-size:14px;color:#059669;font-weight:600;">${p.memorization_quality}</td>
             </tr>`;
           totalPagesByStudent.set(
             sid,
@@ -677,9 +677,7 @@ serve(async (req: Request) => {
         const topStudent = studentsMap.get(topEntry[0]);
         if (topStudent) {
           topStudentHtml =
-            `<div style="margin:8px 0; font-size:14px;"><strong>Top Sabaq:</strong> ${topStudent.name} (${
-              topEntry[1]
-            } pages)</div>`;
+            `<p style="margin:8px 0 12px;font-size:14px;color:#059669;font-weight:600;">&#127942; Top Sabaq: <strong>${topStudent.name}</strong> &mdash; ${topEntry[1]} pages</p>`;
         }
       }
 
@@ -707,84 +705,115 @@ serve(async (req: Request) => {
       let classAssignmentsHtml = "";
       if (assignmentAggregate.size > 0) {
         classAssignmentsHtml = `
-          <table border="0" cellpadding="0" cellspacing="0" style="width: 100%; border-collapse: collapse; margin-top:8px;">
+          <table border="0" cellpadding="0" cellspacing="0" style="width:100%;border-collapse:collapse;border:1px solid #e5e7eb;border-radius:8px;overflow:hidden;margin-top:12px;">
             <thead>
-              <tr>
-                <th style="padding: 8px; border-bottom: 1px solid #ddd; background-color: #f2f2f2; text-align: left;">Assignment</th>
-                <th style="padding: 8px; border-bottom: 1px solid #ddd; background-color: #f2f2f2; text-align: left;">Due</th>
-                <th style="padding: 8px; border-bottom: 1px solid #ddd; background-color: #f2f2f2; text-align: left;">Students</th>
+              <tr style="background:#f0fdf4;">
+                <th style="padding:10px 14px;border-bottom:1px solid #d1fae5;text-align:left;font-size:12px;font-weight:700;color:#166534;text-transform:uppercase;letter-spacing:0.5px;">Assignment</th>
+                <th style="padding:10px 14px;border-bottom:1px solid #d1fae5;text-align:left;font-size:12px;font-weight:700;color:#166534;text-transform:uppercase;letter-spacing:0.5px;">Due</th>
+                <th style="padding:10px 14px;border-bottom:1px solid #d1fae5;text-align:left;font-size:12px;font-weight:700;color:#166534;text-transform:uppercase;letter-spacing:0.5px;">Students</th>
               </tr>
             </thead>
             <tbody>`;
         for (const { title, due, count } of assignmentAggregate.values()) {
           classAssignmentsHtml += `
-            <tr>
-              <td style="padding: 8px; border-bottom: 1px solid #eee;">${title}</td>
-              <td style="padding: 8px; border-bottom: 1px solid #eee;">${
-            due || "—"
-          }</td>
-              <td style="padding: 8px; border-bottom: 1px solid #eee;">${count}</td>
+            <tr style="background:#ffffff;">
+              <td style="padding:10px 14px;border-bottom:1px solid #f3f4f6;font-size:14px;color:#111827;">${title}</td>
+              <td style="padding:10px 14px;border-bottom:1px solid #f3f4f6;font-size:14px;color:#6b7280;">${due || "&mdash;"}</td>
+              <td style="padding:10px 14px;border-bottom:1px solid #f3f4f6;font-size:14px;color:#111827;font-weight:600;">${count}</td>
             </tr>`;
         }
         classAssignmentsHtml += `</tbody></table>`;
       }
 
       classSectionsHtml += `
-        <div style="margin:20px 0;">
-          <h3 style="margin:0 0 8px 0;">Class: ${cls.name}</h3>
+        <div style="margin:0 0 32px;">
+          <p style="margin:0 0 4px;color:#052e16;font-size:15px;font-weight:700;border-bottom:2px solid #d1fae5;padding-bottom:8px;">${cls.name}</p>
           ${topStudentHtml}
-          <h4 style="margin:12px 0 6px 0;">Sabaq Today</h4>
+          <p style="margin:0 0 8px;color:#374151;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;">Sabaq Today</p>
           ${classProgressHtml}
-          ${
-        assignmentAggregate.size > 0
-          ? `<h4 style=\"margin:16px 0 6px 0;\">Assignments (Last 24h)</h4>${classAssignmentsHtml}`
-          : ""
-      }
+          ${assignmentAggregate.size > 0 ? `<p style="margin:16px 0 8px;color:#374151;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;">Assignments (Last 24h)</p>${classAssignmentsHtml}` : ""}
         </div>`;
     }
 
-    const principalEmailHtml = `
-      <!DOCTYPE html>
-      <html>
-      <head>
-          <style>
-              body { font-family: Arial, sans-serif; margin: 0; padding: 0; background-color: #f4f4f4; }
-              .container { width: 100%; max-width: 800px; margin: 20px auto; background-color: #ffffff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-              .header { background-color: #004d40; color: #ffffff; padding: 10px 20px; text-align: center; border-top-left-radius: 8px; border-top-right-radius: 8px; }
-              .content { padding: 20px; }
-              .footer { text-align: center; margin-top: 20px; font-size: 12px; color: #888888; }
-              table { width: 100%; border-collapse: collapse; }
-              th { background-color: #f2f2f2; text-align: left; padding: 8px; }
-              .trigger-info { background-color: #f8f9fa; padding: 8px; border-radius: 4px; margin-bottom: 16px; font-size: 12px; }
-          </style>
-      </head>
-      <body>
-          <div class="container">
-              <div class="header">
-                  <h1>Daily Student Progress Summary</h1>
-              </div>
-              <div class="content">
-                  <p>Assalamu Alaikum Principal,</p>
-                  <p>Here is the class-organized progress report for ${reportDate}:</p>
-                  ${
-      classSectionsHtml || "<p>No activity detected for today.</p>"
-    }
-                  <div class="trigger-info">
-                      Report generated ${
-      triggerSource === "scheduled" ? "automatically" : "manually"
-    } at ${new Date(timestamp).toLocaleString()}
-                  </div>
-                  <p>JazakAllah Khairan,</p>
-                  <p><strong>Dār Al-Ulūm Montréal</strong></p>
-                  ${logoImgHtml}
-              </div>
-              <div class="footer">
-                  <p>This is an automated email.</p>
-              </div>
-          </div>
-      </body>
-      </html>
-    `;
+    const principalEmailHtml = `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Daily Progress Summary – ${reportDate}</title>
+</head>
+<body style="margin:0;padding:0;background:#f0fdf4;font-family:Arial,Helvetica,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#f0fdf4;">
+<tr><td align="center" style="padding:32px 16px;">
+<table width="640" cellpadding="0" cellspacing="0" style="max-width:640px;width:100%;background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(5,46,22,0.10);">
+
+  <!-- Header gradient -->
+  <tr>
+    <td style="background:linear-gradient(135deg,#052e16 0%,#166534 60%,#16a34a 100%);padding:36px 40px 28px;text-align:center;">
+      ${logoImgHtml ? `<div style="margin-bottom:16px;">${logoImgHtml}</div>` : ""}
+      <div style="display:inline-block;background:rgba(255,255,255,0.15);border-radius:8px;padding:6px 16px;margin-bottom:12px;">
+        <span style="color:#bbf7d0;font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;">Principal Report</span>
+      </div>
+      <h1 style="margin:0;color:#ffffff;font-size:24px;font-weight:800;letter-spacing:-0.3px;">Daily Progress Summary</h1>
+      <p style="margin:8px 0 0;color:#bbf7d0;font-size:14px;">${reportDate}</p>
+    </td>
+  </tr>
+
+  <!-- Greeting -->
+  <tr>
+    <td style="padding:32px 40px 0;">
+      <p style="margin:0 0 6px;color:#052e16;font-size:17px;font-weight:700;">Assalamu Alaikum,</p>
+      <p style="margin:0;color:#374151;font-size:14px;line-height:1.6;">Here is today's class-organized progress report. All student activity recorded for <strong>${reportDate}</strong> is summarised below.</p>
+    </td>
+  </tr>
+
+  <!-- Divider -->
+  <tr><td style="padding:20px 40px 0;"><div style="height:1px;background:#d1fae5;"></div></td></tr>
+
+  <!-- Class sections -->
+  <tr>
+    <td style="padding:24px 40px;">
+      ${classSectionsHtml || `<p style="color:#6b7280;font-size:14px;text-align:center;padding:32px 0;">No activity detected for today.</p>`}
+    </td>
+  </tr>
+
+  <!-- Divider -->
+  <tr><td style="padding:0 40px;"><div style="height:1px;background:#d1fae5;"></div></td></tr>
+
+  <!-- Report meta -->
+  <tr>
+    <td style="padding:16px 40px;">
+      <table width="100%" cellpadding="0" cellspacing="0">
+        <tr>
+          <td style="background:#f0fdf4;border-radius:8px;padding:12px 16px;">
+            <p style="margin:0;color:#166534;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;">Report Info</p>
+            <p style="margin:4px 0 0;color:#374151;font-size:13px;">Generated <strong>${triggerSource === "scheduled" ? "automatically (scheduled)" : "manually"}</strong> at ${new Date(timestamp).toLocaleString("en-CA", { timeZone: REPORT_TIME_ZONE })}</p>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+
+  <!-- CTA -->
+  <tr>
+    <td style="padding:8px 40px 32px;text-align:center;">
+      <a href="${APP_URL}" style="display:inline-block;background:linear-gradient(135deg,#16a34a,#166534);color:#ffffff;text-decoration:none;font-size:14px;font-weight:700;padding:14px 32px;border-radius:10px;letter-spacing:0.2px;">Open Dashboard</a>
+    </td>
+  </tr>
+
+  <!-- Footer -->
+  <tr>
+    <td style="background:#f9fafb;padding:20px 40px;text-align:center;border-top:1px solid #e5e7eb;">
+      <p style="margin:0 0 4px;color:#111827;font-size:13px;font-weight:700;">Dār Al-Ulūm Montréal</p>
+      <p style="margin:0;color:#9ca3af;font-size:12px;">JazakAllah Khairan &mdash; This is an automated report. Please do not reply to this email.</p>
+    </td>
+  </tr>
+
+</table>
+</td></tr>
+</table>
+</body>
+</html>`;
 
     // (Admin summary email will be sent after guardian emails if time remains)
     // END dynamic admin emails (moved send to end)
@@ -876,15 +905,13 @@ serve(async (req: Request) => {
 
       const parentEmails = Array.from(parentEmailsSet);
 
-      const progressSummary = progresses.map((p) =>
-        `<tr>
-                <td style="padding: 8px; border-bottom: 1px solid #ddd;">Surah ${p.current_surah}:${p.start_ayat}-${p.end_ayat}</td>
-                <td style="padding: 8px; border-bottom: 1px solid #ddd;">${p.pages_memorized}</td>
-                <td style="padding: 8px; border-bottom: 1px solid #ddd;">${p.memorization_quality}</td>
-                <td style="padding: 8px; border-bottom: 1px solid #ddd;">${
-          p.teacher_notes || p.notes || "N/A"
-        }</td>
-            </tr>`
+      const progressSummary = progresses.map((p, idx) =>
+        `<tr style="background:${idx % 2 === 0 ? "#ffffff" : "#f9fafb"};">
+          <td style="padding:10px 14px;border-bottom:1px solid #f3f4f6;font-size:14px;color:#111827;">Surah ${p.current_surah}:${p.start_ayat}&ndash;${p.end_ayat}</td>
+          <td style="padding:10px 14px;border-bottom:1px solid #f3f4f6;font-size:14px;color:#111827;font-weight:600;">${p.pages_memorized}</td>
+          <td style="padding:10px 14px;border-bottom:1px solid #f3f4f6;font-size:14px;color:#059669;font-weight:600;">${p.memorization_quality}</td>
+          <td style="padding:10px 14px;border-bottom:1px solid #f3f4f6;font-size:14px;color:#6b7280;">${p.teacher_notes || p.notes || "&mdash;"}</td>
+        </tr>`
       ).join("");
 
       // Build academic updates section for this student
@@ -986,19 +1013,20 @@ serve(async (req: Request) => {
 
           // Limit to recent 5 items for brevity
           const limited = rows.slice(0, 5);
-          academicRows = limited.map((r: EmailRow) => {
-            const dueText = r.due_date ? r.due_date : "—";
-            const gradeText = r.grade || "—";
-            const feedbackText = r.feedback || "—";
+          academicRows = limited.map((r: EmailRow, idx: number) => {
+            const dueText = r.due_date ? r.due_date : "&mdash;";
+            const gradeText = r.grade || "&mdash;";
+            const feedbackText = r.feedback || "&mdash;";
+            const statusColor = r.status === "graded" ? "#059669" : r.status === "submitted" ? "#2563eb" : "#6b7280";
             return `
-                <tr>
-                  <td style="padding:6px 8px;border-bottom:1px solid #eee;word-break:break-word;">${r.title}</td>
-                  <td style="padding:6px 8px;border-bottom:1px solid #eee;text-transform:capitalize;">${r.status}</td>
-                  <td style="padding:6px 8px;border-bottom:1px solid #eee;">${dueText}</td>
-                  <td style="padding:6px 8px;border-bottom:1px solid #eee;">${gradeText}</td>
-                  <td style="padding:6px 8px;border-bottom:1px solid #eee;word-break:break-word;">${feedbackText}</td>
-                </tr>
-              `;
+              <tr style="background:${idx % 2 === 0 ? "#ffffff" : "#f9fafb"};">
+                <td style="padding:10px 14px;border-bottom:1px solid #f3f4f6;font-size:14px;color:#111827;word-break:break-word;">${r.title}</td>
+                <td style="padding:10px 14px;border-bottom:1px solid #f3f4f6;font-size:14px;color:${statusColor};font-weight:600;text-transform:capitalize;">${r.status}</td>
+                <td style="padding:10px 14px;border-bottom:1px solid #f3f4f6;font-size:14px;color:#6b7280;">${dueText}</td>
+                <td style="padding:10px 14px;border-bottom:1px solid #f3f4f6;font-size:14px;color:#111827;font-weight:600;">${gradeText}</td>
+                <td style="padding:10px 14px;border-bottom:1px solid #f3f4f6;font-size:14px;color:#6b7280;word-break:break-word;">${feedbackText}</td>
+              </tr>
+            `;
           }).join("");
         }
       } catch (_e) {
@@ -1006,85 +1034,92 @@ serve(async (req: Request) => {
       }
 
       const academicSection = `
-          <h2 style="margin:24px 0 8px 0; font-size:18px;">Academic Updates</h2>
-          <p style="margin:0 0 10px 0; color:#374151; font-size:14px;">Recent assignment activity for ${student.name}${
-        academicRows ? "" : " (no recent updates)"
-      }.</p>
-          <table border="0" cellpadding="0" cellspacing="0" style="width:100%; border-collapse:collapse;">
-            <thead>
-              <tr>
-                <th style="text-align:left; padding:8px; background:#f3f4f6; font-size:13px;">Assignment</th>
-                <th style="text-align:left; padding:8px; background:#f3f4f6; font-size:13px;">Status</th>
-                <th style="text-align:left; padding:8px; background:#f3f4f6; font-size:13px;">Due</th>
-                <th style="text-align:left; padding:8px; background:#f3f4f6; font-size:13px;">Grade</th>
-                <th style="text-align:left; padding:8px; background:#f3f4f6; font-size:13px;">Feedback</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${
-        academicRows ||
-        '<tr><td colspan="5" style="padding:8px; color:#6b7280;">No recent academic activity.</td></tr>'
-      }
-            </tbody>
-          </table>
-        `;
+        <p style="margin:28px 0 10px;color:#052e16;font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;border-bottom:2px solid #d1fae5;padding-bottom:8px;">Academic Updates</p>
+        <p style="margin:0 0 12px;color:#4b5563;font-size:14px;">Recent assignment activity for ${student.name}${academicRows ? "" : " &mdash; no recent updates"}.</p>
+        <table border="0" cellpadding="0" cellspacing="0" style="width:100%;border-collapse:collapse;border:1px solid #e5e7eb;border-radius:8px;overflow:hidden;">
+          <thead>
+            <tr style="background:#f0fdf4;">
+              <th style="text-align:left;padding:10px 14px;font-size:12px;font-weight:700;color:#166534;text-transform:uppercase;letter-spacing:0.5px;border-bottom:1px solid #d1fae5;">Assignment</th>
+              <th style="text-align:left;padding:10px 14px;font-size:12px;font-weight:700;color:#166534;text-transform:uppercase;letter-spacing:0.5px;border-bottom:1px solid #d1fae5;">Status</th>
+              <th style="text-align:left;padding:10px 14px;font-size:12px;font-weight:700;color:#166534;text-transform:uppercase;letter-spacing:0.5px;border-bottom:1px solid #d1fae5;">Due</th>
+              <th style="text-align:left;padding:10px 14px;font-size:12px;font-weight:700;color:#166534;text-transform:uppercase;letter-spacing:0.5px;border-bottom:1px solid #d1fae5;">Grade</th>
+              <th style="text-align:left;padding:10px 14px;font-size:12px;font-weight:700;color:#166534;text-transform:uppercase;letter-spacing:0.5px;border-bottom:1px solid #d1fae5;">Feedback</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${academicRows || '<tr><td colspan="5" style="padding:12px 14px;color:#9ca3af;font-size:14px;">No recent academic activity.</td></tr>'}
+          </tbody>
+        </table>
+      `;
 
-      const emailHtml = `
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <style>
-                body { font-family: Arial, sans-serif; margin: 0; padding: 0; background-color: #f4f4f4; }
-                .container { width: 100%; max-width: 600px; margin: 20px auto; background-color: #ffffff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-                .header { background-color: #004d40; color: #ffffff; padding: 10px 20px; text-align: center; border-top-left-radius: 8px; border-top-right-radius: 8px; }
-                .content { padding: 20px; }
-                .footer { text-align: center; margin-top: 20px; font-size: 12px; color: #888888; }
-                table { width: 100%; border-collapse: collapse; }
-                th { background-color: #f2f2f2; text-align: left; padding: 8px; }
-                .trigger-info { background-color: #f8f9fa; padding: 8px; border-radius: 4px; margin-bottom: 16px; font-size: 12px; }
-            </style>
-        </head>
-        <body>
-            <div class="container">
-                <div class="header">
-                    <h1>Quran Progress for ${student.name}</h1>
-                </div>
-                <div class="content">
-                    <p>Assalamu Alaikum ${
-        student.guardian_name || "Guardian"
-      },</p>
-                    <p>Here is the progress report for <strong>${student.name}</strong> for ${reportDate}:</p>
-                    <table border="0" cellpadding="0" cellspacing="0">
-                        <thead>
-                            <tr>
-                                <th>Lesson</th>
-                                <th>Pages Memorized</th>
-                                <th>Quality</th>
-                                <th>Notes</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${progressSummary}
-                        </tbody>
-                    </table>
-                    ${academicSection}
-                    ${buildPortalCtaHtml()}
-                    <div class="trigger-info">
-                        Report generated ${
-        triggerSource === "scheduled" ? "automatically" : "manually"
-      } at ${fmtDate(timestamp)}
-                    </div>
-                    <p>JazakAllah Khairan</p>
-                    <p><strong>Dār Al-Ulūm Montréal</strong></p>
-                    ${logoImgHtml}
-                </div>
-                <div class="footer">
-                    <p>This is an automated email. Please do not reply.</p>
-                </div>
-            </div>
-        </body>
-        </html>
-        `;
+      const emailHtml = `<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:0;background-color:#f3f4f6;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#f3f4f6;padding:32px 16px;">
+<tr><td align="center">
+<table cellpadding="0" cellspacing="0" border="0" style="max-width:620px;width:100%;background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08);">
+  <tr>
+    <td align="center" style="background:linear-gradient(135deg,#052e16 0%,#14532d 55%,#166534 100%);padding:32px 40px 24px;">
+      <img src="${DEFAULT_ORG_LOGO_URL}" alt="Dar Al-Ulum Montreal" width="76" style="border-radius:8px;display:block;margin:0 auto 14px;">
+      <p style="margin:0;color:#ffffff;font-size:20px;font-weight:700;">D&#257;r Al-Ul&#363;m Montr&#233;al</p>
+      <p style="margin:6px 0 0;color:#86efac;font-size:11px;font-weight:600;letter-spacing:1.8px;text-transform:uppercase;">Daily Progress Report</p>
+    </td>
+  </tr>
+  <tr>
+    <td style="background:#f0fdf4;border-bottom:2px solid #bbf7d0;padding:20px 40px;">
+      <p style="margin:0 0 2px;color:#166534;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;">Student</p>
+      <p style="margin:0;color:#111827;font-size:20px;font-weight:700;">${student.name}</p>
+      <p style="margin:4px 0 0;color:#6b7280;font-size:13px;">${reportDate}</p>
+    </td>
+  </tr>
+  <tr>
+    <td style="padding:32px 40px 24px;">
+      <p style="margin:0 0 16px;color:#111827;font-size:16px;">Assalamu alaikum <strong>${student.guardian_name || "Guardian"}</strong>,</p>
+      <p style="margin:0 0 24px;color:#4b5563;font-size:15px;line-height:1.6;">Here is today&rsquo;s Quran memorization progress report for <strong>${student.name}</strong>.</p>
+      <p style="margin:0 0 10px;color:#052e16;font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;border-bottom:2px solid #d1fae5;padding-bottom:8px;">Sabaq Today</p>
+      <table border="0" cellpadding="0" cellspacing="0" style="width:100%;border-collapse:collapse;border:1px solid #e5e7eb;border-radius:8px;overflow:hidden;margin-bottom:28px;">
+        <thead>
+          <tr style="background:#f0fdf4;">
+            <th style="text-align:left;padding:10px 14px;font-size:12px;font-weight:700;color:#166534;text-transform:uppercase;letter-spacing:0.5px;border-bottom:1px solid #d1fae5;">Lesson</th>
+            <th style="text-align:left;padding:10px 14px;font-size:12px;font-weight:700;color:#166534;text-transform:uppercase;letter-spacing:0.5px;border-bottom:1px solid #d1fae5;">Pages</th>
+            <th style="text-align:left;padding:10px 14px;font-size:12px;font-weight:700;color:#166534;text-transform:uppercase;letter-spacing:0.5px;border-bottom:1px solid #d1fae5;">Quality</th>
+            <th style="text-align:left;padding:10px 14px;font-size:12px;font-weight:700;color:#166534;text-transform:uppercase;letter-spacing:0.5px;border-bottom:1px solid #d1fae5;">Notes</th>
+          </tr>
+        </thead>
+        <tbody>${progressSummary}</tbody>
+      </table>
+      ${academicSection}
+      <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:28px 0;"><tr><td style="border-top:1px solid #e5e7eb;">&nbsp;</td></tr></table>
+      <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:20px;">
+        <tr><td align="center">
+          <a href="${APP_URL}" target="_blank" rel="noopener noreferrer"
+             style="display:inline-block;background:#059669;color:#ffffff;text-decoration:none;font-weight:700;font-size:15px;padding:14px 36px;border-radius:8px;">
+            View Parent Portal &rarr;
+          </a>
+        </td></tr>
+        <tr><td align="center" style="padding-top:8px;">
+          <a href="${APP_URL}" style="color:#059669;font-size:12px;text-decoration:none;">${APP_URL}</a>
+        </td></tr>
+      </table>
+      <p style="margin:0;color:#9ca3af;font-size:12px;text-align:center;line-height:1.5;">
+        JazakAllah Khairan for your continued support.<br>
+        Generated ${triggerSource === "scheduled" ? "automatically" : "manually"} on ${fmtDate(timestamp)}.
+      </p>
+    </td>
+  </tr>
+  <tr>
+    <td style="background:#f9fafb;border-top:1px solid #e5e7eb;padding:18px 40px;text-align:center;">
+      <p style="margin:0 0 2px;color:#374151;font-size:12px;font-weight:600;">D&#257;r Al-Ul&#363;m Montr&#233;al</p>
+      <p style="margin:0;color:#9ca3af;font-size:11px;">Automated message &middot; Please do not reply</p>
+    </td>
+  </tr>
+</table>
+<p style="color:#9ca3af;font-size:11px;margin:14px 0 0;text-align:center;">&copy; D&#257;r Al-Ul&#363;m Montr&#233;al</p>
+</td></tr>
+</table>
+</body>
+</html>`;
 
       if (!RESEND_FROM_EMAIL) {
         console.error("RESEND_FROM_EMAIL environment variable is not set.");

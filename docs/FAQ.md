@@ -14,6 +14,22 @@
 
 ---
 
+### How do I restrict a teacher or admin to one campus?
+
+Set the `section` field on their profile. In the Supabase SQL editor:
+
+```sql
+-- Saint-Laurent (women's campus)
+UPDATE public.profiles SET section = 'women' WHERE id = '<user-uuid>';
+
+-- Henri-Bourassa (men's campus)
+UPDATE public.profiles SET section = 'Henri-Bourassa' WHERE id = '<user-uuid>';
+```
+
+Once set, that user will only see students from their section in all views. The attendance section dropdown will also lock automatically.
+
+---
+
 ### How do I create a parent account?
 
 1. Go to **Admin → Parent Accounts**.
@@ -34,6 +50,21 @@ When a class is created and a teacher is assigned, all students in that section 
 ### How do I reset a teacher's password?
 
 Go to **Teacher Accounts**, find the teacher, and use the password reset option. Alternatively, the teacher can use **Forgot password?** on the login page.
+
+---
+
+### How do I change someone's role (e.g., admin → teacher)?
+
+Via Supabase SQL:
+
+```sql
+UPDATE public.profiles SET role = 'teacher' WHERE id = '<user-uuid>';
+UPDATE auth.users
+  SET raw_user_meta_data = raw_user_meta_data || '{"role": "teacher"}'::jsonb
+  WHERE id = '<user-uuid>';
+```
+
+Always update both tables to keep them consistent.
 
 ---
 
@@ -147,6 +178,18 @@ No students have been assigned to your account. Ask the admin to:
 
 ---
 
+### I can only see students from one campus. Is that normal?
+
+Yes — if your profile has a `section` set (e.g. `'women'` or `'Henri-Bourassa'`), you are scoped to that campus. This is intentional. Contact an admin if it seems incorrect.
+
+---
+
+### The section dropdown is missing from the attendance form. Why?
+
+Your profile has a `section` set, so the system automatically locks your view to that section. The dropdown is hidden because it's not needed. This is expected behaviour for campus-scoped staff.
+
+---
+
 ### How do I receive messages from the admin?
 
 Messages appear in **Messages → Inbox** in real-time. You'll also see a toast notification when a new message arrives.
@@ -162,6 +205,12 @@ Your account must be linked to your child's student record by a teacher or admin
 ### Can I see my child's sick absences?
 
 Yes — the attendance history shows all statuses including Sick, with colour-coded badges.
+
+### What are the daily emails I receive?
+
+Two types:
+1. **Attendance notification** — sent when your child is marked for the day (present, absent, late, etc.). Includes a color-coded status banner and a short message.
+2. **Daily progress report** — sent each evening with your child's Quran lesson details (Sabaq) and any assignment updates.
 
 ---
 
@@ -188,3 +237,4 @@ See [EMAIL_SCHEDULING_SETUP.md](EMAIL_SCHEDULING_SETUP.md). Key things to check:
 - `pg_cron` extension is enabled in Supabase
 - `RESEND_API_KEY` is set in Supabase project secrets
 - Guardian email addresses are on file for students
+- `attendance_settings.enabled = true` for the madrassah

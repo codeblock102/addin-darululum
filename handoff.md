@@ -4,6 +4,62 @@ This file is **non-negotiable**. Every meaningful change must be logged here.
 
 ---
 
+## 2026-05-06 (s4) — Ibrahim Toure demoted to teacher
+
+**What:**
+- Ibrahim Toure (`id: 6f605396-a882-4ddc-bdf7-3df137a66501`) changed from `admin` → `teacher`
+- He already had `section = 'Henri-Bourassa'` so he is now scoped to men/Henri-Bourassa students only
+- `auth.users.raw_user_meta_data` role updated to match
+
+**SQL applied (live):**
+```sql
+UPDATE public.profiles SET role = 'teacher' WHERE id = '6f605396-a882-4ddc-bdf7-3df137a66501';
+UPDATE auth.users SET raw_user_meta_data = raw_user_meta_data || '{"role": "teacher"}'::jsonb WHERE id = '6f605396-a882-4ddc-bdf7-3df137a66501';
+```
+
+---
+
+## 2026-05-06 (s3) — Email redesign + Sr. Salma demoted to teacher
+
+**What:**
+- Redesigned both attendance and daily-progress email edge functions to look clean/professional
+- Both emails now use gradient green headers, status-colored banners, card layout, and DUM logo
+- `attendance-absence-email`: new `buildAttendanceEmailHtml()` with per-status color coding (present=green, absent=red, late=amber, excused=purple, early_departure=orange, sick=cyan)
+- `daily-progress-email`: redesigned guardian email (gradient header, student name card, styled tables), principal/admin summary email (gradient header, class sections, report meta, CTA button)
+- Both functions deployed live (attendance v45, daily-progress v55)
+- **Sr. Salma demoted**: `role = 'teacher'`, `section = 'women'` — she is a teacher for the girls side, not an admin; section filter still restricts her to women students
+
+**DB change (applied to live):**
+```sql
+UPDATE public.profiles SET role = 'teacher' WHERE id = '61d50d06-442b-4269-923f-818d7ae861f7';
+UPDATE auth.users SET raw_user_meta_data = raw_user_meta_data || '{"role": "teacher"}'::jsonb WHERE id = '61d50d06-442b-4269-923f-818d7ae861f7';
+```
+
+**Files changed:**
+- `supabase/functions/attendance-absence-email/index.ts` — new `buildAttendanceEmailHtml()` function, STATUS_STYLES_MAP
+- `supabase/functions/daily-progress-email/index.ts` — redesigned guardian email + principalEmailHtml
+
+---
+
+## 2026-05-06 (s2) — Section-scoped admin: Sr. Salma limited to women/Saint-Laurent students
+
+**What:**
+- Added section-scoped admin support: if an admin's `profiles.section` is set, they only see students from that section across the entire app.
+- Set `profiles.section = 'women'` for Sr. Salma — she now sees only `section = 'women'` students (Saint-Laurent side, KG through secondary, ~83 students) and cannot see the men/Henri-Bourassa side.
+- Other admins with `section = null` (Mufti Zain, Ibrahim Toure) are unaffected — they still see all students.
+
+**Files changed:**
+- `src/hooks/useStudentsQuery.ts` — fetch `section` from profile, add `.eq("section", userData.section)` to admin branch when set
+- `src/pages/Students.tsx` — same fix in inline admin query
+- `src/components/attendance/AttendanceForm.tsx` — fetch `section` from profile in `loadAdminSections`; if set, lock `sectionFilter` to that section and skip the section dropdown entirely
+
+**DB change (applied to live):**
+```sql
+UPDATE public.profiles SET section = 'women' WHERE id = '61d50d06-442b-4269-923f-818d7ae861f7';
+```
+
+---
+
 ## 2026-05-06 — Sr. Salma promoted to admin (Saint-Laurent)
 
 **What:**

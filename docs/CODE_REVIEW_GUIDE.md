@@ -1,6 +1,37 @@
-# Code Review Guide — addin-darululum
+# Code Review Guide — Dār Al-Ulūm Montréal
 
 A running record of significant changes and what reviewers should verify. Ordered newest-first.
+
+---
+
+## 2026-05-06 — Email Redesign + Section-Scoped Staff
+
+**Branch:** `claude/staff-contact-database-CVUOP-s2`  
+**PR:** #85
+
+### What to check
+
+| Change | File(s) | What to verify |
+|---|---|---|
+| Section-scoped admin/teacher | `src/hooks/useStudentsQuery.ts`, `src/pages/Students.tsx`, `src/components/attendance/AttendanceForm.tsx` | Admin/teacher with `profiles.section` set only sees matching students; attendance section dropdown hidden and locked for scoped users |
+| Attendance email redesign | `supabase/functions/attendance-absence-email/index.ts` (v45) | Per-status color banner renders correctly; `buildAttendanceEmailHtml()` outputs valid HTML; gradient header shows logo |
+| Daily progress email redesign | `supabase/functions/daily-progress-email/index.ts` (v55) | Guardian email: gradient header, student name band, Sabaq table, academic table, CTA; Principal email: class sections, top student, report meta, CTA |
+| Sr. Salma role | `profiles` DB row | `role = 'teacher'`, `section = 'women'`, `madrassah_id` set |
+| Ibrahim Toure role | `profiles` DB row | `role = 'teacher'`, `section = 'Henri-Bourassa'`, `madrassah_id` set |
+
+### DB changes applied to live
+
+```sql
+-- Sr. Salma: admin → teacher
+UPDATE public.profiles SET role = 'teacher' WHERE id = '61d50d06-442b-4269-923f-818d7ae861f7';
+
+-- Ibrahim Toure: admin → teacher
+UPDATE public.profiles SET role = 'teacher' WHERE id = '6f605396-a882-4ddc-bdf7-3df137a66501';
+
+-- Section scoping (earlier in same session)
+UPDATE public.profiles SET section = 'women' WHERE id = '61d50d06-442b-4269-923f-818d7ae861f7';
+-- Ibrahim Toure already had section = 'Henri-Bourassa'
+```
 
 ---
 
@@ -94,3 +125,5 @@ Check in browser:
 - [ ] New features visible and functional for their target role
 - [ ] No blank screens or unhandled error states
 - [ ] Mobile layout works (use DevTools device mode)
+- [ ] Section-scoped users see only their campus's students
+- [ ] Attendance section dropdown hidden for scoped users

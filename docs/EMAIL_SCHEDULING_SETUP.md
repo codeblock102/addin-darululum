@@ -1,187 +1,191 @@
 # Email Scheduling Setup Guide
 
-This guide explains how to set up automatic daily email reports that send at 4:30 PM.
+This guide explains how to set up the two automated email systems: the **daily progress digest** and the **attendance notification** emails.
+
+---
 
 ## Overview
 
-The system will automatically send progress report emails to guardians daily at 4:30 PM. The emails include:
-- Student progress data from the last 24 hours
-- Memorization details, quality ratings, and teacher notes
-- Professional HTML formatting
+### Daily Progress Email (`daily-progress-email`)
+Sends each evening (4:30 PM EST via `pg_cron`) with:
+- **Guardian email** — per-student Quran progress (Sabaq), assignment updates, CTA button. Gradient green header with DUM logo; student name band; styled tables.
+- **Principal/admin summary** — class-organized breakdown of all student Sabaq, top student per class, assignment aggregate. Same gradient design.
+
+### Attendance Absence Email (`attendance-absence-email`)
+Sends when a teacher submits attendance OR on a scheduled cutoff sweep:
+- Color-coded status banner: present (green), absent (red), late (amber), excused (purple), early departure (orange), sick (cyan)
+- Short narrative describing the status
+- CTA button linking to Parent Portal
+- De-duplication: one notification per student per day, tracked in `attendance_absence_notifications`
+
+---
 
 ## Setup Steps
 
 ### 1. Run Database Migrations
 
-First, apply the new database migrations to set up the scheduling system:
-
 ```bash
-# Navigate to your project directory
 cd /path/to/your/project
-
-# Run Supabase migrations
 npx supabase db push
-
-# Or if using Supabase CLI directly
-supabase db push
 ```
 
-This will create:
-- `email_logs` table to track email sending events
-- `app_settings` table for configuration
-- `pg_cron` scheduled job for 4:30 PM daily emails
-- Helper functions for manual testing
+This creates:
+- `email_logs` — tracks all send events (trigger source, status, counts)
+- `app_settings` — schedule configuration (enabled, time, timezone)
+- `attendance_settings` — per-madrassah cutoff time and last-sent date
+- `attendance_absence_notifications` — de-duplication log
+- `pg_cron` job for 4:30 PM daily digest
 
-### 2. Configure Environment Variables
+### 2. Configure Supabase Secrets
 
-Ensure these environment variables are set in your Supabase project:
+Set these in your Supabase project → Settings → Edge Functions:
 
-```bash
-RESEND_API_KEY=your_resend_api_key_here
+```
+RESEND_API_KEY=your_resend_api_key
 RESEND_FROM_EMAIL=noreply@yourdomain.com
 SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
+APP_URL=https://app.daralulummontreal.com/
+REPORT_TIMEZONE=America/Toronto
 ```
 
-### 3. Update Timezone (Optional)
-
-The default schedule is set for EST timezone (4:30 PM EST = 21:30 UTC). 
-
-To change the timezone, update the cron expression in the migration file:
-- For PST: `30 0 * * *` (4:30 PM PST = 00:30 UTC next day)
-- For CST: `30 22 * * *` (4:30 PM CST = 22:30 UTC)
-- For MST: `30 23 * * *` (4:30 PM MST = 23:30 UTC)
-
-### 4. Enable pg_cron Extension
-
-Make sure pg_cron is enabled in your Supabase project:
-
-1. Go to Supabase Dashboard → SQL Editor
-2. Run: `CREATE EXTENSION IF NOT EXISTS pg_cron;`
-3. Verify with: `SELECT * FROM pg_extension WHERE extname = 'pg_cron';`
-
-## Testing the System
-
-### Method 1: Admin Panel Testing
-
-1. Log in as an admin user
-2. Go to Settings → Email Schedule tab
-3. Click "Run Test Email" button
-4. Check the email activity log for results
-
-### Method 2: Database Function Testing
+### 3. Enable pg_cron Extension
 
 ```sql
--- Test the email system manually
+CREATE EXTENSION IF NOT EXISTS pg_cron;
+SELECT * FROM pg_extension WHERE extname = 'pg_cron';
+```
+
+### 4. Timezone Configuration
+
+The default schedule is 4:30 PM EST (21:30 UTC). To adjust:
+
+| Timezone | UTC equivalent | Cron expression |
+|---|---|---|
+| EST (default) | 21:30 UTC | `30 21 * * *` |
+| CST | 22:30 UTC | `30 22 * * *` |
+| MST | 23:30 UTC | `30 23 * * *` |
+| PST | 00:30 UTC+1 | `30 0 * * *` |
+
+Update the cron expression in the migration file accordingly.
+
+---
+
+## Testing
+
+### Method 1: Admin Panel
+1. Log in as admin → Settings → Email Schedule
+2. Click **Run Test Email**
+3. Check the email activity log for results
+
+### Method 2: SQL
+```sql
+-- Trigger a test run
 SELECT trigger_daily_email_test();
 
--- Check recent email activity
-SELECT * FROM recent_email_activity ORDER BY triggered_at DESC LIMIT 10;
+-- Check recent activity
+SELECT * FROM email_logs ORDER BY triggered_at DESC LIMIT 10;
 
--- View scheduled jobs status
-SELECT * FROM scheduled_jobs_status;
+-- Check scheduled jobs
+SELECT jobname, schedule, active FROM cron.job WHERE jobname = 'daily-progress-email-job';
 ```
 
-### Method 3: Direct Function Call
+### Method 3: Direct cURL
 
 ```bash
-# Call the edge function directly
-curl -X POST 'https://your-project.supabase.co/functions/v1/daily-progress-email' \
+# Daily progress email (manual trigger)
+curl -X POST 'https://depsfpodwaprzxffdcks.supabase.co/functions/v1/daily-progress-email' \
   -H 'Authorization: Bearer YOUR_SERVICE_ROLE_KEY' \
   -H 'Content-Type: application/json' \
-  -d '{"source": "manual_test", "timestamp": "'$(date -u +%Y-%m-%dT%H:%M:%S.%3NZ)'"}'
+  -d '{"source": "manual", "timestamp": "'$(date -u +%Y-%m-%dT%H:%M:%S.%3NZ)'"}'
+
+# Attendance email (teacher-scoped, for specific students)
+curl -X POST 'https://depsfpodwaprzxffdcks.supabase.co/functions/v1/attendance-absence-email' \
+  -H 'Authorization: Bearer USER_JWT' \
+  -H 'Content-Type: application/json' \
+  -d '{"student_ids": ["uuid1", "uuid2"], "date": "2026-05-06"}'
+
+# Attendance email with force flag (bypasses cutoff/dedup checks)
+curl -X POST 'https://depsfpodwaprzxffdcks.supabase.co/functions/v1/attendance-absence-email' \
+  -H 'Authorization: Bearer SERVICE_ROLE_KEY' \
+  -H 'Content-Type: application/json' \
+  -d '{"force": true}'
 ```
+
+---
 
 ## Monitoring
 
-### Email Activity Dashboard
-
-The admin panel includes an Email Schedule Manager with:
-- **Schedule Status**: Shows if the cron job is active
-- **Test Email Button**: Manual testing capability  
-- **Activity Log**: Last 50 email sending events with details
-
-### Email Logs Table
-
-Monitor the `email_logs` table for:
-- `trigger_source`: 'scheduled', 'manual', 'test'
-- `status`: 'started', 'completed', 'error'
-- `emails_sent` and `emails_skipped` counts
-- Detailed error messages
-
-### Scheduled Jobs
-
-Check scheduled job status:
+### Email Activity Log
 ```sql
-SELECT jobname, schedule, active, jobid 
-FROM cron.job 
-WHERE jobname = 'daily-progress-email-job';
+SELECT trigger_source, status, emails_sent, emails_skipped, message, triggered_at
+FROM email_logs
+ORDER BY triggered_at DESC
+LIMIT 20;
 ```
+
+### Attendance Notification De-duplication Log
+```sql
+-- See who was notified today
+SELECT s.name, n.date, n.madrassah_id
+FROM attendance_absence_notifications n
+JOIN students s ON s.id = n.student_id
+WHERE n.date = CURRENT_DATE;
+
+-- Clear today's log to allow re-send (use with caution)
+DELETE FROM attendance_absence_notifications WHERE date = CURRENT_DATE;
+```
+
+### Students without guardian emails
+```sql
+SELECT name, guardian_email
+FROM students
+WHERE (guardian_email IS NULL OR guardian_email = '')
+  AND status = 'active';
+```
+
+---
 
 ## Troubleshooting
 
-### Common Issues
+| Issue | Cause | Fix |
+|---|---|---|
+| No emails sending | RESEND_API_KEY not set | Check Supabase project secrets |
+| Emails sending but wrong time | Wrong timezone/UTC offset | Update cron expression |
+| Duplicate emails | `attendance_absence_notifications` not populated | Verify `INSERT` in edge function logs |
+| "Email sender not configured" error | RESEND_FROM_EMAIL missing | Add to Supabase secrets |
+| Guardian not receiving | Email not on student record | Check `students.guardian_email`; also check `parents` table |
+| Admin summary not sending | No admin accounts with emails | Verify `profiles` table has admin rows with email field populated |
+| Function timeout | Too many students | Increase `DAILY_EMAIL_MAX_MS` env var (default 120000ms) |
+| Attendance email not firing | `attendance_settings.enabled = false` | `UPDATE attendance_settings SET enabled = true WHERE madrassah_id = '...'` |
 
-1. **No emails being sent**
-   - Check if pg_cron extension is enabled
-   - Verify RESEND_API_KEY is set correctly
-   - Ensure students have guardian email addresses
+---
 
-2. **Wrong timezone**
-   - Update the cron schedule in the migration
-   - Remember: cron uses UTC time
+## Email Design Reference
 
-3. **Permission errors**
-   - Verify service role key has proper permissions
-   - Check RLS policies on related tables
+Both emails use the same design system:
 
-4. **Function timeouts**
-   - Large datasets may need batching
-   - Monitor function execution logs in Supabase
+- **Background:** Light green `#f0fdf4`
+- **Card:** White `#ffffff`, 16px border-radius, subtle shadow
+- **Header:** `linear-gradient(135deg, #052e16, #166534, #16a34a)` with DUM logo
+- **Tables:** Green column headers `#166534`, alternating white/gray rows
+- **CTA button:** Solid green `#059669` or gradient green
+- **Footer:** Light gray `#f9fafb` with Dār Al-Ulūm Montréal wordmark
 
-### Debug Commands
+Attendance status colors:
+| Status | Color | Hex |
+|---|---|---|
+| Present | Green | `#059669` |
+| Absent | Red | `#dc2626` |
+| Late | Amber | `#d97706` |
+| Excused | Purple | `#7c3aed` |
+| Early Departure | Orange | `#ea580c` |
+| Sick | Cyan | `#0891b2` |
 
-```sql
--- Check if cron job exists
-SELECT * FROM cron.job WHERE jobname = 'daily-progress-email-job';
-
--- View recent email logs
-SELECT * FROM email_logs ORDER BY triggered_at DESC LIMIT 20;
-
--- Check students without email addresses
-SELECT s.name, s.guardian_email 
-FROM students s 
-WHERE s.guardian_email IS NULL OR s.guardian_email = '';
-
--- View recent progress records
-SELECT COUNT(*) as progress_count 
-FROM progress 
-WHERE created_at >= NOW() - INTERVAL '24 hours';
-```
-
-## Email Content
-
-The emails include:
-- Professional HTML styling
-- Student name and guardian greeting
-- Progress summary table with:
-  - Lesson details (Surah:Ayat range)
-  - Pages memorized
-  - Quality rating
-  - Teacher notes
-- Source indicator (manual/automatic)
-- Timestamp of generation
+---
 
 ## Security Notes
 
-- Emails are sent only to verified guardian email addresses
-- No sensitive system information is included
-- All email activity is logged for audit purposes
-- Uses secure Supabase environment variables
-
-## Support
-
-If you encounter issues:
-1. Check the email activity log in admin panel
-2. Review Supabase function logs
-3. Verify environment variables
-4. Test with manual email function first 
+- Emails are sent only to guardian email addresses on file — never to arbitrary addresses
+- Service role key is used only inside edge functions, never exposed to the client
+- All send events logged in `email_logs` for audit purposes
+- `attendance_absence_notifications` prevents duplicate sends at the student/date level

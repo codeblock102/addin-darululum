@@ -50,20 +50,28 @@ The record book used in traditional Madrassahs to track daily Sabaq, Sabaq Para,
 A documented plan for students who need accommodations or specialized support. The **Health & IEP** tab on each student's detail page stores the IEP flag and accommodations text. Admins can toggle and edit this inline.
 
 ### Section
-A grouping of students, typically by level of memorization or grade. Teachers are assigned to one or more sections. The `section` field exists on both `students` and `profiles`.
+A grouping used to scope student and staff visibility by campus:
+
+| Value | Campus | Description |
+|---|---|---|
+| `'women'` | Saint-Laurent | Women's campus — all grades KG through Secondary |
+| `'Henri-Bourassa'` | Henri-Bourassa | Men's campus |
+| `null` | Unrestricted | No campus restriction — sees all students |
+
+When set on a `profiles` row, this field restricts what that user (admin or teacher) can see across the entire app. The attendance section dropdown auto-hides for scoped users.
 
 ---
 
 ## Attendance Statuses
 
-| Status | Meaning |
-|---|---|
-| **Present** | Student attended the session |
-| **Absent** | Student was absent (reason required) |
-| **Late** | Student arrived late (reason required) |
-| **Excused** | Pre-approved absence (reason required) |
-| **Early Departure** | Student left before the session ended |
-| **Sick** | Student was absent due to illness |
+| Status | Meaning | Email color |
+|---|---|---|
+| **Present** | Student attended the session | Green |
+| **Absent** | Student was absent (reason required) | Red |
+| **Late** | Student arrived late (reason required) | Amber |
+| **Excused** | Pre-approved absence (reason required) | Purple |
+| **Early Departure** | Student left before the session ended | Orange |
+| **Sick** | Student was absent due to illness | Cyan |
 
 ---
 

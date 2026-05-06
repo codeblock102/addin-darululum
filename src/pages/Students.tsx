@@ -85,7 +85,7 @@ const Students = () => {
 
       const { data: userData } = await supabase
         .from("profiles")
-        .select("madrassah_id, role")
+        .select("madrassah_id, role, section")
         .eq("id", userId)
         .single();
 
@@ -94,12 +94,18 @@ const Students = () => {
       }
 
       if (userData.role === "admin") {
-        const { data: students, error } = await supabase
+        let adminQuery = supabase
           .from("students")
           .select(
             "id, name, date_of_birth, enrollment_date, guardian_name, guardian_contact, guardian_email, status, madrassah_id, section, medical_condition, gender, grade, health_card, permanent_code, street, city, province, postal_code, completed_juz, current_juz, status_start_date, status_end_date, status_notes",
           )
           .eq("madrassah_id", userData.madrassah_id);
+
+        if (userData.section) {
+          adminQuery = adminQuery.eq("section", userData.section);
+        }
+
+        const { data: students, error } = await adminQuery;
 
         if (error) throw error;
         return { students: students || [], userData };

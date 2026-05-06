@@ -45,6 +45,19 @@ Role-based access control helper. Derives `isAdmin`, `isTeacher`, `isParent`, `i
 
 ## Data Hooks
 
+### `useStudentsQuery`
+**File:** `src/hooks/useStudentsQuery.ts`
+
+Unified student fetch hook used across the app. Reads `profiles.section` and automatically applies `.eq("section", section)` when non-null, scoping the results to the user's campus.
+
+**Parameters:** `{ activeOnly?: boolean }`
+
+**Returns:** `{ students, userData, isLoading }`
+
+> This is the canonical hook for fetching students. Both `Students.tsx` (inline query) and `AttendanceForm.tsx` apply the same section filter independently for their specific query shapes.
+
+---
+
 ### `useTeacherSummary`
 **File:** `src/hooks/useTeacherSummary.ts`
 

@@ -12,6 +12,8 @@ Three roles exist:
 | **Teacher** | Teachers — manage students, record attendance, track Qur'an progress, message parents |
 | **Parent** | Parents/guardians — read-only view of their child's progress and attendance |
 
+> **Campus scoping:** Staff with a `section` set on their profile only see students from that section. DUM has two campuses: `women` (Saint-Laurent) and `Henri-Bourassa`. This is transparent — the system just shows the right students automatically.
+
 ---
 
 ## Getting Started
@@ -50,9 +52,11 @@ Your dashboard shows:
 - **Enrolment by Location / Grade** — bar chart breakdown of active students per section/grade
 - **Staff / Classes / Attendance Rate** — three quick-reference mini-cards
 
+> Admins with a section set will see stats scoped to their campus only.
+
 ### Students (`/students`)
 
-- Browse and search the full student list; filter by status (active, inactive)
+- Browse and search the full student list; filter by status (active, inactive) or section
 - Click any student to open their detail page with four tabs:
   - **Profile** — demographics, guardian contacts, current Juz
   - **Dossier** — Mozaïk-style identity card (language, program, contacts, resource person)
@@ -99,6 +103,8 @@ Three modes:
 
 **Export CSV:** The Records tab header has an "Export CSV" button that downloads the currently filtered records.
 
+> **Section-scoped teachers:** If your profile has a section set, the section filter in the attendance form is locked automatically to your campus — you will only see students from your section and the section dropdown will not appear.
+
 ### Progress Book (`/progress-book`)
 
 Record each student's daily Qur'an lesson:
@@ -138,6 +144,8 @@ Shows:
 - Summary cards: total students, today's attendance, recent activity
 - Quick links to take attendance and record progress
 - Alert banner if any students are at risk (attendance <70% or no progress in 14+ days)
+
+> If your profile has a section set, all views are automatically scoped to your campus's students.
 
 ### Recording Progress
 
@@ -203,6 +211,26 @@ Chat-bubble interface. Your messages appear on the right; teacher messages on th
 
 ---
 
+## Email Notifications
+
+Parents and guardians receive two types of automated emails:
+
+### Attendance Notification
+Sent when a teacher submits attendance for your child. The email shows:
+- A color-coded status banner (green = present, red = absent, amber = late, purple = excused, orange = early departure, cyan = sick)
+- A short narrative describing what happened
+- A link to the Parent Portal
+
+### Daily Progress Report
+Sent each evening with your child's Quran lesson details:
+- Lesson (Surah:Ayat range), pages memorized, quality rating, teacher notes
+- Recent assignment activity and grades
+- A link to the Parent Portal
+
+Admins also receive a **Principal Summary** email with a class-by-class breakdown of all student progress for the day.
+
+---
+
 ## Troubleshooting
 
 | Problem | Fix |
@@ -214,3 +242,5 @@ Chat-bubble interface. Your messages appear on the right; teacher messages on th
 | Daily emails not arriving | See `docs/EMAIL_SCHEDULING_SETUP.md` — verify cron, Resend API key, and guardian email |
 | Schedule page is empty | Run `seed_dum_schedules_v10.sql` in Supabase SQL editor |
 | Can't log in | Use Forgot Password on the login page; contact admin if it persists |
+| Teacher sees wrong students | Section scoping is working correctly — contact admin if your section is set incorrectly on your profile |
+| Section dropdown missing from attendance | You have a section set on your profile — this is expected; your view is scoped automatically |

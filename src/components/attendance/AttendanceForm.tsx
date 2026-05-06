@@ -88,7 +88,7 @@ export const AttendanceForm = () => {
 
         const { data: prof } = await supabase
           .from("profiles")
-          .select("madrassah_id")
+          .select("madrassah_id, section")
           .eq("id", teacherId)
           .maybeSingle();
 
@@ -96,6 +96,14 @@ export const AttendanceForm = () => {
           ? (prof.madrassah_id as string | null | undefined)
           : null);
         if (!madrassahId) return;
+
+        // If admin's profile has a section restriction, lock the filter to that section
+        const profileSection = prof && "section" in prof ? (prof.section as string | null) : null;
+        if (profileSection) {
+          setSectionFilter(profileSection);
+          // Don't populate availableSections — the dropdown won't render for restricted admins
+          return;
+        }
 
         const { data: mad } = await supabase
           .from("madrassahs")

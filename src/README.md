@@ -18,6 +18,7 @@ This directory contains all frontend application code.
 ### `pages/`
 Route-level components. Each file maps directly to a URL (see routing table in `README.md`). Notable:
 - `StudentDetail.tsx` — 4-tab student page (Profile, Dossier, Health & IEP, Progress)
+- `Students.tsx` — student list with section-scoped filtering for admins/teachers with `profiles.section` set
 - `SchoolCalendar.tsx` — school calendar with monthly grid, event CRUD (admin), and upcoming sidebar
 - `Teachers.tsx` — teacher list + Staff Directory tab
 - `Attendance.tsx` — attendance management with bulk, multi-day, and single modes
@@ -34,7 +35,7 @@ Route-level components. Each file maps directly to a URL (see routing table in `
 | `admin/` | Admin dashboard, stats cards, settings panels, teacher accounts, messaging |
 | `students/` | `StudentHealthIEP` (Health & IEP tab), `StudentDossier` (Mozaïk dossier tab) |
 | `teachers/` | `StaffHRIS` (Staff Directory tab) |
-| `attendance/` | Forms, bulk grid, absence reason select, multi-day modal, data table, `StudentContactPopover` |
+| `attendance/` | Forms, bulk grid, absence reason select, multi-day modal, data table, `StudentContactPopover`. `AttendanceForm.tsx` auto-locks section and hides section dropdown for scoped staff |
 | `teacher-portal/` | Teacher dashboard, schedule, messaging, student metrics |
 | `dhor-book/` | Progress book entry form and classroom view |
 | `classes/` | Class CRUD dialog, list, validation |
@@ -48,7 +49,8 @@ Route-level components. Each file maps directly to a URL (see routing table in `
 - `I18nContext.tsx` — `t(key, fallback)` translations and `locale` state
 
 ### `hooks/`
-Custom React hooks. See [`docs/HOOKS.md`](../docs/HOOKS.md) for full reference.
+Custom React hooks. See [`docs/HOOKS.md`](../docs/HOOKS.md) for full reference. Key hook:
+- `useStudentsQuery.ts` — unified student fetch; reads `profiles.section` and applies section filter when set
 
 ### `integrations/supabase/`
 - `client.ts` — typed Supabase client instance
