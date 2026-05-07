@@ -4,6 +4,33 @@ This file is **non-negotiable**. Every meaningful change must be logged here.
 
 ---
 
+## 2026-05-07 — DB sync: DUM Master 2025-2026 Excel → Supabase students table
+
+**What:**
+Full sync of the live Supabase `students` table against the DUM Master 2025-2026 Excel file (`DUM Master 2025-2026 Last Update_ April 15, 2026.xlsx`). Cross-referenced all 119 Excel students (Active/Inactive/Daycare/Registration) against the DB using fuzzy name matching + manual review.
+
+**Changes made (all via SQL on project `depsfpodwaprzxffdcks`):**
+
+1. **Deleted 8 ghost students** (in DB but not in Excel) — cascading cleanup across `attendance`, `progress`, `juz_revisions`, `sabaq_para`, `teacher_assignment_submissions`, `students`, and `classes.current_students` array:
+   - Abdoul Khabir Jallow, Adam Bah, Ahmad Abdul-Ghani Abukar, Amina Mohamed Aden, Hassan Al Hamad, Hussein Al Hamad, Khadija Yasin, Yusuf Maigari
+
+2. **Updated 14 students to status='inactive'** (were 'active' in DB, 'Inactive' in Excel):
+   - Aiman Musa Al-Farouq, Asma Lahrach, Fatimah Al-Zahra Zakariyya, Ines Berber, Jana Shnfir, Kamila Islam, Khadija Tahir Munsif, Mariam Ouattara, Mohamed Abdine, Mohamed Bah, Rifat Hossain, Saad Adéwalé Youssoufou (renamed from "Youssoufou Saad Adéwalé"), Sara Benali, Yasmine Allaoui
+
+3. **Fixed section/gender for 32 male students** — `section='men'`, `gender='male'` (Henri-Bourassa Boys location)
+
+4. **Enriched 89 students** with data from the Excel: DOB, guardian names/phones/emails, secondary contact, emergency contact, health card, permanent code, street, city, province, postal code, language, system, financial_aid, hifz_program
+
+5. **Inserted Jana Zabennagi** — new active student (grade 4, female, section='women') who was in Excel but missing from DB entirely
+
+**Final DB state:** 98 active (33 men + 65 women) + 17 inactive = 115 students total
+- Active 98 = Excel's 90 active + 8 daycare (stored as 'active' in DB)
+- Inactive 17 = Excel's 17 inactive ✅
+
+**Files changed:** DB only (no code changes)
+
+---
+
 ## 2026-05-06 (s4) — Ibrahim Toure demoted to teacher
 
 **What:**
