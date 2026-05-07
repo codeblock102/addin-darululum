@@ -252,6 +252,7 @@ Between any two pushes, an automated release bot commits a `CHANGELOG.md` update
 
 | Date | Summary | See Also |
 |---|---|---|
+| 2026-05-07 (s2) | DB data corrections: fixed wrong guardian/address for 9 students (bulk enrichment copy-paste errors), activated AbdulQuawy (Muhammad Adekunle's brother), added 10 missing secondary contacts, deleted Jeanrismé family (2 students); final 113 students | handoff.md |
 | 2026-05-07 | DB sync: deleted 8 ghost students, set 14 inactive, fixed section/gender for 32 male students, enriched 89 students with DOB/contacts/addresses from DUM Master Excel, inserted Jana Zabennagi (new active); final count 115 students | handoff.md |
 | 2026-05-05 (s5) | Teacher deletion fixed — delete-teacher edge function rewritten to nuke all related rows (classes array, progress, comms, tasks, absences, announcements, attendance, profile, auth); redeployed live | handoff.md |
 | 2026-05-05 (s4) | Student profile hero white text: 3 attempts needed — bg-black/20 invisible on dark bg → bg-white/20 still theme-overridden → inline style={{ color:'#fff' }} + replaced <a> with <button> to bypass link CSS; NewProgressEntry trigger styled white; gradient matched to dashboard (#052e16→#166534) | handoff.md |

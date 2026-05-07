@@ -4,6 +4,39 @@ This file is **non-negotiable**. Every meaningful change must be logged here.
 
 ---
 
+## 2026-05-07 (s2) — DB data corrections + Jeanrismé family removal
+
+**What:**
+Follow-up audit of the May 7 enrichment — compared all 115 DB students against the Excel row-by-row, found and fixed systematic copy-paste errors from the bulk enrichment script, added missing secondary contacts, and removed the Jeanrismé family at admin request.
+
+**Changes made (all via SQL on project `depsfpodwaprzxffdcks`):**
+
+1. **AbdulQuawy** (`id: 8955187b`) — set to `status='active'` (was inactive; admin confirmed he is a current student, brother of Muhammad Adekunle); address corrected to `9-172 Ave de Mount Vernon, Lachine QC H8R 1K1`; guardian linked to Taibat Adekunle
+
+2. **Wrong guardian/address data fixed (9 students)** — the bulk enrichment had copy-paste errors assigning one student's family data to another:
+   - **Adam Khan** — had wrong guardian entirely (Imran Khan → Kalsoom Khan), wrong street (Laval → 4190 Boul Gouin O, Montreal H4J 1B5)
+   - **Adam Manat** — wrong guardian name (Nazleen → Madiha Elissaoui), missing street/city/postal/health_card
+   - **Aisha Akhtar** — wrong guardian (Hira → Haroun Akhtar), wrong street (→ 11-5795 Rue Louisbourg, H4J 1K9)
+   - **Cheikh Dawood Touré** — primary/secondary phones swapped; fixed to 514-655-0781 primary
+   - **Jannat Akhtar** — secondary phone was in the primary slot; swapped correctly
+   - **Khadija Fakhoury** — missing guardian phone; added 438-458-6041
+   - **Muhammad Hassan Khan** — had Hafsah Khan's phone as primary; fixed to 5148009122
+   - **Muhammad Adekunle** — wrong city/postal (Lachine H8R 1K1 → Montréal H4J 2A9)
+   - **Muhammad Arsh Hussain** — phone format corrected
+
+3. **Missing secondary contacts added (10 students):**
+   Ali Erraji, Awa Zahra Diop, Aya Daouadji, Jana Shnfir, Moussa Jeanrismé (before deletion), Omar Fakhoury, Soumaya Oumy Diop, Soumeya Jeanrismé (before deletion), Syeda Zainab Mustafa, Syeda Zunayrah Mustafa
+
+4. **Jeanrismé family deleted** (admin request) — cascade-deleted across `attendance`, `progress`, `teacher_assignment_submissions`, `classes.current_students`, `students`:
+   - Moussa Jeanrismé (grade 2, inactive)
+   - Soumeya Jeanrismé (grade 1, inactive)
+
+**Final DB state:** 99 active + 15 inactive = 113 students total
+
+**Files changed:** DB only (no code changes)
+
+---
+
 ## 2026-05-07 — DB sync: DUM Master 2025-2026 Excel → Supabase students table
 
 **What:**
