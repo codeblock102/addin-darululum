@@ -110,9 +110,28 @@ function App() {
             <Route path="parent-accounts" element={<ParentAccounts />} />
             <Route path="bulk-student-import" element={<BulkStudentImport />} />
             <Route path="teacher-schedules" element={<TeacherSchedules />} />
-            <Route path="communication-templates" element={<CommunicationTemplates />} />
-            <Route path="reports" element={<Reports />} />
           </Route>
+          {/* Admin pages served inside DashboardLayout (main sidebar) */}
+          <Route
+            path="/admin/communication-templates"
+            element={
+              <ProtectedRoute requireAdmin>
+                <DashboardLayout>
+                  <CommunicationTemplates />
+                </DashboardLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/reports"
+            element={
+              <ProtectedRoute requireAdmin>
+                <DashboardLayout>
+                  <Reports />
+                </DashboardLayout>
+              </ProtectedRoute>
+            }
+          />
           {/* Admin Activity in main sidebar (not inside Admin Panel) */}
           <Route
             path="/activity"
