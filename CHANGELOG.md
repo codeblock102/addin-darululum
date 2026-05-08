@@ -1,3 +1,10 @@
+## [1.11.1](https://github.com/Adekunes/Tadween/compare/v1.11.0...v1.11.1) (2026-05-08)
+
+
+### Bug Fixes
+
+* serve /admin/reports and /admin/communication-templates inside DashboardLayout ([4b97e8c](https://github.com/Adekunes/Tadween/commit/4b97e8cd4277f36cb8cd95730f5098b7f5cf9c14))
+
 # [1.11.0](https://github.com/Adekunes/Tadween/compare/v1.10.0...v1.11.0) (2026-05-08)
 
 
