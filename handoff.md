@@ -4,6 +4,42 @@ This file is **non-negotiable**. Every meaningful change must be logged here.
 
 ---
 
+## 2026-05-08 (s2) — Bug fix: Reports + CommunicationTemplates routing
+
+**Problem:** `/admin/reports` and `/admin/communication-templates` were registered inside `AdminLayout` (the old setup-wizard layout with a stripped sidebar). Clicking them from the main sidebar would lose the DashboardLayout, making pages appear broken.
+
+**Fix:** Moved both routes out of the `<Route path="/admin">` AdminLayout group and gave them standalone routes wrapped in `DashboardLayout` — the same pattern as `/activity` and `/absence-requests`.
+
+**File changed:** `src/App.tsx`
+
+---
+
+## 2026-05-08 — Screenshot-driven features: Reports page, full contact popover, teacher visibility
+
+**What:** Implemented 3 features based on secretary feedback screenshots (Mozaïk Portal reference design):
+
+### 1. Admin Reports Page (`/admin/reports`)
+- 3 sections: Attendance Reports, Student Reports, Hifz/Progress Reports
+- 5 runnable reports: Attendance by Student, Attendance by Section, Full Student Roster, Students by Section, Hifz Progress by Student
+- Each report: "Generate" button (lazy fetch) + "Export CSV" button (downloads .csv file)
+- Added to admin sidebar nav + i18n (en: "Reports" / fr: "Rapports")
+- **Files:** `src/pages/admin/Reports.tsx` (new), `src/App.tsx`, `src/config/navigation.ts`, `src/i18n/translations.ts`
+
+### 2. StudentContactPopover — Full Coordonnées-style contact display
+- Enhanced query to fetch: `secondary_guardian_name/phone/email/whatsapp`, `emergency_contact`, `home_address`, `guardian_phone`, `guardian_whatsapp` (all exist in DB but were not displayed)
+- Now shows 4 sections: Primary Guardian (mobile, WhatsApp, email, address), Secondary Contact (conditional), Emergency Contact (conditional), Teacher (conditional)
+- WhatsApp links use `wa.me/` format; address is 2-line clamped
+- **File:** `src/components/attendance/StudentContactPopover.tsx`
+
+### 3. Teacher Visibility in Student Profile
+- New `useStudentTeacher(studentId)` hook: resolves student `class_ids` → class names → teacher profiles
+- `StudentDetail.tsx`: teacher badge shown in hero header below section/grade chips
+- `ParentProgress.tsx`: teacher pill badges below child selector tabs
+- Teacher also shown in contact popover (Teacher section)
+- **Files:** `src/hooks/useStudentTeacher.ts` (new), `src/pages/StudentDetail.tsx`, `src/pages/ParentProgress.tsx`
+
+---
+
 ## 2026-05-07 (s2) — DB data corrections + Jeanrismé family removal
 
 **What:**
