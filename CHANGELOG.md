@@ -1,3 +1,10 @@
+# [1.11.0](https://github.com/Adekunes/Tadween/compare/v1.10.0...v1.11.0) (2026-05-08)
+
+
+### Features
+
+* reports page, full contact popover, teacher visibility in student profile ([24f7bd2](https://github.com/Adekunes/Tadween/commit/24f7bd2ed0f3e93d37d1336671d64eed14ee5b7e))
+
 # [1.10.0](https://github.com/Adekunes/Tadween/compare/v1.9.0...v1.10.0) (2026-05-08)
 
 
