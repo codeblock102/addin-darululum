@@ -47,6 +47,7 @@ import ParentAttendance from "@/pages/ParentAttendance.tsx";
 import ParentAccounts from "@/pages/admin/ParentAccounts.tsx";
 import BulkStudentImport from "@/pages/admin/BulkStudentImport.tsx";
 import Activity from "@/pages/admin/Activity.tsx";
+import CommunicationTemplates from "@/pages/admin/CommunicationTemplates.tsx";
 import ResetPassword from "@/pages/ResetPassword.tsx";
 import SchoolCalendar from "@/pages/SchoolCalendar.tsx";
 import TeacherAddParent from "@/pages/TeacherAddParent.tsx";
@@ -108,6 +109,7 @@ function App() {
             <Route path="parent-accounts" element={<ParentAccounts />} />
             <Route path="bulk-student-import" element={<BulkStudentImport />} />
             <Route path="teacher-schedules" element={<TeacherSchedules />} />
+            <Route path="communication-templates" element={<CommunicationTemplates />} />
           </Route>
           {/* Admin Activity in main sidebar (not inside Admin Panel) */}
           <Route

@@ -111,6 +111,12 @@ export const adminNavItems: NavItem[] = [
     icon: ActivityIcon,
     description: "Live app activity feed",
   },
+  {
+    href: "/admin/communication-templates",
+    label: "nav.communicationTemplates",
+    icon: FileText,
+    description: "Manage message templates",
+  },
 ];
 
 /**

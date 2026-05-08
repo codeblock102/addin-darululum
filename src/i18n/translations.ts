@@ -34,6 +34,7 @@ const en: Dict = {
     teacherSchedules: "Teacher Schedules",
     calendar: "School Calendar",
     profile: "Profile",
+    communicationTemplates: "Templates",
   },
   portal: {
     admin: "Admin Portal",
@@ -748,6 +749,7 @@ const fr: Dict = {
     teacherSchedules: "Horaires des enseignants",
     calendar: "Calendrier scolaire",
     profile: "Profil",
+    communicationTemplates: "Modèles",
   },
   portal: {
     admin: "Portail Admin",

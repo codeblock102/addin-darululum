@@ -20,7 +20,8 @@ import { Tabs, TabsContent } from "@/components/ui/tabs.tsx";
 import { AdminPageShell } from "@/components/admin/AdminPageShell.tsx";
 import { useProxy } from "@/contexts/ProxyContext.tsx";
 import { useNavigate } from "react-router-dom";
-import { ArrowDown, ArrowUp, Eye } from "lucide-react";
+import { ArrowDown, ArrowUp, Eye, Pencil } from "lucide-react";
+import { ParentEditDialog, type ParentMinimal } from "@/components/admin/parent-accounts/ParentEditDialog.tsx";
 
 const ParentAccounts = () => {
   const { toast } = useToast();
@@ -51,7 +52,7 @@ const ParentAccounts = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("parents")
-        .select("id, name, email, student_ids")
+        .select("id, name, email, phone, student_ids")
         .order("name", { ascending: true });
       if (error) throw error;
       return data || [];
@@ -62,7 +63,7 @@ const ParentAccounts = () => {
   const [parentSearch, setParentSearch] = useState("");
   const [parentSortKey, setParentSortKey] = useState<"name" | "children">("name");
   const [parentSortDir, setParentSortDir] = useState<"asc" | "desc">("asc");
-  type ParentMin = { id: string; name: string; email: string; student_ids: string[] };
+  type ParentMin = { id: string; name: string; email: string; student_ids: string[]; phone?: string | null };
   type StudentMin = { id: string; name: string };
 
   const toggleParentSort = (key: "name" | "children") => {
@@ -86,6 +87,15 @@ const ParentAccounts = () => {
   const [selectedExistingParentId, setSelectedExistingParentId] = useState<string>("");
   const [linkStudentIds, setLinkStudentIds] = useState<string[]>([]);
   const [linkIsSubmitting, setLinkIsSubmitting] = useState(false);
+
+  // Edit dialog state for parents
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [editTargetParent, setEditTargetParent] = useState<ParentMin | null>(null);
+
+  const openEditDialogFor = (parent: ParentMin) => {
+    setEditTargetParent(parent);
+    setEditDialogOpen(true);
+  };
 
   // Password change dialog state for parents
   const [pwdDialogOpen, setPwdDialogOpen] = useState(false);
@@ -434,6 +444,13 @@ const ParentAccounts = () => {
                       >
                         <Eye className="h-4 w-4" />
                       </button>
+                      <button
+                        onClick={() => openEditDialogFor(p)}
+                        title="Edit parent profile"
+                        className="p-2 rounded-lg hover:bg-green-50 transition-colors text-gray-400 hover:text-green-700"
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </button>
                       <Button variant="outline" size="sm" onClick={() => openPasswordDialogFor(p)}
                         className="rounded-xl border-gray-200 text-gray-700 hover:bg-gray-50">
                         Change Password
@@ -450,6 +467,13 @@ const ParentAccounts = () => {
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* Edit Parent Dialog */}
+      <ParentEditDialog
+        parent={editTargetParent as ParentMinimal | null}
+        open={editDialogOpen}
+        onOpenChange={setEditDialogOpen}
+      />
 
       {/* Change Password Dialog */}
       <AlertDialog open={pwdDialogOpen} onOpenChange={setPwdDialogOpen}>

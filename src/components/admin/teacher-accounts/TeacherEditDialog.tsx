@@ -38,6 +38,7 @@ export function TeacherEditDialog({
     email: string | undefined;
     phone: string | undefined;
     subject: string;
+    section: string | undefined;
     bio: string | undefined;
     grade: number | undefined;
   }>({
@@ -45,6 +46,7 @@ export function TeacherEditDialog({
     email: teacher?.email || "",
     phone: teacher?.phone || "",
     subject: teacher?.subject || "",
+    section: teacher?.section || "",
     bio: teacher?.bio || "",
     grade: teacher?.grade || undefined,
   });
@@ -59,6 +61,7 @@ export function TeacherEditDialog({
         email: teacher.email || "",
         phone: teacher.phone || "",
         subject: teacher.subject || "",
+        section: teacher.section || "",
         bio: teacher.bio || "",
         grade: teacher.grade || undefined,
       });
@@ -86,6 +89,7 @@ export function TeacherEditDialog({
           email: formData.email,
           phone: formData.phone,
           subject: formData.subject,
+          section: formData.section || null,
           bio: formData.bio,
           grade: formData.grade,
         })
@@ -238,6 +242,19 @@ export function TeacherEditDialog({
                 onChange={handleChange}
                 className="col-span-3"
                 required
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="section" className="text-right">
+                Location
+              </Label>
+              <Input
+                id="section"
+                name="section"
+                value={formData.section || ""}
+                onChange={handleChange}
+                className="col-span-3"
+                placeholder="e.g. Saint-Laurent, Brossard"
               />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">

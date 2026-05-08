@@ -293,6 +293,33 @@ interface CustomDatabase extends Database {
         };
         Relationships: [];
       };
+      communication_templates: {
+        Row: {
+          id: string;
+          title: string;
+          body: string;
+          category: string;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          title: string;
+          body: string;
+          category?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          title?: string;
+          body?: string;
+          category?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: Database["public"]["Views"];
     Functions: Database["public"]["Functions"];
