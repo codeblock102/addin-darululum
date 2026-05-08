@@ -439,12 +439,7 @@ export const StudentDialog = (
               result = resp.ok ? await resp.json() : null;
               err = resp.ok ? null : await resp.text();
             }
-            console.log("create-parent result:", { data: result, error: err });
-            if (result?.credentials) {
-              console.log(
-                `Parent credentials -> username: ${result.credentials.username}, password: ${result.credentials.password}`,
-              );
-            }
+            void result; void err;
           }
         } catch (_e) {
           // Non-fatal: ignore parent creation error here

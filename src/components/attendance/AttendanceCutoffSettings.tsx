@@ -24,9 +24,6 @@ export function AttendanceCutoffSettings() {
   const [madrassahId, setMadrassahId] = useState<string | null>(null);
   const [isTriggering, setIsTriggering] = useState(false);
   
-  useEffect(() => {
-    console.log("[AttendanceCutoffSettings] Mounted. isAdmin=", isAdmin);
-  }, [isAdmin]);
 
   // Resolve current user's madrassah_id
   useEffect(() => {

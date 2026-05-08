@@ -97,11 +97,7 @@ export const TeacherDhorBook = ({ teacherId }: TeacherDhorBookProps) => {
   const { data: teacherClasses } = useTeacherClasses(teacherId);
 
   // Set up realtime updates for the records
-  useRealtimeLeaderboard(teacherId, () => {
-    console.log(
-      "Realtime update detected, refreshing classroom/student records",
-    );
-  });
+  useRealtimeLeaderboard(teacherId, () => {});
 
   // Check URL for studentId parameter
   useEffect(() => {

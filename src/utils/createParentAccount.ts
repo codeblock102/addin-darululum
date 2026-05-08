@@ -40,7 +40,7 @@ export async function createParentWithAccount(
         }
       }
     } catch (e) {
-      console.warn("Could not resolve admin madrassah_id; falling back:", e);
+      // ignore
     }
 
     // 1) Primary path: invoke

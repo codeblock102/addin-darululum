@@ -27,7 +27,6 @@ export const TeacherSelector = (
     queryKey: ["admin-message-teachers", session?.user?.id],
     queryFn: async () => {
       if (!session?.user?.id) {
-        console.warn("No authenticated user found");
         return [];
       }
 
@@ -39,7 +38,6 @@ export const TeacherSelector = (
         .single();
 
       if (adminError || !adminProfile?.madrassah_id) {
-        console.warn("Admin madrassah_id not found:", adminError);
         return [];
       }
 
@@ -54,8 +52,6 @@ export const TeacherSelector = (
         .order("name", { ascending: true });
 
       if (error) throw error;
-
-      console.log(`Admin messaging: Found ${data?.length || 0} teachers from madrassah ${adminMadrassahId}`);
 
       return data.map((teacher) => ({
         id: teacher.id,

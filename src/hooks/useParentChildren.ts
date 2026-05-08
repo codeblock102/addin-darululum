@@ -56,7 +56,7 @@ export const useParentChildren = () => {
               student_ids: [],
             });
         } catch (e) {
-          console.warn("Auto-provision parents row failed (non-fatal):", e);
+          void e;
         }
         return [];
       }

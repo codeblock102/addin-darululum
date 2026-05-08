@@ -32,9 +32,6 @@ export function useUpdateStudentCompletedJuz() {
       }
 
       if (!latestProgressEntry) {
-        console.warn(
-          "No progress entry found for student to update completed_juz.",
-        );
         // Depending on requirements, we might want to create one or handle this differently
         // For now, we'll just return, as there's no record to update.
         // Or, if the `progress` table might not have any entries yet, but `students` table has `completed_juz`
@@ -47,7 +44,6 @@ export function useUpdateStudentCompletedJuz() {
         (latestProgressEntry.completed_juz || []) as number[];
 
       if (currentCompletedJuz.includes(newlyCompletedJuz)) {
-        console.log(`Juz ${newlyCompletedJuz} already in completed_juz array.`);
         return {
           message: `Juz ${newlyCompletedJuz} already marked as completed.`,
         };

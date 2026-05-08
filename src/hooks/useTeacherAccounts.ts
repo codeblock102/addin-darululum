@@ -17,7 +17,6 @@ export function useTeacherAccounts() {
     queryKey: ["teacher-accounts", session?.user?.id],
     queryFn: async () => {
       if (!session?.user?.id) {
-        console.warn("No authenticated user found");
         return [];
       }
 
@@ -29,7 +28,6 @@ export function useTeacherAccounts() {
         .single();
 
       if (adminError || !adminProfile?.madrassah_id) {
-        console.warn("Admin madrassah_id not found:", adminError);
         toast({ 
           title: "Access Error", 
           description: "Unable to determine your madrassah assignment", 
@@ -60,7 +58,6 @@ export function useTeacherAccounts() {
         return [];
       }
       
-      console.log(`Admin filtering teachers by madrassah_id: ${adminMadrassahId}, found ${profiles.length} profiles`);
       const profileMap = new Map(profiles.map(p => [p.id, p]));
 
       // 4. Combine the data into the TeacherAccount shape
@@ -88,7 +85,6 @@ export function useTeacherAccounts() {
           };
         });
 
-      console.log(`Filtered teacher accounts: ${combinedData.length} users from madrassah ${adminMadrassahId}`);
       return combinedData;
     },
     staleTime: 5 * 60 * 1000,

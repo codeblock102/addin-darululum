@@ -46,7 +46,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
    */
   const refreshSession = async () => {
     try {
-      console.log("Refreshing session...");
       const { data, error } = await supabase.auth.refreshSession();
       if (error) {
         console.error("Error refreshing session:", error);
@@ -54,7 +53,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         return;
       }
 
-      console.log("Session refreshed successfully:", !!data.session);
       setSession(data.session);
       setError(null);
     } catch (err) {
@@ -67,15 +65,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     // Set up auth state listener FIRST to avoid missing auth events
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (_event, currentSession) => {
-        console.log("Auth state changed:", _event, !!currentSession);
-
         // Update the session state
         setSession(currentSession);
-
-        // If we have a new session, let's fetch user role metadata
-        if (currentSession?.user) {
-          console.log("User metadata:", currentSession.user.user_metadata);
-        }
 
         // We only set isLoading to false here, after the initial check or an auth event.
         // Avoids showing logout toast on initial load if there was no session.
@@ -94,7 +85,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     let isLoadingInitialCheck = true;
     supabase.auth.getSession().then(
       ({ data: { session: currentSession }, error }) => {
-        console.log("Initial session check:", !!currentSession, error);
         if (error) {
           console.error("Error retrieving session:", error);
           setError("Failed to retrieve session");
@@ -119,7 +109,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
    */
   const signOut = async () => {
     try {
-      console.log("Signing out...");
       const { error } = await supabase.auth.signOut();
       if (error) {
         // Handle missing-session case with a local sign-out fallback
@@ -129,7 +118,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           (error as any)?.name === "AuthSessionMissingError";
 
         if (isSessionMissing) {
-          console.warn("Auth session missing on signOut - performing local sign-out fallback");
           await supabase.auth.signOut({ scope: "local" });
         } else {
           console.error("Error signing out:", error);

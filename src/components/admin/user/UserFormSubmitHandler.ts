@@ -20,8 +20,6 @@ export const handleUserSubmit = async (
       );
       return "Operation not permitted";
     } else {
-      console.log("Creating new user with data:", formData);
-
       // Always set the role based on the selection, defaulting to 'teacher'
       const userRole = formData.role || "teacher";
 
@@ -68,7 +66,6 @@ export const handleUserSubmit = async (
               
               if (currentProfile?.madrassah_id) {
                 profileData.madrassah_id = currentProfile.madrassah_id;
-                console.log(`Assigning admin to madrassah: ${currentProfile.madrassah_id}`);
               }
             }
           }
@@ -80,8 +77,6 @@ export const handleUserSubmit = async (
           if (profileError) {
             console.error("Error creating user profile:", profileError);
             // Continue anyway, but log the error
-          } else {
-            console.log(`Profile created for ${userRole} user:`, data.user.id);
           }
 
           // user_roles table removed — role is sourced from profiles.role and auth metadata only
@@ -91,7 +86,6 @@ export const handleUserSubmit = async (
         }
       }
 
-      console.log("User account created successfully:", data);
       onSuccess();
       return `User account created successfully with role: ${userRole}. They can now log in using their email.`;
     }

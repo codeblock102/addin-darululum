@@ -62,14 +62,6 @@ const ParentAcademics = () => {
     queryKey: ["parent-academics-assignments", selectedStudentId],
     queryFn: async () => {
       if (!selectedStudentId) return [] as AssignmentListItem[];
-      // DEV debug: can this user read any assignments at all (RLS check)?
-      if (import.meta.env.DEV) {
-        const { data: anyRow, error: anyErr } = await supabase
-          .from("teacher_assignments")
-          .select("id")
-          .limit(1);
-        console.log("[ParentAcademics] RLS probe — any assignment visible?", { anyCount: anyRow?.length || 0, anyErr });
-      }
 
       // Fetch assignments directly targeting this child; avoid submissions endpoint to prevent 500s
       const { data: assignsOv, error: assignsOvError } = await supabase
@@ -202,7 +194,7 @@ const ParentAcademics = () => {
         setAttachmentPreview({ url: blobUrl, ext, name: nameGuess || "Attachment", inline: false });
       }
     } catch (e) {
-      console.warn("Failed to open attachment:", e);
+      console.error("Failed to open attachment:", e);
     } finally {
       setAttachmentLoading(false);
     }

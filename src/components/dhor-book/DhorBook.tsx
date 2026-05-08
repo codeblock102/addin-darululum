@@ -107,7 +107,7 @@ export const DhorBook = ({
           return [{ id: studentId }];
         }
       } catch (e) {
-        console.warn("Class membership check failed, falling back to section check.", e);
+        void e;
       }
 
       // 2) Fallback: section-based check (case-insensitive section match if provided)
@@ -186,12 +186,6 @@ export const DhorBook = ({
       viewMode,
     ],
     queryFn: async () => {
-      console.log(
-        `Fetching dhor book for student ${studentId} between ${
-          format(rangeStart, "yyyy-MM-dd")
-        } and ${format(rangeEnd, "yyyy-MM-dd")} (${viewMode} view)`,
-      );
-
       // Fetch all data sources (excluding dhor_book_entries)
       const { data: juzRevisions, error: juzError } = await supabase
         .from("juz_revisions")
@@ -346,9 +340,6 @@ export const DhorBook = ({
         new Date(b.entry_date).getTime() - new Date(a.entry_date).getTime()
       );
 
-      console.log(
-        `Consolidated ${finalCombinedEntries.length} dhor book entries for the ${viewMode} view`,
-      );
       return finalCombinedEntries;
     },
     enabled: !!studentId && isAuthorized,

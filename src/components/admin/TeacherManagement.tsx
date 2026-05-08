@@ -18,7 +18,6 @@ export const TeacherManagement = () => {
     queryKey: ["teacher-stats", session?.user?.id],
     queryFn: async () => {
       if (!session?.user?.id) {
-        console.warn("No authenticated user found");
         return { teacherCount: 0, scheduleCount: 0 };
       }
 
@@ -30,7 +29,6 @@ export const TeacherManagement = () => {
         .single();
 
       if (adminError || !adminProfile?.madrassah_id) {
-        console.warn("Admin madrassah_id not found:", adminError);
         return { teacherCount: 0, scheduleCount: 0 };
       }
 
@@ -52,8 +50,6 @@ export const TeacherManagement = () => {
         // Note: Add .eq("madrassah_id", adminMadrassahId) when classes table has madrassah_id field
 
       if (classesError) throw classesError;
-
-      console.log(`Admin ${adminMadrassahId}: Found ${teachersData?.length || 0} teachers`);
 
       return {
         teacherCount: teachersData ? teachersData.length : 0,

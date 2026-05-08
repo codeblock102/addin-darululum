@@ -182,7 +182,7 @@ export const TeacherAssignments = ({ teacherId }: TeacherAssignmentsProps) => {
               .eq("id", assignmentId)
               .eq("teacher_id", teacherId);
           } catch (uploadOrUpdateErr) {
-            console.warn("Attachment upload/update failed:", uploadOrUpdateErr);
+            console.error("Attachment upload/update failed:", uploadOrUpdateErr);
           }
         }
 
@@ -208,8 +208,6 @@ export const TeacherAssignments = ({ teacherId }: TeacherAssignmentsProps) => {
             const chunk = rows.slice(i, i + chunkSize);
             const { error: subErr } = await supabase.from("teacher_assignment_submissions").insert(chunk);
             if (subErr) {
-              // Non-fatal; continue
-              console.warn("Failed to seed some submissions:", subErr.message);
               break;
             }
           }
@@ -336,8 +334,8 @@ export const TeacherAssignments = ({ teacherId }: TeacherAssignmentsProps) => {
       }
 
       // Do not revoke the object URL immediately; it may be in use by the new tab
-    } catch (e) {
-      console.warn("Failed to open attachment:", e);
+    } catch (_e) {
+      // ignore
     }
   };
 
@@ -369,8 +367,8 @@ export const TeacherAssignments = ({ teacherId }: TeacherAssignmentsProps) => {
         const blobUrl = URL.createObjectURL(blob);
         setAttachmentPreview({ url: blobUrl, ext, name: nameGuess || "Attachment", inline: false });
       }
-    } catch (e) {
-      console.warn("Failed to open attachment:", e);
+    } catch (_e) {
+      // ignore
     } finally {
       setAttachmentLoading(false);
     }

@@ -685,7 +685,7 @@ export default function TeacherMessages() {
                 }
               }
             } catch (profileErr) {
-              console.warn("[TeacherMessages] Error checking profiles table:", profileErr);
+              // ignore
             }
           }
           
@@ -747,7 +747,7 @@ export default function TeacherMessages() {
                 }
               }
             } catch (studentErr) {
-              console.warn("[TeacherMessages] Error checking via students:", studentErr);
+              // ignore
             }
           }
           
@@ -779,7 +779,6 @@ export default function TeacherMessages() {
           // Log warning for emails without corresponding parent records
           const finalUnresolvedEmails = emailRecipients.filter((email) => !emailToParentId.has(email.toLowerCase()));
           if (finalUnresolvedEmails.length > 0) {
-            console.warn("[TeacherMessages] Some email addresses don't have corresponding parent records in database:", finalUnresolvedEmails);
             // Still send email, but warn user that message won't appear in app
             if (resolvedIdsArray.length === 0) {
               toast({ 

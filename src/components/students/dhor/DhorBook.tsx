@@ -20,8 +20,6 @@ export const DhorBook = ({ studentId, studentName }: DhorBookProps) => {
   const { data: studentData, isLoading: isStudentLoading } = useQuery({
     queryKey: ["student", studentId],
     queryFn: async () => {
-      console.log(`Checking if student exists with ID: ${studentId}`);
-
       const { data, error } = await supabase
         .from("students")
         .select("*")
@@ -31,12 +29,6 @@ export const DhorBook = ({ studentId, studentName }: DhorBookProps) => {
       if (error) {
         console.error("Error fetching student:", error);
         return null;
-      }
-
-      if (data) {
-        console.log("Student found:", data.name);
-      } else {
-        console.log("No student found with ID:", studentId);
       }
 
       return data;

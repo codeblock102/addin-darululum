@@ -27,3 +27,12 @@ dist-ssr
 .netlify
 scripts/seed-staff.ts
 .claude/
+
+# Environment variables
+.env
+.env.*
+.env.local
+.env.*.local
+
+# Supabase local temp files
+supabase/.temp/

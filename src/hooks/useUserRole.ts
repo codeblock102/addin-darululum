@@ -33,9 +33,6 @@ export const useUserRole = () => {
         const isUserTeacher = !!teacherData || isUserAdmin; // Admins have teacher access
         setIsTeacher(isUserTeacher);
 
-        console.log(
-          `Role check in useUserRole: isAdmin=${isUserAdmin}, isTeacher=${isUserTeacher}`,
-        );
       } catch (error) {
         console.error("Error checking user role:", error);
         setIsAdmin(false);

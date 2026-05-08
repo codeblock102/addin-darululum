@@ -150,7 +150,6 @@ export function DhorBookEntryForm(
           setEndSurah(selectedSurah);
           setCalculatedPages(0);
         } else {
-          console.warn(`[DhorBook] Could not resolve total ayat for Surah ${selectedSurah}`);
           setAyatOptions([]);
         }
       }
@@ -379,7 +378,7 @@ export function DhorBookEntryForm(
             }
           }
         } catch (e) {
-          console.warn("[DhorBook] Unable to resolve next Nazirah Juz from nazJuzData; leaving it undefined", e);
+          void e;
         }
 
         // Only set Nazirah fields if they are not already chosen by the user
@@ -425,7 +424,6 @@ export function DhorBookEntryForm(
           return;
         }
         if (!prev) {
-          console.warn("[DhorBook] No previous sabaq found for student:", studentId);
           return;
         }
 
@@ -486,7 +484,7 @@ export function DhorBookEntryForm(
             }
           }
         } catch (e) {
-          console.warn("[DhorBook] Unable to resolve next Juz from juzData; leaving it undefined", e);
+          void e;
         }
 
         if (nextJuz !== undefined) {
@@ -637,7 +635,6 @@ export function DhorBookEntryForm(
                       onValueChange={(value) => {
                         const juzNumber = parseInt(value, 10);
                         if (Number.isNaN(juzNumber)) {
-                          console.warn("[DhorBook] Ignoring invalid Juz value:", value);
                           return;
                         }
                         field.onChange(juzNumber);
@@ -684,7 +681,6 @@ export function DhorBookEntryForm(
                       onValueChange={(value) => {
                         const surahNumber = parseInt(value, 10);
                         if (Number.isNaN(surahNumber)) {
-                          console.warn("[DhorBook] Ignoring invalid Surah value:", value);
                           return;
                         }
                         field.onChange(surahNumber);
@@ -804,7 +800,6 @@ export function DhorBookEntryForm(
                       onValueChange={(value) => {
                         const ayatNumber = parseInt(value, 10);
                         if (Number.isNaN(ayatNumber)) {
-                          console.warn("[DhorBook] Ignoring invalid Start Ayat value:", value);
                           return;
                         }
                         field.onChange(ayatNumber);
@@ -858,7 +853,6 @@ export function DhorBookEntryForm(
                       onValueChange={(value) => {
                         const ayatNumber = parseInt(value, 10);
                         if (Number.isNaN(ayatNumber)) {
-                          console.warn("[DhorBook] Ignoring invalid End Ayat value:", value);
                           return;
                         }
                         field.onChange(ayatNumber);

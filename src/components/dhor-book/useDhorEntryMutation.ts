@@ -76,11 +76,6 @@ export function useDhorEntryMutation({
 
   const { mutate, isPending } = useMutation({
     mutationFn: async (formData: DhorBookCombinedFormData) => {
-      console.log(
-        "Processing dhor book related entries with data:",
-        JSON.stringify(formData, null, 2),
-      );
-
       const entryDate = formData.entry_date ||
         new Date().toISOString().split("T")[0];
       const results = [];
@@ -108,10 +103,6 @@ export function useDhorEntryMutation({
             progressRecord.memorization_quality = formData.memorization_quality;
           }
 
-          console.log(
-            "Inserting progress record:",
-            JSON.stringify(progressRecord, null, 2),
-          );
           const { data: progressData, error: progressError } = await supabase
             .from("progress")
             .insert([progressRecord])
@@ -123,12 +114,7 @@ export function useDhorEntryMutation({
               `Failed to insert progress data: ${progressError.message}`,
             );
           }
-          console.log("Successfully inserted progress data:", progressData);
           results.push({ type: "progress", data: progressData });
-        } else {
-          console.log(
-            "Skipping progress insert: Sabaq fields (juz, surah, start/end ayat) not provided.",
-          );
         }
 
         // 2. Insert Sabaq Para data into 'sabaq_para' table
@@ -149,10 +135,6 @@ export function useDhorEntryMutation({
             };
           // if (formData.comments) sabaqParaRecord.teacher_notes = formData.comments;
 
-          console.log(
-            "Inserting sabaq_para record:",
-            JSON.stringify(sabaqParaRecord, null, 2),
-          );
           const { data: sabaqParaData, error: sabaqParaError } = await supabase
             .from("sabaq_para")
             .insert([sabaqParaRecord])
@@ -164,17 +146,7 @@ export function useDhorEntryMutation({
               `Failed to insert sabaq_para data: ${sabaqParaError.message}`,
             );
           }
-          console.log("Successfully inserted sabaq_para data:", sabaqParaData);
           results.push({ type: "sabaq_para", data: sabaqParaData });
-        } else {
-          console.log(
-            "Skipping sabaq_para insert: Sabaq Para fields (juz, quality, quarters_revised) not fully provided.",
-          );
-          if (formData.sabaq_para_pages !== undefined) {
-            console.warn(
-              "sabaq_para_pages was provided in form data but is not currently saved. The 'sabaq_para' table expects 'quarters_revised'. Update DB schema or form mapping if 'sabaq_para_pages' should be stored.",
-            );
-          }
         }
 
         // 2b. Insert Nazirah / Qaida as progress entries (lesson_type)
@@ -206,8 +178,6 @@ export function useDhorEntryMutation({
               .select();
             if (nazErr) throw new Error(`Failed to insert nazirah progress: ${nazErr.message}`);
             results.push({ type: "nazirah_progress", data: nazData });
-          } else {
-            console.log("Skipping nazirah insert: missing required fields.");
           }
         } else if (formData.naz_qaida_type === "qaida") {
           if (formData.qaida_lesson) {
@@ -227,8 +197,6 @@ export function useDhorEntryMutation({
               .select();
             if (qaidaErr) throw new Error(`Failed to insert qaida progress: ${qaidaErr.message}`);
             results.push({ type: "qaida_progress", data: qaidaData });
-          } else {
-            console.log("Skipping qaida insert: qaida_lesson not provided.");
           }
         }
 
@@ -277,10 +245,6 @@ export function useDhorEntryMutation({
             juzRevisionRecord.quarters_covered = formData.dhor_quarters_covered;
           }
 
-          console.log(
-            `Inserting juz_revisions record with dhor_slot ${newDhorSlot}:`,
-            JSON.stringify(juzRevisionRecord, null, 2),
-          );
           const { data: juzRevisionData, error: juzRevisionError } =
             await supabase
               .from("juz_revisions")
@@ -296,32 +260,12 @@ export function useDhorEntryMutation({
               `Failed to insert Dhor data: ${juzRevisionError.message}`,
             );
           }
-          console.log("Successfully inserted Dhor data:", juzRevisionData);
           results.push({ type: "juz_revisions", data: juzRevisionData });
-        } else {
-          console.log("Skipping Dhor insert: dhor_juz not provided.");
         }
 
-        // Log any remaining form data fields that are not directly mapped or saved,
-        // including legacy fields for context if needed.
-        console.log("Unsaved/Legacy form data fields & other context:", {
-          comments: formData.comments,
-          points: formData.points,
-          detention: formData.detention,
-          teacher_id: teacherId, // For logging context
-          day_of_week_legacy: formData.day_of_week,
-          sabak_para_legacy: formData.sabak_para,
-          dhor_1_string_legacy: formData.dhor_1,
-          dhor_1_mistakes_legacy: formData.dhor_1_mistakes,
-          dhor_2_string_legacy: formData.dhor_2,
-          dhor_2_mistakes_legacy: formData.dhor_2_mistakes,
-          sabaq_para_pages_from_form: formData.sabaq_para_pages,
-        });
+        void teacherId; // referenced in props but not saved directly
 
         if (results.length === 0) {
-          console.warn(
-            "No data was inserted into any table. Check form data and conditions for insertion.",
-          );
           throw new Error(
             "Nothing was saved. Please fill in at least one section (Sabaq, Sabaq Para, Dhor, or Nazirah/Qaida).",
           );
@@ -334,7 +278,6 @@ export function useDhorEntryMutation({
           "An unexpected error occurred during data submission.";
         if (error instanceof Error) {
           errorMessage = error.message;
-          console.error("Stack trace:", error.stack);
         } else if (typeof error === "string") {
           errorMessage = error;
         }
@@ -342,13 +285,6 @@ export function useDhorEntryMutation({
       }
     },
     onSuccess: (data) => {
-      console.log(
-        "Mutation succeeded, invalidating queries for student:",
-        data?.studentId,
-        "on date:",
-        data?.entryDate,
-      );
-
       const entryDateString = data?.entryDate;
       const currentStudentId = data?.studentId;
 
@@ -363,9 +299,6 @@ export function useDhorEntryMutation({
         const weekStartStr = format(weekStartForDhorKey, "yyyy-MM-dd");
         const weekEndStr = format(weekEndForDhorKey, "yyyy-MM-dd");
 
-        console.log(
-          `Invalidating dhor-book-entries for student ${currentStudentId}, week: ${weekStartStr} to ${weekEndStr}`,
-        );
         queryClient.invalidateQueries({
           queryKey: [
             "dhor-book-entries",
@@ -376,27 +309,24 @@ export function useDhorEntryMutation({
           refetchType: "all",
         });
 
-        // Existing invalidations (example, keep your actual ones)
-        // const entryWeekISO = getStartOfWeekISO(entryDateObj); // If you still use this for other keys
-        // console.log(`Invalidating queries for student ${currentStudentId}, week start ISO: ${entryWeekISO}`);
         queryClient.invalidateQueries({
           queryKey: [
             "progress",
-            currentStudentId, /*, entryWeekISO or other params as needed */
+            currentStudentId,
           ],
           refetchType: "all",
         });
         queryClient.invalidateQueries({
           queryKey: [
             "sabaq_para",
-            currentStudentId, /*, entryWeekISO or other params as needed */
+            currentStudentId,
           ],
           refetchType: "all",
         });
         queryClient.invalidateQueries({
           queryKey: [
             "juz_revisions",
-            currentStudentId, /*, entryWeekISO or other params as needed */
+            currentStudentId,
           ],
           refetchType: "all",
         });
@@ -462,12 +392,7 @@ export function useDhorEntryMutation({
         refetchType: "all",
       });
 
-      // onSuccess prop call from the component using the mutation
-      // This should be called after invalidations if it triggers further refetches manually.
-      // The original code had this: onSuccess?.(data);
-      // It's better if component relies on automatic refetch from invalidation.
-      // If onSuccess?.(data) is critical for UI changes (like closing dialog), keep it.
-      if (onSuccess) { // Check if original onSuccess callback exists (it's optional in props)
+      if (onSuccess) {
         onSuccess(data);
       }
 
@@ -481,7 +406,6 @@ export function useDhorEntryMutation({
       let errorMessage = "Failed to process entries. Please try again.";
       if (error instanceof Error) {
         errorMessage = error.message;
-        console.error("Error stack:", error.stack);
       }
       toast({
         title: "Database Error",

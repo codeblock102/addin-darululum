@@ -103,7 +103,7 @@ const Dashboard = () => {
       const profileData = data && data.length > 0 ? data[0] : null;
       
       if (data && data.length > 1) {
-        console.warn("Warning: Found multiple profiles for this email. Using the first one.");
+        // multiple profiles found; use first
       }
       return profileData ? (profileData as unknown as Teacher) : null;
     },

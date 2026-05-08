@@ -37,7 +37,6 @@ async function fetchStudentsForUser(
   }
 
   if (!userData?.madrassah_id) {
-    console.log('No madrassah_id found for this user.');
     return [];
   }
 

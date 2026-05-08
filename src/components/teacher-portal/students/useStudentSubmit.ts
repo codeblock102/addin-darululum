@@ -181,10 +181,10 @@ export const useStudentSubmit = ({
             active: true,
           });
         if (assignmentError) {
-          console.warn("Teacher-student assignment failed:", assignmentError);
+          console.error("Teacher-student assignment failed:", assignmentError);
         }
       } catch (assignErr) {
-        console.warn("Teacher-student assignment threw:", assignErr);
+        console.error("Teacher-student assignment threw:", assignErr);
       }
 
       // Create or link parent account if guardian email is provided
@@ -231,12 +231,7 @@ export const useStudentSubmit = ({
             result = resp.ok ? await resp.json() : null;
             err = resp.ok ? null : await resp.text();
           }
-          console.log("create-parent result:", { data: result, error: err });
-          if (result?.credentials) {
-            console.log(
-              `Parent credentials -> username: ${result.credentials.username}, password: ${result.credentials.password}`,
-            );
-          }
+          void result; void err;
         }
       } catch (_e) {
         // Non-fatal: parent creation issues should not block student creation
