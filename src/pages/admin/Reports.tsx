@@ -20,7 +20,7 @@ function exportCSV(
   headers: string[],
 ) {
   const lines = [
-    headers.join(","),
+    headers.map((h) => JSON.stringify(h)).join(","),
     ...rows.map((r) =>
       headers.map((h) => JSON.stringify(r[h] ?? "")).join(","),
     ),
@@ -101,6 +101,7 @@ async function fetchAttendanceBySection() {
     string,
     { ids: Set<string>; present: number; absent: number; late: number; excused: number; total: number }
   > = {};
+  const studentSectionMap: Record<string, string> = {};
 
   for (const s of students ?? []) {
     const sec = s.section ?? "Unknown";
@@ -108,20 +109,19 @@ async function fetchAttendanceBySection() {
       sectionMap[sec] = { ids: new Set(), present: 0, absent: 0, late: 0, excused: 0, total: 0 };
     }
     sectionMap[sec].ids.add(s.id);
+    studentSectionMap[s.id] = sec;
   }
 
   for (const r of records ?? []) {
-    for (const [sec, data] of Object.entries(sectionMap)) {
-      if (data.ids.has(r.student_id)) {
-        data.total++;
-        const k = r.status?.toLowerCase();
-        if (k === "present") data.present++;
-        else if (k === "absent") data.absent++;
-        else if (k === "late") data.late++;
-        else if (k === "excused") data.excused++;
-        break;
-      }
-    }
+    const sec = studentSectionMap[r.student_id];
+    if (!sec) continue;
+    const data = sectionMap[sec];
+    data.total++;
+    const k = r.status?.toLowerCase();
+    if (k === "present") data.present++;
+    else if (k === "absent") data.absent++;
+    else if (k === "late") data.late++;
+    else if (k === "excused") data.excused++;
   }
 
   return Object.entries(sectionMap).map(([section, d]) => ({

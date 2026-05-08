@@ -79,6 +79,22 @@ export function TeacherEditDialog({
     e.preventDefault();
     if (!teacher) return;
 
+    const trimmedName = formData.name.trim();
+    if (!trimmedName) {
+      toast({ title: "Validation error", description: "Name is required", variant: "destructive" });
+      return;
+    }
+    const trimmedEmail = formData.email?.trim() ?? "";
+    if (trimmedEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) {
+      toast({ title: "Validation error", description: "Invalid email format", variant: "destructive" });
+      return;
+    }
+    const trimmedSubject = formData.subject?.trim() ?? "";
+    if (!trimmedSubject) {
+      toast({ title: "Validation error", description: "Subject is required", variant: "destructive" });
+      return;
+    }
+
     setLoading(true);
     try {
       // Update teacher information in the profiles table

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Copy, Edit2, FileText, Plus, Trash2, X, Check } from "lucide-react";
 import { AdminPageShell, AdminPrimaryBtn } from "@/components/admin/AdminPageShell.tsx";
 import { Button } from "@/components/ui/button.tsx";
@@ -155,11 +155,9 @@ function TemplateDialog({
   );
 
   // Sync when dialog re-opens with different template
-  const [lastInitialId, setLastInitialId] = useState<string | undefined>(initial?.id);
-  if (initial?.id !== lastInitialId) {
-    setLastInitialId(initial?.id);
+  useEffect(() => {
     setForm(initial ? { title: initial.title, body: initial.body, category: initial.category } : BLANK_FORM);
-  }
+  }, [initial?.id]);
 
   const isEditing = !!initial;
   const isPending = createMutation.isPending || updateMutation.isPending;

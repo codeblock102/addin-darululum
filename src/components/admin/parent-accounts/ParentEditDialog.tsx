@@ -59,6 +59,17 @@ export function ParentEditDialog({ parent, open, onOpenChange }: ParentEditDialo
     e.preventDefault();
     if (!parent) return;
 
+    const trimmedName = formData.name.trim();
+    if (!trimmedName) {
+      toast({ title: "Validation error", description: "Name is required", variant: "destructive" });
+      return;
+    }
+    const trimmedEmail = formData.email.trim();
+    if (trimmedEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) {
+      toast({ title: "Validation error", description: "Invalid email format", variant: "destructive" });
+      return;
+    }
+
     setLoading(true);
     try {
       const { error } = await supabase

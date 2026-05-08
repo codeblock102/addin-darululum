@@ -394,26 +394,59 @@ export const AdminDashboard = () => {
   const { toast } = useToast();
   // ── Data queries ────────────────────────────────────────────────────────────
 
+  const { data: userMadrassahId } = useQuery<string | null>({
+    queryKey: ["admin-madrassah-id", session?.user?.id],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("profiles")
+        .select("madrassah_id")
+        .eq("id", session!.user.id)
+        .maybeSingle();
+      return data?.madrassah_id ?? null;
+    },
+    enabled: !!session?.user?.id,
+    staleTime: 10 * 60 * 1000,
+  });
+
   const { data: studentCount = 0 } = useQuery({
-    queryKey: ["admin-students-count"],
+    queryKey: ["admin-students-count", userMadrassahId],
     queryFn: async () => {
       const { count } = await supabase
         .from("students")
-        .select("id", { count: "exact", head: true });
+        .select("id", { count: "exact", head: true })
+        .eq("madrassah_id", userMadrassahId);
       return count ?? 0;
     },
+    enabled: !!userMadrassahId,
     staleTime: 5 * 60 * 1000,
   });
 
   const { data: teacherCount = 0 } = useQuery({
-    queryKey: ["admin-teachers-count"],
+    queryKey: ["admin-teachers-count", userMadrassahId],
     queryFn: async () => {
       const { count } = await supabase
         .from("profiles")
         .select("id", { count: "exact", head: true })
-        .in("role", ["teacher", "admin"]);
+        .in("role", ["teacher", "admin"])
+        .eq("madrassah_id", userMadrassahId);
       return count ?? 0;
     },
+    enabled: !!userMadrassahId,
+    staleTime: 5 * 60 * 1000,
+  });
+
+  // classes/attendance tables don't have madrassah_id column — single-tenant in practice.
+  // Scope via the student id list instead (students table does have madrassah_id).
+  const { data: madrassahStudentIds = [] } = useQuery<string[]>({
+    queryKey: ["admin-madrassah-student-ids", userMadrassahId],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("students")
+        .select("id")
+        .eq("madrassah_id", userMadrassahId!);
+      return (data ?? []).map((s) => s.id);
+    },
+    enabled: !!userMadrassahId,
     staleTime: 5 * 60 * 1000,
   });
 
@@ -429,40 +462,47 @@ export const AdminDashboard = () => {
   });
 
   const { data: presentToday = 0 } = useQuery({
-    queryKey: ["admin-attendance-today"],
+    queryKey: ["admin-attendance-today", madrassahStudentIds.length],
     queryFn: async () => {
+      if (madrassahStudentIds.length === 0) return 0;
       const today = new Date().toISOString().split("T")[0];
       const { count } = await supabase
         .from("attendance")
         .select("id", { count: "exact", head: true })
         .eq("date", today)
-        .eq("status", "present");
+        .eq("status", "present")
+        .in("student_id", madrassahStudentIds);
       return count ?? 0;
     },
+    enabled: madrassahStudentIds.length > 0,
     staleTime: 2 * 60 * 1000,
   });
 
   const { data: absentToday = 0 } = useQuery({
-    queryKey: ["admin-absent-today"],
+    queryKey: ["admin-absent-today", madrassahStudentIds.length],
     queryFn: async () => {
+      if (madrassahStudentIds.length === 0) return 0;
       const today = new Date().toISOString().split("T")[0];
       const { count } = await supabase
         .from("attendance")
         .select("id", { count: "exact", head: true })
         .eq("date", today)
-        .in("status", ["absent", "excused", "sick"]);
+        .in("status", ["absent", "excused", "sick"])
+        .in("student_id", madrassahStudentIds);
       return count ?? 0;
     },
+    enabled: madrassahStudentIds.length > 0,
     staleTime: 2 * 60 * 1000,
   });
 
   const { data: locationBreakdown = [] } = useQuery({
-    queryKey: ["admin-location-breakdown"],
+    queryKey: ["admin-location-breakdown", userMadrassahId],
     queryFn: async () => {
       const { data } = await supabase
         .from("students")
         .select("section, grade")
-        .eq("status", "active");
+        .eq("status", "active")
+        .eq("madrassah_id", userMadrassahId);
       if (!data) return [];
       const map: Record<string, number> = {};
       for (const s of data) {
@@ -493,14 +533,15 @@ export const AdminDashboard = () => {
 
   // Unmarked students: active students with no attendance record for today
   const { data: unmarkedStudents = [], isLoading: isLoadingUnmarked } = useQuery<UnmarkedStudent[]>({
-    queryKey: ["admin-unmarked-students-today"],
+    queryKey: ["admin-unmarked-students-today", userMadrassahId],
     queryFn: async () => {
       const today = new Date().toISOString().split("T")[0];
       // Fetch all active student ids + names
       const { data: allStudents, error: studentsError } = await supabase
         .from("students")
         .select("id, name")
-        .eq("status", "active");
+        .eq("status", "active")
+        .eq("madrassah_id", userMadrassahId);
       if (studentsError || !allStudents) return [];
 
       // Fetch student_ids that already have an attendance record today
@@ -515,6 +556,7 @@ export const AdminDashboard = () => {
         .filter((s) => !markedIds.has(s.id))
         .map((s) => ({ id: s.id, name: s.name ?? "Unknown" }));
     },
+    enabled: !!userMadrassahId,
     staleTime: 2 * 60 * 1000,
   });
 

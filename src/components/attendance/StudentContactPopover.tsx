@@ -48,7 +48,7 @@ export function StudentContactPopover({
           "emergency_contact, home_address"
         )
         .eq("id", studentId)
-        .single();
+        .maybeSingle();
       if (error) throw error;
       return data;
     },
