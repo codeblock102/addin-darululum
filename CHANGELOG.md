@@ -1,3 +1,10 @@
+# [1.9.0](https://github.com/Adekunes/Tadween/compare/v1.8.0...v1.9.0) (2026-05-08)
+
+
+### Features
+
+* Asana DUM App tasks — task checkmark right-align, admin password reset, attendance today card ([e1ad005](https://github.com/Adekunes/Tadween/commit/e1ad00503aa844d89de5a909e486c8cf04bd0ce2))
+
 # [1.8.0](https://github.com/Adekunes/Tadween/compare/v1.7.5...v1.8.0) (2026-05-06)
 
 
