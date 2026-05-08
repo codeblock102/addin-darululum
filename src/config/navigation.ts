@@ -117,6 +117,12 @@ export const adminNavItems: NavItem[] = [
     icon: FileText,
     description: "Manage message templates",
   },
+  {
+    href: "/admin/reports",
+    label: "nav.reports",
+    icon: FileText,
+    description: "Generate and export reports",
+  },
 ];
 
 /**

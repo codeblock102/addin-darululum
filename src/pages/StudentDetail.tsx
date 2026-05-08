@@ -9,7 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs.t
 import {
   ArrowLeft, BookOpen, FolderOpen, Heart, RefreshCw,
   Phone, Mail, Calendar, GraduationCap, User2, TrendingUp,
-  BookMarked, Clock, CheckCircle2,
+  BookMarked, Clock, CheckCircle2, School,
 } from "lucide-react";
 import { StudentProgressChart } from "@/components/students/StudentProgressChart.tsx";
 import { Skeleton } from "@/components/ui/skeleton.tsx";
@@ -20,6 +20,7 @@ import { useToast } from "@/hooks/use-toast.ts";
 import { DhorBook } from "@/components/dhor-book/DhorBook.tsx";
 import { useAuth } from "@/contexts/AuthContext.tsx";
 import { useTeacherStatus } from "@/hooks/useTeacherStatus.ts";
+import { useStudentTeacher } from "@/hooks/useStudentTeacher.ts";
 
 interface Student {
   id: string;
@@ -168,6 +169,8 @@ const StudentDetail = () => {
     enabled: !!id,
   });
 
+  const { data: studentTeachers = [], isLoading: teachersLoading } = useStudentTeacher(id);
+
   useEffect(() => {
     if (studentError) {
       toast({ title: "Error", description: "Failed to load student details.", variant: "destructive" });
@@ -271,6 +274,23 @@ const StudentDetail = () => {
                 </span>
               )}
             </div>
+
+            {/* Teacher badges */}
+            {!teachersLoading && studentTeachers.length > 0 && (
+              <div className="flex flex-wrap items-center gap-2 mt-2">
+                {studentTeachers.map((t) => (
+                  <span
+                    key={`${t.id}-${t.className}`}
+                    className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1 rounded-full"
+                    style={{ color: "#ffffff", backgroundColor: "rgba(255,255,255,0.12)", border: "1px solid rgba(255,255,255,0.25)" }}
+                  >
+                    <GraduationCap className="h-3 w-3" style={{ color: "rgba(255,255,255,0.65)" }} />
+                    {t.name}
+                    <span style={{ color: "rgba(255,255,255,0.55)" }}>· {t.className}</span>
+                  </span>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Quick contact strip */}

@@ -6,10 +6,14 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover.tsx";
-import { Loader2, Phone, Mail, User, ExternalLink, MessageSquare, Info } from "lucide-react";
+import {
+  Loader2, Phone, Mail, User, ExternalLink, MessageSquare, Info,
+  MapPin, MessageCircle, AlertCircle, GraduationCap,
+} from "lucide-react";
 import { supabase } from "@/integrations/supabase/client.ts";
 import { getInitials } from "@/utils/stringUtils.ts";
 import { cn } from "@/lib/utils.ts";
+import { useStudentTeacher } from "@/hooks/useStudentTeacher.ts";
 
 interface StudentContactPopoverProps {
   studentId: string;
@@ -37,7 +41,12 @@ export function StudentContactPopover({
     queryFn: async () => {
       const { data, error } = await supabase
         .from("students")
-        .select("guardian_name, guardian_contact, guardian_email, section, grade, class_ids")
+        .select(
+          "guardian_name, guardian_contact, guardian_email, section, grade, class_ids," +
+          "guardian_phone, guardian_whatsapp," +
+          "secondary_guardian_name, secondary_guardian_phone, secondary_guardian_email, secondary_guardian_whatsapp," +
+          "emergency_contact, home_address"
+        )
         .eq("id", studentId)
         .single();
       if (error) throw error;
@@ -46,6 +55,8 @@ export function StudentContactPopover({
     enabled: open,
     staleTime: 5 * 60 * 1000,
   });
+
+  const { data: studentTeachers = [] } = useStudentTeacher(open ? studentId : undefined);
 
   // For the name-based trigger (used in attendance table), only show for absent students
   if (!iconTrigger && !isAbsent) {
@@ -123,11 +134,10 @@ export function StudentContactPopover({
               icon: <Phone className="h-4 w-4" />,
               label: "Call",
               onClick: () => {
-                if (student?.guardian_contact) {
-                  window.open(`tel:${student.guardian_contact}`);
-                }
+                const phone = student?.guardian_contact ?? student?.guardian_phone;
+                if (phone) window.open(`tel:${phone}`);
               },
-              disabled: !student?.guardian_contact,
+              disabled: !student?.guardian_contact && !student?.guardian_phone,
             },
             {
               icon: <MessageSquare className="h-4 w-4" />,
@@ -172,7 +182,7 @@ export function StudentContactPopover({
             <div className="flex items-center justify-center py-3">
               <Loader2 className="h-5 w-5 animate-spin text-slate-400" />
             </div>
-          ) : !student?.guardian_name && !student?.guardian_contact && !student?.guardian_email ? (
+          ) : !student?.guardian_name && !student?.guardian_contact && !student?.guardian_phone && !student?.guardian_email ? (
             <div className="py-2 text-center">
               <p className="text-sm text-gray-500">No guardian info on file.</p>
               <p className="text-xs text-gray-400 mt-1">
@@ -181,6 +191,8 @@ export function StudentContactPopover({
             </div>
           ) : (
             <>
+              {/* ── Primary Guardian ── */}
+              <SectionLabel label="Primary Guardian" />
               {student?.guardian_name && (
                 <ContactRow
                   icon={<User className="h-3.5 w-3.5" />}
@@ -188,12 +200,22 @@ export function StudentContactPopover({
                   value={student.guardian_name}
                 />
               )}
-              {student?.guardian_contact && (
+              {(student?.guardian_contact ?? student?.guardian_phone) && (
                 <ContactRow
                   icon={<Phone className="h-3.5 w-3.5" />}
-                  label="Phone"
-                  value={student.guardian_contact}
-                  href={`tel:${student.guardian_contact}`}
+                  label="Mobile"
+                  value={(student.guardian_contact ?? student.guardian_phone)!}
+                  href={`tel:${student.guardian_contact ?? student.guardian_phone}`}
+                />
+              )}
+              {student?.guardian_whatsapp &&
+                student.guardian_whatsapp !== student.guardian_contact &&
+                student.guardian_whatsapp !== student.guardian_phone && (
+                <ContactRow
+                  icon={<MessageCircle className="h-3.5 w-3.5" />}
+                  label="WhatsApp"
+                  value={student.guardian_whatsapp}
+                  href={`https://wa.me/${student.guardian_whatsapp.replace(/\D/g, "")}`}
                 />
               )}
               {student?.guardian_email && (
@@ -204,6 +226,83 @@ export function StudentContactPopover({
                   href={`mailto:${student.guardian_email}`}
                 />
               )}
+              {student?.home_address && (
+                <ContactRow
+                  icon={<MapPin className="h-3.5 w-3.5" />}
+                  label="Address"
+                  value={student.home_address}
+                  multiLine
+                />
+              )}
+
+              {/* ── Secondary Contact ── */}
+              {(student?.secondary_guardian_name || student?.secondary_guardian_phone) && (
+                <>
+                  <hr className="border-gray-100 dark:border-gray-700 !my-3" />
+                  <SectionLabel label="Secondary Contact" />
+                  {student.secondary_guardian_name && (
+                    <ContactRow
+                      icon={<User className="h-3.5 w-3.5" />}
+                      label="Secondary Guardian"
+                      value={student.secondary_guardian_name}
+                    />
+                  )}
+                  {student.secondary_guardian_phone && (
+                    <ContactRow
+                      icon={<Phone className="h-3.5 w-3.5" />}
+                      label="Mobile"
+                      value={student.secondary_guardian_phone}
+                      href={`tel:${student.secondary_guardian_phone}`}
+                    />
+                  )}
+                  {student.secondary_guardian_email && (
+                    <ContactRow
+                      icon={<Mail className="h-3.5 w-3.5" />}
+                      label="Email"
+                      value={student.secondary_guardian_email}
+                      href={`mailto:${student.secondary_guardian_email}`}
+                    />
+                  )}
+                  {student.secondary_guardian_whatsapp &&
+                    student.secondary_guardian_whatsapp !== student.secondary_guardian_phone && (
+                    <ContactRow
+                      icon={<MessageCircle className="h-3.5 w-3.5" />}
+                      label="WhatsApp"
+                      value={student.secondary_guardian_whatsapp}
+                      href={`https://wa.me/${student.secondary_guardian_whatsapp.replace(/\D/g, "")}`}
+                    />
+                  )}
+                </>
+              )}
+
+              {/* ── Emergency Contact ── */}
+              {student?.emergency_contact && (
+                <>
+                  <hr className="border-gray-100 dark:border-gray-700 !my-3" />
+                  <SectionLabel label="Emergency Contact" />
+                  <ContactRow
+                    icon={<AlertCircle className="h-3.5 w-3.5" />}
+                    label="Emergency"
+                    value={student.emergency_contact}
+                  />
+                </>
+              )}
+
+              {/* ── Teacher ── */}
+              {studentTeachers.length > 0 && (
+                <>
+                  <hr className="border-gray-100 dark:border-gray-700 !my-3" />
+                  <SectionLabel label="Teacher" />
+                  {studentTeachers.map((t) => (
+                    <ContactRow
+                      key={t.id}
+                      icon={<GraduationCap className="h-3.5 w-3.5" />}
+                      label={t.className}
+                      value={t.name}
+                    />
+                  ))}
+                </>
+              )}
             </>
           )}
         </div>
@@ -212,16 +311,24 @@ export function StudentContactPopover({
   );
 }
 
+function SectionLabel({ label }: { label: string }) {
+  return (
+    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">{label}</p>
+  );
+}
+
 function ContactRow({
   icon,
   label,
   value,
   href,
+  multiLine = false,
 }: {
   icon: React.ReactNode;
   label: string;
   value: string;
   href?: string;
+  multiLine?: boolean;
 }) {
   return (
     <div className="flex items-start gap-2.5">
@@ -240,7 +347,14 @@ function ContactRow({
             {value}
           </a>
         ) : (
-          <p className="text-sm font-medium text-gray-800 dark:text-gray-200 truncate">{value}</p>
+          <p
+            className={cn(
+              "text-sm font-medium text-gray-800 dark:text-gray-200",
+              multiLine ? "line-clamp-2 whitespace-pre-wrap break-words" : "truncate",
+            )}
+          >
+            {value}
+          </p>
         )}
       </div>
     </div>
