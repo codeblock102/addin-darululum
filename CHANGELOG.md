@@ -1,3 +1,10 @@
+## [1.11.2](https://github.com/Adekunes/Tadween/compare/v1.11.1...v1.11.2) (2026-05-08)
+
+
+### Bug Fixes
+
+* bug audit cleanup — validation, .maybeSingle, CSV escape, madrassah scoping ([0f3a93c](https://github.com/Adekunes/Tadween/commit/0f3a93cedf43fc11e250a2a0146e805a9b7f3ba1))
+
 ## [1.11.1](https://github.com/Adekunes/Tadween/compare/v1.11.0...v1.11.1) (2026-05-08)
 
 
