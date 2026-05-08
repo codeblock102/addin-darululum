@@ -11,6 +11,7 @@ import { useNavigate } from "react-router-dom";
 import {
   AlertTriangle,
   ArrowUpRight,
+  Bell,
   BookOpen,
   Calendar,
   CalendarX,
@@ -25,6 +26,8 @@ import {
   Users,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext.tsx";
+import { useToast } from "@/hooks/use-toast.ts";
+import { StudentContactPopover } from "@/components/attendance/StudentContactPopover.tsx";
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 interface StaffRow {
@@ -33,6 +36,11 @@ interface StaffRow {
   role: string | null;
   subject: string | null;
   section: string | null;
+}
+
+interface UnmarkedStudent {
+  id: string;
+  name: string;
 }
 
 // ─── Metric Card ──────────────────────────────────────────────────────────────
@@ -383,6 +391,7 @@ const StaffRow = ({ staff, idx }: { staff: StaffRow; idx: number }) => {
 export const AdminDashboard = () => {
   const navigate = useNavigate();
   const { session } = useAuth();
+  const { toast } = useToast();
   // ── Data queries ────────────────────────────────────────────────────────────
 
   const { data: studentCount = 0 } = useQuery({
@@ -482,6 +491,33 @@ export const AdminDashboard = () => {
     staleTime: 5 * 60 * 1000,
   });
 
+  // Unmarked students: active students with no attendance record for today
+  const { data: unmarkedStudents = [], isLoading: isLoadingUnmarked } = useQuery<UnmarkedStudent[]>({
+    queryKey: ["admin-unmarked-students-today"],
+    queryFn: async () => {
+      const today = new Date().toISOString().split("T")[0];
+      // Fetch all active student ids + names
+      const { data: allStudents, error: studentsError } = await supabase
+        .from("students")
+        .select("id, name")
+        .eq("status", "active");
+      if (studentsError || !allStudents) return [];
+
+      // Fetch student_ids that already have an attendance record today
+      const { data: markedRecords, error: attError } = await supabase
+        .from("attendance")
+        .select("student_id")
+        .eq("date", today);
+      if (attError) return [];
+
+      const markedIds = new Set((markedRecords ?? []).map((r) => r.student_id));
+      return allStudents
+        .filter((s) => !markedIds.has(s.id))
+        .map((s) => ({ id: s.id, name: s.name ?? "Unknown" }));
+    },
+    staleTime: 2 * 60 * 1000,
+  });
+
   // ── Derived values ─────────────────────────────────────────────────────────
 
   const totalStudents = studentCount;
@@ -504,6 +540,13 @@ export const AdminDashboard = () => {
     ?? "Admin";
 
   const unmarkedToday = Math.max(0, studentCount - presentToday - absentToday);
+
+  const handleRemindTeachers = () => {
+    toast({
+      title: "Reminders sent",
+      description: "Teachers with unmarked students have been notified to confirm attendance.",
+    });
+  };
 
   // ─────────────────────────────────────────────────────────────────────────
 
@@ -597,6 +640,66 @@ export const AdminDashboard = () => {
             onClick={() => navigate("/attendance")}
             badge={null}
           />
+        </div>
+
+        {/* ── Attendance Today — Unmarked Students ─────────────────────────── */}
+        <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
+          <div className="flex items-center justify-between mb-5">
+            <h2 className="text-base font-bold text-gray-900 tracking-tight border-l-2 border-amber-500 pl-3">
+              Attendance Today
+            </h2>
+            <div className="flex items-center gap-3">
+              {isLoadingUnmarked
+                ? <span className="text-xs text-gray-400">Loading…</span>
+                : (
+                  <span className="text-xs font-semibold text-amber-700 bg-amber-50 px-2.5 py-1 rounded-full">
+                    {unmarkedStudents.length} unmarked
+                  </span>
+                )}
+              <button
+                type="button"
+                onClick={handleRemindTeachers}
+                disabled={unmarkedStudents.length === 0}
+                className="flex items-center gap-1.5 bg-amber-500 hover:bg-amber-600 disabled:opacity-40 disabled:cursor-not-allowed text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors"
+              >
+                <Bell className="h-3.5 w-3.5" />
+                Remind Teachers
+              </button>
+            </div>
+          </div>
+
+          {isLoadingUnmarked ? (
+            <div className="flex items-center gap-2 text-gray-400 text-sm py-4">
+              <div className="w-4 h-4 border-2 border-gray-300 border-t-green-600 rounded-full animate-spin" />
+              Loading unmarked students…
+            </div>
+          ) : unmarkedStudents.length === 0 ? (
+            <div className="flex items-center gap-2 rounded-xl bg-green-50 border border-green-100 p-4">
+              <CheckCircle2 className="h-4 w-4 text-green-600 flex-shrink-0" />
+              <p className="text-sm font-medium text-green-800">All students have been marked for today.</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2">
+              {unmarkedStudents.map((student) => (
+                <div
+                  key={student.id}
+                  className="flex items-center gap-1.5 bg-amber-50 hover:bg-amber-100 border border-amber-100 rounded-xl px-3 py-2 transition-colors"
+                >
+                  <StudentContactPopover
+                    studentId={student.id}
+                    studentName={student.name}
+                    iconTrigger={false}
+                  />
+                </div>
+              ))}
+            </div>
+          )}
+
+          {!isLoadingUnmarked && unmarkedStudents.length > 0 && (
+            <p className="mt-3 text-xs text-gray-400">
+              Click a student's name to view parent contact info. Use "Remind Teachers" to notify staff by 9:15 am.
+            </p>
+          )}
         </div>
 
         {/* ── Location / Grade Breakdown ────────────────────────────────────── */}

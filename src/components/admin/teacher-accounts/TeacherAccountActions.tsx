@@ -17,7 +17,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog.tsx";
-import { Edit, Eye, KeyRound, MoreHorizontal, ShieldCheck, Trash2, UserMinus } from "lucide-react";
+import { Edit, Eye, KeyRound, Mail, MoreHorizontal, ShieldCheck, Trash2, UserMinus } from "lucide-react";
 import { TeacherAccount } from "@/types/teacher.ts";
 import { promoteToAdmin } from "@/utils/promoteToAdmin.ts";
 import { useToast } from "@/components/ui/use-toast.ts";
@@ -44,6 +44,26 @@ export function TeacherAccountActions({
   const [newPassword, setNewPassword] = useState("");
   const { toast } = useToast();
   const queryClient = useQueryClient();
+
+  const handleSendPasswordReset = async () => {
+    if (!teacher.email) {
+      toast({ title: "No email on file", description: "This teacher has no email address.", variant: "destructive" });
+      return;
+    }
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(teacher.email, {
+        redirectTo: `${window.location.origin}/auth`,
+      });
+      if (error) {
+        toast({ title: "Failed to send reset email", description: error.message, variant: "destructive" });
+      } else {
+        toast({ title: "Password reset email sent", description: `A reset link was sent to ${teacher.email}` });
+      }
+    } catch (e: unknown) {
+      const message = e instanceof Error ? e.message : "Unknown error";
+      toast({ title: "Failed to send reset email", description: message, variant: "destructive" });
+    }
+  };
 
   const handlePromote = async () => {
     const { success, error } = await promoteToAdmin(teacher.id);
@@ -86,7 +106,11 @@ export function TeacherAccountActions({
             <KeyRound className="mr-2 h-4 w-4" />
             <span>Change Password</span>
           </DropdownMenuItem>
-          
+          <DropdownMenuItem onClick={handleSendPasswordReset} className="cursor-pointer text-blue-700 hover:text-blue-800 hover:bg-blue-50">
+            <Mail className="mr-2 h-4 w-4" />
+            <span>Send Password Reset Email</span>
+          </DropdownMenuItem>
+
           {teacher.role !== 'admin' && (
             <>
               <DropdownMenuSeparator className="bg-gray-200" />

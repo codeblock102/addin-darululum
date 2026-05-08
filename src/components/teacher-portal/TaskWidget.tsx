@@ -124,13 +124,13 @@ export const TaskWidget = ({ teacherId }: TaskWidgetProps) => {
                   {STATUS_LABELS[task.status]}
                 </span>
 
-                {/* Mark done */}
+                {/* Mark done — far right */}
                 <button
                   type="button"
                   title="Mark as done"
                   disabled={completeMutation.isPending}
                   onClick={() => completeMutation.mutate(task.id)}
-                  className="p-1.5 rounded-lg bg-green-50 hover:bg-green-100 text-green-700 flex-shrink-0 transition-colors disabled:opacity-50"
+                  className="ml-auto p-1.5 rounded-lg bg-green-50 hover:bg-green-100 text-green-700 flex-shrink-0 transition-colors disabled:opacity-50"
                 >
                   <Check className="h-3.5 w-3.5" />
                 </button>
