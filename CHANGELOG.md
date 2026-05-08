@@ -1,3 +1,10 @@
+# [1.10.0](https://github.com/Adekunes/Tadween/compare/v1.9.0...v1.10.0) (2026-05-08)
+
+
+### Features
+
+* communication templates + admin edit user info ([9fd7b1c](https://github.com/Adekunes/Tadween/commit/9fd7b1c94761f55296ddcb1a29444a32889f83ca))
+
 # [1.9.0](https://github.com/Adekunes/Tadween/compare/v1.8.0...v1.9.0) (2026-05-08)
 
 
