@@ -193,6 +193,12 @@ export const parentNavItems: NavItem[] = [
     exact: true,
   },
   {
+    href: "/parent/agenda",
+    label: "nav.agenda",
+    icon: Calendar,
+    description: "Weekly class schedule",
+  },
+  {
     href: "/parent/progress",
     label: "nav.quranProgress",
     icon: Book,

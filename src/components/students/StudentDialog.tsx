@@ -27,6 +27,7 @@ import {
   TabsTrigger,
 } from "@/components/ui/tabs.tsx";
 import { formatErrorMessage } from "@/utils/formatErrorMessage.ts";
+import { StudentPhotoUpload } from "@/components/students/StudentPhotoUpload.tsx";
 
 interface Student {
   id: string;
@@ -493,6 +494,20 @@ export const StudentDialog = (
             </TabsList>
 
             <TabsContent value="info" className="space-y-4">
+              {selectedStudent?.id && (
+                <div className="flex items-center gap-4 pb-2">
+                  <StudentPhotoUpload
+                    studentId={selectedStudent.id}
+                    studentName={formData.name || selectedStudent.name}
+                    currentUrl={(completeStudentData as { photo_url?: string | null } | null)?.photo_url ?? null}
+                    size="lg"
+                  />
+                  <div className="text-sm text-muted-foreground">
+                    <p className="font-medium text-gray-900 dark:text-gray-100">Profile Photo</p>
+                    <p>Click to upload a JPEG, PNG, or WebP image (max 2MB).</p>
+                  </div>
+                </div>
+              )}
               <div className="space-y-2">
                 <Label htmlFor="name">Full Name</Label>
                 <Input

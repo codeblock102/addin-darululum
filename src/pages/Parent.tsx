@@ -69,7 +69,19 @@ const Parent = () => {
     enabled: !!selectedStudentId,
   });
 
-  const { data: assignments } = useQuery({
+  type ParentAssignment = {
+    id: string;
+    title: string;
+    description: string | null;
+    due_date: string | null;
+    status: string;
+    student_ids: string[];
+    submission_status?: "assigned" | "submitted" | "graded" | null;
+    submission_grade?: number | null;
+    submission_feedback?: string | null;
+  };
+
+  const { data: assignments } = useQuery<ParentAssignment[]>({
     queryKey: ["parent-student-assignments", selectedStudentId],
     queryFn: async () => {
       if (!selectedStudentId) return [];
@@ -78,7 +90,29 @@ const Parent = () => {
         .select("id, title, description, due_date, status, student_ids")
         .contains("student_ids", [selectedStudentId]);
       if (error) throw error;
-      return data || [];
+      const list = (data || []) as ParentAssignment[];
+      if (list.length === 0) return list;
+      const ids = list.map((a) => a.id);
+      const { data: subs } = await supabase
+        .from("teacher_assignment_submissions")
+        .select("assignment_id, status, grade, feedback")
+        .eq("student_id", selectedStudentId)
+        .in("assignment_id", ids);
+      const subMap = new Map(
+        (subs || []).map((s: { assignment_id: string; status: string; grade: number | null; feedback: string | null }) => [
+          s.assignment_id,
+          s,
+        ]),
+      );
+      return list.map((a) => {
+        const sub = subMap.get(a.id);
+        return {
+          ...a,
+          submission_status: (sub?.status as ParentAssignment["submission_status"]) ?? null,
+          submission_grade: sub?.grade ?? null,
+          submission_feedback: sub?.feedback ?? null,
+        };
+      });
     },
     enabled: !!selectedStudentId,
   });
@@ -109,7 +143,7 @@ const Parent = () => {
 
   const lastProgress = progressEntries?.[0];
   const pendingAssignments = (assignments || []).filter(
-    (a: { status: string }) => a.status?.toLowerCase() !== "graded"
+    (a) => (a.submission_status ?? a.status)?.toLowerCase() !== "graded"
   ).length;
 
   return (
@@ -301,22 +335,41 @@ const Parent = () => {
                   <EmptyState message="No assignments" description="Assignments will appear here once your teacher creates them." icon={<ClipboardList className="h-8 w-8 text-gray-400" />} />
                 ) : (
                   <ul className="space-y-3">
-                    {(assignments || []).map((as: { id: string; title: string; description: string | null; due_date: string | null; status: string }) => (
-                      <li key={as.id} className="p-3 rounded-lg border flex items-start justify-between gap-3">
-                        <div className="space-y-0.5 min-w-0">
-                          <div className="font-medium text-sm truncate">{as.title}</div>
-                          {as.description && (
-                            <div className="text-xs text-muted-foreground truncate">{as.description}</div>
-                          )}
-                          {as.due_date && (
-                            <div className="text-xs text-muted-foreground">Due: {as.due_date}</div>
-                          )}
-                        </div>
-                        <Badge variant={as.status === "graded" ? "secondary" : "outline"} className="shrink-0 capitalize">
-                          {as.status}
-                        </Badge>
-                      </li>
-                    ))}
+                    {(assignments || []).map((as) => {
+                      const effectiveStatus = as.submission_status ?? as.status;
+                      const isGraded = effectiveStatus === "graded";
+                      return (
+                        <li key={as.id} className="p-3 rounded-lg border flex items-start justify-between gap-3">
+                          <div className="space-y-0.5 min-w-0">
+                            <div className="font-medium text-sm truncate">{as.title}</div>
+                            {as.description && (
+                              <div className="text-xs text-muted-foreground truncate">{as.description}</div>
+                            )}
+                            {as.due_date && (
+                              <div className="text-xs text-muted-foreground">Due: {as.due_date}</div>
+                            )}
+                            {isGraded && as.submission_feedback && (
+                              <div className="text-xs text-foreground/70 mt-1 line-clamp-2">
+                                Feedback: {as.submission_feedback}
+                              </div>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-2 shrink-0">
+                            {isGraded && as.submission_grade != null && (
+                              <span className="text-sm font-semibold tabular-nums">
+                                {as.submission_grade}
+                              </span>
+                            )}
+                            <Badge
+                              variant={isGraded ? "secondary" : "outline"}
+                              className={`capitalize ${isGraded ? "bg-green-100 text-green-800 border-green-200" : ""}`}
+                            >
+                              {effectiveStatus}
+                            </Badge>
+                          </div>
+                        </li>
+                      );
+                    })}
                   </ul>
                 )}
               </CardContent>

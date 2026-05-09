@@ -45,7 +45,7 @@ export function StudentContactPopover({
           "guardian_name, guardian_contact, guardian_email, section, grade, class_ids," +
           "guardian_phone, guardian_whatsapp," +
           "secondary_guardian_name, secondary_guardian_phone, secondary_guardian_email, secondary_guardian_whatsapp," +
-          "emergency_contact, home_address"
+          "emergency_contact, home_address, photo_url"
         )
         .eq("id", studentId)
         .maybeSingle();
@@ -96,8 +96,19 @@ export function StudentContactPopover({
         {/* HubSpot-style header — avatar + name */}
         <div className="px-5 pt-5 pb-4 bg-gradient-to-br from-slate-700 to-slate-800">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0 text-white font-bold text-base ring-2 ring-white/30">
-              {getInitials(studentName)}
+            <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0 text-white font-bold text-base ring-2 ring-white/30 overflow-hidden">
+              {(() => {
+                const photoUrl = (student as unknown as { photo_url?: string | null } | null)?.photo_url;
+                return photoUrl ? (
+                  <img
+                    src={photoUrl}
+                    alt={studentName}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  getInitials(studentName)
+                );
+              })()}
             </div>
             <div className="min-w-0">
               <p className="text-base font-bold text-white leading-tight truncate">

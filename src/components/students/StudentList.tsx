@@ -24,6 +24,7 @@ interface Student {
   medical_condition?: string | null;
   status_start_date?: string | null;
   status_end_date?: string | null;
+  photo_url?: string | null;
 }
 
 interface StudentListProps {
@@ -211,10 +212,18 @@ export const StudentList = ({
             <TableCell className="py-4 px-4">
               <div className="flex items-center space-x-3">
                 <div
-                  className={`w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold shrink-0 ${getAvatarBgClass(student.name)}`}
+                  className={`w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold shrink-0 overflow-hidden ${student.photo_url ? "bg-gray-200" : getAvatarBgClass(student.name)}`}
                   style={{ color: "#ffffff" }}
                 >
-                  {student.name.charAt(0).toUpperCase()}
+                  {student.photo_url ? (
+                    <img
+                      src={student.photo_url}
+                      alt={student.name}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    student.name.charAt(0).toUpperCase()
+                  )}
                 </div>
                 <span className="font-medium text-gray-900">{student.name}</span>
               </div>

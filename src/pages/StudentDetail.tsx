@@ -9,13 +9,14 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs.t
 import {
   ArrowLeft, BookOpen, FolderOpen, Heart, RefreshCw,
   Phone, Mail, Calendar, GraduationCap, User2, TrendingUp,
-  BookMarked, Clock, CheckCircle2, School,
+  BookMarked, Clock, CheckCircle2, School, FileText,
 } from "lucide-react";
 import { StudentProgressChart } from "@/components/students/StudentProgressChart.tsx";
 import { Skeleton } from "@/components/ui/skeleton.tsx";
 import { NewProgressEntry } from "@/components/students/NewProgressEntry.tsx";
 import { StudentDossier } from "@/components/students/StudentDossier.tsx";
 import { StudentHealthIEP } from "@/components/students/StudentHealthIEP.tsx";
+import { StudentPhotoUpload } from "@/components/students/StudentPhotoUpload.tsx";
 import { useToast } from "@/hooks/use-toast.ts";
 import { DhorBook } from "@/components/dhor-book/DhorBook.tsx";
 import { useAuth } from "@/contexts/AuthContext.tsx";
@@ -42,16 +43,7 @@ interface Student {
   province?: string | null;
   postal_code?: string | null;
   class_ids?: string[] | null;
-}
-
-function getInitials(name: string) {
-  return name
-    .split(" ")
-    .map((w) => w[0])
-    .filter(Boolean)
-    .slice(0, 2)
-    .join("")
-    .toUpperCase();
+  photo_url?: string | null;
 }
 
 function capitalize(str: string) {
@@ -111,7 +103,7 @@ const StudentDetail = () => {
       if (!id) throw new Error("Student ID is required");
       const { data, error } = await supabase
         .from("students")
-        .select("id, name, grade, gender, section, class_ids, guardian_name, guardian_email, guardian_contact, secondary_guardian_email, permanent_code, health_card, date_of_birth, enrollment_date, street, city, province, postal_code, madrassah_id, created_at, status")
+        .select("id, name, grade, gender, section, class_ids, guardian_name, guardian_email, guardian_contact, secondary_guardian_email, permanent_code, health_card, date_of_birth, enrollment_date, street, city, province, postal_code, madrassah_id, created_at, status, photo_url")
         .eq("id", id)
         .single();
       if (error) throw error;
@@ -223,8 +215,16 @@ const StudentDetail = () => {
           <ArrowLeft className="h-4 w-4" /> Students
         </button>
 
-        {/* Log Progress button */}
-        <div className="absolute top-4 right-4" style={{ color: "#ffffff" }}>
+        {/* Top-right actions */}
+        <div className="absolute top-4 right-4 flex items-center gap-2" style={{ color: "#ffffff" }}>
+          <button
+            type="button"
+            onClick={() => navigate(`/students/${student.id}/report-card`)}
+            style={{ color: "#ffffff", backgroundColor: "rgba(255,255,255,0.15)" }}
+            className="flex items-center gap-1.5 text-sm font-semibold transition-colors px-3 py-1.5 rounded-lg hover:opacity-90"
+          >
+            <FileText className="h-4 w-4" /> View Report Card
+          </button>
           <NewProgressEntry
             studentId={student.id}
             open={isDialogOpen}
@@ -234,12 +234,15 @@ const StudentDetail = () => {
         </div>
 
         <div className="px-6 pt-16 pb-7 flex flex-col sm:flex-row items-start sm:items-end gap-5">
-          {/* Avatar */}
-          <div
-            className="w-20 h-20 rounded-2xl flex items-center justify-center font-bold text-2xl shrink-0 shadow-lg"
-            style={{ backgroundColor: "rgba(255,255,255,0.15)", border: "2px solid rgba(255,255,255,0.35)", color: "#ffffff" }}
-          >
-            {getInitials(student.name)}
+          {/* Avatar — photo upload */}
+          <div className="shrink-0">
+            <StudentPhotoUpload
+              studentId={student.id}
+              studentName={student.name}
+              currentUrl={student.photo_url ?? null}
+              size="lg"
+              readOnly={!isAdmin && !session?.user?.id}
+            />
           </div>
 
           {/* Name + meta */}

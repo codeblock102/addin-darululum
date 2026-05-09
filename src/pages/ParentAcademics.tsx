@@ -15,6 +15,7 @@ import { Separator } from "@/components/ui/separator.tsx";
 import { useIsMobile } from "@/hooks/use-mobile.tsx";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog.tsx";
 import { Button } from "@/components/ui/button.tsx";
+import { SubmitAssignmentDialog } from "@/components/parent/SubmitAssignmentDialog.tsx";
 
 const ParentAcademics = () => {
   const { children } = useParentChildren();
@@ -47,6 +48,8 @@ const ParentAcademics = () => {
     graded_at: string | null;
     grade: number | null;
     feedback: string | null;
+    attachment_url: string | null;
+    parent_note: string | null;
   };
   type AssignmentListItem = {
     id: string; // composite `${assignmentId}:${studentId}`
@@ -55,6 +58,8 @@ const ParentAcademics = () => {
     graded_at: string | null;
     grade: number | null;
     feedback: string | null;
+    submission_attachment_url: string | null;
+    parent_note: string | null;
     assignment: Pick<AssignmentRow, "id" | "title" | "description" | "due_date" | "attachment_name" | "attachment_url">;
   };
 
@@ -88,7 +93,7 @@ const ParentAcademics = () => {
         if (assignmentIds.length > 0) {
           const { data: subs, error: subsErr } = await supabase
             .from("teacher_assignment_submissions")
-            .select("assignment_id, status, submitted_at, graded_at, grade, feedback")
+            .select("assignment_id, status, submitted_at, graded_at, grade, feedback, attachment_url, parent_note")
             .eq("student_id", selectedStudentId)
             .in("assignment_id", assignmentIds);
           if (!subsErr) {
@@ -108,6 +113,8 @@ const ParentAcademics = () => {
           graded_at: sub?.graded_at || null,
           grade: sub?.grade ?? null,
           feedback: sub?.feedback ?? null,
+          submission_attachment_url: sub?.attachment_url ?? null,
+          parent_note: sub?.parent_note ?? null,
           assignment: {
             id: a.id,
             title: a.title,
@@ -143,6 +150,8 @@ const ParentAcademics = () => {
 
   // Assignment details modal state
   const [detailRow, setDetailRow] = useState<AssignmentListItem | null>(null);
+  // Submission dialog state
+  const [submitRow, setSubmitRow] = useState<AssignmentListItem | null>(null);
 
   // Inline preview state for attachment inside the modal
   interface AttachmentPreviewState {
@@ -298,7 +307,20 @@ const ParentAcademics = () => {
                               {row.feedback ?? "—"}
                             </TableCell>
                             <TableCell className="text-right">
-                              <Button size="sm" variant="outline" onClick={() => setDetailRow(row)} className="hidden sm:inline-flex">View</Button>
+                              <div className="flex justify-end gap-2" onClick={(e) => e.stopPropagation()}>
+                                <Button size="sm" variant="outline" onClick={() => setDetailRow(row)} className="hidden sm:inline-flex">View</Button>
+                                <Button
+                                  size="sm"
+                                  variant={row.status === "graded" ? "secondary" : "default"}
+                                  onClick={() => setSubmitRow(row)}
+                                >
+                                  {row.status === "graded"
+                                    ? "View Grade"
+                                    : row.status === "submitted"
+                                      ? "Resubmit"
+                                      : "Submit Work"}
+                                </Button>
+                              </div>
                             </TableCell>
                           </TableRow>
                         ))
@@ -450,6 +472,25 @@ const ParentAcademics = () => {
             </div>
           </DialogContent>
         </Dialog>
+
+        {submitRow && selectedStudentId && (
+          <SubmitAssignmentDialog
+            open={!!submitRow}
+            onClose={() => setSubmitRow(null)}
+            assignmentId={submitRow.assignment.id}
+            studentId={selectedStudentId}
+            assignmentTitle={submitRow.assignment.title}
+            existingSubmission={{
+              status: submitRow.status,
+              submitted_at: submitRow.submitted_at,
+              graded_at: submitRow.graded_at,
+              grade: submitRow.grade,
+              feedback: submitRow.feedback,
+              attachment_url: submitRow.submission_attachment_url,
+              parent_note: submitRow.parent_note,
+            }}
+          />
+        )}
     </div>
   );
 };

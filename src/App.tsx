@@ -20,6 +20,7 @@ import NotFound from "@/pages/NotFound.tsx";
 import Students from "@/pages/Students.tsx";
 import Teachers from "@/pages/Teachers.tsx";
 import StudentDetail from "@/pages/StudentDetail.tsx";
+import HifzReportCard from "@/pages/HifzReportCard.tsx";
 import Dashboard from "@/pages/Dashboard.tsx";
 import Classes from "@/pages/Classes.tsx";
 import ProgressBook from "@/pages/ProgressBook.tsx";
@@ -43,6 +44,7 @@ import TeacherSchedule from "@/pages/TeacherSchedule.tsx";
 import Parent from "@/pages/Parent.tsx";
 import ParentProgress from "@/pages/ParentProgress.tsx";
 import ParentAcademics from "@/pages/ParentAcademics.tsx";
+import ParentAgenda from "@/pages/ParentAgenda.tsx";
 import ParentAttendance from "@/pages/ParentAttendance.tsx";
 import ParentAccounts from "@/pages/admin/ParentAccounts.tsx";
 import BulkStudentImport from "@/pages/admin/BulkStudentImport.tsx";
@@ -195,6 +197,14 @@ function App() {
                 </ProtectedRoute>
               }
             />
+            <Route
+              path="/parent/agenda"
+              element={
+                <ProtectedRoute requireParent>
+                  <ParentAgenda />
+                </ProtectedRoute>
+              }
+            />
             {/* Redirect /teacher-portal to /dashboard for consistency */}
             <Route
               path="/teacher-portal"
@@ -202,6 +212,7 @@ function App() {
             />
             <Route path="/students" element={<Students />} />
             <Route path="/students/:id" element={<StudentDetail />} />
+            <Route path="/students/:id/report-card" element={<HifzReportCard />} />
             <Route
               path="/teachers"
               element={

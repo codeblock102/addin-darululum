@@ -46,6 +46,7 @@ interface Student {
   status_start_date?: string | null;
   status_end_date?: string | null;
   status_notes?: string | null;
+  photo_url?: string | null;
 }
 
 interface StatCardProps {
@@ -97,7 +98,7 @@ const Students = () => {
         const { data: students, error } = await supabase
           .from("students")
           .select(
-            "id, name, date_of_birth, enrollment_date, guardian_name, guardian_contact, guardian_email, status, madrassah_id, section, medical_condition, gender, grade, health_card, permanent_code, street, city, province, postal_code, completed_juz, current_juz, status_start_date, status_end_date, status_notes",
+            "id, name, date_of_birth, enrollment_date, guardian_name, guardian_contact, guardian_email, status, madrassah_id, section, medical_condition, gender, grade, health_card, permanent_code, street, city, province, postal_code, completed_juz, current_juz, status_start_date, status_end_date, status_notes, photo_url",
           )
           .eq("madrassah_id", userData.madrassah_id);
 
@@ -124,7 +125,7 @@ const Students = () => {
         const { data: students, error: studentsError } = await supabase
           .from("students")
           .select(
-            "id, name, date_of_birth, enrollment_date, guardian_name, guardian_contact, guardian_email, status, madrassah_id, section, medical_condition, gender, grade, health_card, permanent_code, street, city, province, postal_code, completed_juz, current_juz, status_start_date, status_end_date, status_notes",
+            "id, name, date_of_birth, enrollment_date, guardian_name, guardian_contact, guardian_email, status, madrassah_id, section, medical_condition, gender, grade, health_card, permanent_code, street, city, province, postal_code, completed_juz, current_juz, status_start_date, status_end_date, status_notes, photo_url",
           )
           .in("id", studentIds);
         
