@@ -28,17 +28,32 @@ A full-stack school management platform for Dār Al-Ulūm Montréal, built to ma
 - **Parent portal** — read-only access to child's progress, attendance, and academics
 - **Admin tools** — bulk student import, parent account provisioning, role setup, database seeder
 
-### Recently Added
+### Recently Added (Phase 1 + Phase 2 — May 2026)
 | Feature | Where to find it |
 |---|---|
-| **Section-scoped access** | Teachers and admins with `profiles.section` set only see students from that section; attendance section dropdown auto-locks |
-| **Stunning email redesign** | Both `attendance-absence-email` and `daily-progress-email` edge functions use gradient headers, status-colored banners, and clean card layouts |
-| **Guided onboarding** | Fires on first login for every role (Admin / Teacher / Parent); role-specific 5-step modal |
-| **Admin dashboard stats** | `/dashboard` — personalized welcome, Today Absent card, Unmarked Today card, Enrolment by Location/Grade breakdown |
-| **Health & IEP tab** | `/students/:id` → Health & IEP tab — health card #, medical conditions, allergies, IEP toggle |
-| **Staff HRIS directory** | `/teachers` → Staff Directory tab — searchable staff cards with subjects, grades, contact links |
-| **Sick attendance status** | Attendance form (single and bulk) — new "Sick" option with thermometer icon |
-| **Teacher schedules seed** | `supabase/migrations/seed_dum_schedules_v10.sql` — run in Supabase SQL editor to populate all 12 class schedules |
+| **Admin Reports** | `/admin/reports` — 5 reports (attendance by student/section, full roster, students by section, hifz progress) with CSV export |
+| **Communication Templates** | `/admin/communication-templates` — preset Islamic message templates, CRUD |
+| **Parent Weekly Agenda** | `/parent/agenda` — child's weekly class schedule grid with school events overlay |
+| **Hifz Report Card** | `/students/:id/report-card` — printable per-student Quran memorization report (Cmd+P → PDF) |
+| **Student Photo Upload** | StudentDialog/Detail/Popover — click avatar to upload, public Supabase bucket |
+| **Parent Assignment Submission** | `/parent/academics` — parents upload completed work + note |
+| **Full Contact Popover** | Primary + secondary + emergency contact + assigned teacher |
+| **Teacher Visibility for Parents** | Student profile + ParentProgress show child's teacher name |
+| **Sentry Error Monitoring** | `src/lib/sentry.ts` — set `VITE_SENTRY_DSN` to enable |
+| **Vitest Critical-Path Tests** | `npm test` — ParentEditDialog, TeacherEditDialog, Reports CSV |
+| **Section-scoped access** | Teachers/admins with `profiles.section` only see matching students |
+| **Email redesign** | `attendance-absence-email` + `daily-progress-email` use gradient headers |
+| **Guided onboarding** | Role-specific 5-step modal on first login |
+| **Admin dashboard stats** | `/dashboard` — Today Absent, Unmarked Today, Enrolment breakdown, Attendance Today card |
+| **Admin "View As" proxy** | Eye icon on Teachers/Parent Accounts — impersonate with amber banner |
+| **Admin password reset** | TeacherAccountActions dropdown → Send Password Reset Email |
+| **Admin edit teacher/parent** | Pencil button on Teachers + Parent Accounts |
+| **Health & IEP tab** | `/students/:id` → Health & IEP tab |
+| **Staff HRIS directory** | `/teachers` → Staff Directory tab |
+| **Sick attendance status** | Attendance form — "Sick" with thermometer icon |
+| **Multi-Day Absence Modal** | Categorized reasons (Family/Health/Legal/Other) |
+| **Sortable table headers** | Students, Teachers, Parent Accounts |
+| **Teacher schedules seed** | `supabase/migrations/seed_dum_schedules_v10.sql` |
 
 ---
 

@@ -1,6 +1,7 @@
 # Darul Ulum Montreal — Roadmap
 
-_Last updated: 2026-05-07_
+_Last updated: 2026-05-09_
+_Status: Phase 1 ✅ shipped · Phase 2 ✅ shipped · Phase 3 next_
 _Owner: Adekunle (engineering) · Stakeholders: DUM admin team, secretary, teachers, parents_
 
 ---
@@ -11,7 +12,7 @@ Darul Ulum Montreal is becoming the operational backbone of a modern Quran schoo
 
 ---
 
-## Phase 1 — Stabilization (this week)
+## Phase 1 — Stabilization ✅ SHIPPED (2026-05-08)
 
 **Goal:** zero known critical bugs, observable production, basic safety net of tests. No new features ship until this is green.
 
@@ -56,7 +57,7 @@ Gate CI on these. Everything else is gravy.
 
 ---
 
-## Phase 2 — Parent UX (next 2 weeks)
+## Phase 2 — Parent UX ✅ SHIPPED (2026-05-09)
 
 **Goal:** parents log in daily because the app is more useful than texting the teacher. This is where we earn retention.
 
@@ -93,7 +94,7 @@ Gate CI on these. Everything else is gravy.
 
 ---
 
-## Phase 3 — School Operations (month 2)
+## Phase 3 — School Operations 🟡 NEXT (month 2)
 
 **Goal:** the secretary's spreadsheets disappear. Admin runs the school day from the app.
 
