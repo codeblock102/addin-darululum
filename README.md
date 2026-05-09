@@ -226,6 +226,7 @@ npm run dev          # Vite dev server at http://localhost:8080
 ```
 VITE_SUPABASE_URL=
 VITE_SUPABASE_ANON_KEY=
+VITE_SENTRY_DSN=   # optional — Sentry frontend DSN; leave empty to disable error monitoring
 ```
 
 **Supabase project secrets:**

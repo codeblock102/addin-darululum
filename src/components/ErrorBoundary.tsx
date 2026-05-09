@@ -1,6 +1,7 @@
 import { Component, ErrorInfo, ReactNode } from "react";
 import { AlertTriangle, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button.tsx";
+import { Sentry } from "@/lib/sentry.ts";
 
 interface Props {
   children: ReactNode;
@@ -29,6 +30,7 @@ export class ErrorBoundary extends Component<Props, State> {
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     console.error("Unhandled render error:", error, errorInfo);
+    Sentry.captureException(error, { extra: { componentStack: errorInfo?.componentStack } });
     this.setState({ errorInfo });
   }
 

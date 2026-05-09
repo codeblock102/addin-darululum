@@ -14,18 +14,26 @@ import { supabase } from "@/integrations/supabase/client.ts";
 
 // ─── CSV helper ───────────────────────────────────────────────────────────────
 
-function exportCSV(
-  filename: string,
+export function buildCSV(
   rows: Record<string, unknown>[],
   headers: string[],
-) {
+): string {
   const lines = [
     headers.map((h) => JSON.stringify(h)).join(","),
     ...rows.map((r) =>
       headers.map((h) => JSON.stringify(r[h] ?? "")).join(","),
     ),
   ];
-  const blob = new Blob([lines.join("\n")], { type: "text/csv" });
+  return lines.join("\n");
+}
+
+export function exportCSV(
+  filename: string,
+  rows: Record<string, unknown>[],
+  headers: string[],
+) {
+  const csv = buildCSV(rows, headers);
+  const blob = new Blob([csv], { type: "text/csv" });
   const a = document.createElement("a");
   a.href = URL.createObjectURL(blob);
   a.download = `${filename}-${new Date().toISOString().split("T")[0]}.csv`;
