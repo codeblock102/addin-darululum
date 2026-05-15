@@ -72,30 +72,39 @@ The core purpose: track every student's Quran memorization journey, monitor atte
 - `/admin/parent-accounts` — Manage parent accounts
 - `/admin/bulk-student-import` — CSV student import
 - `/admin/teacher-schedules` — View teacher schedules
+- `/admin/communication-templates` — Manage message templates
+- `/admin/reports` — Generate + export CSV reports (date/section filtered)
+- `/admin/interviews` — Create interview windows, generate slots, manage bookings
 - `/admin/setup` — First-time setup wizard
 - `/admin/roles` — Manual role assignment
 
 ### Main App (protected, under `DashboardLayout`)
 - `/dashboard` — Role-based hub (Teacher Portal or Admin Portal)
 - `/parent` — Parent dashboard
+- `/parent/agenda` — Weekly class schedule grid (Mon–Sat × hour slots)
 - `/parent/progress` — Child's Quran progress
-- `/parent/academics` — Assignments with status filtering
+- `/parent/academics` — Assignments with status filtering + submission upload
 - `/parent/attendance` — Attendance history
 - `/parent/messages` — Teacher messaging
+- `/parent/interviews` — Book parent-teacher interview slots
 - `/students` — Student roster
 - `/students/:id` — Individual student profile
+- `/students/:id/report-card` — Printable Hifz Report Card (Cmd+P → PDF)
 - `/teachers` — Teacher roster
 - `/classes` — Class management
 - `/progress-book` — Dhor book entry (teacher)
 - `/attendance` — Bulk attendance form (teacher)
 - `/messages` — Teacher messaging
 - `/schedule` — Teacher schedule
+- `/calendar` — School calendar (events, holidays, PD days; audience: all/teachers/parents)
+- `/tasks` — Task list (admin assigns to teachers)
+- `/absence-requests` — Teacher absence request review (admin)
 - `/teacher-accounts` — Manage teacher accounts (admin)
 - `/add-parent` — Link parent to student (teacher)
+- `/profile` — Edit own name/phone/bio + change password
 - `/settings` — System settings
 - `/preferences` — User preferences
 - `/activity` — Activity feed (admin)
-- `/calendar` — School calendar (events, holidays, PD days) — all roles
 
 ### Dev-only (gated)
 - `/dev/seeder`, `/dev/create-demo`, `/dev/create-teacher-profile`, etc.
@@ -118,13 +127,27 @@ The core purpose: track every student's Quran memorization journey, monitor atte
 | `parent_children` | Parent→student linkage (legacy/fallback) |
 | `notifications` | In-app notification queue; also used for overdue-email de-duplication (assignment_id + recipient_id + date) |
 | `analytics_metrics` | Pre-aggregated analytics data |
+| `app_settings` | Global app config (admin-only RW; RLS enabled 2026-05-11) |
+| `email_logs` | All Resend dispatches (admin-only SELECT; service_role inserts; RLS enabled 2026-05-11) |
+| `attendance_settings` | Cutoff times + attendance rules (admin RW, teacher SELECT; RLS enabled 2026-05-11) |
+| `attendance_absence_notifications` | Per-day per-student absence email dedup ledger (admin RW, teacher SELECT; RLS enabled 2026-05-11) |
 | `teacher_tasks` | Tasks assigned by admin to teachers — priority (low/medium/high/urgent), status (pending/in_progress/done), due_date, notes |
 | `announcements` | Class announcements from teachers — title, message, class_id, sent_to_count |
 | `absence_requests` | Teacher absence requests — date range, reason, status (pending/approved/rejected), admin_note, reviewed_by |
 | `school_events` | Calendar events — title, event_type, start_date, end_date, color, audience (all/teachers/parents) |
+| `communication_templates` | Admin-managed reusable message templates — name, subject, body, category |
+| `teacher_assignment_submissions` | Parent file uploads for assignments — file_url, parent_note, upserts on (assignment_id, student_id) |
+| `interview_windows` | Admin-created interview blocks — title, description, start_date, end_date, slot_duration_minutes |
+| `interview_slots` | Bookable 15-min slots — window_id, teacher_id, slot_date, slot_time; UNIQUE booking prevents double-booking |
+| `interview_bookings` | Parent bookings — slot_id (UNIQUE), student_id, parent_id, notes, status (confirmed/cancelled/no_show) |
 
 ### Row Level Security
 All tables have RLS policies. Teachers see only their students. Parents see only their children's data. Admins have full access.
+
+**2026-05-11 hardening:** RLS enabled on `app_settings`, `email_logs`, `attendance_settings`, `attendance_absence_notifications` (previously exposed to anon role). Edge functions writing to these tables use `service_role` which bypasses RLS.
+
+### Profile uniqueness
+`profiles.email` has a case-insensitive UNIQUE index (`profiles_email_unique_idx ON LOWER(email)`) since 2026-05-11 to prevent duplicate accounts.
 
 ---
 
@@ -145,6 +168,7 @@ All emails go through **Resend** via Supabase Edge Functions:
 | `send-assignment-overdue` | Daily at 08:00 UTC via pg_cron — scans overdue ungraded assignments, emails parents; de-duped via `notifications` table |
 | `send-enrollment-confirmation` | When a new student is added (POST `{ student_id }`) — emails all admin accounts |
 | `send-class-announcement` | When teacher broadcasts a class announcement (POST `{ announcement_id }`) — emails all class parents, updates `sent_to_count` |
+| `send-interview-confirmation` | When parent books an interview slot (POST `{ slot_id, student_id, parent_id }`) — emails parent with date/time/teacher/student details |
 
 Required env secrets: `RESEND_API_KEY`, `RESEND_FROM_EMAIL`, `APP_URL`, `LOGO_URL`
 
@@ -204,9 +228,9 @@ The attendance page is the primary monitoring surface. Key features:
 ## Navigation Config
 
 `src/config/navigation.ts` defines nav items per role:
-- **adminNavItems** — 11 items (Dashboard, Analytics, Students, Teachers, Classes, ProgressBook, Attendance, ParentAccounts, BulkImport, TeacherSchedules, Settings)
+- **adminNavItems** — 11 items (Dashboard, Students, Teachers, Classes, ProgressBook, Attendance, Calendar, Reports, Tasks, ParentAccounts, AdminPanel). Reduced from 16 on 2026-05-11 by consolidating 6 low-frequency items (BulkImport, CommunicationTemplates, Activity, AbsenceRequests, TeacherSchedules, Interviews) into a tabbed hub at `/admin/panel`.
 - **teacherNavItems** — 8 items (filtered by capability: attendance, progress, assignments)
-- **parentNavItems** — 6 items (ParentDashboard, AddParent, Messages, QuranProgress, Academics, Attendance)
+- **parentNavItems** — 7 items (ParentDashboard, Agenda, QuranProgress, Attendance, Academics, Messages, Interviews)
 
 ---
 
@@ -252,6 +276,9 @@ Between any two pushes, an automated release bot commits a `CHANGELOG.md` update
 
 | Date | Summary | See Also |
 |---|---|---|
+| 2026-05-11 (s3) | Admin UX consolidation: sidebar 16 → 11 items via new `/admin/panel` tabbed hub (Bulk Import / Templates / Activity / Interviews / Schedules / Absences); old URLs redirect to `?tab=` deep links; AdminLayout secondary sidebar trimmed to dev-only pages; Dashboard cleaned: fake hardcoded weekly bars replaced with real attendance query, fake 74% donut fallback → "—", fake Remind Teachers button removed, broken `?tab=performance` links repointed to `/admin/reports`, redundant Quick Nav grid deleted, welcome banner duplicate buttons collapsed | handoff.md |
+| 2026-05-11 (s2) | DB cleanup: dropped 5 dead empty tables (analytics_alerts, analytics_summary, class_metrics_summary, student_metrics_summary, role_permissions); resolved orphan duplicate profile (maimoona.ansari admin row, no auth.users); added LOWER(email) UNIQUE index on profiles; enabled RLS + admin-only policies on app_settings, email_logs, attendance_settings, attendance_absence_notifications; ran ANALYZE; final 28 base tables, 0 dups, 0 RLS gaps | handoff.md |
+| 2026-05-11 | Phase 3 — Interview Scheduling + CSV Export: 3-table interview system (interview_windows, interview_slots, interview_bookings) with RLS; /admin/interviews (create windows, generate slots per teacher, view/cancel bookings); /parent/interviews (browse open windows, book slot with child selector, cancel booking); send-interview-confirmation edge function (Resend, DUM green header, slot + student + teacher details); Reports.tsx filter bar (date range + section filter, Full Attendance Log new report type, query keys include filters); nav: Interviews added to adminNavItems + parentNavItems; i18n: interviews en/fr | handoff.md, ROADMAP.md |
 | 2026-05-09 | Phase 2 — Parent UX: weekly agenda (/parent/agenda) with class-grid + school events overlay; Hifz Report Card printable view (/students/:id/report-card) with Cmd+P → PDF; student photo upload (Supabase student-photos bucket + photo_url column) wired into Dialog/Detail/Popover/list; parent assignment submission (SubmitAssignmentDialog, parent_note column, assignment-submissions bucket, upsert on (assignment_id, student_id)); ParentAcademics action buttons; Parent dashboard graded badge | handoff.md, ROADMAP.md |
 | 2026-05-08 (s3) | Phase 1 — Stabilization: 10 bug fixes (validation, .maybeSingle, CSV escape, madrassah scoping, setState-during-render); Sentry wiring; TS noUnusedLocals + noUnusedParameters; Vitest + 14 critical-path tests; build verified ✓ 48s; 3 email cron jobs paused (jobids 5, 34, 35) until manual smoke test; Finder dupes deleted; .env removed from git; useAttendanceMutation/useStudentsQuery/createTeacherAccount removed; stale branches Abdul/Nazif/claude/* deleted; dev synced to main | handoff.md, ROADMAP.md |
 | 2026-05-07 (s4) | Communication templates: new Supabase table + RLS, 6 seeded Islamic templates, useCommunicationTemplates hook, /admin/communication-templates page (category pills, card grid, CRUD); admin edit users: TeacherEditDialog adds location field, ParentEditDialog (name/email/phone), pencil button in ParentAccounts | handoff.md |

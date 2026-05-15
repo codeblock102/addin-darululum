@@ -90,8 +90,8 @@ Dhor book — revision sessions. Key fields: `id`, `student_id`, `revision_date`
 ### parent_children
 Parent ↔ student mapping. Key fields: `parent_id`, `student_id`.
 
-### roles / role_permissions
-RBAC model. Permissions shape `capabilities` JSONB on profiles and UI visibility via `useRBAC`.
+### roles
+RBAC model. The `role` field on `profiles` (admin / teacher / parent) drives `capabilities` JSONB and UI visibility via `useRBAC`. The legacy `role_permissions` table was dropped on 2026-05-11 (unused, replaced by hardcoded `useRBAC` rules).
 
 ---
 

@@ -1,7 +1,7 @@
 import {
   Book,
+  CalendarCheck,
   CalendarDays,
-  CalendarOff,
   CheckSquare,
   Clock,
   ClipboardList,
@@ -10,9 +10,9 @@ import {
   Library,
   MessageSquare,
   School,
+  Settings,
   Users,
   UserCheck,
-  Activity as ActivityIcon,
   Calendar,
 } from "lucide-react";
 import { NavItem } from "@/types/navigation.ts";
@@ -73,10 +73,10 @@ export const adminNavItems: NavItem[] = [
     description: "School events, holidays, and PD days",
   },
   {
-    href: "/admin/teacher-schedules",
-    label: "nav.teacherSchedules",
-    icon: CalendarDays,
-    description: "View teachers' weekly schedules",
+    href: "/admin/reports",
+    label: "nav.reports",
+    icon: FileText,
+    description: "Generate and export reports",
   },
 
   // ── Admin Tools ───────────────────────────────────────────────────────────
@@ -94,34 +94,10 @@ export const adminNavItems: NavItem[] = [
     description: "Manage parent accounts",
   },
   {
-    href: "/admin/bulk-student-import",
-    label: "nav.bulkStudentImport",
-    icon: Users,
-    description: "Upload CSV to add students",
-  },
-  {
-    href: "/absence-requests",
-    label: "nav.absenceRequests",
-    icon: CalendarOff,
-    description: "Review teacher absence requests",
-  },
-  {
-    href: "/activity",
-    label: "nav.activityFeed",
-    icon: ActivityIcon,
-    description: "Live app activity feed",
-  },
-  {
-    href: "/admin/communication-templates",
-    label: "nav.communicationTemplates",
-    icon: FileText,
-    description: "Manage message templates",
-  },
-  {
-    href: "/admin/reports",
-    label: "nav.reports",
-    icon: FileText,
-    description: "Generate and export reports",
+    href: "/admin/panel",
+    label: "nav.adminPanel",
+    icon: Settings,
+    description: "Hub for templates, imports, activity log, interviews, schedules, absences",
   },
 ];
 
@@ -221,5 +197,11 @@ export const parentNavItems: NavItem[] = [
     label: "nav.messages",
     icon: MessageSquare,
     description: "Message your child's teacher",
+  },
+  {
+    href: "/parent/interviews",
+    label: "nav.interviews",
+    icon: CalendarCheck,
+    description: "Book parent-teacher interviews",
   },
 ];

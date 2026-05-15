@@ -4,6 +4,147 @@ This file is **non-negotiable**. Every meaningful change must be logged here.
 
 ---
 
+## 2026-05-11 (s3) — Admin UX Consolidation (B + C + F)
+
+**What:** Sidebar 16 → 11 items; new tabbed hub at `/admin/panel`; admin Dashboard cleaned of fake data + broken links + redundant buttons.
+
+### B + C: Sidebar consolidation + tabbed hub
+
+**New file** `src/pages/admin/AdminPanel.tsx` (one page, shadcn `Tabs`, `?tab=` deep-linked, wraps existing pages directly — no body extraction needed since each page already uses `AdminPageShell`):
+- Tabs: Bulk Import / Templates / Activity Log / Interviews / Teacher Schedules / Absence Requests
+- URL: `/admin/panel?tab=<id>` — deep-linkable, defaults to `bulk-import`
+- Wrapped in `DashboardLayout` so the main sidebar stays visible
+
+**Sidebar trim** (`src/config/navigation.ts`):
+- REMOVED: BulkImport, CommunicationTemplates, ActivityFeed, AbsenceRequests, TeacherSchedules, Interviews
+- ADDED: single "Admin Panel" entry (Settings icon) under Admin section
+- Reports stays as direct sidebar entry (high-frequency)
+- Final count: 11 items (Dashboard / Students / Teachers / Classes / ProgressBook / Attendance / Calendar / Reports / Tasks / ParentAccounts / AdminPanel)
+
+**Old URLs → redirects** (`src/App.tsx`):
+- `/admin/communication-templates` → `/admin/panel?tab=templates`
+- `/admin/interviews` → `/admin/panel?tab=interviews`
+- `/admin/bulk-student-import` → `/admin/panel?tab=bulk-import`
+- `/admin/teacher-schedules` → `/admin/panel?tab=schedules`
+- `/activity` → `/admin/panel?tab=activity`
+- `/absence-requests` → `/admin/panel?tab=absences`
+- All bookmarks keep working
+
+**AdminLayout sidebar trim** (`src/pages/admin/AdminLayout.tsx`): the secondary `/admin/*` sidebar now only shows true dev pages (Setup / Roles / Seeder / Admin Creator / Parent Accounts / Settings). TeacherSchedules + bulk-import sub-routes removed (replaced by redirects).
+
+**i18n** (`src/i18n/translations.ts`): `adminPanel: "Admin Panel"` / `"Panneau Admin"`.
+
+### F: Admin Dashboard cleanup (`src/components/admin/AdminDashboard.tsx`)
+
+| Change | Before | After |
+|---|---|---|
+| Weekly attendance chart | Hardcoded fake `[42, 91, 88, 74, 83, 60, 28]` array | Real `useQuery` against `attendance` table for last 7 days, computed % per day |
+| Donut fallback | Showed fake `74%` when real value is 0 | Shows `—` |
+| "Remind Teachers" button | Fake toast, no email actually sent | REMOVED (false-positive UX worse than no button) |
+| Welcome banner buttons | 2 buttons both navigating to `/students` | Collapsed to 1 "Manage Students" button |
+| "View all" alerts link | `/dashboard?tab=performance` (no such tab exists) | `/admin/reports` |
+| "View Performance" alert button | Same broken link | `/admin/reports` |
+| Staff "Manage" button | `/dashboard?tab=students` (broken) | `/teachers` |
+| Quick Nav grid (4 cards) | Duplicated sidebar items (Students/Attendance/Classes/Analytics) | DELETED entire grid |
+
+**Net buttons:** ~14 → ~6 meaningful actions on the dashboard.
+
+**Build:** `npm run build` ✓ exit 0, 5.02s, no new warnings.
+
+---
+
+## 2026-05-11 (s2) — DB Cleanup: Dead Tables, Profile Dups, RLS Hardening
+
+**What:** End-of-day database hygiene pass on `depsfpodwaprzxffdcks`.
+
+**Audit results (before):**
+- 0 orphan attendance/progress, 0 duplicate students, 0 duplicate attendance rows — integrity already clean
+- `pg_stat_user_tables` was massively stale (showed `parents`=2, real=121; `profiles`=3, real=144)
+- 5 dead empty tables with zero code refs: `analytics_alerts`, `analytics_summary`, `class_metrics_summary`, `student_metrics_summary`, `role_permissions`
+- 1 duplicate `profiles.email` (`maimoona.ansari@gmail.com`) — orphan admin row (no `auth.users`, no `parents` link) + real parent row with linked child
+- 4 tables with RLS disabled and exposed to anon role: `app_settings`, `email_logs`, `attendance_settings`, `attendance_absence_notifications`
+
+**Migrations applied live:**
+
+`supabase/migrations/20260511010000_cleanup_dead_tables_and_dup_profile.sql`:
+- `DROP TABLE` × 5 (analytics_alerts, analytics_summary, class_metrics_summary, student_metrics_summary, role_permissions) with CASCADE
+- `DELETE` orphan admin profile row (id `794ca656-d5c8-4c28-bb36-e6f58baaa34e`) — kept the real parent row (id `f70161a4-755b-46f6-b202-3b128c975aa6`) which is wired to auth.users + linked to student `325d3a00-...`
+- `CREATE UNIQUE INDEX profiles_email_unique_idx ON profiles (LOWER(email))` — prevents future email dups
+
+`supabase/migrations/20260511020000_enable_rls_unprotected_tables.sql`:
+- `ENABLE ROW LEVEL SECURITY` on all 4 unprotected tables
+- Policies:
+  - `app_settings`: admin-only RW
+  - `email_logs`: admin-only SELECT (service_role bypasses RLS for inserts from edge functions)
+  - `attendance_settings`: admin RW + teacher SELECT
+  - `attendance_absence_notifications`: admin RW + teacher SELECT
+
+**Other:**
+- `ANALYZE;` run to refresh stale planner stats
+
+**Verification (after):**
+- 28 base tables (was 33)
+- 0 duplicate emails in profiles
+- 0 RLS-disabled tables in the previously-flagged set
+- get_advisors security clean for the 4 fixed tables
+
+**Skipped this session (user decision):**
+- Pruning `email_logs` and `attendance_absence_notifications` older than 90 days (no urgency)
+
+---
+
+## 2026-05-11 — Phase 3: Interview Scheduling + Bulk Attendance CSV Export
+
+**What:** Phase 3 items 3.1 (L) and 3.3 (S) shipped.
+
+### 3.1 Parent-Teacher Interview Scheduling
+
+**DB migration** (`supabase/migrations/20260511000000_create_interview_tables.sql`) — applied live to `depsfpodwaprzxffdcks`:
+- `interview_windows(id, title, description, start_date, end_date, slot_duration_minutes, created_by, created_at)`
+- `interview_slots(id, window_id, teacher_id, slot_date, slot_time, duration_minutes, created_at)`
+- `interview_bookings(id, slot_id, student_id, parent_id, notes, status, created_at)` — UNIQUE on `slot_id` (prevents double-booking)
+- RLS: windows/slots are public-read, admin-write; bookings are admin/teacher-read, parent-own-read, parent-insert, admin-update/delete
+
+**Admin panel** (`src/pages/admin/Interviews.tsx` at `/admin/interviews`):
+- 3 pill tabs: Interview Windows / Manage Slots / Bookings
+- "New Window" dialog: title, description, date range, slot duration (10/15/20/30 min)
+- "Generate Slots" dialog: pick window + teacher + date + start/end time → auto-generates N-minute slots via frontend loop → bulk inserts
+- Bookings table: date/time, teacher, student, parent, status; Cancel/No-show buttons
+
+**Parent booking page** (`src/pages/ParentInterviews.tsx` at `/parent/interviews`):
+- Shows open windows (end_date ≥ today) as expandable cards
+- Slots grouped by teacher → date → time pill buttons (green=mine, gray=booked, white=available)
+- Click slot → confirm dialog → select child (if multiple) → add notes → insert booking → calls edge function
+- "My Bookings" banner at top with cancel option
+
+**Edge function** (`supabase/functions/send-interview-confirmation/index.ts`) — deployed live (v1):
+- POST `{ slot_id, student_id, parent_id }`
+- Sends HTML email to parent: date, time, teacher name, student name, deep link to `/parent/interviews`
+- DUM green gradient header, matches other email templates
+
+**Navigation + i18n:**
+- Admin sidebar: "Interviews" with CalendarCheck icon under Admin Tools
+- Parent sidebar: "Interviews" with CalendarCheck icon
+- i18n: `interviews: "Interviews"` / `"Entretiens"` in en + fr nav sections
+
+### 3.3 Bulk Attendance CSV Export
+
+**Modified** `src/pages/admin/Reports.tsx`:
+- New filter bar card at top: Date From, Date To, Section dropdown (men/women/Henri-Bourassa/Saint-Laurent), Reset button
+- Filter state defaults to current month (first → today), section = all
+- `fetchAttendanceByStudent` + `fetchAttendanceBySection` both now accept filters: `.gte("date", dateFrom)`, `.lte("date", dateTo)`, `.eq("section", section)` on student query
+- New **"Full Attendance Log"** report: raw date-stamped records with Date, Student Name, Section, Status, Notes columns — designed for government/external reporting
+- React Query keys include filter object — changing any filter clears cached data
+
+**Build:** `npm run build` ✓ exit 0, 4.91s (no new warnings vs. baseline)
+
+**Pending from Phase 3:**
+- 3.2 Transport/Pickup Confirmation (M)
+- 3.4 Secretary test accounts (S)
+- Email crons 5, 34, 35 still paused — run smoke test before re-enabling
+
+---
+
 ## 2026-05-09 — Phase 2: Parent UX (4 features in parallel)
 
 **What:** Phase 2 of ROADMAP. 4 parent-facing features built in parallel via subagents:

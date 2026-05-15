@@ -55,15 +55,23 @@ serve(async (req: Request) => {
         .contains("teacher_ids", [userId]);
       if (classes && classes.length > 0) {
         for (const cls of classes) {
-          const newIds = (cls.teacher_ids || []).filter((id: string) => id !== userId);
-          await admin.from("classes").update({ teacher_ids: newIds }).eq("id", cls.id);
+          const newIds = (cls.teacher_ids || []).filter((id: string) =>
+            id !== userId
+          );
+          await admin.from("classes").update({ teacher_ids: newIds }).eq(
+            "id",
+            cls.id,
+          );
         }
       }
     } catch (_e) { /* ignore */ }
 
     // ── 2. Remove teacher from classes.current_teacher_id ──────────
     try {
-      await admin.from("classes").update({ current_teacher_id: null }).eq("current_teacher_id", userId);
+      await admin.from("classes").update({ current_teacher_id: null }).eq(
+        "current_teacher_id",
+        userId,
+      );
     } catch (_e) { /* ignore */ }
 
     // ── 3. Clean up students_teachers ──────────────────────────────
@@ -78,7 +86,9 @@ serve(async (req: Request) => {
 
     // ── 5. Delete messages sent/received ───────────────────────────
     try {
-      await admin.from("communications").delete().or(`sender_id.eq.${userId},recipient_id.eq.${userId}`);
+      await admin.from("communications").delete().or(
+        `sender_id.eq.${userId},recipient_id.eq.${userId}`,
+      );
     } catch (_e) { /* ignore */ }
 
     // ── 6. Delete teacher tasks ─────────────────────────────────────
@@ -109,8 +119,13 @@ serve(async (req: Request) => {
     if (profileDelErr) {
       console.error("Profile delete error:", profileDelErr);
       return new Response(
-        JSON.stringify({ error: `Failed to delete profile: ${profileDelErr.message}` }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        JSON.stringify({
+          error: `Failed to delete profile: ${profileDelErr.message}`,
+        }),
+        {
+          status: 500,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
       );
     }
 

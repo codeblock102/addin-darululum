@@ -7,7 +7,6 @@ import {
   Users,
   Home,
   LogOut,
-  Calendar,
   Settings,
   Menu,
   X,
@@ -30,11 +29,12 @@ const AdminLayout = () => {
     }
   };
 
+  // Dev-mode admin pages only. Day-to-day admin tools live in /admin/panel
+  // (consolidated tabbed hub) reachable from the main sidebar.
   const navItems = [
     { to: '/admin/setup', icon: UserPlus, label: 'Setup Admin' },
     { to: '/admin/roles', icon: Shield, label: 'Manual Role Setup' },
     { to: '/admin/seeder', icon: Database, label: 'Database Seeder' },
-    { to: '/admin/teacher-schedules', icon: Calendar, label: 'Teacher Schedules' },
     { to: '/admin/admin-creator', icon: Users, label: 'Admin Creator' },
     { to: '/admin/parent-accounts', icon: Users, label: 'Parent Accounts' },
     { to: '/settings', icon: Settings, label: 'Settings & Emails' },

@@ -11,22 +11,18 @@ import { useNavigate } from "react-router-dom";
 import {
   AlertTriangle,
   ArrowUpRight,
-  Bell,
   BookOpen,
   Calendar,
   CalendarX,
   CheckCircle2,
-  ClipboardList,
   GraduationCap,
   HelpCircle,
   MapPin,
   Plus,
   TrendingUp,
   UserCheck,
-  Users,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext.tsx";
-import { useToast } from "@/hooks/use-toast.ts";
 import { StudentContactPopover } from "@/components/attendance/StudentContactPopover.tsx";
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -175,27 +171,16 @@ const Pill = ({
   </div>
 );
 
-// ─── Attendance Bar Chart ─────────────────────────────────────────────────────
+// ─── Attendance Bar Chart (real data from last 7 days) ───────────────────────
 
-const weekDays = [
-  { day: "S", pct: 42 },
-  { day: "M", pct: 91 },
-  { day: "T", pct: 88 },
-  { day: "W", pct: 74, highlight: true },
-  { day: "T", pct: 83 },
-  { day: "F", pct: 60 },
-  { day: "S", pct: 28 },
-];
+interface DayBar {
+  day: string;
+  pct: number;
+  isToday: boolean;
+}
 
-const AttendanceChart = ({
-  attendanceRate,
-}: {
-  attendanceRate: number;
-}) => {
-  // Replace Wednesday value with real rate if available
-  const bars = weekDays.map((d, i) =>
-    i === 3 && attendanceRate > 0 ? { ...d, pct: Math.round(attendanceRate) } : d
-  );
+const AttendanceChart = ({ bars }: { bars: DayBar[] }) => {
+  const hasData = bars.some((b) => b.pct > 0);
 
   return (
     <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
@@ -203,49 +188,50 @@ const AttendanceChart = ({
         <h2 className="text-base font-bold text-gray-900 tracking-tight border-l-2 border-green-600 pl-3">
           Attendance Analytics
         </h2>
-        <span className="text-xs text-gray-400">This week</span>
+        <span className="text-xs text-gray-400">Last 7 days</span>
       </div>
 
-      <div className="flex items-end justify-between gap-3 h-44">
-        {bars.map((d, i) => (
-          <div key={i} className="flex-1 flex flex-col items-center gap-2">
-            {/* Tooltip on highlighted bar */}
-            {d.highlight && (
-              <div className="bg-gray-800 text-white text-[10px] font-semibold px-2 py-0.5 rounded-md whitespace-nowrap">
-                {d.pct}%
-              </div>
-            )}
-            {/* Bar */}
-            <div className="w-full flex items-end justify-center">
-              {d.pct < 50
-                ? (
-                  /* Hatched bar for low / weekend */
+      {!hasData ? (
+        <div className="flex items-center justify-center h-44 text-sm text-gray-400">
+          No attendance recorded yet this week.
+        </div>
+      ) : (
+        <div className="flex items-end justify-between gap-3 h-44">
+          {bars.map((d, i) => (
+            <div key={i} className="flex-1 flex flex-col items-center gap-2">
+              {d.isToday && d.pct > 0 && (
+                <div className="bg-gray-800 text-white text-[10px] font-semibold px-2 py-0.5 rounded-md whitespace-nowrap">
+                  {d.pct}%
+                </div>
+              )}
+              <div className="w-full flex items-end justify-center">
+                {d.pct === 0 ? (
                   <div
                     className="w-full rounded-t-xl"
                     style={{
-                      height: `${Math.max((d.pct / 100) * 140, 10)}px`,
+                      height: "10px",
                       backgroundImage:
                         "repeating-linear-gradient(45deg,#d1d5db,#d1d5db 2px,transparent 2px,transparent 8px)",
                       backgroundColor: "#f3f4f6",
                     }}
                   />
-                )
-                : (
+                ) : (
                   <div
                     className="w-full rounded-t-xl"
                     style={{
-                      height: `${(d.pct / 100) * 140}px`,
-                      background: d.highlight
+                      height: `${Math.max((d.pct / 100) * 140, 10)}px`,
+                      background: d.isToday
                         ? "linear-gradient(180deg,#22c55e,#166534)"
                         : "linear-gradient(180deg,#16a34a,#14532d)",
                     }}
                   />
                 )}
+              </div>
+              <span className="text-xs text-gray-400 font-medium">{d.day}</span>
             </div>
-            <span className="text-xs text-gray-400 font-medium">{d.day}</span>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 };
@@ -261,7 +247,7 @@ const ProgressDonut = ({
   onTrackCount: number;
   atRiskCount: number;
 }) => {
-  const safePct = pct > 0 ? Math.min(Math.round(pct), 100) : 74;
+  const safePct = pct > 0 ? Math.min(Math.round(pct), 100) : 0;
   const circumference = 2 * Math.PI * 15.9155;
   const dash = (safePct / 100) * circumference;
   const gap = circumference - dash;
@@ -300,7 +286,9 @@ const ProgressDonut = ({
             />
           </svg>
           <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <span className="text-2xl font-bold text-gray-900">{safePct}%</span>
+            <span className="text-2xl font-bold text-gray-900">
+              {safePct > 0 ? `${safePct}%` : "—"}
+            </span>
             <span className="text-[11px] text-gray-500">On Track</span>
           </div>
         </div>
@@ -391,7 +379,6 @@ const StaffRow = ({ staff, idx }: { staff: StaffRow; idx: number }) => {
 export const AdminDashboard = () => {
   const navigate = useNavigate();
   const { session } = useAuth();
-  const { toast } = useToast();
   // ── Data queries ────────────────────────────────────────────────────────────
 
   const { data: userMadrassahId } = useQuery<string | null>({
@@ -583,12 +570,50 @@ export const AdminDashboard = () => {
 
   const unmarkedToday = Math.max(0, studentCount - presentToday - absentToday);
 
-  const handleRemindTeachers = () => {
-    toast({
-      title: "Reminders sent",
-      description: "Teachers with unmarked students have been notified to confirm attendance.",
-    });
-  };
+  // ── Real last-7-days attendance bars ───────────────────────────────────────
+  const { data: weeklyBars = [] } = useQuery<DayBar[]>({
+    queryKey: ["admin-weekly-attendance", madrassahStudentIds.length],
+    queryFn: async () => {
+      if (madrassahStudentIds.length === 0) return [];
+      const today = new Date();
+      const dates: { iso: string; label: string; isToday: boolean }[] = [];
+      for (let i = 6; i >= 0; i--) {
+        const d = new Date(today);
+        d.setDate(today.getDate() - i);
+        dates.push({
+          iso: d.toISOString().split("T")[0],
+          label: ["S", "M", "T", "W", "T", "F", "S"][d.getDay()],
+          isToday: i === 0,
+        });
+      }
+      const start = dates[0].iso;
+      const end = dates[dates.length - 1].iso;
+      const { data } = await supabase
+        .from("attendance")
+        .select("date, status")
+        .gte("date", start)
+        .lte("date", end)
+        .in("student_id", madrassahStudentIds);
+      const byDate = new Map<string, { present: number; total: number }>();
+      for (const d of dates) byDate.set(d.iso, { present: 0, total: 0 });
+      for (const row of data ?? []) {
+        const bucket = byDate.get(row.date);
+        if (!bucket) continue;
+        bucket.total += 1;
+        if (row.status === "present") bucket.present += 1;
+      }
+      return dates.map((d) => {
+        const b = byDate.get(d.iso)!;
+        return {
+          day: d.label,
+          pct: b.total > 0 ? Math.round((b.present / b.total) * 100) : 0,
+          isToday: d.isToday,
+        };
+      });
+    },
+    enabled: madrassahStudentIds.length > 0,
+    staleTime: 5 * 60 * 1000,
+  });
 
   // ─────────────────────────────────────────────────────────────────────────
 
@@ -620,18 +645,10 @@ export const AdminDashboard = () => {
             <button
               type="button"
               onClick={() => navigate("/students")}
-              className="flex items-center gap-2 bg-white/20 hover:bg-white/30 text-sm font-semibold px-4 py-2.5 rounded-xl transition-colors"
-              style={{ color: "white" }}
-            >
-              <Plus className="h-4 w-4" style={{ color: "white" }} />
-              Add Student
-            </button>
-            <button
-              type="button"
-              onClick={() => navigate("/students")}
               className="flex items-center gap-2 bg-white hover:bg-gray-50 text-gray-800 text-sm font-semibold px-4 py-2.5 rounded-xl transition-colors"
             >
-              View All
+              <Plus className="h-4 w-4" />
+              Manage Students
             </button>
           </div>
         </div>
@@ -698,15 +715,6 @@ export const AdminDashboard = () => {
                     {unmarkedStudents.length} unmarked
                   </span>
                 )}
-              <button
-                type="button"
-                onClick={handleRemindTeachers}
-                disabled={unmarkedStudents.length === 0}
-                className="flex items-center gap-1.5 bg-amber-500 hover:bg-amber-600 disabled:opacity-40 disabled:cursor-not-allowed text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors"
-              >
-                <Bell className="h-3.5 w-3.5" />
-                Remind Teachers
-              </button>
             </div>
           </div>
 
@@ -739,7 +747,7 @@ export const AdminDashboard = () => {
 
           {!isLoadingUnmarked && unmarkedStudents.length > 0 && (
             <p className="mt-3 text-xs text-gray-400">
-              Click a student's name to view parent contact info. Use "Remind Teachers" to notify staff by 9:15 am.
+              Click a student's name to view parent contact info.
             </p>
           )}
         </div>
@@ -809,7 +817,7 @@ export const AdminDashboard = () => {
         {/* ── Chart + Alerts ────────────────────────────────────────────────── */}
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-5">
           <div className="lg:col-span-3">
-            <AttendanceChart attendanceRate={attendanceRate} />
+            <AttendanceChart bars={weeklyBars} />
           </div>
 
           {/* Alerts Panel */}
@@ -818,7 +826,7 @@ export const AdminDashboard = () => {
               <h2 className="text-base font-bold text-gray-900 tracking-tight border-l-2 border-green-600 pl-3">Alerts</h2>
               <button
                 type="button"
-                onClick={() => navigate("/dashboard?tab=performance")}
+                onClick={() => navigate("/admin/reports")}
                 className="text-xs text-green-700 hover:text-green-800 font-medium transition-colors"
               >
                 View all
@@ -843,8 +851,7 @@ export const AdminDashboard = () => {
                     </div>
                     <button
                       type="button"
-                      onClick={() =>
-                        navigate("/dashboard?tab=performance")}
+                      onClick={() => navigate("/admin/reports")}
                       className="mt-3 w-full bg-red-500 hover:bg-red-600 text-white text-xs font-semibold py-2 rounded-lg transition-colors flex items-center justify-center gap-2"
                     >
                       <TrendingUp className="h-3.5 w-3.5" />
@@ -900,7 +907,7 @@ export const AdminDashboard = () => {
               <h2 className="text-base font-bold text-gray-900 tracking-tight border-l-2 border-green-600 pl-3">Staff</h2>
               <button
                 type="button"
-                onClick={() => navigate("/dashboard?tab=students")}
+                onClick={() => navigate("/teachers")}
                 className="flex items-center gap-1.5 border border-gray-200 hover:bg-gray-50 text-gray-600 text-xs font-medium px-3 py-1.5 rounded-lg transition-colors"
               >
                 <Plus className="h-3 w-3" />
@@ -931,49 +938,6 @@ export const AdminDashboard = () => {
           </div>
         </div>
 
-        {/* ── Quick Navigation ──────────────────────────────────────────────── */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-          {[
-            {
-              label: "Students",
-              icon: <Users className="h-5 w-5" />,
-              href: "/students",
-              pill: "bg-blue-50 text-blue-700",
-            },
-            {
-              label: "Attendance",
-              icon: <ClipboardList className="h-5 w-5" />,
-              href: "/attendance",
-              pill: "bg-green-50 text-green-700",
-            },
-            {
-              label: "Classes",
-              icon: <BookOpen className="h-5 w-5" />,
-              href: "/classes",
-              pill: "bg-purple-50 text-purple-700",
-            },
-            {
-              label: "Analytics",
-              icon: <TrendingUp className="h-5 w-5" />,
-              href: "/dashboard?tab=performance",
-              pill: "bg-amber-50 text-amber-700",
-            },
-          ].map((item) => (
-            <button
-              key={item.label}
-              type="button"
-              onClick={() => navigate(item.href)}
-              className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm hover:shadow-md transition-shadow text-left flex items-center gap-3"
-            >
-              <div className={`p-2.5 rounded-xl ${item.pill}`}>
-                {item.icon}
-              </div>
-              <span className="text-sm font-semibold text-gray-800">
-                {item.label}
-              </span>
-            </button>
-          ))}
-        </div>
       </div>
     </div>
   );

@@ -175,35 +175,88 @@ function htmlEscape(str: string): string {
   }[c] as string));
 }
 
-const STATUS_STYLES_MAP: Record<string, { color: string; bg: string; border: string; label: string }> = {
-  present:         { color: "#059669", bg: "#f0fdf4", border: "#34d399", label: "Present" },
-  absent:          { color: "#dc2626", bg: "#fef2f2", border: "#f87171", label: "Absent" },
-  late:            { color: "#d97706", bg: "#fffbeb", border: "#fbbf24", label: "Late" },
-  excused:         { color: "#7c3aed", bg: "#faf5ff", border: "#a78bfa", label: "Excused" },
-  early_departure: { color: "#ea580c", bg: "#fff7ed", border: "#fb923c", label: "Early Departure" },
-  sick:            { color: "#0891b2", bg: "#f0f9ff", border: "#38bdf8", label: "Sick" },
+const STATUS_STYLES_MAP: Record<
+  string,
+  { color: string; bg: string; border: string; label: string }
+> = {
+  present: {
+    color: "#059669",
+    bg: "#f0fdf4",
+    border: "#34d399",
+    label: "Present",
+  },
+  absent: {
+    color: "#dc2626",
+    bg: "#fef2f2",
+    border: "#f87171",
+    label: "Absent",
+  },
+  late: { color: "#d97706", bg: "#fffbeb", border: "#fbbf24", label: "Late" },
+  excused: {
+    color: "#7c3aed",
+    bg: "#faf5ff",
+    border: "#a78bfa",
+    label: "Excused",
+  },
+  early_departure: {
+    color: "#ea580c",
+    bg: "#fff7ed",
+    border: "#fb923c",
+    label: "Early Departure",
+  },
+  sick: { color: "#0891b2", bg: "#f0f9ff", border: "#38bdf8", label: "Sick" },
 };
-const DEFAULT_STATUS_STYLE = { color: "#6b7280", bg: "#f9fafb", border: "#d1d5db", label: "Not Marked" };
+const DEFAULT_STATUS_STYLE = {
+  color: "#6b7280",
+  bg: "#f9fafb",
+  border: "#d1d5db",
+  label: "Not Marked",
+};
 
 function buildAttendanceEmailHtml(p: {
-  studentName: string; guardianName: string; status: string;
-  dateYmd: string; time?: string | null; logoUrl: string; appUrl: string;
+  studentName: string;
+  guardianName: string;
+  status: string;
+  dateYmd: string;
+  time?: string | null;
+  logoUrl: string;
+  appUrl: string;
 }): string {
   const st = STATUS_STYLES_MAP[p.status] ?? DEFAULT_STATUS_STYLE;
-  const safeStudent  = htmlEscape(p.studentName || "Student");
+  const safeStudent = htmlEscape(p.studentName || "Student");
   const safeGuardian = htmlEscape(p.guardianName || "");
-  const safeDate     = htmlEscape(p.dateYmd);
-  const dispTime     = p.time ? formatDisplayTime(p.time) : null;
-  const timeStr      = dispTime ? ` at ${htmlEscape(dispTime)}` : "";
+  const safeDate = htmlEscape(p.dateYmd);
+  const dispTime = p.time ? formatDisplayTime(p.time) : null;
+  const timeStr = dispTime ? ` at ${htmlEscape(dispTime)}` : "";
   let narrative: string;
   switch (p.status) {
-    case "present":         narrative = `<strong>${safeStudent}</strong> attended class and was marked <strong>Present</strong> on ${safeDate}.`; break;
-    case "absent":          narrative = `<strong>${safeStudent}</strong> was marked <strong>Absent</strong> on ${safeDate}. If this is unexpected, please contact the school office. We hope everything is well.`; break;
-    case "late":            narrative = `<strong>${safeStudent}</strong> arrived <strong>late${timeStr}</strong> on ${safeDate}. Please encourage timely arrival to avoid missing lessons.`; break;
-    case "early_departure": narrative = `<strong>${safeStudent}</strong> was marked for <strong>Early Departure${timeStr}</strong> on ${safeDate}.`; break;
-    case "excused":         narrative = `<strong>${safeStudent}</strong> was marked <strong>Excused</strong> on ${safeDate}. The absence has been recorded by the school.`; break;
-    case "sick":            narrative = `<strong>${safeStudent}</strong> was marked <strong>Sick</strong> on ${safeDate}. We wish them a speedy recovery and look forward to their return.`; break;
-    default:                narrative = `<strong>${safeStudent}</strong> has not been marked yet for ${safeDate}. Please contact the school if you have any concerns.`;
+    case "present":
+      narrative =
+        `<strong>${safeStudent}</strong> attended class and was marked <strong>Present</strong> on ${safeDate}.`;
+      break;
+    case "absent":
+      narrative =
+        `<strong>${safeStudent}</strong> was marked <strong>Absent</strong> on ${safeDate}. If this is unexpected, please contact the school office. We hope everything is well.`;
+      break;
+    case "late":
+      narrative =
+        `<strong>${safeStudent}</strong> arrived <strong>late${timeStr}</strong> on ${safeDate}. Please encourage timely arrival to avoid missing lessons.`;
+      break;
+    case "early_departure":
+      narrative =
+        `<strong>${safeStudent}</strong> was marked for <strong>Early Departure${timeStr}</strong> on ${safeDate}.`;
+      break;
+    case "excused":
+      narrative =
+        `<strong>${safeStudent}</strong> was marked <strong>Excused</strong> on ${safeDate}. The absence has been recorded by the school.`;
+      break;
+    case "sick":
+      narrative =
+        `<strong>${safeStudent}</strong> was marked <strong>Sick</strong> on ${safeDate}. We wish them a speedy recovery and look forward to their return.`;
+      break;
+    default:
+      narrative =
+        `<strong>${safeStudent}</strong> has not been marked yet for ${safeDate}. Please contact the school if you have any concerns.`;
   }
   return `<!DOCTYPE html>
 <html lang="en">
@@ -231,14 +284,18 @@ function buildAttendanceEmailHtml(p: {
         </td>
         <td style="vertical-align:middle;border-left:2px solid ${st.border};padding-left:16px;">
           <p style="margin:0;color:#111827;font-size:18px;font-weight:700;">${safeStudent}</p>
-          <p style="margin:4px 0 0;color:#6b7280;font-size:13px;">${safeDate}${timeStr ? " &nbsp;&middot;&nbsp;" + timeStr : ""}</p>
+          <p style="margin:4px 0 0;color:#6b7280;font-size:13px;">${safeDate}${
+    timeStr ? " &nbsp;&middot;&nbsp;" + timeStr : ""
+  }</p>
         </td>
       </tr></table>
     </td>
   </tr>
   <tr>
     <td style="padding:32px 40px 24px;">
-      <p style="margin:0 0 12px;color:#111827;font-size:16px;">Assalamu alaikum${safeGuardian ? ` <strong>${safeGuardian}</strong>` : ""},</p>
+      <p style="margin:0 0 12px;color:#111827;font-size:16px;">Assalamu alaikum${
+    safeGuardian ? ` <strong>${safeGuardian}</strong>` : ""
+  },</p>
       <p style="margin:0 0 28px;color:#4b5563;font-size:15px;line-height:1.65;">${narrative}</p>
       <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:28px;"><tr><td style="border-top:1px solid #e5e7eb;">&nbsp;</td></tr></table>
       <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:24px;">

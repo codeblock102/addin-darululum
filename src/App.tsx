@@ -34,7 +34,6 @@ import Preferences from "@/pages/Preferences.tsx";
 import CreateDemoAccount from "@/pages/dev/CreateDemoAccount.tsx";
 import CreateTeacherProfileForTestAccount from "@/pages/dev/CreateTeacherProfileForTestAccount.tsx";
 import DatabaseSeeder from "@/pages/dev/DatabaseSeeder.tsx";
-import TeacherSchedules from "@/pages/admin/TeacherSchedules.tsx";
 import SetupAdmin from "@/pages/admin/SetupAdmin.tsx";
 import ManualRoleSetup from "@/pages/dev/ManualRoleSetup.tsx";
 import AdminLayout from "@/pages/admin/AdminLayout.tsx";
@@ -47,10 +46,9 @@ import ParentAcademics from "@/pages/ParentAcademics.tsx";
 import ParentAgenda from "@/pages/ParentAgenda.tsx";
 import ParentAttendance from "@/pages/ParentAttendance.tsx";
 import ParentAccounts from "@/pages/admin/ParentAccounts.tsx";
-import BulkStudentImport from "@/pages/admin/BulkStudentImport.tsx";
-import Activity from "@/pages/admin/Activity.tsx";
-import CommunicationTemplates from "@/pages/admin/CommunicationTemplates.tsx";
 import Reports from "@/pages/admin/Reports.tsx";
+import AdminPanel from "@/pages/admin/AdminPanel.tsx";
+import ParentInterviews from "@/pages/ParentInterviews.tsx";
 import ResetPassword from "@/pages/ResetPassword.tsx";
 import SchoolCalendar from "@/pages/SchoolCalendar.tsx";
 import TeacherAddParent from "@/pages/TeacherAddParent.tsx";
@@ -58,7 +56,6 @@ import TeacherMessages from "@/pages/TeacherMessages.tsx";
 import ParentMessages from "@/pages/ParentMessages.tsx";
 import Profile from "@/pages/Profile.tsx";
 import Tasks from "@/pages/Tasks.tsx";
-import AbsenceRequests from "@/pages/AbsenceRequests.tsx";
 
 /**
  * @component App
@@ -110,20 +107,19 @@ function App() {
             <Route path="seeder" element={<DatabaseSeeder />} />
             <Route path="admin-creator" element={<DevAdminManagement />} />
             <Route path="parent-accounts" element={<ParentAccounts />} />
-            <Route path="bulk-student-import" element={<BulkStudentImport />} />
-            <Route path="teacher-schedules" element={<TeacherSchedules />} />
           </Route>
-          {/* Admin pages served inside DashboardLayout (main sidebar) */}
+          {/* Admin Panel — consolidated tabbed hub for low-frequency tools */}
           <Route
-            path="/admin/communication-templates"
+            path="/admin/panel"
             element={
               <ProtectedRoute requireAdmin>
                 <DashboardLayout>
-                  <CommunicationTemplates />
+                  <AdminPanel />
                 </DashboardLayout>
               </ProtectedRoute>
             }
           />
+          {/* High-frequency admin pages stay direct in main sidebar */}
           <Route
             path="/admin/reports"
             element={
@@ -134,27 +130,13 @@ function App() {
               </ProtectedRoute>
             }
           />
-          {/* Admin Activity in main sidebar (not inside Admin Panel) */}
-          <Route
-            path="/activity"
-            element={
-              <ProtectedRoute>
-                <DashboardLayout>
-                  <Activity />
-                </DashboardLayout>
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/absence-requests"
-            element={
-              <ProtectedRoute requireAdmin>
-                <DashboardLayout>
-                  <AbsenceRequests />
-                </DashboardLayout>
-              </ProtectedRoute>
-            }
-          />
+          {/* Old admin URLs → redirect to corresponding Admin Panel tab */}
+          <Route path="/admin/communication-templates" element={<Navigate to="/admin/panel?tab=templates" replace />} />
+          <Route path="/admin/interviews" element={<Navigate to="/admin/panel?tab=interviews" replace />} />
+          <Route path="/admin/bulk-student-import" element={<Navigate to="/admin/panel?tab=bulk-import" replace />} />
+          <Route path="/admin/teacher-schedules" element={<Navigate to="/admin/panel?tab=schedules" replace />} />
+          <Route path="/activity" element={<Navigate to="/admin/panel?tab=activity" replace />} />
+          <Route path="/absence-requests" element={<Navigate to="/admin/panel?tab=absences" replace />} />
 
           <Route
             element={
@@ -202,6 +184,14 @@ function App() {
               element={
                 <ProtectedRoute requireParent>
                   <ParentAgenda />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/parent/interviews"
+              element={
+                <ProtectedRoute requireParent>
+                  <ParentInterviews />
                 </ProtectedRoute>
               }
             />

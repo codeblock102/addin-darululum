@@ -677,7 +677,9 @@ serve(async (req: Request) => {
         const topStudent = studentsMap.get(topEntry[0]);
         if (topStudent) {
           topStudentHtml =
-            `<p style="margin:8px 0 12px;font-size:14px;color:#059669;font-weight:600;">&#127942; Top Sabaq: <strong>${topStudent.name}</strong> &mdash; ${topEntry[1]} pages</p>`;
+            `<p style="margin:8px 0 12px;font-size:14px;color:#059669;font-weight:600;">&#127942; Top Sabaq: <strong>${topStudent.name}</strong> &mdash; ${
+              topEntry[1]
+            } pages</p>`;
         }
       }
 
@@ -718,7 +720,9 @@ serve(async (req: Request) => {
           classAssignmentsHtml += `
             <tr style="background:#ffffff;">
               <td style="padding:10px 14px;border-bottom:1px solid #f3f4f6;font-size:14px;color:#111827;">${title}</td>
-              <td style="padding:10px 14px;border-bottom:1px solid #f3f4f6;font-size:14px;color:#6b7280;">${due || "&mdash;"}</td>
+              <td style="padding:10px 14px;border-bottom:1px solid #f3f4f6;font-size:14px;color:#6b7280;">${
+            due || "&mdash;"
+          }</td>
               <td style="padding:10px 14px;border-bottom:1px solid #f3f4f6;font-size:14px;color:#111827;font-weight:600;">${count}</td>
             </tr>`;
         }
@@ -731,7 +735,11 @@ serve(async (req: Request) => {
           ${topStudentHtml}
           <p style="margin:0 0 8px;color:#374151;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;">Sabaq Today</p>
           ${classProgressHtml}
-          ${assignmentAggregate.size > 0 ? `<p style="margin:16px 0 8px;color:#374151;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;">Assignments (Last 24h)</p>${classAssignmentsHtml}` : ""}
+          ${
+        assignmentAggregate.size > 0
+          ? `<p style="margin:16px 0 8px;color:#374151;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;">Assignments (Last 24h)</p>${classAssignmentsHtml}`
+          : ""
+      }
         </div>`;
     }
 
@@ -750,7 +758,9 @@ serve(async (req: Request) => {
   <!-- Header gradient -->
   <tr>
     <td style="background:linear-gradient(135deg,#052e16 0%,#166534 60%,#16a34a 100%);padding:36px 40px 28px;text-align:center;">
-      ${logoImgHtml ? `<div style="margin-bottom:16px;">${logoImgHtml}</div>` : ""}
+      ${
+      logoImgHtml ? `<div style="margin-bottom:16px;">${logoImgHtml}</div>` : ""
+    }
       <div style="display:inline-block;background:rgba(255,255,255,0.15);border-radius:8px;padding:6px 16px;margin-bottom:12px;">
         <span style="color:#bbf7d0;font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;">Principal Report</span>
       </div>
@@ -773,7 +783,10 @@ serve(async (req: Request) => {
   <!-- Class sections -->
   <tr>
     <td style="padding:24px 40px;">
-      ${classSectionsHtml || `<p style="color:#6b7280;font-size:14px;text-align:center;padding:32px 0;">No activity detected for today.</p>`}
+      ${
+      classSectionsHtml ||
+      `<p style="color:#6b7280;font-size:14px;text-align:center;padding:32px 0;">No activity detected for today.</p>`
+    }
     </td>
   </tr>
 
@@ -787,7 +800,13 @@ serve(async (req: Request) => {
         <tr>
           <td style="background:#f0fdf4;border-radius:8px;padding:12px 16px;">
             <p style="margin:0;color:#166534;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;">Report Info</p>
-            <p style="margin:4px 0 0;color:#374151;font-size:13px;">Generated <strong>${triggerSource === "scheduled" ? "automatically (scheduled)" : "manually"}</strong> at ${new Date(timestamp).toLocaleString("en-CA", { timeZone: REPORT_TIME_ZONE })}</p>
+            <p style="margin:4px 0 0;color:#374151;font-size:13px;">Generated <strong>${
+      triggerSource === "scheduled" ? "automatically (scheduled)" : "manually"
+    }</strong> at ${
+      new Date(timestamp).toLocaleString("en-CA", {
+        timeZone: REPORT_TIME_ZONE,
+      })
+    }</p>
           </td>
         </tr>
       </table>
@@ -910,7 +929,9 @@ serve(async (req: Request) => {
           <td style="padding:10px 14px;border-bottom:1px solid #f3f4f6;font-size:14px;color:#111827;">Surah ${p.current_surah}:${p.start_ayat}&ndash;${p.end_ayat}</td>
           <td style="padding:10px 14px;border-bottom:1px solid #f3f4f6;font-size:14px;color:#111827;font-weight:600;">${p.pages_memorized}</td>
           <td style="padding:10px 14px;border-bottom:1px solid #f3f4f6;font-size:14px;color:#059669;font-weight:600;">${p.memorization_quality}</td>
-          <td style="padding:10px 14px;border-bottom:1px solid #f3f4f6;font-size:14px;color:#6b7280;">${p.teacher_notes || p.notes || "&mdash;"}</td>
+          <td style="padding:10px 14px;border-bottom:1px solid #f3f4f6;font-size:14px;color:#6b7280;">${
+          p.teacher_notes || p.notes || "&mdash;"
+        }</td>
         </tr>`
       ).join("");
 
@@ -1017,7 +1038,11 @@ serve(async (req: Request) => {
             const dueText = r.due_date ? r.due_date : "&mdash;";
             const gradeText = r.grade || "&mdash;";
             const feedbackText = r.feedback || "&mdash;";
-            const statusColor = r.status === "graded" ? "#059669" : r.status === "submitted" ? "#2563eb" : "#6b7280";
+            const statusColor = r.status === "graded"
+              ? "#059669"
+              : r.status === "submitted"
+              ? "#2563eb"
+              : "#6b7280";
             return `
               <tr style="background:${idx % 2 === 0 ? "#ffffff" : "#f9fafb"};">
                 <td style="padding:10px 14px;border-bottom:1px solid #f3f4f6;font-size:14px;color:#111827;word-break:break-word;">${r.title}</td>
@@ -1035,7 +1060,9 @@ serve(async (req: Request) => {
 
       const academicSection = `
         <p style="margin:28px 0 10px;color:#052e16;font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;border-bottom:2px solid #d1fae5;padding-bottom:8px;">Academic Updates</p>
-        <p style="margin:0 0 12px;color:#4b5563;font-size:14px;">Recent assignment activity for ${student.name}${academicRows ? "" : " &mdash; no recent updates"}.</p>
+        <p style="margin:0 0 12px;color:#4b5563;font-size:14px;">Recent assignment activity for ${student.name}${
+        academicRows ? "" : " &mdash; no recent updates"
+      }.</p>
         <table border="0" cellpadding="0" cellspacing="0" style="width:100%;border-collapse:collapse;border:1px solid #e5e7eb;border-radius:8px;overflow:hidden;">
           <thead>
             <tr style="background:#f0fdf4;">
@@ -1047,7 +1074,10 @@ serve(async (req: Request) => {
             </tr>
           </thead>
           <tbody>
-            ${academicRows || '<tr><td colspan="5" style="padding:12px 14px;color:#9ca3af;font-size:14px;">No recent academic activity.</td></tr>'}
+            ${
+        academicRows ||
+        '<tr><td colspan="5" style="padding:12px 14px;color:#9ca3af;font-size:14px;">No recent academic activity.</td></tr>'
+      }
           </tbody>
         </table>
       `;
@@ -1075,7 +1105,9 @@ serve(async (req: Request) => {
   </tr>
   <tr>
     <td style="padding:32px 40px 24px;">
-      <p style="margin:0 0 16px;color:#111827;font-size:16px;">Assalamu alaikum <strong>${student.guardian_name || "Guardian"}</strong>,</p>
+      <p style="margin:0 0 16px;color:#111827;font-size:16px;">Assalamu alaikum <strong>${
+        student.guardian_name || "Guardian"
+      }</strong>,</p>
       <p style="margin:0 0 24px;color:#4b5563;font-size:15px;line-height:1.6;">Here is today&rsquo;s Quran memorization progress report for <strong>${student.name}</strong>.</p>
       <p style="margin:0 0 10px;color:#052e16;font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;border-bottom:2px solid #d1fae5;padding-bottom:8px;">Sabaq Today</p>
       <table border="0" cellpadding="0" cellspacing="0" style="width:100%;border-collapse:collapse;border:1px solid #e5e7eb;border-radius:8px;overflow:hidden;margin-bottom:28px;">
@@ -1104,7 +1136,9 @@ serve(async (req: Request) => {
       </table>
       <p style="margin:0;color:#9ca3af;font-size:12px;text-align:center;line-height:1.5;">
         JazakAllah Khairan for your continued support.<br>
-        Generated ${triggerSource === "scheduled" ? "automatically" : "manually"} on ${fmtDate(timestamp)}.
+        Generated ${
+        triggerSource === "scheduled" ? "automatically" : "manually"
+      } on ${fmtDate(timestamp)}.
       </p>
     </td>
   </tr>

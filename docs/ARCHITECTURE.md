@@ -192,7 +192,7 @@ ProtectedRoute checks AuthContext
 | `juz_revisions` | Dhor book — revision sessions per juz/quarter |
 | `parent_children` | Parent ↔ student mapping |
 | `parents` | Parent records with `student_ids` array |
-| `roles / role_permissions` | RBAC model — granular permissions shaping `capabilities` JSONB |
+| `roles` | RBAC role enum (admin/teacher/parent); legacy `role_permissions` table dropped 2026-05-11 |
 | `communications` | Teacher ↔ admin messaging |
 | `email_logs` | Daily digest send history |
 | `app_settings` | Application-level configuration |

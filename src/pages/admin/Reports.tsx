@@ -6,7 +6,7 @@
 
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Download, Play, BarChart2, Users, Calendar, BookOpen, Loader2 } from "lucide-react";
+import { Download, Play, BarChart2, Users, Calendar, BookOpen, Loader2, Filter, X } from "lucide-react";
 import { AdminPageShell } from "@/components/admin/AdminPageShell.tsx";
 import { Button } from "@/components/ui/button.tsx";
 import { useToast } from "@/components/ui/use-toast.ts";
@@ -45,24 +45,31 @@ export function exportCSV(
 type ReportId =
   | "attendance-by-student"
   | "attendance-by-section"
+  | "attendance-log"
   | "full-student-roster"
   | "students-by-section"
   | "hifz-progress";
 
+// ─── Attendance filter types ─────────────────────────────────────────────────
+
+interface AttendanceFilters {
+  dateFrom: string;
+  dateTo: string;
+  section: string;
+}
+
 // ─── Data fetchers ────────────────────────────────────────────────────────────
 
-async function fetchAttendanceByStudent() {
-  // Fetch all active students
-  const { data: students, error: sErr } = await supabase
-    .from("students")
-    .select("id, name, section")
-    .eq("status", "active");
+async function fetchAttendanceByStudent(filters: AttendanceFilters) {
+  let studentQ = supabase.from("students").select("id, name, section").eq("status", "active");
+  if (filters.section) studentQ = studentQ.eq("section", filters.section);
+  const { data: students, error: sErr } = await studentQ;
   if (sErr) throw sErr;
 
-  // Fetch all attendance records
-  const { data: records, error: aErr } = await supabase
-    .from("attendance")
-    .select("student_id, status");
+  let attQ = supabase.from("attendance").select("student_id, status");
+  if (filters.dateFrom) attQ = attQ.gte("date", filters.dateFrom);
+  if (filters.dateTo) attQ = attQ.lte("date", filters.dateTo);
+  const { data: records, error: aErr } = await attQ;
   if (aErr) throw aErr;
 
   const STATUS_KEYS = ["present", "absent", "late", "excused", "sick"] as const;
@@ -93,16 +100,16 @@ async function fetchAttendanceByStudent() {
   return rows;
 }
 
-async function fetchAttendanceBySection() {
-  const { data: students, error: sErr } = await supabase
-    .from("students")
-    .select("id, section")
-    .eq("status", "active");
+async function fetchAttendanceBySection(filters: AttendanceFilters) {
+  let studentQ = supabase.from("students").select("id, section").eq("status", "active");
+  if (filters.section) studentQ = studentQ.eq("section", filters.section);
+  const { data: students, error: sErr } = await studentQ;
   if (sErr) throw sErr;
 
-  const { data: records, error: aErr } = await supabase
-    .from("attendance")
-    .select("student_id, status");
+  let attQ = supabase.from("attendance").select("student_id, status");
+  if (filters.dateFrom) attQ = attQ.gte("date", filters.dateFrom);
+  if (filters.dateTo) attQ = attQ.lte("date", filters.dateTo);
+  const { data: records, error: aErr } = await attQ;
   if (aErr) throw aErr;
 
   const sectionMap: Record<
@@ -142,6 +149,37 @@ async function fetchAttendanceBySection() {
     "Attendance Rate %":
       d.total > 0 ? ((d.present / d.total) * 100).toFixed(1) : "0.0",
   }));
+}
+
+async function fetchAttendanceLog(filters: AttendanceFilters) {
+  let q = (supabase as any)
+    .from("attendance")
+    .select("date, status, notes, students(name, section)")
+    .order("date", { ascending: false })
+    .order("students(name)");
+
+  if (filters.dateFrom) q = q.gte("date", filters.dateFrom);
+  if (filters.dateTo) q = q.lte("date", filters.dateTo);
+
+  const { data, error } = await q;
+  if (error) throw error;
+
+  return (data ?? [])
+    .filter((r: any) => {
+      if (!filters.section) return true;
+      const student = Array.isArray(r.students) ? r.students[0] : r.students;
+      return student?.section === filters.section;
+    })
+    .map((r: any) => {
+      const student = Array.isArray(r.students) ? r.students[0] : r.students;
+      return {
+        Date: r.date,
+        "Student Name": student?.name ?? "",
+        Section: student?.section ?? "",
+        Status: r.status,
+        Notes: r.notes ?? "",
+      };
+    });
 }
 
 async function fetchFullStudentRoster() {
@@ -192,7 +230,6 @@ async function fetchHifzProgress() {
     .order("created_at", { ascending: false });
   if (error) throw error;
 
-  // Keep only the most recent entry per student
   const seen = new Set<string>();
   const latest: typeof data = [];
   for (const row of data ?? []) {
@@ -202,7 +239,6 @@ async function fetchHifzProgress() {
     }
   }
 
-  // Count total entries per student
   const entryCounts: Record<string, number> = {};
   for (const row of data ?? []) {
     entryCounts[row.student_id] = (entryCounts[row.student_id] ?? 0) + 1;
@@ -221,6 +257,22 @@ async function fetchHifzProgress() {
   });
 }
 
+// ─── Default filter values ────────────────────────────────────────────────────
+
+function defaultFilters(): AttendanceFilters {
+  const today = new Date();
+  const firstOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+  return {
+    dateFrom: firstOfMonth.toISOString().split("T")[0],
+    dateTo: today.toISOString().split("T")[0],
+    section: "",
+  };
+}
+
+// ─── Known sections ───────────────────────────────────────────────────────────
+
+const KNOWN_SECTIONS = ["men", "women", "Henri-Bourassa", "Saint-Laurent"];
+
 // ─── Report config ────────────────────────────────────────────────────────────
 
 interface ReportDef {
@@ -229,7 +281,8 @@ interface ReportDef {
   description: string;
   filename: string;
   headers: string[];
-  fetcher: () => Promise<Record<string, unknown>[]>;
+  usesFilters?: boolean;
+  fetcher: (filters: AttendanceFilters) => Promise<Record<string, unknown>[]>;
 }
 
 const SECTIONS: {
@@ -258,6 +311,7 @@ const SECTIONS: {
           "Total Days",
           "Attendance Rate %",
         ],
+        usesFilters: true,
         fetcher: fetchAttendanceByStudent,
       },
       {
@@ -274,7 +328,17 @@ const SECTIONS: {
           "Excused",
           "Attendance Rate %",
         ],
+        usesFilters: true,
         fetcher: fetchAttendanceBySection,
+      },
+      {
+        id: "attendance-log",
+        name: "Full Attendance Log",
+        description: "Raw date-stamped records for every student — ideal for government reporting.",
+        filename: "attendance-log",
+        headers: ["Date", "Student Name", "Section", "Status", "Notes"],
+        usesFilters: true,
+        fetcher: fetchAttendanceLog,
       },
     ],
   },
@@ -301,7 +365,7 @@ const SECTIONS: {
           "Enrollment Date",
           "Status",
         ],
-        fetcher: fetchFullStudentRoster,
+        fetcher: (_f) => fetchFullStudentRoster(),
       },
       {
         id: "students-by-section",
@@ -309,7 +373,7 @@ const SECTIONS: {
         description: "Count of active students per section.",
         filename: "students-by-section",
         headers: ["Section", "Student Count"],
-        fetcher: fetchStudentsBySection,
+        fetcher: (_f) => fetchStudentsBySection(),
       },
     ],
   },
@@ -331,7 +395,7 @@ const SECTIONS: {
           "Date (last entry)",
           "Total Entries",
         ],
-        fetcher: fetchHifzProgress,
+        fetcher: (_f) => fetchHifzProgress(),
       },
     ],
   },
@@ -371,6 +435,9 @@ function ReportRow({ report, isActive, onGenerate, data, isLoading }: ReportRowP
       <div className="min-w-0">
         <p className="text-sm font-medium text-gray-700">{report.name}</p>
         <p className="text-xs text-gray-400 mt-0.5 truncate">{report.description}</p>
+        {report.usesFilters && (
+          <p className="text-xs text-green-600 mt-0.5">Uses date &amp; section filters ↑</p>
+        )}
         {isActive && data && (
           <p className="text-xs text-green-700 font-medium mt-1">
             {data.length} row{data.length !== 1 ? "s" : ""} ready
@@ -410,36 +477,54 @@ function ReportRow({ report, isActive, onGenerate, data, isLoading }: ReportRowP
 
 export default function Reports() {
   const [activeReport, setActiveReport] = useState<ReportId | null>(null);
+  const [filters, setFilters] = useState<AttendanceFilters>(defaultFilters);
+
+  const updateFilter = (key: keyof AttendanceFilters, value: string) => {
+    setFilters((prev) => ({ ...prev, [key]: value }));
+    // Clear active report so stale data doesn't linger
+    setActiveReport(null);
+  };
+
+  const resetFilters = () => {
+    setFilters(defaultFilters());
+    setActiveReport(null);
+  };
 
   // One query per report — all start disabled, enabled only when activeReport matches
   const queries: Record<ReportId, ReturnType<typeof useQuery>> = {
     "attendance-by-student": useQuery({
-      queryKey: ["report", "attendance-by-student"],
-      queryFn: fetchAttendanceByStudent,
+      queryKey: ["report", "attendance-by-student", filters],
+      queryFn: () => fetchAttendanceByStudent(filters),
       enabled: activeReport === "attendance-by-student",
-      staleTime: 5 * 60 * 1000,
+      staleTime: 0,
     }),
     "attendance-by-section": useQuery({
-      queryKey: ["report", "attendance-by-section"],
-      queryFn: fetchAttendanceBySection,
+      queryKey: ["report", "attendance-by-section", filters],
+      queryFn: () => fetchAttendanceBySection(filters),
       enabled: activeReport === "attendance-by-section",
-      staleTime: 5 * 60 * 1000,
+      staleTime: 0,
+    }),
+    "attendance-log": useQuery({
+      queryKey: ["report", "attendance-log", filters],
+      queryFn: () => fetchAttendanceLog(filters),
+      enabled: activeReport === "attendance-log",
+      staleTime: 0,
     }),
     "full-student-roster": useQuery({
       queryKey: ["report", "full-student-roster"],
-      queryFn: fetchFullStudentRoster,
+      queryFn: () => fetchFullStudentRoster(),
       enabled: activeReport === "full-student-roster",
       staleTime: 5 * 60 * 1000,
     }),
     "students-by-section": useQuery({
       queryKey: ["report", "students-by-section"],
-      queryFn: fetchStudentsBySection,
+      queryFn: () => fetchStudentsBySection(),
       enabled: activeReport === "students-by-section",
       staleTime: 5 * 60 * 1000,
     }),
     "hifz-progress": useQuery({
       queryKey: ["report", "hifz-progress"],
-      queryFn: fetchHifzProgress,
+      queryFn: () => fetchHifzProgress(),
       enabled: activeReport === "hifz-progress",
       staleTime: 5 * 60 * 1000,
     }),
@@ -453,6 +538,54 @@ export default function Reports() {
       iconBg="bg-green-50"
     >
       <div className="space-y-6">
+        {/* ── Attendance filter bar ──────────────────────────────────────── */}
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+          <div className="flex items-center gap-2 border-l-2 border-green-600 pl-3 mb-4">
+            <Filter className="w-4 h-4 text-green-600" />
+            <h2 className="text-base font-bold text-gray-900 tracking-tight">Attendance Filters</h2>
+            <span className="text-xs text-gray-400 ml-1">— applies to all Attendance Reports</span>
+          </div>
+          <div className="flex flex-wrap gap-3 items-end">
+            <div>
+              <label className="block text-xs font-medium text-gray-500 mb-1">From</label>
+              <input
+                type="date"
+                value={filters.dateFrom}
+                onChange={(e) => updateFilter("dateFrom", e.target.value)}
+                className="text-sm border border-gray-200 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-green-500"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-500 mb-1">To</label>
+              <input
+                type="date"
+                value={filters.dateTo}
+                onChange={(e) => updateFilter("dateTo", e.target.value)}
+                className="text-sm border border-gray-200 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-green-500"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-500 mb-1">Section</label>
+              <select
+                value={filters.section}
+                onChange={(e) => updateFilter("section", e.target.value)}
+                className="text-sm border border-gray-200 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-green-500 bg-white"
+              >
+                <option value="">All sections</option>
+                {KNOWN_SECTIONS.map((s) => (
+                  <option key={s} value={s}>{s}</option>
+                ))}
+              </select>
+            </div>
+            <button
+              onClick={resetFilters}
+              className="flex items-center gap-1 text-xs text-gray-400 hover:text-gray-700 transition-colors pb-1.5"
+            >
+              <X className="w-3 h-3" /> Reset
+            </button>
+          </div>
+        </div>
+
         {SECTIONS.map((section) => (
           <div
             key={section.title}
