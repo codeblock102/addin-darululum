@@ -45,15 +45,22 @@ export const StatCard = React.forwardRef<HTMLDivElement, StatCardProps>(
     return (
       <motion.div
         ref={ref}
-        initial={{ opacity: 0, y: 6 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.3, delay: index * 0.06 }}
+        initial={{ opacity: 0, y: 6, scale: 0.98 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        transition={{
+          type: "spring",
+          stiffness: 260,
+          damping: 24,
+          mass: 0.6,
+          delay: index * 0.06,
+        }}
+        whileHover={{ scale: 1.01 }}
         className={cn(
           // Mobile: hairline divider row.
           "flex items-center justify-between gap-4 border-b border-border py-3",
-          // Desktop: full card, no bottom rule.
-          "lg:block lg:rounded-lg lg:border lg:border-border lg:bg-card lg:p-4 lg:shadow-none",
-          // Tone accent — visible at any breakpoint.
+          // Desktop: full card, no bottom rule. Subtle hover lift.
+          "lg:block lg:rounded-lg lg:border lg:border-border lg:bg-card lg:p-4 lg:shadow-none lg:transition-shadow lg:hover:shadow-md",
+          // Tone accent — visible at any breakpoint (2px brand-tinted strip).
           "border-l-2 pl-3 lg:pl-4",
           TONE_BORDER[tone],
           className,
@@ -73,7 +80,9 @@ export const StatCard = React.forwardRef<HTMLDivElement, StatCardProps>(
             {value}
           </p>
           {hint ? (
-            <p className="mt-1 text-xs text-muted-foreground">{hint}</p>
+            <p className="mt-1 text-[12px] leading-tight text-muted-foreground/80">
+              {hint}
+            </p>
           ) : null}
         </div>
 

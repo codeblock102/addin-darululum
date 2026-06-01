@@ -1,4 +1,5 @@
 import * as React from "react";
+import { motion } from "framer-motion";
 
 import { cn } from "@/lib/utils";
 
@@ -25,8 +26,11 @@ export const PageHeader = React.forwardRef<HTMLElement, PageHeaderProps>(
     ref,
   ) {
     return (
-      <header
+      <motion.header
         ref={ref}
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
         className={cn(
           "sticky top-0 z-20",
           "bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60",
@@ -35,7 +39,7 @@ export const PageHeader = React.forwardRef<HTMLElement, PageHeaderProps>(
           "transition-[padding] duration-200",
           className,
         )}
-        {...rest}
+        {...(rest as React.ComponentProps<typeof motion.header>)}
       >
         <div
           className={cn(
@@ -62,7 +66,7 @@ export const PageHeader = React.forwardRef<HTMLElement, PageHeaderProps>(
                 {title}
               </h1>
               {description ? (
-                <p className="mt-1 text-sm text-muted-foreground lg:text-base">
+                <p className="mt-1 text-[14.5px] leading-relaxed text-muted-foreground lg:text-base">
                   {description}
                 </p>
               ) : null}
@@ -70,12 +74,12 @@ export const PageHeader = React.forwardRef<HTMLElement, PageHeaderProps>(
           </div>
 
           {actions ? (
-            <div className="flex flex-row flex-wrap items-center gap-2 lg:justify-end">
+            <div className="flex flex-row flex-wrap items-center gap-2 lg:justify-end lg:gap-3">
               {actions}
             </div>
           ) : null}
         </div>
-      </header>
+      </motion.header>
     );
   },
 );

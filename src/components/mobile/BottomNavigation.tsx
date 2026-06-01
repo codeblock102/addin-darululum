@@ -101,25 +101,40 @@ export const BottomNavigation = () => {
       onClick={onClick}
       type="button"
       className={cn(
-        "flex-1 min-w-0 inline-flex flex-col items-center justify-center gap-1 px-1 border-b-2 border-transparent",
-        active
-          ? "text-foreground border-foreground"
-          : "text-muted-foreground",
+        "relative flex-1 min-w-0 inline-flex flex-col items-center justify-center gap-1 px-1 transition-colors duration-200 active:bg-primary/5",
+        active ? "text-primary" : "text-muted-foreground",
       )}
       aria-label={label}
       aria-current={active ? "page" : undefined}
     >
-      <Icon className="w-5 h-5 shrink-0" />
-      <span className="text-[10px] leading-none truncate max-w-full">
+      <Icon
+        className={cn(
+          "w-5 h-5 shrink-0 transition-transform duration-200 ease-out",
+          active ? "scale-105" : "scale-100",
+        )}
+      />
+      <span
+        className={cn(
+          "text-[10px] leading-none truncate max-w-full transition-all duration-200",
+          active ? "font-medium" : "font-normal",
+        )}
+      >
         {label}
       </span>
+      <span
+        className={cn(
+          "absolute bottom-0 left-1/2 -translate-x-1/2 h-1 rounded-full bg-primary transition-all duration-200 ease-out",
+          active ? "w-8 opacity-100" : "w-0 opacity-0",
+        )}
+        aria-hidden="true"
+      />
     </button>
   );
 
   return (
     <>
       <nav
-        className="fixed bottom-0 left-0 z-50 w-full h-16 bg-background border-t lg:hidden pb-[env(safe-area-inset-bottom)]"
+        className="fixed bottom-0 left-0 z-50 w-full h-[68px] bg-background lg:hidden pb-[env(safe-area-inset-bottom)] border-t border-transparent [border-image:linear-gradient(to_right,transparent,hsl(var(--primary)/0.25),transparent)_1]"
         aria-label="Primary"
       >
         <div className="grid grid-cols-5 h-full items-stretch">

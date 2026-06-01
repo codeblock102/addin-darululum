@@ -6,6 +6,7 @@
  */
 
 import * as React from "react";
+import { motion } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client.ts";
 import { useNavigate } from "react-router-dom";
@@ -608,15 +609,30 @@ export const AdminDashboard = () => {
       <div className="max-w-7xl mx-auto space-y-6">
 
         {/* ── Welcome Header ────────────────────────────────────────────────── */}
-        <header className="py-6 lg:py-8 border-b border-border/40">
-          <p className="font-arabic text-2xl text-brand mb-2">السلام عليكم</p>
-          <h1 className="font-display text-3xl lg:text-4xl font-semibold text-foreground tracking-tight">
+        <motion.header
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+          className="py-6 lg:py-8 relative"
+        >
+          <p className="font-arabic text-2xl text-brand/80 mb-2">السلام عليكم</p>
+          <h1 className="font-display text-3xl lg:text-4xl font-semibold text-foreground tracking-tight leading-tight">
             {salutation}
           </h1>
-          <p className="mt-2 text-sm text-muted-foreground tabular-nums">
-            {gregorian} · {hijri}
+          <p className="mt-2 text-[13px] tracking-wide text-muted-foreground tabular-nums">
+            <span>{gregorian}</span>
+            <span className="mx-2 text-muted-foreground/50" aria-hidden="true">·</span>
+            <span>{hijri}</span>
           </p>
-        </header>
+          <div
+            aria-hidden="true"
+            className="mt-4 h-px w-full border-b border-border/40"
+            style={{
+              backgroundImage:
+                "linear-gradient(90deg, hsl(var(--brand) / 0.25) 0%, hsl(var(--brand) / 0.08) 40%, transparent 100%)",
+            }}
+          />
+        </motion.header>
 
         <PageGuide
           id="dashboard:intro"
