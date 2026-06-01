@@ -486,12 +486,14 @@ export const StudentDialog = (
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4 pt-4">
           <Tabs defaultValue="info" className="w-full">
-            <TabsList className="grid w-full grid-cols-4 mb-4">
-              <TabsTrigger value="info">Student Info</TabsTrigger>
-              <TabsTrigger value="guardian">Guardian</TabsTrigger>
-              <TabsTrigger value="address">Address</TabsTrigger>
-              <TabsTrigger value="quran">Quran Progress</TabsTrigger>
-            </TabsList>
+            <div className="-mx-4 px-4 mb-4 overflow-x-auto scrollbar-none lg:mx-0 lg:px-0">
+              <TabsList className="inline-flex w-max gap-1 lg:grid lg:w-full lg:grid-cols-4 lg:gap-0">
+                <TabsTrigger value="info" className="whitespace-nowrap px-3 lg:px-4">Student Info</TabsTrigger>
+                <TabsTrigger value="guardian" className="whitespace-nowrap px-3 lg:px-4">Guardian</TabsTrigger>
+                <TabsTrigger value="address" className="whitespace-nowrap px-3 lg:px-4">Address</TabsTrigger>
+                <TabsTrigger value="quran" className="whitespace-nowrap px-3 lg:px-4">Quran Progress</TabsTrigger>
+              </TabsList>
+            </div>
 
             <TabsContent value="info" className="space-y-4">
               {selectedStudent?.id && (
