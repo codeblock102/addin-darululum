@@ -14,6 +14,9 @@ import { Calendar, CheckCircle2, Clock, FileUp, Trash2, Upload, MessageSquare as
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog.tsx";
 import { useI18n } from "@/contexts/I18nContext.tsx";
 import { useIsMobile } from "@/hooks/use-mobile.tsx";
+import { PageGuide } from "@/components/ui/page-guide.tsx";
+import { LottiePlayer } from "@/components/ui/lottie-player.tsx";
+import emptyProgress from "@/assets/lottie/empty-progress.json";
 
 interface TeacherAssignmentsProps {
   teacherId: string;
@@ -392,7 +395,12 @@ export const TeacherAssignments = ({ teacherId }: TeacherAssignmentsProps) => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-16 lg:pb-0">
+      <PageGuide
+        id="teacher-assignments"
+        title="Create and track assignments"
+        body="Pick classes or specific students, add a due date and attachment, then manage submissions and grades."
+      />
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
         <div>
           <h2 className="text-xl font-semibold text-foreground">{t("pages.teacherPortal.assignments.title", "Assignments")}</h2>
@@ -534,7 +542,12 @@ export const TeacherAssignments = ({ teacherId }: TeacherAssignmentsProps) => {
             </div>
           <div className="space-y-4">
             {isLoadingAssignments && (<p className="text-sm text-foreground">{t("pages.teacherPortal.assignments.loading", "Loading assignments…")}</p>)}
-            {!isLoadingAssignments && visibleAssignments.length === 0 && (<p className="text-sm text-foreground">{t("pages.teacherPortal.assignments.empty", "No assignments yet.")}</p>)}
+            {!isLoadingAssignments && visibleAssignments.length === 0 && (
+              <div className="flex flex-col items-center py-6 text-center">
+                <LottiePlayer src={emptyProgress} className="w-40 h-40" ariaLabel="No assignments yet" />
+                <p className="text-sm text-foreground mt-2">{t("pages.teacherPortal.assignments.empty", "No assignments yet.")}</p>
+              </div>
+            )}
 
             <div className="grid grid-cols-1 gap-3">
               {visibleAssignments.map((a) => (

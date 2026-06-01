@@ -70,7 +70,7 @@ const Auth = () => {
       if (profileError) {
         console.error("Error fetching profile role:", profileError.message);
       } else if (profileRow?.role === "admin" || profileRow?.role === "teacher") {
-        toast({ title: "Welcome back!", description: "Redirecting to your dashboard..." });
+        toast({ title: "Welcome back!", description: "Redirecting to your dashboard...", duration: 2000 });
         navigate("/dashboard");
         return;
       }
@@ -84,12 +84,12 @@ const Auth = () => {
       if (parentError) {
         console.error("Error checking parents:", parentError.message);
       } else if (parentRow?.id) {
-        toast({ title: "Welcome back!", description: "Redirecting to Parent Portal..." });
+        toast({ title: "Welcome back!", description: "Redirecting to Parent Portal...", duration: 2000 });
         navigate("/parent");
         return;
       }
 
-      toast({ title: "Welcome back!", description: "Redirecting..." });
+      toast({ title: "Welcome back!", description: "Redirecting...", duration: 2000 });
       navigate("/dashboard");
     } catch (error) {
       const message = error instanceof Error ? error.message : "An unexpected error occurred.";

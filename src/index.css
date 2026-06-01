@@ -1,7 +1,9 @@
+@import url('https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Newsreader:wght@400;500;600&display=swap');
+
 /**
  * @file src/index.css
  * @summary This is the main global CSS file for the application.
- * 
+ *
  * It imports various other CSS files from the `src/styles` directory to organize
  * the overall styling of the application. This includes base styles, theme definitions,
  * animations, component-specific styles, and role-specific themes (admin, teacher).
@@ -13,3 +15,26 @@
 @import "./styles/components.css";
 @import "./styles/admin-theme.css";
 @import "./styles/teacher-theme.css";
+
+/* Brand tokens — additive, do not override existing variables */
+:root {
+  --brand: 152 56% 28%;
+  --brand-foreground: 0 0% 100%;
+  --success: 142 71% 36%;
+  --success-foreground: 0 0% 100%;
+  --warning: 38 92% 50%;
+  --warning-foreground: 0 0% 10%;
+  --info: 199 89% 48%;
+  --info-foreground: 0 0% 100%;
+}
+
+.dark {
+  --brand: 152 56% 38%;
+  --brand-foreground: 0 0% 100%;
+  --success: 142 71% 45%;
+  --success-foreground: 0 0% 100%;
+  --warning: 38 92% 55%;
+  --warning-foreground: 0 0% 10%;
+  --info: 199 89% 55%;
+  --info-foreground: 0 0% 100%;
+}

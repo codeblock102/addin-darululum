@@ -3,7 +3,6 @@ import { Sidebar } from "./Sidebar.tsx";
 import { useRBAC } from "@/hooks/useRBAC.ts";
 import { LoadingSpinner } from "./dashboard/LoadingSpinner.tsx";
 import { BackgroundPattern } from "./dashboard/BackgroundPattern.tsx";
-import { RoleBadge } from "./dashboard/RoleBadge.tsx";
 import { useIsMobile } from "@/hooks/use-mobile.tsx";
 import { BottomNavigation } from "@/components/mobile/BottomNavigation.tsx";
 import { Outlet } from "react-router-dom";
@@ -13,6 +12,7 @@ import { OnboardingModal } from "@/components/onboarding/OnboardingModal.tsx";
 import { DailyPromptModal } from "@/components/onboarding/DailyPromptModal.tsx";
 import { useProxy } from "@/contexts/ProxyContext.tsx";
 import { Eye, X } from "lucide-react";
+import { PageTransition } from "@/components/ui/page-transition.tsx";
 interface DashboardLayoutProps {
   children?: React.ReactNode;
 }
@@ -109,7 +109,7 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
       {/* Main Content Area */}
       <div
         className={cn(
-          "flex-1 overflow-x-hidden transition-all duration-300",
+          "flex-1 overflow-x-hidden transition-all duration-300 pb-16 lg:pb-0",
           proxy.active ? "mt-9" : "",
           isMobile ? "h-[calc(100vh-4rem)] overflow-y-auto" : "",
           !isMobile && (sidebarOpen ? `md:ml-64` : `md:ml-16`),
@@ -119,7 +119,7 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
           <div className="h-full">
             <div className="max-w-7xl mx-auto h-full">
               <div className="animate-fadeIn h-full">
-                {children || <Outlet />}
+                <PageTransition>{children || <Outlet />}</PageTransition>
               </div>
             </div>
           </div>

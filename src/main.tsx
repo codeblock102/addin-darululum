@@ -24,7 +24,16 @@ import { ErrorBoundary } from "@/components/ErrorBoundary.tsx";
 // Apply the React patch to filter out data-lov-id attributes
 // reactPatches removed: component-level sanitizing handles data-lov-id
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 60_000, // 1 min — keep things fresh enough but skip refetches on remount
+      gcTime: 5 * 60_000, // 5 min cache
+      refetchOnWindowFocus: false,
+      retry: 1,
+    },
+  },
+});
 
 createRoot(document.getElementById("root")!).render(
   <ErrorBoundary>

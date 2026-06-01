@@ -12,6 +12,9 @@ import { Input } from "@/components/ui/input.tsx";
 import { Label } from "@/components/ui/label.tsx";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select.tsx";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog.tsx";
+import { PageGuide } from "@/components/ui/page-guide.tsx";
+import { LottiePlayer } from "@/components/ui/lottie-player.tsx";
+import emptyProgress from "@/assets/lottie/empty-progress.json";
 
 type Recipient = { id: string; name: string; teacherId: string; classId: string };
 
@@ -463,7 +466,12 @@ export default function ParentMessages() {
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 pb-16 lg:pb-0">
+      <PageGuide
+        id="parent-messages"
+        title="Talk to your child's teacher"
+        body="Send messages, reply to teacher updates, and keep all conversations in one place."
+      />
       <Card>
         <CardHeader>
           <CardTitle>Message Teacher</CardTitle>
@@ -568,7 +576,12 @@ export default function ParentMessages() {
                     </li>
                   );
                 })}
-                {(filteredInbox || []).length === 0 && <EmptyState message="No messages" description="Messages from your child's teacher will appear here." />}
+                {(filteredInbox || []).length === 0 && (
+                  <div className="flex flex-col items-center py-4">
+                    <LottiePlayer src={emptyProgress} className="w-40 h-40" ariaLabel="No messages" />
+                    <EmptyState message="No messages" description="Messages from your child's teacher will appear here." />
+                  </div>
+                )}
               </ul>
             )}
           </CardContent>

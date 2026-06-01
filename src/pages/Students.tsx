@@ -4,7 +4,11 @@ import { supabase } from "@/integrations/supabase/client.ts";
 import { StudentDialog } from "@/components/students/StudentDialog.tsx";
 import { StudentList } from "@/components/students/StudentList.tsx";
 import { Input } from "@/components/ui/input.tsx";
-import { PlusCircle, Search, Users, Activity, CheckCircle } from "lucide-react";
+import { Filter, Plus, Search, Upload } from "lucide-react";
+import { LottiePlayer } from "@/components/ui/lottie-player.tsx";
+import { PageGuide } from "@/components/ui/page-guide.tsx";
+import { QuickActions } from "@/components/ui/quick-actions.tsx";
+import emptyStudents from "@/assets/lottie/empty-students.json";
 import {
   Select,
   SelectContent,
@@ -15,11 +19,9 @@ import {
 import { useAuth } from "@/hooks/use-auth.ts";
 import { Skeleton } from "@/components/ui/skeleton.tsx";
 import { useI18n } from "@/contexts/I18nContext.tsx";
-import {
-  AdminPageShell,
-  AdminPrimaryBtn,
-  AdminStatCard,
-} from "@/components/admin/AdminPageShell.tsx";
+import { Button } from "@/components/ui/button.tsx";
+import { PageHeader } from "@/components/ui/page-header.tsx";
+import { StatCard } from "@/components/ui/stat-card.tsx";
 
 interface Student {
   id: string;
@@ -48,25 +50,6 @@ interface Student {
   status_notes?: string | null;
   photo_url?: string | null;
 }
-
-interface StatCardProps {
-  title: string;
-  value: number | string;
-  icon: React.ReactNode;
-  iconBg?: string;
-  description: string;
-  isLoading: boolean;
-}
-
-const StatCard = ({ title, value, icon, iconBg, description, isLoading }: StatCardProps) => (
-  isLoading
-    ? <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm animate-pulse">
-        <Skeleton className="h-4 w-24 mb-3" />
-        <Skeleton className="h-8 w-16 mb-2" />
-        <Skeleton className="h-3 w-28" />
-      </div>
-    : <AdminStatCard label={title} value={value} icon={icon} iconBg={iconBg} meta={description} />
-);
 
 const Students = () => {
   const { t } = useI18n();
@@ -194,46 +177,66 @@ const Students = () => {
   };
 
   return (
-    <AdminPageShell
-      title={t("pages.students.title")}
-      subtitle={t("pages.students.subtitle")}
-      icon={<Users className="h-5 w-5 text-green-700" />}
-      iconBg="bg-green-50"
-      actions={
-        (isAdmin || isTeacher) ? (
-          <AdminPrimaryBtn onClick={handleAddStudent}>
-            <PlusCircle className="h-4 w-4" />
-            {t("pages.students.add")}
-          </AdminPrimaryBtn>
-        ) : undefined
-      }
-    >
+    <div className="min-h-screen bg-background pb-16 lg:pb-0">
+      <PageHeader
+        title={t("pages.students.title")}
+        description={t("pages.students.subtitle")}
+        actions={
+          (isAdmin || isTeacher) ? (
+            <Button onClick={handleAddStudent}>
+              <Plus className="h-4 w-4 mr-2" />
+              {t("pages.students.add")}
+            </Button>
+          ) : undefined
+        }
+      />
+      <div className="space-y-6 p-4 lg:p-8">
+      <PageGuide
+        id="students:intro"
+        title="Manage your student roster"
+        body="Search by name or guardian, filter by section or status, or add a new student with the button above."
+      />
+      <QuickActions
+        className="mt-3"
+        actions={[
+          { id: 'add', label: 'Add Student', icon: <Plus className="h-4 w-4"/>, onClick: () => setIsDialogOpen(true) },
+          { id: 'bulk', label: 'Bulk Import', icon: <Upload className="h-4 w-4"/>, onClick: () => {} },
+          { id: 'filter', label: 'Show Inactive', icon: <Filter className="h-4 w-4"/>, onClick: () => setSelectedStatus('inactive') },
+        ]}
+      />
       {/* Stat cards */}
-      <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-        <StatCard
-          title={t("pages.students.statsTotal")}
-          value={totalStudents}
-          description={`${activeStudents} ${t("pages.students.statsActive").toLowerCase()}`}
-          icon={<Users className="h-4 w-4 text-blue-600" />}
-          iconBg="bg-blue-50"
-          isLoading={isLoading}
-        />
-        <StatCard
-          title={t("pages.students.statsActive")}
-          value={activeStudents}
-          description={`${((activeStudents / totalStudents) * 100 || 0).toFixed(0)}% of students`}
-          icon={<CheckCircle className="h-4 w-4 text-green-600" />}
-          iconBg="bg-green-50"
-          isLoading={isLoading}
-        />
-        <StatCard
-          title={t("pages.students.statsInactive")}
-          value={inactiveStudents}
-          description={`${((inactiveStudents / totalStudents) * 100 || 0).toFixed(0)}% of students`}
-          icon={<Activity className="h-4 w-4 text-amber-600" />}
-          iconBg="bg-amber-50"
-          isLoading={isLoading}
-        />
+      <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
+        {isLoading ? (
+          <>
+            <Skeleton className="h-24" />
+            <Skeleton className="h-24" />
+            <Skeleton className="h-24" />
+          </>
+        ) : (
+          <>
+            <StatCard
+              index={0}
+              label={t("pages.students.statsTotal")}
+              value={totalStudents}
+              hint={`${activeStudents} ${t("pages.students.statsActive").toLowerCase()}`}
+              tone="default"
+            />
+            <StatCard
+              index={1}
+              label={t("pages.students.statsActive")}
+              value={activeStudents}
+              hint={`${totalStudents > 0 ? Math.round((activeStudents / totalStudents) * 100) : 0}% of students`}
+              tone="success"
+            />
+            <StatCard
+              index={2}
+              label={t("pages.students.statsInactive")}
+              value={inactiveStudents}
+              hint={`${totalStudents > 0 ? 100 - Math.round((activeStudents / totalStudents) * 100) : 0}% of students`}
+              tone="warning"
+            />
+          </>
+        )}
       </div>
 
       {/* Student list card */}
@@ -285,11 +288,18 @@ const Students = () => {
           </div>
         </div>
         <div className="p-0">
-          <StudentList
-            students={filteredStudents}
-            isLoading={isLoading}
-            onEditStudent={handleEditStudent}
-          />
+          {!isLoading && filteredStudents.length === 0 ? (
+            <div className="flex flex-col items-center gap-3 py-8">
+              <LottiePlayer src={emptyStudents} className="w-40 h-40" loop />
+              <p className="text-muted-foreground text-sm">No students match your filters.</p>
+            </div>
+          ) : (
+            <StudentList
+              students={filteredStudents}
+              isLoading={isLoading}
+              onEditStudent={handleEditStudent}
+            />
+          )}
         </div>
       </div>
 
@@ -300,7 +310,8 @@ const Students = () => {
         onClose={handleCloseDialog}
         madrassahId={data?.userData?.madrassah_id}
       />
-    </AdminPageShell>
+      </div>
+    </div>
   );
 };
 

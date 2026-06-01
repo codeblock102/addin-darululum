@@ -29,6 +29,7 @@ export const adminNavItems: NavItem[] = [
     icon: Home,
     description: "Overview of all activities",
     exact: true,
+    priority: 1,
   },
 
   // ── People ────────────────────────────────────────────────────────────────
@@ -38,6 +39,7 @@ export const adminNavItems: NavItem[] = [
     icon: Users,
     description: "Manage student profiles",
     section: "People",
+    priority: 2,
   },
   {
     href: "/teachers",
@@ -59,12 +61,14 @@ export const adminNavItems: NavItem[] = [
     icon: Book,
     description: "Student progress tracker",
     section: "Operations",
+    priority: 4,
   },
   {
     href: "/attendance",
     label: "nav.attendance",
     icon: FileText,
     description: "Track attendance records",
+    priority: 3,
   },
   {
     href: "/calendar",
@@ -136,6 +140,7 @@ export const teacherNavItems: NavItem[] = [
     icon: Home,
     description: "Teacher dashboard",
     exact: true,
+    priority: 1,
   },
 
   // ── Daily ─────────────────────────────────────────────────────────────────
@@ -145,18 +150,21 @@ export const teacherNavItems: NavItem[] = [
     icon: Clock,
     description: "Track student attendance",
     section: "Daily",
+    priority: 2,
   },
   {
     href: "/dashboard?tab=progress-book",
     label: "nav.progressBook",
     icon: Book,
     description: "Record student progress",
+    priority: 3,
   },
   {
     href: "/dashboard?tab=assignments",
     label: "nav.assignments",
     icon: ClipboardList,
     description: "Create and track assignments",
+    priority: 4,
   },
 
   // ── Communication ─────────────────────────────────────────────────────────
@@ -191,18 +199,21 @@ export const parentNavItems: NavItem[] = [
     icon: Home,
     description: "Overview of your children",
     exact: true,
+    priority: 1,
   },
   {
     href: "/parent/agenda",
     label: "nav.agenda",
     icon: Calendar,
     description: "Weekly class schedule",
+    priority: 2,
   },
   {
     href: "/parent/progress",
     label: "nav.quranProgress",
     icon: Book,
     description: "View memorization and revision",
+    priority: 3,
   },
   {
     href: "/parent/attendance",
@@ -221,5 +232,6 @@ export const parentNavItems: NavItem[] = [
     label: "nav.messages",
     icon: MessageSquare,
     description: "Message your child's teacher",
+    priority: 4,
   },
 ];

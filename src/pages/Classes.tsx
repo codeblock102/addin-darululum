@@ -6,11 +6,15 @@ import { ClassTable } from "@/components/classes/components/ClassTable.tsx";
 import { EnrollmentDialog } from "@/components/classes/components/EnrollmentDialog.tsx";
 import { Dialog } from "@/components/ui/dialog.tsx";
 import { SearchInput } from "@/components/table/SearchInput.tsx";
-import { Plus, BookOpen } from "lucide-react";
+import { Plus } from "lucide-react";
 import { ClassFormData } from "@/components/classes/validation/classFormSchema.ts";
 import { DeleteClassDialog } from "@/components/classes/components/DeleteClassDialog.tsx";
 import { useI18n } from "@/contexts/I18nContext.tsx";
-import { AdminPageShell, AdminPrimaryBtn } from "@/components/admin/AdminPageShell.tsx";
+import { Button } from "@/components/ui/button.tsx";
+import { PageHeader } from "@/components/ui/page-header.tsx";
+import { LottiePlayer } from "@/components/ui/lottie-player.tsx";
+import { PageGuide } from "@/components/ui/page-guide.tsx";
+import emptyClasses from "@/assets/lottie/empty-classes.json";
 
 
 const fetchClasses = async () => {
@@ -117,11 +121,6 @@ export default function Classes() {
     setIsEnrollmentDialogOpen(true);
   };
 
-  const _handleCloseEnrollmentDialog = () => {
-    setSelectedClass(null);
-    setIsEnrollmentDialogOpen(false);
-  };
-
   const handleOpenDeleteDialog = (
     classItem: Partial<ClassFormData> & { id: string }
   ) => {
@@ -129,12 +128,7 @@ export default function Classes() {
     setIsDeleteDialogOpen(true);
   };
 
-  const _handleCloseDeleteDialog = () => {
-    setSelectedClass(null);
-    setIsDeleteDialogOpen(false);
-  };
-
-  const filteredClasses = classes?.filter((c) => {
+const filteredClasses = classes?.filter((c) => {
     const query = searchQuery.toLowerCase();
     const teacherNames = c.teachers.map((teacher: { name: string }) => teacher.name.toLowerCase()).join(" ");
     return (
@@ -146,18 +140,23 @@ export default function Classes() {
   });
 
   return (
-    <AdminPageShell
-      title={t("pages.classes.headerTitle")}
-      subtitle={t("pages.classes.headerDesc")}
-      icon={<BookOpen className="h-5 w-5 text-green-700" />}
-      iconBg="bg-green-50"
-      actions={
-        <AdminPrimaryBtn onClick={() => { handleOpenClassDialog(); setIsClassDialogOpen(true); }}>
-          <Plus className="h-4 w-4" />
-          {t("pages.classes.addClass")}
-        </AdminPrimaryBtn>
-      }
-    >
+    <div className="min-h-screen bg-background pb-16 lg:pb-0">
+      <PageHeader
+        title={t("pages.classes.headerTitle")}
+        description={t("pages.classes.headerDesc")}
+        actions={
+          <Button onClick={() => { handleOpenClassDialog(); setIsClassDialogOpen(true); }}>
+            <Plus className="h-4 w-4 mr-2" />
+            {t("pages.classes.addClass")}
+          </Button>
+        }
+      />
+      <PageGuide
+        id="classes:intro"
+        title="All classes, teachers, and capacity"
+        body="Search any class by name or teacher. Tap a class to view enrolled students."
+      />
+      <div className="space-y-6 p-4 lg:p-8">
       <Dialog open={isClassDialogOpen} onOpenChange={setIsClassDialogOpen}>
         {isClassDialogOpen && (
           <ClassDialog selectedClass={selectedClass} onClose={handleCloseClassDialog} />
@@ -190,15 +189,21 @@ export default function Classes() {
         </div>
         {isLoading && <p className="p-6 text-gray-500 text-sm">{t("pages.classes.loading")}</p>}
         {isError && <p className="p-6 text-red-500 text-sm">{t("pages.classes.errorPrefix")}{(error as Error).message}</p>}
-        {!isLoading && !isError && (
+        {!isLoading && !isError && (filteredClasses && filteredClasses.length > 0 ? (
           <ClassTable
-            classes={filteredClasses || []}
+            classes={filteredClasses}
             onEdit={handleOpenClassDialog}
             onEnroll={handleOpenEnrollmentDialog}
             onDelete={handleOpenDeleteDialog}
           />
-        )}
+        ) : (
+          <div className="flex flex-col items-center justify-center p-12 text-center">
+            <LottiePlayer src={emptyClasses} className="w-48 h-48" />
+            <p className="mt-4 text-gray-500 text-sm">No classes found</p>
+          </div>
+        ))}
       </div>
-    </AdminPageShell>
+      </div>
+    </div>
   );
 }

@@ -11,6 +11,7 @@ import { TeacherAttendance } from "./TeacherAttendance.tsx";
 import { useRBAC } from "@/hooks/useRBAC.ts";
 import { AbsenceRequestForm } from "./AbsenceRequestForm.tsx";
 import { AnnouncementComposer } from "./AnnouncementComposer.tsx";
+import { PageGuide } from "@/components/ui/page-guide.tsx";
 
 interface TeacherDashboardProps {
   teacher: Teacher;
@@ -53,13 +54,18 @@ export const TeacherDashboard = (
   // For admin users, render without DashboardLayout to avoid duplication
   if (isAdmin) {
     return (
-      <div className="min-h-screen bg-gray-50 p-4 sm:p-6 md:p-8">
+      <div className="min-h-screen bg-gray-50 p-4 sm:p-6 md:p-8 pb-16 lg:pb-0">
         <div className="max-w-7xl mx-auto space-y-6">
           <DashboardHeader
             teacher={teacher}
             classes={classes}
             isLoadingClasses={isLoadingClasses}
             isAdmin={isAdmin}
+          />
+          <PageGuide
+            id="teacher-dashboard"
+            title="Your teacher dashboard"
+            body="Switch between Overview, Students, Progress Book, Assignments, and Attendance using the tabs."
           />
           {renderTabContent()}
         </div>
@@ -69,12 +75,17 @@ export const TeacherDashboard = (
 
   // For regular teachers, render directly since DashboardLayout is already applied in App.tsx
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-16 lg:pb-0">
       <DashboardHeader
         teacher={teacher}
         classes={classes}
         isLoadingClasses={isLoadingClasses}
         isAdmin={isAdmin}
+      />
+      <PageGuide
+        id="teacher-dashboard"
+        title="Your teacher dashboard"
+        body="Switch between Overview, Students, Progress Book, Assignments, and Attendance using the tabs."
       />
       {renderTabContent()}
     </div>

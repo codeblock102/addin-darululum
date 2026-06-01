@@ -47,9 +47,9 @@ export const ClassTable = ({
           classes.map((classItem) => (
             <Card key={classItem.id} className="border border-gray-200 bg-white">
               <CardContent className="p-4">
-                <div className="flex items-start justify-between gap-3">
-                  <div className="min-w-0">
-                    <div className="font-semibold text-gray-900 truncate">{classItem.name}</div>
+                <div className="flex items-start justify-between gap-2">
+                  <div className="min-w-0 flex-1">
+                    <div className="font-semibold text-gray-900 line-clamp-2 break-words">{classItem.name}</div>
                     <div className="mt-1 flex flex-wrap items-center gap-2 text-sm text-gray-600">
                       {classItem.subject && (
                         <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200">
@@ -73,27 +73,27 @@ export const ClassTable = ({
                       <span className="ml-3">Capacity: {classItem.capacity ?? "-"}</span>
                     </div>
                   </div>
-                  <div className="shrink-0 flex items-center gap-1">
+                  <div className="shrink-0 flex items-center gap-0.5">
                     <button
-                      className="p-2 rounded-lg hover:bg-gray-100 transition-colors text-gray-400 hover:text-gray-700"
+                      className="size-7 inline-flex items-center justify-center rounded-lg hover:bg-gray-100 transition-colors text-gray-400 hover:text-gray-700"
                       onClick={() => onEdit(classItem)}
                       title="Edit class"
                     >
-                      <Pencil className="h-4 w-4" />
+                      <Pencil className="h-3.5 w-3.5" />
                     </button>
                     <button
-                      className="p-2 rounded-lg hover:bg-gray-100 transition-colors text-gray-400 hover:text-gray-700"
+                      className="size-7 inline-flex items-center justify-center rounded-lg hover:bg-gray-100 transition-colors text-gray-400 hover:text-gray-700"
                       onClick={() => onEnroll(classItem)}
                       title="Manage students"
                     >
-                      <Users className="h-4 w-4" />
+                      <Users className="h-3.5 w-3.5" />
                     </button>
                     <button
-                      className="p-2 rounded-lg hover:bg-red-50 transition-colors text-gray-400 hover:text-red-600"
+                      className="size-7 inline-flex items-center justify-center rounded-lg hover:bg-red-50 transition-colors text-gray-400 hover:text-red-600"
                       onClick={() => onDelete(classItem)}
                       title="Delete class"
                     >
-                      <Trash2 className="h-4 w-4" />
+                      <Trash2 className="h-3.5 w-3.5" />
                     </button>
                   </div>
                 </div>

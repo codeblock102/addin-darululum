@@ -11,54 +11,63 @@
  *
  * It also includes the `<Toaster>` component, which is used to display toast notifications globally throughout the application.
  */
+import { lazy, Suspense } from "react";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { Toaster } from "@/components/ui/toaster.tsx";
 import { ThemeProvider } from "@/components/theme-provider.tsx";
 import { ProxyProvider } from "@/contexts/ProxyContext.tsx";
 import Index from "@/pages/Index.tsx";
 import NotFound from "@/pages/NotFound.tsx";
-import Students from "@/pages/Students.tsx";
-import Teachers from "@/pages/Teachers.tsx";
-import StudentDetail from "@/pages/StudentDetail.tsx";
-import HifzReportCard from "@/pages/HifzReportCard.tsx";
 import Dashboard from "@/pages/Dashboard.tsx";
-import Classes from "@/pages/Classes.tsx";
-import ProgressBook from "@/pages/ProgressBook.tsx";
-import TeacherAccounts from "@/pages/TeacherAccounts.tsx";
 import Auth from "@/pages/Auth.tsx";
-import Attendance from "@/pages/Attendance.tsx";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute.tsx";
 import { DashboardLayout } from "@/components/layouts/DashboardLayout.tsx";
-import Settings from "@/pages/Settings.tsx";
-import Preferences from "@/pages/Preferences.tsx";
-import CreateDemoAccount from "@/pages/dev/CreateDemoAccount.tsx";
-import CreateTeacherProfileForTestAccount from "@/pages/dev/CreateTeacherProfileForTestAccount.tsx";
-import DatabaseSeeder from "@/pages/dev/DatabaseSeeder.tsx";
-import TeacherSchedules from "@/pages/admin/TeacherSchedules.tsx";
-import SetupAdmin from "@/pages/admin/SetupAdmin.tsx";
-import ManualRoleSetup from "@/pages/dev/ManualRoleSetup.tsx";
-import AdminLayout from "@/pages/admin/AdminLayout.tsx";
-import AdminAccessDiagnostic from "@/pages/dev/AdminAccessDiagnostic.tsx";
-import DevAdminManagement from "@/pages/dev/DevAdminManagement.tsx";
-import TeacherSchedule from "@/pages/TeacherSchedule.tsx";
-import Parent from "@/pages/Parent.tsx";
-import ParentProgress from "@/pages/ParentProgress.tsx";
-import ParentAcademics from "@/pages/ParentAcademics.tsx";
-import ParentAgenda from "@/pages/ParentAgenda.tsx";
-import ParentAttendance from "@/pages/ParentAttendance.tsx";
-import ParentAccounts from "@/pages/admin/ParentAccounts.tsx";
-import BulkStudentImport from "@/pages/admin/BulkStudentImport.tsx";
-import Activity from "@/pages/admin/Activity.tsx";
-import CommunicationTemplates from "@/pages/admin/CommunicationTemplates.tsx";
-import Reports from "@/pages/admin/Reports.tsx";
 import ResetPassword from "@/pages/ResetPassword.tsx";
-import SchoolCalendar from "@/pages/SchoolCalendar.tsx";
-import TeacherAddParent from "@/pages/TeacherAddParent.tsx";
-import TeacherMessages from "@/pages/TeacherMessages.tsx";
-import ParentMessages from "@/pages/ParentMessages.tsx";
-import Profile from "@/pages/Profile.tsx";
-import Tasks from "@/pages/Tasks.tsx";
-import AbsenceRequests from "@/pages/AbsenceRequests.tsx";
+
+// Lazy-loaded heavy routes
+const Students = lazy(() => import("@/pages/Students.tsx"));
+const Teachers = lazy(() => import("@/pages/Teachers.tsx"));
+const StudentDetail = lazy(() => import("@/pages/StudentDetail.tsx"));
+const HifzReportCard = lazy(() => import("@/pages/HifzReportCard.tsx"));
+const Classes = lazy(() => import("@/pages/Classes.tsx"));
+const ProgressBook = lazy(() => import("@/pages/ProgressBook.tsx"));
+const TeacherAccounts = lazy(() => import("@/pages/TeacherAccounts.tsx"));
+const Attendance = lazy(() => import("@/pages/Attendance.tsx"));
+const Settings = lazy(() => import("@/pages/Settings.tsx"));
+const Preferences = lazy(() => import("@/pages/Preferences.tsx"));
+const CreateDemoAccount = lazy(() => import("@/pages/dev/CreateDemoAccount.tsx"));
+const CreateTeacherProfileForTestAccount = lazy(() => import("@/pages/dev/CreateTeacherProfileForTestAccount.tsx"));
+const DatabaseSeeder = lazy(() => import("@/pages/dev/DatabaseSeeder.tsx"));
+const TeacherSchedules = lazy(() => import("@/pages/admin/TeacherSchedules.tsx"));
+const SetupAdmin = lazy(() => import("@/pages/admin/SetupAdmin.tsx"));
+const ManualRoleSetup = lazy(() => import("@/pages/dev/ManualRoleSetup.tsx"));
+const AdminLayout = lazy(() => import("@/pages/admin/AdminLayout.tsx"));
+const AdminAccessDiagnostic = lazy(() => import("@/pages/dev/AdminAccessDiagnostic.tsx"));
+const DevAdminManagement = lazy(() => import("@/pages/dev/DevAdminManagement.tsx"));
+const TeacherSchedule = lazy(() => import("@/pages/TeacherSchedule.tsx"));
+const Parent = lazy(() => import("@/pages/Parent.tsx"));
+const ParentProgress = lazy(() => import("@/pages/ParentProgress.tsx"));
+const ParentAcademics = lazy(() => import("@/pages/ParentAcademics.tsx"));
+const ParentAgenda = lazy(() => import("@/pages/ParentAgenda.tsx"));
+const ParentAttendance = lazy(() => import("@/pages/ParentAttendance.tsx"));
+const ParentAccounts = lazy(() => import("@/pages/admin/ParentAccounts.tsx"));
+const BulkStudentImport = lazy(() => import("@/pages/admin/BulkStudentImport.tsx"));
+const Activity = lazy(() => import("@/pages/admin/Activity.tsx"));
+const CommunicationTemplates = lazy(() => import("@/pages/admin/CommunicationTemplates.tsx"));
+const Reports = lazy(() => import("@/pages/admin/Reports.tsx"));
+const SchoolCalendar = lazy(() => import("@/pages/SchoolCalendar.tsx"));
+const TeacherAddParent = lazy(() => import("@/pages/TeacherAddParent.tsx"));
+const TeacherMessages = lazy(() => import("@/pages/TeacherMessages.tsx"));
+const ParentMessages = lazy(() => import("@/pages/ParentMessages.tsx"));
+const Profile = lazy(() => import("@/pages/Profile.tsx"));
+const Tasks = lazy(() => import("@/pages/Tasks.tsx"));
+const AbsenceRequests = lazy(() => import("@/pages/AbsenceRequests.tsx"));
+
+const RouteSkeleton = () => (
+  <div className="min-h-screen flex items-center justify-center bg-background">
+    <div className="animate-pulse h-8 w-8 rounded-full bg-brand/30" />
+  </div>
+);
 
 /**
  * @component App
@@ -87,6 +96,7 @@ function App() {
     <ThemeProvider defaultTheme="light" storageKey="vite-ui-theme">
       <ProxyProvider>
       <BrowserRouter>
+        <Suspense fallback={<RouteSkeleton />}>
         <Routes>
           <Route path="/auth" element={<Auth />} />
           <Route path="/reset-password" element={<ResetPassword />} />
@@ -279,6 +289,7 @@ function App() {
             />
           </Route>
         </Routes>
+        </Suspense>
       </BrowserRouter>
       </ProxyProvider>
       <Toaster />

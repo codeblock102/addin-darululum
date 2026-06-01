@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { format } from "date-fns";
-import { Dialog, DialogContent } from "@/components/ui/dialog.tsx";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog.tsx";
 import { Button } from "@/components/ui/button.tsx";
 import { useRBAC } from "@/hooks/useRBAC.ts";
 import { useAuth } from "@/contexts/AuthContext.tsx";
@@ -165,6 +165,7 @@ export function DailyPromptModal() {
   return (
     <Dialog open={open} onOpenChange={(v) => !v && handleClose()}>
       <DialogContent className="sm:max-w-lg p-0 overflow-hidden gap-0 rounded-2xl">
+        <DialogTitle className="sr-only">Daily checklist</DialogTitle>
         {/* Header */}
         <div
           className="px-6 py-5 relative overflow-hidden"

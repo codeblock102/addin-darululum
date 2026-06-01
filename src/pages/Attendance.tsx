@@ -20,13 +20,18 @@ import {
   Settings,
   TrendingUp,
   UserCheck,
-  UserX,
 } from "lucide-react";
 import { Button } from "@/components/ui/button.tsx";
+import { PageHeader } from "@/components/ui/page-header.tsx";
+import { StatCard } from "@/components/ui/stat-card.tsx";
 import { useI18n } from "@/contexts/I18nContext.tsx";
-import { AdminStatCard } from "@/components/admin/AdminPageShell.tsx";
 import { StudentContactPopover } from "@/components/attendance/StudentContactPopover.tsx";
 import { cn } from "@/lib/utils.ts";
+import { LottiePlayer } from "@/components/ui/lottie-player.tsx";
+import { PageGuide } from "@/components/ui/page-guide.tsx";
+import { QuickActions } from "@/components/ui/quick-actions.tsx";
+import emptyAttendance from "@/assets/lottie/empty-attendance.json";
+import successCheck from "@/assets/lottie/success-check.json";
 
 // ─── Watchlist ────────────────────────────────────────────────────────────────
 
@@ -63,7 +68,7 @@ const WatchlistView = () => {
         if (!byStudent[r.student_id]) byStudent[r.student_id] = { dates: [], statuses: [], reasons: [] };
         byStudent[r.student_id].dates.push(r.date);
         byStudent[r.student_id].statuses.push(r.status);
-        byStudent[r.student_id].reasons.push((r as any).late_reason ?? null);
+        byStudent[r.student_id].reasons.push((r as { late_reason?: string | null }).late_reason ?? null);
       }
 
       // Only keep students with 2+ absences
@@ -373,7 +378,7 @@ const HeatmapView = () => {
 // ─── Main Page ────────────────────────────────────────────────────────────────
 
 const tabCls = (active: boolean) =>
-  `flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-lg transition-all duration-150 border-0 outline-none ${
+  `flex items-center gap-1.5 px-2.5 lg:px-3 py-1.5 text-xs lg:text-sm font-medium rounded-lg transition-all duration-150 border-0 outline-none whitespace-nowrap shrink-0 ${
     active
       ? "bg-green-700 text-white shadow-sm"
       : "text-gray-500 hover:text-gray-800 hover:bg-gray-100 bg-transparent"
@@ -384,6 +389,16 @@ const Attendance = () => {
   const [selectedTab, setSelectedTab] = useState("take-attendance");
   const [longTermOpen, setLongTermOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
+
+  useEffect(() => {
+    const handler = () => {
+      setShowSuccess(true);
+      window.setTimeout(() => setShowSuccess(false), 1200);
+    };
+    window.addEventListener("attendance:marked", handler);
+    return () => window.removeEventListener("attendance:marked", handler);
+  }, []);
   const navigate = useNavigate();
   const { isAdmin, isAttendanceTaker, isLoading } = useRBAC();
 
@@ -394,12 +409,6 @@ const Attendance = () => {
 
   const todayYmd = format(new Date(), "yyyy-MM-dd");
   const sevenDaysAgoYmd = format(subDays(new Date(), 6), "yyyy-MM-dd");
-
-  const todayLabel = new Date().toLocaleDateString("en-CA", {
-    weekday: "long",
-    month: "long",
-    day: "numeric",
-  });
 
   const { data: activeStudentsCount = 0 } = useQuery({
     queryKey: ["active-students-count"],
@@ -463,95 +472,81 @@ const Attendance = () => {
   const unmarked = Math.max(0, activeStudentsCount - todayRows.length);
 
   return (
-    <div className="min-h-screen bg-[#f5f6fa] p-4 sm:p-6 md:p-8">
+    <div className="min-h-screen bg-[#f5f6fa] p-4 sm:p-6 md:p-8 pb-16 lg:pb-0">
       <div className="max-w-7xl mx-auto space-y-5">
 
-        {/* ── Welcome Banner ───────────────────────────────────────────────── */}
-        <div
-          className="rounded-2xl p-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 relative overflow-hidden"
-          style={{ background: "linear-gradient(135deg, #052e16 0%, #14532d 55%, #166534 100%)" }}
-        >
-          <div className="absolute -right-8 -top-8 w-40 h-40 rounded-full pointer-events-none" style={{ background: "rgba(255,255,255,0.05)" }} />
-          <div className="absolute right-8 -bottom-10 w-28 h-28 rounded-full pointer-events-none" style={{ background: "rgba(255,255,255,0.04)" }} />
+        {/* ── Header ───────────────────────────────────────────────────────── */}
+        <PageHeader
+          title="Attendance Monitor"
+          description={
+            unmarked > 0
+              ? `${unmarked} student${unmarked !== 1 ? "s" : ""} not yet marked today`
+              : todayRows.length > 0
+              ? "All students marked for today"
+              : "No records yet — take roll call below"
+          }
+          actions={
+            <>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setSettingsOpen(true)}
+                title="Attendance settings"
+              >
+                <Settings className="h-4 w-4" />
+              </Button>
+              <Button onClick={() => setLongTermOpen(true)}>
+                <CalendarDays className="h-4 w-4 mr-2" />
+                Multi-day Absence
+              </Button>
+            </>
+          }
+        />
 
-          <div className="relative">
-            <p className="text-sm font-medium" style={{ color: "#86efac" }}>{todayLabel}</p>
-            <h1 className="text-2xl font-bold mt-1" style={{ color: "white" }}>Attendance Monitor</h1>
-            <p className="text-sm mt-1" style={{ color: "#bbf7d0" }}>
-              {unmarked > 0
-                ? `${unmarked} student${unmarked !== 1 ? "s" : ""} not yet marked today`
-                : todayRows.length > 0
-                ? "All students marked for today"
-                : "No records yet — take roll call below"}
-            </p>
-          </div>
+        <PageGuide
+          id="attendance:intro"
+          title="Today's attendance at a glance"
+          body="Tap Take Attendance to mark students. Use Watchlist to see repeat absences. Heatmap shows weekly trends."
+        />
 
-          <div className="flex items-center gap-2 relative flex-wrap">
-            {absentToday + sickToday > 0 && (
-              <div className="flex items-center gap-2 bg-red-500/20 border border-red-400/30 text-xs font-semibold px-3 py-2 rounded-xl" style={{ color: "white" }}>
-                <AlertTriangle className="h-3.5 w-3.5" style={{ color: "#fca5a5" }} />
-                {absentToday + sickToday} absent today
-              </div>
-            )}
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setSettingsOpen(true)}
-              className="bg-white/15 hover:bg-white/25 border-0 rounded-xl h-9 w-9 p-0"
-              style={{ color: "white" }}
-              title="Attendance settings"
-            >
-              <Settings className="h-4 w-4" style={{ color: "white" }} />
-            </Button>
-            <button
-              type="button"
-              onClick={() => setLongTermOpen(true)}
-              className="flex items-center gap-2 bg-white/20 hover:bg-white/30 text-sm font-semibold px-4 py-2 rounded-xl transition-colors"
-              style={{ color: "white" }}
-            >
-              <CalendarDays className="h-3.5 w-3.5" style={{ color: "white" }} />
-              Multi-day Absence
-            </button>
-          </div>
-        </div>
+        <QuickActions
+          className="mt-3"
+          actions={[
+            { id: 'take', label: 'Take Attendance', onClick: () => setSelectedTab('take-attendance') },
+            { id: 'watchlist', label: 'View Watchlist', onClick: () => setSelectedTab('watchlist') },
+            { id: 'multi', label: 'Multi-day Absence', onClick: () => setLongTermOpen(true) },
+          ]}
+        />
 
         {/* ── Stat Cards ───────────────────────────────────────────────────── */}
-        <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
-          <AdminStatCard
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          <StatCard
+            index={0}
             label="Present Today"
-            value={`${attendedToday} / ${activeStudentsCount}`}
-            meta={`${todayPct.toFixed(1)}% attendance rate`}
-            metaColor="text-green-700"
-            icon={<UserCheck className="h-4 w-4 text-green-700" />}
-            iconBg="bg-green-50"
-            onClick={() => setSelectedTab("take-attendance")}
+            value={`${attendedToday}/${activeStudentsCount}`}
+            hint={`${todayPct.toFixed(1)}% attendance rate`}
+            tone="success"
           />
-          <AdminStatCard
+          <StatCard
+            index={1}
             label="Absent / Sick"
             value={String(absentToday + sickToday)}
-            meta={`${absentPct.toFixed(1)}% of enrolled`}
-            metaColor={absentToday + sickToday > 0 ? "text-red-600" : "text-gray-500"}
-            icon={<UserX className="h-4 w-4 text-red-600" />}
-            iconBg="bg-red-50"
-            onClick={() => setSelectedTab("watchlist")}
+            hint={`${absentPct.toFixed(1)}% of enrolled`}
+            tone="warning"
           />
-          <AdminStatCard
+          <StatCard
+            index={2}
             label="Late Today"
             value={String(lateToday)}
-            meta={`${latePct.toFixed(1)}% of present`}
-            metaColor={lateToday > 0 ? "text-amber-600" : "text-gray-500"}
-            icon={<Clock className="h-4 w-4 text-amber-600" />}
-            iconBg="bg-amber-50"
-            onClick={() => setSelectedTab("records")}
+            hint={`${latePct.toFixed(1)}% of present`}
+            tone="warning"
           />
-          <AdminStatCard
+          <StatCard
+            index={3}
             label="7-Day Average"
             value={`${weekPct.toFixed(1)}%`}
-            meta={`${weekAttended} of ${weekTotal} records`}
-            metaColor="text-blue-600"
-            icon={<TrendingUp className="h-4 w-4 text-blue-600" />}
-            iconBg="bg-blue-50"
-            onClick={() => setSelectedTab("heatmap")}
+            hint={`${weekAttended} of ${weekTotal} records`}
+            tone="info"
           />
         </div>
 
@@ -602,8 +597,8 @@ const Attendance = () => {
         {/* ── Main Card ────────────────────────────────────────────────────── */}
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
           <Tabs value={selectedTab} onValueChange={setSelectedTab}>
-            <div className="border-b border-gray-100 px-4 py-3 overflow-x-auto">
-              <div className="inline-flex items-center gap-0.5 bg-gray-100/70 p-1 rounded-xl">
+            <div className="border-b border-gray-100 px-4 py-3 overflow-x-auto scrollbar-none">
+              <div className="inline-flex items-center gap-0.5 bg-gray-100/70 p-1 rounded-xl w-max">
                 <button className={tabCls(selectedTab === "take-attendance")} onClick={() => setSelectedTab("take-attendance")}>
                   <CalendarCheck className="h-4 w-4" />
                   {t("pages.attendance.tabs.take", "Take Attendance")}
@@ -634,7 +629,14 @@ const Attendance = () => {
                 <HeatmapView />
               </TabsContent>
               <TabsContent value="records" className="mt-0">
-                <AttendanceTable />
+                {todayRows.length === 0 && weekRows.length === 0 ? (
+                  <div className="py-12 flex flex-col items-center justify-center text-center">
+                    <LottiePlayer src={emptyAttendance} className="w-40 h-40" />
+                    <p className="text-sm text-gray-500 mt-2">No attendance records yet.</p>
+                  </div>
+                ) : (
+                  <AttendanceTable />
+                )}
               </TabsContent>
             </div>
           </Tabs>
@@ -651,6 +653,12 @@ const Attendance = () => {
           <AttendanceCutoffSettings />
         </DialogContent>
       </Dialog>
+
+      {showSuccess && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/30 pointer-events-none">
+          <LottiePlayer src={successCheck} className="w-40 h-40" loop={false} />
+        </div>
+      )}
     </div>
   );
 };

@@ -20,19 +20,16 @@ import { DhorBook as DhorBookComponent } from "@/components/dhor-book/DhorBook.t
 import { ClassroomRecords } from "@/components/dhor-book/ClassroomRecords.tsx";
 import { MonthlyProgress } from "@/components/progress/MonthlyProgress.tsx";
 import {
-  Book,
-  BookOpen,
-  CalendarDays,
-  FileText,
   Loader2,
   Search,
-  TrendingUp,
-  Users,
 } from "lucide-react";
 import { useTeacherStatus } from "@/hooks/useTeacherStatus.ts";
 import { useToast } from "@/components/ui/use-toast.ts";
-import { AlertCircle } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext.tsx";
+import { PageHeader } from "@/components/ui/page-header.tsx";
+import { LottiePlayer } from "@/components/ui/lottie-player.tsx";
+import { PageGuide } from "@/components/ui/page-guide.tsx";
+import emptyProgress from "@/assets/lottie/empty-progress.json";
 
 const ProgressBookPage = () => {
   const { toast } = useToast();
@@ -41,7 +38,6 @@ const ProgressBookPage = () => {
     undefined,
   );
   const [searchQuery, setSearchQuery] = useState("");
-  const [activeTab, setActiveTab] = useState("all");
   const [viewMode, setViewMode] = useState<"daily" | "classroom" | "monthly">("daily");
   const [selectedTeacherId, setSelectedTeacherId] = useState<
     string | undefined
@@ -71,7 +67,8 @@ const ProgressBookPage = () => {
         .eq("role", "teacher")
         .order("name", { ascending: true });
       if (error) {
-        console.error("Error fetching teachers:", error);
+        toast({ title: "Failed to load data", description: "Could not fetch teachers.", variant: "destructive" });
+        console.error(error);
         return [];
       }
       return data || [];
@@ -89,7 +86,8 @@ const ProgressBookPage = () => {
         .eq("id", userId)
         .single();
       if (error) {
-        console.error("Error fetching user profile data:", error);
+        toast({ title: "Failed to load data", description: "Could not fetch user profile.", variant: "destructive" });
+        console.error(error);
         throw error;
       }
       return data;
@@ -123,10 +121,8 @@ const ProgressBookPage = () => {
             .eq("teacher_id", selectedTeacherId);
 
           if (studentIdError) {
-            console.error(
-              "Error fetching student names for teacher",
-              studentIdError,
-            );
+            toast({ title: "Failed to load data", description: "Could not fetch student names for teacher.", variant: "destructive" });
+            console.error(studentIdError);
             return [];
           }
           const studentNames = studentLinks.map((s) => s.student_name);
@@ -138,10 +134,8 @@ const ProgressBookPage = () => {
             .in("name", studentNames);
 
           if (studentError) {
-            console.error(
-              "Error fetching student IDs by name",
-              studentError,
-            );
+            toast({ title: "Failed to load data", description: "Could not fetch student IDs.", variant: "destructive" });
+            console.error(studentError);
             return [];
           }
 
@@ -155,7 +149,8 @@ const ProgressBookPage = () => {
           .eq("teacher_id", currentTeacherId);
 
         if (linkError) {
-          console.error("Error fetching teacher's students", linkError);
+          toast({ title: "Failed to load data", description: "Could not fetch teacher's students.", variant: "destructive" });
+          console.error(linkError);
           return [];
         }
 
@@ -168,10 +163,8 @@ const ProgressBookPage = () => {
             .in("name", studentNames);
 
         if (studentError) {
-            console.error(
-              "Error fetching student IDs by name",
-              studentError,
-            );
+            toast({ title: "Failed to load data", description: "Could not fetch student IDs.", variant: "destructive" });
+            console.error(studentError);
             return [];
         }
 
@@ -189,12 +182,12 @@ const ProgressBookPage = () => {
       const { data, error } = await query.order("name", { ascending: true });
 
       if (error) {
-        console.error("Error fetching students:", error);
         toast({
-          title: "Error fetching students",
+          title: "Failed to load data",
           description: "Could not retrieve student data.",
           variant: "destructive",
         });
+        console.error(error);
         return [];
       }
       return data || [];
@@ -207,31 +200,26 @@ const ProgressBookPage = () => {
   );
 
   return (
-    <div className="space-y-4 sm:space-y-6 pb-16">
-      <div className="flex items-center gap-4">
-        <div className="space-y-2">
-          <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-              <BookOpen className="h-5 w-5 text-blue-600" />
-            </div>
-            <div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1">
-                Progress Book
-              </h1>
-              <p className="text-sm sm:text-base text-gray-600">
-                Track and monitor student memorization progress
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
+    <div className="min-h-screen bg-background pb-16">
+      <PageHeader
+        title="Progress Book"
+        description="Track and monitor student memorization progress"
+      />
+      <div className="space-y-4 sm:space-y-6 p-4 lg:p-8">
+      <PageGuide
+        id="progress:intro"
+        title="Track every student's memorization"
+        body="Pick a student to view daily entries, monthly summary, or compare across the leaderboard."
+      />
 
       <Tabs value={viewMode} onValueChange={(value) => setViewMode(value as "daily" | "classroom" | "monthly")} className="w-full">
-        <TabsList className="grid w-full grid-cols-1 gap-2 sm:grid-cols-3">
-          <TabsTrigger value="daily">Daily Records</TabsTrigger>
-          <TabsTrigger value="monthly">Monthly Progress</TabsTrigger>
-          <TabsTrigger value="classroom">Leaderboard View</TabsTrigger>
-        </TabsList>
+        <div className="overflow-x-auto -mx-4 px-4 scrollbar-none">
+          <TabsList className="inline-flex w-max gap-2 h-auto p-1">
+            <TabsTrigger value="daily" className="text-sm whitespace-nowrap px-3 lg:px-4">Daily Records</TabsTrigger>
+            <TabsTrigger value="monthly" className="text-sm whitespace-nowrap px-3 lg:px-4">Monthly Progress</TabsTrigger>
+            <TabsTrigger value="classroom" className="text-sm whitespace-nowrap px-3 lg:px-4">Leaderboard View</TabsTrigger>
+          </TabsList>
+        </div>
         <TabsContent value="daily">
           <Card className="mt-4">
             <CardContent className="p-4 sm:p-6">
@@ -296,7 +284,7 @@ const ProgressBookPage = () => {
                   ) : (
                     <div className="flex items-center justify-center h-full rounded-lg bg-gray-50 p-8 text-center">
                       <div>
-                        <Book className="h-12 w-12 mx-auto text-gray-400 mb-4" />
+                        <LottiePlayer src={emptyProgress} className="h-40 w-40 mx-auto mb-4" ariaLabel="No student selected" />
                         <h3 className="text-lg font-semibold text-gray-800">Select a Student</h3>
                         <p className="text-sm text-gray-600">Choose a student from the list to view their detailed progress.</p>
                       </div>
@@ -342,6 +330,7 @@ const ProgressBookPage = () => {
           </Card>
         </TabsContent>
       </Tabs>
+      </div>
     </div>
   );
 };

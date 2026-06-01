@@ -5,6 +5,7 @@
  * soft shadows, generous spacing, clear hierarchy.
  */
 
+import * as React from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client.ts";
 import { useNavigate } from "react-router-dom";
@@ -26,11 +27,15 @@ import {
   Users,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext.tsx";
+import useIslamicGreeting from "@/hooks/use-islamic-greeting.ts";
 import { useToast } from "@/hooks/use-toast.ts";
 import { StudentContactPopover } from "@/components/attendance/StudentContactPopover.tsx";
+import { StatCard } from "@/components/ui/stat-card.tsx";
+import { PageGuide } from "@/components/ui/page-guide.tsx";
+import { QuickActions } from "@/components/ui/quick-actions.tsx";
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-interface StaffRow {
+interface StaffRowData {
   id: string;
   name: string | null;
   role: string | null;
@@ -348,7 +353,7 @@ const avatarColors = [
   "bg-cyan-100 text-cyan-700",
 ];
 
-const StaffRow = ({ staff, idx }: { staff: StaffRow; idx: number }) => {
+const StaffRowItem = ({ staff, idx }: { staff: StaffRowData; idx: number }) => {
   const initials = (staff.name ?? "?")
     .split(" ")
     .slice(0, 2)
@@ -394,19 +399,22 @@ export const AdminDashboard = () => {
   const { toast } = useToast();
   // ── Data queries ────────────────────────────────────────────────────────────
 
-  const { data: userMadrassahId } = useQuery<string | null>({
-    queryKey: ["admin-madrassah-id", session?.user?.id],
+  const { data: adminProfile } = useQuery<
+    { madrassah_id: string | null; role: string | null; name: string | null } | null
+  >({
+    queryKey: ["admin-profile", session?.user?.id],
     queryFn: async () => {
       const { data } = await supabase
         .from("profiles")
-        .select("madrassah_id")
+        .select("madrassah_id, role, name")
         .eq("id", session!.user.id)
         .maybeSingle();
-      return data?.madrassah_id ?? null;
+      return data ?? null;
     },
     enabled: !!session?.user?.id,
     staleTime: 10 * 60 * 1000,
   });
+  const userMadrassahId = adminProfile?.madrassah_id ?? null;
 
   const { data: studentCount = 0 } = useQuery({
     queryKey: ["admin-students-count", userMadrassahId],
@@ -517,7 +525,7 @@ export const AdminDashboard = () => {
     staleTime: 5 * 60 * 1000,
   });
 
-  const { data: staffList = [] } = useQuery<StaffRow[]>({
+  const { data: staffList = [] } = useQuery<StaffRowData[]>({
     queryKey: ["admin-staff-list"],
     queryFn: async () => {
       const { data } = await supabase
@@ -526,7 +534,7 @@ export const AdminDashboard = () => {
         .in("role", ["teacher", "admin"])
         .order("name")
         .limit(6);
-      return (data ?? []) as StaffRow[];
+      return (data ?? []) as StaffRowData[];
     },
     staleTime: 5 * 60 * 1000,
   });
@@ -577,9 +585,12 @@ export const AdminDashboard = () => {
     day: "numeric",
   });
 
-  const adminName = session?.user?.user_metadata?.full_name
+  const adminName = adminProfile?.name?.split(" ")[0]
+    ?? session?.user?.user_metadata?.full_name?.split(" ")[0]
     ?? session?.user?.email?.split("@")[0]
     ?? "Admin";
+
+  const { salutation, gregorian, hijri } = useIslamicGreeting(adminName);
 
   const unmarkedToday = Math.max(0, studentCount - presentToday - absentToday);
 
@@ -596,65 +607,46 @@ export const AdminDashboard = () => {
     <div className="min-h-screen bg-[#f5f6fa] p-6 md:p-8">
       <div className="max-w-7xl mx-auto space-y-6">
 
-        {/* ── Welcome Banner ────────────────────────────────────────────────── */}
-        <div
-          className="rounded-2xl p-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 relative overflow-hidden"
-          style={{ background: "linear-gradient(135deg, #052e16 0%, #14532d 55%, #166534 100%)" }}
-        >
-          <div
-            className="absolute -right-8 -top-8 w-40 h-40 rounded-full pointer-events-none"
-            style={{ background: "rgba(255,255,255,0.05)" }}
-          />
-          <div className="relative">
-            <p className="text-sm font-medium" style={{ color: "#86efac" }}>
-              {todayLabel}
-            </p>
-            <h1 className="text-2xl font-bold mt-1" style={{ color: "white" }}>
-              Good {new Date().getHours() < 12 ? "morning" : new Date().getHours() < 17 ? "afternoon" : "evening"}, {adminName.split(" ")[0]} 👋
-            </h1>
-            <p className="text-sm mt-1" style={{ color: "#bbf7d0" }}>
-              Here's a summary of the school today.
-            </p>
-          </div>
-          <div className="flex items-center gap-3 relative">
-            <button
-              type="button"
-              onClick={() => navigate("/students")}
-              className="flex items-center gap-2 bg-white/20 hover:bg-white/30 text-sm font-semibold px-4 py-2.5 rounded-xl transition-colors"
-              style={{ color: "white" }}
-            >
-              <Plus className="h-4 w-4" style={{ color: "white" }} />
-              Add Student
-            </button>
-            <button
-              type="button"
-              onClick={() => navigate("/students")}
-              className="flex items-center gap-2 bg-white hover:bg-gray-50 text-gray-800 text-sm font-semibold px-4 py-2.5 rounded-xl transition-colors"
-            >
-              View All
-            </button>
-          </div>
-        </div>
+        {/* ── Welcome Header ────────────────────────────────────────────────── */}
+        <header className="py-6 lg:py-8 border-b border-border/40">
+          <p className="font-arabic text-2xl text-brand mb-2">السلام عليكم</p>
+          <h1 className="font-display text-3xl lg:text-4xl font-semibold text-foreground tracking-tight">
+            {salutation}
+          </h1>
+          <p className="mt-2 text-sm text-muted-foreground tabular-nums">
+            {gregorian} · {hijri}
+          </p>
+        </header>
+
+        <PageGuide
+          id="dashboard:intro"
+          title="Your school at a glance"
+          body="Quick stats up top. Tap a card to drill in. Use the actions below for common tasks."
+        />
+        <QuickActions
+          className="mt-3"
+          actions={[
+            { id: 'attendance', label: 'Take Attendance', icon: <Calendar className="h-4 w-4"/>, onClick: () => navigate('/attendance') },
+            { id: 'add-student', label: 'Add Student', icon: <Plus className="h-4 w-4"/>, onClick: () => navigate('/students') },
+            { id: 'progress', label: 'Open Progress Book', icon: <BookOpen className="h-4 w-4"/>, onClick: () => navigate('/progress-book') },
+          ]}
+        />
 
         {/* ── Metric Cards ─────────────────────────────────────────────────── */}
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
-          <MetricCard
-            variant="primary"
-            label="Total Students"
-            value={totalStudents}
+          <button
+            type="button"
             onClick={() => navigate("/students")}
-            badge={
-              <Pill
-                style={{ background: "rgba(255,255,255,0.18)", color: "#ffffff" }}
-                icon={<TrendingUp className="h-3 w-3" style={{ color: "#bbf7d0" }} />}
-                label={
-                  onTrackCount > 0
-                    ? `${onTrackCount} on track`
-                    : "View progress"
-                }
-              />
-            }
-          />
+            className="text-left rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            <StatCard
+              label="Total Students"
+              value={totalStudents}
+              hint={`${totalStudents} enrolled`}
+              tone="default"
+              index={0}
+            />
+          </button>
           <MetricCard
             label="Today Present"
             value={presentToday}
@@ -911,7 +903,7 @@ export const AdminDashboard = () => {
             <div className="space-y-3">
               {staffList.length > 0
                 ? staffList.map((staff, idx) => (
-                  <StaffRow key={staff.id} staff={staff} idx={idx} />
+                  <StaffRowItem key={staff.id} staff={staff} idx={idx} />
                 ))
                 : (
                   <p className="text-center py-6 text-gray-400 text-sm">

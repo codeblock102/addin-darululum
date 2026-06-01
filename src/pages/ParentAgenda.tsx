@@ -19,6 +19,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card.t
 import { Button } from "@/components/ui/button.tsx";
 import { Badge } from "@/components/ui/badge.tsx";
 import { useIsMobile } from "@/hooks/use-mobile.tsx";
+import { PageGuide } from "@/components/ui/page-guide.tsx";
+import { LottiePlayer } from "@/components/ui/lottie-player.tsx";
+import emptyProgress from "@/assets/lottie/empty-progress.json";
 
 // ---------- Types ----------
 interface TimeSlot {
@@ -259,7 +262,12 @@ const ParentAgenda = () => {
   );
 
   return (
-    <div className="container mx-auto px-3 sm:px-6 py-4 sm:py-6 space-y-4">
+    <div className="container mx-auto px-3 sm:px-6 py-4 sm:py-6 space-y-4 pb-16 lg:pb-0">
+      <PageGuide
+        id="parent-agenda"
+        title="Your child's weekly schedule"
+        body="See classes, teachers, and school events for each day. Use the arrows to switch weeks."
+      />
       <Card>
         <CardHeader className="space-y-3">
           <div className="flex items-center justify-between gap-3 flex-wrap">
@@ -318,7 +326,8 @@ const ParentAgenda = () => {
               <p className="text-xs text-gray-400">Please contact the school admin.</p>
             </div>
           ) : noScheduleHint ? (
-            <div className="py-12 text-center">
+            <div className="py-12 text-center flex flex-col items-center">
+              <LottiePlayer src={emptyProgress} className="w-40 h-40" ariaLabel="No schedule yet" />
               <p className="text-sm font-medium text-gray-700">No schedule available yet.</p>
               <p className="text-xs text-gray-500 mt-1">Ask the school office.</p>
             </div>

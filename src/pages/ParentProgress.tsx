@@ -5,6 +5,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card.t
 import { DhorBook } from "@/components/dhor-book/DhorBook.tsx";
 import { useStudentTeacher } from "@/hooks/useStudentTeacher.ts";
 import { GraduationCap } from "lucide-react";
+import { PageGuide } from "@/components/ui/page-guide.tsx";
+import { LottiePlayer } from "@/components/ui/lottie-player.tsx";
+import emptyProgress from "@/assets/lottie/empty-progress.json";
 
 const ParentProgress = () => {
   const { children } = useParentChildren();
@@ -19,10 +22,16 @@ const ParentProgress = () => {
   const { data: studentTeachers = [] } = useStudentTeacher(selectedStudentId ?? undefined);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-16 lg:pb-0">
       <div>
         <h1 className="text-2xl font-bold tracking-tight mb-1">Qur'an Progress</h1>
         <p className="text-muted-foreground text-sm mb-4">View your child's memorisation book.</p>
+        <PageGuide
+          id="parent-progress"
+          title="Your child's Qur'an progress"
+          body="Pick a child to see their Dhor Book, sabaq history, and revisions."
+          className="mb-4"
+        />
         <ChildSelector
           children={children}
           selectedId={selectedStudentId}
@@ -45,6 +54,13 @@ const ParentProgress = () => {
           </div>
         )}
       </div>
+
+      {!selectedStudentId && (
+        <div className="flex flex-col items-center justify-center py-12 text-center">
+          <LottiePlayer src={emptyProgress} className="w-40 h-40" ariaLabel="No child selected" />
+          <p className="text-sm font-medium text-gray-700 mt-2">Select a child to view progress.</p>
+        </div>
+      )}
 
       {selectedStudentId && (
         <Card>

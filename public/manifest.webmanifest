@@ -4,8 +4,8 @@
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
-  "background_color": "#0f766e",
-  "theme_color": "#0f766e",
+  "background_color": "#1f6f43",
+  "theme_color": "#1f6f43",
   "description": "Comprehensive Islamic education management system for Dār Al-Ulūm Montréal",
   "icons": [
     {

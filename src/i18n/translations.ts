@@ -37,6 +37,12 @@ const en: Dict = {
     profile: "Profile",
     communicationTemplates: "Templates",
     reports: "Reports",
+    tasks: "Tasks",
+    absenceRequests: "Absence Requests",
+    more: "More",
+  },
+  auth: {
+    logout: "Log out",
   },
   portal: {
     admin: "Admin Portal",
@@ -754,6 +760,12 @@ const fr: Dict = {
     profile: "Profil",
     communicationTemplates: "Modèles",
     reports: "Rapports",
+    tasks: "Tâches",
+    absenceRequests: "Demandes d'absence",
+    more: "Plus",
+  },
+  auth: {
+    logout: "Se déconnecter",
   },
   portal: {
     admin: "Portail Admin",
