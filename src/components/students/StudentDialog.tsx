@@ -6,11 +6,10 @@ import { Input } from "@/components/ui/input.tsx";
 import { Label } from "@/components/ui/label.tsx";
 import { Textarea } from "@/components/ui/textarea.tsx";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog.tsx";
+  Sheet,
+  SheetContent,
+  SheetClose,
+} from "@/components/ui/sheet.tsx";
 import {
   Select,
   SelectContent,
@@ -20,12 +19,7 @@ import {
 } from "@/components/ui/select.tsx";
 import { useToast } from "@/components/ui/use-toast.ts";
 import { Checkbox } from "@/components/ui/checkbox.tsx";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@/components/ui/tabs.tsx";
+import { X } from "lucide-react";
 import { formatErrorMessage } from "@/utils/formatErrorMessage.ts";
 import { StudentPhotoUpload } from "@/components/students/StudentPhotoUpload.tsx";
 
@@ -477,39 +471,50 @@ export const StudentDialog = (
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto bg-white text-gray-900 border border-gray-200 shadow-2xl dark:bg-slate-900 dark:text-white dark:border-slate-700">
-        <DialogHeader>
-          <DialogTitle>
-            {selectedStudent ? "Edit Student" : "Add New Student"}
-          </DialogTitle>
-        </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4 pt-4">
-          <Tabs defaultValue="info" className="w-full">
-            <div className="-mx-4 px-4 mb-4 overflow-x-auto scrollbar-none lg:mx-0 lg:px-0">
-              <TabsList className="inline-flex w-max gap-1 lg:grid lg:w-full lg:grid-cols-4 lg:gap-0">
-                <TabsTrigger value="info" className="whitespace-nowrap px-3 lg:px-4">Student Info</TabsTrigger>
-                <TabsTrigger value="guardian" className="whitespace-nowrap px-3 lg:px-4">Guardian</TabsTrigger>
-                <TabsTrigger value="address" className="whitespace-nowrap px-3 lg:px-4">Address</TabsTrigger>
-                <TabsTrigger value="quran" className="whitespace-nowrap px-3 lg:px-4">Quran Progress</TabsTrigger>
-              </TabsList>
-            </div>
-
-            <TabsContent value="info" className="space-y-4">
-              {selectedStudent?.id && (
-                <div className="flex items-center gap-4 pb-2">
-                  <StudentPhotoUpload
-                    studentId={selectedStudent.id}
-                    studentName={formData.name || selectedStudent.name}
-                    currentUrl={(completeStudentData as { photo_url?: string | null } | null)?.photo_url ?? null}
-                    size="lg"
-                  />
-                  <div className="text-sm text-muted-foreground">
-                    <p className="font-medium text-gray-900 dark:text-gray-100">Profile Photo</p>
-                    <p>Click to upload a JPEG, PNG, or WebP image (max 2MB).</p>
-                  </div>
-                </div>
+    <Sheet open={open} onOpenChange={onOpenChange}>
+      <SheetContent
+        side="right"
+        className="w-full sm:max-w-2xl p-0 flex flex-col gap-0 sm:rounded-l-2xl border-l"
+      >
+        {/* Hero zone */}
+        <header className="relative px-6 pt-8 pb-6 border-b border-border bg-gradient-to-b from-brand/[0.04] to-background">
+          <SheetClose className="absolute right-4 top-4 inline-flex h-8 w-8 items-center justify-center rounded-full hover:bg-foreground/5 transition-colors">
+            <X className="h-4 w-4" />
+            <span className="sr-only">Close</span>
+          </SheetClose>
+          <div className="flex items-end gap-4">
+            {selectedStudent?.id && (
+              <div className="relative">
+                <StudentPhotoUpload
+                  studentId={selectedStudent.id}
+                  studentName={formData.name || selectedStudent.name}
+                  currentUrl={(completeStudentData as { photo_url?: string | null } | null)?.photo_url ?? null}
+                  size="lg"
+                />
+              </div>
+            )}
+            <div className="min-w-0 flex-1 pb-2">
+              <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                {selectedStudent ? "Editing student" : "New student"}
+              </p>
+              <h2 className="font-display text-2xl font-semibold text-foreground tracking-tight leading-tight mt-0.5 truncate">
+                {formData.name || selectedStudent?.name || "Untitled student"}
+              </h2>
+              {selectedStudent?.section && (
+                <p className="text-[13px] text-muted-foreground mt-1">{selectedStudent.section}</p>
               )}
+            </div>
+          </div>
+        </header>
+
+        {/* Sectioned scroll */}
+        <div className="flex-1 overflow-y-auto">
+          <form id="student-form" onSubmit={handleSubmit} className="px-6 py-6 space-y-10">
+            <section className="space-y-5">
+              <div>
+                <h3 className="font-display text-lg font-semibold text-foreground">Student info</h3>
+                <p className="text-[13px] text-muted-foreground mt-0.5">Basic identification + enrollment details.</p>
+              </div>
               <div className="space-y-2">
                 <Label htmlFor="name">Full Name</Label>
                 <Input
@@ -733,52 +738,13 @@ export const StudentDialog = (
                   </div>
                 </div>
               )}
-            </TabsContent>
+            </section>
 
-            <TabsContent value="address" className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="street">Street</Label>
-                  <Input
-                    id="street"
-                    placeholder="Enter street address"
-                    value={formData.street || ""}
-                    onChange={(e) => setFormData((prev) => ({ ...prev, street: e.target.value }))}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="city">City</Label>
-                  <Input
-                    id="city"
-                    placeholder="Enter city"
-                    value={formData.city || ""}
-                    onChange={(e) => setFormData((prev) => ({ ...prev, city: e.target.value }))}
-                  />
-                </div>
+            <section className="space-y-5">
+              <div>
+                <h3 className="font-display text-lg font-semibold text-foreground">Guardians</h3>
+                <p className="text-[13px] text-muted-foreground mt-0.5">Primary + optional secondary contacts.</p>
               </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="province">Province</Label>
-                  <Input
-                    id="province"
-                    placeholder="Enter province/state"
-                    value={formData.province || ""}
-                    onChange={(e) => setFormData((prev) => ({ ...prev, province: e.target.value }))}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="postal_code">Postal Code</Label>
-                  <Input
-                    id="postal_code"
-                    placeholder="Enter postal code"
-                    value={formData.postal_code || ""}
-                    onChange={(e) => setFormData((prev) => ({ ...prev, postal_code: e.target.value }))}
-                  />
-                </div>
-              </div>
-            </TabsContent>
-
-            <TabsContent value="guardian" className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="guardian_name">Guardian Name</Label>
                 <Input
@@ -861,9 +827,60 @@ export const StudentDialog = (
                   />
                 </div>
               </div>
-            </TabsContent>
+            </section>
 
-            <TabsContent value="quran" className="space-y-4">
+            <section className="space-y-5">
+              <div>
+                <h3 className="font-display text-lg font-semibold text-foreground">Address</h3>
+                <p className="text-[13px] text-muted-foreground mt-0.5">Home address for records.</p>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="street">Street</Label>
+                  <Input
+                    id="street"
+                    placeholder="Enter street address"
+                    value={formData.street || ""}
+                    onChange={(e) => setFormData((prev) => ({ ...prev, street: e.target.value }))}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="city">City</Label>
+                  <Input
+                    id="city"
+                    placeholder="Enter city"
+                    value={formData.city || ""}
+                    onChange={(e) => setFormData((prev) => ({ ...prev, city: e.target.value }))}
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="province">Province</Label>
+                  <Input
+                    id="province"
+                    placeholder="Enter province/state"
+                    value={formData.province || ""}
+                    onChange={(e) => setFormData((prev) => ({ ...prev, province: e.target.value }))}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="postal_code">Postal Code</Label>
+                  <Input
+                    id="postal_code"
+                    placeholder="Enter postal code"
+                    value={formData.postal_code || ""}
+                    onChange={(e) => setFormData((prev) => ({ ...prev, postal_code: e.target.value }))}
+                  />
+                </div>
+              </div>
+            </section>
+
+            <section className="space-y-5">
+              <div>
+                <h3 className="font-display text-lg font-semibold text-foreground">Quran progress</h3>
+                <p className="text-[13px] text-muted-foreground mt-0.5">Current juz, completion, and status.</p>
+              </div>
               <div className="space-y-2">
                 <Label htmlFor="current_juz">Current Juz</Label>
                 <Select
@@ -922,30 +939,32 @@ export const StudentDialog = (
                   })}
                 </div>
               </div>
-            </TabsContent>
-          </Tabs>
+            </section>
+          </form>
+        </div>
 
-          <div className="flex justify-end space-x-2 pt-4">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={onClose}
-            >
-              Cancel
-            </Button>
-            <Button
-              type="submit"
-              disabled={isProcessing}
-            >
-              {isProcessing
-                ? "Processing..."
-                : selectedStudent
-                ? "Update Student"
-                : "Add Student"}
-            </Button>
-          </div>
-        </form>
-      </DialogContent>
-    </Dialog>
+        {/* Sticky save bar */}
+        <footer className="border-t border-border bg-background/95 backdrop-blur px-6 py-3 flex items-center justify-end gap-2 shrink-0">
+          <Button
+            type="button"
+            variant="ghost"
+            onClick={onClose}
+          >
+            Cancel
+          </Button>
+          <Button
+            type="submit"
+            form="student-form"
+            disabled={isProcessing}
+          >
+            {isProcessing
+              ? "Saving…"
+              : selectedStudent
+              ? "Save changes"
+              : "Add student"}
+          </Button>
+        </footer>
+      </SheetContent>
+    </Sheet>
   );
 };
