@@ -36,3 +36,10 @@ scripts/seed-staff.ts
 
 # Supabase local temp files
 supabase/.temp/
+
+# Playwright MCP scratch files
+.playwright-mcp/
+
+# Local design ref screenshots (not for version control)
+refs/
+
