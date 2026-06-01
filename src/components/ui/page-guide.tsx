@@ -1,53 +1,46 @@
 import { motion } from 'framer-motion'
-import { X, ArrowDown, Sparkles } from 'lucide-react'
+import { X, Sparkles } from 'lucide-react'
 import { useDismissedGuides } from '@/hooks/use-dismissed-guides.ts'
 import { cn } from '@/lib/utils.ts'
 
 interface PageGuideProps {
   id: string
   title: string
-  body: string
-  arrow?: 'down' | 'none'
+  body?: string
   className?: string
 }
 
-export function PageGuide({ id, title, body, arrow = 'down', className }: PageGuideProps) {
+export function PageGuide({ id, title, body, className }: PageGuideProps) {
   const { isDismissed, dismiss } = useDismissedGuides()
   if (isDismissed(id)) return null
   return (
     <motion.aside
-      initial={{ opacity: 0, y: -12, scale: 0.98 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
-      exit={{ opacity: 0, y: -8, scale: 0.98 }}
-      transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+      initial={{ opacity: 0, y: -6 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -4 }}
+      transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+      role="note"
       className={cn(
-        'relative overflow-hidden rounded-2xl border border-brand/15 bg-gradient-to-br from-brand/[0.04] via-background to-background px-4 py-3.5 pr-12 shadow-[0_1px_2px_rgba(15,70,40,0.04),0_8px_24px_-12px_rgba(15,70,40,0.08)] lg:max-w-2xl',
+        'relative flex items-start gap-3 rounded-xl border border-border bg-brand/[0.03] py-2.5 pl-3.5 pr-2.5',
+        'before:absolute before:left-0 before:top-2 before:bottom-2 before:w-[3px] before:rounded-full before:bg-brand/40',
+        'lg:py-3 lg:pr-3 lg:max-w-2xl',
         className,
       )}
-      role="note"
     >
-      <div className="absolute right-0 top-0 h-24 w-24 rounded-full bg-brand/[0.06] blur-2xl" aria-hidden />
-      <div className="relative">
-        <div className="mb-1 inline-flex items-center gap-1.5 rounded-full bg-brand/10 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider text-brand">
-          <Sparkles className="h-3 w-3" />
-          Tip
-        </div>
-        <p className="font-display font-semibold text-foreground text-[15px] leading-snug">{title}</p>
-        <p className="mt-1 text-[13.5px] leading-relaxed text-muted-foreground">{body}</p>
+      <Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-brand" aria-hidden />
+      <div className="min-w-0 flex-1">
+        <p className="text-[13.5px] font-semibold text-foreground leading-snug">{title}</p>
+        {body && (
+          <p className="mt-0.5 text-[12.5px] leading-snug text-muted-foreground line-clamp-2">
+            {body}
+          </p>
+        )}
       </div>
-      {arrow === 'down' && (
-        <motion.div
-          className="absolute -bottom-2.5 left-7 inline-flex h-5 w-5 items-center justify-center rounded-full bg-brand text-brand-foreground shadow-md"
-          animate={{ y: [0, 4, 0] }}
-          transition={{ repeat: Infinity, duration: 1.6, ease: 'easeInOut' }}
-        >
-          <ArrowDown className="h-3 w-3" />
-        </motion.div>
-      )}
       <button
+        type="button"
         onClick={() => dismiss(id)}
         aria-label="Dismiss guide"
-        className="absolute right-2.5 top-2.5 inline-flex h-7 w-7 items-center justify-center rounded-full text-muted-foreground hover:bg-foreground/5 hover:text-foreground transition-colors"
+        className="-mr-0.5 -mt-0.5 inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:bg-foreground/5 hover:text-foreground transition-colors"
       >
         <X className="h-3.5 w-3.5" />
       </button>

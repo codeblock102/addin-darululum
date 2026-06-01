@@ -265,8 +265,8 @@ const ParentAgenda = () => {
     <div className="container mx-auto px-3 sm:px-6 py-4 sm:py-6 space-y-4 pb-16 lg:pb-0">
       <PageGuide
         id="parent-agenda"
-        title="Your child's weekly schedule"
-        body="See classes, teachers, and school events for each day. Use the arrows to switch weeks."
+        title="Your week"
+        body="Tap any day to see your child's tasks."
       />
       <Card>
         <CardHeader className="space-y-3">

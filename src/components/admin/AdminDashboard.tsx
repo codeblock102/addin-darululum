@@ -636,8 +636,8 @@ export const AdminDashboard = () => {
 
         <PageGuide
           id="dashboard:intro"
-          title="Your school at a glance"
-          body="Quick stats up top. Tap a card to drill in. Use the actions below for common tasks."
+          title="Your school today"
+          body="Tap a card to drill in. More actions below."
         />
         <QuickActions
           className="mt-3"

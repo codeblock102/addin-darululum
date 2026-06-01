@@ -469,8 +469,8 @@ export default function ParentMessages() {
     <div className="space-y-4 pb-16 lg:pb-0">
       <PageGuide
         id="parent-messages"
-        title="Talk to your child's teacher"
-        body="Send messages, reply to teacher updates, and keep all conversations in one place."
+        title="School messages"
+        body="Read updates from teachers and admin."
       />
       <Card>
         <CardHeader>

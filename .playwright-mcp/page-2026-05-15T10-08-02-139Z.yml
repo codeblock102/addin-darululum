@@ -1,0 +1,363 @@
+- generic:
+  - generic:
+    - generic:
+      - generic:
+        - generic:
+          - generic:
+            - generic:
+              - link:
+                - /url: /dashboard
+                - generic:
+                  - img
+                - generic:
+                  - generic: Dār Al-Ulūm
+                  - generic: Admin
+              - generic:
+                - button:
+                  - img
+            - generic:
+              - navigation:
+                - generic:
+                  - link:
+                    - /url: /dashboard
+                    - img
+                    - generic: Dashboard
+                - generic:
+                  - generic: People
+                  - link:
+                    - /url: /students
+                    - img
+                    - generic: Students
+                - generic:
+                  - link:
+                    - /url: /teachers
+                    - img
+                    - generic: Teachers
+                - generic:
+                  - link:
+                    - /url: /classes
+                    - img
+                    - generic: Classes
+                - generic:
+                  - generic: Operations
+                  - link:
+                    - /url: /progress-book
+                    - img
+                    - generic: Progress Book
+                - generic:
+                  - link:
+                    - /url: /attendance
+                    - img
+                    - generic: Attendance
+                - generic:
+                  - link:
+                    - /url: /calendar
+                    - img
+                    - generic: School Calendar
+                - generic:
+                  - link:
+                    - /url: /admin/reports
+                    - img
+                    - generic: Reports
+                - generic:
+                  - generic: Admin
+                  - link:
+                    - /url: /tasks
+                    - img
+                    - generic: nav.tasks
+                - generic:
+                  - link:
+                    - /url: /admin/parent-accounts
+                    - img
+                    - generic: Parent Accounts
+                - generic:
+                  - link:
+                    - /url: /admin/panel
+                    - img
+                    - generic: Admin Panel
+            - generic:
+              - button:
+                - generic:
+                  - generic:
+                    - generic: M
+                  - generic:
+                    - paragraph: mzbaig9
+                    - paragraph: mzbaig9@gmail.com
+                    - generic: Admin
+      - generic:
+        - generic:
+          - generic:
+            - generic:
+              - generic:
+                - generic:
+                  - generic:
+                    - generic:
+                      - generic:
+                        - generic:
+                          - img
+                        - generic:
+                          - heading [level=1]: Progress Book
+                          - paragraph: Track and monitor student memorization progress
+                  - generic:
+                    - tablist:
+                      - tab [selected]: Daily Records
+                      - tab: Monthly Progress
+                      - tab: Leaderboard View
+                    - tabpanel:
+                      - generic:
+                        - generic:
+                          - generic:
+                            - generic:
+                              - generic:
+                                - generic:
+                                  - heading [level=3]: Filter by Teacher
+                                  - combobox:
+                                    - generic: All Teachers
+                                    - img
+                              - generic:
+                                - generic:
+                                  - heading [level=3]: Select Student
+                                  - generic:
+                                    - img
+                                    - textbox:
+                                      - /placeholder: Search students...
+                                  - list:
+                                    - listitem:
+                                      - button: Aayah Lari
+                                    - listitem:
+                                      - button: Abdou Karim Diouf
+                                    - listitem:
+                                      - button: AbdulMomen Shnfir
+                                    - listitem:
+                                      - button: AbdulQuawy
+                                    - listitem:
+                                      - button: Abdus Saboor
+                                    - listitem:
+                                      - button: Adam Khan
+                                    - listitem:
+                                      - button: Adam Manat
+                                    - listitem:
+                                      - button: Ahmed Subhan Alvi
+                                    - listitem:
+                                      - button: Aisha Akhtar
+                                    - listitem:
+                                      - button: Anisa Zaman
+                                    - listitem:
+                                      - button: Ardo Hamze Dabar
+                                    - listitem:
+                                      - button: Arham Gul Khan
+                                    - listitem:
+                                      - button: Arwa Islam
+                                    - listitem:
+                                      - button: Asia Siddiqa
+                                    - listitem:
+                                      - button: Asiya Khan
+                                    - listitem:
+                                      - button: Ayah Abdalwhab Bakheet Mohamed
+                                    - listitem:
+                                      - button: Aysha Guimont
+                                    - listitem:
+                                      - button: Azzedine Moubarak Salah-Addine
+                                    - listitem:
+                                      - button: Cheikh Dawood Touré
+                                    - listitem:
+                                      - button: Eman Fatima
+                                    - listitem:
+                                      - button: Eshal Khan
+                                    - listitem:
+                                      - button: Fatoumata Zahra Doumbouya
+                                    - listitem:
+                                      - button: Hafsa Abdullah
+                                    - listitem:
+                                      - button: Hafsah Khan
+                                    - listitem:
+                                      - button: Hajar Tarar
+                                    - listitem:
+                                      - button: Haleemah Lari
+                                    - listitem:
+                                      - button: Hamza Khan
+                                    - listitem:
+                                      - button: Hania Huma Muhammad
+                                    - listitem:
+                                      - button: Hawa Hamze Dabar
+                                    - listitem:
+                                      - button: Ibraheem Lari
+                                    - listitem:
+                                      - button: Ibrahim Abdoul-Karim Toure
+                                    - listitem:
+                                      - button: Ibrahim Hamideh
+                                    - listitem:
+                                      - button: Idriss Touré
+                                    - listitem:
+                                      - button: Ilyas Tarar
+                                    - listitem:
+                                      - button: Imran Er-Raji
+                                    - listitem:
+                                      - button: Ismail Baz Toussaint
+                                    - listitem:
+                                      - button: Ismail James Xu
+                                    - listitem:
+                                      - button: Jana Zabennagi
+                                    - listitem:
+                                      - button: Jannat Akhtar
+                                    - listitem:
+                                      - button: Jawad Haroune Khelladi
+                                    - listitem:
+                                      - button: Khadija Fakhoury
+                                    - listitem:
+                                      - button: Khadija Gangat
+                                    - listitem:
+                                      - button: Mahir Ali Mamun
+                                    - listitem:
+                                      - button: Maisam Rashid
+                                    - listitem:
+                                      - button: Malak Bouskaya
+                                    - listitem:
+                                      - button: Mardhiya Adekunle
+                                    - listitem:
+                                      - button: Marwa Fakhoury
+                                    - listitem:
+                                      - button: Maryam Baig
+                                    - listitem:
+                                      - button: Maryam Bint Quarashi
+                                    - listitem:
+                                      - button: Maryam Koudy Ba
+                                    - listitem:
+                                      - button: Maryam Rashid
+                                    - listitem:
+                                      - button: Maryam Tarar
+                                    - listitem:
+                                      - button: Mashiyat Morshad Arisha
+                                    - listitem:
+                                      - button: Meherba Islam
+                                    - listitem:
+                                      - button: Mira Bouzidi
+                                    - listitem:
+                                      - button: Mirza Musa Baig
+                                    - listitem:
+                                      - button: Mouhamed Kabir Youssoufou
+                                    - listitem:
+                                      - button: Moussa Wadjih Khelladi
+                                    - listitem:
+                                      - button: Muhammad Adekunle
+                                    - listitem:
+                                      - button: Muhammad Ahmed
+                                    - listitem:
+                                      - button: Muhammad Hassan Khan
+                                    - listitem:
+                                      - button: Muhammad Saaria Ahmed
+                                    - listitem:
+                                      - button: Muhammad Saqib Mulla
+                                    - listitem:
+                                      - button: Muntasir Rahman
+                                    - listitem:
+                                      - button: Nazeer Suleman
+                                    - listitem:
+                                      - button: Noor Hadiya Khan
+                                    - listitem:
+                                      - button: Nouha Nait Ali
+                                    - listitem:
+                                      - button: Olfa Saidia
+                                    - listitem:
+                                      - button: Raheem Khan
+                                    - listitem:
+                                      - button: Rahma Saidia
+                                    - listitem:
+                                      - button: Rahmatouye Ba
+                                    - listitem:
+                                      - button: Rayhana Zaimy
+                                    - listitem:
+                                      - button: Rayhane Taki
+                                    - listitem:
+                                      - button: Rayyan Abdul Rahim Xu
+                                    - listitem:
+                                      - button: Reem Abdul Rehman
+                                    - listitem:
+                                      - button: Rhita Ait Tamarmoucht
+                                    - listitem:
+                                      - button: Rita Zabennagi
+                                    - listitem:
+                                      - button: Ruqayyah Bint Quarashi
+                                    - listitem:
+                                      - button: Saad Adéwalé Youssoufou
+                                    - listitem:
+                                      - button: Saad Rafi
+                                    - listitem:
+                                      - button: Safaa Fakhoury
+                                    - listitem:
+                                      - button: Safiya Fadoul
+                                    - listitem:
+                                      - button: Salahaddin Moubarak Salah-addin Mohamed
+                                    - listitem:
+                                      - button: Samiha Zaman
+                                    - listitem:
+                                      - button: Shuaib Rahman
+                                    - listitem:
+                                      - button: Syeda Halima Basith
+                                    - listitem:
+                                      - button: Syed Hamza Maaz Nizami
+                                    - listitem:
+                                      - button: Syed Ismail Basith
+                                    - listitem:
+                                      - button: Syed Taha Mansoor Nizami
+                                    - listitem:
+                                      - button: Um-Kulsoom Baig
+                                    - listitem:
+                                      - button: Wasif Ibne Jaman
+                                    - listitem:
+                                      - button: Yahia Bouzidi
+                                    - listitem:
+                                      - button: Yahya Moujammi
+                                    - listitem:
+                                      - button: Yahya Sarker
+                                    - listitem:
+                                      - button: Youcef Mehanni
+                                    - listitem:
+                                      - button: Youcef Saidia
+                                    - listitem:
+                                      - button: Yussra Fakhoury
+                                    - listitem:
+                                      - button: Zakaria Fakhoury
+                            - generic:
+                              - generic:
+                                - generic:
+                                  - img
+                                  - heading [level=3]: Select a Student
+                                  - paragraph: Choose a student from the list to view their detailed progress.
+    - list
+  - dialog [ref=e9]:
+    - generic [ref=e10]:
+      - paragraph [ref=e11]: Friday, May 15
+      - heading "Good morning 👋" [level=2] [ref=e12]
+      - paragraph [ref=e13]: Here's your daily checklist for today.
+    - generic [ref=e14]:
+      - generic [ref=e15]:
+        - img [ref=e17]
+        - generic [ref=e20]:
+          - paragraph [ref=e21]: Check today's attendance
+          - paragraph [ref=e22]: The Attendance Monitor shows who's present, absent, and not yet marked. Flag anything unusual early.
+      - generic [ref=e23]:
+        - img [ref=e25]
+        - generic [ref=e30]:
+          - paragraph [ref=e31]: Review the absence watchlist
+          - paragraph [ref=e32]: Go to Attendance → Watchlist tab to see students with repeat absences. Reach out to parents if streaks are growing.
+      - generic [ref=e33]:
+        - img [ref=e35]
+        - generic [ref=e38]:
+          - paragraph [ref=e39]: Check the activity feed
+          - paragraph [ref=e40]: The Activity Feed shows all teacher actions — progress logs, attendance, and assignments — since yesterday.
+      - generic [ref=e41]:
+        - img [ref=e43]
+        - generic [ref=e46]:
+          - paragraph [ref=e47]: Pending admin tasks
+          - paragraph [ref=e48]: Check for unlinked parent accounts, new parent requests, or any pending bulk student imports.
+    - generic [ref=e49]:
+      - generic [ref=e50]:
+        - img [ref=e51]
+        - img [ref=e54]
+        - img [ref=e57]
+        - img [ref=e60]
+      - button "Let's go!" [active] [ref=e63] [cursor=pointer]
+    - button "Close" [ref=e64] [cursor=pointer]:
+      - img [ref=e65]
+      - generic [ref=e68]: Close

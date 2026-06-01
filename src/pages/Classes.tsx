@@ -153,8 +153,8 @@ const filteredClasses = classes?.filter((c) => {
       />
       <PageGuide
         id="classes:intro"
-        title="All classes, teachers, and capacity"
-        body="Search any class by name or teacher. Tap a class to view enrolled students."
+        title="All classes"
+        body="Tap a class to view enrollment."
       />
       <div className="space-y-6 p-4 lg:p-8">
       <Dialog open={isClassDialogOpen} onOpenChange={setIsClassDialogOpen}>

@@ -208,8 +208,8 @@ const ProgressBookPage = () => {
       <div className="space-y-4 sm:space-y-6 p-4 lg:p-8">
       <PageGuide
         id="progress:intro"
-        title="Track every student's memorization"
-        body="Pick a student to view daily entries, monthly summary, or compare across the leaderboard."
+        title="Track memorization"
+        body="Pick a student to see daily entries."
       />
 
       <Tabs value={viewMode} onValueChange={(value) => setViewMode(value as "daily" | "classroom" | "monthly")} className="w-full">

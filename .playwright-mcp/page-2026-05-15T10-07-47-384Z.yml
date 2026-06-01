@@ -1,0 +1,915 @@
+- generic:
+  - generic:
+    - generic:
+      - generic:
+        - generic:
+          - generic:
+            - generic:
+              - link:
+                - /url: /dashboard
+                - generic:
+                  - img
+                - generic:
+                  - generic: Dār Al-Ulūm
+                  - generic: Admin
+              - generic:
+                - button:
+                  - img
+            - generic:
+              - navigation:
+                - generic:
+                  - link:
+                    - /url: /dashboard
+                    - img
+                    - generic: Dashboard
+                - generic:
+                  - generic: People
+                  - link:
+                    - /url: /students
+                    - img
+                    - generic: Students
+                - generic:
+                  - link:
+                    - /url: /teachers
+                    - img
+                    - generic: Teachers
+                - generic:
+                  - link:
+                    - /url: /classes
+                    - img
+                    - generic: Classes
+                - generic:
+                  - generic: Operations
+                  - link:
+                    - /url: /progress-book
+                    - img
+                    - generic: Progress Book
+                - generic:
+                  - link:
+                    - /url: /attendance
+                    - img
+                    - generic: Attendance
+                - generic:
+                  - link:
+                    - /url: /calendar
+                    - img
+                    - generic: School Calendar
+                - generic:
+                  - link:
+                    - /url: /admin/reports
+                    - img
+                    - generic: Reports
+                - generic:
+                  - generic: Admin
+                  - link:
+                    - /url: /tasks
+                    - img
+                    - generic: nav.tasks
+                - generic:
+                  - link:
+                    - /url: /admin/parent-accounts
+                    - img
+                    - generic: Parent Accounts
+                - generic:
+                  - link:
+                    - /url: /admin/panel
+                    - img
+                    - generic: Admin Panel
+            - generic:
+              - button:
+                - generic:
+                  - generic:
+                    - generic: M
+                  - generic:
+                    - paragraph: mzbaig9
+                    - paragraph: mzbaig9@gmail.com
+                    - generic: Admin
+      - generic:
+        - generic:
+          - generic:
+            - generic:
+              - generic:
+                - generic:
+                  - generic:
+                    - generic:
+                      - generic:
+                        - paragraph: Friday, May 15
+                        - heading [level=1]: Attendance Monitor
+                        - paragraph: 98 students not yet marked today
+                      - generic:
+                        - button:
+                          - img
+                        - button:
+                          - img
+                          - text: Multi-day Absence
+                    - generic:
+                      - button:
+                        - generic:
+                          - paragraph: Present Today
+                          - generic:
+                            - img
+                        - paragraph: 0 / 98
+                        - paragraph: 0.0% attendance rate
+                      - button:
+                        - generic:
+                          - paragraph: Absent / Sick
+                          - generic:
+                            - img
+                        - paragraph: "0"
+                        - paragraph: 0.0% of enrolled
+                      - button:
+                        - generic:
+                          - paragraph: Late Today
+                          - generic:
+                            - img
+                        - paragraph: "0"
+                        - paragraph: 0.0% of present
+                      - button:
+                        - generic:
+                          - paragraph: 7-Day Average
+                          - generic:
+                            - img
+                        - paragraph: 84.3%
+                        - paragraph: 107 of 127 records
+                    - generic:
+                      - generic: Today's rate
+                      - generic: 0.0%
+                    - generic:
+                      - generic:
+                        - generic:
+                          - generic:
+                            - button:
+                              - img
+                              - text: Take Attendance
+                            - button:
+                              - img
+                              - text: Watchlist
+                            - button:
+                              - img
+                              - text: Heatmap
+                            - button:
+                              - img
+                              - text: Records
+                        - generic:
+                          - tabpanel:
+                            - generic:
+                              - generic:
+                                - generic:
+                                  - heading [level=3]: Date and Time
+                                  - paragraph: Select the date and time for the attendance records.
+                                - generic:
+                                  - generic:
+                                    - generic: Date
+                                    - button:
+                                      - generic: May 15th, 2026
+                                      - img
+                              - generic:
+                                - generic:
+                                  - heading [level=3]: Select Students
+                                  - paragraph: Choose the students to mark attendance for.
+                                - generic:
+                                  - generic:
+                                    - combobox:
+                                      - generic: All sections
+                                      - img
+                                  - generic:
+                                    - generic:
+                                      - generic:
+                                        - heading [level=3]: Select Students
+                                        - button: Select All
+                                      - textbox:
+                                        - /placeholder: Search students...
+                                    - generic:
+                                      - generic:
+                                        - generic:
+                                          - generic: "1"
+                                          - checkbox
+                                          - generic: Maryam Koudy Ba
+                                          - generic:
+                                            - button:
+                                              - img
+                                        - generic:
+                                          - generic: "2"
+                                          - checkbox
+                                          - generic: Mirza Musa Baig
+                                          - generic:
+                                            - button:
+                                              - img
+                                        - generic:
+                                          - generic: "3"
+                                          - checkbox
+                                          - generic: Rayhane Taki
+                                          - generic:
+                                            - button:
+                                              - img
+                                        - generic:
+                                          - generic: "4"
+                                          - checkbox
+                                          - generic: Rhita Ait Tamarmoucht
+                                          - generic:
+                                            - button:
+                                              - img
+                                        - generic:
+                                          - generic: "5"
+                                          - checkbox
+                                          - generic: Safiya Fadoul
+                                          - generic:
+                                            - button:
+                                              - img
+                                        - generic:
+                                          - generic: "6"
+                                          - checkbox
+                                          - generic: Salahaddin Moubarak Salah-addin Mohamed
+                                          - generic:
+                                            - button:
+                                              - img
+                                        - generic:
+                                          - generic: "7"
+                                          - checkbox
+                                          - generic: Syeda Halima Basith
+                                          - generic:
+                                            - button:
+                                              - img
+                                        - generic:
+                                          - generic: "8"
+                                          - checkbox
+                                          - generic: Yahia Bouzidi
+                                          - generic:
+                                            - button:
+                                              - img
+                                        - generic:
+                                          - generic: "9"
+                                          - checkbox
+                                          - generic: Youcef Saidia
+                                          - generic:
+                                            - button:
+                                              - img
+                                        - generic:
+                                          - generic: "10"
+                                          - checkbox
+                                          - generic: Saad Adéwalé Youssoufou
+                                          - generic:
+                                            - button:
+                                              - img
+                                        - generic:
+                                          - generic: "11"
+                                          - checkbox
+                                          - generic: Yussra Fakhoury
+                                          - generic:
+                                            - button:
+                                              - img
+                                        - generic:
+                                          - generic: "12"
+                                          - checkbox
+                                          - generic: Arham Gul Khan
+                                          - generic:
+                                            - button:
+                                              - img
+                                        - generic:
+                                          - generic: "13"
+                                          - checkbox
+                                          - generic: Aysha Guimont
+                                          - generic:
+                                            - button:
+                                              - img
+                                        - generic:
+                                          - generic: "14"
+                                          - checkbox
+                                          - generic: Eshal Khan
+                                          - generic:
+                                            - button:
+                                              - img
+                                        - generic:
+                                          - generic: "15"
+                                          - checkbox
+                                          - generic: Hajar Tarar
+                                          - generic:
+                                            - button:
+                                              - img
+                                        - generic:
+                                          - generic: "16"
+                                          - checkbox
+                                          - generic: Hamza Khan
+                                          - generic:
+                                            - button:
+                                              - img
+                                        - generic:
+                                          - generic: "17"
+                                          - checkbox
+                                          - generic: Ismail James Xu
+                                          - generic:
+                                            - button:
+                                              - img
+                                        - generic:
+                                          - generic: "18"
+                                          - checkbox
+                                          - generic: Jawad Haroune Khelladi
+                                          - generic:
+                                            - button:
+                                              - img
+                                        - generic:
+                                          - generic: "19"
+                                          - checkbox
+                                          - generic: Maisam Rashid
+                                          - generic:
+                                            - button:
+                                              - img
+                                        - generic:
+                                          - generic: "20"
+                                          - checkbox
+                                          - generic: Malak Bouskaya
+                                          - generic:
+                                            - button:
+                                              - img
+                                        - generic:
+                                          - generic: "21"
+                                          - checkbox
+                                          - generic: Mardhiya Adekunle
+                                          - generic:
+                                            - button:
+                                              - img
+                                        - generic:
+                                          - generic: "22"
+                                          - checkbox
+                                          - generic: Maryam Bint Quarashi
+                                          - generic:
+                                            - button:
+                                              - img
+                                        - generic:
+                                          - generic: "23"
+                                          - checkbox
+                                          - generic: Maryam Tarar
+                                          - generic:
+                                            - button:
+                                              - img
+                                        - generic:
+                                          - generic: "24"
+                                          - checkbox
+                                          - generic: Moussa Wadjih Khelladi
+                                          - generic:
+                                            - button:
+                                              - img
+                                        - generic:
+                                          - generic: "25"
+                                          - checkbox
+                                          - generic: Nouha Nait Ali
+                                          - generic:
+                                            - button:
+                                              - img
+                                        - generic:
+                                          - generic: "26"
+                                          - checkbox
+                                          - generic: Olfa Saidia
+                                          - generic:
+                                            - button:
+                                              - img
+                                        - generic:
+                                          - generic: "27"
+                                          - checkbox
+                                          - generic: Rahma Saidia
+                                          - generic:
+                                            - button:
+                                              - img
+                                        - generic:
+                                          - generic: "28"
+                                          - checkbox
+                                          - generic: Rahmatouye Ba
+                                          - generic:
+                                            - button:
+                                              - img
+                                        - generic:
+                                          - generic: "29"
+                                          - checkbox
+                                          - generic: Rayhana Zaimy
+                                          - generic:
+                                            - button:
+                                              - img
+                                        - generic:
+                                          - generic: "30"
+                                          - checkbox
+                                          - generic: Ruqayyah Bint Quarashi
+                                          - generic:
+                                            - button:
+                                              - img
+                                        - generic:
+                                          - generic: "31"
+                                          - checkbox
+                                          - generic: Shuaib Rahman
+                                          - generic:
+                                            - button:
+                                              - img
+                                        - generic:
+                                          - generic: "32"
+                                          - checkbox
+                                          - generic: Jannat Akhtar
+                                          - generic:
+                                            - button:
+                                              - img
+                                        - generic:
+                                          - generic: "33"
+                                          - checkbox
+                                          - generic: Yahya Moujammi
+                                          - generic:
+                                            - button:
+                                              - img
+                                        - generic:
+                                          - generic: "34"
+                                          - checkbox
+                                          - generic: Khadija Fakhoury
+                                          - generic:
+                                            - button:
+                                              - img
+                                        - generic:
+                                          - generic: "35"
+                                          - checkbox
+                                          - generic: Yahya Sarker
+                                          - generic:
+                                            - button:
+                                              - img
+                                        - generic:
+                                          - generic: "36"
+                                          - checkbox
+                                          - generic: Asia Siddiqa
+                                          - generic:
+                                            - button:
+                                              - img
+                                        - generic:
+                                          - generic: "37"
+                                          - checkbox
+                                          - generic: Eman Fatima
+                                          - generic:
+                                            - button:
+                                              - img
+                                        - generic:
+                                          - generic: "38"
+                                          - checkbox
+                                          - generic: Hafsa Abdullah
+                                          - generic:
+                                            - button:
+                                              - img
+                                        - generic:
+                                          - generic: "39"
+                                          - checkbox
+                                          - generic: Khadija Gangat
+                                          - generic:
+                                            - button:
+                                              - img
+                                        - generic:
+                                          - generic: "40"
+                                          - checkbox
+                                          - generic: Marwa Fakhoury
+                                          - generic:
+                                            - button:
+                                              - img
+                                        - generic:
+                                          - generic: "41"
+                                          - checkbox
+                                          - generic: Maryam Baig
+                                          - generic:
+                                            - button:
+                                              - img
+                                        - generic:
+                                          - generic: "42"
+                                          - checkbox
+                                          - generic: Maryam Rashid
+                                          - generic:
+                                            - button:
+                                              - img
+                                        - generic:
+                                          - generic: "43"
+                                          - checkbox
+                                          - generic: Muhammad Ahmed
+                                          - generic:
+                                            - button:
+                                              - img
+                                        - generic:
+                                          - generic: "44"
+                                          - checkbox
+                                          - generic: Muhammad Saqib Mulla
+                                          - generic:
+                                            - button:
+                                              - img
+                                        - generic:
+                                          - generic: "45"
+                                          - checkbox
+                                          - generic: Noor Hadiya Khan
+                                          - generic:
+                                            - button:
+                                              - img
+                                        - generic:
+                                          - generic: "46"
+                                          - checkbox
+                                          - generic: Safaa Fakhoury
+                                          - generic:
+                                            - button:
+                                              - img
+                                        - generic:
+                                          - generic: "47"
+                                          - checkbox
+                                          - generic: Samiha Zaman
+                                          - generic:
+                                            - button:
+                                              - img
+                                        - generic:
+                                          - generic: "48"
+                                          - checkbox
+                                          - generic: Aisha Akhtar
+                                          - generic:
+                                            - button:
+                                              - img
+                                        - generic:
+                                          - generic: "49"
+                                          - checkbox
+                                          - generic: Syed Taha Mansoor Nizami
+                                          - generic:
+                                            - button:
+                                              - img
+                                        - generic:
+                                          - generic: "50"
+                                          - checkbox
+                                          - generic: Um-Kulsoom Baig
+                                          - generic:
+                                            - button:
+                                              - img
+                                        - generic:
+                                          - generic: "51"
+                                          - checkbox
+                                          - generic: Youcef Mehanni
+                                          - generic:
+                                            - button:
+                                              - img
+                                        - generic:
+                                          - generic: "52"
+                                          - checkbox
+                                          - generic: Aayah Lari
+                                          - generic:
+                                            - button:
+                                              - img
+                                        - generic:
+                                          - generic: "53"
+                                          - checkbox
+                                          - generic: Zakaria Fakhoury
+                                          - generic:
+                                            - button:
+                                              - img
+                                        - generic:
+                                          - generic: "54"
+                                          - checkbox
+                                          - generic: Arwa Islam
+                                          - generic:
+                                            - button:
+                                              - img
+                                        - generic:
+                                          - generic: "55"
+                                          - checkbox
+                                          - generic: Asiya Khan
+                                          - generic:
+                                            - button:
+                                              - img
+                                        - generic:
+                                          - generic: "56"
+                                          - checkbox
+                                          - generic: Anisa Zaman
+                                          - generic:
+                                            - button:
+                                              - img
+                                        - generic:
+                                          - generic: "57"
+                                          - checkbox
+                                          - generic: Hafsah Khan
+                                          - generic:
+                                            - button:
+                                              - img
+                                        - generic:
+                                          - generic: "58"
+                                          - checkbox
+                                          - generic: Mashiyat Morshad Arisha
+                                          - generic:
+                                            - button:
+                                              - img
+                                        - generic:
+                                          - generic: "59"
+                                          - checkbox
+                                          - generic: Meherba Islam
+                                          - generic:
+                                            - button:
+                                              - img
+                                        - generic:
+                                          - generic: "60"
+                                          - checkbox
+                                          - generic: Mira Bouzidi
+                                          - generic:
+                                            - button:
+                                              - img
+                                        - generic:
+                                          - generic: "61"
+                                          - checkbox
+                                          - generic: Raheem Khan
+                                          - generic:
+                                            - button:
+                                              - img
+                                        - generic:
+                                          - generic: "62"
+                                          - checkbox
+                                          - generic: Ardo Hamze Dabar
+                                          - generic:
+                                            - button:
+                                              - img
+                                        - generic:
+                                          - generic: "63"
+                                          - checkbox
+                                          - generic: Azzedine Moubarak Salah-Addine
+                                          - generic:
+                                            - button:
+                                              - img
+                                        - generic:
+                                          - generic: "64"
+                                          - checkbox
+                                          - generic: Fatoumata Zahra Doumbouya
+                                          - generic:
+                                            - button:
+                                              - img
+                                        - generic:
+                                          - generic: "65"
+                                          - checkbox
+                                          - generic: Hania Huma Muhammad
+                                          - generic:
+                                            - button:
+                                              - img
+                                        - generic:
+                                          - generic: "66"
+                                          - checkbox
+                                          - generic: Rayyan Abdul Rahim Xu
+                                          - generic:
+                                            - button:
+                                              - img
+                                        - generic:
+                                          - generic: "67"
+                                          - checkbox
+                                          - generic: Reem Abdul Rehman
+                                          - generic:
+                                            - button:
+                                              - img
+                                        - generic:
+                                          - generic: "68"
+                                          - checkbox
+                                          - generic: Rita Zabennagi
+                                          - generic:
+                                            - button:
+                                              - img
+                                        - generic:
+                                          - generic: "69"
+                                          - checkbox
+                                          - generic: AbdulQuawy
+                                          - generic:
+                                            - button:
+                                              - img
+                                        - generic:
+                                          - generic: "70"
+                                          - checkbox
+                                          - generic: Adam Manat
+                                          - generic:
+                                            - button:
+                                              - img
+                                        - generic:
+                                          - generic: "71"
+                                          - checkbox
+                                          - generic: Mahir Ali Mamun
+                                          - generic:
+                                            - button:
+                                              - img
+                                        - generic:
+                                          - generic: "72"
+                                          - checkbox
+                                          - generic: Mouhamed Kabir Youssoufou
+                                          - generic:
+                                            - button:
+                                              - img
+                                        - generic:
+                                          - generic: "73"
+                                          - checkbox
+                                          - generic: Adam Khan
+                                          - generic:
+                                            - button:
+                                              - img
+                                        - generic:
+                                          - generic: "74"
+                                          - checkbox
+                                          - generic: Muhammad Saaria Ahmed
+                                          - generic:
+                                            - button:
+                                              - img
+                                        - generic:
+                                          - generic: "75"
+                                          - checkbox
+                                          - generic: Muntasir Rahman
+                                          - generic:
+                                            - button:
+                                              - img
+                                        - generic:
+                                          - generic: "76"
+                                          - checkbox
+                                          - generic: Muhammad Hassan Khan
+                                          - generic:
+                                            - button:
+                                              - img
+                                        - generic:
+                                          - generic: "77"
+                                          - checkbox
+                                          - generic: Nazeer Suleman
+                                          - generic:
+                                            - button:
+                                              - img
+                                        - generic:
+                                          - generic: "78"
+                                          - checkbox
+                                          - generic: Saad Rafi
+                                          - generic:
+                                            - button:
+                                              - img
+                                        - generic:
+                                          - generic: "79"
+                                          - checkbox
+                                          - generic: AbdulMomen Shnfir
+                                          - generic:
+                                            - button:
+                                              - img
+                                        - generic:
+                                          - generic: "80"
+                                          - checkbox
+                                          - generic: Abdus Saboor
+                                          - generic:
+                                            - button:
+                                              - img
+                                        - generic:
+                                          - generic: "81"
+                                          - checkbox
+                                          - generic: Ahmed Subhan Alvi
+                                          - generic:
+                                            - button:
+                                              - img
+                                        - generic:
+                                          - generic: "82"
+                                          - checkbox
+                                          - generic: Ibrahim Abdoul-Karim Toure
+                                          - generic:
+                                            - button:
+                                              - img
+                                        - generic:
+                                          - generic: "83"
+                                          - checkbox
+                                          - generic: Ibrahim Hamideh
+                                          - generic:
+                                            - button:
+                                              - img
+                                        - generic:
+                                          - generic: "84"
+                                          - checkbox
+                                          - generic: Syed Ismail Basith
+                                          - generic:
+                                            - button:
+                                              - img
+                                        - generic:
+                                          - generic: "85"
+                                          - checkbox
+                                          - generic: Wasif Ibne Jaman
+                                          - generic:
+                                            - button:
+                                              - img
+                                        - generic:
+                                          - generic: "86"
+                                          - checkbox
+                                          - generic: Jana Zabennagi
+                                          - generic:
+                                            - button:
+                                              - img
+                                        - generic:
+                                          - generic: "87"
+                                          - checkbox
+                                          - generic: Abdou Karim Diouf
+                                          - generic:
+                                            - button:
+                                              - img
+                                        - generic:
+                                          - generic: "88"
+                                          - checkbox
+                                          - generic: Ayah Abdalwhab Bakheet Mohamed
+                                          - generic:
+                                            - button:
+                                              - img
+                                        - generic:
+                                          - generic: "89"
+                                          - checkbox
+                                          - generic: Haleemah Lari
+                                          - generic:
+                                            - button:
+                                              - img
+                                        - generic:
+                                          - generic: "90"
+                                          - checkbox
+                                          - generic: Hawa Hamze Dabar
+                                          - generic:
+                                            - button:
+                                              - img
+                                        - generic:
+                                          - generic: "91"
+                                          - checkbox
+                                          - generic: Ibraheem Lari
+                                          - generic:
+                                            - button:
+                                              - img
+                                        - generic:
+                                          - generic: "92"
+                                          - checkbox
+                                          - generic: Idriss Touré
+                                          - generic:
+                                            - button:
+                                              - img
+                                        - generic:
+                                          - generic: "93"
+                                          - checkbox
+                                          - generic: Ilyas Tarar
+                                          - generic:
+                                            - button:
+                                              - img
+                                        - generic:
+                                          - generic: "94"
+                                          - checkbox
+                                          - generic: Imran Er-Raji
+                                          - generic:
+                                            - button:
+                                              - img
+                                        - generic:
+                                          - generic: "95"
+                                          - checkbox
+                                          - generic: Ismail Baz Toussaint
+                                          - generic:
+                                            - button:
+                                              - img
+                                        - generic:
+                                          - generic: "96"
+                                          - checkbox
+                                          - generic: Syed Hamza Maaz Nizami
+                                          - generic:
+                                            - button:
+                                              - img
+                                        - generic:
+                                          - generic: "97"
+                                          - checkbox
+                                          - generic: Cheikh Dawood Touré
+                                          - generic:
+                                            - button:
+                                              - img
+                                        - generic:
+                                          - generic: "98"
+                                          - checkbox
+                                          - generic: Muhammad Adekunle
+                                          - generic:
+                                            - button:
+                                              - img
+                              - generic:
+                                - generic:
+                                  - heading [level=3]: Absence / Late Reason
+                                  - paragraph: Select a reason when marking a student absent, excused, or late.
+                                - generic:
+                                  - generic:
+                                    - text: Additional Notes
+                                    - textbox:
+                                      - /placeholder: Add any additional notes about attendance
+    - list
+  - dialog [ref=e9]:
+    - generic [ref=e10]:
+      - paragraph [ref=e11]: Friday, May 15
+      - heading "Good morning 👋" [level=2] [ref=e12]
+      - paragraph [ref=e13]: Here's your daily checklist for today.
+    - generic [ref=e14]:
+      - generic [ref=e15]:
+        - img [ref=e17]
+        - generic [ref=e20]:
+          - paragraph [ref=e21]: Check today's attendance
+          - paragraph [ref=e22]: The Attendance Monitor shows who's present, absent, and not yet marked. Flag anything unusual early.
+      - generic [ref=e23]:
+        - img [ref=e25]
+        - generic [ref=e30]:
+          - paragraph [ref=e31]: Review the absence watchlist
+          - paragraph [ref=e32]: Go to Attendance → Watchlist tab to see students with repeat absences. Reach out to parents if streaks are growing.
+      - generic [ref=e33]:
+        - img [ref=e35]
+        - generic [ref=e38]:
+          - paragraph [ref=e39]: Check the activity feed
+          - paragraph [ref=e40]: The Activity Feed shows all teacher actions — progress logs, attendance, and assignments — since yesterday.
+      - generic [ref=e41]:
+        - img [ref=e43]
+        - generic [ref=e46]:
+          - paragraph [ref=e47]: Pending admin tasks
+          - paragraph [ref=e48]: Check for unlinked parent accounts, new parent requests, or any pending bulk student imports.
+    - generic [ref=e49]:
+      - generic [ref=e50]:
+        - img [ref=e51]
+        - img [ref=e54]
+        - img [ref=e57]
+        - img [ref=e60]
+      - button "Let's go!" [active] [ref=e63] [cursor=pointer]
+    - button "Close" [ref=e64] [cursor=pointer]:
+      - img [ref=e65]
+      - generic [ref=e68]: Close

@@ -505,8 +505,8 @@ const Attendance = () => {
 
         <PageGuide
           id="attendance:intro"
-          title="Today's attendance at a glance"
-          body="Tap Take Attendance to mark students. Use Watchlist to see repeat absences. Heatmap shows weekly trends."
+          title="Today's attendance"
+          body="Take Attendance, view Watchlist, or scan Heatmap."
         />
 
         <QuickActions

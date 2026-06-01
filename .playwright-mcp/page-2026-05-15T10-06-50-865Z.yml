@@ -1,0 +1,43 @@
+- generic [ref=e2]:
+  - generic [ref=e3]:
+    - generic [ref=e4]:
+      - generic [ref=e8]:
+        - generic [ref=e9]:
+          - img "Dār Al-Ulūm Montréal"
+        - heading "Dār Al-Ulūm Montréal" [level=1] [ref=e10]:
+          - text: Dār Al-Ulūm
+          - text: Montréal
+        - paragraph [ref=e11]: Islamic Education Management System
+        - generic [ref=e12]:
+          - generic [ref=e15]: Student Progress Tracking
+          - generic [ref=e18]: Attendance Management
+          - generic [ref=e21]: Parent Communication
+      - paragraph [ref=e22]: © 2026 Dār Al-Ulūm Montréal
+    - generic [ref=e24]:
+      - generic [ref=e25]:
+        - heading "Welcome back" [level=2] [ref=e26]
+        - paragraph [ref=e27]: Sign in to your account to continue
+      - generic [ref=e28]:
+        - generic [ref=e29]:
+          - text: Email address
+          - generic [ref=e30]:
+            - img
+            - textbox "Email address" [ref=e31]:
+              - /placeholder: you@daralulummontreal.com
+        - generic [ref=e32]:
+          - generic [ref=e33]:
+            - generic [ref=e34]: Password
+            - button "Forgot password?" [ref=e35] [cursor=pointer]
+          - generic [ref=e36]:
+            - img
+            - textbox "Password" [ref=e37]:
+              - /placeholder: ••••••••
+            - button "Show password" [ref=e38] [cursor=pointer]:
+              - img [ref=e39]
+        - button "Sign in" [ref=e42] [cursor=pointer]
+      - paragraph [ref=e44]:
+        - text: Need help?
+        - link "Contact your administrator" [ref=e45] [cursor=pointer]:
+          - /url: mailto:mufti.zain@daralulummontreal.com
+  - region "Notifications (F8)":
+    - list

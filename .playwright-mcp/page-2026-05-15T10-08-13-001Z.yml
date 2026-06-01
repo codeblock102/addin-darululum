@@ -1,0 +1,156 @@
+- generic:
+  - generic:
+    - generic:
+      - generic:
+        - generic:
+          - generic:
+            - generic:
+              - generic:
+                - link:
+                  - /url: /dashboard
+                  - generic:
+                    - img
+              - button:
+                - img
+            - generic:
+              - navigation:
+                - generic:
+                  - link:
+                    - /url: /dashboard
+                    - img
+                - generic:
+                  - link:
+                    - /url: /students
+                    - img
+                - generic:
+                  - link:
+                    - /url: /teachers
+                    - img
+                - generic:
+                  - link:
+                    - /url: /classes
+                    - img
+                - generic:
+                  - link:
+                    - /url: /progress-book
+                    - img
+                - generic:
+                  - link:
+                    - /url: /attendance
+                    - img
+                - generic:
+                  - link:
+                    - /url: /calendar
+                    - img
+                - generic:
+                  - link:
+                    - /url: /admin/reports
+                    - img
+                - generic:
+                  - link:
+                    - /url: /tasks
+                    - img
+                - generic:
+                  - link:
+                    - /url: /admin/parent-accounts
+                    - img
+                - generic:
+                  - link:
+                    - /url: /admin/panel
+                    - img
+            - generic:
+              - button:
+                - generic:
+                  - generic: M
+      - generic:
+        - generic:
+          - generic:
+            - generic:
+              - generic:
+                - generic:
+                  - generic:
+                    - generic:
+                      - heading [level=1]: Admin Panel
+                      - paragraph: Hub for less-frequent admin tools. Daily workflows live in the main sidebar.
+                  - generic:
+                    - generic:
+                      - tablist:
+                        - tab:
+                          - img
+                          - text: Bulk Import
+                        - tab:
+                          - img
+                          - text: Templates
+                        - tab:
+                          - img
+                          - text: Activity Log
+                        - tab [selected]:
+                          - img
+                          - text: Interviews
+                        - tab:
+                          - img
+                          - text: Teacher Schedules
+                        - tab:
+                          - img
+                          - text: Absence Requests
+                      - tabpanel:
+                        - generic:
+                          - generic:
+                            - generic:
+                              - generic:
+                                - generic:
+                                  - img
+                                - generic:
+                                  - heading [level=1]: Interviews
+                                  - paragraph: Schedule and manage parent-teacher interviews
+                          - generic:
+                            - generic:
+                              - button: Interview Windows
+                              - button: Manage Slots
+                              - button: Bookings
+                            - generic:
+                              - generic:
+                                - button:
+                                  - img
+                                  - text: New Window
+                              - generic:
+                                - img
+                                - paragraph: No interview windows yet.
+                                - paragraph: Create a window to define when interviews take place.
+    - list
+  - dialog [ref=e9]:
+    - generic [ref=e10]:
+      - paragraph [ref=e11]: Friday, May 15
+      - heading "Good morning 👋" [level=2] [ref=e12]
+      - paragraph [ref=e13]: Here's your daily checklist for today.
+    - generic [ref=e14]:
+      - generic [ref=e15]:
+        - img [ref=e17]
+        - generic [ref=e20]:
+          - paragraph [ref=e21]: Check today's attendance
+          - paragraph [ref=e22]: The Attendance Monitor shows who's present, absent, and not yet marked. Flag anything unusual early.
+      - generic [ref=e23]:
+        - img [ref=e25]
+        - generic [ref=e30]:
+          - paragraph [ref=e31]: Review the absence watchlist
+          - paragraph [ref=e32]: Go to Attendance → Watchlist tab to see students with repeat absences. Reach out to parents if streaks are growing.
+      - generic [ref=e33]:
+        - img [ref=e35]
+        - generic [ref=e38]:
+          - paragraph [ref=e39]: Check the activity feed
+          - paragraph [ref=e40]: The Activity Feed shows all teacher actions — progress logs, attendance, and assignments — since yesterday.
+      - generic [ref=e41]:
+        - img [ref=e43]
+        - generic [ref=e46]:
+          - paragraph [ref=e47]: Pending admin tasks
+          - paragraph [ref=e48]: Check for unlinked parent accounts, new parent requests, or any pending bulk student imports.
+    - generic [ref=e49]:
+      - generic [ref=e50]:
+        - img [ref=e51]
+        - img [ref=e54]
+        - img [ref=e57]
+        - img [ref=e60]
+      - button "Let's go!" [active] [ref=e63] [cursor=pointer]
+    - button "Close" [ref=e64] [cursor=pointer]:
+      - img [ref=e65]
+      - generic [ref=e68]: Close

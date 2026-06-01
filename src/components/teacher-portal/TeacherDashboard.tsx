@@ -64,8 +64,8 @@ export const TeacherDashboard = (
           />
           <PageGuide
             id="teacher-dashboard"
-            title="Your teacher dashboard"
-            body="Switch between Overview, Students, Progress Book, Assignments, and Attendance using the tabs."
+            title="Your day"
+            body="Mark attendance and log progress below."
           />
           {renderTabContent()}
         </div>
@@ -84,8 +84,8 @@ export const TeacherDashboard = (
       />
       <PageGuide
         id="teacher-dashboard"
-        title="Your teacher dashboard"
-        body="Switch between Overview, Students, Progress Book, Assignments, and Attendance using the tabs."
+        title="Your day"
+        body="Mark attendance and log progress below."
       />
       {renderTabContent()}
     </div>

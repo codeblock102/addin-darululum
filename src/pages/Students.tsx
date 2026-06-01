@@ -193,8 +193,8 @@ const Students = () => {
       <div className="space-y-6 p-4 lg:p-8">
       <PageGuide
         id="students:intro"
-        title="Manage your student roster"
-        body="Search by name or guardian, filter by section or status, or add a new student with the button above."
+        title="Manage your students"
+        body="Search, filter, or add a new student above."
       />
       <QuickActions
         className="mt-3"

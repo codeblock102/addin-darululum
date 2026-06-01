@@ -28,8 +28,8 @@ const ParentProgress = () => {
         <p className="text-muted-foreground text-sm mb-4">View your child's memorisation book.</p>
         <PageGuide
           id="parent-progress"
-          title="Your child's Qur'an progress"
-          body="Pick a child to see their Dhor Book, sabaq history, and revisions."
+          title="Your child's progress"
+          body="Tap a juz to drill into sabaq + sabaqi."
           className="mb-4"
         />
         <ChildSelector

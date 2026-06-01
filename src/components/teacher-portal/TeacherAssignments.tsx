@@ -398,8 +398,8 @@ export const TeacherAssignments = ({ teacherId }: TeacherAssignmentsProps) => {
     <div className="space-y-6 pb-16 lg:pb-0">
       <PageGuide
         id="teacher-assignments"
-        title="Create and track assignments"
-        body="Pick classes or specific students, add a due date and attachment, then manage submissions and grades."
+        title="Assignments"
+        body="Create or review submissions."
       />
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
         <div>

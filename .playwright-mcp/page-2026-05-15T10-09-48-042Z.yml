@@ -1,0 +1,339 @@
+- generic [ref=e2]:
+  - generic [ref=e69]:
+    - generic [ref=e72]:
+      - generic [ref=e73]:
+        - link "Dār Al-Ulūm Admin" [ref=e74] [cursor=pointer]:
+          - /url: /dashboard
+          - img [ref=e76]
+          - generic [ref=e79]:
+            - generic [ref=e80]: Dār Al-Ulūm
+            - generic [ref=e81]: Admin
+        - button "Collapse sidebar" [ref=e83] [cursor=pointer]:
+          - img
+      - navigation [ref=e85]:
+        - link "Dashboard" [ref=e87] [cursor=pointer]:
+          - /url: /dashboard
+          - img [ref=e88]
+          - generic [ref=e91]: Dashboard
+        - generic [ref=e92]:
+          - generic [ref=e93]: People
+          - link "Students" [ref=e94] [cursor=pointer]:
+            - /url: /students
+            - img [ref=e95]
+            - generic [ref=e100]: Students
+        - link "Teachers" [ref=e102] [cursor=pointer]:
+          - /url: /teachers
+          - img [ref=e103]
+          - generic [ref=e108]: Teachers
+        - link "Classes" [ref=e110] [cursor=pointer]:
+          - /url: /classes
+          - img [ref=e111]
+          - generic [ref=e113]: Classes
+        - generic [ref=e114]:
+          - generic [ref=e115]: Operations
+          - link "Progress Book" [ref=e116] [cursor=pointer]:
+            - /url: /progress-book
+            - img [ref=e117]
+            - generic [ref=e119]: Progress Book
+        - link "Attendance" [ref=e121] [cursor=pointer]:
+          - /url: /attendance
+          - img [ref=e122]
+          - generic [ref=e125]: Attendance
+        - link "School Calendar" [ref=e127] [cursor=pointer]:
+          - /url: /calendar
+          - img [ref=e128]
+          - generic [ref=e130]: School Calendar
+        - link "Reports" [ref=e132] [cursor=pointer]:
+          - /url: /admin/reports
+          - img [ref=e133]
+          - generic [ref=e136]: Reports
+        - generic [ref=e137]:
+          - generic [ref=e138]: Admin
+          - link "nav.tasks" [ref=e139] [cursor=pointer]:
+            - /url: /tasks
+            - img [ref=e140]
+            - generic [ref=e143]: nav.tasks
+        - link "Parent Accounts" [ref=e145] [cursor=pointer]:
+          - /url: /admin/parent-accounts
+          - img [ref=e146]
+          - generic [ref=e150]: Parent Accounts
+        - link "Admin Panel" [ref=e152] [cursor=pointer]:
+          - /url: /admin/panel
+          - img [ref=e153]
+          - generic [ref=e156]: Admin Panel
+      - button "M mzbaig9 mzbaig9@gmail.com Admin" [ref=e158] [cursor=pointer]:
+        - generic [ref=e159]:
+          - generic [ref=e161]: M
+          - generic [ref=e162]:
+            - paragraph [ref=e163]: mzbaig9
+            - paragraph [ref=e164]: mzbaig9@gmail.com
+            - generic [ref=e165]: Admin
+    - generic [ref=e172]:
+      - generic [ref=e173]:
+        - generic [ref=e174]:
+          - paragraph [ref=e175]: Friday, May 15
+          - heading "Good morning, mzbaig9 👋" [level=1] [ref=e176]
+          - paragraph [ref=e177]: Here's a summary of the school today.
+        - button "Manage Students" [ref=e179] [cursor=pointer]:
+          - img [ref=e180]
+          - text: Manage Students
+      - generic [ref=e181]:
+        - button "Total Students 112 View progress" [ref=e182] [cursor=pointer]:
+          - generic [ref=e183]:
+            - generic [ref=e184]:
+              - paragraph [ref=e185]: Total Students
+              - img [ref=e187]
+            - paragraph [ref=e190]: "112"
+            - generic [ref=e191]:
+              - img [ref=e192]
+              - generic [ref=e195]: View progress
+        - button "Today Present 0 Mark attendance" [ref=e196] [cursor=pointer]:
+          - generic [ref=e197]:
+            - img [ref=e200]
+            - img [ref=e205]
+          - paragraph [ref=e208]: Today Present
+          - paragraph [ref=e209]: "0"
+          - paragraph [ref=e210]: Mark attendance
+        - button "Today Absent 0 absences today" [ref=e211] [cursor=pointer]:
+          - generic [ref=e212]:
+            - img [ref=e215]
+            - img [ref=e220]
+          - paragraph [ref=e223]: Today Absent
+          - paragraph [ref=e224]: "0"
+          - paragraph [ref=e225]: absences today
+        - button "Unmarked Today 112 students need marking" [ref=e226] [cursor=pointer]:
+          - generic [ref=e227]:
+            - img [ref=e230]
+            - img [ref=e234]
+          - paragraph [ref=e237]: Unmarked Today
+          - paragraph [ref=e238]: "112"
+          - paragraph [ref=e239]: students need marking
+      - generic [ref=e240]:
+        - generic [ref=e241]:
+          - heading "Attendance Today" [level=2] [ref=e242]
+          - generic [ref=e244]: 98 unmarked
+        - generic [ref=e245]:
+          - button "Maryam Koudy Ba" [ref=e247] [cursor=pointer]
+          - button "Mirza Musa Baig" [ref=e249] [cursor=pointer]
+          - button "Rayhane Taki" [ref=e251] [cursor=pointer]
+          - button "Rhita Ait Tamarmoucht" [ref=e253] [cursor=pointer]
+          - button "Safiya Fadoul" [ref=e255] [cursor=pointer]
+          - button "Salahaddin Moubarak Salah-addin Mohamed" [ref=e257] [cursor=pointer]
+          - button "Syeda Halima Basith" [ref=e259] [cursor=pointer]
+          - button "Yahia Bouzidi" [ref=e261] [cursor=pointer]
+          - button "Youcef Saidia" [ref=e263] [cursor=pointer]
+          - button "Saad Adéwalé Youssoufou" [ref=e265] [cursor=pointer]
+          - button "Yussra Fakhoury" [ref=e267] [cursor=pointer]
+          - button "Arham Gul Khan" [ref=e269] [cursor=pointer]
+          - button "Aysha Guimont" [ref=e271] [cursor=pointer]
+          - button "Eshal Khan" [ref=e273] [cursor=pointer]
+          - button "Hajar Tarar" [ref=e275] [cursor=pointer]
+          - button "Hamza Khan" [ref=e277] [cursor=pointer]
+          - button "Ismail James Xu" [ref=e279] [cursor=pointer]
+          - button "Jawad Haroune Khelladi" [ref=e281] [cursor=pointer]
+          - button "Maisam Rashid" [ref=e283] [cursor=pointer]
+          - button "Malak Bouskaya" [ref=e285] [cursor=pointer]
+          - button "Mardhiya Adekunle" [ref=e287] [cursor=pointer]
+          - button "Maryam Bint Quarashi" [ref=e289] [cursor=pointer]
+          - button "Maryam Tarar" [ref=e291] [cursor=pointer]
+          - button "Moussa Wadjih Khelladi" [ref=e293] [cursor=pointer]
+          - button "Nouha Nait Ali" [ref=e295] [cursor=pointer]
+          - button "Olfa Saidia" [ref=e297] [cursor=pointer]
+          - button "Rahma Saidia" [ref=e299] [cursor=pointer]
+          - button "Rahmatouye Ba" [ref=e301] [cursor=pointer]
+          - button "Rayhana Zaimy" [ref=e303] [cursor=pointer]
+          - button "Ruqayyah Bint Quarashi" [ref=e305] [cursor=pointer]
+          - button "Shuaib Rahman" [ref=e307] [cursor=pointer]
+          - button "Jannat Akhtar" [ref=e309] [cursor=pointer]
+          - button "Yahya Moujammi" [ref=e311] [cursor=pointer]
+          - button "Khadija Fakhoury" [ref=e313] [cursor=pointer]
+          - button "Yahya Sarker" [ref=e315] [cursor=pointer]
+          - button "Asia Siddiqa" [ref=e317] [cursor=pointer]
+          - button "Eman Fatima" [ref=e319] [cursor=pointer]
+          - button "Hafsa Abdullah" [ref=e321] [cursor=pointer]
+          - button "Khadija Gangat" [ref=e323] [cursor=pointer]
+          - button "Marwa Fakhoury" [ref=e325] [cursor=pointer]
+          - button "Maryam Baig" [ref=e327] [cursor=pointer]
+          - button "Maryam Rashid" [ref=e329] [cursor=pointer]
+          - button "Muhammad Ahmed" [ref=e331] [cursor=pointer]
+          - button "Muhammad Saqib Mulla" [ref=e333] [cursor=pointer]
+          - button "Noor Hadiya Khan" [ref=e335] [cursor=pointer]
+          - button "Safaa Fakhoury" [ref=e337] [cursor=pointer]
+          - button "Samiha Zaman" [ref=e339] [cursor=pointer]
+          - button "Aisha Akhtar" [ref=e341] [cursor=pointer]
+          - button "Syed Taha Mansoor Nizami" [ref=e343] [cursor=pointer]
+          - button "Um-Kulsoom Baig" [ref=e345] [cursor=pointer]
+          - button "Youcef Mehanni" [ref=e347] [cursor=pointer]
+          - button "Aayah Lari" [ref=e349] [cursor=pointer]
+          - button "Zakaria Fakhoury" [ref=e351] [cursor=pointer]
+          - button "Arwa Islam" [ref=e353] [cursor=pointer]
+          - button "Asiya Khan" [ref=e355] [cursor=pointer]
+          - button "Anisa Zaman" [ref=e357] [cursor=pointer]
+          - button "Hafsah Khan" [ref=e359] [cursor=pointer]
+          - button "Mashiyat Morshad Arisha" [ref=e361] [cursor=pointer]
+          - button "Meherba Islam" [ref=e363] [cursor=pointer]
+          - button "Mira Bouzidi" [ref=e365] [cursor=pointer]
+          - button "Raheem Khan" [ref=e367] [cursor=pointer]
+          - button "Ardo Hamze Dabar" [ref=e369] [cursor=pointer]
+          - button "Azzedine Moubarak Salah-Addine" [ref=e371] [cursor=pointer]
+          - button "Fatoumata Zahra Doumbouya" [ref=e373] [cursor=pointer]
+          - button "Hania Huma Muhammad" [ref=e375] [cursor=pointer]
+          - button "Rayyan Abdul Rahim Xu" [ref=e377] [cursor=pointer]
+          - button "Reem Abdul Rehman" [ref=e379] [cursor=pointer]
+          - button "Rita Zabennagi" [ref=e381] [cursor=pointer]
+          - button "AbdulQuawy" [ref=e383] [cursor=pointer]
+          - button "Adam Manat" [ref=e385] [cursor=pointer]
+          - button "Mahir Ali Mamun" [ref=e387] [cursor=pointer]
+          - button "Mouhamed Kabir Youssoufou" [ref=e389] [cursor=pointer]
+          - button "Adam Khan" [ref=e391] [cursor=pointer]
+          - button "Muhammad Saaria Ahmed" [ref=e393] [cursor=pointer]
+          - button "Muntasir Rahman" [ref=e395] [cursor=pointer]
+          - button "Muhammad Hassan Khan" [ref=e397] [cursor=pointer]
+          - button "Nazeer Suleman" [ref=e399] [cursor=pointer]
+          - button "Saad Rafi" [ref=e401] [cursor=pointer]
+          - button "AbdulMomen Shnfir" [ref=e403] [cursor=pointer]
+          - button "Abdus Saboor" [ref=e405] [cursor=pointer]
+          - button "Ahmed Subhan Alvi" [ref=e407] [cursor=pointer]
+          - button "Ibrahim Abdoul-Karim Toure" [ref=e409] [cursor=pointer]
+          - button "Ibrahim Hamideh" [ref=e411] [cursor=pointer]
+          - button "Syed Ismail Basith" [ref=e413] [cursor=pointer]
+          - button "Wasif Ibne Jaman" [ref=e415] [cursor=pointer]
+          - button "Jana Zabennagi" [ref=e417] [cursor=pointer]
+          - button "Abdou Karim Diouf" [ref=e419] [cursor=pointer]
+          - button "Ayah Abdalwhab Bakheet Mohamed" [ref=e421] [cursor=pointer]
+          - button "Haleemah Lari" [ref=e423] [cursor=pointer]
+          - button "Hawa Hamze Dabar" [ref=e425] [cursor=pointer]
+          - button "Ibraheem Lari" [ref=e427] [cursor=pointer]
+          - button "Idriss Touré" [ref=e429] [cursor=pointer]
+          - button "Ilyas Tarar" [ref=e431] [cursor=pointer]
+          - button "Imran Er-Raji" [ref=e433] [cursor=pointer]
+          - button "Ismail Baz Toussaint" [ref=e435] [cursor=pointer]
+          - button "Syed Hamza Maaz Nizami" [ref=e437] [cursor=pointer]
+          - button "Cheikh Dawood Touré" [ref=e439] [cursor=pointer]
+          - button "Muhammad Adekunle" [ref=e441] [cursor=pointer]
+        - paragraph [ref=e442]: Click a student's name to view parent contact info.
+      - generic [ref=e443]:
+        - generic [ref=e444]:
+          - img [ref=e445]
+          - heading "Enrolment by Location / Grade" [level=2] [ref=e448]
+        - generic [ref=e449]:
+          - generic [ref=e451]:
+            - generic [ref=e452]: women
+            - generic [ref=e453]:
+              - text: "65"
+              - generic [ref=e454]: (58%)
+          - generic [ref=e458]:
+            - generic [ref=e459]: men
+            - generic [ref=e460]:
+              - text: "33"
+              - generic [ref=e461]: (29%)
+      - generic [ref=e464]:
+        - generic [ref=e465]:
+          - img [ref=e467]
+          - generic [ref=e470]:
+            - paragraph [ref=e471]: "19"
+            - paragraph [ref=e472]: Staff Members
+        - generic [ref=e473]:
+          - img [ref=e475]
+          - generic [ref=e477]:
+            - paragraph [ref=e478]: "154"
+            - paragraph [ref=e479]: Active Classes
+        - generic [ref=e480]:
+          - img [ref=e482]
+          - generic [ref=e486]:
+            - paragraph [ref=e487]: —
+            - paragraph [ref=e488]: Attendance Rate
+      - generic [ref=e489]:
+        - generic [ref=e491]:
+          - generic [ref=e492]:
+            - heading "Attendance Analytics" [level=2] [ref=e493]
+            - generic [ref=e494]: Last 7 days
+          - generic [ref=e495]:
+            - generic [ref=e499]: S
+            - generic [ref=e503]: S
+            - generic [ref=e507]: M
+            - generic [ref=e511]: T
+            - generic [ref=e515]: W
+            - generic [ref=e519]: T
+            - generic [ref=e523]: F
+        - generic [ref=e524]:
+          - generic [ref=e525]:
+            - heading "Alerts" [level=2] [ref=e526]
+            - button "View all" [ref=e527] [cursor=pointer]
+          - generic [ref=e528]:
+            - generic [ref=e530]:
+              - img [ref=e531]
+              - generic [ref=e534]:
+                - paragraph [ref=e535]: All Students On Track
+                - paragraph [ref=e536]: No alerts at this time
+            - generic [ref=e537]:
+              - generic [ref=e538]:
+                - img [ref=e539]
+                - generic [ref=e541]:
+                  - paragraph [ref=e542]: Today's Attendance
+                  - paragraph [ref=e543]: Friday, May 15
+              - button "Go to Attendance" [ref=e544] [cursor=pointer]
+      - generic [ref=e545]:
+        - generic [ref=e546]:
+          - generic [ref=e547]:
+            - heading "Staff" [level=2] [ref=e548]
+            - button "Manage" [ref=e549] [cursor=pointer]:
+              - img [ref=e550]
+              - text: Manage
+          - generic [ref=e551]:
+            - generic [ref=e552]:
+              - generic [ref=e553]: AQ
+              - generic [ref=e554]:
+                - paragraph [ref=e555]: Abdul Quayum
+                - paragraph
+              - generic [ref=e556]: Admin
+            - generic [ref=e557]:
+              - generic [ref=e558]: AT
+              - generic [ref=e559]:
+                - paragraph [ref=e560]: Admin Test account
+                - paragraph
+              - generic [ref=e561]: Admin
+            - generic [ref=e562]:
+              - generic [ref=e563]: DH
+              - generic [ref=e564]:
+                - paragraph [ref=e565]: Dara Heather
+                - paragraph
+              - generic [ref=e566]: Admin
+            - generic [ref=e567]:
+              - generic [ref=e568]: HB
+              - generic [ref=e569]:
+                - paragraph [ref=e570]: Humairaa Bukhari
+                - paragraph [ref=e571]: English · women
+              - generic [ref=e572]: Teacher
+            - generic [ref=e573]:
+              - generic [ref=e574]: IT
+              - generic [ref=e575]:
+                - paragraph [ref=e576]: Ibrahim Toure
+                - paragraph [ref=e577]: French · men
+              - generic [ref=e578]: Teacher
+            - generic [ref=e579]:
+              - generic [ref=e580]: IB
+              - generic [ref=e581]:
+                - paragraph [ref=e582]: Ihssene Brahimi
+                - paragraph [ref=e583]: Science · women
+              - generic [ref=e584]: Teacher
+        - generic [ref=e586]:
+          - heading "Student Progress" [level=2] [ref=e587]
+          - generic [ref=e588]:
+            - generic [ref=e589]:
+              - img [ref=e590]
+              - generic [ref=e593]:
+                - generic [ref=e594]: —
+                - generic [ref=e595]: On Track
+            - generic [ref=e596]:
+              - generic [ref=e599]: On Track
+              - generic [ref=e602]: Needs Work
+            - generic [ref=e603]:
+              - generic [ref=e604]:
+                - generic [ref=e605]: On Track Students
+                - generic [ref=e606]: —
+              - generic [ref=e607]:
+                - generic [ref=e608]: Needs Attention
+                - generic [ref=e609]: "0"
+  - region "Notifications (F8)":
+    - list

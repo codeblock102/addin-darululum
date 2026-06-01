@@ -1,0 +1,289 @@
+- generic:
+  - generic:
+    - generic:
+      - generic:
+        - generic:
+          - generic:
+            - generic:
+              - generic:
+                - link:
+                  - /url: /dashboard
+                  - generic:
+                    - img
+              - button:
+                - img
+            - generic:
+              - navigation:
+                - generic:
+                  - link:
+                    - /url: /dashboard
+                    - img
+                - generic:
+                  - link:
+                    - /url: /students
+                    - img
+                - generic:
+                  - link:
+                    - /url: /teachers
+                    - img
+                - generic:
+                  - link:
+                    - /url: /classes
+                    - img
+                - generic:
+                  - link:
+                    - /url: /progress-book
+                    - img
+                - generic:
+                  - link:
+                    - /url: /attendance
+                    - img
+                - generic:
+                  - link:
+                    - /url: /calendar
+                    - img
+                - generic:
+                  - link:
+                    - /url: /admin/reports
+                    - img
+                - generic:
+                  - link:
+                    - /url: /tasks
+                    - img
+                - generic:
+                  - link:
+                    - /url: /admin/parent-accounts
+                    - img
+                - generic:
+                  - link:
+                    - /url: /admin/panel
+                    - img
+            - generic:
+              - button:
+                - generic:
+                  - generic: M
+      - generic:
+        - generic:
+          - generic:
+            - generic:
+              - generic:
+                - generic:
+                  - button:
+                    - img
+                    - text: Back
+                  - button:
+                    - img
+                    - text: Print / Save as PDF
+                - generic:
+                  - banner:
+                    - generic:
+                      - generic: DUM
+                      - generic:
+                        - heading [level=1]: Darul Ulum Montreal
+                        - paragraph: Hifz Department · Student Progress Record
+                    - generic:
+                      - paragraph: "Issued: May 15, 2026"
+                  - generic:
+                    - heading [level=2]: Hifz Progress Report
+                    - paragraph: 2025–2026 Term 2
+                  - generic:
+                    - generic:
+                      - generic:
+                        - generic: Name
+                        - generic: Mardhiya Adekunle
+                      - generic:
+                        - generic: Section
+                        - generic: women
+                      - generic:
+                        - generic: Grade
+                        - generic: "10"
+                      - generic:
+                        - generic: Date of Birth
+                        - generic: Apr 10, 2009
+                    - generic:
+                      - generic:
+                        - generic: Permanent Code
+                        - generic: —
+                      - generic:
+                        - generic: Class / Group
+                        - generic: —
+                      - generic:
+                        - generic: Teacher
+                        - generic: —
+                      - generic:
+                        - generic: Completed Juz
+                        - generic: —
+                  - generic:
+                    - heading [level=3]: Progress Summary
+                    - generic:
+                      - generic:
+                        - paragraph: Current Surah
+                        - paragraph: Surah 4
+                        - paragraph: May 5, 2026
+                      - generic:
+                        - paragraph: Current Juz
+                        - paragraph: —
+                      - generic:
+                        - paragraph: Sessions This Term
+                        - paragraph: "6"
+                        - paragraph: Progress entries logged
+                  - generic:
+                    - heading [level=3]: Recent Progress Entries (last 14)
+                    - table:
+                      - rowgroup:
+                        - row:
+                          - columnheader: Date
+                          - columnheader: Surah
+                          - columnheader: Ayat Range
+                          - columnheader: Quality
+                          - columnheader: Teacher Notes
+                      - rowgroup:
+                        - row:
+                          - cell: May 5, 2026
+                          - cell: S. 4
+                          - cell: 17–23
+                          - cell: average
+                          - cell: —
+                        - row:
+                          - cell: Feb 22, 2026
+                          - cell: S. 3
+                          - cell: 179–200
+                          - cell: average
+                          - cell: —
+                        - row:
+                          - cell: Feb 4, 2026
+                          - cell: S. 3
+                          - cell: 175–179
+                          - cell: average
+                          - cell: —
+                        - row:
+                          - cell: Feb 3, 2026
+                          - cell: S. 3
+                          - cell: 173–176
+                          - cell: average
+                          - cell: —
+                        - row:
+                          - cell: Feb 2, 2026
+                          - cell: S. 3
+                          - cell: 167–173
+                          - cell: good
+                          - cell: —
+                        - row:
+                          - cell: Feb 1, 2026
+                          - cell: S. 3
+                          - cell: 167–171
+                          - cell: needsWork
+                          - cell: —
+                        - row:
+                          - cell: Jan 28, 2026
+                          - cell: S. 3
+                          - cell: 105–167
+                          - cell: average
+                          - cell: —
+                        - row:
+                          - cell: Jan 14, 2026
+                          - cell: S. 3
+                          - cell: 141–167
+                          - cell: average
+                          - cell: —
+                        - row:
+                          - cell: Jan 6, 2026
+                          - cell: S. 3
+                          - cell: 135–141
+                          - cell: average
+                          - cell: —
+                        - row:
+                          - cell: Nov 30, 2025
+                          - cell: S. 3
+                          - cell: 86–135
+                          - cell: average
+                          - cell: —
+                        - row:
+                          - cell: Nov 5, 2025
+                          - cell: S. 3
+                          - cell: 81–86
+                          - cell: average
+                          - cell: —
+                        - row:
+                          - cell: Nov 3, 2025
+                          - cell: S. 3
+                          - cell: 64–82
+                          - cell: average
+                          - cell: —
+                        - row:
+                          - cell: Oct 7, 2025
+                          - cell: S. 3
+                          - cell: 70–76
+                          - cell: good
+                          - cell: —
+                        - row:
+                          - cell: Oct 6, 2025
+                          - cell: S. 3
+                          - cell: 63–70
+                          - cell: average
+                          - cell: —
+                  - generic:
+                    - heading [level=3]: Attendance Summary (Term to date)
+                    - generic:
+                      - generic:
+                        - paragraph: Total Days
+                        - paragraph: "6"
+                      - generic:
+                        - paragraph: Present
+                        - paragraph: "6"
+                      - generic:
+                        - paragraph: Absent
+                        - paragraph: "0"
+                      - generic:
+                        - paragraph: Late
+                        - paragraph: "0"
+                      - generic:
+                        - paragraph: Rate
+                        - paragraph: 100%
+                  - generic:
+                    - heading [level=3]: Teacher Remarks
+                    - generic: —
+                  - generic:
+                    - generic:
+                      - generic: Teacher Signature
+                    - generic:
+                      - generic: Principal Signature
+                    - generic:
+                      - generic: Date
+    - list
+  - dialog [ref=e9]:
+    - generic [ref=e10]:
+      - paragraph [ref=e11]: Friday, May 15
+      - heading "Good morning 👋" [level=2] [ref=e12]
+      - paragraph [ref=e13]: Here's your daily checklist for today.
+    - generic [ref=e14]:
+      - generic [ref=e15]:
+        - img [ref=e17]
+        - generic [ref=e20]:
+          - paragraph [ref=e21]: Check today's attendance
+          - paragraph [ref=e22]: The Attendance Monitor shows who's present, absent, and not yet marked. Flag anything unusual early.
+      - generic [ref=e23]:
+        - img [ref=e25]
+        - generic [ref=e30]:
+          - paragraph [ref=e31]: Review the absence watchlist
+          - paragraph [ref=e32]: Go to Attendance → Watchlist tab to see students with repeat absences. Reach out to parents if streaks are growing.
+      - generic [ref=e33]:
+        - img [ref=e35]
+        - generic [ref=e38]:
+          - paragraph [ref=e39]: Check the activity feed
+          - paragraph [ref=e40]: The Activity Feed shows all teacher actions — progress logs, attendance, and assignments — since yesterday.
+      - generic [ref=e41]:
+        - img [ref=e43]
+        - generic [ref=e46]:
+          - paragraph [ref=e47]: Pending admin tasks
+          - paragraph [ref=e48]: Check for unlinked parent accounts, new parent requests, or any pending bulk student imports.
+    - generic [ref=e49]:
+      - generic [ref=e50]:
+        - img [ref=e51]
+        - img [ref=e54]
+        - img [ref=e57]
+        - img [ref=e60]
+      - button "Let's go!" [active] [ref=e63] [cursor=pointer]
+    - button "Close" [ref=e64] [cursor=pointer]:
+      - img [ref=e65]
+      - generic [ref=e68]: Close

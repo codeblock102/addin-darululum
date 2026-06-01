@@ -1,0 +1,227 @@
+- generic [ref=e2]:
+  - generic [ref=e8]:
+    - generic [ref=e11]:
+      - generic [ref=e12]:
+        - link "Admin" [ref=e14] [cursor=pointer]:
+          - /url: /dashboard
+          - img [ref=e16]
+        - button "Expand sidebar" [ref=e19] [cursor=pointer]:
+          - img
+      - navigation [ref=e21]:
+        - link "Dashboard" [ref=e23] [cursor=pointer]:
+          - /url: /dashboard
+          - img [ref=e24]
+        - link "Students" [ref=e28] [cursor=pointer]:
+          - /url: /students
+          - img [ref=e29]
+        - link "Teachers" [ref=e35] [cursor=pointer]:
+          - /url: /teachers
+          - img [ref=e36]
+        - link "Classes" [ref=e42] [cursor=pointer]:
+          - /url: /classes
+          - img [ref=e43]
+        - link "Progress Book" [ref=e46] [cursor=pointer]:
+          - /url: /progress-book
+          - img [ref=e47]
+        - link "Attendance" [ref=e50] [cursor=pointer]:
+          - /url: /attendance
+          - img [ref=e51]
+        - link "School Calendar" [ref=e55] [cursor=pointer]:
+          - /url: /calendar
+          - img [ref=e56]
+        - link "Reports" [ref=e59] [cursor=pointer]:
+          - /url: /admin/reports
+          - img [ref=e60]
+        - link "nav.tasks" [ref=e64] [cursor=pointer]:
+          - /url: /tasks
+          - img [ref=e65]
+        - link "Parent Accounts" [ref=e69] [cursor=pointer]:
+          - /url: /admin/parent-accounts
+          - img [ref=e70]
+        - link "Admin Panel" [ref=e75] [cursor=pointer]:
+          - /url: /admin/panel
+          - img [ref=e76]
+      - button "M" [ref=e80] [cursor=pointer]:
+        - generic [ref=e82]: M
+    - generic [ref=e87]:
+      - generic [ref=e88]:
+        - button "Back" [ref=e89] [cursor=pointer]:
+          - img
+          - text: Back
+        - button "Print / Save as PDF" [ref=e90] [cursor=pointer]:
+          - img
+          - text: Print / Save as PDF
+      - generic [ref=e91]:
+        - banner [ref=e92]:
+          - generic [ref=e93]:
+            - generic [ref=e94]: DUM
+            - generic [ref=e95]:
+              - heading "Darul Ulum Montreal" [level=1] [ref=e96]
+              - paragraph [ref=e97]: Hifz Department · Student Progress Record
+          - paragraph [ref=e99]: "Issued: May 15, 2026"
+        - generic [ref=e100]:
+          - heading "Hifz Progress Report" [level=2] [ref=e101]
+          - paragraph [ref=e102]: 2025–2026 Term 2
+        - generic [ref=e103]:
+          - generic [ref=e104]:
+            - generic [ref=e105]:
+              - generic [ref=e106]: Name
+              - generic [ref=e107]: Mardhiya Adekunle
+            - generic [ref=e108]:
+              - generic [ref=e109]: Section
+              - generic [ref=e110]: women
+            - generic [ref=e111]:
+              - generic [ref=e112]: Grade
+              - generic [ref=e113]: "10"
+            - generic [ref=e114]:
+              - generic [ref=e115]: Date of Birth
+              - generic [ref=e116]: Apr 10, 2009
+          - generic [ref=e117]:
+            - generic [ref=e118]:
+              - generic [ref=e119]: Permanent Code
+              - generic [ref=e120]: —
+            - generic [ref=e121]:
+              - generic [ref=e122]: Class / Group
+              - generic [ref=e123]: —
+            - generic [ref=e124]:
+              - generic [ref=e125]: Teacher
+              - generic [ref=e126]: —
+            - generic [ref=e127]:
+              - generic [ref=e128]: Completed Juz
+              - generic [ref=e129]: —
+        - generic [ref=e130]:
+          - heading "Progress Summary" [level=3] [ref=e131]
+          - generic [ref=e132]:
+            - generic [ref=e133]:
+              - paragraph [ref=e134]: Current Surah
+              - paragraph [ref=e135]: Surah 4
+              - paragraph [ref=e136]: May 5, 2026
+            - generic [ref=e137]:
+              - paragraph [ref=e138]: Current Juz
+              - paragraph [ref=e139]: —
+            - generic [ref=e140]:
+              - paragraph [ref=e141]: Sessions This Term
+              - paragraph [ref=e142]: "6"
+              - paragraph [ref=e143]: Progress entries logged
+        - generic [ref=e144]:
+          - heading "Recent Progress Entries (last 14)" [level=3] [ref=e145]
+          - table [ref=e146]:
+            - rowgroup [ref=e147]:
+              - row "Date Surah Ayat Range Quality Teacher Notes" [ref=e148]:
+                - columnheader "Date" [ref=e149]
+                - columnheader "Surah" [ref=e150]
+                - columnheader "Ayat Range" [ref=e151]
+                - columnheader "Quality" [ref=e152]
+                - columnheader "Teacher Notes" [ref=e153]
+            - rowgroup [ref=e154]:
+              - row "May 5, 2026 S. 4 17–23 average —" [ref=e155]:
+                - cell "May 5, 2026" [ref=e156]
+                - cell "S. 4" [ref=e157]
+                - cell "17–23" [ref=e158]
+                - cell "average" [ref=e159]
+                - cell "—" [ref=e160]
+              - row "Feb 22, 2026 S. 3 179–200 average —" [ref=e161]:
+                - cell "Feb 22, 2026" [ref=e162]
+                - cell "S. 3" [ref=e163]
+                - cell "179–200" [ref=e164]
+                - cell "average" [ref=e165]
+                - cell "—" [ref=e166]
+              - row "Feb 4, 2026 S. 3 175–179 average —" [ref=e167]:
+                - cell "Feb 4, 2026" [ref=e168]
+                - cell "S. 3" [ref=e169]
+                - cell "175–179" [ref=e170]
+                - cell "average" [ref=e171]
+                - cell "—" [ref=e172]
+              - row "Feb 3, 2026 S. 3 173–176 average —" [ref=e173]:
+                - cell "Feb 3, 2026" [ref=e174]
+                - cell "S. 3" [ref=e175]
+                - cell "173–176" [ref=e176]
+                - cell "average" [ref=e177]
+                - cell "—" [ref=e178]
+              - row "Feb 2, 2026 S. 3 167–173 good —" [ref=e179]:
+                - cell "Feb 2, 2026" [ref=e180]
+                - cell "S. 3" [ref=e181]
+                - cell "167–173" [ref=e182]
+                - cell "good" [ref=e183]
+                - cell "—" [ref=e184]
+              - row "Feb 1, 2026 S. 3 167–171 needsWork —" [ref=e185]:
+                - cell "Feb 1, 2026" [ref=e186]
+                - cell "S. 3" [ref=e187]
+                - cell "167–171" [ref=e188]
+                - cell "needsWork" [ref=e189]
+                - cell "—" [ref=e190]
+              - row "Jan 28, 2026 S. 3 105–167 average —" [ref=e191]:
+                - cell "Jan 28, 2026" [ref=e192]
+                - cell "S. 3" [ref=e193]
+                - cell "105–167" [ref=e194]
+                - cell "average" [ref=e195]
+                - cell "—" [ref=e196]
+              - row "Jan 14, 2026 S. 3 141–167 average —" [ref=e197]:
+                - cell "Jan 14, 2026" [ref=e198]
+                - cell "S. 3" [ref=e199]
+                - cell "141–167" [ref=e200]
+                - cell "average" [ref=e201]
+                - cell "—" [ref=e202]
+              - row "Jan 6, 2026 S. 3 135–141 average —" [ref=e203]:
+                - cell "Jan 6, 2026" [ref=e204]
+                - cell "S. 3" [ref=e205]
+                - cell "135–141" [ref=e206]
+                - cell "average" [ref=e207]
+                - cell "—" [ref=e208]
+              - row "Nov 30, 2025 S. 3 86–135 average —" [ref=e209]:
+                - cell "Nov 30, 2025" [ref=e210]
+                - cell "S. 3" [ref=e211]
+                - cell "86–135" [ref=e212]
+                - cell "average" [ref=e213]
+                - cell "—" [ref=e214]
+              - row "Nov 5, 2025 S. 3 81–86 average —" [ref=e215]:
+                - cell "Nov 5, 2025" [ref=e216]
+                - cell "S. 3" [ref=e217]
+                - cell "81–86" [ref=e218]
+                - cell "average" [ref=e219]
+                - cell "—" [ref=e220]
+              - row "Nov 3, 2025 S. 3 64–82 average —" [ref=e221]:
+                - cell "Nov 3, 2025" [ref=e222]
+                - cell "S. 3" [ref=e223]
+                - cell "64–82" [ref=e224]
+                - cell "average" [ref=e225]
+                - cell "—" [ref=e226]
+              - row "Oct 7, 2025 S. 3 70–76 good —" [ref=e227]:
+                - cell "Oct 7, 2025" [ref=e228]
+                - cell "S. 3" [ref=e229]
+                - cell "70–76" [ref=e230]
+                - cell "good" [ref=e231]
+                - cell "—" [ref=e232]
+              - row "Oct 6, 2025 S. 3 63–70 average —" [ref=e233]:
+                - cell "Oct 6, 2025" [ref=e234]
+                - cell "S. 3" [ref=e235]
+                - cell "63–70" [ref=e236]
+                - cell "average" [ref=e237]
+                - cell "—" [ref=e238]
+        - generic [ref=e239]:
+          - heading "Attendance Summary (Term to date)" [level=3] [ref=e240]
+          - generic [ref=e241]:
+            - generic [ref=e242]:
+              - paragraph [ref=e243]: Total Days
+              - paragraph [ref=e244]: "6"
+            - generic [ref=e245]:
+              - paragraph [ref=e246]: Present
+              - paragraph [ref=e247]: "6"
+            - generic [ref=e248]:
+              - paragraph [ref=e249]: Absent
+              - paragraph [ref=e250]: "0"
+            - generic [ref=e251]:
+              - paragraph [ref=e252]: Late
+              - paragraph [ref=e253]: "0"
+            - generic [ref=e254]:
+              - paragraph [ref=e255]: Rate
+              - paragraph [ref=e256]: 100%
+        - generic [ref=e257]:
+          - heading "Teacher Remarks" [level=3] [ref=e258]
+          - generic [ref=e259]: —
+        - generic [ref=e260]:
+          - generic [ref=e262]: Teacher Signature
+          - generic [ref=e264]: Principal Signature
+          - generic [ref=e266]: Date
+  - region "Notifications (F8)":
+    - list

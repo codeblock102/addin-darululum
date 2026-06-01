@@ -1,0 +1,7 @@
+- generic [ref=e2]:
+  - generic [ref=e3]:
+    - img [ref=e4]
+    - paragraph [ref=e6]: Checking permissions...
+    - button "Go to login page" [ref=e7] [cursor=pointer]
+  - region "Notifications (F8)":
+    - list

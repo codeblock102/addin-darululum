@@ -1,0 +1,116 @@
+- generic [ref=e2]:
+  - generic [ref=e8]:
+    - generic [ref=e11]:
+      - generic [ref=e12]:
+        - link "Dār Al-Ulūm Admin" [ref=e13] [cursor=pointer]:
+          - /url: /dashboard
+          - img [ref=e15]
+          - generic [ref=e18]:
+            - generic [ref=e19]: Dār Al-Ulūm
+            - generic [ref=e20]: Admin
+        - button "Collapse sidebar" [ref=e22] [cursor=pointer]:
+          - img
+      - navigation [ref=e24]:
+        - link "Dashboard" [ref=e26] [cursor=pointer]:
+          - /url: /dashboard
+          - img [ref=e27]
+          - generic [ref=e30]: Dashboard
+        - generic [ref=e31]:
+          - generic [ref=e32]: People
+          - link "Students" [ref=e33] [cursor=pointer]:
+            - /url: /students
+            - img [ref=e34]
+            - generic [ref=e39]: Students
+        - link "Teachers" [ref=e41] [cursor=pointer]:
+          - /url: /teachers
+          - img [ref=e42]
+          - generic [ref=e47]: Teachers
+        - link "Classes" [ref=e49] [cursor=pointer]:
+          - /url: /classes
+          - img [ref=e50]
+          - generic [ref=e52]: Classes
+        - generic [ref=e53]:
+          - generic [ref=e54]: Operations
+          - link "Progress Book" [ref=e55] [cursor=pointer]:
+            - /url: /progress-book
+            - img [ref=e56]
+            - generic [ref=e58]: Progress Book
+        - link "Attendance" [ref=e60] [cursor=pointer]:
+          - /url: /attendance
+          - img [ref=e61]
+          - generic [ref=e64]: Attendance
+        - link "School Calendar" [ref=e66] [cursor=pointer]:
+          - /url: /calendar
+          - img [ref=e67]
+          - generic [ref=e69]: School Calendar
+        - link "Reports" [ref=e71] [cursor=pointer]:
+          - /url: /admin/reports
+          - img [ref=e72]
+          - generic [ref=e75]: Reports
+        - generic [ref=e76]:
+          - generic [ref=e77]: Admin
+          - link "nav.tasks" [ref=e78] [cursor=pointer]:
+            - /url: /tasks
+            - img [ref=e79]
+            - generic [ref=e82]: nav.tasks
+        - link "Parent Accounts" [ref=e84] [cursor=pointer]:
+          - /url: /admin/parent-accounts
+          - img [ref=e85]
+          - generic [ref=e89]: Parent Accounts
+        - link "Admin Panel" [ref=e91] [cursor=pointer]:
+          - /url: /admin/panel
+          - img [ref=e92]
+          - generic [ref=e95]: Admin Panel
+      - button "M mzbaig9 mzbaig9@gmail.com Admin" [ref=e97] [cursor=pointer]:
+        - generic [ref=e98]:
+          - generic [ref=e100]: M
+          - generic [ref=e101]:
+            - paragraph [ref=e102]: mzbaig9
+            - paragraph [ref=e103]: mzbaig9@gmail.com
+            - generic [ref=e104]: Admin
+    - generic [ref=e110]:
+      - generic [ref=e112]:
+        - heading "Admin Panel" [level=1] [ref=e113]
+        - paragraph [ref=e114]: Hub for less-frequent admin tools. Daily workflows live in the main sidebar.
+      - generic [ref=e116]:
+        - tablist [ref=e117]:
+          - tab "Bulk Import" [ref=e118] [cursor=pointer]:
+            - img [ref=e119]
+            - text: Bulk Import
+          - tab "Templates" [ref=e122] [cursor=pointer]:
+            - img [ref=e123]
+            - text: Templates
+          - tab "Activity Log" [ref=e126] [cursor=pointer]:
+            - img [ref=e127]
+            - text: Activity Log
+          - tab "Interviews" [selected] [ref=e129] [cursor=pointer]:
+            - img [ref=e130]
+            - text: Interviews
+          - tab "Teacher Schedules" [ref=e133] [cursor=pointer]:
+            - img [ref=e134]
+            - text: Teacher Schedules
+          - tab "Absence Requests" [ref=e136] [cursor=pointer]:
+            - img [ref=e137]
+            - text: Absence Requests
+        - tabpanel "Interviews" [ref=e141]:
+          - generic [ref=e142]:
+            - generic [ref=e145]:
+              - img [ref=e147]
+              - generic [ref=e149]:
+                - heading "Interviews" [level=1] [ref=e150]
+                - paragraph [ref=e151]: Schedule and manage parent-teacher interviews
+            - generic [ref=e152]:
+              - generic [ref=e153]:
+                - button "Interview Windows" [ref=e154] [cursor=pointer]
+                - button "Manage Slots" [ref=e155] [cursor=pointer]
+                - button "Bookings" [ref=e156] [cursor=pointer]
+              - generic [ref=e157]:
+                - button "New Window" [ref=e159] [cursor=pointer]:
+                  - img
+                  - text: New Window
+                - generic [ref=e160]:
+                  - img [ref=e161]
+                  - paragraph [ref=e163]: No interview windows yet.
+                  - paragraph [ref=e164]: Create a window to define when interviews take place.
+  - region "Notifications (F8)":
+    - list
