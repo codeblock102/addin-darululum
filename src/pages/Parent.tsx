@@ -1,86 +1,89 @@
+import { useEffect, useMemo, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { ClipboardList } from "lucide-react";
+
+import { supabase } from "@/integrations/supabase/client.ts";
+import { useAuth } from "@/hooks/use-auth.ts";
 import { useParentChildren } from "@/hooks/useParentChildren.ts";
 import { ChildSelector } from "@/components/parent/ChildSelector.tsx";
+
+import { HeroCard, HeroCardSkeleton } from "@/components/parent/dashboard/HeroCard.tsx";
+import { JuzGrid, JuzGridSkeleton } from "@/components/parent/dashboard/JuzGrid.tsx";
+import {
+  StreakHeader,
+  StreakHeaderSkeleton,
+} from "@/components/parent/dashboard/StreakHeader.tsx";
+import { KPITiles, KPITilesSkeleton } from "@/components/parent/dashboard/KPITiles.tsx";
+import { ActivityFeed } from "@/components/parent/dashboard/ActivityFeed.tsx";
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card.tsx";
 import { Badge } from "@/components/ui/badge.tsx";
-import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client.ts";
-import { useQuery } from "@tanstack/react-query";
-import { Tables } from "@/types/supabase.ts";
-import { BookOpen, CalendarCheck, CalendarDays, ClipboardList, Coffee, GraduationCap, Heart, Palmtree, Star, TrendingUp } from "lucide-react";
 import { EmptyState } from "@/components/analytics/EmptyState.tsx";
-import { format, parseISO } from "date-fns";
 
-const PARENT_EVENT_TYPE_MAP: Record<string, { label: string; color: string; icon: React.ReactNode }> = {
-  holiday:  { label: "Holiday",  color: "#16a34a", icon: <Palmtree className="h-3.5 w-3.5" /> },
-  break:    { label: "Break",    color: "#0ea5e9", icon: <Coffee className="h-3.5 w-3.5" /> },
-  pd_day:   { label: "PD Day",   color: "#8b5cf6", icon: <GraduationCap className="h-3.5 w-3.5" /> },
-  exam:     { label: "Exam",     color: "#f59e0b", icon: <BookOpen className="h-3.5 w-3.5" /> },
-  event:    { label: "Event",    color: "#ec4899", icon: <Star className="h-3.5 w-3.5" /> },
-};
+import {
+  buildActivityEntries,
+  deriveAttendancePct,
+  deriveJuzGrid,
+  deriveStreakDays,
+  deriveTodayMetric,
+  useParentRecentMessages,
+  useParentUpcomingEvents,
+  useStudentAttendance,
+  useStudentJuzRevisions,
+  useStudentProgressFeed,
+  useStudentRow,
+  useStudentSabaqPara,
+} from "@/hooks/parent-dashboard/useParentDashboardData.ts";
 
-const statusColor = (status: string) => {
-  switch (status?.toLowerCase()) {
-    case "present": return "bg-green-100 text-green-800 border-green-200";
-    case "absent":  return "bg-red-100 text-red-800 border-red-200";
-    case "late":    return "bg-amber-100 text-amber-800 border-amber-200";
-    default:        return "bg-muted text-muted-foreground";
-  }
+type ParentAssignment = {
+  id: string;
+  title: string;
+  description: string | null;
+  due_date: string | null;
+  status: string;
+  student_ids: string[];
+  submission_status?: "assigned" | "submitted" | "graded" | null;
+  submission_grade?: number | null;
+  submission_feedback?: string | null;
 };
 
 const Parent = () => {
-  const { children, isLoading } = useParentChildren();
+  const { session } = useAuth();
+  const parentUserId = session?.user?.id ?? null;
+  const { children, isLoading: childrenLoading } = useParentChildren();
   const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!selectedStudentId && children.length > 0) {
+    if (children.length === 0) {
+      setSelectedStudentId(null);
+      return;
+    }
+    if (
+      !selectedStudentId ||
+      !children.some((c) => c.id === selectedStudentId)
+    ) {
       setSelectedStudentId(children[0].id);
     }
   }, [children, selectedStudentId]);
 
-  const { data: progressEntries } = useQuery({
-    queryKey: ["parent-student-progress", selectedStudentId],
-    queryFn: async () => {
-      if (!selectedStudentId) return [];
-      const { data, error } = await supabase
-        .from("progress")
-        .select("*, students(name)")
-        .eq("student_id", selectedStudentId)
-        .order("created_at", { ascending: false })
-        .limit(20);
-      if (error) throw error;
-      return data || [];
-    },
-    enabled: !!selectedStudentId,
-  });
+  // Core dashboard data
+  const { data: progress, isLoading: progressLoading } = useStudentProgressFeed(
+    selectedStudentId,
+  );
+  const { data: attendance, isLoading: attendanceLoading } =
+    useStudentAttendance(selectedStudentId);
+  const { data: sabaqPara, isLoading: sabaqParaLoading } =
+    useStudentSabaqPara(selectedStudentId);
+  const { data: juzRevisions, isLoading: juzRevisionsLoading } =
+    useStudentJuzRevisions(selectedStudentId);
+  const { data: studentRow, isLoading: studentRowLoading } = useStudentRow(
+    selectedStudentId,
+  );
+  const { data: messages, isLoading: messagesLoading } =
+    useParentRecentMessages(parentUserId);
+  const { data: events, isLoading: eventsLoading } = useParentUpcomingEvents();
 
-  const { data: attendance } = useQuery<Tables<"attendance">[]>({
-    queryKey: ["parent-student-attendance", selectedStudentId],
-    queryFn: async () => {
-      if (!selectedStudentId) return [];
-      const { data, error } = await supabase
-        .from("attendance")
-        .select("id, student_id, date, status, session, reason")
-        .eq("student_id", selectedStudentId)
-        .order("date", { ascending: false })
-        .limit(50);
-      if (error) throw error;
-      return data || [];
-    },
-    enabled: !!selectedStudentId,
-  });
-
-  type ParentAssignment = {
-    id: string;
-    title: string;
-    description: string | null;
-    due_date: string | null;
-    status: string;
-    student_ids: string[];
-    submission_status?: "assigned" | "submitted" | "graded" | null;
-    submission_grade?: number | null;
-    submission_feedback?: string | null;
-  };
-
+  // Preserved: assignments card ("Current Work")
   const { data: assignments } = useQuery<ParentAssignment[]>({
     queryKey: ["parent-student-assignments", selectedStudentId],
     queryFn: async () => {
@@ -99,16 +102,21 @@ const Parent = () => {
         .eq("student_id", selectedStudentId)
         .in("assignment_id", ids);
       const subMap = new Map(
-        (subs || []).map((s: { assignment_id: string; status: string; grade: number | null; feedback: string | null }) => [
-          s.assignment_id,
-          s,
-        ]),
+        (subs || []).map(
+          (s: {
+            assignment_id: string;
+            status: string;
+            grade: number | null;
+            feedback: string | null;
+          }) => [s.assignment_id, s],
+        ),
       );
       return list.map((a) => {
         const sub = subMap.get(a.id);
         return {
           ...a,
-          submission_status: (sub?.status as ParentAssignment["submission_status"]) ?? null,
+          submission_status:
+            (sub?.status as ParentAssignment["submission_status"]) ?? null,
           submission_grade: sub?.grade ?? null,
           submission_feedback: sub?.feedback ?? null,
         };
@@ -117,265 +125,214 @@ const Parent = () => {
     enabled: !!selectedStudentId,
   });
 
-  // Upcoming school events for parents
-  const { data: upcomingEvents = [] } = useQuery({
-    queryKey: ["parent-upcoming-events"],
-    queryFn: async () => {
-      const today = new Date().toISOString().split("T")[0];
-      const { data, error } = await supabase
-        .from("school_events")
-        .select("id, title, event_type, start_date, end_date, color, audience")
-        .gte("start_date", today)
-        .in("audience", ["all", "parents"])
-        .order("start_date", { ascending: true })
-        .limit(5);
-      if (error) throw error;
-      return data ?? [];
-    },
-  });
+  // Derivations
+  const todayMetric = useMemo(
+    () => deriveTodayMetric(progress, attendance),
+    [progress, attendance],
+  );
+  const streakDays = useMemo(() => deriveStreakDays(progress), [progress]);
+  const attendancePct = useMemo(
+    () => deriveAttendancePct(attendance),
+    [attendance],
+  );
+  const juzGrid = useMemo(
+    () => deriveJuzGrid(studentRow ?? null, juzRevisions, progress),
+    [studentRow, juzRevisions, progress],
+  );
+  const juzCompleted = useMemo(
+    () =>
+      juzGrid.filter(
+        (j) => j.status === "memorized" || j.status === "under-revision",
+      ).length,
+    [juzGrid],
+  );
+  const activityEntries = useMemo(
+    () =>
+      buildActivityEntries({
+        progress,
+        attendance,
+        sabaqPara,
+        juzRevisions,
+        messages,
+        events,
+        limit: 25,
+      }),
+    [progress, attendance, sabaqPara, juzRevisions, messages, events],
+  );
 
-  // Derived stats
-  const attendanceRate = (() => {
-    if (!attendance || attendance.length === 0) return null;
-    const present = attendance.filter((a) => a.status?.toLowerCase() === "present").length;
-    return Math.round((present / attendance.length) * 100);
-  })();
+  const selectedChild = children.find((c) => c.id === selectedStudentId);
 
-  const lastProgress = progressEntries?.[0];
-  const pendingAssignments = (assignments || []).filter(
-    (a) => (a.submission_status ?? a.status)?.toLowerCase() !== "graded"
-  ).length;
+  // Hero loading is bound to progress + attendance — those drive today's metric.
+  const heroLoading = progressLoading || attendanceLoading;
+  // TODO: replace with a real revision-streak query (e.g. student_dhor_summaries
+  // or a dedicated streak table) once we model freezes/last-revised. For now we
+  // derive from consecutive progress days and assume 0 freezes.
+  const streakLoading = progressLoading;
+  const freezesRemaining = 0;
+  // Prefer the local-day `date` column (YYYY-MM-DD as the teacher logged it) and
+  // fall back to the UTC `created_at` timestamp. Using `created_at` alone would
+  // disagree with deriveTodayMetric for entries logged just after UTC midnight
+  // when the parent's local day is still the previous day (or vice-versa).
+  const lastRevisedAt = progress?.[0]?.date ?? progress?.[0]?.created_at ?? null;
 
   return (
     <div className="space-y-6 animate-fadeIn">
-        {/* Header + child selector */}
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight mb-1">Parent Dashboard</h1>
-          <p className="text-muted-foreground text-sm mb-4">Track your child's progress and school activity.</p>
-          <ChildSelector
-            children={children}
-            selectedId={selectedStudentId}
-            onSelect={setSelectedStudentId}
-            isLoading={isLoading}
-          />
+      {/* Header row: title + streak + child selector */}
+      <div className="space-y-3">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight">Parent Dashboard</h1>
+            <p className="text-muted-foreground text-sm">
+              Track your child's progress and school activity.
+            </p>
+          </div>
+          {selectedStudentId ? (
+            streakLoading ? (
+              <StreakHeaderSkeleton />
+            ) : (
+              <StreakHeader
+                streakDays={streakDays}
+                freezesRemaining={freezesRemaining}
+                lastRevisedAt={lastRevisedAt}
+              />
+            )
+          ) : null}
         </div>
+        <ChildSelector
+          children={children}
+          selectedId={selectedStudentId}
+          onSelect={setSelectedStudentId}
+          isLoading={childrenLoading}
+        />
+      </div>
 
-        {selectedStudentId && (
-          <>
-            {/* Stat cards */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-              <Card>
-                <CardContent className="pt-5 pb-4">
-                  <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                    <CalendarCheck className="h-4 w-4" />
-                    <span className="text-xs font-medium uppercase tracking-wide">Attendance</span>
-                  </div>
-                  <div className="text-3xl font-bold">
-                    {attendanceRate !== null ? `${attendanceRate}%` : "—"}
-                  </div>
-                  <div className="text-xs text-muted-foreground mt-1">
-                    {attendance?.length ?? 0} sessions recorded
-                  </div>
-                </CardContent>
-              </Card>
+      {selectedStudentId && (
+        <>
+          {/* Hero card — today's snapshot */}
+          {heroLoading || !selectedChild ? (
+            <HeroCardSkeleton />
+          ) : (
+            <HeroCard
+              student={{
+                id: selectedChild.id,
+                name: selectedChild.name,
+                photoUrl: selectedChild.photo_url ?? null,
+              }}
+              todayMetric={todayMetric}
+            />
+          )}
 
-              <Card>
-                <CardContent className="pt-5 pb-4">
-                  <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                    <BookOpen className="h-4 w-4" />
-                    <span className="text-xs font-medium uppercase tracking-wide">Qur'an</span>
-                  </div>
-                  <div className="text-lg font-semibold leading-tight">
-                    {lastProgress
-                      ? `Surah ${lastProgress.current_surah ?? "—"}, Juz ${lastProgress.current_juz ?? "—"}`
-                      : "No entries yet"}
-                  </div>
-                  {lastProgress?.memorization_quality && (
-                    <div className="text-xs text-muted-foreground mt-1">
-                      Quality: {lastProgress.memorization_quality}
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
+          {/* KPI tiles */}
+          {studentRowLoading || attendanceLoading || progressLoading ? (
+            <KPITilesSkeleton />
+          ) : (
+            <KPITiles
+              streak={streakDays}
+              juzCompleted={juzCompleted}
+              attendancePct={attendancePct}
+            />
+          )}
 
-              <Card>
-                <CardContent className="pt-5 pb-4">
-                  <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                    <ClipboardList className="h-4 w-4" />
-                    <span className="text-xs font-medium uppercase tracking-wide">Pending Work</span>
-                  </div>
-                  <div className="text-3xl font-bold">{pendingAssignments}</div>
-                  <div className="text-xs text-muted-foreground mt-1">
-                    {(assignments || []).length} total assignments
-                  </div>
-                </CardContent>
-              </Card>
+          {/* Juz grid */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Juz Progress</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {studentRowLoading ? (
+                <JuzGridSkeleton />
+              ) : (
+                <JuzGrid progress={juzGrid} />
+              )}
+            </CardContent>
+          </Card>
 
-              <Card>
-                <CardContent className="pt-5 pb-4">
-                  <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                    <TrendingUp className="h-4 w-4" />
-                    <span className="text-xs font-medium uppercase tracking-wide">Progress Entries</span>
-                  </div>
-                  <div className="text-3xl font-bold">{progressEntries?.length ?? 0}</div>
-                  <div className="text-xs text-muted-foreground mt-1">last 20 sessions</div>
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Upcoming school events */}
-            {upcomingEvents.length > 0 && (
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-base flex items-center gap-2">
-                    <CalendarDays className="h-4 w-4 text-green-700" />
-                    Upcoming School Events
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-2">
-                    {upcomingEvents.map((ev: { id: string; title: string; event_type: string; start_date: string; end_date?: string | null; color?: string | null; audience?: string }) => {
-                      const cfg = PARENT_EVENT_TYPE_MAP[ev.event_type] ?? PARENT_EVENT_TYPE_MAP.event;
-                      return (
-                        <div key={ev.id} className="flex items-center gap-3 py-2 border-b border-gray-50 last:border-0">
-                          <div
-                            className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0"
-                            style={{ background: `${cfg.color}22`, color: cfg.color }}
-                          >
-                            {cfg.icon}
-                          </div>
-                          <div className="min-w-0 flex-1">
-                            <p className="text-sm font-medium text-gray-900 truncate">{ev.title}</p>
-                            <p className="text-xs text-muted-foreground">
-                              {format(parseISO(ev.start_date), "MMM d")}
-                              {ev.end_date && ev.end_date !== ev.start_date && ` – ${format(parseISO(ev.end_date), "MMM d")}`}
-                            </p>
-                          </div>
-                          <span
-                            className="text-[10px] font-semibold px-1.5 py-0.5 rounded flex-shrink-0"
-                            style={{ background: `${cfg.color}22`, color: cfg.color }}
-                          >
-                            {cfg.label}
-                          </span>
-                          {ev.audience === "parents" && (
-                            <span className="inline-flex items-center gap-0.5 text-[10px] font-medium px-1.5 py-0.5 rounded bg-pink-50 text-pink-600 flex-shrink-0">
-                              <Heart className="h-3 w-3" />
-                            </span>
+          {/* Preserved: pending assignments / current work */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Current Work</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {(assignments || []).length === 0 ? (
+                <EmptyState
+                  message="No assignments"
+                  description="Assignments will appear here once your teacher creates them."
+                  icon={<ClipboardList className="h-8 w-8 text-gray-400" />}
+                />
+              ) : (
+                <ul className="space-y-3">
+                  {(assignments || []).map((as) => {
+                    const effectiveStatus = as.submission_status ?? as.status;
+                    const isGraded = effectiveStatus === "graded";
+                    return (
+                      <li
+                        key={as.id}
+                        className="p-3 rounded-lg border flex items-start justify-between gap-3"
+                      >
+                        <div className="space-y-0.5 min-w-0">
+                          <div className="font-medium text-sm truncate">{as.title}</div>
+                          {as.description && (
+                            <div className="text-xs text-muted-foreground truncate">
+                              {as.description}
+                            </div>
+                          )}
+                          {as.due_date && (
+                            <div className="text-xs text-muted-foreground">
+                              Due: {as.due_date}
+                            </div>
+                          )}
+                          {isGraded && as.submission_feedback && (
+                            <div className="text-xs text-foreground/70 mt-1 line-clamp-2">
+                              Feedback: {as.submission_feedback}
+                            </div>
                           )}
                         </div>
-                      );
-                    })}
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Recent attendance */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-base">Recent Attendance</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {(attendance || []).length === 0 ? (
-                  <EmptyState message="No attendance records" description="Attendance will appear here once it's recorded." icon={<CalendarCheck className="h-8 w-8 text-gray-400" />} />
-                ) : (
-                  <ul className="space-y-2">
-                    {(attendance || []).slice(0, 10).map((a) => (
-                      <li key={a.id} className="flex items-center justify-between text-sm">
-                        <span className="text-muted-foreground">{a.date}</span>
-                        <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium border ${statusColor(a.status)}`}>
-                          {a.status}
-                        </span>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </CardContent>
-            </Card>
-
-            {/* Recent Qur'an progress */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-base">Recent Qur'an Progress</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {(progressEntries || []).length === 0 ? (
-                  <EmptyState message="No progress entries yet" description="Progress will appear here once your teacher logs entries." icon={<TrendingUp className="h-8 w-8 text-gray-400" />} />
-                ) : (
-                  <ul className="space-y-3">
-                    {(progressEntries || []).slice(0, 5).map((p: Tables<"progress">) => (
-                      <li key={p.id} className="p-3 rounded-lg border bg-muted/20 space-y-1">
-                        <div className="flex items-center justify-between gap-2">
-                          <span className="font-medium text-sm">
-                            Surah {p.current_surah ?? "—"}, Juz {p.current_juz ?? "—"}
-                          </span>
-                          <span className="text-xs text-muted-foreground">
-                            {new Date(p.created_at).toLocaleDateString()}
-                          </span>
+                        <div className="flex items-center gap-2 shrink-0">
+                          {isGraded && as.submission_grade != null && (
+                            <span className="text-sm font-semibold tabular-nums">
+                              {as.submission_grade}
+                            </span>
+                          )}
+                          <Badge
+                            variant={isGraded ? "secondary" : "outline"}
+                            className={`capitalize ${
+                              isGraded
+                                ? "bg-green-100 text-green-800 border-green-200"
+                                : ""
+                            }`}
+                          >
+                            {effectiveStatus}
+                          </Badge>
                         </div>
-                        <div className="text-xs text-muted-foreground">
-                          Verses {p.start_ayat ?? "—"}–{p.end_ayat ?? "—"}
-                          {p.memorization_quality && ` · Quality: ${p.memorization_quality}`}
-                        </div>
-                        {p.notes && <div className="text-xs text-foreground/70">{p.notes}</div>}
                       </li>
-                    ))}
-                  </ul>
-                )}
-              </CardContent>
-            </Card>
+                    );
+                  })}
+                </ul>
+              )}
+            </CardContent>
+          </Card>
 
-            {/* Pending assignments */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-base">Current Work</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {(assignments || []).length === 0 ? (
-                  <EmptyState message="No assignments" description="Assignments will appear here once your teacher creates them." icon={<ClipboardList className="h-8 w-8 text-gray-400" />} />
-                ) : (
-                  <ul className="space-y-3">
-                    {(assignments || []).map((as) => {
-                      const effectiveStatus = as.submission_status ?? as.status;
-                      const isGraded = effectiveStatus === "graded";
-                      return (
-                        <li key={as.id} className="p-3 rounded-lg border flex items-start justify-between gap-3">
-                          <div className="space-y-0.5 min-w-0">
-                            <div className="font-medium text-sm truncate">{as.title}</div>
-                            {as.description && (
-                              <div className="text-xs text-muted-foreground truncate">{as.description}</div>
-                            )}
-                            {as.due_date && (
-                              <div className="text-xs text-muted-foreground">Due: {as.due_date}</div>
-                            )}
-                            {isGraded && as.submission_feedback && (
-                              <div className="text-xs text-foreground/70 mt-1 line-clamp-2">
-                                Feedback: {as.submission_feedback}
-                              </div>
-                            )}
-                          </div>
-                          <div className="flex items-center gap-2 shrink-0">
-                            {isGraded && as.submission_grade != null && (
-                              <span className="text-sm font-semibold tabular-nums">
-                                {as.submission_grade}
-                              </span>
-                            )}
-                            <Badge
-                              variant={isGraded ? "secondary" : "outline"}
-                              className={`capitalize ${isGraded ? "bg-green-100 text-green-800 border-green-200" : ""}`}
-                            >
-                              {effectiveStatus}
-                            </Badge>
-                          </div>
-                        </li>
-                      );
-                    })}
-                  </ul>
-                )}
-              </CardContent>
-            </Card>
-          </>
-        )}
+          {/* Activity feed — merged stream of attendance / progress / messages / events */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Recent Activity</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ActivityFeed
+                entries={activityEntries}
+                isLoading={
+                  progressLoading ||
+                  attendanceLoading ||
+                  sabaqParaLoading ||
+                  juzRevisionsLoading ||
+                  messagesLoading ||
+                  eventsLoading
+                }
+              />
+            </CardContent>
+          </Card>
+        </>
+      )}
     </div>
   );
 };
