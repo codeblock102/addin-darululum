@@ -211,7 +211,10 @@ const Auth = () => {
                   type="email"
                   placeholder="you@daralulummontreal.com"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                    setErrorMessage(null);
+                  }}
                   className="pl-10 h-11 bg-white border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500 transition-all"
                   required
                   autoComplete="email"
@@ -240,7 +243,10 @@ const Auth = () => {
                   type={showPassword ? "text" : "password"}
                   placeholder="••••••••"
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                    setErrorMessage(null);
+                  }}
                   className="pl-10 pr-10 h-11 bg-white border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500 transition-all"
                   required
                   autoComplete="current-password"

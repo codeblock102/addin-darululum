@@ -20,8 +20,9 @@ export default {
     },
     extend: {
       fontFamily: {
-        sans: ['Inter', 'ui-sans-serif', 'system-ui'],
-        arabic: ['Amiri', 'serif'],
+        sans: ['Inter', 'ui-sans-serif', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', 'sans-serif'],
+        arabic: ['Cairo', 'Tajawal', 'Noto Sans Arabic', 'system-ui', 'sans-serif'],
+        quran: ['Amiri', 'Noto Naskh Arabic', 'serif'],
       },
       colors: {
         border: "hsl(var(--border))",
@@ -57,6 +58,16 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        // Semantic design tokens (Phase: design-system unification)
+        surface: "hsl(var(--surface))",
+        "surface-elevated": "hsl(var(--surface-elevated))",
+        brand: "hsl(var(--brand))",
+        "brand-fg": "hsl(var(--brand-fg))",
+        "brand-muted": "hsl(var(--brand-muted))",
+        // Arabic/ayāt palette tokens (registered for future Arabic/ayāt views)
+        parchment: "hsl(var(--parchment))",
+        gold: "hsl(var(--gold))",
+        terracotta: "hsl(var(--terracotta))",
       },
       borderRadius: {
         lg: "var(--radius)",

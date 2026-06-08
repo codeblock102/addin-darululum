@@ -98,8 +98,8 @@ export const DhorBook = ({
         const { data: classes, error: classErr } = await supabase
           .from("classes")
           .select("id, current_students, teacher_ids")
-          .contains("current_students", `{${studentId}}`)
-          .contains("teacher_ids", `{${teacherId}}`);
+          .contains("current_students", [studentId])
+          .contains("teacher_ids", [teacherId]);
         if (classErr) {
           console.error("Error verifying class membership for teacher/student:", classErr);
         } else if ((classes || []).length > 0) {
@@ -467,7 +467,13 @@ export const DhorBook = ({
         <TabsContent value="weekly" className="mt-0">
           {/* Week Navigation Controls */}
           <div className="flex items-center justify-between mb-3 sm:mb-6 gap-2">
-            <Button variant="outline" size="sm" onClick={goToPrevious} className="px-2 sm:px-3">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={goToPrevious}
+              className="px-2 sm:px-3 min-h-11 min-w-11"
+              aria-label="Previous week"
+            >
               <ChevronLeft className="h-4 w-4 mr-1" />
               <span className="hidden sm:inline">Previous</span>
             </Button>
@@ -480,7 +486,7 @@ export const DhorBook = ({
               <Button
                 variant="ghost"
                 size="sm"
-                className="ml-1 sm:ml-2 h-8 px-2 shrink-0"
+                className="ml-1 sm:ml-2 min-h-11 min-w-11 px-2 shrink-0"
                 onClick={goToCurrent}
               >
                 Today
@@ -488,10 +494,10 @@ export const DhorBook = ({
               <Button
                 variant="ghost"
                 size="sm"
-                className="ml-1 h-8 px-2 shrink-0"
+                className="ml-1 min-h-11 min-w-11 px-2 shrink-0"
                 onClick={handleRefresh}
                 disabled={isRefreshing}
-                aria-label="Refresh"
+                aria-label="Refresh week"
                 title="Refresh"
               >
                 {isRefreshing ? <Loader2 className="h-4 w-4 animate-spin" /> : (
@@ -512,7 +518,13 @@ export const DhorBook = ({
               </Button>
             </div>
 
-            <Button variant="outline" size="sm" onClick={goToNext} className="px-2 sm:px-3">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={goToNext}
+              className="px-2 sm:px-3 min-h-11 min-w-11"
+              aria-label="Next week"
+            >
               <span className="hidden sm:inline">Next</span>
               <ChevronRight className="h-4 w-4 ml-1" />
             </Button>
@@ -538,7 +550,13 @@ export const DhorBook = ({
         <TabsContent value="monthly" className="mt-0">
           {/* Month Navigation Controls */}
           <div className="flex items-center justify-between mb-3 sm:mb-6 gap-2">
-            <Button variant="outline" size="sm" onClick={goToPrevious} className="px-2 sm:px-3">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={goToPrevious}
+              className="px-2 sm:px-3 min-h-11 min-w-11"
+              aria-label="Previous month"
+            >
               <ChevronLeft className="h-4 w-4 mr-1" />
               <span className="hidden sm:inline">Previous</span>
             </Button>
@@ -551,7 +569,7 @@ export const DhorBook = ({
               <Button
                 variant="ghost"
                 size="sm"
-                className="ml-1 sm:ml-2 h-8 px-2 shrink-0"
+                className="ml-1 sm:ml-2 min-h-11 min-w-11 px-2 shrink-0"
                 onClick={goToCurrent}
               >
                 Current Month
@@ -559,10 +577,10 @@ export const DhorBook = ({
               <Button
                 variant="ghost"
                 size="sm"
-                className="ml-1 h-8 px-2 shrink-0"
+                className="ml-1 min-h-11 min-w-11 px-2 shrink-0"
                 onClick={handleRefresh}
                 disabled={isRefreshing}
-                aria-label="Refresh"
+                aria-label="Refresh month"
                 title="Refresh"
               >
                 {isRefreshing ? <Loader2 className="h-4 w-4 animate-spin" /> : (
@@ -583,7 +601,13 @@ export const DhorBook = ({
               </Button>
             </div>
 
-            <Button variant="outline" size="sm" onClick={goToNext} className="px-2 sm:px-3">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={goToNext}
+              className="px-2 sm:px-3 min-h-11 min-w-11"
+              aria-label="Next month"
+            >
               <span className="hidden sm:inline">Next</span>
               <ChevronRight className="h-4 w-4 ml-1" />
             </Button>

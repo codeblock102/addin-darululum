@@ -65,11 +65,11 @@ export function StudentContactPopover({
 
   const trigger = iconTrigger ? (
     <button
-      className="p-1 rounded-md text-gray-400 hover:text-blue-600 hover:bg-blue-50 transition-colors shrink-0"
+      className="min-h-11 min-w-11 p-2.5 inline-flex items-center justify-center rounded-md text-gray-400 hover:text-blue-600 hover:bg-blue-50 transition-colors shrink-0"
       title="View contact"
       type="button"
     >
-      <Info className="h-3.5 w-3.5" />
+      <Info className="h-4 w-4" />
     </button>
   ) : (
     <button

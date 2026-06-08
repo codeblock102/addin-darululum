@@ -10,6 +10,7 @@ export function useRevisionData(revisionId: string, onSuccess: () => void) {
   // State to hold the revision data
   const [revision, setRevision] = useState<JuzRevisionEntry | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
 
   // Fetch the revision on component mount
   useEffect(() => {
@@ -21,16 +22,32 @@ export function useRevisionData(revisionId: string, onSuccess: () => void) {
         .single();
 
       if (error) {
-        console.error("Error fetching revision:", error);
-        return null;
+        throw error instanceof Error ? error : new Error(error.message);
       }
       return data;
     };
 
-    fetchRevision().then((data) => {
-      setRevision(data);
-      setIsLoading(false);
-    });
+    setIsLoading(true);
+    setError(null);
+    fetchRevision()
+      .then((data) => {
+        setRevision(data);
+        setIsLoading(false);
+      })
+      .catch((err) => {
+        const normalized = err instanceof Error
+          ? err
+          : new Error(typeof err === "string" ? err : "Failed to fetch revision");
+        console.error("Error fetching revision:", normalized);
+        setError(normalized);
+        setRevision(null);
+        setIsLoading(false);
+        toast({
+          title: "Error",
+          description: normalized.message,
+          variant: "destructive",
+        });
+      });
   }, [revisionId]); // Refetch if revisionId changes
 
   const handleSave = async (values: Partial<RevisionFormValues>) => {
@@ -99,6 +116,7 @@ export function useRevisionData(revisionId: string, onSuccess: () => void) {
   return {
     revision,
     isLoading,
+    error,
     handleSave,
     handleDelete,
     isDeleteDialogOpen,

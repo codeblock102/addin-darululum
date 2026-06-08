@@ -126,16 +126,55 @@ const Dashboard = () => {
   };
 
   if (error && !isAdmin) {
+    // TODO: Replace hardcoded support email with a shared SUPPORT_EMAIL constant
+    // or a dedicated /contact route when one exists.
+    const supportEmail = "admin@madrasah.local";
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    const errorCode =
+      typeof error === "object" && error !== null && "code" in error
+        ? String((error as { code?: unknown }).code ?? "")
+        : "";
+    const mailtoSubject = encodeURIComponent(
+      `Dashboard error${errorCode ? ` (${errorCode})` : ""}`,
+    );
+    const mailtoBody = encodeURIComponent(
+      `Hello admin,\n\nI ran into an error loading my dashboard profile.\n\n` +
+        `Account email: ${session?.user?.email ?? "unknown"}\n` +
+        (errorCode ? `Error code: ${errorCode}\n` : "") +
+        `Error message: ${errorMessage}\n`,
+    );
+
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-        <div className="w-full max-w-md text-center space-y-4">
-          <p className="text-destructive font-medium">Could not load your profile.</p>
-          <button
-            className="text-sm underline text-muted-foreground"
-            onClick={handleRefresh}
-          >
-            Try again
-          </button>
+        <div
+          className="w-full max-w-md text-center space-y-4"
+          role="alert"
+          aria-live="polite"
+        >
+          <div className="space-y-1">
+            <p className="text-destructive font-medium">
+              Could not load your profile.
+            </p>
+            <p className="text-sm text-muted-foreground">
+              {errorCode ? `[${errorCode}] ` : ""}
+              {errorMessage || "An unexpected error occurred."}
+            </p>
+          </div>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+            <button
+              type="button"
+              className="text-sm underline text-muted-foreground"
+              onClick={handleRefresh}
+            >
+              Try again
+            </button>
+            <a
+              className="text-sm underline text-muted-foreground"
+              href={`mailto:${supportEmail}?subject=${mailtoSubject}&body=${mailtoBody}`}
+            >
+              Contact admin
+            </a>
+          </div>
         </div>
       </div>
     );
