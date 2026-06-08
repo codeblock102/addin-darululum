@@ -1,0 +1,80 @@
+/**
+ * Print stylesheet for the Hifz Report Card page.
+ *
+ * Hides the app chrome (sidebar, top nav) and page-level action buttons so the
+ * report itself fills the printed page. Forces a clean white background and
+ * black text regardless of the app's runtime theme.
+ *
+ * Specificity strategy: the report root carries both `.hifz-report-card` and
+ * `.report-card-print` classes. We chain both selectors so these rules win
+ * against any single-class utility from Tailwind without needing `!important`.
+ * The two rules that genuinely need `!important` are the visibility toggles
+ * (which fight `body *`) and the `@page` margin, neither of which can be
+ * expressed with specificity alone.
+ */
+
+@media print {
+  @page {
+    size: letter portrait;
+    margin: 0.5in;
+  }
+
+  html,
+  body {
+    background: #ffffff;
+  }
+
+  /* Hide everything by default, then re-show the report subtree. The
+   * visibility toggle is the only reliable way to suppress arbitrary
+   * app chrome (sidebar, nav, toasts) we don't control here, so !important
+   * stays — it has to override every other rule in the cascade. */
+  body * {
+    visibility: hidden !important;
+  }
+
+  .hifz-report-card.report-card-print,
+  .hifz-report-card.report-card-print * {
+    visibility: visible !important;
+  }
+
+  .hifz-report-card.report-card-print {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    background: #ffffff;
+    color: #000000;
+    box-shadow: none;
+    border: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .hifz-report-card.report-card-print * {
+    color: #000000;
+    background: transparent;
+    box-shadow: none;
+  }
+
+  .hifz-report-card.report-card-print table {
+    page-break-inside: auto;
+  }
+
+  .hifz-report-card.report-card-print tr {
+    page-break-inside: avoid;
+    page-break-after: auto;
+  }
+
+  .hifz-report-card .no-print,
+  .no-print {
+    display: none !important;
+  }
+
+  .hifz-report-card .print-page-break {
+    page-break-before: always;
+  }
+
+  .hifz-report-card .signature-block {
+    page-break-inside: avoid;
+  }
+}
