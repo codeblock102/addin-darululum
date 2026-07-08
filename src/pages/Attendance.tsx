@@ -8,7 +8,7 @@ import { AttendanceForm } from "@/components/attendance/AttendanceForm.tsx";
 import { AttendanceTable } from "@/components/attendance/AttendanceTable.tsx";
 import { AttendanceCutoffSettings } from "@/components/attendance/AttendanceCutoffSettings.tsx";
 import { LongTermAbsenceModal } from "@/components/attendance/LongTermAbsenceModal.tsx";
-import { Tabs, TabsContent } from "@/components/ui/tabs.tsx";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs.tsx";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog.tsx";
 import {
   AlertTriangle,
@@ -140,7 +140,7 @@ const WatchlistView = () => {
   if (isLoading) {
     return (
       <div className="py-16 flex items-center justify-center">
-        <div className="h-6 w-6 rounded-full border-2 border-green-700 border-t-transparent animate-spin" />
+        <div className="h-6 w-6 rounded-full border-2 border-brand border-t-transparent animate-spin" />
       </div>
     );
   }
@@ -163,7 +163,7 @@ const WatchlistView = () => {
     <div className="space-y-4">
       {/* ── Unexcused absence warning panel ── */}
       {unexcusedStudents.length > 0 && (
-        <div className="rounded-xl border border-orange-200 bg-orange-50 px-4 py-3">
+        <div className="sticky top-2 z-10 rounded-xl border border-orange-200 bg-orange-50 px-4 py-3 shadow-sm">
           <div className="flex items-center gap-2 mb-2">
             <AlertTriangle className="h-4 w-4 text-orange-600 flex-shrink-0" />
             <p className="text-sm font-semibold text-orange-800">
@@ -174,7 +174,7 @@ const WatchlistView = () => {
             {unexcusedStudents.map((r) => (
               <div
                 key={r.student_id}
-                className="flex items-center gap-1.5 px-2.5 py-1 bg-white rounded-lg border border-orange-200 text-xs"
+                className="flex items-center gap-1.5 px-2.5 py-1 bg-surface-elevated rounded-lg border border-orange-200 text-xs"
               >
                 <span className="font-medium text-gray-800">{r.name}</span>
                 <span className="text-orange-600 font-bold">·{r.unexcused_count}</span>
@@ -296,7 +296,7 @@ const HeatmapView = () => {
   if (isLoading) {
     return (
       <div className="py-16 flex items-center justify-center">
-        <div className="h-6 w-6 rounded-full border-2 border-green-700 border-t-transparent animate-spin" />
+        <div className="h-6 w-6 rounded-full border-2 border-brand border-t-transparent animate-spin" />
       </div>
     );
   }
@@ -354,8 +354,8 @@ const HeatmapView = () => {
           const best = schoolDays.reduce((best, d) => (d.rate ?? 0) > (best.rate ?? 0) ? d : best, schoolDays[0] ?? { date: "", rate: null, label: "—", day: "", isWeekend: false });
 
           return [
-            { label: "Avg rate (30d)", value: `${avgRate}%`, color: "text-green-700" },
-            { label: "Full days (≥90%)", value: String(fullDays), color: "text-green-700" },
+            { label: "Avg rate (30d)", value: `${avgRate}%`, color: "text-brand" },
+            { label: "Full days (≥90%)", value: String(fullDays), color: "text-brand" },
             { label: "Low days (<60%)", value: String(lowDays), color: lowDays > 0 ? "text-red-600" : "text-gray-500" },
             { label: "Best day", value: best ? `${best.label} · ${best.rate}%` : "—", color: "text-gray-700" },
           ].map((s) => (
@@ -372,12 +372,8 @@ const HeatmapView = () => {
 
 // ─── Main Page ────────────────────────────────────────────────────────────────
 
-const tabCls = (active: boolean) =>
-  `flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-lg transition-all duration-150 border-0 outline-none ${
-    active
-      ? "bg-green-700 text-white shadow-sm"
-      : "text-gray-500 hover:text-gray-800 hover:bg-gray-100 bg-transparent"
-  }`;
+const tabTriggerCls =
+  "flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-lg transition-all duration-150 border-0 outline-none text-gray-500 hover:text-gray-800 hover:bg-gray-100 bg-transparent data-[state=active]:bg-brand data-[state=active]:text-brand-fg data-[state=active]:shadow-sm data-[state=active]:hover:bg-brand data-[state=active]:hover:text-brand-fg";
 
 const Attendance = () => {
   const { t } = useI18n();
@@ -463,7 +459,7 @@ const Attendance = () => {
   const unmarked = Math.max(0, activeStudentsCount - todayRows.length);
 
   return (
-    <div className="min-h-screen bg-[#f5f6fa] p-4 sm:p-6 md:p-8">
+    <div className="min-h-screen bg-surface p-4 sm:p-6 md:p-8">
       <div className="max-w-7xl mx-auto space-y-5">
 
         {/* ── Welcome Banner ───────────────────────────────────────────────── */}
@@ -476,7 +472,7 @@ const Attendance = () => {
 
           <div className="relative">
             <p className="text-sm font-medium" style={{ color: "#86efac" }}>{todayLabel}</p>
-            <h1 className="text-2xl font-bold mt-1" style={{ color: "white" }}>Attendance Monitor</h1>
+            <h1 className="text-2xl font-bold mt-1 text-white">Attendance Monitor</h1>
             <p className="text-sm mt-1" style={{ color: "#bbf7d0" }}>
               {unmarked > 0
                 ? `${unmarked} student${unmarked !== 1 ? "s" : ""} not yet marked today`
@@ -488,7 +484,7 @@ const Attendance = () => {
 
           <div className="flex items-center gap-2 relative flex-wrap">
             {absentToday + sickToday > 0 && (
-              <div className="flex items-center gap-2 bg-red-500/20 border border-red-400/30 text-xs font-semibold px-3 py-2 rounded-xl" style={{ color: "white" }}>
+              <div className="flex items-center gap-2 bg-red-500/20 border border-red-400/30 text-xs font-semibold px-3 py-2 rounded-xl text-white">
                 <AlertTriangle className="h-3.5 w-3.5" style={{ color: "#fca5a5" }} />
                 {absentToday + sickToday} absent today
               </div>
@@ -497,19 +493,17 @@ const Attendance = () => {
               variant="ghost"
               size="sm"
               onClick={() => setSettingsOpen(true)}
-              className="bg-white/15 hover:bg-white/25 border-0 rounded-xl h-9 w-9 p-0"
-              style={{ color: "white" }}
+              className="bg-white/15 hover:bg-white/25 border-0 rounded-xl h-9 w-9 p-0 text-white"
               title="Attendance settings"
             >
-              <Settings className="h-4 w-4" style={{ color: "white" }} />
+              <Settings className="h-4 w-4 text-white" />
             </Button>
             <button
               type="button"
               onClick={() => setLongTermOpen(true)}
-              className="flex items-center gap-2 bg-white/20 hover:bg-white/30 text-sm font-semibold px-4 py-2 rounded-xl transition-colors"
-              style={{ color: "white" }}
+              className="flex items-center gap-2 bg-white/20 hover:bg-white/30 text-sm font-semibold px-4 py-2 rounded-xl transition-colors text-white"
             >
-              <CalendarDays className="h-3.5 w-3.5" style={{ color: "white" }} />
+              <CalendarDays className="h-3.5 w-3.5 text-white" />
               Multi-day Absence
             </button>
           </div>
@@ -521,8 +515,8 @@ const Attendance = () => {
             label="Present Today"
             value={`${attendedToday} / ${activeStudentsCount}`}
             meta={`${todayPct.toFixed(1)}% attendance rate`}
-            metaColor="text-green-700"
-            icon={<UserCheck className="h-4 w-4 text-green-700" />}
+            metaColor="text-brand"
+            icon={<UserCheck className="h-4 w-4 text-brand" />}
             iconBg="bg-green-50"
             onClick={() => setSelectedTab("take-attendance")}
           />
@@ -556,7 +550,7 @@ const Attendance = () => {
         </div>
 
         {/* ── Progress bar ─────────────────────────────────────────────────── */}
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm px-5 py-3.5 flex items-center gap-4">
+        <div className="bg-surface-elevated rounded-2xl border border-gray-100 shadow-sm px-5 py-3.5 flex items-center gap-4">
           <span className="text-xs font-medium text-gray-500 shrink-0">Today's rate</span>
           <div className="flex-1 bg-gray-100 rounded-full h-2 overflow-hidden">
             <div
@@ -564,14 +558,14 @@ const Attendance = () => {
               style={{ width: `${todayPct}%`, background: "linear-gradient(90deg, #15803d, #166534)" }}
             />
           </div>
-          <span className="text-xs font-bold text-green-800 shrink-0 w-12 text-right">
+          <span className="text-xs font-bold text-brand shrink-0 w-12 text-right">
             {todayPct.toFixed(1)}%
           </span>
         </div>
 
         {/* ── Late Arrivals Alert ──────────────────────────────────────────── */}
         {lateToday > 0 && (
-          <div className="bg-white rounded-2xl border border-amber-200 shadow-sm px-5 py-4">
+          <div className="bg-surface-elevated rounded-2xl border border-amber-200 shadow-sm px-5 py-4">
             <div className="flex items-center gap-2 mb-3">
               <div className="w-7 h-7 rounded-lg bg-amber-50 flex items-center justify-center">
                 <Clock className="h-4 w-4 text-amber-600" />
@@ -582,15 +576,18 @@ const Attendance = () => {
             </div>
             <div className="flex flex-wrap gap-2">
               {todayRows
-                .filter((r) => sl(r.status) === "late" && r.students)
+                .filter(
+                  (r): r is typeof r & { students: NonNullable<typeof r.students> } =>
+                    sl(r.status) === "late" && r.students != null,
+                )
                 .map((r) => (
                   <div
                     key={r.id}
                     className="flex items-center gap-1.5 px-2.5 py-1 bg-amber-50 rounded-lg border border-amber-200"
                   >
                     <StudentContactPopover
-                      studentId={r.students!.id}
-                      studentName={r.students!.name}
+                      studentId={r.students.id}
+                      studentName={r.students.name}
                       status="late"
                     />
                   </div>
@@ -600,27 +597,27 @@ const Attendance = () => {
         )}
 
         {/* ── Main Card ────────────────────────────────────────────────────── */}
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+        <div className="bg-surface-elevated rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
           <Tabs value={selectedTab} onValueChange={setSelectedTab}>
             <div className="border-b border-gray-100 px-4 py-3 overflow-x-auto">
-              <div className="inline-flex items-center gap-0.5 bg-gray-100/70 p-1 rounded-xl">
-                <button className={tabCls(selectedTab === "take-attendance")} onClick={() => setSelectedTab("take-attendance")}>
+              <TabsList className="inline-flex h-auto items-center justify-start gap-0.5 bg-gray-100/70 p-1 rounded-xl text-muted-foreground">
+                <TabsTrigger value="take-attendance" className={tabTriggerCls}>
                   <CalendarCheck className="h-4 w-4" />
                   {t("pages.attendance.tabs.take", "Take Attendance")}
-                </button>
-                <button className={tabCls(selectedTab === "watchlist")} onClick={() => setSelectedTab("watchlist")}>
+                </TabsTrigger>
+                <TabsTrigger value="watchlist" className={tabTriggerCls}>
                   <AlertTriangle className="h-4 w-4" />
                   Watchlist
-                </button>
-                <button className={tabCls(selectedTab === "heatmap")} onClick={() => setSelectedTab("heatmap")}>
+                </TabsTrigger>
+                <TabsTrigger value="heatmap" className={tabTriggerCls}>
                   <TrendingUp className="h-4 w-4" />
                   Heatmap
-                </button>
-                <button className={tabCls(selectedTab === "records")} onClick={() => setSelectedTab("records")}>
+                </TabsTrigger>
+                <TabsTrigger value="records" className={tabTriggerCls}>
                   <List className="h-4 w-4" />
                   {t("pages.attendance.tabs.records", "Records")}
-                </button>
-              </div>
+                </TabsTrigger>
+              </TabsList>
             </div>
 
             <div className="p-5 sm:p-6">

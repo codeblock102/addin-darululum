@@ -11,10 +11,12 @@
  */
 import { useNavigate, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft, Printer } from "lucide-react";
+import { ArrowLeft, Printer, ShieldAlert } from "lucide-react";
 import { Button } from "@/components/ui/button.tsx";
 import { Skeleton } from "@/components/ui/skeleton.tsx";
 import { supabase } from "@/integrations/supabase/client.ts";
+import { useAuth } from "@/hooks/use-auth.ts";
+import "@/styles/report-card-print.css";
 
 // ── Types ────────────────────────────────────────────────────────────
 interface StudentRow {
@@ -227,21 +229,137 @@ function StatBlock({
   );
 }
 
+// ── Authorization ────────────────────────────────────────────────────
+/**
+ * Determine whether the current user is allowed to view a given student's
+ * report card. Allowed roles:
+ *   - admin (profiles.role === 'admin' or user_metadata.role === 'admin')
+ *   - teacher of one of the student's classes (classes.teacher_ids)
+ *   - parent linked to the student (parents.student_ids contains studentId)
+ *
+ * Returns { allowed, reason } where reason is "unauthenticated" |
+ * "forbidden" | undefined.
+ */
+async function checkReportCardAccess(
+  studentId: string,
+  userId: string | undefined,
+  userMetaRole: string | undefined,
+): Promise<{ allowed: boolean; reason?: "unauthenticated" | "forbidden" }> {
+  if (!userId) return { allowed: false, reason: "unauthenticated" };
+
+  // 1. Admin via auth metadata short-circuit
+  if (userMetaRole === "admin") return { allowed: true };
+
+  // 2. Admin via profiles.role
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("id, role")
+    .eq("id", userId)
+    .maybeSingle();
+  if (profile?.role === "admin") return { allowed: true };
+
+  // 3. Teacher: is the user in any of the student's classes' teacher_ids?
+  const { data: studentRow } = await supabase
+    .from("students")
+    .select("class_ids")
+    .eq("id", studentId)
+    .maybeSingle();
+  const classIds = ((studentRow as unknown as { class_ids: string[] | null } | null)?.class_ids) ?? [];
+  if (classIds.length > 0) {
+    const { data: classRows } = await supabase
+      .from("classes")
+      .select("id, teacher_ids")
+      .in("id", classIds);
+    const classes = (classRows ?? []) as unknown as Array<{
+      id: string;
+      teacher_ids: string[] | null;
+    }>;
+    const teacherIds = new Set(
+      classes.flatMap((c) => c.teacher_ids ?? []),
+    );
+    if (teacherIds.has(userId)) return { allowed: true };
+  }
+
+  // 4. Parent: parents row where id === userId and student_ids includes studentId
+  const { data: parentRow } = await (supabase as unknown as {
+    from: (t: string) => {
+      select: (s: string) => {
+        eq: (col: string, val: string) => {
+          maybeSingle: () => Promise<{ data: { student_ids: string[] | null } | null }>;
+        };
+      };
+    };
+  })
+    .from("parents")
+    .select("student_ids")
+    .eq("id", userId)
+    .maybeSingle();
+  const studentIds = parentRow?.student_ids ?? [];
+  if (studentIds.includes(studentId)) return { allowed: true };
+
+  return { allowed: false, reason: "forbidden" };
+}
+
 // ── Main page ────────────────────────────────────────────────────────
 const HifzReportCard = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { session, isLoading: authLoading } = useAuth();
 
   const logoUrl =
     (import.meta.env.VITE_LOGO_URL as string | undefined) ||
     (import.meta.env.LOGO_URL as string | undefined) ||
     "";
 
+  // Authorization gate — runs before fetchReportData. Report data only
+  // fetches when access is granted.
+  const userId = session?.user?.id;
+  const userMetaRole = session?.user?.user_metadata?.role as string | undefined;
+  const {
+    data: access,
+    isLoading: accessLoading,
+  } = useQuery({
+    queryKey: ["hifz-report-card-access", id, userId],
+    queryFn: () => checkReportCardAccess(id!, userId, userMetaRole),
+    enabled: !!id && !authLoading,
+  });
+
   const { data, isLoading, error } = useQuery({
     queryKey: ["hifz-report-card", id],
     queryFn: () => fetchReportData(id!),
-    enabled: !!id,
+    enabled: !!id && access?.allowed === true,
   });
+
+  // Loading: auth or access check pending
+  if (authLoading || accessLoading) {
+    return (
+      <div className="space-y-4">
+        <Skeleton className="h-10 w-64" />
+        <Skeleton className="h-[900px] w-full" />
+      </div>
+    );
+  }
+
+  // Forbidden / unauthenticated
+  if (access && !access.allowed) {
+    return (
+      <div className="flex flex-col items-center justify-center h-[60vh] text-center px-4">
+        <ShieldAlert className="h-12 w-12 text-muted-foreground mb-3" />
+        <h2 className="text-2xl font-bold mb-2">403 — Access Denied</h2>
+        <p className="text-gray-600 mb-6 max-w-md">
+          {access.reason === "unauthenticated"
+            ? "You must be signed in to view this report card."
+            : "You don't have permission to view this student's report card. Only the student's parent, their teacher, or an administrator may view it."}
+        </p>
+        <div className="flex gap-3">
+          <Button variant="outline" onClick={() => navigate(-1)}>
+            <ArrowLeft className="h-4 w-4 mr-2" /> Back
+          </Button>
+          <Button onClick={() => navigate("/dashboard")}>Back to Dashboard</Button>
+        </div>
+      </div>
+    );
+  }
 
   if (isLoading) {
     return (
@@ -274,37 +392,6 @@ const HifzReportCard = () => {
 
   return (
     <>
-      {/* Print stylesheet — hides app chrome and page actions, forces white. */}
-      <style>{`
-        @media print {
-          @page { size: letter portrait; margin: 0.5in; }
-          html, body { background: #ffffff !important; }
-          body * { visibility: hidden !important; }
-          .report-card-print, .report-card-print * { visibility: visible !important; }
-          .report-card-print {
-            position: absolute !important;
-            left: 0; top: 0;
-            width: 100%;
-            background: #ffffff !important;
-            color: #000000 !important;
-            box-shadow: none !important;
-            border: none !important;
-            padding: 0 !important;
-            margin: 0 !important;
-          }
-          .report-card-print * {
-            color: #000000 !important;
-            background: transparent !important;
-            box-shadow: none !important;
-          }
-          .report-card-print table { page-break-inside: auto; }
-          .report-card-print tr { page-break-inside: avoid; page-break-after: auto; }
-          .no-print { display: none !important; }
-          .print-page-break { page-break-before: always; }
-          .signature-block { page-break-inside: avoid; }
-        }
-      `}</style>
-
       {/* Page actions (hidden in print) */}
       <div className="no-print flex items-center justify-between mb-4">
         <Button variant="ghost" onClick={() => navigate(-1)}>
@@ -317,7 +404,7 @@ const HifzReportCard = () => {
 
       {/* Report Card body — Letter-sized container */}
       <div
-        className="report-card-print mx-auto bg-white text-gray-900 shadow-md border border-gray-200 print:shadow-none"
+        className="hifz-report-card report-card-print mx-auto bg-white text-gray-900 shadow-md border border-gray-200 print:shadow-none"
         style={{ width: "8.5in", minHeight: "11in", padding: "0.5in" }}
       >
         {/* Letterhead */}

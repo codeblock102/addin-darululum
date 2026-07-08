@@ -15,6 +15,51 @@
 @layer utilities {
   /* Increase readability: make pale paragraph text darker */
   p.text-gray-200 {
-    @apply text-foreground;
+    color: hsl(var(--foreground));
+  }
+
+  /* Arabic-script text (modern UI Arabic — Cairo/Tajawal/Noto Sans Arabic).
+     Slightly larger size + looser line-height for legibility next to Latin. */
+  .arabic {
+    font-family: theme('fontFamily.arabic');
+    font-size: 1.1em;
+    line-height: 1.8;
+  }
+
+  /* Quranic/classical Arabic text (Amiri/Noto Naskh Arabic).
+     Larger size + generous line-height for ayah readability. */
+  .quran-text {
+    font-family: theme('fontFamily.quran');
+    font-size: 1.25em;
+    line-height: 2;
+  }
+
+  /* RTL alignment when the document/element direction is right-to-left. */
+  [dir="rtl"] .arabic,
+  [dir="rtl"] .quran-text {
+    text-align: right;
+  }
+
+  /* Ayah surface — warm parchment background for Arabic/ayāt views. */
+  .ayah-surface {
+    background-color: hsl(var(--parchment));
+    color: hsl(var(--foreground));
+    padding: 1rem;
+    border-radius: 0.75rem;
+  }
+}
+
+/* Honor user OS-level motion preference globally. Tailwind's built-in
+   motion-safe: / motion-reduce: variants remain usable for per-utility
+   opt-in. This block neutralizes any animation/transition that hasn't
+   been explicitly gated. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }

@@ -6,6 +6,8 @@ import { BackgroundPattern } from "./dashboard/BackgroundPattern.tsx";
 import { RoleBadge } from "./dashboard/RoleBadge.tsx";
 import { useIsMobile } from "@/hooks/use-mobile.tsx";
 import { BottomNavigation } from "@/components/mobile/BottomNavigation.tsx";
+import { BottomTabBar } from "@/components/mobile/BottomTabBar.tsx";
+import { LogLessonFAB } from "@/components/mobile/LogLessonFAB.tsx";
 import { Outlet } from "react-router-dom";
 import { cn } from "@/lib/utils.ts";
 import { useTheme } from "@/hooks/use-theme.ts";
@@ -116,7 +118,7 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
         )}
       >
         <BackgroundPattern isAdmin={isAdmin}>
-          <div className="h-full">
+          <div className="h-full pb-20 sm:pb-0">
             <div className="max-w-7xl mx-auto h-full">
               <div className="animate-fadeIn h-full">
                 {children || <Outlet />}
@@ -126,9 +128,27 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
         </BackgroundPattern>
       </div>
 
-      {/* Mobile Bottom Navigation */}
-      {isMobile && !isLoading && (isTeacher || isAdmin || isParent) && (
-        <BottomNavigation />
+      {/*
+        Mobile Bottom Navigation (legacy, scroll-bar style).
+        Wrapped so it shows ONLY between the sm and lg breakpoints —
+        below sm the new <BottomTabBar /> replaces it; at lg and up the
+        sidebar takes over. This avoids two stacked mobile bars.
+      */}
+      {!isLoading && (isTeacher || isAdmin || isParent) && (
+        <div className="hidden sm:block lg:hidden">
+          <BottomNavigation />
+        </div>
+      )}
+
+      {/*
+        Phone chrome: bottom tab bar + log-lesson FAB.
+        Both are sm:hidden internally — desktop keeps the existing sidebar.
+      */}
+      {!isLoading && (isTeacher || isAdmin || isParent) && (
+        <>
+          <BottomTabBar />
+          <LogLessonFAB />
+        </>
       )}
 
       <OnboardingModal />

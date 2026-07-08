@@ -103,7 +103,7 @@ const ParentAttendance = () => {
               </CardHeader>
               <CardContent>
                 {records.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">No attendance records found.</p>
+                  <p className="text-sm text-muted-foreground">No attendance records yet. The latest 50 sessions appear here once your child's teacher logs attendance.</p>
                 ) : (
                   <ul className="space-y-2">
                     {records.map((a) => {

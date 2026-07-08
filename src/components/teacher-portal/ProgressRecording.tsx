@@ -49,9 +49,13 @@ export const ProgressRecording = ({
     queryFn: async () => {
       const { data, error } = await supabase.from("profiles").select("id, name")
 
-        .eq("id", teacherId).single();
+        .eq("id", teacherId).maybeSingle();
       if (error) {
         console.error("Error fetching teacher details:", error);
+        return null;
+      }
+      if (!data) {
+        console.warn("No profile found for teacher:", teacherId);
         return null;
       }
       return data;

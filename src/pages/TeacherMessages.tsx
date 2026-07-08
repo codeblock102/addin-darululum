@@ -466,6 +466,44 @@ export default function TeacherMessages() {
 
   const [sending, setSending] = useState(false);
 
+  // Broadcast throttle: count broadcasts (>=2 recipients with same message+subject)
+  // the teacher has sent today. Shows a soft warning when count >= 2.
+  // The communications table has no is_broadcast flag, so we group today's sent
+  // rows by (message, subject, minute-bucket of created_at) — a single broadcast
+  // insert produces N rows in one batch with identical content.
+  const { data: broadcastsTodayCount = 0 } = useQuery<number>({
+    queryKey: ["teacher-broadcasts-today", teacherId],
+    queryFn: async () => {
+      if (!teacherId) return 0;
+      const startOfDay = new Date();
+      startOfDay.setHours(0, 0, 0, 0);
+      const { data, error } = await supabase
+        .from("communications")
+        .select("message, subject, created_at")
+        .eq("sender_id", teacherId)
+        .gte("created_at", startOfDay.toISOString());
+      if (error) return 0;
+      const rows = (data || []) as Array<{ message: string; subject: string | null; created_at: string }>;
+      // Bucket by (message, subject, minute) — broadcasts are batch-inserted, so
+      // all rows in one broadcast share these three values.
+      const groups = new Map<string, number>();
+      for (const r of rows) {
+        const minuteBucket = r.created_at.slice(0, 16); // YYYY-MM-DDTHH:MM
+        const key = `${minuteBucket}|${r.subject ?? ""}|${r.message}`;
+        groups.set(key, (groups.get(key) || 0) + 1);
+      }
+      // Count groups with >= 2 rows (i.e., went to multiple recipients = broadcast)
+      let count = 0;
+      for (const n of groups.values()) if (n >= 2) count += 1;
+      return count;
+    },
+    enabled: !!teacherId,
+    staleTime: 60_000,
+  });
+
+  const isBroadcastMode = selectedRecipientId === "__all_parents__";
+  const showBroadcastWarning = isBroadcastMode && broadcastsTodayCount >= 2;
+
   const openThreadWithPeer = async (peerId: string, markReadForInbox: boolean) => {
     try {
       if (markReadForInbox) {
@@ -881,6 +919,7 @@ export default function TeacherMessages() {
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ["teacher-sent", teacherId] }),
         queryClient.invalidateQueries({ queryKey: ["teacher-inbox", teacherId] }),
+        queryClient.invalidateQueries({ queryKey: ["teacher-broadcasts-today", teacherId] }),
       ]);
     } catch (e) {
       console.error("[TeacherMessages] send error:", e);
@@ -956,6 +995,17 @@ export default function TeacherMessages() {
               className="resize-none"
             />
           </div>
+          {showBroadcastWarning && (
+            <div
+              role="alert"
+              className="flex items-start gap-2 rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-xs text-amber-900 dark:border-amber-700 dark:bg-amber-900/20 dark:text-amber-200"
+            >
+              <span aria-hidden className="mt-0.5 inline-block h-1.5 w-1.5 rounded-full bg-amber-500 shrink-0" />
+              <span>
+                You've sent {broadcastsTodayCount} broadcasts today. Parents may mute frequent messages — consider scheduling for tomorrow.
+              </span>
+            </div>
+          )}
           <div className="flex justify-end">
             <Button
               onClick={handleSend}
