@@ -317,7 +317,10 @@ serve(async (req: Request) => {
       throw prefsErr;
     }
 
-    const prefsBase = (prefsRaw || []) as Omit<NotificationPreference, "email">[];
+    const prefsBase = (prefsRaw || []) as Omit<
+      NotificationPreference,
+      "email"
+    >[];
 
     // Resolve email per user from auth.users (service-role required).
     const prefs: NotificationPreference[] = [];
@@ -364,7 +367,9 @@ serve(async (req: Request) => {
         // No batch hint — accept whichever window the user is in.
         if (withinWindow(localNow.totalMinutes, morningMin, WINDOW_MIN)) {
           matchedBatch = "morning";
-        } else if (withinWindow(localNow.totalMinutes, eveningMin, WINDOW_MIN)) {
+        } else if (
+          withinWindow(localNow.totalMinutes, eveningMin, WINDOW_MIN)
+        ) {
           matchedBatch = "evening";
         }
       }
@@ -375,7 +380,9 @@ serve(async (req: Request) => {
           email: pref.email,
           status: "skipped_window",
           notifications: 0,
-          reason: `local time ${pad(localNow.hours)}:${pad(localNow.minutes)} not within +/-${WINDOW_MIN}m of digest times`,
+          reason: `local time ${pad(localNow.hours)}:${
+            pad(localNow.minutes)
+          } not within +/-${WINDOW_MIN}m of digest times`,
         });
         continue;
       }
@@ -397,7 +404,9 @@ serve(async (req: Request) => {
       // 2) Pull undelivered standard notifications since last_delivered_at.
       let outboxQuery = supabase
         .from("notifications_outbox")
-        .select("id, user_id, tier, title, body, payload, created_at, delivered_at")
+        .select(
+          "id, user_id, tier, title, body, payload, created_at, delivered_at",
+        )
         .eq("user_id", pref.user_id)
         .eq("tier", "standard")
         .is("delivered_at", null)
@@ -488,9 +497,8 @@ serve(async (req: Request) => {
           ? "skipped_no_transport: RESEND_FROM_EMAIL not configured"
           : "skipped_no_transport: user has no email on auth.users";
         console.warn(
-          `send-digest: not delivering ${notifications.length} notifications to ${pref.user_id} (${matchedBatch}); resend=${
-            !!resend
-          } from=${!!RESEND_FROM_EMAIL} email=${!!pref.email} — will retry next run`,
+          `send-digest: not delivering ${notifications.length} notifications to ${pref.user_id} (${matchedBatch}); resend=${!!resend} from=${!!RESEND_FROM_EMAIL} email=${!!pref
+            .email} — will retry next run`,
         );
       }
 
@@ -544,12 +552,15 @@ serve(async (req: Request) => {
       processed: results.length,
       sent: results.filter((r) => r.status === "sent").length,
       logged: results.filter((r) => r.status === "logged").length,
-      skipped_window:
-        results.filter((r) => r.status === "skipped_window").length,
-      skipped_quiet_hours:
-        results.filter((r) => r.status === "skipped_quiet_hours").length,
-      skipped_no_notifications:
-        results.filter((r) => r.status === "skipped_no_notifications").length,
+      skipped_window: results.filter((r) =>
+        r.status === "skipped_window"
+      ).length,
+      skipped_quiet_hours: results.filter((r) =>
+        r.status === "skipped_quiet_hours"
+      ).length,
+      skipped_no_notifications: results.filter((r) =>
+        r.status === "skipped_no_notifications"
+      ).length,
       failed: results.filter((r) => r.status === "failed").length,
     };
     console.log("send-digest: done", summary);
