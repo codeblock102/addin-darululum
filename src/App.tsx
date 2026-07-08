@@ -11,10 +11,13 @@
  *
  * It also includes the `<Toaster>` component, which is used to display toast notifications globally throughout the application.
  */
+import { useEffect } from "react";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import { DirectionProvider } from "@radix-ui/react-direction";
 import { Toaster } from "@/components/ui/toaster.tsx";
 import { ThemeProvider } from "@/components/theme-provider.tsx";
 import { ProxyProvider } from "@/contexts/ProxyContext.tsx";
+import { useDirection } from "@/hooks/useDirection.ts";
 import Index from "@/pages/Index.tsx";
 import NotFound from "@/pages/NotFound.tsx";
 import Students from "@/pages/Students.tsx";
@@ -30,6 +33,7 @@ import Attendance from "@/pages/Attendance.tsx";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute.tsx";
 import { DashboardLayout } from "@/components/layouts/DashboardLayout.tsx";
 import Settings from "@/pages/Settings.tsx";
+import NotificationsSettings from "@/pages/NotificationsSettings.tsx";
 import Preferences from "@/pages/Preferences.tsx";
 import CreateDemoAccount from "@/pages/dev/CreateDemoAccount.tsx";
 import CreateTeacherProfileForTestAccount from "@/pages/dev/CreateTeacherProfileForTestAccount.tsx";
@@ -79,10 +83,42 @@ import Tasks from "@/pages/Tasks.tsx";
  *
  * @returns {JSX.Element} The main application structure with configured routes and providers.
  */
+/**
+ * Wraps the routed app in Radix's DirectionProvider and keeps the
+ * `<html data-dir>` attribute in sync so plain CSS `[dir="rtl"]` selectors
+ * (Tailwind RTL plugin, custom overrides, etc.) work without each component
+ * having to opt in. The `dir` source is `useDirection()` which today reads
+ * from `notification_preferences.locale`; a future i18n layer can swap in
+ * without touching consumers.
+ */
+function AppShell({ children }: { children: React.ReactNode }) {
+  const dir = useDirection();
+
+  useEffect(() => {
+    const html = document.documentElement;
+    html.setAttribute("data-dir", dir);
+    html.setAttribute("dir", dir);
+  }, [dir]);
+
+  useEffect(() => {
+    return () => {
+      // Leave the attribute in place during dir changes — only clear on
+      // actual unmount (e.g. tests). The root <html> never really
+      // "unmounts" in a SPA.
+      const html = document.documentElement;
+      html.removeAttribute("data-dir");
+      html.removeAttribute("dir");
+    };
+  }, []);
+
+  return <DirectionProvider dir={dir}>{children}</DirectionProvider>;
+}
+
 function App() {
   return (
     <ThemeProvider defaultTheme="light" storageKey="vite-ui-theme">
       <ProxyProvider>
+      <AppShell>
       <BrowserRouter>
         <Routes>
           <Route path="/auth" element={<Auth />} />
@@ -90,7 +126,6 @@ function App() {
           <Route path="/create-demo-account" element={<ProtectedRoute requireAdmin><CreateDemoAccount /></ProtectedRoute>} />
           <Route path="/create-teacher-profile" element={<ProtectedRoute requireAdmin><CreateTeacherProfileForTestAccount /></ProtectedRoute>} />
           <Route path="/admin-diagnostic" element={<ProtectedRoute requireAdmin><AdminAccessDiagnostic /></ProtectedRoute>} />
-          <Route path="*" element={<NotFound />} />
 
           {/* Admin Routes */}
           <Route
@@ -257,6 +292,10 @@ function App() {
               }
             />
             <Route path="/settings" element={<Settings />} />
+            <Route
+              path="/settings/notifications"
+              element={<NotificationsSettings />}
+            />
             <Route path="/preferences" element={<Preferences />} />
             <Route path="/profile" element={<Profile />} />
             <Route
@@ -267,9 +306,14 @@ function App() {
                 </ProtectedRoute>
               }
             />
+            {/* Catch-all inside the protected layout: 404s render within
+                DashboardLayout for signed-in users, and ProtectedRoute
+                redirects unauthenticated visitors to /auth first. */}
+            <Route path="*" element={<NotFound />} />
           </Route>
         </Routes>
       </BrowserRouter>
+      </AppShell>
       </ProxyProvider>
       <Toaster />
     </ThemeProvider>

@@ -31,6 +31,18 @@
   --border: 214.3 31.8% 91.4%;
   --input: 214.3 31.8% 91.4%;
   --ring: 221.2 83.2% 53.3%;
+
+  /* Semantic design tokens (consume via Tailwind: bg-surface, text-brand, etc.) */
+  --surface: 220 20% 97%;             /* ~#f5f6fa */
+  --surface-elevated: 0 0% 100%;      /* white */
+  --brand: 142.1 76.2% 36.3%;         /* tailwind green-700 ~#15803d */
+  --brand-fg: 0 0% 100%;              /* white */
+  --brand-muted: 138.5 76.5% 96.7%;   /* tailwind green-100 ~#dcfce7 */
+
+  /* Arabic/ayāt palette tokens (light mode) — reserved for Arabic/ayāt views */
+  --parchment: 40 40% 96%;            /* warm cream background for ayāt */
+  --gold: 42 78% 60%;                 /* achievement accent */
+  --terracotta: 12 60% 55%;           /* muted error tone in near-Arabic contexts */
 }
 
 /* Dark mode */
@@ -54,6 +66,18 @@
   --border: 216 34% 17%;
   --input: 216 34% 17%;
   --ring: 216 34% 17%;
+
+  /* Semantic design tokens — dark mode */
+  --surface: 224 71% 6%;              /* near-background, slightly lifted */
+  --surface-elevated: 224 71% 10%;    /* elevated panels */
+  --brand: 142.1 70.6% 45.3%;         /* tailwind green-500 — better contrast on dark */
+  --brand-fg: 144.9 80.4% 10%;        /* deep green for text on brand */
+  --brand-muted: 145 63% 13%;         /* deep green muted background */
+
+  /* Arabic/ayāt palette tokens (dark mode) — reserved for Arabic/ayāt views */
+  --parchment: 40 20% 12%;            /* warm dark cream background for ayāt */
+  --gold: 42 70% 55%;                 /* achievement accent */
+  --terracotta: 12 55% 50%;           /* muted error tone in near-Arabic contexts */
 }
 
 /* Admin theme variables - these apply when admin-theme class is present */

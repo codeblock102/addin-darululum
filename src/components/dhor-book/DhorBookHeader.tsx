@@ -50,7 +50,9 @@ export function DhorBookHeader(
           <Button
             variant="outline"
             size="icon"
+            className="min-h-11 min-w-11"
             onClick={() => onWeekChange(subWeeks(currentWeek, 1))}
+            aria-label="Previous week"
           >
             <ChevronLeft className="h-4 w-4" />
           </Button>
@@ -62,7 +64,9 @@ export function DhorBookHeader(
           <Button
             variant="outline"
             size="icon"
+            className="min-h-11 min-w-11"
             onClick={() => onWeekChange(addWeeks(currentWeek, 1))}
+            aria-label="Next week"
           >
             <ChevronRight className="h-4 w-4" />
           </Button>

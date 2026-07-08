@@ -19,6 +19,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card.t
 import { Button } from "@/components/ui/button.tsx";
 import { Badge } from "@/components/ui/badge.tsx";
 import { useIsMobile } from "@/hooks/use-mobile.tsx";
+import { useToast } from "@/hooks/use-toast.ts";
 
 // ---------- Types ----------
 interface TimeSlot {
@@ -90,6 +91,7 @@ function fmt12(hm: string): string {
 const ParentAgenda = () => {
   const { children: kids, isLoading: loadingKids } = useParentChildren();
   const isMobile = useIsMobile();
+  const { toast } = useToast();
 
   const [selectedChildId, setSelectedChildId] = useState<string | null>(null);
   const [weekStart, setWeekStart] = useState<Date>(() => startOfWeek(new Date(), { weekStartsOn: 0 }));
@@ -104,19 +106,34 @@ const ParentAgenda = () => {
   const weekEnd = useMemo(() => endOfWeek(weekStart, { weekStartsOn: 0 }), [weekStart]);
   const weekDays = useMemo(() => eachDayOfInterval({ start: weekStart, end: weekEnd }), [weekStart, weekEnd]);
 
+  // Navigation bounds: clamp to the current week (no past) and 8 weeks ahead.
+  const todayWeekStart = useMemo(() => startOfWeek(new Date(), { weekStartsOn: 0 }), []);
+  const maxWeekStart = useMemo(() => addWeeks(todayWeekStart, 8), [todayWeekStart]);
+  const isAtFirstWeek = weekStart.getTime() <= todayWeekStart.getTime();
+  const isAtLastWeek = weekStart.getTime() >= maxWeekStart.getTime();
+
   // Fetch the child row to get class_ids
   const { data: childRow } = useQuery<{ id: string; class_ids: string[] | null } | null>({
     queryKey: ["parent-agenda-child", selectedChildId],
     enabled: !!selectedChildId,
     queryFn: async () => {
-      if (!selectedChildId) return null;
-      const { data, error } = await (supabase as any)
-        .from("students")
-        .select("id, class_ids")
-        .eq("id", selectedChildId)
-        .maybeSingle();
-      if (error) throw error;
-      return (data as { id: string; class_ids: string[] | null } | null) ?? null;
+      try {
+        if (!selectedChildId) return null;
+        const { data, error } = await (supabase as any)
+          .from("students")
+          .select("id, class_ids")
+          .eq("id", selectedChildId)
+          .maybeSingle();
+        if (error) throw error;
+        return (data as { id: string; class_ids: string[] | null } | null) ?? null;
+      } catch (e) {
+        toast({
+          title: "Failed to load child",
+          description: e instanceof Error ? e.message : String(e),
+          variant: "destructive",
+        });
+        throw e;
+      }
     },
   });
 
@@ -125,14 +142,23 @@ const ParentAgenda = () => {
     queryKey: ["parent-agenda-classes", childRow?.class_ids],
     enabled: !!childRow?.class_ids && childRow.class_ids.length > 0,
     queryFn: async () => {
-      const ids = childRow?.class_ids ?? [];
-      if (ids.length === 0) return [];
-      const { data, error } = await (supabase as any)
-        .from("classes")
-        .select("id, name, time_slots, teacher_ids")
-        .in("id", ids);
-      if (error) throw error;
-      return ((data || []) as unknown) as ClassRow[];
+      try {
+        const ids = childRow?.class_ids ?? [];
+        if (ids.length === 0) return [];
+        const { data, error } = await (supabase as any)
+          .from("classes")
+          .select("id, name, time_slots, teacher_ids")
+          .in("id", ids);
+        if (error) throw error;
+        return ((data || []) as unknown) as ClassRow[];
+      } catch (e) {
+        toast({
+          title: "Failed to load classes",
+          description: e instanceof Error ? e.message : String(e),
+          variant: "destructive",
+        });
+        throw e;
+      }
     },
   });
 
@@ -152,16 +178,25 @@ const ParentAgenda = () => {
     queryKey: ["parent-agenda-teachers", teacherIds],
     enabled: teacherIds.length > 0,
     queryFn: async () => {
-      const { data, error } = await (supabase as any)
-        .from("profiles")
-        .select("id, name")
-        .in("id", teacherIds);
-      if (error) throw error;
-      const map: Record<string, string> = {};
-      ((data || []) as Array<{ id: string; name: string | null }>).forEach((t) => {
-        if (t.id) map[t.id] = t.name || "Teacher";
-      });
-      return map;
+      try {
+        const { data, error } = await (supabase as any)
+          .from("profiles")
+          .select("id, name")
+          .in("id", teacherIds);
+        if (error) throw error;
+        const map: Record<string, string> = {};
+        ((data || []) as Array<{ id: string; name: string | null }>).forEach((t) => {
+          if (t.id) map[t.id] = t.name || "Teacher";
+        });
+        return map;
+      } catch (e) {
+        toast({
+          title: "Failed to load teachers",
+          description: e instanceof Error ? e.message : String(e),
+          variant: "destructive",
+        });
+        throw e;
+      }
     },
   });
 
@@ -169,13 +204,22 @@ const ParentAgenda = () => {
   const { data: events } = useQuery<SchoolEvent[]>({
     queryKey: ["parent-agenda-events", format(weekStart, "yyyy-MM-dd"), format(weekEnd, "yyyy-MM-dd")],
     queryFn: async () => {
-      const { data, error } = await (supabase as any)
-        .from("school_events")
-        .select("id, title, event_type, start_date, end_date, all_day, color, audience")
-        .lte("start_date", format(weekEnd, "yyyy-MM-dd"))
-        .gte("end_date", format(weekStart, "yyyy-MM-dd"));
-      if (error) throw error;
-      return ((data || []) as unknown) as SchoolEvent[];
+      try {
+        const { data, error } = await (supabase as any)
+          .from("school_events")
+          .select("id, title, event_type, start_date, end_date, all_day, color, audience")
+          .lte("start_date", format(weekEnd, "yyyy-MM-dd"))
+          .gte("end_date", format(weekStart, "yyyy-MM-dd"));
+        if (error) throw error;
+        return ((data || []) as unknown) as SchoolEvent[];
+      } catch (e) {
+        toast({
+          title: "Failed to load school events",
+          description: e instanceof Error ? e.message : String(e),
+          variant: "destructive",
+        });
+        throw e;
+      }
     },
   });
 
@@ -274,6 +318,7 @@ const ParentAgenda = () => {
                 size="sm"
                 variant="outline"
                 onClick={() => setWeekStart((d) => subWeeks(d, 1))}
+                disabled={isAtFirstWeek}
                 aria-label="Previous week"
               >
                 <ChevronLeft className="h-4 w-4" />
@@ -289,6 +334,7 @@ const ParentAgenda = () => {
                 size="sm"
                 variant="outline"
                 onClick={() => setWeekStart((d) => addWeeks(d, 1))}
+                disabled={isAtLastWeek}
                 aria-label="Next week"
               >
                 <ChevronRight className="h-4 w-4" />
@@ -314,13 +360,13 @@ const ParentAgenda = () => {
               <div className="p-4 bg-gray-100 rounded-full mb-4">
                 <Users className="h-8 w-8 text-gray-400" />
               </div>
-              <p className="text-sm font-medium text-gray-700 mb-1">No children linked to your account</p>
-              <p className="text-xs text-gray-400">Please contact the school admin.</p>
+              <p className="text-sm font-medium text-gray-700 mb-1">No children linked to your account yet</p>
+              <p className="text-xs text-gray-500">Once an admin links your child to your parent account, their weekly schedule will appear here. Reach out to the school office if this is taking longer than expected.</p>
             </div>
           ) : noScheduleHint ? (
             <div className="py-12 text-center">
-              <p className="text-sm font-medium text-gray-700">No schedule available yet.</p>
-              <p className="text-xs text-gray-500 mt-1">Ask the school office.</p>
+              <p className="text-sm font-medium text-gray-700">No schedule published yet</p>
+              <p className="text-xs text-gray-500 mt-1">Your child's teacher hasn't set up a weekly timetable for their class. The agenda will fill in automatically once classes and lesson slots are scheduled.</p>
             </div>
           ) : isMobile ? (
             <MobileDayView

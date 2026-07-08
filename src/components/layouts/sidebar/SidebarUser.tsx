@@ -8,7 +8,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu.tsx";
 import { useAuth } from "@/hooks/use-auth.ts";
-import { LogOut, Settings, User } from "lucide-react";
+import { Bell, LogOut, Settings, User } from "lucide-react";
 import { cn } from "@/lib/utils.ts";
 import { useIsMobile } from "@/hooks/use-mobile.tsx";
 import { useI18n } from "@/contexts/I18nContext.tsx";
@@ -59,7 +59,7 @@ export const SidebarUser = ({ isAdmin, isParent, isOpen }: SidebarUserProps) => 
           <DropdownMenuContent
             side="right"
             align="end"
-            className="w-56 ml-2"
+            className="w-56 ms-2"
             sideOffset={8}
           >
             <div className="flex items-center gap-2 p-2">
@@ -84,19 +84,23 @@ export const SidebarUser = ({ isAdmin, isParent, isOpen }: SidebarUserProps) => 
             </div>
             <DropdownMenuSeparator />
             <DropdownMenuItem className="cursor-pointer" onClick={() => navigate("/profile")}>
-              <User className="mr-2 h-4 w-4" />
+              <User className="me-2 h-4 w-4" />
               <span>{t("nav.profile", "Profile")}</span>
             </DropdownMenuItem>
             <DropdownMenuItem className="cursor-pointer" onClick={() => navigate(isAdmin ? "/settings" : "/preferences")}>
-              <Settings className="mr-2 h-4 w-4" />
+              <Settings className="me-2 h-4 w-4" />
               <span>{t("nav.settings", "Settings")}</span>
+            </DropdownMenuItem>
+            <DropdownMenuItem className="cursor-pointer" onClick={() => navigate("/settings/notifications")}>
+              <Bell className="me-2 h-4 w-4" />
+              <span>{t("nav.notifications", "Notifications")}</span>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem
               className="cursor-pointer text-red-600 focus:text-red-600"
               onClick={() => signOut()}
             >
-              <LogOut className="mr-2 h-4 w-4" />
+              <LogOut className="me-2 h-4 w-4" />
               <span>{t("auth.logout", "Log out")}</span>
             </DropdownMenuItem>
           </DropdownMenuContent>
@@ -136,19 +140,23 @@ export const SidebarUser = ({ isAdmin, isParent, isOpen }: SidebarUserProps) => 
         </DropdownMenuTrigger>
         <DropdownMenuContent side="top" align="end" className="w-56">
           <DropdownMenuItem className="cursor-pointer" onClick={() => navigate("/profile")}>
-            <User className="mr-2 h-4 w-4" />
+            <User className="me-2 h-4 w-4" />
             <span>{t("nav.profile", "Profile")}</span>
           </DropdownMenuItem>
           <DropdownMenuItem className="cursor-pointer" onClick={() => navigate(isAdmin ? "/settings" : "/preferences")}>
-            <Settings className="mr-2 h-4 w-4" />
+            <Settings className="me-2 h-4 w-4" />
             <span>{t("nav.settings", "Settings")}</span>
+          </DropdownMenuItem>
+          <DropdownMenuItem className="cursor-pointer" onClick={() => navigate("/settings/notifications")}>
+            <Bell className="me-2 h-4 w-4" />
+            <span>{t("nav.notifications", "Notifications")}</span>
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem
             className="cursor-pointer text-red-600 focus:text-red-600"
             onClick={() => signOut()}
           >
-            <LogOut className="mr-2 h-4 w-4" />
+            <LogOut className="me-2 h-4 w-4" />
             <span>{t("auth.logout", "Log out")}</span>
           </DropdownMenuItem>
         </DropdownMenuContent>

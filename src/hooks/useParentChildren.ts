@@ -15,6 +15,7 @@ export interface ParentChildStudent {
   guardian_name?: string | null;
   guardian_contact?: string | null;
   status?: string | null;
+  photo_url?: string | null;
 }
 
 export const useParentChildren = () => {
@@ -68,7 +69,7 @@ export const useParentChildren = () => {
 
       const { data: students, error: studentsError } = await supabase
         .from("students")
-        .select("id, name, guardian_name, guardian_contact, status")
+        .select("id, name, guardian_name, guardian_contact, status, photo_url")
         .in("id", studentIds as string[]);
 
       if (studentsError) {
