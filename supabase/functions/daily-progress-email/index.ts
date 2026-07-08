@@ -1223,8 +1223,11 @@ serve(async (req: Request) => {
           } else if (data) {
             // Process batch results
             // Resend batch API returns an array of results, one per email
-            // Each result has an id if successful, or error if failed
-            const results = Array.isArray(data) ? data : [];
+            // Each result has an id if successful, or error if failed.
+            // SDK v3 wraps the array as { data: [...] }, so unwrap that shape too.
+            const results = Array.isArray(data)
+              ? data
+              : (Array.isArray((data as any)?.data) ? (data as any).data : []);
 
             for (let i = 0; i < batch.length; i++) {
               const payload = batch[i];

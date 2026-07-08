@@ -224,7 +224,7 @@ export const Sidebar = (
           <SidebarNav items={navItems} isAdmin={isAdmin} isOpen={isOpen} />
         </div>
 
-        <SidebarUser isAdmin={isAdmin} isOpen={isOpen} />
+        <SidebarUser isAdmin={isAdmin} isParent={isParent} isOpen={isOpen} />
       </div>
     </div>
   );

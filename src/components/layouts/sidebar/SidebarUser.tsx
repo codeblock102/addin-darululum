@@ -16,10 +16,11 @@ import { useNavigate } from "react-router-dom";
 
 interface SidebarUserProps {
   isAdmin: boolean;
+  isParent?: boolean;
   isOpen?: boolean;
 }
 
-export const SidebarUser = ({ isAdmin, isOpen }: SidebarUserProps) => {
+export const SidebarUser = ({ isAdmin, isParent, isOpen }: SidebarUserProps) => {
   const { session, signOut } = useAuth();
   const isMobile = useIsMobile();
   const { t } = useI18n();
@@ -127,7 +128,7 @@ export const SidebarUser = ({ isAdmin, isOpen }: SidebarUserProps) => {
                   {userEmail}
                 </p>
                 <span className="text-[9px] font-semibold uppercase tracking-widest text-gray-400 mt-1">
-                  {isAdmin ? "Admin" : "Teacher"}
+                  {isAdmin ? "Admin" : isParent ? "Parent" : "Teacher"}
                 </span>
               </div>
             </div>
